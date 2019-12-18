@@ -24,7 +24,7 @@ public class ServiceProviderUtils {
     private static final String SERVICE_NOT_AVAILABLE = "Service provider IRSA (Gaia DR2, AllWise, CatWise) or CDS (Simbad) currently not reachable.";
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
-        StringBuilder url = new StringBuilder(SIMBAD_BASE_URL)
+        StringBuilder url = new StringBuilder(SIMBAD_MIRROR_URL)
                 .append("?request=doQuery&lang=adql&format=text&query=SELECT%20main_id,%20otype_txt,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,'.'%20FROM%20basic%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20")
                 .append(String.valueOf(degRA))
                 .append(",%20")

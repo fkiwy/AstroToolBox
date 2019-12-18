@@ -233,9 +233,8 @@ public class ModuleHelper {
         String name = element.getName();
         JLabel label = new JLabel(name == null ? "" : name + " = ", JLabel.RIGHT);
         if (element.isOnFocus()) {
-            label.setFont(PLAIN_BOLD_FONT);
-        } else {
-            label.setFont(PLAIN_FONT);
+            label.setOpaque(true);
+            label.setBackground(JColor.WHITE.val);
         }
         if (element.isComputed()) {
             label.setForeground(JColor.DARKER_GREEN.val);
@@ -250,9 +249,7 @@ public class ModuleHelper {
         String value = element.getValue();
         JTextField field = new JTextField(value == null ? "" : value);
         if (element.isOnFocus()) {
-            field.setFont(PLAIN_BOLD_FONT);
-        } else {
-            field.setFont(PLAIN_FONT);
+            field.setBackground(JColor.WHITE.val);
         }
         if (element.isComputed()) {
             field.setForeground(JColor.DARKER_GREEN.val);

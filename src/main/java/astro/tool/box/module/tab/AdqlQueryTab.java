@@ -86,6 +86,8 @@ public class AdqlQueryTab {
     private String queryResults;
     private String previousTableName;
 
+    private boolean isSyntaxChecked;
+
     public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
@@ -114,14 +116,17 @@ public class AdqlQueryTab {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
-                    CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                    if (selectedEntry != null && selectedEntry instanceof GaiaDR2CatalogEntry) {
-                        String comoverQuery = createComoverQuery();
-                        comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
-                        comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
-                        comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(selectedEntry.getPmra()));
-                        comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(selectedEntry.getPmdec()));
-                        textEditor.setText(comoverQuery);
+                    String query = textEditor.getText();
+                    if (query.isEmpty() || query.contains("Find all comovers")) {
+                        CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
+                        if (selectedEntry != null && selectedEntry instanceof GaiaDR2CatalogEntry) {
+                            String comoverQuery = createComoverQuery();
+                            comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
+                            comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
+                            comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(selectedEntry.getPmra()));
+                            comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(selectedEntry.getPmdec()));
+                            textEditor.setText(comoverQuery);
+                        }
                     }
                 }
             };
@@ -229,16 +234,21 @@ public class AdqlQueryTab {
                         .replaceAll("\\+", "%2B")
                         .replaceAll(";", "");
                 try {
+                    String response;
                     // Validate query
-                    String response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)));
-                    JSONObject obj = new JSONObject(response);
-                    String validation = obj.getString("validation");
-                    if (!validation.equals("ok")) {
-                        JSONArray arr = obj.getJSONArray("errors");
-                        String errorMessage = arr.getJSONObject(0).getString("message");
-                        showQueryErrorMessage(errorMessage);
-                        initStatus();
-                        return;
+                    try {
+                        response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)));
+                        isSyntaxChecked = true;
+                        JSONObject obj = new JSONObject(response);
+                        String validation = obj.getString("validation");
+                        if (!validation.equals("ok")) {
+                            JSONArray arr = obj.getJSONArray("errors");
+                            String errorMessage = arr.getJSONObject(0).getString("message");
+                            showQueryErrorMessage(errorMessage);
+                            initStatus();
+                            return;
+                        }
+                    } catch (Exception ex) {
                     }
 
                     // Execute query
@@ -682,10 +692,15 @@ public class AdqlQueryTab {
 
     private String getQueryErrorMessage() {
         StringBuilder message = new StringBuilder();
-        addRow(message, "There seems to be some kind of error not related to ADQL syntax.");
-        addRow(message, "Check the table and column names, they might be misspelled.");
-        addRow(message, "Use the 'Browse IRSA tables' button to do so.");
-        addRow(message, "If the error persists, please send a bug report including your query to " + HELP_EMAIL);
+        if (isSyntaxChecked) {
+            addRow(message, "There seems to be some kind of error not related to ADQL syntax.");
+            addRow(message, "Check the table and column names, they might be misspelled.");
+            addRow(message, "Use the 'Browse IRSA tables' button to do so.");
+            addRow(message, "If the error persists, please send a bug report including your query to " + HELP_EMAIL);
+        } else {
+            addRow(message, "Syntax check service not available. Error unknown!");
+            addRow(message, "Review the ADQL syntax and the table and column names.");
+        }
         return message.toString();
     }
 
