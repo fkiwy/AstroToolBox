@@ -1431,13 +1431,13 @@ public class ImageViewerTab {
         return (float) Math.log(x + Math.sqrt(x * x + 1.0));
     }
 
+    private int getContrast() {
+        return size < 30 || useCoverageMaps.isSelected() ? 25 : 50;
+    }
+
     private void setContrast(int contrast) {
         lowScaleSlider.setValue(lowContrast = contrast);
         highScaleSlider.setValue(highContrast = 0);
-    }
-
-    private int getContrast() {
-        return size < 30 || useCoverageMaps.isSelected() ? 25 : 50;
     }
 
     private int getNumberOfWeightsBelowLimit(short[][] weights, int limit) {
@@ -1721,7 +1721,7 @@ public class ImageViewerTab {
                     numberOfYears = 4;
                 }
 
-                ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec)); // -> cos... to test !!!
+                ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
                 dec = dec - numberOfYears * pmDec / DEG_MAS;
 
                 NumberPair position = getPixelCoordinates(ra, dec);
@@ -1729,7 +1729,7 @@ public class ImageViewerTab {
                 double y = position.getY();
 
                 numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
-                double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec)); // -> cos... to test !!!
+                double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
                 double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
                 position = getPixelCoordinates(newRa, newDec);
