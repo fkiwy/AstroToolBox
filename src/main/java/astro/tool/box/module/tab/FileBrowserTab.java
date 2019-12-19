@@ -1,9 +1,9 @@
 package astro.tool.box.module.tab;
 
-import astro.tool.box.enumeration.JColor;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
+import astro.tool.box.enumeration.JColor;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

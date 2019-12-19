@@ -1,8 +1,8 @@
 package astro.tool.box.module;
 
-import java.awt.Color;
 import static java.lang.Math.*;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 
@@ -32,7 +32,7 @@ public class Arrow {
         this.arrowSize = arrowSize;
         this.color = color;
     }
-    
+
     public void draw(Graphics2D graphics) {
         double diffX = startX - endX;
         double angle;

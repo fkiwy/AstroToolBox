@@ -1,8 +1,8 @@
 package astro.tool.box.module;
 
-import astro.tool.box.container.CatalogElement;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
