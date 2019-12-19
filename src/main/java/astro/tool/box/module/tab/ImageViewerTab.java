@@ -127,6 +127,7 @@ public class ImageViewerTab {
     private JCheckBox useCoverageMaps;
     private JCheckBox skipBadCoadds;
     private JCheckBox stretchImage;
+    private JCheckBox invertColors;
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
     private JCheckBox simbadOverlay;
@@ -222,9 +223,9 @@ public class ImageViewerTab {
             scrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             int width = 240;
-            int height = 900;
+            int height = 925;
 
-            JPanel controlPanel = new JPanel(new GridLayout(37, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(38, 1));
             controlPanel.setPreferredSize(new Dimension(width - 20, height));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -430,6 +431,9 @@ public class ImageViewerTab {
                 createFlipbook();
                 skipBadCoadds.setCursor(Cursor.getDefaultCursor());
             });
+
+            invertColors = new JCheckBox("Invert colors");
+            controlPanel.add(invertColors);
 
             borderEpoch = new JCheckBox("Border first epoch");
             controlPanel.add(borderEpoch);
@@ -1404,7 +1408,8 @@ public class ImageViewerTab {
             value = stretch(value);
         }
         value = contrast(value);
-        return 1 - min(1, value);
+        value = min(1, value);
+        return invertColors.isSelected() ? value : 1 - value;
     }
 
     private float normalize(float value, int minVal, int maxVal) {
