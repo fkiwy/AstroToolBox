@@ -1503,7 +1503,8 @@ public class ImageViewerTab {
         } else {
             presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
             presetMaxVal = avgVal * size;
-            presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
+            //presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
+            presetMaxVal = presetMaxVal > maxVal ? maxVal : avgVal * size / 2;
         }
 
         minValueSlider.setMinimum(minVal);
@@ -1616,6 +1617,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 simbadEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 simbadEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1636,6 +1639,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 gaiaDR2Entries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 gaiaDR2Entries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1656,6 +1661,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 allWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 allWiseEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1676,6 +1683,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 catWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 catWiseEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1690,8 +1699,8 @@ public class ImageViewerTab {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
             NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-            catalogEntry.setTargetRa(position.getX());
-            catalogEntry.setTargetDec(position.getY());
+            catalogEntry.setPixelRa(position.getX());
+            catalogEntry.setPixelDec(position.getY());
             Circle circle = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
             circle.draw(graphics);
         });
@@ -1745,8 +1754,8 @@ public class ImageViewerTab {
     private void showCatalogInfo(List<CatalogEntry> catalogEntries, int x, int y) {
         catalogEntries.forEach(catalogEntry -> {
             double radius = getOverlaySize() / 2;
-            if (catalogEntry.getTargetRa() > x - radius && catalogEntry.getTargetRa() < x + radius
-                    && catalogEntry.getTargetDec() > y - radius && catalogEntry.getTargetDec() < y + radius) {
+            if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
+                    && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
                 displayCatalogPanel(catalogEntry);
             }
         });
