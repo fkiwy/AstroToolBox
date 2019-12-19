@@ -26,9 +26,9 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
-import astro.tool.box.module.Arrow;
 import astro.tool.box.module.Circle;
 import astro.tool.box.module.FlipbookComponent;
+import astro.tool.box.module.Arrow;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
@@ -1025,7 +1025,7 @@ public class ImageViewerTab {
             addOverlaysAndPMVectors(image);
 
             Graphics graphics = image.getGraphics();
-            Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10);
+            Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10, Color.BLACK);
             circle.draw(graphics);
 
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(image)));
@@ -1746,7 +1746,7 @@ public class ImageViewerTab {
                 double newY = position.getY();
 
                 Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
-                arrow.draw((Graphics2D) graphics);
+                arrow.draw(graphics);
             }
         });
     }
