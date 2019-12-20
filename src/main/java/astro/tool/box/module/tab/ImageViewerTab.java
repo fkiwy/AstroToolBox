@@ -218,21 +218,21 @@ public class ImageViewerTab {
             imagePanel = new JPanel();
             imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
 
-            JScrollPane scrollPanel = new JScrollPane(imagePanel);
-            mainPanel.add(scrollPanel, BorderLayout.CENTER);
-            scrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+            JScrollPane imageScrollPanel = new JScrollPane(imagePanel);
+            mainPanel.add(imageScrollPanel, BorderLayout.CENTER);
+            imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-            int width = 240;
-            int height = 925;
+            int controlPanelWidth = 240;
+            int controlPanelHeight = 950;
 
-            JPanel controlPanel = new JPanel(new GridLayout(38, 1));
-            controlPanel.setPreferredSize(new Dimension(width - 20, height));
+            JPanel controlPanel = new JPanel(new GridLayout(39, 1));
+            controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
-            JScrollPane wrapper = new JScrollPane(controlPanel);
-            wrapper.setPreferredSize(new Dimension(width, height));
-            wrapper.setBorder(new EmptyBorder(0, 0, 0, 0));
-            leftPanel.add(wrapper);
+            JScrollPane controlScrollPanel = new JScrollPane(controlPanel);
+            controlScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, controlPanelHeight));
+            controlScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            leftPanel.add(controlScrollPanel);
 
             controlPanel.add(new JLabel("Coordinates:"));
 
@@ -438,7 +438,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            controlPanel.add(new JLabel("Overlays:"));
+            controlPanel.add(new JLabel(underLine("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
@@ -458,7 +458,7 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            controlPanel.add(new JLabel("PM vectors:"));
+            controlPanel.add(new JLabel(underLine("PM vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
@@ -471,9 +471,11 @@ public class ImageViewerTab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
-            properMotionPanel.add(new JLabel("PM (mas/yr) above"));
+            properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = createField(100, PLAIN_FONT);
             properMotionPanel.add(properMotionField);
+
+            controlPanel.add(new JLabel(underLine("Advanced controls:")));
 
             useCoverageMaps = new JCheckBox("Use coverage maps");
             controlPanel.add(useCoverageMaps);

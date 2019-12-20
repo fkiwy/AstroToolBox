@@ -168,6 +168,10 @@ public class ModuleHelper {
         return label;
     }
 
+    public static String underLine(String text) {
+        return "<html><u>" + text + "</u></html>";
+    }
+
     public static Border createEtchedBorder(String boderTitle) {
         return createEtchedBorder(boderTitle, null, null);
     }
