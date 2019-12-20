@@ -124,8 +124,6 @@ public class ImageViewerTab {
 
     private JPanel imagePanel;
     private JCheckBox minMaxLimits;
-    private JCheckBox useCoverageMaps;
-    private JCheckBox skipBadCoadds;
     private JCheckBox stretchImage;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
@@ -136,6 +134,8 @@ public class ImageViewerTab {
     private JCheckBox catWiseOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
+    private JCheckBox useCoverageMaps;
+    private JCheckBox skipBadCoadds;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -411,27 +411,6 @@ public class ImageViewerTab {
             stretchImage = new JCheckBox("Apply image stretching", true);
             controlPanel.add(stretchImage);
 
-            useCoverageMaps = new JCheckBox("Use coverage maps");
-            controlPanel.add(useCoverageMaps);
-            useCoverageMaps.addActionListener((ActionEvent evt) -> {
-                useCoverageMaps.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                images.clear();
-                setContrast(getContrast());
-                initMinMaxValues();
-                createFlipbook();
-                useCoverageMaps.setCursor(Cursor.getDefaultCursor());
-            });
-
-            skipBadCoadds = new JCheckBox("Skip low weighted coadds");
-            controlPanel.add(skipBadCoadds);
-            skipBadCoadds.addActionListener((ActionEvent evt) -> {
-                skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                images.clear();
-                initMinMaxValues();
-                createFlipbook();
-                skipBadCoadds.setCursor(Cursor.getDefaultCursor());
-            });
-
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
 
@@ -495,6 +474,27 @@ public class ImageViewerTab {
             properMotionPanel.add(new JLabel("PM (mas/yr) above"));
             properMotionField = createField(100, PLAIN_FONT);
             properMotionPanel.add(properMotionField);
+
+            useCoverageMaps = new JCheckBox("Use coverage maps");
+            controlPanel.add(useCoverageMaps);
+            useCoverageMaps.addActionListener((ActionEvent evt) -> {
+                useCoverageMaps.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                images.clear();
+                setContrast(getContrast());
+                initMinMaxValues();
+                createFlipbook();
+                useCoverageMaps.setCursor(Cursor.getDefaultCursor());
+            });
+
+            skipBadCoadds = new JCheckBox("Skip low weighted coadds");
+            controlPanel.add(skipBadCoadds);
+            skipBadCoadds.addActionListener((ActionEvent evt) -> {
+                skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                images.clear();
+                initMinMaxValues();
+                createFlipbook();
+                skipBadCoadds.setCursor(Cursor.getDefaultCursor());
+            });
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
