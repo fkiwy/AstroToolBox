@@ -184,6 +184,7 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean imageCutOff;
     private boolean hasException;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
@@ -773,6 +774,13 @@ public class ImageViewerTab {
                 setContrast(getContrast());
                 initMinMaxValues();
                 windowShift = 0;
+                imageCutOff = false;
+                simbadOverlay.setEnabled(true);
+                gaiaDR2Overlay.setEnabled(true);
+                allWiseOverlay.setEnabled(true);
+                catWiseOverlay.setEnabled(true);
+                gaiaDR2ProperMotion.setEnabled(true);
+                catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
                 ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
             }
@@ -1003,12 +1011,8 @@ public class ImageViewerTab {
             }
             timer.restart();
         } catch (Exception ex) {
-            if (hasException) {
-                showErrorDialog(baseFrame, "Image has been cut off. Choose a smaller field of view.");
-            } else {
-                showExceptionDialog(baseFrame, ex);
-                hasException = true;
-            }
+            showExceptionDialog(baseFrame, ex);
+            hasException = true;
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
@@ -1111,9 +1115,21 @@ public class ImageViewerTab {
             Header header = hdu.getHeader();
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (naxis1 != naxis2) {
-                hasException = true;
-                throw new Exception("Image has been cut off. Choose a smaller field of view.");
+            if (naxis1 != naxis2 && !imageCutOff) {
+                showInfoDialog(baseFrame, "Image has been cut off. No centering possible. Overlays deactivated.");
+                imageCutOff = true;
+                simbadOverlay.setSelected(false);
+                gaiaDR2Overlay.setSelected(false);
+                allWiseOverlay.setSelected(false);
+                catWiseOverlay.setSelected(false);
+                gaiaDR2ProperMotion.setSelected(false);
+                catWiseProperMotion.setSelected(false);
+                simbadOverlay.setEnabled(false);
+                gaiaDR2Overlay.setEnabled(false);
+                allWiseOverlay.setEnabled(false);
+                catWiseOverlay.setEnabled(false);
+                gaiaDR2ProperMotion.setEnabled(false);
+                catWiseProperMotion.setEnabled(false);
             }
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
@@ -1510,8 +1526,7 @@ public class ImageViewerTab {
         } else {
             presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
             presetMaxVal = avgVal * size;
-            //presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
-            presetMaxVal = presetMaxVal > maxVal ? maxVal : avgVal * size / 2;
+            presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
         }
 
         minValueSlider.setMinimum(minVal);
