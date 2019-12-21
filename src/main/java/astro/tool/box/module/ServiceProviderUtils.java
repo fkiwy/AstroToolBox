@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class ServiceProviderUtils {
 
-    private static final String SERVICE_NOT_AVAILABLE = "Service provider IRSA (Gaia DR2, AllWise, CatWise) or CDS (Simbad) currently not reachable.";
+    private static final String SERVICE_NOT_AVAILABLE = "Service provider IRSA (Gaia DR2, AllWise, CatWise) or CDS (Simbad) currently not reachable." + LINE_SEP + "Try to use the Simbad mirror under the Settings tab (General settings -> Use Simbad mirror -> Apply settings).";
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
         boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
