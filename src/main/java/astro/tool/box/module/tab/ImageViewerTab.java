@@ -237,7 +237,7 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel("Coordinates:"));
 
-            coordsField = createField("133.787 -7.24515", PLAIN_FONT);
+            coordsField = createField("", PLAIN_FONT);
             controlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
                 coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1116,7 +1116,8 @@ public class ImageViewerTab {
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
             if (naxis1 != naxis2 && !imageCutOff) {
-                showInfoDialog(baseFrame, "Image has been cut off. No centering possible. Overlays deactivated.");
+                String message = "Image has been cut off. No centering possible. Overlays deactivated. You may choose a smaller field of view.";
+                showInfoDialog(baseFrame, message);
                 imageCutOff = true;
                 simbadOverlay.setSelected(false);
                 gaiaDR2Overlay.setSelected(false);

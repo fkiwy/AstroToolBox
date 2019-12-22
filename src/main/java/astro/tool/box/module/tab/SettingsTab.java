@@ -126,7 +126,7 @@ public class SettingsTab {
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
             useProxy = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_PROXY, "false"));
-            useSimbadMirror = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR, "false"));
+            useSimbadMirror = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR, "true"));
 
             setLookAndFeel(lookAndFeel);
 
