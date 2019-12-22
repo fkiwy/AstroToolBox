@@ -1364,10 +1364,12 @@ public class ImageViewerTab {
             short[][] weights = (short[][]) imageData.getData();
 
             float[][] weightedValues = new float[size][size];
+            short[][] refactoredWeights = new short[size][size];
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     try {
                         weightedValues[i][j] = values[i][j] * weights[i][j];
+                        refactoredWeights[i][j] = 1;
                     } catch (ArrayIndexOutOfBoundsException ex) {
                     }
                 }
@@ -1375,6 +1377,7 @@ public class ImageViewerTab {
 
             Fits result = new Fits();
             result.addHDU(FitsFactory.hduFactory(weightedValues));
+            result.addHDU(FitsFactory.hduFactory(refactoredWeights));
             return result;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
