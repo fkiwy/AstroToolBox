@@ -47,7 +47,7 @@ public class CoordsConverterTool {
             JTextField decField = createField("", PLAIN_FONT);
             mainPanel.add(decField);
 
-            mainPanel.add(createLabel("System: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Convert to: ", PLAIN_FONT, JLabel.RIGHT));
             JComboBox<CoordsSystem> coordsSystems = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
             mainPanel.add(coordsSystems);
 
@@ -57,8 +57,8 @@ public class CoordsConverterTool {
             mainPanel.add(resultField);
 
             mainPanel.add(new JLabel());
-            JButton calculateButton = new JButton("Convert");
-            calculateButton.addActionListener((ActionEvent e) -> {
+            JButton convertButton = new JButton("Convert");
+            convertButton.addActionListener((ActionEvent e) -> {
                 try {
                     CoordsSystem coordsSystem = (CoordsSystem) coordsSystems.getSelectedItem();
                     String result;
@@ -73,7 +73,7 @@ public class CoordsConverterTool {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }
             });
-            mainPanel.add(calculateButton);
+            mainPanel.add(convertButton);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

@@ -8,6 +8,7 @@ import astro.tool.box.enumeration.Unit;
 import static java.lang.Math.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -235,7 +236,7 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Convert a modified julian date to local date and time
+     * Convert a modified Julian date to local date and time
      *
      * @param modifiedJulianDate
      * @return the local date and time (UTC)
@@ -250,6 +251,23 @@ public class AstrometricFunctions {
         Duration duration = Duration.ofDays(days.longValue()).plusSeconds(integerSeconds.longValue()).plusNanos(nanos.longValue());
         Instant instant = epoch.plus(duration);
         return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
+    }
+
+    /**
+     * Convert local date and time to a modified Julian date
+     *
+     * @param dateTime
+     * @return the modified Julian date
+     */
+    public static BigDecimal convertDateTimeToMJD(LocalDateTime dateTime) {
+        Instant epoch = OffsetDateTime.of(1858, 11, 17, 0, 0, 0, 0, ZoneOffset.UTC).toInstant();
+        Duration duration = Duration.between(epoch, dateTime.toInstant(ZoneOffset.UTC));
+        Duration durationRemainder = duration.minusDays(duration.toDays());
+        BigDecimal wholeDays = new BigDecimal(duration.toDays());
+        BigDecimal partialDayInNanos = new BigDecimal(durationRemainder.toNanos());
+        BigDecimal nanosInADay = new BigDecimal(TimeUnit.DAYS.toNanos(1));
+        BigDecimal partialDay = partialDayInNanos.divide(nanosInADay, 6, RoundingMode.HALF_EVEN);
+        return wholeDays.add(partialDay);
     }
 
     /**

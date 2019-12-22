@@ -38,15 +38,15 @@ public class UnitConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Unit of value to convert: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<Unit> toConvertUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
-            mainPanel.add(toConvertUnits);
-
-            mainPanel.add(createLabel("Value to convert: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Value: ", PLAIN_FONT, JLabel.RIGHT));
             JTextField toConvertField = createField("", PLAIN_FONT);
             mainPanel.add(toConvertField);
 
-            mainPanel.add(createLabel("Unit of converted value: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<Unit> toConvertUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            mainPanel.add(toConvertUnits);
+
+            mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
             JComboBox<Unit> convertedUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             mainPanel.add(convertedUnits);
 
@@ -56,8 +56,8 @@ public class UnitConverterTool {
             mainPanel.add(convertedField);
 
             mainPanel.add(new JLabel());
-            JButton calculateButton = new JButton("Convert");
-            calculateButton.addActionListener((ActionEvent e) -> {
+            JButton convertButton = new JButton("Convert");
+            convertButton.addActionListener((ActionEvent e) -> {
                 try {
                     double converted = convertToUnit(
                             toDouble(toConvertField.getText()),
@@ -69,7 +69,7 @@ public class UnitConverterTool {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }
             });
-            mainPanel.add(calculateButton);
+            mainPanel.add(convertButton);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

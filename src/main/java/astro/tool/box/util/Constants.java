@@ -1,11 +1,15 @@
 package astro.tool.box.util;
 
+import java.time.format.DateTimeFormatter;
+
 public class Constants {
+
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap/sync";
 
     public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap/sync";
-    
+
     public static final String IRSA_BASE_URL = "https://irsa.ipac.caltech.edu/SCS";
 
     public static final String IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP";
