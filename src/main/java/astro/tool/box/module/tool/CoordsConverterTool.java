@@ -27,44 +27,67 @@ public class CoordsConverterTool {
 
     public void init() {
         try {
-            JPanel mainPanel = new JPanel(new GridLayout(4, 2));
+            JPanel mainPanel = new JPanel(new GridLayout(5, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Coordinates converter", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 125));
+            mainPanel.setPreferredSize(new Dimension(350, 150));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Coordinates: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField coordsField = createField("", PLAIN_FONT);
-            mainPanel.add(coordsField);
+            mainPanel.add(createLabel("Coordinates to convert: ", PLAIN_FONT, JLabel.RIGHT));
+            JTextField coordsToConvert = createField("", PLAIN_FONT);
+            mainPanel.add(coordsToConvert);
 
-            mainPanel.add(createLabel("Convert to: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<CoordsSystem> coordsSystems = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
-            mainPanel.add(coordsSystems);
+            mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<CoordsSystem> systemsToConvertFrom = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
+            mainPanel.add(systemsToConvertFrom);
+
+            mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<CoordsSystem> systemsToConvertTo = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
+            systemsToConvertTo.setSelectedItem(CoordsSystem.SEXAGESIMAL);
+            mainPanel.add(systemsToConvertTo);
+
+            systemsToConvertFrom.addActionListener((ActionEvent evt) -> {
+                CoordsSystem coordsSystem = (CoordsSystem) systemsToConvertFrom.getSelectedItem();
+                if (coordsSystem.equals(CoordsSystem.DECIMAL)) {
+                    systemsToConvertTo.setSelectedItem(CoordsSystem.SEXAGESIMAL);
+                } else {
+                    systemsToConvertTo.setSelectedItem(CoordsSystem.DECIMAL);
+                }
+            });
+
+            systemsToConvertTo.addActionListener((ActionEvent evt) -> {
+                CoordsSystem coordsSystem = (CoordsSystem) systemsToConvertTo.getSelectedItem();
+                if (coordsSystem.equals(CoordsSystem.DECIMAL)) {
+                    systemsToConvertFrom.setSelectedItem(CoordsSystem.SEXAGESIMAL);
+                } else {
+                    systemsToConvertFrom.setSelectedItem(CoordsSystem.DECIMAL);
+                }
+            });
 
             mainPanel.add(createLabel("Converted coordinates: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
-            resultField.setEditable(false);
-            mainPanel.add(resultField);
+            JTextField convertedCoords = createField("", PLAIN_FONT);
+            convertedCoords.setEditable(false);
+            mainPanel.add(convertedCoords);
 
             mainPanel.add(new JLabel());
             JButton convertButton = new JButton("Convert");
             convertButton.addActionListener((ActionEvent e) -> {
                 try {
-                    CoordsSystem coordsSystem = (CoordsSystem) coordsSystems.getSelectedItem();
-                    String result;
-                    String[] parts = splitCoordinates(coordsField.getText());
+                    String converted;
+                    CoordsSystem coordsSystem = (CoordsSystem) systemsToConvertTo.getSelectedItem();
+                    String[] parts = splitCoordinates(coordsToConvert.getText());
                     double degRA = Double.valueOf(parts[0].trim());
                     double degDE = Double.valueOf(parts[1].trim());
                     if (coordsSystem.equals(CoordsSystem.DECIMAL)) {
-                        result = degRA + " " + degDE;
+                        converted = degRA + " " + degDE;
                     } else {
-                        result = convertToSexagesimalCoords(degRA, degDE);
+                        converted = convertToSexagesimalCoords(degRA, degDE);
                     }
-                    resultField.setText(result);
+                    convertedCoords.setText(converted);
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }

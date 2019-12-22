@@ -38,33 +38,33 @@ public class UnitConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Value: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField toConvertField = createField("", PLAIN_FONT);
-            mainPanel.add(toConvertField);
+            mainPanel.add(createLabel("Value to convert: ", PLAIN_FONT, JLabel.RIGHT));
+            JTextField valueToConvert = createField("", PLAIN_FONT);
+            mainPanel.add(valueToConvert);
 
             mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<Unit> toConvertUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
-            mainPanel.add(toConvertUnits);
+            JComboBox<Unit> unitsToConvertFrom = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            mainPanel.add(unitsToConvertFrom);
 
             mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<Unit> convertedUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
-            mainPanel.add(convertedUnits);
+            JComboBox<Unit> unitsToConvertTo = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            unitsToConvertTo.setSelectedItem(Unit.MAS);
+            mainPanel.add(unitsToConvertTo);
 
             mainPanel.add(createLabel("Converted value: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField convertedField = createField("", PLAIN_FONT);
-            convertedField.setEditable(false);
-            mainPanel.add(convertedField);
+            JTextField convertedValue = createField("", PLAIN_FONT);
+            convertedValue.setEditable(false);
+            mainPanel.add(convertedValue);
 
             mainPanel.add(new JLabel());
             JButton convertButton = new JButton("Convert");
             convertButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double converted = convertToUnit(
-                            toDouble(toConvertField.getText()),
-                            (Unit) toConvertUnits.getSelectedItem(),
-                            (Unit) convertedUnits.getSelectedItem()
+                    double converted = convertToUnit(toDouble(valueToConvert.getText()),
+                            (Unit) unitsToConvertFrom.getSelectedItem(),
+                            (Unit) unitsToConvertTo.getSelectedItem()
                     );
-                    convertedField.setText(roundTo9DecNZ(converted));
+                    convertedValue.setText(roundTo9DecNZ(converted));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }

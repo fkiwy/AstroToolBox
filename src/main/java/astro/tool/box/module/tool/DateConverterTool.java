@@ -31,44 +31,61 @@ public class DateConverterTool {
 
     public void init() {
         try {
-            JPanel mainPanel = new JPanel(new GridLayout(6, 2));
+            JPanel mainPanel = new JPanel(new GridLayout(5, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Date converter", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 175));
+            mainPanel.setPreferredSize(new Dimension(350, 150));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Date: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField dateField = createField("", PLAIN_FONT);
-            mainPanel.add(dateField);
+            mainPanel.add(createLabel("Date to convert: ", PLAIN_FONT, JLabel.RIGHT));
+            JTextField dateToConvert = createField("2010-12-31 18:10:30", PLAIN_FONT);
+            mainPanel.add(dateToConvert);
 
-            mainPanel.add(createLabel("Calendar date format: ", PLAIN_FONT, JLabel.RIGHT));
-            mainPanel.add(createLabel("2010-12-31 18:10:30", PLAIN_FONT));
+            mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<DateSystem> systemsToConvertFrom = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
+            mainPanel.add(systemsToConvertFrom);
 
-            mainPanel.add(createLabel("", PLAIN_FONT, JLabel.RIGHT));
-            mainPanel.add(createLabel("Time is not required.", PLAIN_FONT));
+            mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<DateSystem> systemsToConvertTo = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
+            systemsToConvertTo.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
+            mainPanel.add(systemsToConvertTo);
 
-            mainPanel.add(createLabel("Convert to: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<DateSystem> dateSystems = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
-            mainPanel.add(dateSystems);
+            systemsToConvertFrom.addActionListener((ActionEvent evt) -> {
+                DateSystem dateSystem = (DateSystem) systemsToConvertFrom.getSelectedItem();
+                if (dateSystem.equals(DateSystem.CALENDAR_DATE)) {
+                    systemsToConvertTo.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
+                } else {
+                    systemsToConvertTo.setSelectedItem(DateSystem.CALENDAR_DATE);
+                }
+            });
+
+            systemsToConvertTo.addActionListener((ActionEvent evt) -> {
+                DateSystem dateSystem = (DateSystem) systemsToConvertTo.getSelectedItem();
+                if (dateSystem.equals(DateSystem.CALENDAR_DATE)) {
+                    systemsToConvertFrom.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
+                } else {
+                    systemsToConvertFrom.setSelectedItem(DateSystem.CALENDAR_DATE);
+                }
+            });
 
             mainPanel.add(createLabel("Converted date: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
-            resultField.setEditable(false);
-            mainPanel.add(resultField);
+            JTextField convertedDate = createField("", PLAIN_FONT);
+            convertedDate.setEditable(false);
+            mainPanel.add(convertedDate);
 
             mainPanel.add(new JLabel());
             JButton convertButton = new JButton("Convert");
             convertButton.addActionListener((ActionEvent e) -> {
                 try {
-                    DateSystem dateSystem = (DateSystem) dateSystems.getSelectedItem();
-                    String result;
-                    String input = dateField.getText().trim();
+                    String converted;
+                    DateSystem dateSystem = (DateSystem) systemsToConvertTo.getSelectedItem();
+                    String input = dateToConvert.getText().trim();
                     if (dateSystem.equals(DateSystem.CALENDAR_DATE)) {
-                        result = convertMJDToDateTime(new BigDecimal(input)).format(DATE_TIME_FORMATTER);
+                        converted = convertMJDToDateTime(new BigDecimal(input)).format(DATE_TIME_FORMATTER);
                     } else {
                         LocalDateTime dateTime;
                         try {
@@ -76,9 +93,9 @@ public class DateConverterTool {
                         } catch (DateTimeParseException ex) {
                             dateTime = LocalDateTime.parse(input + " 00:00:00", DATE_TIME_FORMATTER);
                         }
-                        result = convertDateTimeToMJD(dateTime).toString();
+                        converted = convertDateTimeToMJD(dateTime).toString();
                     }
-                    resultField.setText(result);
+                    convertedDate.setText(converted);
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }

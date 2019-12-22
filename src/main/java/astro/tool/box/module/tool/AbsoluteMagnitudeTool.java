@@ -26,11 +26,11 @@ public class AbsoluteMagnitudeTool {
 
     public void init() {
         try {
-            JPanel mainPanel = new JPanel(new GridLayout(6, 2));
+            JPanel mainPanel = new JPanel(new GridLayout(5, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Calculate absolute magnitude", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 175));
+            mainPanel.setPreferredSize(new Dimension(350, 150));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
