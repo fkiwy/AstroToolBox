@@ -266,7 +266,7 @@ public class AstrometricFunctions {
         BigDecimal wholeDays = new BigDecimal(duration.toDays());
         BigDecimal partialDayInNanos = new BigDecimal(durationRemainder.toNanos());
         BigDecimal nanosInADay = new BigDecimal(TimeUnit.DAYS.toNanos(1));
-        BigDecimal partialDay = partialDayInNanos.divide(nanosInADay, 6, RoundingMode.HALF_EVEN);
+        BigDecimal partialDay = partialDayInNanos.divide(nanosInADay, 9, RoundingMode.HALF_EVEN);
         return wholeDays.add(partialDay);
     }
 

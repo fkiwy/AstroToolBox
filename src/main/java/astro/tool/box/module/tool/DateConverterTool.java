@@ -31,19 +31,25 @@ public class DateConverterTool {
 
     public void init() {
         try {
-            JPanel mainPanel = new JPanel(new GridLayout(5, 2));
+            JPanel mainPanel = new JPanel(new GridLayout(7, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Date converter", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 150));
+            mainPanel.setPreferredSize(new Dimension(375, 200));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
             mainPanel.add(createLabel("Date to convert: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField dateToConvert = createField("2010-12-31 18:10:30", PLAIN_FONT);
+            JTextField dateToConvert = createField("", PLAIN_FONT);
             mainPanel.add(dateToConvert);
+
+            mainPanel.add(createLabel("Calendar date format: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("yyyy-MM-dd HH:mm:ss", PLAIN_FONT));
+
+            mainPanel.add(createLabel("", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Time is not required.", PLAIN_FONT));
 
             mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
             JComboBox<DateSystem> systemsToConvertFrom = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});

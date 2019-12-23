@@ -30,7 +30,7 @@ public class ActualDistanceTool {
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Calculate distance based on parallax", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 100));
+            mainPanel.setPreferredSize(new Dimension(375, 100));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);

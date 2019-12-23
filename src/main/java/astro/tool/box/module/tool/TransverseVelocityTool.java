@@ -30,7 +30,7 @@ public class TransverseVelocityTool {
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Calculate tangential velocity", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 175));
+            mainPanel.setPreferredSize(new Dimension(375, 175));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);

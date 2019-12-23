@@ -727,11 +727,11 @@ public class ImageViewerTab {
                 showErrorDialog(baseFrame, "Field of view must not be empty!");
                 return;
             }
-            String[] parts = splitCoordinates(coords);
+            NumberPair coordinates = getCoordinates(coords);
             List<String> errorMessages = new ArrayList<>();
             try {
-                targetRa = Double.valueOf(parts[0].trim());
-                targetDec = Double.valueOf(parts[1].trim());
+                targetRa = coordinates.getX();
+                targetDec = coordinates.getY();
                 if (targetRa < 0) {
                     errorMessages.add("RA must not be smaller than 0 deg.");
                 }
@@ -745,8 +745,8 @@ public class ImageViewerTab {
                     errorMessages.add("Dec must not be greater than 90 deg.");
                 }
             } catch (Exception ex) {
-                targetRa = Double.valueOf(0);
-                targetDec = Double.valueOf(0);
+                targetRa = 0;
+                targetDec = 0;
                 errorMessages.add("Invalid coordinates!");
             }
             try {

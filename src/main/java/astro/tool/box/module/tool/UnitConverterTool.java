@@ -32,7 +32,7 @@ public class UnitConverterTool {
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Unit converter", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 150));
+            mainPanel.setPreferredSize(new Dimension(375, 150));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);

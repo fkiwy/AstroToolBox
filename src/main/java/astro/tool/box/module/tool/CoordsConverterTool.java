@@ -2,6 +2,7 @@ package astro.tool.box.module.tool;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
+import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.CoordsSystem;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -31,7 +32,7 @@ public class CoordsConverterTool {
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Coordinates converter", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 150));
+            mainPanel.setPreferredSize(new Dimension(375, 150));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
@@ -79,13 +80,11 @@ public class CoordsConverterTool {
                 try {
                     String converted;
                     CoordsSystem coordsSystem = (CoordsSystem) systemsToConvertTo.getSelectedItem();
-                    String[] parts = splitCoordinates(coordsToConvert.getText());
-                    double degRA = Double.valueOf(parts[0].trim());
-                    double degDE = Double.valueOf(parts[1].trim());
+                    NumberPair coordinates = getCoordinates(coordsToConvert.getText());
                     if (coordsSystem.equals(CoordsSystem.DECIMAL)) {
-                        converted = degRA + " " + degDE;
+                        converted = coordinates.getX() + " " + coordinates.getY();
                     } else {
-                        converted = convertToSexagesimalCoords(degRA, degDE);
+                        converted = convertToSexagesimalCoords(coordinates.getX(), coordinates.getY());
                     }
                     convertedCoords.setText(converted);
                 } catch (Exception ex) {

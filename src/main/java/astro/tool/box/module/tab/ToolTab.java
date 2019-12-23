@@ -32,10 +32,10 @@ public class ToolTab {
     public void init() {
         try {
             JPanel toolPanel = new JPanel(new GridLayout(4, 3));
-            AngularDistanceTool angularDistanceTool = new AngularDistanceTool(baseFrame, toolPanel);
-            angularDistanceTool.init();
             ProperMotionsTool properMotionsTool = new ProperMotionsTool(baseFrame, toolPanel);
             properMotionsTool.init();
+            AngularDistanceTool angularDistanceTool = new AngularDistanceTool(baseFrame, toolPanel);
+            angularDistanceTool.init();
             TotalProperMotionTool totalProperMotionTool = new TotalProperMotionTool(baseFrame, toolPanel);
             totalProperMotionTool.init();
             TransverseVelocityTool transverseVelocityTool = new TransverseVelocityTool(baseFrame, toolPanel);
