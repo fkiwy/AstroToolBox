@@ -12,6 +12,7 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.container.StringPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
@@ -57,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static java.lang.Math.*;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -598,25 +600,29 @@ public class ImageViewerTab {
                                 default:
                                     int mouseX = evt.getX();
                                     int mouseY = evt.getY();
-                                    int overlays = 0;
-                                    if (simbadOverlay.isSelected() && simbadEntries != null) {
-                                        showCatalogInfo(simbadEntries, mouseX, mouseY);
-                                        overlays++;
-                                    }
-                                    if (gaiaDR2Overlay.isSelected() && gaiaDR2Entries != null) {
-                                        showCatalogInfo(gaiaDR2Entries, mouseX, mouseY);
-                                        overlays++;
-                                    }
-                                    if (allWiseOverlay.isSelected() && allWiseEntries != null) {
-                                        showCatalogInfo(allWiseEntries, mouseX, mouseY);
-                                        overlays++;
-                                    }
-                                    if (catWiseOverlay.isSelected() && catWiseEntries != null) {
-                                        showCatalogInfo(catWiseEntries, mouseX, mouseY);
-                                        overlays++;
-                                    }
-                                    if (overlays == 0) {
-                                        displayCatalogSearchResults(newRa, newDec);
+                                    if (timer.isRunning()) {
+                                        int overlays = 0;
+                                        if (simbadOverlay.isSelected() && simbadEntries != null) {
+                                            showCatalogInfo(simbadEntries, mouseX, mouseY);
+                                            overlays++;
+                                        }
+                                        if (gaiaDR2Overlay.isSelected() && gaiaDR2Entries != null) {
+                                            showCatalogInfo(gaiaDR2Entries, mouseX, mouseY);
+                                            overlays++;
+                                        }
+                                        if (allWiseOverlay.isSelected() && allWiseEntries != null) {
+                                            showCatalogInfo(allWiseEntries, mouseX, mouseY);
+                                            overlays++;
+                                        }
+                                        if (catWiseOverlay.isSelected() && catWiseEntries != null) {
+                                            showCatalogInfo(catWiseEntries, mouseX, mouseY);
+                                            overlays++;
+                                        }
+                                        if (overlays == 0) {
+                                            displayCatalogSearchResults(newRa, newDec);
+                                        }
+                                    } else {
+                                        displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
                                     }
                                     //coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                     //createFlipbook();
@@ -1972,6 +1978,59 @@ public class ImageViewerTab {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private void displaySmallBodyPanel(double targetRa, double targetDec, double minObsEpoch, double maxObsEpoch) {
+        JPanel detailPanel = new JPanel(new GridLayout(8, 2));
+
+        StringPair sexagesimalCoords = convertToSexagesimalCoords(targetRa, targetDec);
+        String bodyRa = sexagesimalCoords.getS1().replace(" ", ":").split("\\.")[0];
+        String bodyDec = sexagesimalCoords.getS2().split("\\.")[0];
+
+        detailPanel.add(createLabel("Center of the search region in RA: ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField(bodyRa, PLAIN_FONT));
+
+        detailPanel.add(createLabel("Center of the search region in dec: ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField(bodyDec, PLAIN_FONT));
+
+        detailPanel.add(createLabel("Width of search region in RA (*): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("w0:10", PLAIN_FONT));
+
+        detailPanel.add(createLabel("Width of search region in dec (*): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("w0 10", PLAIN_FONT));
+
+        detailPanel.add(createLabel("Some observatories (if dec >= -30°): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("ATLAS, Pan-STARRS", PLAIN_FONT));
+
+        detailPanel.add(createLabel("Min observation time (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
+
+        detailPanel.add(createLabel("Max observation time (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
+
+        detailPanel.add(createLabel("Link: ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createHyperlink("JPL SB Identification", "https://ssd.jpl.nasa.gov/sbfind.cgi", PLAIN_FONT));
+
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.add(detailPanel);
+
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        container.add(infoPanel);
+
+        infoPanel.add(createLabel("(*) Feel free to adjust the width of the search region to your needs.", PLAIN_FONT));
+
+        infoPanel.add(createLabel("(**) These are the minimum and maximum observation times of all the frames", PLAIN_FONT));
+        infoPanel.add(createLabel("which are part of the coadd that the small body features in.", PLAIN_FONT));
+
+        JFrame smallBodyFrame = new JFrame();
+        smallBodyFrame.setIconImage(getToolBoxImage());
+        smallBodyFrame.setTitle("Data to enter into JPL's Small Body Identification tool");
+        smallBodyFrame.add(container);
+        smallBodyFrame.setSize(450, 350);
+        smallBodyFrame.setAlwaysOnTop(true);
+        smallBodyFrame.setResizable(false);
+        smallBodyFrame.setVisible(true);
     }
 
     private double getFovDiagonal() {

@@ -2,6 +2,7 @@ package astro.tool.box.function;
 
 import astro.tool.box.util.ConversionFactors;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -71,8 +72,9 @@ public class AstrometricFunctionsTest {
     @Test
     public void convertToSexagesimalCoords() {
         Locale.setDefault(Locale.US);
-        String sexagesimalCoords = AstrometricFunctions.convertToSexagesimalCoords(194.3374822, 71.8969964);
-        assertEquals("12 57 21.00 71 53 49.19", sexagesimalCoords);
+        StringPair sexagesimalCoords = AstrometricFunctions.convertToSexagesimalCoords(194.3374822, 71.8969964);
+        assertEquals("12 57 21.00", sexagesimalCoords.getS1());
+        assertEquals("71 53 49.19", sexagesimalCoords.getS2());
     }
 
     @Test

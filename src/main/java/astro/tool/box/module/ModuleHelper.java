@@ -75,8 +75,12 @@ public class ModuleHelper {
     }
 
     public static JLabel createHyperlink(String label, String uri) {
+        return createHyperlink(label, uri, SMALL_FONT);
+    }
+
+    public static JLabel createHyperlink(String label, String uri, Font font) {
         JLabel hyperlink = new JLabel(label);
-        hyperlink.setFont(SMALL_FONT);
+        hyperlink.setFont(font);
         hyperlink.setForeground(JColor.DARK_BLUE.val);
         hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         hyperlink.addMouseListener(new MouseAdapter() {
@@ -199,12 +203,12 @@ public class ModuleHelper {
         return new NumberPair(ra, dec);
     }
 
-    public static String[] splitCoordinates(String coords) {
+    private static String[] splitCoordinates(String coords) {
         coords = convertToDecimalCoords(coords);
         return coords.trim().replaceAll("[,;]", " ").split("\\s+");
     }
 
-    public static String convertToDecimalCoords(String coords) {
+    private static String convertToDecimalCoords(String coords) {
         String[] parts = coords.replaceAll("[:hdms°'\"]", " ").split("\\s+");
         if (parts.length == 6) {
             String ra = "";

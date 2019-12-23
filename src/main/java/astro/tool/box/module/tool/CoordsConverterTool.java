@@ -3,6 +3,7 @@ package astro.tool.box.module.tool;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.CoordsSystem;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -84,7 +85,8 @@ public class CoordsConverterTool {
                     if (coordsSystem.equals(CoordsSystem.DECIMAL)) {
                         converted = coordinates.getX() + " " + coordinates.getY();
                     } else {
-                        converted = convertToSexagesimalCoords(coordinates.getX(), coordinates.getY());
+                        StringPair strings = convertToSexagesimalCoords(coordinates.getX(), coordinates.getY());
+                        converted = strings.getS1() + " " + strings.getS2();
                     }
                     convertedCoords.setText(converted);
                 } catch (Exception ex) {

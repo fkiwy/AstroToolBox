@@ -3,6 +3,7 @@ package astro.tool.box.function;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Unit;
 
 import static java.lang.Math.*;
@@ -223,7 +224,7 @@ public class AstrometricFunctions {
      * @param degDE
      * @return the sexagesimal coordinates
      */
-    public static String convertToSexagesimalCoords(double degRA, double degDE) {
+    public static StringPair convertToSexagesimalCoords(double degRA, double degDE) {
         int hRA = (int) floor(degRA / 15);
         int mRA = (int) floor((degRA / 15 - hRA) * DEG_ARCMIN);
         double sRA = (degRA / 15 - hRA) * DEG_ARCSEC - mRA * DEG_ARCMIN;
@@ -232,7 +233,10 @@ public class AstrometricFunctions {
         int mDE = (int) floor((degDE - dDE) * DEG_ARCMIN);
         double sDE = (degDE - dDE) * DEG_ARCSEC - mDE * DEG_ARCMIN;
 
-        return hRA + " " + mRA + " " + roundTo2Dec(sRA) + " " + dDE + " " + mDE + " " + roundTo2Dec(sDE);
+        return new StringPair(
+                formatInteger(hRA, "00") + " " + formatInteger(mRA, "00") + " " + formatDouble(sRA, "00.00"),
+                formatInteger(dDE, "00") + " " + formatInteger(mDE, "00") + " " + formatDouble(sDE, "00.00")
+        );
     }
 
     /**
