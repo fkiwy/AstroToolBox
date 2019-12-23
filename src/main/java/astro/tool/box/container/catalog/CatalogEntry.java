@@ -49,6 +49,14 @@ public interface CatalogEntry {
 
     void setTargetDec(double targetDec);
 
+    double getPixelRa();
+
+    void setPixelRa(double pixelRa);
+
+    double getPixelDec();
+
+    void setPixelDec(double pixelDec);
+
     List<CatalogElement> getCatalogElements();
 
     double getPlx();

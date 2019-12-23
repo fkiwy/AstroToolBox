@@ -32,44 +32,44 @@ public class UnitConverterTool {
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Unit converter", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 150));
+            mainPanel.setPreferredSize(new Dimension(375, 150));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Unit of value to convert: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<Unit> toConvertUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
-            mainPanel.add(toConvertUnits);
-
             mainPanel.add(createLabel("Value to convert: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField toConvertField = createField("", PLAIN_FONT);
-            mainPanel.add(toConvertField);
+            JTextField valueToConvert = createField("", PLAIN_FONT);
+            mainPanel.add(valueToConvert);
 
-            mainPanel.add(createLabel("Unit of converted value: ", PLAIN_FONT, JLabel.RIGHT));
-            JComboBox<Unit> convertedUnits = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
-            mainPanel.add(convertedUnits);
+            mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<Unit> unitsToConvertFrom = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            mainPanel.add(unitsToConvertFrom);
+
+            mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
+            JComboBox<Unit> unitsToConvertTo = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            unitsToConvertTo.setSelectedItem(Unit.MAS);
+            mainPanel.add(unitsToConvertTo);
 
             mainPanel.add(createLabel("Converted value: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField convertedField = createField("", PLAIN_FONT);
-            convertedField.setEditable(false);
-            mainPanel.add(convertedField);
+            JTextField convertedValue = createField("", PLAIN_FONT);
+            convertedValue.setEditable(false);
+            mainPanel.add(convertedValue);
 
             mainPanel.add(new JLabel());
-            JButton calculateButton = new JButton("Convert");
-            calculateButton.addActionListener((ActionEvent e) -> {
+            JButton convertButton = new JButton("Convert");
+            convertButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double converted = convertToUnit(
-                            toDouble(toConvertField.getText()),
-                            (Unit) toConvertUnits.getSelectedItem(),
-                            (Unit) convertedUnits.getSelectedItem()
+                    double converted = convertToUnit(toDouble(valueToConvert.getText()),
+                            (Unit) unitsToConvertFrom.getSelectedItem(),
+                            (Unit) unitsToConvertTo.getSelectedItem()
                     );
-                    convertedField.setText(roundTo9DecNZ(converted));
+                    convertedValue.setText(roundTo9DecNZ(converted));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }
             });
-            mainPanel.add(calculateButton);
+            mainPanel.add(convertButton);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

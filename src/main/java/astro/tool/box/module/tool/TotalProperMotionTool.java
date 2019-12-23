@@ -30,7 +30,7 @@ public class TotalProperMotionTool {
             mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Calculate total proper motion", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(350, 125));
+            mainPanel.setPreferredSize(new Dimension(375, 125));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);

@@ -1,11 +1,11 @@
 package astro.tool.box.module.tab;
 
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.WiseBand;
-import static astro.tool.box.util.Constants.LINE_SEP;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -55,11 +55,13 @@ public class SettingsTab {
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
+    public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
 
     private LookAndFeel lookAndFeel;
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
+    private boolean useSimbadMirror;
 
     // Catalog search settings
     private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
@@ -124,6 +126,13 @@ public class SettingsTab {
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
             useProxy = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_PROXY, "false"));
+            String simbadMirrorProperty = USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR);
+            if (simbadMirrorProperty == null) {
+                useSimbadMirror = true;
+                USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+            } else {
+                useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
+            }
 
             setLookAndFeel(lookAndFeel);
 
@@ -155,9 +164,13 @@ public class SettingsTab {
             useProxyCheckBox.setSelected(useProxy);
             generalSettings.add(useProxyCheckBox);
 
-            for (int i = 0; i < 4; i++) {
-                generalSettings.add(new JLabel());
-            }
+            generalSettings.add(createLabel("Use Simbad mirror : ", PLAIN_FONT, JLabel.RIGHT));
+            JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
+            useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
+            generalSettings.add(useSimbadMirrorCheckBox);
+
+            generalSettings.add(new JLabel());
+            generalSettings.add(new JLabel());
 
             // Catalog search settings
             JPanel catalogQuerySettings = new JPanel(new GridLayout(6, 2));
@@ -303,6 +316,7 @@ public class SettingsTab {
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
+                    useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
 
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
@@ -345,6 +359,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
+                USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
 
                 // Catalog search settings
                 catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));

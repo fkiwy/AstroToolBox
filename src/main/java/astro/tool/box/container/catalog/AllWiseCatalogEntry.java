@@ -106,6 +106,12 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     // Declination used for distance calculation
     private double targetDec;
 
+    // Pixel RA position
+    private double pixelRa;
+
+    // Pixel declination position
+    private double pixelDec;
+
     // Search radius
     private double searchRadius;
 
@@ -319,6 +325,26 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public void setTargetDec(double targetDec) {
         this.targetDec = targetDec;
+    }
+
+    @Override
+    public double getPixelRa() {
+        return pixelRa;
+    }
+
+    @Override
+    public void setPixelRa(double pixelRa) {
+        this.pixelRa = pixelRa;
+    }
+
+    @Override
+    public double getPixelDec() {
+        return pixelDec;
+    }
+
+    @Override
+    public void setPixelDec(double pixelDec) {
+        this.pixelDec = pixelDec;
     }
 
     @Override

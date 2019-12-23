@@ -10,6 +10,7 @@ import astro.tool.box.module.tool.AbsoluteMagnitudeTool;
 import astro.tool.box.module.tool.CoordsConverterTool;
 import astro.tool.box.module.tool.TotalVelocityTool;
 import astro.tool.box.module.tool.AngularDistanceTool;
+import astro.tool.box.module.tool.DateConverterTool;
 import java.awt.GridLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -30,11 +31,11 @@ public class ToolTab {
 
     public void init() {
         try {
-            JPanel toolPanel = new JPanel(new GridLayout(3, 3));
-            AngularDistanceTool angularDistanceTool = new AngularDistanceTool(baseFrame, toolPanel);
-            angularDistanceTool.init();
+            JPanel toolPanel = new JPanel(new GridLayout(4, 3));
             ProperMotionsTool properMotionsTool = new ProperMotionsTool(baseFrame, toolPanel);
             properMotionsTool.init();
+            AngularDistanceTool angularDistanceTool = new AngularDistanceTool(baseFrame, toolPanel);
+            angularDistanceTool.init();
             TotalProperMotionTool totalProperMotionTool = new TotalProperMotionTool(baseFrame, toolPanel);
             totalProperMotionTool.init();
             TransverseVelocityTool transverseVelocityTool = new TransverseVelocityTool(baseFrame, toolPanel);
@@ -45,10 +46,12 @@ public class ToolTab {
             actualDistanceTool.init();
             AbsoluteMagnitudeTool absoluteMagnitudeTool = new AbsoluteMagnitudeTool(baseFrame, toolPanel);
             absoluteMagnitudeTool.init();
-            CoordsConverterTool coordsConverterTool = new CoordsConverterTool(baseFrame, toolPanel);
-            coordsConverterTool.init();
             UnitConverterTool unitConverterTool = new UnitConverterTool(baseFrame, toolPanel);
             unitConverterTool.init();
+            CoordsConverterTool coordsConverterTool = new CoordsConverterTool(baseFrame, toolPanel);
+            coordsConverterTool.init();
+            DateConverterTool dateConverterTool = new DateConverterTool(baseFrame, toolPanel);
+            dateConverterTool.init();
             tabbedPane.addTab(TAB_NAME, new JScrollPane(toolPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);

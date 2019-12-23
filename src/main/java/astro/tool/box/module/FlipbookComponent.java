@@ -1,13 +1,11 @@
 package astro.tool.box.module;
 
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.function.AstrometricFunctions;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class FlipbookComponent {
-
-    private static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private static final String ASC_NODE = "ascending";
 
@@ -107,11 +105,11 @@ public class FlipbookComponent {
         }
         if (minObsEpoch > 0) {
             LocalDateTime ldt = AstrometricFunctions.convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-            minObsTime = "Min obs. time=" + ldt.format(FORMATTER);
+            minObsTime = "Min obs. time=" + ldt.format(DATE_TIME_FORMATTER);
         }
         if (maxObsEpoch > 0) {
             LocalDateTime ldt = AstrometricFunctions.convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch)));
-            maxObsTime = " ~ Max obs. time=" + ldt.format(FORMATTER) + " ~ ";
+            maxObsTime = " ~ Max obs. time=" + ldt.format(DATE_TIME_FORMATTER) + " ~ ";
         }
         return "WISE: " + minObsTime + maxObsTime + "Band=" + titleBand + " ~ Epoch=" + titleEpoch + " ~ Node=" + node;
     }

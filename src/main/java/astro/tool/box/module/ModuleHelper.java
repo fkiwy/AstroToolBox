@@ -1,8 +1,8 @@
 package astro.tool.box.module;
 
-import astro.tool.box.container.CatalogElement;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
@@ -54,7 +54,7 @@ import javax.swing.table.TableRowSorter;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v1.0b";
+    public static final String PGM_VERSION = "v1.1b";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
@@ -168,6 +168,10 @@ public class ModuleHelper {
         return label;
     }
 
+    public static String underLine(String text) {
+        return "<html><u>" + text + "</u></html>";
+    }
+
     public static Border createEtchedBorder(String boderTitle) {
         return createEtchedBorder(boderTitle, null, null);
     }
@@ -233,9 +237,8 @@ public class ModuleHelper {
         String name = element.getName();
         JLabel label = new JLabel(name == null ? "" : name + " = ", JLabel.RIGHT);
         if (element.isOnFocus()) {
-            label.setFont(PLAIN_BOLD_FONT);
-        } else {
-            label.setFont(PLAIN_FONT);
+            label.setOpaque(true);
+            label.setBackground(JColor.WHITE.val);
         }
         if (element.isComputed()) {
             label.setForeground(JColor.DARKER_GREEN.val);
@@ -250,9 +253,7 @@ public class ModuleHelper {
         String value = element.getValue();
         JTextField field = new JTextField(value == null ? "" : value);
         if (element.isOnFocus()) {
-            field.setFont(PLAIN_BOLD_FONT);
-        } else {
-            field.setFont(PLAIN_FONT);
+            field.setBackground(JColor.WHITE.val);
         }
         if (element.isComputed()) {
             field.setForeground(JColor.DARKER_GREEN.val);

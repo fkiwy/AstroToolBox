@@ -83,4 +83,12 @@ public class AstrometricFunctionsTest {
         assertEquals("2018-11-13T14:00:36.448416", ldt.toString());
     }
 
+    @Test
+    public void convertDateTimeToMJD() {
+        BigDecimal mjd = AstrometricFunctions.convertDateTimeToMJD(LocalDateTime.parse("2018-11-10T15:19:52.872096"));
+        assertEquals("58432.638806390", mjd.toString());
+        mjd = AstrometricFunctions.convertDateTimeToMJD(LocalDateTime.parse("2018-11-13T14:00:36.448416"));
+        assertEquals("58435.583755190", mjd.toString());
+    }
+
 }

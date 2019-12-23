@@ -26,9 +26,9 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
-import astro.tool.box.module.Arrow;
 import astro.tool.box.module.Circle;
 import astro.tool.box.module.FlipbookComponent;
+import astro.tool.box.module.Arrow;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
@@ -124,9 +124,8 @@ public class ImageViewerTab {
 
     private JPanel imagePanel;
     private JCheckBox minMaxLimits;
-    private JCheckBox useCoverageMaps;
-    private JCheckBox skipBadCoadds;
     private JCheckBox stretchImage;
+    private JCheckBox invertColors;
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
     private JCheckBox simbadOverlay;
@@ -135,6 +134,8 @@ public class ImageViewerTab {
     private JCheckBox catWiseOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
+    private JCheckBox useCoverageMaps;
+    private JCheckBox skipBadCoadds;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -183,6 +184,7 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean imageCutOff;
     private boolean hasException;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
@@ -217,25 +219,25 @@ public class ImageViewerTab {
             imagePanel = new JPanel();
             imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
 
-            JScrollPane scrollPanel = new JScrollPane(imagePanel);
-            mainPanel.add(scrollPanel, BorderLayout.CENTER);
-            scrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+            JScrollPane imageScrollPanel = new JScrollPane(imagePanel);
+            mainPanel.add(imageScrollPanel, BorderLayout.CENTER);
+            imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-            int width = 240;
-            int height = 900;
+            int controlPanelWidth = 240;
+            int controlPanelHeight = 950;
 
-            JPanel controlPanel = new JPanel(new GridLayout(37, 1));
-            controlPanel.setPreferredSize(new Dimension(width - 20, height));
+            JPanel controlPanel = new JPanel(new GridLayout(39, 1));
+            controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
-            JScrollPane wrapper = new JScrollPane(controlPanel);
-            wrapper.setPreferredSize(new Dimension(width, height));
-            wrapper.setBorder(new EmptyBorder(0, 0, 0, 0));
-            leftPanel.add(wrapper);
+            JScrollPane controlScrollPanel = new JScrollPane(controlPanel);
+            controlScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, controlPanelHeight));
+            controlScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            leftPanel.add(controlScrollPanel);
 
             controlPanel.add(new JLabel("Coordinates:"));
 
-            coordsField = createField("133.787 -7.24515", PLAIN_FONT);
+            coordsField = createField("", PLAIN_FONT);
             controlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
                 coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -410,26 +412,8 @@ public class ImageViewerTab {
             stretchImage = new JCheckBox("Apply image stretching", true);
             controlPanel.add(stretchImage);
 
-            useCoverageMaps = new JCheckBox("Use coverage maps");
-            controlPanel.add(useCoverageMaps);
-            useCoverageMaps.addActionListener((ActionEvent evt) -> {
-                useCoverageMaps.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                images.clear();
-                setContrast(getContrast());
-                initMinMaxValues();
-                createFlipbook();
-                useCoverageMaps.setCursor(Cursor.getDefaultCursor());
-            });
-
-            skipBadCoadds = new JCheckBox("Skip low weighted coadds");
-            controlPanel.add(skipBadCoadds);
-            skipBadCoadds.addActionListener((ActionEvent evt) -> {
-                skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                images.clear();
-                initMinMaxValues();
-                createFlipbook();
-                skipBadCoadds.setCursor(Cursor.getDefaultCursor());
-            });
+            invertColors = new JCheckBox("Invert colors");
+            controlPanel.add(invertColors);
 
             borderEpoch = new JCheckBox("Border first epoch");
             controlPanel.add(borderEpoch);
@@ -455,7 +439,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            controlPanel.add(new JLabel("Overlays:"));
+            controlPanel.add(new JLabel(underLine("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
@@ -475,7 +459,7 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            controlPanel.add(new JLabel("PM vectors:"));
+            controlPanel.add(new JLabel(underLine("PM vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
@@ -488,9 +472,32 @@ public class ImageViewerTab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
-            properMotionPanel.add(new JLabel("PM (mas/yr) above"));
+            properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = createField(100, PLAIN_FONT);
             properMotionPanel.add(properMotionField);
+
+            controlPanel.add(new JLabel(underLine("Advanced controls:")));
+
+            useCoverageMaps = new JCheckBox("Use coverage maps");
+            controlPanel.add(useCoverageMaps);
+            useCoverageMaps.addActionListener((ActionEvent evt) -> {
+                useCoverageMaps.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                images.clear();
+                setContrast(getContrast());
+                initMinMaxValues();
+                createFlipbook();
+                useCoverageMaps.setCursor(Cursor.getDefaultCursor());
+            });
+
+            skipBadCoadds = new JCheckBox("Skip low weighted coadds");
+            controlPanel.add(skipBadCoadds);
+            skipBadCoadds.addActionListener((ActionEvent evt) -> {
+                skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                images.clear();
+                initMinMaxValues();
+                createFlipbook();
+                skipBadCoadds.setCursor(Cursor.getDefaultCursor());
+            });
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
@@ -720,11 +727,11 @@ public class ImageViewerTab {
                 showErrorDialog(baseFrame, "Field of view must not be empty!");
                 return;
             }
-            String[] parts = splitCoordinates(coords);
+            NumberPair coordinates = getCoordinates(coords);
             List<String> errorMessages = new ArrayList<>();
             try {
-                targetRa = Double.valueOf(parts[0].trim());
-                targetDec = Double.valueOf(parts[1].trim());
+                targetRa = coordinates.getX();
+                targetDec = coordinates.getY();
                 if (targetRa < 0) {
                     errorMessages.add("RA must not be smaller than 0 deg.");
                 }
@@ -738,8 +745,8 @@ public class ImageViewerTab {
                     errorMessages.add("Dec must not be greater than 90 deg.");
                 }
             } catch (Exception ex) {
-                targetRa = Double.valueOf(0);
-                targetDec = Double.valueOf(0);
+                targetRa = 0;
+                targetDec = 0;
                 errorMessages.add("Invalid coordinates!");
             }
             try {
@@ -767,6 +774,13 @@ public class ImageViewerTab {
                 setContrast(getContrast());
                 initMinMaxValues();
                 windowShift = 0;
+                imageCutOff = false;
+                simbadOverlay.setEnabled(true);
+                gaiaDR2Overlay.setEnabled(true);
+                allWiseOverlay.setEnabled(true);
+                catWiseOverlay.setEnabled(true);
+                gaiaDR2ProperMotion.setEnabled(true);
+                catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
                 ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
             }
@@ -997,12 +1011,8 @@ public class ImageViewerTab {
             }
             timer.restart();
         } catch (Exception ex) {
-            if (hasException) {
-                showErrorDialog(baseFrame, "Image has been cut off. Choose a smaller field of view.");
-            } else {
-                showExceptionDialog(baseFrame, ex);
-                hasException = true;
-            }
+            showExceptionDialog(baseFrame, ex);
+            hasException = true;
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
@@ -1025,7 +1035,7 @@ public class ImageViewerTab {
             addOverlaysAndPMVectors(image);
 
             Graphics graphics = image.getGraphics();
-            Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10);
+            Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10, Color.BLACK);
             circle.draw(graphics);
 
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(image)));
@@ -1105,9 +1115,22 @@ public class ImageViewerTab {
             Header header = hdu.getHeader();
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (naxis1 != naxis2) {
-                hasException = true;
-                throw new Exception("Image has been cut off. Choose a smaller field of view.");
+            if (naxis1 != naxis2 && !imageCutOff) {
+                String message = "Image has been cut off. No centering possible. Overlays deactivated. You may choose a smaller field of view.";
+                showInfoDialog(baseFrame, message);
+                imageCutOff = true;
+                simbadOverlay.setSelected(false);
+                gaiaDR2Overlay.setSelected(false);
+                allWiseOverlay.setSelected(false);
+                catWiseOverlay.setSelected(false);
+                gaiaDR2ProperMotion.setSelected(false);
+                catWiseProperMotion.setSelected(false);
+                simbadOverlay.setEnabled(false);
+                gaiaDR2Overlay.setEnabled(false);
+                allWiseOverlay.setEnabled(false);
+                catWiseOverlay.setEnabled(false);
+                gaiaDR2ProperMotion.setEnabled(false);
+                catWiseProperMotion.setEnabled(false);
             }
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
@@ -1341,10 +1364,12 @@ public class ImageViewerTab {
             short[][] weights = (short[][]) imageData.getData();
 
             float[][] weightedValues = new float[size][size];
+            short[][] refactoredWeights = new short[size][size];
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     try {
                         weightedValues[i][j] = values[i][j] * weights[i][j];
+                        refactoredWeights[i][j] = 1;
                     } catch (ArrayIndexOutOfBoundsException ex) {
                     }
                 }
@@ -1352,6 +1377,7 @@ public class ImageViewerTab {
 
             Fits result = new Fits();
             result.addHDU(FitsFactory.hduFactory(weightedValues));
+            result.addHDU(FitsFactory.hduFactory(refactoredWeights));
             return result;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -1404,7 +1430,8 @@ public class ImageViewerTab {
             value = stretch(value);
         }
         value = contrast(value);
-        return 1 - min(1, value);
+        value = min(1, value);
+        return invertColors.isSelected() ? value : 1 - value;
     }
 
     private float normalize(float value, int minVal, int maxVal) {
@@ -1431,13 +1458,13 @@ public class ImageViewerTab {
         return (float) Math.log(x + Math.sqrt(x * x + 1.0));
     }
 
+    private int getContrast() {
+        return size < 30 || useCoverageMaps.isSelected() ? 25 : 50;
+    }
+
     private void setContrast(int contrast) {
         lowScaleSlider.setValue(lowContrast = contrast);
         highScaleSlider.setValue(highContrast = 0);
-    }
-
-    private int getContrast() {
-        return size < 30 || useCoverageMaps.isSelected() ? 25 : 50;
     }
 
     private int getNumberOfWeightsBelowLimit(short[][] weights, int limit) {
@@ -1616,6 +1643,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 simbadEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 simbadEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1636,6 +1665,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 gaiaDR2Entries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 gaiaDR2Entries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1656,6 +1687,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 allWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 allWiseEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1676,6 +1709,8 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 catWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 catWiseEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
                 });
             }
@@ -1690,8 +1725,8 @@ public class ImageViewerTab {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
             NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-            catalogEntry.setTargetRa(position.getX());
-            catalogEntry.setTargetDec(position.getY());
+            catalogEntry.setPixelRa(position.getX());
+            catalogEntry.setPixelDec(position.getY());
             Circle circle = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
             circle.draw(graphics);
         });
@@ -1721,7 +1756,7 @@ public class ImageViewerTab {
                     numberOfYears = 4;
                 }
 
-                ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec)); // -> cos... to test !!!
+                ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
                 dec = dec - numberOfYears * pmDec / DEG_MAS;
 
                 NumberPair position = getPixelCoordinates(ra, dec);
@@ -1729,7 +1764,7 @@ public class ImageViewerTab {
                 double y = position.getY();
 
                 numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
-                double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec)); // -> cos... to test !!!
+                double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
                 double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
                 position = getPixelCoordinates(newRa, newDec);
@@ -1737,7 +1772,7 @@ public class ImageViewerTab {
                 double newY = position.getY();
 
                 Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
-                arrow.draw((Graphics2D) graphics);
+                arrow.draw(graphics);
             }
         });
     }
@@ -1745,8 +1780,8 @@ public class ImageViewerTab {
     private void showCatalogInfo(List<CatalogEntry> catalogEntries, int x, int y) {
         catalogEntries.forEach(catalogEntry -> {
             double radius = getOverlaySize() / 2;
-            if (catalogEntry.getTargetRa() > x - radius && catalogEntry.getTargetRa() < x + radius
-                    && catalogEntry.getTargetDec() > y - radius && catalogEntry.getTargetDec() < y + radius) {
+            if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
+                    && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
                 displayCatalogPanel(catalogEntry);
             }
         });

@@ -1,7 +1,7 @@
 package astro.tool.box.module.tab;
 
-import astro.tool.box.module.HtmlText;
 import static astro.tool.box.module.ModuleHelper.*;
+import astro.tool.box.module.HtmlText;
 import java.awt.FlowLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
