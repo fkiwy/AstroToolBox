@@ -224,9 +224,9 @@ public class ImageViewerTab {
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 950;
+            int controlPanelHeight = 1025;
 
-            JPanel controlPanel = new JPanel(new GridLayout(39, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(42, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -497,6 +497,47 @@ public class ImageViewerTab {
                 initMinMaxValues();
                 createFlipbook();
                 skipBadCoadds.setCursor(Cursor.getDefaultCursor());
+            });
+
+            controlPanel.add(new JLabel(underLine("Image player controls:")));
+
+            JPanel timerControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(timerControls);
+
+            JButton playButton = new JButton("Play");
+            timerControls.add(playButton);
+            playButton.addActionListener((ActionEvent evt) -> {
+                timer.setRepeats(true);
+                timer.start();
+            });
+
+            JButton stopButton = new JButton("Stop");
+            timerControls.add(stopButton);
+            stopButton.addActionListener((ActionEvent evt) -> {
+                timer.stop();
+            });
+
+            timerControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(timerControls);
+
+            JButton backwardButton = new JButton("Backward");
+            timerControls.add(backwardButton);
+            backwardButton.addActionListener((ActionEvent evt) -> {
+                timer.stop();
+                imageNumber -= 2;
+                if (imageNumber < 0) {
+                    imageNumber = flipbook.length - 1;
+                }
+                timer.setRepeats(false);
+                timer.start();
+            });
+
+            JButton forwardButton = new JButton("Forward");
+            timerControls.add(forwardButton);
+            forwardButton.addActionListener((ActionEvent evt) -> {
+                timer.stop();
+                timer.setRepeats(false);
+                timer.start();
             });
 
             timer = new Timer(speed, (ActionEvent e) -> {
