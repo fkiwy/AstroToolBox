@@ -166,6 +166,7 @@ public class ImageViewerTab {
     private int fieldOfView = 15;
     private int imageNumber = 0;
     private int windowShift = 0;
+    private int numberOfQuadrants = 0;
     private int epochCount = NUMBER_OF_EPOCHS * 2;
     private int stretch = STRETCH;
     private int speed = SPEED;
@@ -229,9 +230,9 @@ public class ImageViewerTab {
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1050;
+            int controlPanelHeight = 1100;
 
-            JPanel controlPanel = new JPanel(new GridLayout(43, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(45, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -557,6 +558,16 @@ public class ImageViewerTab {
                 timer.start();
             });
 
+            JLabel rotateLabel = new JLabel(String.format("Rotate by 90° clockwise: %d°", numberOfQuadrants * 90));
+            controlPanel.add(rotateLabel);
+
+            JSlider rotateSlider = new JSlider(0, 3, numberOfQuadrants);
+            controlPanel.add(rotateSlider);
+            rotateSlider.addChangeListener((ChangeEvent e) -> {
+                numberOfQuadrants = rotateSlider.getValue();
+                rotateLabel.setText(String.format("Rotate by 90° clockwise: %d°", numberOfQuadrants * 90));
+            });
+
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
                     staticDisplay.setSelected(false);
@@ -575,6 +586,7 @@ public class ImageViewerTab {
                         wiseImage = createImage(component.getBand(), component.getEpoch());
                     }
                     wiseImage = flipVertically(wiseImage);
+                    wiseImage = rotate(wiseImage, numberOfQuadrants);
                     wiseImage = zoom(wiseImage, zoom);
 
                     addOverlaysAndPMVectors(wiseImage);
@@ -1465,6 +1477,12 @@ public class ImageViewerTab {
         AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
         tx.translate(0, -image.getHeight(null));
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(image, null);
+    }
+
+    public BufferedImage rotate(BufferedImage image, int numberOfQuadrants) {
+        AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(image, null);
     }
 
