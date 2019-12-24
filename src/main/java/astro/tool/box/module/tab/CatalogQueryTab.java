@@ -323,7 +323,7 @@ public class CatalogQueryTab {
         JTable catalogTable = new JTable(defaultTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return true;
             }
         };
         alignCatalogColumns(catalogTable, catalogEntry);
@@ -519,7 +519,7 @@ public class CatalogQueryTab {
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return false;
+                    return true;
                 }
             };
             spectralTypeTable.setAutoCreateRowSorter(true);

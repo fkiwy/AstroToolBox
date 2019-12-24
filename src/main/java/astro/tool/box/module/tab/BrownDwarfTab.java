@@ -194,7 +194,7 @@ public class BrownDwarfTab {
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return true;
             }
         };
         spectralTypeTable.setAutoCreateRowSorter(true);

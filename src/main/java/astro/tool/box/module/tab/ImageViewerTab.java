@@ -1926,7 +1926,7 @@ public class ImageViewerTab {
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return false;
+                    return true;
                 }
             };
             spectralTypeTable.setAutoCreateRowSorter(true);
@@ -1974,7 +1974,7 @@ public class ImageViewerTab {
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return false;
+                    return true;
                 }
             };
             spectralTypeTable.setAutoCreateRowSorter(true);
@@ -2004,10 +2004,10 @@ public class ImageViewerTab {
         String objectDec = sexagesimalCoords.getS2().split("\\.")[0];
 
         detailPanel.add(createLabel("Min observation time (*): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER) + " MJD: " + minObsEpoch, PLAIN_FONT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER) + " (" + minObsEpoch + ")", PLAIN_FONT));
 
         detailPanel.add(createLabel("Max observation time (*): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER) + " MJD: " + maxObsEpoch, PLAIN_FONT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER) + " (" + maxObsEpoch + ")", PLAIN_FONT));
 
         detailPanel.add(createLabel("Some observatories in the North: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("T05, T08, F51, F52, 675, 703, Wise", PLAIN_FONT));
@@ -2016,10 +2016,10 @@ public class ImageViewerTab {
         detailPanel.add(createField("413, Antofagasta, Arica, Johannesburg, Pretoria", PLAIN_FONT));
 
         detailPanel.add(createLabel("Center of the search region in RA: ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(objectRa, PLAIN_FONT));
+        detailPanel.add(createField(objectRa + " (" + roundTo7DecNZ(targetRa) + ")", PLAIN_FONT));
 
         detailPanel.add(createLabel("Center of the search region in dec: ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(objectDec, PLAIN_FONT));
+        detailPanel.add(createField(objectDec + " (" + roundTo7DecNZ(targetDec) + ")", PLAIN_FONT));
 
         detailPanel.add(createLabel("Width of search region in RA: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("w0:05", PLAIN_FONT));
