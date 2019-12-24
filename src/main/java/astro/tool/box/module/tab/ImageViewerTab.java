@@ -89,6 +89,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import nom.tam.fits.Fits;
@@ -138,6 +139,7 @@ public class ImageViewerTab {
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCoverageMaps;
     private JCheckBox skipBadCoadds;
+    private JCheckBox showSBDetails;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -188,6 +190,7 @@ public class ImageViewerTab {
 
     private boolean imageCutOff;
     private boolean hasException;
+    private boolean timerStopped;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
@@ -216,7 +219,7 @@ public class ImageViewerTab {
             JPanel leftPanel = new JPanel();
             mainPanel.add(leftPanel, BorderLayout.LINE_START);
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-            leftPanel.setBorder(new EmptyBorder(5, 5, 5, 20));
+            leftPanel.setBorder(new EmptyBorder(0, 5, 5, 20));
 
             imagePanel = new JPanel();
             imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
@@ -226,9 +229,9 @@ public class ImageViewerTab {
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1025;
+            int controlPanelHeight = 1050;
 
-            JPanel controlPanel = new JPanel(new GridLayout(42, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(43, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -276,6 +279,12 @@ public class ImageViewerTab {
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
                 epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                if (epochs.getSelectedItem().equals(Epoch.ALL)) {
+                    showSBDetails.setEnabled(true);
+                } else {
+                    showSBDetails.setSelected(false);
+                    showSBDetails.setEnabled(false);
+                }
                 initMinMaxValues();
                 createFlipbook();
                 epochs.setCursor(Cursor.getDefaultCursor());
@@ -501,6 +510,10 @@ public class ImageViewerTab {
                 skipBadCoadds.setCursor(Cursor.getDefaultCursor());
             });
 
+            showSBDetails = new JCheckBox("Show small body details (Epochs: ALL)");
+            controlPanel.add(showSBDetails);
+            showSBDetails.setEnabled(false);
+
             controlPanel.add(new JLabel(underLine("Image player controls:")));
 
             JPanel timerControls = new JPanel(new GridLayout(1, 2));
@@ -511,12 +524,14 @@ public class ImageViewerTab {
             playButton.addActionListener((ActionEvent evt) -> {
                 timer.setRepeats(true);
                 timer.start();
+                timerStopped = false;
             });
 
             JButton stopButton = new JButton("Stop");
             timerControls.add(stopButton);
             stopButton.addActionListener((ActionEvent evt) -> {
                 timer.stop();
+                timerStopped = true;
             });
 
             timerControls = new JPanel(new GridLayout(1, 2));
@@ -600,7 +615,9 @@ public class ImageViewerTab {
                                 default:
                                     int mouseX = evt.getX();
                                     int mouseY = evt.getY();
-                                    if (timer.isRunning()) {
+                                    if (showSBDetails.isSelected()) {
+                                        displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
+                                    } else {
                                         int overlays = 0;
                                         if (simbadOverlay.isSelected() && simbadEntries != null) {
                                             showCatalogInfo(simbadEntries, mouseX, mouseY);
@@ -621,8 +638,6 @@ public class ImageViewerTab {
                                         if (overlays == 0) {
                                             displayCatalogSearchResults(newRa, newDec);
                                         }
-                                    } else {
-                                        displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
                                     }
                                     //coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                     //createFlipbook();
@@ -722,7 +737,7 @@ public class ImageViewerTab {
 
                 @Override
                 public void windowActivated(WindowEvent e) {
-                    if (flipbook != null && !staticDisplay.isSelected() && !hasException) {
+                    if (flipbook != null && !staticDisplay.isSelected() && !hasException && !timerStopped) {
                         timer.restart();
                     }
                 }
@@ -1981,70 +1996,63 @@ public class ImageViewerTab {
     }
 
     private void displaySmallBodyPanel(double targetRa, double targetDec, double minObsEpoch, double maxObsEpoch) {
-        JPanel detailPanel = new JPanel(new GridLayout(10, 3));
+        JPanel detailPanel = new JPanel(new GridLayout(10, 2));
+        detailPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         StringPair sexagesimalCoords = convertToSexagesimalCoords(targetRa, targetDec);
-        String bodyRa = sexagesimalCoords.getS1().replace(" ", ":").split("\\.")[0];
-        String bodyDec = sexagesimalCoords.getS2().split("\\.")[0];
+        String objectRa = sexagesimalCoords.getS1().replace(" ", ":").split("\\.")[0];
+        String objectDec = sexagesimalCoords.getS2().split("\\.")[0];
 
         detailPanel.add(createLabel("Min observation time (*): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
-        detailPanel.add(createLabel(" Observation Time", PLAIN_FONT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER) + " MJD: " + minObsEpoch, PLAIN_FONT));
 
         detailPanel.add(createLabel("Max observation time (*): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
-        detailPanel.add(createLabel(" Observation Time", PLAIN_FONT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER) + " MJD: " + maxObsEpoch, PLAIN_FONT));
 
         detailPanel.add(createLabel("Some observatories in the North: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("T05, T08, F51, F52, 675, 703, Wise", PLAIN_FONT));
-        detailPanel.add(createLabel(" Observer Location (Named Body or Site)", PLAIN_FONT));
 
         detailPanel.add(createLabel("Some observatories in the South: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("413, Antofagasta, Arica, Johannesburg, Pretoria", PLAIN_FONT));
-        detailPanel.add(createLabel(" Observer Location (Named Body or Site)", PLAIN_FONT));
 
         detailPanel.add(createLabel("Center of the search region in RA: ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(bodyRa, PLAIN_FONT));
-        detailPanel.add(createLabel(" Search Region (First Corner or Center)", PLAIN_FONT));
+        detailPanel.add(createField(objectRa, PLAIN_FONT));
 
         detailPanel.add(createLabel("Center of the search region in dec: ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(bodyDec, PLAIN_FONT));
-        detailPanel.add(createLabel(" Search Region (First Corner or Center)", PLAIN_FONT));
+        detailPanel.add(createField(objectDec, PLAIN_FONT));
 
-        detailPanel.add(createLabel("Width of search region in RA (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createLabel("Width of search region in RA: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("w0:05", PLAIN_FONT));
-        detailPanel.add(createLabel(" Search Region (Second Corner or Widths)", PLAIN_FONT));
 
-        detailPanel.add(createLabel("Width of search region in dec (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createLabel("Width of search region in dec: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("w0 05", PLAIN_FONT));
-        detailPanel.add(createLabel(" Search Region (Second Corner or Widths)", PLAIN_FONT));
 
-        detailPanel.add(createLabel("Visual magnitude limit (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createLabel("Visual magnitude limit: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField("25", PLAIN_FONT));
-        detailPanel.add(createLabel(" Uncheck 'Object Magnitude Parameters Required'", PLAIN_FONT));
 
         detailPanel.add(createLabel("Link: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createHyperlink("JPL SB Identification", "https://ssd.jpl.nasa.gov/sbfind.cgi", PLAIN_FONT));
-        detailPanel.add(createLabel("", PLAIN_FONT));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(detailPanel);
 
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        infoPanel.setBorder(new MatteBorder(1, 0, 0, 0, Color.DARK_GRAY));
         container.add(infoPanel);
 
-        infoPanel.add(createLabel("(*) These are the observation times of the first and last single exposures that went into the coadd in which the small body is located.", PLAIN_FONT));
-        infoPanel.add(createLabel("You now have to find the single exposure between these 2 dates in which the object is located. Use the", PLAIN_FONT));
+        infoPanel.add(createLabel("(*) These are the observation times of the first and last single exposures that went into the coadd the", PLAIN_FONT));
+        infoPanel.add(createLabel("small body is located in. You have to find the single exposure between these 2 dates in which the object", PLAIN_FONT));
+        infoPanel.add(createLabel("shows up. Use the", PLAIN_FONT));
         infoPanel.add(createHyperlink("WISE image service", "https://irsa.ipac.caltech.edu/applications/wise", PLAIN_FONT));
         infoPanel.add(createLabel("to do so.", PLAIN_FONT));
-        infoPanel.add(createLabel("(**) Feel free to adjust the specified values to your needs.", PLAIN_FONT));
+        infoPanel.add(createLabel("Enter the observation time of that single exposure into JPL's SB Identification tool.", PLAIN_FONT));
 
         JFrame smallBodyFrame = new JFrame();
         smallBodyFrame.setIconImage(getToolBoxImage());
         smallBodyFrame.setTitle("Data to enter into JPL's Small Body Identification tool");
         smallBodyFrame.add(container);
-        smallBodyFrame.setSize(775, 375);
+        smallBodyFrame.setSize(600, 420);
         smallBodyFrame.setAlwaysOnTop(true);
         smallBodyFrame.setResizable(false);
         smallBodyFrame.setVisible(true);
