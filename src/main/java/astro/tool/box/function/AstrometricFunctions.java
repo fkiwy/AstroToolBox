@@ -229,9 +229,16 @@ public class AstrometricFunctions {
         int mRA = (int) floor((degRA / 15 - hRA) * DEG_ARCMIN);
         double sRA = (degRA / 15 - hRA) * DEG_ARCSEC - mRA * DEG_ARCMIN;
 
+        boolean isNegative = degDE < 0;
+        if (isNegative) {
+            degDE = -degDE;
+        }
         int dDE = (int) floor(degDE);
         int mDE = (int) floor((degDE - dDE) * DEG_ARCMIN);
         double sDE = (degDE - dDE) * DEG_ARCSEC - mDE * DEG_ARCMIN;
+        if (isNegative) {
+            dDE = -dDE;
+        }
 
         return new StringPair(
                 formatInteger(hRA, "00") + " " + formatInteger(mRA, "00") + " " + formatDouble(sRA, "00.00"),

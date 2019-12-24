@@ -1981,35 +1981,51 @@ public class ImageViewerTab {
     }
 
     private void displaySmallBodyPanel(double targetRa, double targetDec, double minObsEpoch, double maxObsEpoch) {
-        JPanel detailPanel = new JPanel(new GridLayout(8, 2));
+        JPanel detailPanel = new JPanel(new GridLayout(10, 3));
 
         StringPair sexagesimalCoords = convertToSexagesimalCoords(targetRa, targetDec);
         String bodyRa = sexagesimalCoords.getS1().replace(" ", ":").split("\\.")[0];
         String bodyDec = sexagesimalCoords.getS2().split("\\.")[0];
 
+        detailPanel.add(createLabel("Min observation time (*): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
+        detailPanel.add(createLabel(" Observation Time", PLAIN_FONT));
+
+        detailPanel.add(createLabel("Max observation time (*): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
+        detailPanel.add(createLabel(" Observation Time", PLAIN_FONT));
+
+        detailPanel.add(createLabel("Some observatories in the North: ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("T05, T08, F51, F52, 675, 703, Wise", PLAIN_FONT));
+        detailPanel.add(createLabel(" Observer Location (Named Body or Site)", PLAIN_FONT));
+
+        detailPanel.add(createLabel("Some observatories in the South: ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("413, Antofagasta, Arica, Johannesburg, Pretoria", PLAIN_FONT));
+        detailPanel.add(createLabel(" Observer Location (Named Body or Site)", PLAIN_FONT));
+
         detailPanel.add(createLabel("Center of the search region in RA: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField(bodyRa, PLAIN_FONT));
+        detailPanel.add(createLabel(" Search Region (First Corner or Center)", PLAIN_FONT));
 
         detailPanel.add(createLabel("Center of the search region in dec: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createField(bodyDec, PLAIN_FONT));
+        detailPanel.add(createLabel(" Search Region (First Corner or Center)", PLAIN_FONT));
 
-        detailPanel.add(createLabel("Width of search region in RA (*): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField("w0:10", PLAIN_FONT));
+        detailPanel.add(createLabel("Width of search region in RA (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("w0:05", PLAIN_FONT));
+        detailPanel.add(createLabel(" Search Region (Second Corner or Widths)", PLAIN_FONT));
 
-        detailPanel.add(createLabel("Width of search region in dec (*): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField("w0 10", PLAIN_FONT));
+        detailPanel.add(createLabel("Width of search region in dec (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("w0 05", PLAIN_FONT));
+        detailPanel.add(createLabel(" Search Region (Second Corner or Widths)", PLAIN_FONT));
 
-        detailPanel.add(createLabel("Some observatories (if dec >= -30°): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField("ATLAS, Pan-STARRS", PLAIN_FONT));
-
-        detailPanel.add(createLabel("Min observation time (**): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
-
-        detailPanel.add(createLabel("Max observation time (**): ", PLAIN_FONT, JLabel.RIGHT));
-        detailPanel.add(createField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER), PLAIN_FONT));
+        detailPanel.add(createLabel("Visual magnitude limit (**): ", PLAIN_FONT, JLabel.RIGHT));
+        detailPanel.add(createField("25", PLAIN_FONT));
+        detailPanel.add(createLabel(" Uncheck 'Object Magnitude Parameters Required'", PLAIN_FONT));
 
         detailPanel.add(createLabel("Link: ", PLAIN_FONT, JLabel.RIGHT));
         detailPanel.add(createHyperlink("JPL SB Identification", "https://ssd.jpl.nasa.gov/sbfind.cgi", PLAIN_FONT));
+        detailPanel.add(createLabel("", PLAIN_FONT));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -2018,16 +2034,17 @@ public class ImageViewerTab {
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         container.add(infoPanel);
 
-        infoPanel.add(createLabel("(*) Feel free to adjust the width of the search region to your needs.", PLAIN_FONT));
-
-        infoPanel.add(createLabel("(**) These are the minimum and maximum observation times of all the frames", PLAIN_FONT));
-        infoPanel.add(createLabel("which are part of the coadd that the small body features in.", PLAIN_FONT));
+        infoPanel.add(createLabel("(*) These are the observation times of the first and last single exposures that went into the coadd in which the small body is located.", PLAIN_FONT));
+        infoPanel.add(createLabel("You now have to find the single exposure between these 2 dates in which the object is located. Use the", PLAIN_FONT));
+        infoPanel.add(createHyperlink("WISE image service", "https://irsa.ipac.caltech.edu/applications/wise", PLAIN_FONT));
+        infoPanel.add(createLabel("to do so.", PLAIN_FONT));
+        infoPanel.add(createLabel("(**) Feel free to adjust the specified values to your needs.", PLAIN_FONT));
 
         JFrame smallBodyFrame = new JFrame();
         smallBodyFrame.setIconImage(getToolBoxImage());
         smallBodyFrame.setTitle("Data to enter into JPL's Small Body Identification tool");
         smallBodyFrame.add(container);
-        smallBodyFrame.setSize(450, 350);
+        smallBodyFrame.setSize(775, 375);
         smallBodyFrame.setAlwaysOnTop(true);
         smallBodyFrame.setResizable(false);
         smallBodyFrame.setVisible(true);
