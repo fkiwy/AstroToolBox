@@ -583,6 +583,7 @@ public class ImageViewerTab {
                     component.setEpochCount(epochCount / 2);
                     imagePanel.setBorder(createEtchedBorder(component.getTitle(), PLAIN_FONT));
 
+                    // Create and display WISE images
                     if (wiseBand.equals(WiseBand.W1W2)) {
                         wiseImage = createComposite(component.getEpoch());
                     } else {
@@ -608,8 +609,8 @@ public class ImageViewerTab {
                     int width = 50;
                     int height = 50;
                     if (posX == 0 && posY == 0) {
-                        posX = wiseImage.getWidth() / 2;
-                        posY = wiseImage.getHeight() / 2;
+                        posX = (int) round(getScaledValue(pixelX));
+                        posY = (int) round(getScaledValue(pixelY));
                     }
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
@@ -629,14 +630,22 @@ public class ImageViewerTab {
                     }
 
                     // Create and display magnified WISE image
-                    BufferedImage subImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
-                    subImage = zoom(subImage, 200);
-                    imagePanel.add(new JLabel(new ImageIcon(subImage)));
+                    BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
+                    magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
+                    imagePanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
 
-                    // Display PanSTARRS image
+                    // Display PanSTARRS images
                     JLabel ps1Label = null;
                     if (ps1Image != null) {
-                        ps1Label = new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom)));
+                        BufferedImage processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
+
+                        // Create and display magnified PanSTARRS image
+                        BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
+                        magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
+                        imagePanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
+
+                        // Display regular PanSTARRS image
+                        ps1Label = new JLabel(new ImageIcon(processedPs1Image));
                         ps1Label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
                         imagePanel.add(ps1Label);
                     }
@@ -882,6 +891,7 @@ public class ImageViewerTab {
                 hasException = false;
                 setContrast(getContrast());
                 initMinMaxValues();
+                posX = posY = 0;
                 windowShift = 0;
                 imageCutOff = false;
                 simbadOverlay.setEnabled(true);
