@@ -185,8 +185,8 @@ public class ImageViewerTab {
     private double pixelX;
     private double pixelY;
 
-    private int posX;
-    private int posY;
+    private int centerX;
+    private int centerY;
 
     private int previousSize;
     private double previousRa;
@@ -231,6 +231,11 @@ public class ImageViewerTab {
             JScrollPane imageScrollPanel = new JScrollPane(imagePanel);
             mainPanel.add(imageScrollPanel, BorderLayout.CENTER);
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+            JPanel rightPanel = new JPanel();
+            mainPanel.add(rightPanel, BorderLayout.LINE_END);
+            rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+            rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
             int controlPanelHeight = 1075;
@@ -608,14 +613,14 @@ public class ImageViewerTab {
                     // Initialize positions of magnified WISE image
                     int width = 50;
                     int height = 50;
-                    if (posX == 0 && posY == 0) {
-                        posX = (int) round(getScaledValue(pixelX));
-                        posY = (int) round(getScaledValue(pixelY));
+                    if (centerX == 0 && centerY == 0) {
+                        centerX = (int) round(getScaledValue(pixelX));
+                        centerY = (int) round(getScaledValue(pixelY));
                     }
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
-                    int upperLeftX = posX - (width / 2);
-                    int upperLeftY = posY - (height / 2);
+                    int upperLeftX = centerX - (width / 2);
+                    int upperLeftY = centerY - (height / 2);
                     int upperRightX = upperLeftX + width;
                     int lowerLeftY = upperLeftY + height;
 
@@ -630,9 +635,10 @@ public class ImageViewerTab {
                     }
 
                     // Create and display magnified WISE image
+                    rightPanel.removeAll();
                     BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
                     magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
-                    imagePanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
+                    rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
 
                     // Display PanSTARRS images
                     JLabel ps1Label = null;
@@ -642,7 +648,7 @@ public class ImageViewerTab {
                         // Create and display magnified PanSTARRS image
                         BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
                         magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
-                        imagePanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
+                        rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
 
                         // Display regular PanSTARRS image
                         ps1Label = new JLabel(new ImageIcon(processedPs1Image));
@@ -705,8 +711,8 @@ public class ImageViewerTab {
 
                         @Override
                         public void mouseEntered(MouseEvent evt) {
-                            posX = evt.getX();
-                            posY = evt.getY();
+                            centerX = evt.getX();
+                            centerY = evt.getY();
                         }
 
                         @Override
@@ -891,7 +897,7 @@ public class ImageViewerTab {
                 hasException = false;
                 setContrast(getContrast());
                 initMinMaxValues();
-                posX = posY = 0;
+                centerX = centerY = 0;
                 windowShift = 0;
                 imageCutOff = false;
                 simbadOverlay.setEnabled(true);
