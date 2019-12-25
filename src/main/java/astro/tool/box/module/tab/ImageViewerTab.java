@@ -625,8 +625,10 @@ public class ImageViewerTab {
                     int width = 50;
                     int height = 50;
                     if (centerX == 0 && centerY == 0) {
-                        centerX = (int) round(getScaledValue(pixelX));
-                        centerY = (int) round(getScaledValue(pixelY));
+                        //centerX = (int) round(getScaledValue(pixelX));
+                        //centerY = (int) round(getScaledValue(pixelY));
+                        centerX = wiseImage.getWidth() / 2;
+                        centerY = wiseImage.getHeight() / 2;
                     }
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
@@ -646,10 +648,12 @@ public class ImageViewerTab {
                     }
 
                     // Create and display magnified WISE image
-                    rightPanel.removeAll();
-                    BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
-                    magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
-                    rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
+                    if (!hideMagnifier.isSelected()) {
+                        rightPanel.removeAll();
+                        BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
+                        magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
+                        rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
+                    }
 
                     // Display PanSTARRS images
                     JLabel ps1Label = null;
@@ -657,9 +661,11 @@ public class ImageViewerTab {
                         BufferedImage processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
 
                         // Create and display magnified PanSTARRS image
-                        BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
-                        magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
-                        rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
+                        if (!hideMagnifier.isSelected()) {
+                            BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
+                            magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
+                            rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
+                        }
 
                         // Display regular PanSTARRS image
                         ps1Label = new JLabel(new ImageIcon(processedPs1Image));
