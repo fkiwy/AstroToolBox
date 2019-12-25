@@ -139,7 +139,7 @@ public class ImageViewerTab {
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCoverageMaps;
     private JCheckBox skipBadCoadds;
-    private JCheckBox showSBDetails;
+    private JCheckBox smallBodyHelp;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -166,7 +166,7 @@ public class ImageViewerTab {
     private int fieldOfView = 15;
     private int imageNumber = 0;
     private int windowShift = 0;
-    private int numberOfQuadrants = 0;
+    private int quadrantCount = 0;
     private int epochCount = NUMBER_OF_EPOCHS * 2;
     private int stretch = STRETCH;
     private int speed = SPEED;
@@ -230,9 +230,9 @@ public class ImageViewerTab {
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1100;
+            int controlPanelHeight = 1075;
 
-            JPanel controlPanel = new JPanel(new GridLayout(45, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(44, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -281,10 +281,10 @@ public class ImageViewerTab {
             epochs.addActionListener((ActionEvent evt) -> {
                 epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 if (epochs.getSelectedItem().equals(Epoch.ALL)) {
-                    showSBDetails.setEnabled(true);
+                    smallBodyHelp.setEnabled(true);
                 } else {
-                    showSBDetails.setSelected(false);
-                    showSBDetails.setEnabled(false);
+                    smallBodyHelp.setSelected(false);
+                    smallBodyHelp.setEnabled(false);
                 }
                 initMinMaxValues();
                 createFlipbook();
@@ -511,9 +511,9 @@ public class ImageViewerTab {
                 skipBadCoadds.setCursor(Cursor.getDefaultCursor());
             });
 
-            showSBDetails = new JCheckBox("Show small body details (Epochs: ALL)");
-            controlPanel.add(showSBDetails);
-            showSBDetails.setEnabled(false);
+            smallBodyHelp = new JCheckBox("Show small body help (Epochs: ALL)");
+            controlPanel.add(smallBodyHelp);
+            smallBodyHelp.setEnabled(false);
 
             controlPanel.add(new JLabel(underLine("Image player controls:")));
 
@@ -558,14 +558,14 @@ public class ImageViewerTab {
                 timer.start();
             });
 
-            JLabel rotateLabel = new JLabel(String.format("Rotate by 90° clockwise: %d°", numberOfQuadrants * 90));
-            controlPanel.add(rotateLabel);
-
-            JSlider rotateSlider = new JSlider(0, 3, numberOfQuadrants);
-            controlPanel.add(rotateSlider);
-            rotateSlider.addChangeListener((ChangeEvent e) -> {
-                numberOfQuadrants = rotateSlider.getValue();
-                rotateLabel.setText(String.format("Rotate by 90° clockwise: %d°", numberOfQuadrants * 90));
+            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            controlPanel.add(rotateButton);
+            rotateButton.addActionListener((ActionEvent evt) -> {
+                quadrantCount++;
+                if (quadrantCount > 3) {
+                    quadrantCount = 0;
+                }
+                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
             });
 
             timer = new Timer(speed, (ActionEvent e) -> {
@@ -586,7 +586,7 @@ public class ImageViewerTab {
                         wiseImage = createImage(component.getBand(), component.getEpoch());
                     }
                     wiseImage = flipVertically(wiseImage);
-                    wiseImage = rotate(wiseImage, numberOfQuadrants);
+                    wiseImage = rotate(wiseImage, quadrantCount);
                     wiseImage = zoom(wiseImage, zoom);
 
                     addOverlaysAndPMVectors(wiseImage);
@@ -603,7 +603,7 @@ public class ImageViewerTab {
 
                     JLabel ps1Label = null;
                     if (ps1Image != null) {
-                        ps1Label = new JLabel(new ImageIcon(zoom(ps1Image, zoom)));
+                        ps1Label = new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom)));
                         ps1Label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
                         imagePanel.add(ps1Label);
                     }
@@ -627,7 +627,7 @@ public class ImageViewerTab {
                                 default:
                                     int mouseX = evt.getX();
                                     int mouseY = evt.getY();
-                                    if (showSBDetails.isSelected()) {
+                                    if (smallBodyHelp.isSelected()) {
                                         displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
                                     } else {
                                         int overlays = 0;
@@ -1104,6 +1104,7 @@ public class ImageViewerTab {
                 image = createImage(component.getBand(), component.getEpoch());
             }
             image = flipVertically(image);
+            image = rotate(image, quadrantCount);
             image = zoom(image, zoom);
 
             addOverlaysAndPMVectors(image);
@@ -1117,7 +1118,7 @@ public class ImageViewerTab {
             grid.add(pane);
         }
         if (ps1Image != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(ps1Image, zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("PanSTARRS-1 stack y/i/g", PLAIN_FONT));
             grid.add(pane);
         }
