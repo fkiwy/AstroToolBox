@@ -141,6 +141,7 @@ public class ImageViewerTab {
     private JCheckBox skipBadCoadds;
     private JCheckBox smallBodyHelp;
     private JCheckBox hideMagnifier;
+    private JCheckBox drawCircle;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -158,13 +159,15 @@ public class ImageViewerTab {
 
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
-    private Map<String, Fits> images = new HashMap<>();
+    private Map<String, Fits> images;
+    private List<NumberPair> circles;
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
     private int fieldOfView = 15;
+    private int circleSize = 10;
     private int imageNumber = 0;
     private int windowShift = 0;
     private int quadrantCount = 0;
@@ -239,9 +242,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1100;
+            int controlPanelHeight = 1125;
 
-            JPanel controlPanel = new JPanel(new GridLayout(45, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(46, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -534,6 +537,9 @@ public class ImageViewerTab {
                 }
             });
 
+            drawCircle = new JCheckBox("Draw circle (mouse wheel click & spin)");
+            controlPanel.add(drawCircle);
+
             controlPanel.add(new JLabel(underLine("Image player controls:")));
 
             JPanel timerControls = new JPanel(new GridLayout(1, 2));
@@ -611,6 +617,12 @@ public class ImageViewerTab {
 
                     addOverlaysAndPMVectors(wiseImage);
 
+                    if (drawCircle.isSelected()) {
+                        for (NumberPair circle : circles) {
+                            drawCircle(wiseImage, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
+                        }
+                    }
+
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
                     if (borderEpoch.isSelected() && component.isFirstEpoch()) {
@@ -687,7 +699,13 @@ public class ImageViewerTab {
                                     displayZoomedWiseImages(newRa, newDec);
                                     break;
                                 case MouseEvent.BUTTON2:
-                                    displayZoomedPs1Image(newRa, newDec, fieldOfView);
+                                    if (drawCircle.isSelected()) {
+                                        double circleX = evt.getX() * 1.0 / zoom;
+                                        double circleY = evt.getY() * 1.0 / zoom;
+                                        circles.add(new NumberPair(circleX, circleY));
+                                    } else {
+                                        displayZoomedPs1Image(newRa, newDec, fieldOfView);
+                                    }
                                     break;
                                 default:
                                     int mouseX = evt.getX();
@@ -743,10 +761,18 @@ public class ImageViewerTab {
 
                     imageLabel.addMouseWheelListener((MouseWheelEvent evt) -> {
                         int notches = evt.getWheelRotation();
-                        if (notches < 0) {
-                            fieldOfView++;
-                        } else if (fieldOfView > 0) {
-                            fieldOfView--;
+                        if (drawCircle.isSelected()) {
+                            if (notches < 0) {
+                                circleSize++;
+                            } else if (circleSize > 0) {
+                                circleSize--;
+                            }
+                        } else {
+                            if (notches < 0) {
+                                fieldOfView++;
+                            } else if (fieldOfView > 0) {
+                                fieldOfView--;
+                            }
                         }
                     });
 
@@ -911,6 +937,7 @@ public class ImageViewerTab {
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 images = new HashMap<>();
+                circles = new ArrayList<>();
                 hasException = false;
                 setContrast(getContrast());
                 initMinMaxValues();
@@ -1176,6 +1203,12 @@ public class ImageViewerTab {
             image = zoom(image, zoom);
 
             addOverlaysAndPMVectors(image);
+
+            if (drawCircle.isSelected()) {
+                for (NumberPair circle : circles) {
+                    drawCircle(image, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
+                }
+            }
 
             Graphics graphics = image.getGraphics();
             Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10, Color.BLACK);
@@ -1732,6 +1765,7 @@ public class ImageViewerTab {
         imageViewerTab.getSizeField().setText("100");
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.getEpochs().setSelectedItem(epoch);
+        imageViewerTab.getHideMagnifier().setSelected(true);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
 
@@ -1924,6 +1958,12 @@ public class ImageViewerTab {
                 arrow.draw(graphics);
             }
         });
+    }
+
+    private void drawCircle(BufferedImage image, int x, int y, int size, Color color) {
+        Graphics graphics = image.getGraphics();
+        Circle circle = new Circle(x, y, size, color);
+        circle.draw(graphics);
     }
 
     private void showCatalogInfo(List<CatalogEntry> catalogEntries, int x, int y) {
@@ -2175,6 +2215,10 @@ public class ImageViewerTab {
 
     public JSlider getZoomSlider() {
         return zoomSlider;
+    }
+
+    public JCheckBox getHideMagnifier() {
+        return hideMagnifier;
     }
 
     public Timer getTimer() {
