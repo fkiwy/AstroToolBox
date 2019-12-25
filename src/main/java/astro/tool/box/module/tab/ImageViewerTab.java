@@ -140,6 +140,7 @@ public class ImageViewerTab {
     private JCheckBox useCoverageMaps;
     private JCheckBox skipBadCoadds;
     private JCheckBox smallBodyHelp;
+    private JCheckBox hideMagnifier;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -238,9 +239,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1075;
+            int controlPanelHeight = 1100;
 
-            JPanel controlPanel = new JPanel(new GridLayout(44, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(45, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -522,6 +523,16 @@ public class ImageViewerTab {
             smallBodyHelp = new JCheckBox("Show small body help (Epochs: ALL)");
             controlPanel.add(smallBodyHelp);
             smallBodyHelp.setEnabled(false);
+
+            hideMagnifier = new JCheckBox("Hide magnifier panel");
+            controlPanel.add(hideMagnifier);
+            hideMagnifier.addActionListener((ActionEvent evt) -> {
+                if (hideMagnifier.isSelected()) {
+                    rightPanel.setVisible(false);
+                } else {
+                    rightPanel.setVisible(true);
+                }
+            });
 
             controlPanel.add(new JLabel(underLine("Image player controls:")));
 
