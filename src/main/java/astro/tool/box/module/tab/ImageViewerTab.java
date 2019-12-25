@@ -185,6 +185,9 @@ public class ImageViewerTab {
     private double pixelX;
     private double pixelY;
 
+    private int posX;
+    private int posY;
+
     private int previousSize;
     private double previousRa;
     private double previousDec;
@@ -243,7 +246,7 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel("Coordinates:"));
 
-            coordsField = createField("", PLAIN_FONT);
+            coordsField = createField("133.787 -7.245150", PLAIN_FONT);
             controlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
                 coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -601,6 +604,36 @@ public class ImageViewerTab {
 
                     imagePanel.add(imageLabel);
 
+                    // Initialize positions of magnified WISE image
+                    int width = 50;
+                    int height = 50;
+                    if (posX == 0 && posY == 0) {
+                        posX = wiseImage.getWidth() / 2;
+                        posY = wiseImage.getHeight() / 2;
+                    }
+                    int imageWidth = wiseImage.getWidth();
+                    int imageHeight = wiseImage.getHeight();
+                    int upperLeftX = posX - (width / 2);
+                    int upperLeftY = posY - (height / 2);
+                    int upperRightX = upperLeftX + width;
+                    int lowerLeftY = upperLeftY + height;
+
+                    // Correct positions of magnified WISE image
+                    upperLeftX = upperLeftX < 0 ? 0 : upperLeftX;
+                    upperLeftY = upperLeftY < 0 ? 0 : upperLeftY;
+                    if (upperRightX > imageWidth) {
+                        upperLeftX = upperLeftX - (upperRightX - imageWidth);
+                    }
+                    if (lowerLeftY > imageHeight) {
+                        upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
+                    }
+
+                    // Create and display magnified WISE image
+                    BufferedImage subImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
+                    subImage = zoom(subImage, 200);
+                    imagePanel.add(new JLabel(new ImageIcon(subImage)));
+
+                    // Display PanSTARRS image
                     JLabel ps1Label = null;
                     if (ps1Image != null) {
                         ps1Label = new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom)));
@@ -663,6 +696,8 @@ public class ImageViewerTab {
 
                         @Override
                         public void mouseEntered(MouseEvent evt) {
+                            posX = evt.getX();
+                            posY = evt.getY();
                         }
 
                         @Override
