@@ -608,6 +608,7 @@ public class ImageViewerTab {
                     int returnVal = fileChooser.showSaveDialog(controlPanel);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".png");
                         ImageIO.write(wiseImage, "png", file);
                     }
                 } catch (Exception ex) {
@@ -713,7 +714,21 @@ public class ImageViewerTab {
                     imageLabel.addMouseListener(new MouseListener() {
                         @Override
                         public void mousePressed(MouseEvent evt) {
-                            NumberPair coords = getObjectCoordinates(evt);
+                            int mouseX = evt.getX();
+                            int mouseY = evt.getY();
+                            // Undo rotation of pixel coordinates in case of image rotation
+                            if (quadrantCount > 0 && quadrantCount < 4) {
+                                double anchorX = wiseImage.getWidth() / 2;
+                                double anchorY = wiseImage.getHeight() / 2;
+                                double angle = (4 - quadrantCount) * 90;
+                                double theta = Math.toRadians(angle);
+                                Point2D ptSrc = new Point(mouseX, mouseY);
+                                Point2D ptDst = new Point();
+                                AffineTransform.getRotateInstance(theta, anchorX, anchorY).transform(ptSrc, ptDst);
+                                mouseX = (int) round(ptDst.getX());
+                                mouseY = (int) round(ptDst.getY());
+                            }
+                            NumberPair coords = getObjectCoordinates(mouseX, mouseY);
                             double newRa = coords.getX();
                             double newDec = coords.getY();
                             switch (evt.getButton()) {
@@ -730,24 +745,9 @@ public class ImageViewerTab {
                                     }
                                     break;
                                 default:
-                                    int mouseX = evt.getX();
-                                    int mouseY = evt.getY();
                                     if (smallBodyHelp.isSelected()) {
                                         displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
                                     } else {
-                                        // Undo rotation of pixel coordinates in case of image rotation
-                                        if (quadrantCount > 0 && quadrantCount < 4) {
-                                            double anchorX = wiseImage.getWidth() / 2;
-                                            double anchorY = wiseImage.getHeight() / 2;
-                                            double angle = (4 - quadrantCount) * 90;
-                                            double theta = Math.toRadians(angle);
-                                            Point2D ptSrc = new Point(mouseX, mouseY);
-                                            Point2D ptDst = new Point();
-                                            AffineTransform.getRotateInstance(theta, anchorX, anchorY).transform(ptSrc, ptDst);
-                                            mouseX = (int) round(ptDst.getX());
-                                            mouseY = (int) round(ptDst.getY());
-                                        }
-
                                         int overlays = 0;
                                         if (simbadOverlay.isSelected() && simbadEntries != null) {
                                             showCatalogInfo(simbadEntries, mouseX, mouseY);
@@ -890,9 +890,9 @@ public class ImageViewerTab {
         }
     }
 
-    private NumberPair getObjectCoordinates(MouseEvent evt) {
-        double diffX = getScaledValue(pixelX) - evt.getX();
-        double diffY = getScaledValue(pixelY) - evt.getY();
+    private NumberPair getObjectCoordinates(int x, int y) {
+        double diffX = getScaledValue(pixelX) - x;
+        double diffY = getScaledValue(pixelY) - y;
         double conversionFactor = getConversionFactor();
         diffX *= conversionFactor;
         diffY *= conversionFactor;
