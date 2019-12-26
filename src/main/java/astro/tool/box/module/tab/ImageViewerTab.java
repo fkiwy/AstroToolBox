@@ -32,6 +32,7 @@ import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.Arrow;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -54,6 +55,8 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -79,6 +82,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -88,6 +92,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
@@ -242,9 +247,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1125;
+            int controlPanelHeight = 1150;
 
-            JPanel controlPanel = new JPanel(new GridLayout(46, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(47, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -591,6 +596,23 @@ public class ImageViewerTab {
                     quadrantCount = 0;
                 }
                 rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            });
+
+            JButton saveAsButton = new JButton("Save image");
+            controlPanel.add(saveAsButton);
+            saveAsButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
+                    int returnVal = fileChooser.showSaveDialog(controlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        ImageIO.write(wiseImage, "png", file);
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
             });
 
             timer = new Timer(speed, (ActionEvent e) -> {
