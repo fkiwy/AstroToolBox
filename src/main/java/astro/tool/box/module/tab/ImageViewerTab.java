@@ -17,6 +17,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -24,6 +25,7 @@ import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.Unit;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
@@ -623,8 +625,8 @@ public class ImageViewerTab {
 
             useCustomOverlays = new JCheckBox("Works with custom overlays");
             controlPanel.add(useCustomOverlays);
+            customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
-                customOverlays = customOverlaysTab.getCustomOverlays();
                 if (customOverlays.isEmpty()) {
                     showInfoDialog(baseFrame, "There are no custom overlays.");
                     useCustomOverlays.setSelected(false);
@@ -1019,6 +1021,9 @@ public class ImageViewerTab {
                 gaiaDR2ProperMotion.setEnabled(true);
                 catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
+                customOverlays.values().forEach((customOverlay) -> {
+                    customOverlay.setCatalogEntries(null);
+                });
                 ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
             }
             previousSize = size;
@@ -1315,9 +1320,15 @@ public class ImageViewerTab {
             drawOverlay(image, catWiseEntries, Color.MAGENTA);
         }
 
-        //add custom overlays
-        
-        
+        if (useCustomOverlays.isSelected()) {
+            customOverlays.values().forEach((customOverlay) -> {
+                if (customOverlay.getCheckBox().isSelected()) {
+                    fetchGenericCatalogEntries(customOverlay);
+                    drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor());
+                }
+            });
+        }
+
         if (gaiaDR2ProperMotion.isSelected()) {
             fetchGaiaDR2CatalogEntries();
             drawPMVectors(image, gaiaDR2Entries, Color.CYAN.darker());
@@ -1972,6 +1983,54 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void fetchGenericCatalogEntries(CustomOverlay customOverlay) {
+        List<CatalogEntry> catalogEntries = customOverlay.getCatalogEntries();
+        if (catalogEntries == null) {
+            baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            catalogEntries = new ArrayList<>();
+            try (Scanner scanner = new Scanner(customOverlay.getFile())) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                StringBuilder errors = new StringBuilder();
+                int numberOfColumns = columnNames.length;
+                int lastColumnIndex = numberOfColumns - 1;
+                int raColumnIndex = customOverlay.getRaColumnIndex();
+                int decColumnIndex = customOverlay.getDecColumnIndex();
+                if (raColumnIndex > lastColumnIndex) {
+                    errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
+                }
+                if (decColumnIndex > lastColumnIndex) {
+                    errors.append("Dec position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
+                }
+                if (errors.length() > 0) {
+                    showErrorDialog(baseFrame, errors.toString());
+                    return;
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                    CatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
+                    catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
+                    catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
+                    double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
+                    System.out.println(catalogEntry);
+                    if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
+                            && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
+                        System.out.println("----------------->" + catalogEntry);
+                        catalogEntry.setTargetRa(targetRa);
+                        catalogEntry.setTargetDec(targetDec);
+                        catalogEntry.loadCatalogElements();
+                        catalogEntries.add(catalogEntry);
+                        break;
+                    }
+                }
+            } catch (Exception ex) {
+                showExceptionDialog(baseFrame, ex);
+            } finally {
+                customOverlay.setCatalogEntries(catalogEntries);
+                baseFrame.setCursor(Cursor.getDefaultCursor());
+            }
         }
     }
 

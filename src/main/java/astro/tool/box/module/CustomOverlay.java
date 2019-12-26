@@ -1,7 +1,9 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.catalog.CatalogEntry;
 import java.awt.Color;
 import java.io.File;
+import java.util.List;
 import javax.swing.JCheckBox;
 
 public class CustomOverlay {
@@ -17,6 +19,8 @@ public class CustomOverlay {
     private File file;
 
     private JCheckBox checkBox;
+
+    private List<CatalogEntry> catalogEntries;
 
     public String getName() {
         return name;
@@ -64,6 +68,14 @@ public class CustomOverlay {
 
     public void setCheckBox(JCheckBox checkBox) {
         this.checkBox = checkBox;
+    }
+
+    public List<CatalogEntry> getCatalogEntries() {
+        return catalogEntries;
+    }
+
+    public void setCatalogEntries(List<CatalogEntry> catalogEntries) {
+        this.catalogEntries = catalogEntries;
     }
 
 }
