@@ -51,12 +51,12 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -735,6 +735,19 @@ public class ImageViewerTab {
                                     if (smallBodyHelp.isSelected()) {
                                         displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
                                     } else {
+                                        // Undo rotation of pixel coordinates in case of image rotation
+                                        if (quadrantCount > 0 && quadrantCount < 4) {
+                                            double anchorX = wiseImage.getWidth() / 2;
+                                            double anchorY = wiseImage.getHeight() / 2;
+                                            double angle = (4 - quadrantCount) * 90;
+                                            double theta = Math.toRadians(angle);
+                                            Point2D ptSrc = new Point(mouseX, mouseY);
+                                            Point2D ptDst = new Point();
+                                            AffineTransform.getRotateInstance(theta, anchorX, anchorY).transform(ptSrc, ptDst);
+                                            mouseX = (int) round(ptDst.getX());
+                                            mouseY = (int) round(ptDst.getY());
+                                        }
+
                                         int overlays = 0;
                                         if (simbadOverlay.isSelected() && simbadEntries != null) {
                                             showCatalogInfo(simbadEntries, mouseX, mouseY);
@@ -894,8 +907,8 @@ public class ImageViewerTab {
         double conversionFactor = getConversionFactor();
         diffX /= -conversionFactor;
         diffY /= -conversionFactor;
-        double posX = getScaledValue(this.pixelX) - (diffX);
-        double posY = getScaledValue(this.pixelY) - (diffY);
+        double posX = getScaledValue(pixelX) - (diffX);
+        double posY = getScaledValue(pixelY) - (diffY);
         return new NumberPair(posX, posY);
     }
 
