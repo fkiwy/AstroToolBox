@@ -5,6 +5,7 @@ import astro.tool.box.module.tab.AdqlQueryTab;
 import astro.tool.box.module.tab.BatchQueryTab;
 import astro.tool.box.module.tab.BrownDwarfTab;
 import astro.tool.box.module.tab.CatalogQueryTab;
+import astro.tool.box.module.tab.CustomOverlaysTab;
 import astro.tool.box.module.tab.FileBrowserTab;
 import astro.tool.box.module.tab.HelpTab;
 import astro.tool.box.module.tab.ImageViewerTab;
@@ -51,7 +52,9 @@ public class Application {
         WhiteDwarfTab whiteDwarfTab = new WhiteDwarfTab(baseFrame, tabbedPane, catalogQueryTab);
         whiteDwarfTab.init();
 
-        imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
+        CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane);
+
+        imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane, customOverlaysTab);
         imageViewerTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
@@ -62,6 +65,8 @@ public class Application {
 
         FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         fileBrowserTab.init();
+
+        customOverlaysTab.init();
 
         ToolTab toolTab = new ToolTab(baseFrame, tabbedPane);
         toolTab.init();

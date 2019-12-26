@@ -30,6 +30,7 @@ import astro.tool.box.module.Application;
 import astro.tool.box.module.Circle;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.Arrow;
+import astro.tool.box.module.CustomOverlay;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
@@ -121,6 +122,7 @@ public class ImageViewerTab {
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
+    private final CustomOverlaysTab customOverlaysTab;
 
     private final CatalogQueryFacade catalogQueryFacade;
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
@@ -142,6 +144,7 @@ public class ImageViewerTab {
     private JCheckBox catWiseOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
+    private JCheckBox useCustomOverlays;
     private JCheckBox useCoverageMaps;
     private JCheckBox skipBadCoadds;
     private JCheckBox smallBodyHelp;
@@ -165,6 +168,7 @@ public class ImageViewerTab {
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
     private Map<String, Fits> images;
+    private Map<String, CustomOverlay> customOverlays;
     private List<NumberPair> circles;
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
@@ -205,9 +209,10 @@ public class ImageViewerTab {
     private boolean hasException;
     private boolean timerStopped;
 
-    public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
+    public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
+        this.customOverlaysTab = customOverlaysTab;
         catalogQueryFacade = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
@@ -247,9 +252,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1150;
+            int controlPanelHeight = 1175;
 
-            JPanel controlPanel = new JPanel(new GridLayout(47, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(48, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -613,6 +618,34 @@ public class ImageViewerTab {
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            useCustomOverlays = new JCheckBox("Works with custom overlays");
+            controlPanel.add(useCustomOverlays);
+            useCustomOverlays.addActionListener((ActionEvent evt) -> {
+                customOverlays = customOverlaysTab.getCustomOverlays();
+                if (customOverlays.isEmpty()) {
+                    showInfoDialog(baseFrame, "There are no custom overlays.");
+                    useCustomOverlays.setSelected(false);
+                } else {
+                    GridLayout layout = (GridLayout) controlPanel.getLayout();
+                    if (useCustomOverlays.isSelected()) {
+                        layout.setRows(layout.getRows() + customOverlays.size());
+                        customOverlays.values().forEach(customOverlay -> {
+                            JCheckBox overlayCheckBox = new JCheckBox(customOverlay.getName());
+                            overlayCheckBox.setForeground(customOverlay.getColor());
+                            customOverlay.setCheckBox(overlayCheckBox);
+                            controlPanel.add(overlayCheckBox);
+                        });
+                    } else {
+                        layout.setRows(layout.getRows() - customOverlays.size());
+                        customOverlays.values().forEach((customOverlay) -> {
+                            controlPanel.remove(customOverlay.getCheckBox());
+                            controlPanel.updateUI();
+                        });
+                    }
+                    baseFrame.setVisible(true);
                 }
             });
 
@@ -1282,6 +1315,9 @@ public class ImageViewerTab {
             drawOverlay(image, catWiseEntries, Color.MAGENTA);
         }
 
+        //add custom overlays
+        
+        
         if (gaiaDR2ProperMotion.isSelected()) {
             fetchGaiaDR2CatalogEntries();
             drawPMVectors(image, gaiaDR2Entries, Color.CYAN.darker());
