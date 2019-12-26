@@ -612,10 +612,10 @@ public class ImageViewerTab {
                         wiseImage = createImage(component.getBand(), component.getEpoch());
                     }
                     wiseImage = flipVertically(wiseImage);
-                    wiseImage = rotate(wiseImage, quadrantCount);
                     wiseImage = zoom(wiseImage, zoom);
 
                     addOverlaysAndPMVectors(wiseImage);
+                    wiseImage = rotate(wiseImage, quadrantCount);
 
                     if (drawCircle.isSelected()) {
                         for (NumberPair circle : circles) {
@@ -1199,10 +1199,10 @@ public class ImageViewerTab {
                 image = createImage(component.getBand(), component.getEpoch());
             }
             image = flipVertically(image);
-            image = rotate(image, quadrantCount);
             image = zoom(image, zoom);
 
             addOverlaysAndPMVectors(image);
+            image = rotate(image, quadrantCount);
 
             if (drawCircle.isSelected()) {
                 for (NumberPair circle : circles) {
