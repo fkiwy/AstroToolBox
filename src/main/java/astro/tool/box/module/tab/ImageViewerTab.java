@@ -2131,7 +2131,6 @@ public class ImageViewerTab {
 
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
         catalogElements.forEach(element -> {
-            System.out.println("name=" + element.getName());
             addLabelToPanel(element, detailPanel);
             addFieldToPanel(element, detailPanel);
         });
