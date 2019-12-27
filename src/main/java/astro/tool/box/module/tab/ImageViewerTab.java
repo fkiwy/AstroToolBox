@@ -623,7 +623,7 @@ public class ImageViewerTab {
                 }
             });
 
-            useCustomOverlays = new JCheckBox("Works with custom overlays");
+            useCustomOverlays = new JCheckBox("Work with custom overlays");
             controlPanel.add(useCustomOverlays);
             customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
@@ -799,6 +799,14 @@ public class ImageViewerTab {
                                         if (catWiseOverlay.isSelected() && catWiseEntries != null) {
                                             showCatalogInfo(catWiseEntries, mouseX, mouseY);
                                             overlays++;
+                                        }
+                                        if (useCustomOverlays.isSelected()) {
+                                            for (CustomOverlay customOverlay : customOverlays.values()) {
+                                                if (customOverlay.getCheckBox().isSelected()) {
+                                                    showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY);
+                                                    overlays++;
+                                                }
+                                            }
                                         }
                                         if (overlays == 0) {
                                             displayCatalogSearchResults(newRa, newDec);
@@ -1022,6 +1030,7 @@ public class ImageViewerTab {
                 catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
                 customOverlays.values().forEach((customOverlay) -> {
+                    customOverlay.getCheckBox().setEnabled(true);
                     customOverlay.setCatalogEntries(null);
                 });
                 ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
@@ -1389,6 +1398,10 @@ public class ImageViewerTab {
                 catWiseOverlay.setEnabled(false);
                 gaiaDR2ProperMotion.setEnabled(false);
                 catWiseProperMotion.setEnabled(false);
+                customOverlays.values().forEach((customOverlay) -> {
+                    customOverlay.getCheckBox().setSelected(false);
+                    customOverlay.getCheckBox().setEnabled(false);
+                });
             }
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
@@ -2010,19 +2023,17 @@ public class ImageViewerTab {
                 }
                 while (scanner.hasNextLine()) {
                     String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
-                    CatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
+                    GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                     catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                     catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
                     double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
-                    System.out.println(catalogEntry);
                     if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
                             && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
-                        System.out.println("----------------->" + catalogEntry);
                         catalogEntry.setTargetRa(targetRa);
                         catalogEntry.setTargetDec(targetDec);
+                        catalogEntry.setCatalogName(customOverlay.getName());
                         catalogEntry.loadCatalogElements();
                         catalogEntries.add(catalogEntry);
-                        break;
                     }
                 }
             } catch (Exception ex) {
@@ -2107,11 +2118,14 @@ public class ImageViewerTab {
     }
 
     private void displayCatalogPanel(CatalogEntry catalogEntry) {
+        boolean isGenericCatalog = catalogEntry instanceof GenericCatalogEntry;
         int maxRows = 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Catalog entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
-        ));
+        if (!isGenericCatalog) {
+            detailPanel.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Catalog entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
+            ));
+        }
 
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
         catalogElements.forEach(element -> {
@@ -2134,15 +2148,18 @@ public class ImageViewerTab {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(detailPanel);
-        container.add(createMainSequenceSpectralTypePanel(catalogEntry));
-        if (catalogEntry instanceof AllWiseCatalogEntry) {
-            AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
-            if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
-                String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                container.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+
+        if (!isGenericCatalog) {
+            container.add(createMainSequenceSpectralTypePanel(catalogEntry));
+            if (catalogEntry instanceof AllWiseCatalogEntry) {
+                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
+                    String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
+                    container.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+                }
             }
+            container.add(createBrownDwarfsSpectralTypePanel(catalogEntry));
         }
-        container.add(createBrownDwarfsSpectralTypePanel(catalogEntry));
 
         JFrame catalogFrame = new JFrame();
         catalogFrame.setIconImage(getToolBoxImage());

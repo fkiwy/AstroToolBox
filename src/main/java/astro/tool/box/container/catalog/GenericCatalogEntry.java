@@ -32,6 +32,9 @@ public class GenericCatalogEntry implements CatalogEntry {
     // Pixel declination position
     private double pixelDec;
 
+    // Catalog name
+    private String catalogName;
+
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     public GenericCatalogEntry() {
@@ -61,7 +64,11 @@ public class GenericCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "";
+        return catalogName;
+    }
+
+    public void setCatalogName(String catalogName) {
+        this.catalogName = catalogName;
     }
 
     @Override
