@@ -22,6 +22,26 @@ public class CustomOverlay {
 
     private List<CatalogEntry> catalogEntries;
 
+    public String serialize() {
+        StringBuilder data = new StringBuilder();
+        data.append(name).append(";");
+        data.append(color.getRGB()).append(";");
+        data.append(raColumnIndex).append(";");
+        data.append(decColumnIndex).append(";");
+        data.append(file.getPath());
+        return data.toString();
+    }
+
+    public void deserialize(String data) {
+        System.out.println("data=" + data);
+        String[] values = data.split(";");
+        name = values[0];
+        color = new Color(Integer.valueOf(values[1]));
+        raColumnIndex = Integer.valueOf(values[2]);
+        decColumnIndex = Integer.valueOf(values[3]);
+        file = new File(values[4]);
+    }
+
     public String getName() {
         return name;
     }
