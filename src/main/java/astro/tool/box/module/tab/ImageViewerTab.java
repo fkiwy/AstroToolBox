@@ -768,7 +768,7 @@ public class ImageViewerTab {
                             double newDec = coords.getY();
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
-                                    displayZoomedWiseImages(newRa, newDec);
+                                    displayRecenteredWiseImages(newRa, newDec);
                                     break;
                                 case MouseEvent.BUTTON2:
                                     if (drawCircle.isSelected()) {
@@ -1374,7 +1374,7 @@ public class ImageViewerTab {
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
             if (naxis1 != naxis2 && !imageCutOff) {
-                String message = "Image has been cut off. No centering possible. Overlays deactivated. You may choose a smaller field of view.";
+                String message = "Image has been cut off. No centering possible. Overlays deactivated. Choose a smaller field of view!";
                 showInfoDialog(baseFrame, message);
                 imageCutOff = true;
                 simbadOverlay.setSelected(false);
@@ -1829,7 +1829,7 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getDefaultCursor());
     }
 
-    private void displayZoomedWiseImages(double targetRa, double targetDec) {
+    private void displayRecenteredWiseImages(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         timer.stop();
@@ -1844,10 +1844,10 @@ public class ImageViewerTab {
 
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-        imageViewerTab.getSizeField().setText("100");
+        imageViewerTab.getSizeField().setText(sizeField.getText());
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.getEpochs().setSelectedItem(epoch);
-        imageViewerTab.getHideMagnifier().setSelected(true);
+        imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
 
@@ -2347,10 +2347,6 @@ public class ImageViewerTab {
         return zoomSlider;
     }
 
-    public JCheckBox getHideMagnifier() {
-        return hideMagnifier;
-    }
-
     public Timer getTimer() {
         return timer;
     }
@@ -2361,6 +2357,10 @@ public class ImageViewerTab {
 
     public void setImageViewer(ImageViewerTab imageViewer) {
         this.imageViewer = imageViewer;
+    }
+
+    public void setQuadrantCount(int quadrantCount) {
+        this.quadrantCount = quadrantCount;
     }
 
     public void setWiseBand(WiseBand wiseBand) {
