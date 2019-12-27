@@ -33,7 +33,6 @@ public class CustomOverlay {
     }
 
     public void deserialize(String data) {
-        System.out.println("data=" + data);
         String[] values = data.split(";");
         name = values[0];
         color = new Color(Integer.valueOf(values[1]));

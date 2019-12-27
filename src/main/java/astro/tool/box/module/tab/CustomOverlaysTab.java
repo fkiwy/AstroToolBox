@@ -1,6 +1,5 @@
 package astro.tool.box.module.tab;
 
-import astro.tool.box.enumeration.JColor;
 import static astro.tool.box.function.NumericFunctions.toInteger;
 import astro.tool.box.module.CustomOverlay;
 import static astro.tool.box.module.ModuleHelper.*;
@@ -28,7 +27,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 
 public class CustomOverlaysTab {
@@ -69,8 +67,8 @@ public class CustomOverlaysTab {
                 overlays.add(overlay);
             });
 
-            int overlayCount = 10;
-            JPanel table = new JPanel(new GridLayout(overlayCount + 1, 1));
+            int overlayCount = 20;
+            JPanel table = new JPanel(new GridLayout(overlayCount, 1));
 
             for (int i = 0; i < overlayCount; i++) {
                 JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -87,140 +85,139 @@ public class CustomOverlaysTab {
 
                 JTextField overlayNameField = new JTextField(20);
                 row.add(overlayNameField);
-                overlayNameField.setText(customOverlay.getName());
+                String overlayName = customOverlay.getName();
+                overlayNameField.setText(overlayName);
+                overlayNameField.setEditable((overlayName == null));
 
-                JTextField colorField = new JTextField(2);
-                row.add(colorField);
-                colorField.setBackground(customOverlay.getColor());
+                JTextField colorField = new JTextField(1);
+                Color color = customOverlay.getColor();
+                colorField.setBackground(color);
+                colorField.setEditable(false);
 
-                JButton chooseColorButton = new JButton("Overlay color");
+                JButton chooseColorButton = new JButton("Choose color");
                 row.add(chooseColorButton);
                 chooseColorButton.addActionListener((ActionEvent evt) -> {
-                    Color chosenColor = JColorChooser.showDialog(null, "Choose an overlay color", null);
+                    Color chosenColor = JColorChooser.showDialog(null, "Choose an overlay color", color);
+                    chosenColor = chosenColor == null ? color : chosenColor;
                     customOverlay.setColor(chosenColor);
                     colorField.setBackground(chosenColor);
                 });
+
+                row.add(colorField);
 
                 row.add(new JLabel("RA position:"));
 
                 JTextField raColumnPosition = new JTextField(2);
                 row.add(raColumnPosition);
-                raColumnPosition.setText(Integer.toString(customOverlay.getRaColumnIndex()));
+                raColumnPosition.setText(overlayName == null ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
 
                 row.add(new JLabel("dec position:"));
 
                 JTextField decColumnPosition = new JTextField(2);
                 row.add(decColumnPosition);
-                decColumnPosition.setText(Integer.toString(customOverlay.getDecColumnIndex()));
+                decColumnPosition.setText(overlayName == null ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
                 JTextField overlayFileName = new JTextField(30);
-                overlayFileName.setEditable(false);
                 File file = customOverlay.getFile();
                 overlayFileName.setText(file == null ? "" : file.getName());
+                overlayFileName.setEditable(false);
 
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
-                JButton importFileButton = new JButton("Specify file location");
+                JButton importFileButton = new JButton("Select file");
                 row.add(importFileButton);
                 importFileButton.addActionListener((ActionEvent evt) -> {
                     int returnVal = fileChooser.showOpenDialog(null);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        int raColumnIndex = 0;
-                        int decColumnIndex = 0;
-                        StringBuilder errors = new StringBuilder();
-                        if (overlayNameField.getText().isEmpty()) {
-                            errors.append("Overlay name must be specified.").append(LINE_SEP);
-                        }
-                        if (customOverlay.getColor() == null) {
-                            errors.append("Overlay color must be specified.").append(LINE_SEP);
-                        }
-                        if (raColumnPosition.getText().isEmpty()) {
-                            errors.append("RA position must be specified.").append(LINE_SEP);
-                        }
-                        if (raColumnPosition.getText().isEmpty() || decColumnPosition.getText().isEmpty()) {
-                            errors.append("Dec position must be specified.").append(LINE_SEP);
-                        }
-                        if (errors.length() > 0) {
-                            showErrorDialog(baseFrame, errors.toString());
-                            return;
-                        }
-                        try {
-                            raColumnIndex = toInteger(raColumnPosition.getText()) - 1;
-                            if (raColumnIndex < 0) {
-                                errors.append("RA position must be greater than 0.").append(LINE_SEP);
-                            }
-                        } catch (Exception ex) {
-                            errors.append("Invalid RA position!").append(LINE_SEP);
-                        }
-                        try {
-                            decColumnIndex = toInteger(decColumnPosition.getText()) - 1;
-                            if (decColumnIndex < 0) {
-                                errors.append("Dec position must be greater than 0.").append(LINE_SEP);
-                            }
-                        } catch (Exception ex) {
-                            errors.append("Invalid dec position!").append(LINE_SEP);
-                        }
-                        if (errors.length() > 0) {
-                            showErrorDialog(baseFrame, errors.toString());
-                            return;
-                        }
-                        String overlayName = overlayNameField.getText();
                         File selectedFile = fileChooser.getSelectedFile();
-
-                        customOverlay.setName(overlayName);
-                        customOverlay.setRaColumnIndex(raColumnIndex);
-                        customOverlay.setDecColumnIndex(decColumnIndex);
                         customOverlay.setFile(selectedFile);
-                        customOverlays.put(overlayName, customOverlay);
-
-                        overlayNameField.setEditable(false);
                         overlayFileName.setText(selectedFile.getName());
                     }
                 });
 
-                row.add(new JLabel("Overlay file:"));
                 row.add(overlayFileName);
+
+                JButton saveOverlayButton = new JButton("Save");
+                row.add(saveOverlayButton);
+                saveOverlayButton.addActionListener((ActionEvent evt) -> {
+                    int raColumnIndex = 0;
+                    int decColumnIndex = 0;
+                    StringBuilder errors = new StringBuilder();
+                    if (overlayNameField.getText().isEmpty()) {
+                        errors.append("Overlay name must be specified.").append(LINE_SEP);
+                    }
+                    if (customOverlay.getColor() == null) {
+                        errors.append("Overlay color must be specified.").append(LINE_SEP);
+                    }
+                    if (raColumnPosition.getText().isEmpty()) {
+                        errors.append("RA position must be specified.").append(LINE_SEP);
+                    }
+                    if (raColumnPosition.getText().isEmpty() || decColumnPosition.getText().isEmpty()) {
+                        errors.append("Dec position must be specified.").append(LINE_SEP);
+                    }
+                    if (customOverlay.getFile() == null) {
+                        errors.append("Overlay file must be specified.").append(LINE_SEP);
+                    }
+                    if (errors.length() > 0) {
+                        showErrorDialog(baseFrame, errors.toString());
+                        return;
+                    }
+                    try {
+                        raColumnIndex = toInteger(raColumnPosition.getText()) - 1;
+                        if (raColumnIndex < 0) {
+                            errors.append("RA position must be greater than 0.").append(LINE_SEP);
+                        }
+                    } catch (Exception ex) {
+                        errors.append("Invalid RA position!").append(LINE_SEP);
+                    }
+                    try {
+                        decColumnIndex = toInteger(decColumnPosition.getText()) - 1;
+                        if (decColumnIndex < 0) {
+                            errors.append("Dec position must be greater than 0.").append(LINE_SEP);
+                        }
+                    } catch (Exception ex) {
+                        errors.append("Invalid dec position!").append(LINE_SEP);
+                    }
+                    if (errors.length() > 0) {
+                        showErrorDialog(baseFrame, errors.toString());
+                        return;
+                    }
+                    String name = overlayNameField.getText();
+                    customOverlay.setName(name);
+                    customOverlay.setRaColumnIndex(raColumnIndex);
+                    customOverlay.setDecColumnIndex(decColumnIndex);
+                    customOverlays.put(name, customOverlay);
+                    overlayNameField.setEditable(false);
+                    saveOverlayDefinitions();
+                });
 
                 JButton removeOverlayButton = new JButton("Remove");
                 row.add(removeOverlayButton);
                 removeOverlayButton.addActionListener((ActionEvent evt) -> {
                     customOverlays.remove(customOverlay.getName());
+                    saveOverlayDefinitions();
                     table.remove(row);
                     table.updateUI();
                 });
             }
 
-            JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            table.add(row);
-
-            String saveMessage = "Overlay definitions have been saved!";
-            JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
-            Timer timer = new Timer(3000, (ActionEvent e) -> {
-                message.setText("");
-            });
-
-            JButton removeOverlayButton = new JButton("Save overlay definitions");
-            row.add(removeOverlayButton);
-            removeOverlayButton.addActionListener((ActionEvent evt) -> {
-                StringBuilder data = new StringBuilder();
-                customOverlays.values().forEach(customOverlay -> {
-                    data.append(customOverlay.serialize()).append(LINE_SEP);
-                });
-                try (FileWriter writer = new FileWriter(OVERLAYS_PATH)) {
-                    writer.write(data.toString());
-                    message.setText(saveMessage);
-                    timer.restart();
-                } catch (IOException ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            row.add(message);
-
             tabbedPane.addTab(TAB_NAME, new JScrollPane(table));
         } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void saveOverlayDefinitions() {
+        StringBuilder data = new StringBuilder();
+        customOverlays.values().forEach(customOverlay -> {
+            data.append(customOverlay.serialize()).append(LINE_SEP);
+        });
+        try (FileWriter writer = new FileWriter(OVERLAYS_PATH)) {
+            writer.write(data.toString());
+
+        } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
         }
     }
