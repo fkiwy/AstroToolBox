@@ -785,25 +785,25 @@ public class ImageViewerTab {
                                     } else {
                                         int overlays = 0;
                                         if (simbadOverlay.isSelected() && simbadEntries != null) {
-                                            showCatalogInfo(simbadEntries, mouseX, mouseY);
+                                            showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
                                             overlays++;
                                         }
                                         if (gaiaDR2Overlay.isSelected() && gaiaDR2Entries != null) {
-                                            showCatalogInfo(gaiaDR2Entries, mouseX, mouseY);
+                                            showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
                                             overlays++;
                                         }
                                         if (allWiseOverlay.isSelected() && allWiseEntries != null) {
-                                            showCatalogInfo(allWiseEntries, mouseX, mouseY);
+                                            showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
                                             overlays++;
                                         }
                                         if (catWiseOverlay.isSelected() && catWiseEntries != null) {
-                                            showCatalogInfo(catWiseEntries, mouseX, mouseY);
+                                            showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
                                             overlays++;
                                         }
                                         if (useCustomOverlays.isSelected()) {
                                             for (CustomOverlay customOverlay : customOverlays.values()) {
                                                 if (customOverlay.getCheckBox().isSelected()) {
-                                                    showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY);
+                                                    showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY, customOverlay.getColor());
                                                     overlays++;
                                                 }
                                             }
@@ -2111,28 +2111,27 @@ public class ImageViewerTab {
         circle.draw(graphics);
     }
 
-    private void showCatalogInfo(List<CatalogEntry> catalogEntries, int x, int y) {
+    private void showCatalogInfo(List<CatalogEntry> catalogEntries, int x, int y, Color color) {
         catalogEntries.forEach(catalogEntry -> {
             double radius = getOverlaySize() / 2;
             if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
-                displayCatalogPanel(catalogEntry);
+                displayCatalogPanel(catalogEntry, color);
             }
         });
     }
 
-    private void displayCatalogPanel(CatalogEntry catalogEntry) {
+    private void displayCatalogPanel(CatalogEntry catalogEntry, Color color) {
         boolean isGenericCatalog = catalogEntry instanceof GenericCatalogEntry;
-        int maxRows = 19;
+        int maxRows = isGenericCatalog ? 30 : 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        if (!isGenericCatalog) {
-            detailPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Catalog entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
-            ));
-        }
+        detailPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
+        ));
 
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
         catalogElements.forEach(element -> {
+            System.out.println("name=" + element.getName());
             addLabelToPanel(element, detailPanel);
             addFieldToPanel(element, detailPanel);
         });
@@ -2151,6 +2150,8 @@ public class ImageViewerTab {
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setBorder(new EmptyBorder(3, 3, 3, 3));
+        container.setBackground(color);
         container.add(detailPanel);
 
         if (!isGenericCatalog) {
@@ -2159,7 +2160,9 @@ public class ImageViewerTab {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
                     String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                    container.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                    messagePanel.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+                    container.add(messagePanel);
                 }
             }
             container.add(createBrownDwarfsSpectralTypePanel(catalogEntry));
@@ -2167,7 +2170,7 @@ public class ImageViewerTab {
 
         JFrame catalogFrame = new JFrame();
         catalogFrame.setIconImage(getToolBoxImage());
-        catalogFrame.setTitle(catalogEntry.getCatalogName());
+        catalogFrame.setTitle("Object details");
         catalogFrame.add(container);
         catalogFrame.setSize(650, 550);
         catalogFrame.setLocation(windowShift, windowShift);
