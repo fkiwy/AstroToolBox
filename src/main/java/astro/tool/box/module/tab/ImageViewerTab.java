@@ -1029,10 +1029,12 @@ public class ImageViewerTab {
                 gaiaDR2ProperMotion.setEnabled(true);
                 catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
-                customOverlays.values().forEach((customOverlay) -> {
-                    customOverlay.getCheckBox().setEnabled(true);
-                    customOverlay.setCatalogEntries(null);
-                });
+                if (useCustomOverlays.isSelected()) {
+                    customOverlays.values().forEach((customOverlay) -> {
+                        customOverlay.getCheckBox().setEnabled(true);
+                        customOverlay.setCatalogEntries(null);
+                    });
+                }
                 ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
             }
             previousSize = size;
@@ -1398,10 +1400,12 @@ public class ImageViewerTab {
                 catWiseOverlay.setEnabled(false);
                 gaiaDR2ProperMotion.setEnabled(false);
                 catWiseProperMotion.setEnabled(false);
-                customOverlays.values().forEach((customOverlay) -> {
-                    customOverlay.getCheckBox().setSelected(false);
-                    customOverlay.getCheckBox().setEnabled(false);
-                });
+                if (useCustomOverlays.isSelected()) {
+                    customOverlays.values().forEach((customOverlay) -> {
+                        customOverlay.getCheckBox().setSelected(false);
+                        customOverlay.getCheckBox().setEnabled(false);
+                    });
+                }
             }
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
