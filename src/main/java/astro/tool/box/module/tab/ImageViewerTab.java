@@ -33,6 +33,7 @@ import astro.tool.box.module.Circle;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.Arrow;
 import astro.tool.box.module.CustomOverlay;
+import astro.tool.box.module.Giffer;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
@@ -254,9 +255,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1175;
+            int controlPanelHeight = 1200;
 
-            JPanel controlPanel = new JPanel(new GridLayout(48, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(49, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -619,6 +620,16 @@ public class ImageViewerTab {
                         ImageIO.write(wiseImage, "png", file);
                     }
                 } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            JButton createGIFButton = new JButton("Create animated GIF");
+            controlPanel.add(createGIFButton);
+            createGIFButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createAnimatedGIF();
+                } catch (IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -1311,6 +1322,37 @@ public class ImageViewerTab {
         imagePanel.setBorder(createEmptyBorder("", PLAIN_FONT));
         imagePanel.add(grid);
         baseFrame.setVisible(true);
+    }
+
+    private void createAnimatedGIF() throws IOException {
+        timer.stop();
+        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
+        int i = 0;
+        for (FlipbookComponent component : flipbook) {
+            BufferedImage image;
+            if (wiseBand.equals(WiseBand.W1W2)) {
+                image = createComposite(component.getEpoch());
+            } else {
+                image = createImage(component.getBand(), component.getEpoch());
+            }
+            image = flipVertically(image);
+            image = zoom(image, zoom);
+
+            addOverlaysAndPMVectors(image);
+            image = rotate(image, quadrantCount);
+
+            if (drawCircle.isSelected()) {
+                for (NumberPair circle : circles) {
+                    drawCircle(image, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
+                }
+            }
+
+            imageSet[i++] = image;
+        }
+        if (imageSet.length > 0) {
+            Giffer giffer = new Giffer();
+            giffer.generateFromBI(imageSet, "c:/temp/output.gif", 50, true);
+        }
     }
 
     private void addOverlaysAndPMVectors(BufferedImage image) {
