@@ -623,7 +623,7 @@ public class ImageViewerTab {
                 }
             });
 
-            useCustomOverlays = new JCheckBox("Work with custom overlays");
+            useCustomOverlays = new JCheckBox(underLine("Work with custom overlays:"));
             controlPanel.add(useCustomOverlays);
             customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
