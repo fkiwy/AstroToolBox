@@ -49,6 +49,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -601,46 +602,102 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underLine("Image alignment controls:")));
 
-            JPanel alignmentControls = new JPanel(new GridLayout(1, 2));
+            int delay = 100;
+
+            JPanel alignmentControls = new JPanel(new GridLayout(1, 3));
             controlPanel.add(alignmentControls);
 
-            JButton shiftLeft = new JButton(String.format(html("Shift &larr; %s"), roundTo1Dec(shiftX)));
+            JButton shiftLeft = new JButton(html("Shift &larr;"));
             alignmentControls.add(shiftLeft);
 
-            JButton shiftRight = new JButton(String.format(html("Shift &rarr; %s"), roundTo1Dec(shiftX)));
+            JButton shiftRight = new JButton(html("Shift &rarr;"));
             alignmentControls.add(shiftRight);
 
-            shiftLeft.addActionListener((ActionEvent evt) -> {
-                shiftX -= 0.1;
-                shiftLeft.setText(String.format(html("Shift &larr; %s"), roundTo1Dec(shiftX)));
-                shiftRight.setText(String.format(html("Shift &rarr; %s"), roundTo1Dec(0)));
+            JTextField shiftXValue = new JTextField(roundTo1Dec(shiftX));
+            alignmentControls.add(shiftXValue);
+            shiftXValue.setHorizontalAlignment(JTextField.CENTER);
+            shiftXValue.setEditable(false);
+
+            shiftLeft.addMouseListener(new MouseAdapter() {
+                Timer timer = new Timer(delay, (ActionEvent e) -> {
+                    shiftX -= 0.1;
+                    shiftXValue.setText(roundTo1Dec(shiftX));
+                });
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    timer.start();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    timer.stop();
+                }
             });
 
-            shiftRight.addActionListener((ActionEvent evt) -> {
-                shiftX += 0.1;
-                shiftLeft.setText(String.format(html("Shift &larr; %s"), roundTo1Dec(0)));
-                shiftRight.setText(String.format(html("Shift &rarr; %s"), roundTo1Dec(shiftX)));
+            shiftRight.addMouseListener(new MouseAdapter() {
+                Timer timer = new Timer(delay, (ActionEvent e) -> {
+                    shiftX += 0.1;
+                    shiftXValue.setText(roundTo1Dec(shiftX));
+                });
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    timer.start();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    timer.stop();
+                }
             });
 
             alignmentControls = new JPanel(new GridLayout(1, 2));
             controlPanel.add(alignmentControls);
 
-            JButton shiftUp = new JButton(String.format(html("Shift &uarr; %s"), roundTo1Dec(shiftY)));
+            JButton shiftUp = new JButton(html("Shift &uarr;"));
             alignmentControls.add(shiftUp);
 
-            JButton shiftDown = new JButton(String.format(html("Shift &darr; %s"), roundTo1Dec(shiftY)));
+            JButton shiftDown = new JButton(html("Shift &darr;"));
             alignmentControls.add(shiftDown);
 
-            shiftUp.addActionListener((ActionEvent evt) -> {
-                shiftY -= 0.1;
-                shiftUp.setText(String.format(html("Shift &uarr; %s"), roundTo1Dec(shiftY)));
-                shiftDown.setText(String.format(html("Shift &darr; %s"), roundTo1Dec(0)));
+            JTextField shiftYValue = new JTextField(roundTo1Dec(shiftY));
+            alignmentControls.add(shiftYValue);
+            shiftYValue.setHorizontalAlignment(JTextField.CENTER);
+            shiftYValue.setEditable(false);
+
+            shiftUp.addMouseListener(new MouseAdapter() {
+                Timer timer = new Timer(delay, (ActionEvent e) -> {
+                    shiftY -= 0.1;
+                    shiftYValue.setText(roundTo1Dec(shiftY));
+                });
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    timer.start();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    timer.stop();
+                }
             });
 
-            shiftDown.addActionListener((ActionEvent evt) -> {
-                shiftY += 0.1;
-                shiftUp.setText(String.format(html("Shift &uarr; %s"), roundTo1Dec(0)));
-                shiftDown.setText(String.format(html("Shift &darr; %s"), roundTo1Dec(shiftY)));
+            shiftDown.addMouseListener(new MouseAdapter() {
+                Timer timer = new Timer(delay, (ActionEvent e) -> {
+                    shiftY += 0.1;
+                    shiftYValue.setText(roundTo1Dec(shiftY));
+                });
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    timer.start();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    timer.stop();
+                }
             });
 
             JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
