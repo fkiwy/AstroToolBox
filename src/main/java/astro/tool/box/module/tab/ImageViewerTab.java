@@ -700,6 +700,8 @@ public class ImageViewerTab {
                 }
             });
 
+            controlPanel.add(new JLabel(underLine("Miscellaneous:")));
+            
             JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
             controlPanel.add(rotateButton);
             rotateButton.addActionListener((ActionEvent evt) -> {
@@ -710,9 +712,12 @@ public class ImageViewerTab {
                 rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
             });
 
-            JButton saveAsButton = new JButton("Save single image as PNG");
-            controlPanel.add(saveAsButton);
-            saveAsButton.addActionListener((ActionEvent evt) -> {
+            JPanel saveControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(saveControls);
+
+            JButton saveAsPngButton = new JButton("Save as PNG");
+            saveControls.add(saveAsPngButton);
+            saveAsPngButton.addActionListener((ActionEvent evt) -> {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     JFileChooser fileChooser = new JFileChooser();
@@ -728,9 +733,9 @@ public class ImageViewerTab {
                 }
             });
 
-            JButton createGifButton = new JButton("Save all images as animated GIF");
-            controlPanel.add(createGifButton);
-            createGifButton.addActionListener((ActionEvent evt) -> {
+            JButton saveAsGifButton = new JButton("Save as GIF");
+            saveControls.add(saveAsGifButton);
+            saveAsGifButton.addActionListener((ActionEvent evt) -> {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     JFileChooser fileChooser = new JFileChooser();
