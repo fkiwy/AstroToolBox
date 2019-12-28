@@ -33,7 +33,7 @@ import astro.tool.box.module.Circle;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.Arrow;
 import astro.tool.box.module.CustomOverlay;
-import astro.tool.box.module.Giffer;
+import astro.tool.box.module.GifSequencer;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
@@ -606,7 +606,7 @@ public class ImageViewerTab {
                 rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
             });
 
-            JButton saveAsButton = new JButton("Save image");
+            JButton saveAsButton = new JButton("Save single image as PNG");
             controlPanel.add(saveAsButton);
             saveAsButton.addActionListener((ActionEvent evt) -> {
                 try {
@@ -624,12 +624,20 @@ public class ImageViewerTab {
                 }
             });
 
-            JButton createGIFButton = new JButton("Create animated GIF");
-            controlPanel.add(createGIFButton);
-            createGIFButton.addActionListener((ActionEvent evt) -> {
+            JButton createGifButton = new JButton("Save all images as animated GIF");
+            controlPanel.add(createGifButton);
+            createGifButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    createAnimatedGIF();
-                } catch (IOException ex) {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+                    int returnVal = fileChooser.showSaveDialog(controlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".gif");
+                        createAnimatedGif(file);
+                    }
+                } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -1324,7 +1332,7 @@ public class ImageViewerTab {
         baseFrame.setVisible(true);
     }
 
-    private void createAnimatedGIF() throws IOException {
+    private void createAnimatedGif(File file) throws IOException {
         timer.stop();
         BufferedImage[] imageSet = new BufferedImage[flipbook.length];
         int i = 0;
@@ -1350,8 +1358,8 @@ public class ImageViewerTab {
             imageSet[i++] = image;
         }
         if (imageSet.length > 0) {
-            Giffer giffer = new Giffer();
-            giffer.generateFromBI(imageSet, "c:/temp/output.gif", 50, true);
+            GifSequencer sequencer = new GifSequencer();
+            sequencer.generateFromBI(imageSet, file, 50, true);
         }
     }
 

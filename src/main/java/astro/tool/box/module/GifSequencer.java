@@ -15,9 +15,9 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 
-public class Giffer {
+public class GifSequencer {
 
-    public void generateFromFiles(String[] filenames, String output, int delay, boolean loop) throws IIOException, IOException {
+    public void generateFromFiles(String[] filenames, File output, int delay, boolean loop) throws IIOException, IOException {
         int length = filenames.length;
         BufferedImage[] img_list = new BufferedImage[length];
 
@@ -29,18 +29,19 @@ public class Giffer {
         generateFromBI(img_list, output, delay, loop);
     }
 
-    public void generateFromBI(BufferedImage[] images, String output, int delay, boolean loop) throws IIOException, IOException {
+    public void generateFromBI(BufferedImage[] images, File output, int delay, boolean loop) throws IIOException, IOException {
         ImageWriter gifWriter = getWriter();
-        ImageOutputStream ios = getImageOutputStream(output);
-        IIOMetadata metadata = getMetadata(gifWriter, delay, loop);
+        try (ImageOutputStream ios = getImageOutputStream(output)) {
+            IIOMetadata metadata = getMetadata(gifWriter, delay, loop);
 
-        gifWriter.setOutput(ios);
-        gifWriter.prepareWriteSequence(null);
-        for (BufferedImage img : images) {
-            IIOImage temp = new IIOImage(img, null, metadata);
-            gifWriter.writeToSequence(temp, null);
+            gifWriter.setOutput(ios);
+            gifWriter.prepareWriteSequence(null);
+            for (BufferedImage img : images) {
+                IIOImage temp = new IIOImage(img, null, metadata);
+                gifWriter.writeToSequence(temp, null);
+            }
+            gifWriter.endWriteSequence();
         }
-        gifWriter.endWriteSequence();
     }
 
     private ImageWriter getWriter() throws IIOException {
@@ -52,9 +53,8 @@ public class Giffer {
         throw new IIOException("GIF writer doesn't exist on this JVM!");
     }
 
-    private ImageOutputStream getImageOutputStream(String output) throws IOException {
-        File outfile = new File(output);
-        return ImageIO.createImageOutputStream(outfile);
+    private ImageOutputStream getImageOutputStream(File output) throws IOException {
+        return ImageIO.createImageOutputStream(output);
     }
 
     private IIOMetadata getMetadata(ImageWriter writer, int delay, boolean loop) throws IIOInvalidTreeException {
