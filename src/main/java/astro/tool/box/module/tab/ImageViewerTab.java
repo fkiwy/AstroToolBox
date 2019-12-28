@@ -195,6 +195,9 @@ public class ImageViewerTab {
     private int minValue;
     private int maxValue;
 
+    private double shiftX;
+    private double shiftY;
+
     private double targetRa;
     private double targetDec;
 
@@ -255,9 +258,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 240;
-            int controlPanelHeight = 1200;
+            int controlPanelHeight = 1275;
 
-            JPanel controlPanel = new JPanel(new GridLayout(49, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(52, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -555,11 +558,11 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underLine("Image player controls:")));
 
-            JPanel timerControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(timerControls);
+            JPanel playerControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(playerControls);
 
             JButton playButton = new JButton("Play");
-            timerControls.add(playButton);
+            playerControls.add(playButton);
             playButton.addActionListener((ActionEvent evt) -> {
                 timer.setRepeats(true);
                 timer.start();
@@ -567,17 +570,17 @@ public class ImageViewerTab {
             });
 
             JButton stopButton = new JButton("Stop");
-            timerControls.add(stopButton);
+            playerControls.add(stopButton);
             stopButton.addActionListener((ActionEvent evt) -> {
                 timer.stop();
                 timerStopped = true;
             });
 
-            timerControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(timerControls);
+            playerControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(playerControls);
 
             JButton backwardButton = new JButton("Backward");
-            timerControls.add(backwardButton);
+            playerControls.add(backwardButton);
             backwardButton.addActionListener((ActionEvent evt) -> {
                 timer.stop();
                 imageNumber -= 2;
@@ -589,11 +592,55 @@ public class ImageViewerTab {
             });
 
             JButton forwardButton = new JButton("Forward");
-            timerControls.add(forwardButton);
+            playerControls.add(forwardButton);
             forwardButton.addActionListener((ActionEvent evt) -> {
                 timer.stop();
                 timer.setRepeats(false);
                 timer.start();
+            });
+
+            controlPanel.add(new JLabel(underLine("Image alignment controls:")));
+
+            JPanel alignmentControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(alignmentControls);
+
+            JButton shiftLeft = new JButton(String.format(html("Shift &larr; %s"), roundTo1Dec(shiftX)));
+            alignmentControls.add(shiftLeft);
+
+            JButton shiftRight = new JButton(String.format(html("Shift &rarr; %s"), roundTo1Dec(shiftX)));
+            alignmentControls.add(shiftRight);
+
+            shiftLeft.addActionListener((ActionEvent evt) -> {
+                shiftX -= 0.1;
+                shiftLeft.setText(String.format(html("Shift &larr; %s"), roundTo1Dec(shiftX)));
+                shiftRight.setText(String.format(html("Shift &rarr; %s"), roundTo1Dec(0)));
+            });
+
+            shiftRight.addActionListener((ActionEvent evt) -> {
+                shiftX += 0.1;
+                shiftLeft.setText(String.format(html("Shift &larr; %s"), roundTo1Dec(0)));
+                shiftRight.setText(String.format(html("Shift &rarr; %s"), roundTo1Dec(shiftX)));
+            });
+
+            alignmentControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(alignmentControls);
+
+            JButton shiftUp = new JButton(String.format(html("Shift &uarr; %s"), roundTo1Dec(shiftY)));
+            alignmentControls.add(shiftUp);
+
+            JButton shiftDown = new JButton(String.format(html("Shift &darr; %s"), roundTo1Dec(shiftY)));
+            alignmentControls.add(shiftDown);
+
+            shiftUp.addActionListener((ActionEvent evt) -> {
+                shiftY -= 0.1;
+                shiftUp.setText(String.format(html("Shift &uarr; %s"), roundTo1Dec(shiftY)));
+                shiftDown.setText(String.format(html("Shift &darr; %s"), roundTo1Dec(0)));
+            });
+
+            shiftDown.addActionListener((ActionEvent evt) -> {
+                shiftY += 0.1;
+                shiftUp.setText(String.format(html("Shift &uarr; %s"), roundTo1Dec(0)));
+                shiftDown.setText(String.format(html("Shift &darr; %s"), roundTo1Dec(shiftY)));
             });
 
             JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
@@ -681,24 +728,7 @@ public class ImageViewerTab {
                     FlipbookComponent component = flipbook[imageNumber];
                     component.setEpochCount(epochCount / 2);
                     imagePanel.setBorder(createEtchedBorder(component.getTitle(), PLAIN_FONT));
-
-                    // Create and display WISE images
-                    if (wiseBand.equals(WiseBand.W1W2)) {
-                        wiseImage = createComposite(component.getEpoch());
-                    } else {
-                        wiseImage = createImage(component.getBand(), component.getEpoch());
-                    }
-                    wiseImage = flipVertically(wiseImage);
-                    wiseImage = zoom(wiseImage, zoom);
-
-                    addOverlaysAndPMVectors(wiseImage);
-                    wiseImage = rotate(wiseImage, quadrantCount);
-
-                    if (drawCircle.isSelected()) {
-                        for (NumberPair circle : circles) {
-                            drawCircle(wiseImage, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
-                        }
-                    }
+                    wiseImage = processImage(component);
 
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
@@ -1295,31 +1325,15 @@ public class ImageViewerTab {
         JPanel grid = new JPanel(new GridLayout(3, 5));
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(epochCount / 2);
-            BufferedImage image;
-            if (wiseBand.equals(WiseBand.W1W2)) {
-                image = createComposite(component.getEpoch());
-            } else {
-                image = createImage(component.getBand(), component.getEpoch());
-            }
-            image = flipVertically(image);
-            image = zoom(image, zoom);
-
-            addOverlaysAndPMVectors(image);
-            image = rotate(image, quadrantCount);
-
-            if (drawCircle.isSelected()) {
-                for (NumberPair circle : circles) {
-                    drawCircle(image, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
-                }
-            }
+            BufferedImage image = processImage(component);
 
             Graphics graphics = image.getGraphics();
             Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10, Color.BLACK);
             circle.draw(graphics);
 
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(image)));
-            pane.setBorder(createEtchedBorder(component.getTitle(), PLAIN_FONT));
-            grid.add(pane);
+            JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
+            scrollPanel.setBorder(createEtchedBorder(component.getTitle(), PLAIN_FONT));
+            grid.add(scrollPanel);
         }
         if (ps1Image != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
@@ -1337,30 +1351,34 @@ public class ImageViewerTab {
         BufferedImage[] imageSet = new BufferedImage[flipbook.length];
         int i = 0;
         for (FlipbookComponent component : flipbook) {
-            BufferedImage image;
-            if (wiseBand.equals(WiseBand.W1W2)) {
-                image = createComposite(component.getEpoch());
-            } else {
-                image = createImage(component.getBand(), component.getEpoch());
-            }
-            image = flipVertically(image);
-            image = zoom(image, zoom);
-
-            addOverlaysAndPMVectors(image);
-            image = rotate(image, quadrantCount);
-
-            if (drawCircle.isSelected()) {
-                for (NumberPair circle : circles) {
-                    drawCircle(image, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
-                }
-            }
-
-            imageSet[i++] = image;
+            imageSet[i++] = processImage(component);
         }
         if (imageSet.length > 0) {
             GifSequencer sequencer = new GifSequencer();
             sequencer.generateFromBI(imageSet, file, 50, true);
         }
+    }
+
+    private BufferedImage processImage(FlipbookComponent component) {
+        BufferedImage image;
+        if (wiseBand.equals(WiseBand.W1W2)) {
+            image = createComposite(component.getEpoch());
+        } else {
+            image = createImage(component.getBand(), component.getEpoch());
+        }
+        image = flip(image);
+        if (imageNumber == 0) {
+            image = shift(image);
+        }
+        image = zoom(image, zoom);
+        addOverlaysAndPMVectors(image);
+        image = rotate(image, quadrantCount);
+        if (drawCircle.isSelected()) {
+            for (NumberPair circle : circles) {
+                drawCircle(image, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
+            }
+        }
+        return image;
     }
 
     private void addOverlaysAndPMVectors(BufferedImage image) {
@@ -1524,7 +1542,7 @@ public class ImageViewerTab {
             }
 
             BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = (Graphics2D) image.getGraphics();
+            Graphics2D graphics = image.createGraphics();
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     try {
@@ -1573,7 +1591,7 @@ public class ImageViewerTab {
             }
 
             BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = (Graphics2D) image.getGraphics();
+            Graphics2D graphics = image.createGraphics();
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     try {
@@ -1724,7 +1742,7 @@ public class ImageViewerTab {
         }
     }
 
-    private BufferedImage flipVertically(BufferedImage image) {
+    private BufferedImage flip(BufferedImage image) {
         AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
         tx.translate(0, -image.getHeight(null));
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
@@ -1737,13 +1755,19 @@ public class ImageViewerTab {
         return op.filter(image, null);
     }
 
+    public BufferedImage shift(BufferedImage image) {
+        AffineTransform tx = AffineTransform.getTranslateInstance(shiftX, shiftY);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+        return op.filter(image, new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB));
+    }
+
     private BufferedImage zoom(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
-        Image pic = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
+        Image scaled = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
         image = new BufferedImage(zoom, zoom, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-        g2d.drawImage(pic, 0, 0, null);
-        g2d.dispose();
+        Graphics2D graphics = image.createGraphics();
+        graphics.drawImage(scaled, 0, 0, null);
+        graphics.dispose();
         return image;
     }
 

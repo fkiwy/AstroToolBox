@@ -95,7 +95,7 @@ public class ModuleHelper {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                hyperlink.setText("<html><a href=''>" + label + "</a></html>");
+                hyperlink.setText(html("<a href=''>" + label + "</a>"));
             }
 
             @Override
@@ -173,7 +173,11 @@ public class ModuleHelper {
     }
 
     public static String underLine(String text) {
-        return "<html><u>" + text + "</u></html>";
+        return html("<u>" + text + "</u>");
+    }
+
+    public static String html(String text) {
+        return "<html>" + text + "</html>";
     }
 
     public static Border createEtchedBorder(String boderTitle) {
