@@ -1758,7 +1758,7 @@ public class ImageViewerTab {
     public BufferedImage shift(BufferedImage image) {
         AffineTransform tx = AffineTransform.getTranslateInstance(shiftX, shiftY);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(image, new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB));
+        return op.filter(image, null);
     }
 
     private BufferedImage zoom(BufferedImage image, int zoom) {
