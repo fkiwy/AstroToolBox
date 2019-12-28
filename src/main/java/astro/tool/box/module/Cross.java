@@ -5,24 +5,25 @@ import static java.lang.Math.*;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Circle implements Drawable {
+public class Cross implements Drawable {
 
     private final int x;
     private final int y;
     private final int size;
     private final Color color;
 
-    public Circle(double x, double y, double size, Color color) {
-        this.x = (int) round(x - size / 2);
-        this.y = (int) round(y - size / 2);
-        this.size = (int) round(size);
+    public Cross(double x, double y, double size, Color color) {
+        this.x = (int) round(x);
+        this.y = (int) round(y);
+        this.size = (int) round(size / 2);
         this.color = color;
     }
 
     @Override
     public void draw(Graphics graphics) {
         graphics.setColor(color);
-        graphics.drawOval(x, y, size, size);
+        graphics.drawLine(x - size, y, x + size, y);
+        graphics.drawLine(x, y - size, x, y + size);
     }
 
 }

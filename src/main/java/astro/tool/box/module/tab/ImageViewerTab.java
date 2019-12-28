@@ -25,6 +25,7 @@ import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.Unit;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
@@ -32,8 +33,11 @@ import astro.tool.box.module.Application;
 import astro.tool.box.module.Circle;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.Arrow;
+import astro.tool.box.module.Cross;
 import astro.tool.box.module.CustomOverlay;
+import astro.tool.box.module.Drawable;
 import astro.tool.box.module.GifSequencer;
+import astro.tool.box.module.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
@@ -196,14 +200,14 @@ public class ImageViewerTab {
     private int minValue;
     private int maxValue;
 
-    private double shiftX;
-    private double shiftY;
-
     private double targetRa;
     private double targetDec;
 
     private double pixelX;
     private double pixelY;
+
+    private double shiftX;
+    private double shiftY;
 
     private int centerX;
     private int centerY;
@@ -258,7 +262,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int controlPanelWidth = 240;
+            int controlPanelWidth = 260;
             int controlPanelHeight = 1275;
 
             JPanel controlPanel = new JPanel(new GridLayout(52, 1));
@@ -701,7 +705,7 @@ public class ImageViewerTab {
             });
 
             controlPanel.add(new JLabel(underLine("Miscellaneous:")));
-            
+
             JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
             controlPanel.add(rotateButton);
             rotateButton.addActionListener((ActionEvent evt) -> {
@@ -1130,6 +1134,7 @@ public class ImageViewerTab {
                 hasException = false;
                 setContrast(getContrast());
                 initMinMaxValues();
+                shiftX = shiftY = 0;
                 centerX = centerY = 0;
                 windowShift = 0;
                 imageCutOff = false;
@@ -1446,26 +1451,26 @@ public class ImageViewerTab {
     private void addOverlaysAndPMVectors(BufferedImage image) {
         if (simbadOverlay.isSelected()) {
             fetchSimbadCatalogEntries();
-            drawOverlay(image, simbadEntries, Color.RED);
+            drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
         }
         if (gaiaDR2Overlay.isSelected()) {
             fetchGaiaDR2CatalogEntries();
-            drawOverlay(image, gaiaDR2Entries, Color.CYAN.darker());
+            drawOverlay(image, gaiaDR2Entries, Color.CYAN.darker(), Shape.CIRCLE);
         }
         if (allWiseOverlay.isSelected()) {
             fetchAllWiseCatalogEntries();
-            drawOverlay(image, allWiseEntries, Color.GREEN.darker());
+            drawOverlay(image, allWiseEntries, Color.GREEN.darker(), Shape.CIRCLE);
         }
         if (catWiseOverlay.isSelected()) {
             fetchCatWiseCatalogEntries();
-            drawOverlay(image, catWiseEntries, Color.MAGENTA);
+            drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
         }
 
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
                 if (customOverlay.getCheckBox().isSelected()) {
                     fetchGenericCatalogEntries(customOverlay);
-                    drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor());
+                    drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor(), customOverlay.getShape());
                 }
             });
         }
@@ -2185,14 +2190,28 @@ public class ImageViewerTab {
         }
     }
 
-    private void drawOverlay(BufferedImage image, List<CatalogEntry> catalogEntries, Color color) {
+    private void drawOverlay(BufferedImage image, List<CatalogEntry> catalogEntries, Color color, Shape shape) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
             NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
-            Circle circle = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-            circle.draw(graphics);
+            Drawable toDraw;
+            switch (shape) {
+                case CIRCLE:
+                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case CROSS:
+                    toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case XCROSS:
+                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                default:
+                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+            }
+            toDraw.draw(graphics);
         });
     }
 

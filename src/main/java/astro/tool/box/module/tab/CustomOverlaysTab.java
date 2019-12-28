@@ -1,5 +1,6 @@
 package astro.tool.box.module.tab;
 
+import astro.tool.box.enumeration.Shape;
 import static astro.tool.box.function.NumericFunctions.toInteger;
 import astro.tool.box.module.CustomOverlay;
 import static astro.tool.box.module.ModuleHelper.*;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -105,6 +107,13 @@ public class CustomOverlaysTab {
 
                 row.add(colorField);
 
+                row.add(new JLabel("Shape:"));
+
+                JComboBox<Shape> overlayShapes = new JComboBox<>(Shape.values());
+                row.add(overlayShapes);
+                Shape shape = customOverlay.getShape();
+                overlayShapes.setSelectedItem(shape == null ? Shape.CIRCLE : shape);
+
                 row.add(new JLabel("RA position:"));
 
                 JTextField raColumnPosition = new JTextField(2);
@@ -186,6 +195,7 @@ public class CustomOverlaysTab {
                     }
                     String name = overlayNameField.getText();
                     customOverlay.setName(name);
+                    customOverlay.setShape((Shape) overlayShapes.getSelectedItem());
                     customOverlay.setRaColumnIndex(raColumnIndex);
                     customOverlay.setDecColumnIndex(decColumnIndex);
                     customOverlays.put(name, customOverlay);

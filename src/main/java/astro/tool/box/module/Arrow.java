@@ -5,7 +5,7 @@ import static java.lang.Math.*;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Arrow {
+public class Arrow implements Drawable {
 
     private final int x1;
     private final int y1;
@@ -23,6 +23,7 @@ public class Arrow {
         this.color = color;
     }
 
+    @Override
     public void draw(Graphics graphics) {
         double theta = Math.atan2(y2 - y1, x2 - x1);
         double phi = Math.toRadians(20);

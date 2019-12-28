@@ -93,6 +93,7 @@ public class LookupTab {
                     default:
                         fileName = "";
                         tableName = "";
+                        break;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
                 InputStream input = getClass().getResourceAsStream(fileName);
