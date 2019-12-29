@@ -1,10 +1,8 @@
 package astro.tool.box.module.tab;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -473,7 +471,7 @@ public class CatalogQueryTab {
         bottomPanel.add(detailPanel);
     }
 
-    private void displayProperMotions(CatalogEntry selectedEntry) {
+    /*private void displayProperMotions(CatalogEntry selectedEntry) {
         if (selectedEntry instanceof AllWiseCatalogEntry) {
             selectedAllWiseEntry = (AllWiseCatalogEntry) selectedEntry;
         } else if (selectedEntry instanceof CatWiseCatalogEntry) {
@@ -489,9 +487,8 @@ public class CatalogQueryTab {
             );
             System.out.println("Apparent motions: " + properMotions);
         }
-
-    }
-
+    }*/
+    //
     private void displaySpectralTypes(Map<Color, Double> colors) {
         try {
             Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);

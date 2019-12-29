@@ -53,7 +53,6 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -262,7 +261,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int controlPanelWidth = 260;
+            int controlPanelWidth = 250;
             int controlPanelHeight = 1275;
 
             JPanel controlPanel = new JPanel(new GridLayout(52, 1));
@@ -604,7 +603,57 @@ public class ImageViewerTab {
                 timer.start();
             });
 
-            controlPanel.add(new JLabel(underLine("Image alignment controls:")));
+            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            controlPanel.add(rotateButton);
+            rotateButton.addActionListener((ActionEvent evt) -> {
+                quadrantCount++;
+                if (quadrantCount > 3) {
+                    quadrantCount = 0;
+                }
+                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            });
+
+            JPanel saveControls = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(saveControls);
+
+            JButton saveAsPngButton = new JButton("Save as PNG");
+            saveControls.add(saveAsPngButton);
+            saveAsPngButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
+                    int returnVal = fileChooser.showSaveDialog(controlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".png");
+                        ImageIO.write(wiseImage, "png", file);
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            JButton saveAsGifButton = new JButton("Save as GIF");
+            saveControls.add(saveAsGifButton);
+            saveAsGifButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+                    int returnVal = fileChooser.showSaveDialog(controlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".gif");
+                        createAnimatedGif(file);
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            //
+            /*controlPanel.add(new JLabel(underLine("Image alignment controls:")));
 
             int delay = 100;
 
@@ -702,59 +751,8 @@ public class ImageViewerTab {
                 public void mouseReleased(MouseEvent e) {
                     timer.stop();
                 }
-            });
-
-            controlPanel.add(new JLabel(underLine("Miscellaneous:")));
-
-            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
-            controlPanel.add(rotateButton);
-            rotateButton.addActionListener((ActionEvent evt) -> {
-                quadrantCount++;
-                if (quadrantCount > 3) {
-                    quadrantCount = 0;
-                }
-                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
-            });
-
-            JPanel saveControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(saveControls);
-
-            JButton saveAsPngButton = new JButton("Save as PNG");
-            saveControls.add(saveAsPngButton);
-            saveAsPngButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
-                    int returnVal = fileChooser.showSaveDialog(controlPanel);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".png");
-                        ImageIO.write(wiseImage, "png", file);
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            JButton saveAsGifButton = new JButton("Save as GIF");
-            saveControls.add(saveAsGifButton);
-            saveAsGifButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
-                    int returnVal = fileChooser.showSaveDialog(controlPanel);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".gif");
-                        createAnimatedGif(file);
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
+            });*/
+            //
             useCustomOverlays = new JCheckBox(underLine("Work with custom overlays:"));
             controlPanel.add(useCustomOverlays);
             customOverlays = customOverlaysTab.getCustomOverlays();
@@ -1393,11 +1391,6 @@ public class ImageViewerTab {
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(epochCount / 2);
             BufferedImage image = processImage(component);
-
-            Graphics graphics = image.getGraphics();
-            Circle circle = new Circle(getScaledValue(pixelX), getScaledValue(pixelY), 10 + zoom / 10, Color.BLACK);
-            circle.draw(graphics);
-
             JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
             scrollPanel.setBorder(createEtchedBorder(component.getTitle(), PLAIN_FONT));
             grid.add(scrollPanel);
@@ -1434,15 +1427,16 @@ public class ImageViewerTab {
             image = createImage(component.getBand(), component.getEpoch());
         }
         image = flip(image);
-        if (imageNumber == 0) {
-            image = shift(image);
-        }
+        //if (imageNumber == 0) {
+        //    image = shift(image);
+        //}
         image = zoom(image, zoom);
         addOverlaysAndPMVectors(image);
         image = rotate(image, quadrantCount);
         if (drawCircle.isSelected()) {
-            for (NumberPair circle : circles) {
-                drawCircle(image, (int) round(circle.getX() * zoom), (int) round(circle.getY() * zoom), circleSize * 2, Color.RED);
+            for (NumberPair circleCoords : circles) {
+                Circle circle = new Circle(circleCoords.getX() * zoom, circleCoords.getY() * zoom, circleSize * 2, Color.RED);
+                circle.draw(image.getGraphics());
             }
         }
         return image;
@@ -1816,18 +1810,18 @@ public class ImageViewerTab {
         return op.filter(image, null);
     }
 
-    public BufferedImage rotate(BufferedImage image, int numberOfQuadrants) {
+    private BufferedImage rotate(BufferedImage image, int numberOfQuadrants) {
         AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(image, null);
     }
 
-    public BufferedImage shift(BufferedImage image) {
+    /*private BufferedImage shift(BufferedImage image) {
         AffineTransform tx = AffineTransform.getTranslateInstance(shiftX, shiftY);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(image, new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB));
-    }
-
+    }*/
+    //
     private BufferedImage zoom(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
         Image scaled = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
@@ -2258,12 +2252,6 @@ public class ImageViewerTab {
                 arrow.draw(graphics);
             }
         });
-    }
-
-    private void drawCircle(BufferedImage image, int x, int y, int size, Color color) {
-        Graphics graphics = image.getGraphics();
-        Circle circle = new Circle(x, y, size, color);
-        circle.draw(graphics);
     }
 
     private void showCatalogInfo(List<CatalogEntry> catalogEntries, int x, int y, Color color) {
