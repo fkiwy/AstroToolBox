@@ -216,10 +216,16 @@ public class CustomOverlaysTab {
                 JButton removeOverlayButton = new JButton("Delete");
                 row.add(removeOverlayButton);
                 removeOverlayButton.addActionListener((ActionEvent evt) -> {
-                    customOverlays.remove(customOverlay.getName());
+                    String name = customOverlay.getName();
+                    if (name == null || !showConfirmDialog(baseFrame, "Confirm delete action for overlay " + name)) {
+                        return;
+                    }
+                    customOverlays.remove(name);
                     saveOverlayDefinitions();
                     overlayNameField.setText("");
+                    overlayNameField.setEditable(true);
                     colorField.setBackground(null);
+                    overlayShapes.setSelectedItem(Shape.CIRCLE);
                     raColumnPosition.setText("");
                     decColumnPosition.setText("");
                     overlayFileName.setText("");
