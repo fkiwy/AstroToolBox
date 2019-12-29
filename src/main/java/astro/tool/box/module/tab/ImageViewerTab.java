@@ -38,6 +38,7 @@ import astro.tool.box.module.CustomOverlay;
 import astro.tool.box.module.Drawable;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.Square;
+import astro.tool.box.module.Triangle;
 import astro.tool.box.module.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -2204,6 +2205,9 @@ public class ImageViewerTab {
                     break;
                 case SQUARE:
                     toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case TRIANGLE:
+                    toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
                     break;
                 default:
                     toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
