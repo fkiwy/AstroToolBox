@@ -25,6 +25,17 @@ public class CustomOverlay {
 
     private List<CatalogEntry> catalogEntries;
 
+    public void init() {
+        name = null;
+        color = null;
+        shape = null;
+        raColumnIndex = 0;
+        decColumnIndex = 0;
+        file = null;
+        checkBox = null;
+        catalogEntries = null;
+    }
+
     public String serialize() {
         StringBuilder data = new StringBuilder();
         data.append(name).append(";");

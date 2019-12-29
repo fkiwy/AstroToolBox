@@ -1,5 +1,6 @@
 package astro.tool.box.module.tab;
 
+import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
 import static astro.tool.box.function.NumericFunctions.toInteger;
 import astro.tool.box.module.CustomOverlay;
@@ -29,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 
 public class CustomOverlaysTab {
@@ -148,6 +150,11 @@ public class CustomOverlaysTab {
 
                 row.add(overlayFileName);
 
+                JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
+                Timer timer = new Timer(3000, (ActionEvent e) -> {
+                    message.setText("");
+                });
+
                 JButton saveOverlayButton = new JButton("Save");
                 row.add(saveOverlayButton);
                 saveOverlayButton.addActionListener((ActionEvent evt) -> {
@@ -201,16 +208,29 @@ public class CustomOverlaysTab {
                     customOverlays.put(name, customOverlay);
                     overlayNameField.setEditable(false);
                     saveOverlayDefinitions();
+
+                    message.setText("Saved!");
+                    timer.restart();
                 });
 
-                JButton removeOverlayButton = new JButton("Remove");
+                JButton removeOverlayButton = new JButton("Delete");
                 row.add(removeOverlayButton);
                 removeOverlayButton.addActionListener((ActionEvent evt) -> {
                     customOverlays.remove(customOverlay.getName());
                     saveOverlayDefinitions();
-                    table.remove(row);
+                    overlayNameField.setText("");
+                    colorField.setBackground(null);
+                    raColumnPosition.setText("");
+                    decColumnPosition.setText("");
+                    overlayFileName.setText("");
+                    customOverlay.init();
                     table.updateUI();
+
+                    message.setText("Deleted!");
+                    timer.restart();
                 });
+
+                row.add(message);
             }
 
             tabbedPane.addTab(TAB_NAME, new JScrollPane(table));

@@ -417,10 +417,10 @@ public class SettingsTab {
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
                     USER_SETTINGS.store(output, "User settings");
                     message.setText("Settings have been applied!");
+                    timer.restart();
                 } catch (IOException ex) {
                 }
 
-                timer.restart();
             });
 
             buttonPanel.add(message);
