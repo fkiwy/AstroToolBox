@@ -8,10 +8,6 @@ public class HtmlText {
         builder = new StringBuilder("<font face=\"\" size=\"3\">");
     }
 
-    public HtmlText(String font, int size) {
-        builder = new StringBuilder("<font face=\"" + font + "\" size=\"" + size + "\">");
-    }
-
     public HtmlText boldRow(String text) {
         return boldText(text).newLine();
     }

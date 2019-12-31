@@ -13,6 +13,7 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -65,6 +66,7 @@ public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
     private static final String IRSA_TABLES = "IRSA tables";
+    private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -158,7 +160,7 @@ public class AdqlQueryTab {
             });
 
             String saveMessage = "File has been saved!";
-            JLabel message = createLabel("", DEFAULT_FONT, JColor.DARKER_GREEN.val);
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });

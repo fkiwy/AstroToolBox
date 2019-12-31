@@ -139,13 +139,13 @@ public class CatalogQueryTab {
             JLabel coordsLabel = new JLabel("Coordinates:");
             topPanel.add(coordsLabel);
 
-            coordsField = createField("", DEFAULT_FONT, 25);
+            coordsField = new JTextField("", 25);
             topPanel.add(coordsField);
 
             JLabel radiusLabel = new JLabel("Search radius (arcsec):");
             topPanel.add(radiusLabel);
 
-            radiusField = createField("", DEFAULT_FONT, 5);
+            radiusField = new JTextField("", 5);
             topPanel.add(radiusField);
 
             JLabel catalogLabel = new JLabel("Catalogs:");
@@ -177,9 +177,9 @@ public class CatalogQueryTab {
                         return;
                     }
                     double searchRadius;
-                    NumberPair coordinates = getCoordinates(coords);
                     List<String> errorMessages = new ArrayList<>();
                     try {
+                        NumberPair coordinates = getCoordinates(coords);
                         targetRa = coordinates.getX();
                         targetDec = coordinates.getY();
                         if (targetRa < 0) {
@@ -271,7 +271,6 @@ public class CatalogQueryTab {
             topPanel.add(searchButton);
 
             searchLabel = new JLabel();
-            searchLabel.setFont(DEFAULT_FONT);
             topPanel.add(searchLabel);
 
             ChangeListener changeListener = (ChangeEvent changeEvent) -> {
@@ -372,17 +371,17 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(18, 2));
-        linkPanel.setPreferredSize(new Dimension(210, 375));
+        linkPanel.setPreferredSize(new Dimension(250, 375));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
-        linkPanel.add(createLabel("Image viewers:", SMALL_FONT));
-        linkPanel.add(createLabel("FoV (arcsec)", SMALL_FONT));
-        panstarrsField = createField(panstarrsFOV, SMALL_FONT);
-        aladinLiteField = createField(aladinLiteFOV, SMALL_FONT);
-        wiseViewField = createField(wiseViewFOV, SMALL_FONT);
-        finderChartField = createField(finderChartFOV, SMALL_FONT);
+        linkPanel.add(new JLabel("Image viewers:"));
+        linkPanel.add(new JLabel("FoV (arcsec)"));
+        panstarrsField = new JTextField(String.valueOf(panstarrsFOV));
+        aladinLiteField = new JTextField(String.valueOf(aladinLiteFOV));
+        wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
+        finderChartField = new JTextField(String.valueOf(finderChartFOV));
         if (degDE >= -30) {
             linkPanel.add(createHyperlink("PanSTARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
             linkPanel.add(panstarrsField);
@@ -396,7 +395,6 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         JButton saveButton = new JButton("Change FoV");
-        saveButton.setFont(SMALL_FONT);
         saveButton.addActionListener((ActionEvent e) -> {
             try {
                 panstarrsFOV = toInteger(panstarrsField.getText());
@@ -414,7 +412,7 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
-        linkPanel.add(createLabel("Databases:", SMALL_FONT));
+        linkPanel.add(new JLabel("Databases:"));
         linkPanel.add(createHyperlink("IRSA Data Discov.", getDataDiscoveryUrl()));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
@@ -423,7 +421,7 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
-        linkPanel.add(createLabel("Single catalogs:", SMALL_FONT));
+        linkPanel.add(new JLabel("Single catalogs:"));
         linkPanel.add(createHyperlink("AllWISE", getSpecificCatalogsUrl("II/328/allwise", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
@@ -525,7 +523,7 @@ public class CatalogQueryTab {
             resizeColumnWidth(spectralTypeTable);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", DEFAULT_FONT, JColor.DARK_RED.val))
+                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                     : new JScrollPane(spectralTypeTable);
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(2, 1));
@@ -538,17 +536,18 @@ public class CatalogQueryTab {
             JPanel spectralTypeNote = new JPanel();
             spectralTypeNote.setLayout(new BoxLayout(spectralTypeNote, BoxLayout.Y_AXIS));
 
-            spectralTypeNote.add(createLabel("Note that for some colors, results may be contradictory, as they may", SMALL_FONT));
-            spectralTypeNote.add(createLabel("fit to early type as well to late type stars.", SMALL_FONT));
-            spectralTypeNote.add(createLabel("The more colors match, the better the result (for the most part).", SMALL_FONT));
-            spectralTypeNote.add(createLabel("Be aware that, in any case, this feature only returns approximate", SMALL_FONT));
-            spectralTypeNote.add(createLabel("results.", SMALL_FONT));
-            spectralTypeNote.add(createLabel(" ", SMALL_FONT));
-            spectralTypeNote.add(createLabel("The feature uses Eric Mamajek's spectral type lookup table:", SMALL_FONT));
-            spectralTypeNote.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Seq.", "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt"));
-            spectralTypeNote.add(createLabel("Version in use: 2019.3.22", SMALL_FONT));
-            spectralTypeNote.add(createLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab under", SMALL_FONT));
-            spectralTypeNote.add(createLabel(LookupTable.MAIN_SEQUENCE + ".", SMALL_FONT));
+            spectralTypeNote.add(new JLabel("Note that for some colors, results may be contradictory,"));
+            spectralTypeNote.add(new JLabel("as they may fit to early type as well to late type stars."));
+            spectralTypeNote.add(new JLabel("The more colors match, the better the result. Be aware"));
+            spectralTypeNote.add(new JLabel("that this feature only returns approximate results."));
+            spectralTypeNote.add(new JLabel(" "));
+            spectralTypeNote.add(new JLabel("The feature uses Eric Mamajek's spectral type table:"));
+            String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
+            spectralTypeNote.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective", hyperlink));
+            spectralTypeNote.add(createHyperlink("Temperature Sequence", hyperlink));
+            spectralTypeNote.add(new JLabel("Version in use: 2019.3.22"));
+            spectralTypeNote.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab:"));
+            spectralTypeNote.add(new JLabel(LookupTable.MAIN_SEQUENCE.name()));
 
             spectralTypeInfo.add(spectralTypeNote);
 

@@ -78,12 +78,12 @@ public class FileBrowserTab {
 
             filePanel.add(new JLabel("RA position:"));
 
-            raColumnPosition = createField("", DEFAULT_FONT, 2);
+            raColumnPosition = new JTextField("", 2);
             filePanel.add(raColumnPosition);
 
             filePanel.add(new JLabel("dec position:"));
 
-            decColumnPosition = createField("", DEFAULT_FONT, 2);
+            decColumnPosition = new JTextField("", 2);
             filePanel.add(decColumnPosition);
 
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -115,10 +115,10 @@ public class FileBrowserTab {
 
             filePanel.add(new JLabel("Columns to add:"));
 
-            JTextField addColumnsField = createField("", DEFAULT_FONT, 15);
+            JTextField addColumnsField = new JTextField("", 15);
             filePanel.add(addColumnsField);
 
-            JLabel message = createLabel("", DEFAULT_FONT, JColor.DARKER_GREEN.val);
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });

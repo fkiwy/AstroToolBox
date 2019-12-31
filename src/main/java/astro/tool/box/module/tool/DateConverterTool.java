@@ -41,21 +41,21 @@ public class DateConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Date to convert: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField dateToConvert = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Date to convert: ", JLabel.RIGHT));
+            JTextField dateToConvert = new JTextField("");
             mainPanel.add(dateToConvert);
 
-            mainPanel.add(createLabel("Calendar date format: ", DEFAULT_FONT, JLabel.RIGHT));
-            mainPanel.add(createLabel("yyyy-MM-dd HH:mm:ss", DEFAULT_FONT));
+            mainPanel.add(new JLabel("Calendar date format: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("yyyy-MM-dd HH:mm:ss"));
 
-            mainPanel.add(createLabel("", DEFAULT_FONT, JLabel.RIGHT));
-            mainPanel.add(createLabel("Time is not required.", DEFAULT_FONT));
+            mainPanel.add(new JLabel("", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Time is not required."));
 
-            mainPanel.add(createLabel("Convert from: ", DEFAULT_FONT, JLabel.RIGHT));
+            mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
             JComboBox<DateSystem> systemsToConvertFrom = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
             mainPanel.add(systemsToConvertFrom);
 
-            mainPanel.add(createLabel("To: ", DEFAULT_FONT, JLabel.RIGHT));
+            mainPanel.add(new JLabel("To: ", JLabel.RIGHT));
             JComboBox<DateSystem> systemsToConvertTo = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
             systemsToConvertTo.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
             mainPanel.add(systemsToConvertTo);
@@ -78,8 +78,8 @@ public class DateConverterTool {
                 }
             });
 
-            mainPanel.add(createLabel("Converted date: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField convertedDate = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Converted date: ", JLabel.RIGHT));
+            JTextField convertedDate = new JTextField("");
             convertedDate.setEditable(false);
             mainPanel.add(convertedDate);
 

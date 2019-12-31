@@ -150,7 +150,7 @@ public class CustomOverlaysTab {
 
                 row.add(overlayFileName);
 
-                JLabel message = createLabel("", DEFAULT_FONT, JColor.DARKER_GREEN.val);
+                JLabel message = createLabel("", JColor.DARKER_GREEN);
                 Timer timer = new Timer(3000, (ActionEvent e) -> {
                     message.setText("");
                 });

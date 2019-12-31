@@ -15,7 +15,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -66,10 +65,6 @@ public class ModuleHelper {
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
     public static final String AGN_WARNING = "Possible AGN?";
 
-    public static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
-    public static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
-    public static final Font SMALL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
 
@@ -79,12 +74,7 @@ public class ModuleHelper {
     }
 
     public static JLabel createHyperlink(String label, String uri) {
-        return createHyperlink(label, uri, SMALL_FONT);
-    }
-
-    public static JLabel createHyperlink(String label, String uri, Font font) {
         JLabel hyperlink = new JLabel(label);
-        hyperlink.setFont(font);
         hyperlink.setForeground(JColor.DARK_BLUE.val);
         hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         hyperlink.addMouseListener(new MouseAdapter() {
@@ -145,37 +135,6 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static JTextField createField(Object text, Font font) {
-        return createField(text, font, 0);
-    }
-
-    public static JTextField createField(Object text, Font font, int cols) {
-        JTextField field = cols == 0 ? new JTextField() : new JTextField(cols);
-        field.setText(text.toString());
-        field.setFont(font);
-        field.setEditable(true);
-        return field;
-    }
-
-    public static JLabel createLabel(Object text, Font font) {
-        JLabel label = new JLabel(text.toString());
-        label.setFont(font);
-        return label;
-    }
-
-    public static JLabel createLabel(Object text, Font font, int alignment) {
-        JLabel label = new JLabel(text.toString(), alignment);
-        label.setFont(font);
-        return label;
-    }
-
-    public static JLabel createLabel(Object text, Font font, Color color) {
-        JLabel label = new JLabel(text.toString());
-        label.setForeground(color);
-        label.setFont(font);
-        return label;
-    }
-
     public static String underLine(String text) {
         return html("<u>" + text + "</u>");
     }
@@ -184,23 +143,25 @@ public class ModuleHelper {
         return "<html>" + text + "</html>";
     }
 
+    public static JLabel createLabel(Object text, JColor color) {
+        JLabel label = new JLabel(text.toString());
+        label.setForeground(color.val);
+        return label;
+    }
+
     public static Border createEtchedBorder(String boderTitle) {
-        return createEtchedBorder(boderTitle, null, null);
+        return createEtchedBorder(boderTitle, null);
     }
 
-    public static Border createEtchedBorder(String boderTitle, Font titleFont) {
-        return createEtchedBorder(boderTitle, titleFont, null);
-    }
-
-    public static Border createEtchedBorder(String boderTitle, Font titleFont, Color titleColor) {
+    public static Border createEtchedBorder(String boderTitle, Color titleColor) {
         return BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, titleFont, titleColor
+                BorderFactory.createEtchedBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, null, titleColor
         );
     }
 
-    public static Border createEmptyBorder(String boderTitle, Font titleFont) {
+    public static Border createEmptyBorder(String boderTitle) {
         return BorderFactory.createTitledBorder(
-                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, titleFont
+                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP
         );
     }
 

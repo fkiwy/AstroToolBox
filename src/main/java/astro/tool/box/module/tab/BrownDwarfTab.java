@@ -92,24 +92,24 @@ public class BrownDwarfTab {
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
-            colorInput.add(createLabel("W1mag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField w1Field = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("W1mag: ", JLabel.RIGHT));
+            JTextField w1Field = new JTextField("");
             colorInput.add(w1Field);
 
-            colorInput.add(createLabel("W2mag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField w2Field = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("W2mag: ", JLabel.RIGHT));
+            JTextField w2Field = new JTextField("");
             colorInput.add(w2Field);
 
-            colorInput.add(createLabel("Jmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField jField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("Jmag: ", JLabel.RIGHT));
+            JTextField jField = new JTextField("");
             colorInput.add(jField);
 
-            colorInput.add(createLabel("Kmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField kField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("Kmag: ", JLabel.RIGHT));
+            JTextField kField = new JTextField("");
             colorInput.add(kField);
 
-            colorInput.add(createLabel("M Gmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField m_gField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("M Gmag: ", JLabel.RIGHT));
+            JTextField m_gField = new JTextField("");
             colorInput.add(m_gField);
 
             colorInput.add(new JLabel());
@@ -138,7 +138,7 @@ public class BrownDwarfTab {
                     lookupResult.removeAll();
                     CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", DEFAULT_FONT, JColor.DARK_RED.val));
+                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
                         StringBuilder catalogEntry = new StringBuilder("for ")
@@ -149,12 +149,12 @@ public class BrownDwarfTab {
                                 .append(selectedEntry.getRa())
                                 .append(" dec = ")
                                 .append(selectedEntry.getDec());
-                        lookupResult.add(createLabel(catalogEntry.toString(), DEFAULT_FONT));
+                        lookupResult.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
                                 String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, DEFAULT_FONT, JColor.DARK_RED.val));
+                                lookupResult.add(createLabel(warning, JColor.DARK_RED));
                             }
                         }
                     }
@@ -203,12 +203,13 @@ public class BrownDwarfTab {
         resizeColumnWidth(spectralTypeTable);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", DEFAULT_FONT, JColor.DARK_RED.val))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(spectralTypeTable);
         lookupResult.add(spectralTypePanel);
 
-        lookupResult.add(createLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab under " + LookupTable.MLTY_DWARFS + ".", SMALL_FONT));
-        lookupResult.add(createLabel("Lookup is performed with the following colors, if available: W1-W2, J-W2, J-K and absolute Gmag.", SMALL_FONT));
+        lookupResult.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
+        lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
+        lookupResult.add(new JLabel("W1-W2, J-W2, J-K and absolute Gmag"));
     }
 
 }

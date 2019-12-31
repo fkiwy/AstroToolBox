@@ -36,16 +36,16 @@ public class TotalVelocityTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Tangential velocity (km/s): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField tangVelocityField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Tangential velocity (km/s): ", JLabel.RIGHT));
+            JTextField tangVelocityField = new JTextField("");
             mainPanel.add(tangVelocityField);
 
-            mainPanel.add(createLabel("Radial velocity (km/s): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField radVelocityField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Radial velocity (km/s): ", JLabel.RIGHT));
+            JTextField radVelocityField = new JTextField("");
             mainPanel.add(radVelocityField);
 
-            mainPanel.add(createLabel("Total velocity (km/s): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Total velocity (km/s): ", JLabel.RIGHT));
+            JTextField resultField = new JTextField("");
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

@@ -36,20 +36,20 @@ public class AbsoluteMagnitudeTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Apparent magnitude: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField apparentMagField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Apparent magnitude: ", JLabel.RIGHT));
+            JTextField apparentMagField = new JTextField("");
             mainPanel.add(apparentMagField);
 
-            mainPanel.add(createLabel("Parallax (mas): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField parallaxField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Parallax (mas): ", JLabel.RIGHT));
+            JTextField parallaxField = new JTextField("");
             mainPanel.add(parallaxField);
 
-            mainPanel.add(createLabel("or Distance (pc): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField distanceField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("or Distance (pc): ", JLabel.RIGHT));
+            JTextField distanceField = new JTextField("");
             mainPanel.add(distanceField);
 
-            mainPanel.add(createLabel("Absolute magnitude: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Absolute magnitude: ", JLabel.RIGHT));
+            JTextField resultField = new JTextField("");
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

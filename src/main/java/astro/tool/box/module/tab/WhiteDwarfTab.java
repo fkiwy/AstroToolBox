@@ -112,36 +112,36 @@ public class WhiteDwarfTab {
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
-            colorInput.add(createLabel("Gmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField gField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("Gmag: ", JLabel.RIGHT));
+            JTextField gField = new JTextField("");
             colorInput.add(gField);
 
-            colorInput.add(createLabel("BPmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField bpField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("BPmag: ", JLabel.RIGHT));
+            JTextField bpField = new JTextField("");
             colorInput.add(bpField);
 
-            colorInput.add(createLabel("RPmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField rpField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("RPmag: ", JLabel.RIGHT));
+            JTextField rpField = new JTextField("");
             colorInput.add(rpField);
 
-            colorInput.add(createLabel("Bmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField bField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("Bmag: ", JLabel.RIGHT));
+            JTextField bField = new JTextField("");
             colorInput.add(bField);
 
-            colorInput.add(createLabel("Vmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField vField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("Vmag: ", JLabel.RIGHT));
+            JTextField vField = new JTextField("");
             colorInput.add(vField);
 
-            colorInput.add(createLabel("Jmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField jField = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("Jmag: ", JLabel.RIGHT));
+            JTextField jField = new JTextField("");
             colorInput.add(jField);
 
-            colorInput.add(createLabel("gmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField g_Field = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("gmag: ", JLabel.RIGHT));
+            JTextField g_Field = new JTextField("");
             colorInput.add(g_Field);
 
-            colorInput.add(createLabel("rmag: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField r_Field = createField("", DEFAULT_FONT);
+            colorInput.add(new JLabel("rmag: ", JLabel.RIGHT));
+            JTextField r_Field = new JTextField("");
             colorInput.add(r_Field);
 
             colorInput.add(new JLabel());
@@ -171,7 +171,7 @@ public class WhiteDwarfTab {
                     lookupResult.removeAll();
                     CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", DEFAULT_FONT, JColor.DARK_RED.val));
+                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
                         StringBuilder catalogEntry = new StringBuilder("for ")
@@ -182,12 +182,12 @@ public class WhiteDwarfTab {
                                 .append(selectedEntry.getRa())
                                 .append(" dec = ")
                                 .append(selectedEntry.getDec());
-                        lookupResult.add(createLabel(catalogEntry.toString(), DEFAULT_FONT));
+                        lookupResult.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
                                 String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, DEFAULT_FONT, JColor.DARK_RED.val));
+                                lookupResult.add(createLabel(warning, JColor.DARK_RED));
                             }
                         }
                     }
@@ -210,9 +210,10 @@ public class WhiteDwarfTab {
         Map<SpectralTypeLookupResult, Set<ColorValue>> whiteDwarfMixResults = whiteDwarfMixLookupService.lookup(colors);
         displaySpectralTypes(whiteDwarfMixResults, lookupResult, "WD type: Mix He/H=0.1");
 
-        lookupResult.add(createLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab under", SMALL_FONT));
-        lookupResult.add(createLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + " and " + LookupTable.WHITE_DWARFS_MIX + ".", SMALL_FONT));
-        lookupResult.add(createLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r and r-J.", SMALL_FONT));
+        lookupResult.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
+        lookupResult.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + ", " + LookupTable.WHITE_DWARFS_MIX));
+        lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
+        lookupResult.add(new JLabel("G-RP, BP-RP, B-V, V-J, g-r and r-J"));
     }
 
     private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult, String panelTitle) {
@@ -248,7 +249,7 @@ public class WhiteDwarfTab {
         resizeColumnWidth(spectralTypeTable);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", DEFAULT_FONT, JColor.DARK_RED.val))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), panelTitle, TitledBorder.LEFT, TitledBorder.TOP

@@ -39,20 +39,20 @@ public class AngularDistanceTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("From coordinates (deg): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField fromCoordsField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
+            JTextField fromCoordsField = new JTextField("");
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(createLabel("To coordinates (deg): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField toCoordsField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
+            JTextField toCoordsField = new JTextField("");
             mainPanel.add(toCoordsField);
 
-            mainPanel.add(createLabel("Angular distance unit: ", DEFAULT_FONT, JLabel.RIGHT));
+            mainPanel.add(new JLabel("Angular distance unit: ", JLabel.RIGHT));
             JComboBox<Unit> resultUnits = new JComboBox<>(new Unit[]{Unit.ARCSEC, Unit.MAS});
             mainPanel.add(resultUnits);
 
-            mainPanel.add(createLabel("Angular distance: ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Angular distance: ", JLabel.RIGHT));
+            JTextField resultField = new JTextField("");
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

@@ -36,24 +36,24 @@ public class TransverseVelocityTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Proper motion in RA (mas/yr): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField pmraField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Proper motion in RA (mas/yr): ", JLabel.RIGHT));
+            JTextField pmraField = new JTextField("");
             mainPanel.add(pmraField);
 
-            mainPanel.add(createLabel("Proper motion in dec (mas/yr): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField pmdecField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Proper motion in dec (mas/yr): ", JLabel.RIGHT));
+            JTextField pmdecField = new JTextField("");
             mainPanel.add(pmdecField);
 
-            mainPanel.add(createLabel("Parallax (mas): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField parallaxField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Parallax (mas): ", JLabel.RIGHT));
+            JTextField parallaxField = new JTextField("");
             mainPanel.add(parallaxField);
 
-            mainPanel.add(createLabel("or Distance (pc): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField distanceField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("or Distance (pc): ", JLabel.RIGHT));
+            JTextField distanceField = new JTextField("");
             mainPanel.add(distanceField);
 
-            mainPanel.add(createLabel("Tangential velocity (km/s): ", DEFAULT_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", DEFAULT_FONT);
+            mainPanel.add(new JLabel("Tangential velocity (km/s): ", JLabel.RIGHT));
+            JTextField resultField = new JTextField("");
             resultField.setEditable(false);
             mainPanel.add(resultField);
 
