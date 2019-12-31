@@ -39,15 +39,15 @@ public class CoordsConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Coordinates to convert: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField coordsToConvert = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Coordinates to convert: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField coordsToConvert = createField("", DEFAULT_FONT);
             mainPanel.add(coordsToConvert);
 
-            mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Convert from: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox<CoordsSystem> systemsToConvertFrom = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
             mainPanel.add(systemsToConvertFrom);
 
-            mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("To: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox<CoordsSystem> systemsToConvertTo = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
             systemsToConvertTo.setSelectedItem(CoordsSystem.SEXAGESIMAL);
             mainPanel.add(systemsToConvertTo);
@@ -70,8 +70,8 @@ public class CoordsConverterTool {
                 }
             });
 
-            mainPanel.add(createLabel("Converted coordinates: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField convertedCoords = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Converted coordinates: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField convertedCoords = createField("", DEFAULT_FONT);
             convertedCoords.setEditable(false);
             mainPanel.add(convertedCoords);
 

@@ -38,21 +38,21 @@ public class UnitConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Value to convert: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField valueToConvert = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Value to convert: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField valueToConvert = createField("", DEFAULT_FONT);
             mainPanel.add(valueToConvert);
 
-            mainPanel.add(createLabel("Convert from: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Convert from: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox<Unit> unitsToConvertFrom = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             mainPanel.add(unitsToConvertFrom);
 
-            mainPanel.add(createLabel("To: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("To: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox<Unit> unitsToConvertTo = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             unitsToConvertTo.setSelectedItem(Unit.MAS);
             mainPanel.add(unitsToConvertTo);
 
-            mainPanel.add(createLabel("Converted value: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField convertedValue = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Converted value: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField convertedValue = createField("", DEFAULT_FONT);
             convertedValue.setEditable(false);
             mainPanel.add(convertedValue);
 

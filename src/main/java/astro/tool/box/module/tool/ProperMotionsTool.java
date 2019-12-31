@@ -40,28 +40,28 @@ public class ProperMotionsTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("From coordinates (deg): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField fromCoordsField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("From coordinates (deg): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField fromCoordsField = createField("", DEFAULT_FONT);
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(createLabel("To coordinates (deg): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField toCoordsField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("To coordinates (deg): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField toCoordsField = createField("", DEFAULT_FONT);
             mainPanel.add(toCoordsField);
 
-            mainPanel.add(createLabel("Elapsed time unit: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Elapsed time unit: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox<Unit> timeUnits = new JComboBox<>(new Unit[]{Unit.YEAR, Unit.DAY});
             mainPanel.add(timeUnits);
 
-            mainPanel.add(createLabel("Elapsed time: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField elapsedTimeField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Elapsed time: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField elapsedTimeField = createField("", DEFAULT_FONT);
             mainPanel.add(elapsedTimeField);
 
-            mainPanel.add(createLabel("Proper motions unit: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(createLabel("Proper motions unit: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox<Unit> resultUnits = new JComboBox<>(new Unit[]{Unit.ARCSEC, Unit.MAS});
             mainPanel.add(resultUnits);
 
-            mainPanel.add(createLabel("Proper motions (pmra, pmdec): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Proper motions (pmra, pmdec): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField resultField = createField("", DEFAULT_FONT);
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

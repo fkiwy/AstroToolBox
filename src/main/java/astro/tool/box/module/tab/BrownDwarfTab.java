@@ -92,24 +92,24 @@ public class BrownDwarfTab {
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
-            colorInput.add(createLabel("W1mag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField w1Field = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("W1mag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField w1Field = createField("", DEFAULT_FONT);
             colorInput.add(w1Field);
 
-            colorInput.add(createLabel("W2mag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField w2Field = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("W2mag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField w2Field = createField("", DEFAULT_FONT);
             colorInput.add(w2Field);
 
-            colorInput.add(createLabel("Jmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField jField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("Jmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField jField = createField("", DEFAULT_FONT);
             colorInput.add(jField);
 
-            colorInput.add(createLabel("Kmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField kField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("Kmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField kField = createField("", DEFAULT_FONT);
             colorInput.add(kField);
 
-            colorInput.add(createLabel("M Gmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField m_gField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("M Gmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField m_gField = createField("", DEFAULT_FONT);
             colorInput.add(m_gField);
 
             colorInput.add(new JLabel());
@@ -138,7 +138,7 @@ public class BrownDwarfTab {
                     lookupResult.removeAll();
                     CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", PLAIN_FONT, JColor.DARK_RED.val));
+                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", DEFAULT_FONT, JColor.DARK_RED.val));
                         return;
                     } else {
                         StringBuilder catalogEntry = new StringBuilder("for ")
@@ -149,12 +149,12 @@ public class BrownDwarfTab {
                                 .append(selectedEntry.getRa())
                                 .append(" dec = ")
                                 .append(selectedEntry.getDec());
-                        lookupResult.add(createLabel(catalogEntry.toString(), PLAIN_FONT));
+                        lookupResult.add(createLabel(catalogEntry.toString(), DEFAULT_FONT));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
                                 String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+                                lookupResult.add(createLabel(warning, DEFAULT_FONT, JColor.DARK_RED.val));
                             }
                         }
                     }
@@ -203,7 +203,7 @@ public class BrownDwarfTab {
         resizeColumnWidth(spectralTypeTable);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", PLAIN_FONT, JColor.DARK_RED.val))
+                ? new JScrollPane(createLabel("No colors available / No match", DEFAULT_FONT, JColor.DARK_RED.val))
                 : new JScrollPane(spectralTypeTable);
         lookupResult.add(spectralTypePanel);
 

@@ -67,10 +67,8 @@ public class ModuleHelper {
     public static final String AGN_WARNING = "Possible AGN?";
 
     public static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
-    public static final Font PLAIN_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
-    public static final Font PLAIN_BOLD_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 12);
+    public static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
     public static final Font SMALL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-    public static final Font SMALL_BOLD_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 11);
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;

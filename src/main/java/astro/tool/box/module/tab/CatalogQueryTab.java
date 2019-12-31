@@ -139,13 +139,13 @@ public class CatalogQueryTab {
             JLabel coordsLabel = new JLabel("Coordinates:");
             topPanel.add(coordsLabel);
 
-            coordsField = createField("", PLAIN_FONT, 25);
+            coordsField = createField("", DEFAULT_FONT, 25);
             topPanel.add(coordsField);
 
             JLabel radiusLabel = new JLabel("Search radius (arcsec):");
             topPanel.add(radiusLabel);
 
-            radiusField = createField("", PLAIN_FONT, 5);
+            radiusField = createField("", DEFAULT_FONT, 5);
             topPanel.add(radiusField);
 
             JLabel catalogLabel = new JLabel("Catalogs:");
@@ -271,7 +271,7 @@ public class CatalogQueryTab {
             topPanel.add(searchButton);
 
             searchLabel = new JLabel();
-            searchLabel.setFont(PLAIN_FONT);
+            searchLabel.setFont(DEFAULT_FONT);
             topPanel.add(searchLabel);
 
             ChangeListener changeListener = (ChangeEvent changeEvent) -> {
@@ -525,7 +525,7 @@ public class CatalogQueryTab {
             resizeColumnWidth(spectralTypeTable);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", PLAIN_FONT, JColor.DARK_RED.val))
+                    ? new JScrollPane(createLabel("No colors available / No match", DEFAULT_FONT, JColor.DARK_RED.val))
                     : new JScrollPane(spectralTypeTable);
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(2, 1));

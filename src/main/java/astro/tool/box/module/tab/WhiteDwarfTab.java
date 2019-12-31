@@ -112,36 +112,36 @@ public class WhiteDwarfTab {
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
-            colorInput.add(createLabel("Gmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField gField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("Gmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField gField = createField("", DEFAULT_FONT);
             colorInput.add(gField);
 
-            colorInput.add(createLabel("BPmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField bpField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("BPmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField bpField = createField("", DEFAULT_FONT);
             colorInput.add(bpField);
 
-            colorInput.add(createLabel("RPmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField rpField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("RPmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField rpField = createField("", DEFAULT_FONT);
             colorInput.add(rpField);
 
-            colorInput.add(createLabel("Bmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField bField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("Bmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField bField = createField("", DEFAULT_FONT);
             colorInput.add(bField);
 
-            colorInput.add(createLabel("Vmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField vField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("Vmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField vField = createField("", DEFAULT_FONT);
             colorInput.add(vField);
 
-            colorInput.add(createLabel("Jmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField jField = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("Jmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField jField = createField("", DEFAULT_FONT);
             colorInput.add(jField);
 
-            colorInput.add(createLabel("gmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField g_Field = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("gmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField g_Field = createField("", DEFAULT_FONT);
             colorInput.add(g_Field);
 
-            colorInput.add(createLabel("rmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField r_Field = createField("", PLAIN_FONT);
+            colorInput.add(createLabel("rmag: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField r_Field = createField("", DEFAULT_FONT);
             colorInput.add(r_Field);
 
             colorInput.add(new JLabel());
@@ -171,7 +171,7 @@ public class WhiteDwarfTab {
                     lookupResult.removeAll();
                     CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", PLAIN_FONT, JColor.DARK_RED.val));
+                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", DEFAULT_FONT, JColor.DARK_RED.val));
                         return;
                     } else {
                         StringBuilder catalogEntry = new StringBuilder("for ")
@@ -182,12 +182,12 @@ public class WhiteDwarfTab {
                                 .append(selectedEntry.getRa())
                                 .append(" dec = ")
                                 .append(selectedEntry.getDec());
-                        lookupResult.add(createLabel(catalogEntry.toString(), PLAIN_FONT));
+                        lookupResult.add(createLabel(catalogEntry.toString(), DEFAULT_FONT));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
                                 String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+                                lookupResult.add(createLabel(warning, DEFAULT_FONT, JColor.DARK_RED.val));
                             }
                         }
                     }
@@ -248,7 +248,7 @@ public class WhiteDwarfTab {
         resizeColumnWidth(spectralTypeTable);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", PLAIN_FONT, JColor.DARK_RED.val))
+                ? new JScrollPane(createLabel("No colors available / No match", DEFAULT_FONT, JColor.DARK_RED.val))
                 : new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), panelTitle, TitledBorder.LEFT, TitledBorder.TOP

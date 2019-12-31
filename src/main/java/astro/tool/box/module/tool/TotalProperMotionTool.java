@@ -36,16 +36,16 @@ public class TotalProperMotionTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Proper motion in RA: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField pmraField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Proper motion in RA: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField pmraField = createField("", DEFAULT_FONT);
             mainPanel.add(pmraField);
 
-            mainPanel.add(createLabel("Proper motion in dec: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField pmdecField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Proper motion in dec: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField pmdecField = createField("", DEFAULT_FONT);
             mainPanel.add(pmdecField);
 
-            mainPanel.add(createLabel("Total proper motion: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Total proper motion: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField resultField = createField("", DEFAULT_FONT);
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

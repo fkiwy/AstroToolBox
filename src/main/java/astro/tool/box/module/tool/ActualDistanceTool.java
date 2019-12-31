@@ -36,12 +36,12 @@ public class ActualDistanceTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Parallax (mas): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField parallaxField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Parallax (mas): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField parallaxField = createField("", DEFAULT_FONT);
             mainPanel.add(parallaxField);
 
-            mainPanel.add(createLabel("Distance (pc): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Distance (pc): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField resultField = createField("", DEFAULT_FONT);
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

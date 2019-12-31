@@ -36,24 +36,24 @@ public class TransverseVelocityTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("Proper motion in RA (mas/yr): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField pmraField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Proper motion in RA (mas/yr): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField pmraField = createField("", DEFAULT_FONT);
             mainPanel.add(pmraField);
 
-            mainPanel.add(createLabel("Proper motion in dec (mas/yr): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField pmdecField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Proper motion in dec (mas/yr): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField pmdecField = createField("", DEFAULT_FONT);
             mainPanel.add(pmdecField);
 
-            mainPanel.add(createLabel("Parallax (mas): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField parallaxField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Parallax (mas): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField parallaxField = createField("", DEFAULT_FONT);
             mainPanel.add(parallaxField);
 
-            mainPanel.add(createLabel("or Distance (pc): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField distanceField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("or Distance (pc): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField distanceField = createField("", DEFAULT_FONT);
             mainPanel.add(distanceField);
 
-            mainPanel.add(createLabel("Tangential velocity (km/s): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
+            mainPanel.add(createLabel("Tangential velocity (km/s): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField resultField = createField("", DEFAULT_FONT);
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

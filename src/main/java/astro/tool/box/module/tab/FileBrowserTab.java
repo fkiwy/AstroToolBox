@@ -45,6 +45,7 @@ public class FileBrowserTab {
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
     private final Application application;
+    private final int tabIndex;
 
     private JPanel centerPanel;
     private JTable resultTable;
@@ -56,12 +57,13 @@ public class FileBrowserTab {
     private int raColumnIndex;
     private int decColumnIndex;
 
-    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, Application application) {
+    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, Application application, int tabIndex) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
         this.application = application;
+        this.tabIndex = tabIndex;
     }
 
     public void init() {
@@ -76,12 +78,12 @@ public class FileBrowserTab {
 
             filePanel.add(new JLabel("RA position:"));
 
-            raColumnPosition = createField("", PLAIN_FONT, 2);
+            raColumnPosition = createField("", DEFAULT_FONT, 2);
             filePanel.add(raColumnPosition);
 
             filePanel.add(new JLabel("dec position:"));
 
-            decColumnPosition = createField("", PLAIN_FONT, 2);
+            decColumnPosition = createField("", DEFAULT_FONT, 2);
             filePanel.add(decColumnPosition);
 
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -113,10 +115,10 @@ public class FileBrowserTab {
 
             filePanel.add(new JLabel("Columns to add:"));
 
-            JTextField addColumnsField = createField("", PLAIN_FONT, 15);
+            JTextField addColumnsField = createField("", DEFAULT_FONT, 15);
             filePanel.add(addColumnsField);
 
-            JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
+            JLabel message = createLabel("", DEFAULT_FONT, JColor.DARKER_GREEN.val);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -202,11 +204,12 @@ public class FileBrowserTab {
 
             filePanel.add(message);
 
-            JButton openButton = new JButton("Add a new File Browser tab");
+            JButton openButton = new JButton("Open new File Browser");
             filePanel.add(openButton);
             openButton.addActionListener((ActionEvent evt) -> {
-                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application);
+                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application, tabIndex + 1);
                 fileBrowserTab.init();
+                tabbedPane.setSelectedIndex(tabIndex + 1);
             });
 
             baseFrame.addWindowListener(new WindowAdapter() {
@@ -225,7 +228,7 @@ public class FileBrowserTab {
                 }
             });
 
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            tabbedPane.insertTab(TAB_NAME, null, new JScrollPane(mainPanel), null, tabIndex);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

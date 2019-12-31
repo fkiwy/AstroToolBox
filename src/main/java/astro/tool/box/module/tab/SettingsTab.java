@@ -120,7 +120,7 @@ public class SettingsTab {
             generalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "General Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            generalSettings.setPreferredSize(new Dimension(350, 175));
+            generalSettings.setPreferredSize(new Dimension(500, 175));
             containerPanel.add(generalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -139,7 +139,7 @@ public class SettingsTab {
 
             setLookAndFeel(lookAndFeel);
 
-            generalSettings.add(createLabel("Look & Feel:", PLAIN_FONT, JLabel.RIGHT));
+            generalSettings.add(createLabel("Look & Feel:", DEFAULT_FONT, JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             generalSettings.add(radioPanel);
@@ -154,26 +154,26 @@ public class SettingsTab {
             radioGroup.add(javaRadioButton);
             radioGroup.add(osRadioButton);
 
-            generalSettings.add(createLabel("Proxy host name: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField proxyAddressField = createField(proxyAddress, PLAIN_FONT);
+            generalSettings.add(createLabel("Proxy host name: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField proxyAddressField = createField(proxyAddress, DEFAULT_FONT);
             generalSettings.add(proxyAddressField);
 
-            generalSettings.add(createLabel("Proxy port: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField proxyPortField = createField(proxyPort, PLAIN_FONT);
+            generalSettings.add(createLabel("Proxy port: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField proxyPortField = createField(proxyPort, DEFAULT_FONT);
             generalSettings.add(proxyPortField);
 
-            generalSettings.add(createLabel("Use proxy : ", PLAIN_FONT, JLabel.RIGHT));
+            generalSettings.add(createLabel("Use proxy : ", DEFAULT_FONT, JLabel.RIGHT));
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
             generalSettings.add(useProxyCheckBox);
 
-            generalSettings.add(createLabel("Use Simbad mirror : ", PLAIN_FONT, JLabel.RIGHT));
+            generalSettings.add(createLabel("Use Simbad mirror : ", DEFAULT_FONT, JLabel.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             generalSettings.add(useSimbadMirrorCheckBox);
 
-            generalSettings.add(createLabel("Object collection path (.csv): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField collectionPathField = createField(objectCollectionPath, PLAIN_FONT);
+            generalSettings.add(createLabel("File path & name of object collection (.csv): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField collectionPathField = createField(objectCollectionPath, DEFAULT_FONT);
             generalSettings.add(collectionPathField);
 
             // Catalog search settings
@@ -205,29 +205,29 @@ public class SettingsTab {
             catalogQueryTab.setWiseViewFOV(wiseViewFOV);
             catalogQueryTab.setFinderChartFOV(finderChartFOV);
 
-            catalogQuerySettings.add(createLabel("Copy coordinates to clipboard: ", PLAIN_FONT, JLabel.RIGHT));
+            catalogQuerySettings.add(createLabel("Copy coordinates to clipboard: ", DEFAULT_FONT, JLabel.RIGHT));
             JCheckBox clipboardCheckBox = new JCheckBox();
             clipboardCheckBox.setSelected(copyCoordsToClipboard);
             catalogQuerySettings.add(clipboardCheckBox);
 
-            catalogQuerySettings.add(createLabel("Search radius: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField searchRadiusField = createField(searchRadius, PLAIN_FONT);
+            catalogQuerySettings.add(createLabel("Search radius: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField searchRadiusField = createField(searchRadius, DEFAULT_FONT);
             catalogQuerySettings.add(searchRadiusField);
 
-            catalogQuerySettings.add(createLabel("PanSTARRS FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField panstarrsFovField = createField(panstarrsFOV, PLAIN_FONT);
+            catalogQuerySettings.add(createLabel("PanSTARRS FoV: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField panstarrsFovField = createField(panstarrsFOV, DEFAULT_FONT);
             catalogQuerySettings.add(panstarrsFovField);
 
-            catalogQuerySettings.add(createLabel("Aladin Lite FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField aladinLiteFovField = createField(aladinLiteFOV, PLAIN_FONT);
+            catalogQuerySettings.add(createLabel("Aladin Lite FoV: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField aladinLiteFovField = createField(aladinLiteFOV, DEFAULT_FONT);
             catalogQuerySettings.add(aladinLiteFovField);
 
-            catalogQuerySettings.add(createLabel("WiseView FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField wiseViewFovField = createField(wiseViewFOV, PLAIN_FONT);
+            catalogQuerySettings.add(createLabel("WiseView FoV: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField wiseViewFovField = createField(wiseViewFOV, DEFAULT_FONT);
             catalogQuerySettings.add(wiseViewFovField);
 
-            catalogQuerySettings.add(createLabel("IRSA Finder Chart FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField finderChartFovField = createField(finderChartFOV, PLAIN_FONT);
+            catalogQuerySettings.add(createLabel("IRSA Finder Chart FoV: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField finderChartFovField = createField(finderChartFOV, DEFAULT_FONT);
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
@@ -266,7 +266,7 @@ public class SettingsTab {
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
 
-            imageViewerSettings.add(createLabel("Bands: ", PLAIN_FONT, JLabel.RIGHT));
+            imageViewerSettings.add(createLabel("Bands: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox<>(new WiseBand[]{
                 WiseBand.W1,
                 WiseBand.W2,
@@ -275,7 +275,7 @@ public class SettingsTab {
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
 
-            imageViewerSettings.add(createLabel("Epochs: ", PLAIN_FONT, JLabel.RIGHT));
+            imageViewerSettings.add(createLabel("Epochs: ", DEFAULT_FONT, JLabel.RIGHT));
             JComboBox epochs = new JComboBox<>(new Epoch[]{
                 Epoch.ALL,
                 Epoch.ALL_ASCENDING,
@@ -290,22 +290,22 @@ public class SettingsTab {
             epochs.setSelectedItem(epoch);
             imageViewerSettings.add(epochs);
 
-            imageViewerSettings.add(createLabel("Field of view (arcsec): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField sizeField = createField(String.valueOf(size), PLAIN_FONT);
+            imageViewerSettings.add(createLabel("Field of view (arcsec): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField sizeField = createField(String.valueOf(size), DEFAULT_FONT);
             imageViewerSettings.add(sizeField);
 
-            imageViewerSettings.add(createLabel("Speed (ms): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField speedField = createField(String.valueOf(speed), PLAIN_FONT);
+            imageViewerSettings.add(createLabel("Speed (ms): ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField speedField = createField(String.valueOf(speed), DEFAULT_FONT);
             imageViewerSettings.add(speedField);
 
-            imageViewerSettings.add(createLabel("Zoom: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField zoomField = createField(String.valueOf(zoom), PLAIN_FONT);
+            imageViewerSettings.add(createLabel("Zoom: ", DEFAULT_FONT, JLabel.RIGHT));
+            JTextField zoomField = createField(String.valueOf(zoom), DEFAULT_FONT);
             imageViewerSettings.add(zoomField);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(buttonPanel, BorderLayout.CENTER);
 
-            JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
+            JLabel message = createLabel("", DEFAULT_FONT, JColor.DARKER_GREEN.val);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
