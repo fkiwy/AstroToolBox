@@ -4,6 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.module.Application;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -43,6 +44,7 @@ public class FileBrowserTab {
     private final JTabbedPane tabbedPane;
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
+    private final Application application;
 
     private JPanel centerPanel;
     private JTable resultTable;
@@ -54,11 +56,12 @@ public class FileBrowserTab {
     private int raColumnIndex;
     private int decColumnIndex;
 
-    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
+    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, Application application) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
+        this.application = application;
     }
 
     public void init() {
@@ -95,22 +98,7 @@ public class FileBrowserTab {
                         decColumnIndex = 0;
                     } else {
                         StringBuilder errors = new StringBuilder();
-                        try {
-                            raColumnIndex = toInteger(raColumnPosition.getText()) - 1;
-                            if (raColumnIndex < 0) {
-                                errors.append("RA position must be greater than 0.").append(LINE_SEP);
-                            }
-                        } catch (Exception ex) {
-                            errors.append("Invalid RA position!").append(LINE_SEP);
-                        }
-                        try {
-                            decColumnIndex = toInteger(decColumnPosition.getText()) - 1;
-                            if (decColumnIndex < 0) {
-                                errors.append("Dec position must be greater than 0.").append(LINE_SEP);
-                            }
-                        } catch (Exception ex) {
-                            errors.append("Invalid dec position!").append(LINE_SEP);
-                        }
+                        checkRaAndDecColumnPositions(errors);
                         if (errors.length() > 0) {
                             showErrorDialog(baseFrame, errors.toString());
                             return;
@@ -141,6 +129,12 @@ public class FileBrowserTab {
                     return;
                 }
                 if (!showConfirmDialog(baseFrame, "Confirm reload action for file " + file.getName())) {
+                    return;
+                }
+                StringBuilder errors = new StringBuilder();
+                checkRaAndDecColumnPositions(errors);
+                if (errors.length() > 0) {
+                    showErrorDialog(baseFrame, errors.toString());
                     return;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
@@ -208,6 +202,13 @@ public class FileBrowserTab {
 
             filePanel.add(message);
 
+            JButton openButton = new JButton("Add a new File Browser tab");
+            filePanel.add(openButton);
+            openButton.addActionListener((ActionEvent evt) -> {
+                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application);
+                fileBrowserTab.init();
+            });
+
             baseFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent evt) {
@@ -227,6 +228,25 @@ public class FileBrowserTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void checkRaAndDecColumnPositions(StringBuilder errors) {
+        try {
+            raColumnIndex = toInteger(raColumnPosition.getText()) - 1;
+            if (raColumnIndex < 0) {
+                errors.append("RA position must be greater than 0.").append(LINE_SEP);
+            }
+        } catch (Exception ex) {
+            errors.append("Invalid RA position!").append(LINE_SEP);
+        }
+        try {
+            decColumnIndex = toInteger(decColumnPosition.getText()) - 1;
+            if (decColumnIndex < 0) {
+                errors.append("Dec position must be greater than 0.").append(LINE_SEP);
+            }
+        } catch (Exception ex) {
+            errors.append("Invalid dec position!").append(LINE_SEP);
         }
     }
 
