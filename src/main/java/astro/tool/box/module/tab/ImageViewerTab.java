@@ -5,10 +5,12 @@ import static astro.tool.box.module.ServiceProviderUtils.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
@@ -67,15 +69,18 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import static java.lang.Math.*;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -2316,6 +2321,15 @@ public class ImageViewerTab {
                 }
             }
             container.add(createBrownDwarfsSpectralTypePanel(catalogEntry));
+
+            JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            container.add(collectPanel);
+
+            JButton collectButton = new JButton("Collect this object");
+            collectPanel.add(collectButton);
+            collectButton.addActionListener((ActionEvent evt) -> {
+                collectObject(catalogEntry);
+            });
         }
 
         JFrame catalogFrame = new JFrame();
@@ -2423,6 +2437,65 @@ public class ImageViewerTab {
             return spectralTypePanel;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    private void collectObject(CatalogEntry catalogEntry) {
+        // Collect data
+        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), mainSequenceSpectralTypeLookupService, true);
+        if (catalogEntry instanceof SimbadCatalogEntry) {
+            SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+            StringBuilder simbadType = new StringBuilder();
+            simbadType.append("[");
+            simbadType.append(simbadEntry.getObjectType());
+            if (!simbadEntry.getSpectralType().isEmpty()) {
+                simbadType.append(" ").append(simbadEntry.getSpectralType());
+            }
+            simbadType.append("]");
+            spectralTypes.add(0, simbadType.toString());
+        }
+        if (catalogEntry instanceof AllWiseCatalogEntry) {
+            AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+            if (isAPossibleAgn(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
+                spectralTypes.add("[" + AGN_WARNING + "]");
+            }
+        }
+        CollectedObject collectedObject = new CollectedObject.Builder()
+                .setDiscoveryDate(LocalDateTime.now())
+                .setCatalogName(catalogEntry.getCatalogName())
+                .setRa(catalogEntry.getRa())
+                .setDec(catalogEntry.getDec())
+                .setSourceId(catalogEntry.getSourceId() + " ")
+                .setPlx(catalogEntry.getPlx())
+                .setPmra(catalogEntry.getPmra())
+                .setPmdec(catalogEntry.getPmdec())
+                .setSpectralTypes(spectralTypes).build();
+
+        // Save object
+        String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
+        if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
+            showErrorDialog(baseFrame, "Specify a file location for your object collection in the Settings tab.");
+            return;
+        }
+
+        boolean newFile = false;
+        File objectCollection = new File(objectCollectionPath);
+        if (!objectCollection.exists()) {
+            try {
+                objectCollection.createNewFile();
+                newFile = true;
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+                return;
+            }
+        }
+        try (PrintWriter pw = new PrintWriter(new FileWriter(objectCollection, true))) {
+            if (newFile) {
+                pw.println(collectedObject.getTitles());
+            }
+            pw.println(collectedObject.getValues());
+        } catch (IOException ex) {
+            showExceptionDialog(baseFrame, ex);
         }
     }
 

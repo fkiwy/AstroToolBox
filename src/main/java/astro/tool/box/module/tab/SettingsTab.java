@@ -56,12 +56,14 @@ public class SettingsTab {
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
+    public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
     private boolean useSimbadMirror;
+    private String objectCollectionPath;
 
     // Catalog search settings
     private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
@@ -133,6 +135,7 @@ public class SettingsTab {
             } else {
                 useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
             }
+            objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
             setLookAndFeel(lookAndFeel);
 
@@ -169,8 +172,9 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             generalSettings.add(useSimbadMirrorCheckBox);
 
-            generalSettings.add(new JLabel());
-            generalSettings.add(new JLabel());
+            generalSettings.add(createLabel("Object collection path (.csv): ", PLAIN_FONT, JLabel.RIGHT));
+            JTextField collectionPathField = createField(objectCollectionPath, PLAIN_FONT);
+            generalSettings.add(collectionPathField);
 
             // Catalog search settings
             JPanel catalogQuerySettings = new JPanel(new GridLayout(6, 2));
@@ -317,6 +321,7 @@ public class SettingsTab {
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    objectCollectionPath = collectionPathField.getText();
 
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
@@ -360,6 +365,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+                USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings
                 catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));

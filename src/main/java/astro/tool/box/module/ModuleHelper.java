@@ -3,10 +3,13 @@ package astro.tool.box.module;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -28,10 +31,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -351,6 +357,32 @@ public class ModuleHelper {
             }
             columnModel.getColumn(column).setPreferredWidth(width + 20);
         }
+    }
+
+    public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean sptWithColors) {
+        Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+        List<String> spectralTypes = new ArrayList<>();
+        results.entrySet().forEach(entry -> {
+            SpectralTypeLookupResult key = entry.getKey();
+            Set<ColorValue> values = entry.getValue();
+            StringBuilder matchedColors = new StringBuilder();
+            Iterator<ColorValue> colorIterator = values.iterator();
+            while (colorIterator.hasNext()) {
+                ColorValue colorValue = colorIterator.next();
+                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
+                if (colorIterator.hasNext()) {
+                    matchedColors.append(" ");
+                }
+            }
+            String spectralType;
+            if (sptWithColors) {
+                spectralType = "[" + key.getSpt() + ": " + matchedColors + "]";
+            } else {
+                spectralType = key.getSpt();
+            }
+            spectralTypes.add(spectralType);
+        });
+        return spectralTypes;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {
