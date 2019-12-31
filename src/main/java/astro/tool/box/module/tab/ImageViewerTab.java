@@ -2325,11 +2325,18 @@ public class ImageViewerTab {
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(collectPanel);
 
+            JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
+            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
+                message.setText("");
+            });
+
             JButton collectButton = new JButton("Collect this object");
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
-                collectObject(catalogEntry);
+                collectObject(catalogEntry, message, messageTimer);
             });
+
+            collectPanel.add(message);
         }
 
         JFrame catalogFrame = new JFrame();
@@ -2440,7 +2447,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void collectObject(CatalogEntry catalogEntry) {
+    private void collectObject(CatalogEntry catalogEntry, JLabel message, Timer messageTimer) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), mainSequenceSpectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
@@ -2496,7 +2503,11 @@ public class ImageViewerTab {
             pw.println(collectedObject.getValues());
         } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
+            return;
         }
+
+        message.setText("Object has been added to collection!");
+        messageTimer.restart();
     }
 
     private void displaySmallBodyPanel(double targetRa, double targetDec, double minObsEpoch, double maxObsEpoch) {

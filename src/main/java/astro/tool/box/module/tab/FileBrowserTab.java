@@ -183,6 +183,29 @@ public class FileBrowserTab {
                 }
             });
 
+            JButton removeButton = new JButton("Remove selected row");
+            filePanel.add(removeButton);
+            removeButton.addActionListener((ActionEvent evt) -> {
+                if (file == null) {
+                    showErrorDialog(baseFrame, "No file imported yet!");
+                    return;
+                }
+                if (resultTable.getSelectedRow() == -1) {
+                    showErrorDialog(baseFrame, "No row selected yet!");
+                    return;
+                }
+                String confirmRemoveMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
+                        + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP + LINE_SEP
+                        + "Confirm removel of row # " + resultTable.getValueAt(resultTable.getSelectedRow(), 0);
+                if (!showConfirmDialog(baseFrame, confirmRemoveMessage)) {
+                    return;
+                }
+                DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
+                tableModel.removeRow(resultTable.getSelectedRow());
+                message.setText("Row has been removed!");
+                timer.restart();
+            });
+
             filePanel.add(message);
 
             baseFrame.addWindowListener(new WindowAdapter() {
@@ -295,8 +318,8 @@ public class FileBrowserTab {
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         if (raColumnIndex > 0 || decColumnIndex > 0) {
             resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
-                if (!e.getValueIsAdjusting()) {
-                    int selectedRow = resultTable.getSelectedRow();
+                int selectedRow = resultTable.getSelectedRow();
+                if (!e.getValueIsAdjusting() && selectedRow > -1) {
                     String ra = (String) resultTable.getValueAt(selectedRow, raColumnIndex + 1);
                     String dec = (String) resultTable.getValueAt(selectedRow, decColumnIndex + 1);
                     String coords = ra + " " + dec;
