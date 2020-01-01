@@ -56,7 +56,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -273,16 +272,15 @@ public class CatalogQueryTab {
             searchLabel = new JLabel();
             topPanel.add(searchLabel);
 
-            ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     baseFrame.getRootPane().setDefaultButton(searchButton);
                 } else {
                     baseFrame.getRootPane().setDefaultButton(null);
                 }
-            };
-            tabbedPane.addChangeListener(changeListener);
+            });
 
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
         } catch (Exception ex) {

@@ -12,6 +12,7 @@ import astro.tool.box.module.tab.FileBrowserTab;
 import astro.tool.box.module.tab.HelpTab;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.module.tab.LookupTab;
+import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
@@ -79,6 +80,9 @@ public class Application {
 
         FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, this, tabbedPane.getTabCount());
         fileBrowserTab.init();
+
+        ObjectCollectionTab objectCollectionTab = new ObjectCollectionTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        objectCollectionTab.init();
 
         customOverlaysTab.init();
 

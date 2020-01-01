@@ -2327,7 +2327,7 @@ public class ImageViewerTab {
                 message.setText("");
             });
 
-            JButton collectButton = new JButton("Add to collection");
+            JButton collectButton = new JButton("Add to object collection");
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
                 collectObject(catalogEntry, message, messageTimer);

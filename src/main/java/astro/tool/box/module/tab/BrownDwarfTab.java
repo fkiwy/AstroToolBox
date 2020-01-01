@@ -41,7 +41,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class BrownDwarfTab {
 
@@ -131,8 +130,8 @@ public class BrownDwarfTab {
             });
             colorInput.add(lookupButton);
 
-            ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     lookupResult.removeAll();
@@ -161,9 +160,8 @@ public class BrownDwarfTab {
                     Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
                     displaySpectralTypes(results, lookupResult);
                 }
-            };
+            });
 
-            tabbedPane.addChangeListener(changeListener);
             tabbedPane.addTab(TAB_NAME, spectralTypeLookup);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);

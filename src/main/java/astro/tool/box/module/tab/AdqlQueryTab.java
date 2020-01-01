@@ -46,7 +46,6 @@ import javax.swing.RowFilter;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -113,8 +112,8 @@ public class AdqlQueryTab {
             textEditor.setEditable(true);
             addUndoManager(textEditor);
 
-            ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     String query = textEditor.getText();
@@ -130,8 +129,7 @@ public class AdqlQueryTab {
                         }
                     }
                 }
-            };
-            tabbedPane.addChangeListener(changeListener);
+            });
 
             JScrollPane scrollEditor = new JScrollPane(textEditor);
             scrollEditor.setPreferredSize(new Dimension(scrollEditor.getWidth(), 250));
