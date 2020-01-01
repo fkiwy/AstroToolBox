@@ -549,7 +549,7 @@ public class ImageViewerTab {
                 skipBadCoadds.setCursor(Cursor.getDefaultCursor());
             });
 
-            smallBodyHelp = new JCheckBox("Show small body help (Epochs: ALL)");
+            smallBodyHelp = new JCheckBox("Small body help (Epochs: ALL)");
             controlPanel.add(smallBodyHelp);
             smallBodyHelp.setEnabled(false);
 
@@ -563,7 +563,7 @@ public class ImageViewerTab {
                 }
             });
 
-            drawCircle = new JCheckBox("Draw circle (mouse wheel click & spin)");
+            drawCircle = new JCheckBox("Draw circle (wheel click & spin)");
             controlPanel.add(drawCircle);
 
             controlPanel.add(new JLabel(underLine("Image player controls:")));
@@ -2478,7 +2478,7 @@ public class ImageViewerTab {
         // Save object
         String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
         if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
-            showErrorDialog(baseFrame, "Specify file path & name of object collection in the Settings tab.");
+            showErrorDialog(baseFrame, "Specify file location of object collection in the Settings tab.");
             return;
         }
 

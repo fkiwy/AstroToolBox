@@ -112,11 +112,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(6, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(7, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(500, 175));
+            globalSettings.setPreferredSize(new Dimension(450, 200));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -167,16 +167,19 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
-            globalSettings.add(new JLabel("File path & name of object collection (.csv): ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
             globalSettings.add(collectionPathField);
+            
+            globalSettings.add(new JLabel("(*) The file will be created by the tool. ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(6, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(7, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 175));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -226,11 +229,11 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(6, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(7, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 175));
+            imageViewerSettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
