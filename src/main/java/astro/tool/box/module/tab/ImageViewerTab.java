@@ -523,7 +523,7 @@ public class ImageViewerTab {
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
-            properMotionField = new JTextField(100);
+            properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
 
             controlPanel.add(new JLabel(underLine("Advanced controls:")));
@@ -2368,12 +2368,13 @@ public class ImageViewerTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors;
-                spectralTypes.add(spectralType.split(",", 5));
+                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors + ","
+                        + key.getNearest() + "," + roundTo3Dec(key.getGap());
+                spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,sol rad,sol mass,matched colors";
-            String[] columns = titles.split(",", 5);
+            String titles = "spt,teff,sol rad,sol mass,matched colors,nearest color,gap to nearest color";
+            String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override
@@ -2416,12 +2417,12 @@ public class ImageViewerTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + matchedColors;
-                spectralTypes.add(spectralType.split(",", 2));
+                String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+                spectralTypes.add(spectralType.split(",", 4));
             });
 
-            String titles = "spt,matched colors";
-            String[] columns = titles.split(",", 2);
+            String titles = "spt,matched colors,nearest color,gap to nearest color";
+            String[] columns = titles.split(",", 4);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override

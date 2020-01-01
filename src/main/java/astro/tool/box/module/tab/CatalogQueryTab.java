@@ -502,12 +502,13 @@ public class CatalogQueryTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors;
-                spectralTypes.add(spectralType.split(",", 5));
+                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors
+                        + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+                spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,sol rad,sol mass,matched colors";
-            String[] columns = titles.split(",", 5);
+            String titles = "spt,teff,sol rad,sol mass,matched colors,nearest color,gap to nearest color";
+            String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override
@@ -528,24 +529,22 @@ public class CatalogQueryTab {
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(350, 375));
+            spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
             spectralTypeInfo.add(spectralTypePanel);
 
             JPanel spectralTypeNote = new JPanel();
             spectralTypeNote.setLayout(new BoxLayout(spectralTypeNote, BoxLayout.Y_AXIS));
 
-            spectralTypeNote.add(new JLabel("Note that for some colors, results may be contradictory,"));
-            spectralTypeNote.add(new JLabel("as they may fit to early type as well to late type stars."));
-            spectralTypeNote.add(new JLabel("The more colors match, the better the result. Be aware"));
-            spectralTypeNote.add(new JLabel("that this feature only returns approximate results."));
+            spectralTypeNote.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
+            spectralTypeNote.add(new JLabel("to early type as well to late type stars."));
+            spectralTypeNote.add(new JLabel("The more colors match, the better the results, in general."));
+            spectralTypeNote.add(new JLabel("Be aware that this feature only returns approximate results."));
             spectralTypeNote.add(new JLabel(" "));
-            spectralTypeNote.add(new JLabel("The feature uses Eric Mamajek's spectral type table:"));
+            spectralTypeNote.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
-            spectralTypeNote.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective", hyperlink));
-            spectralTypeNote.add(createHyperlink("Temperature Sequence", hyperlink));
+            spectralTypeNote.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
             spectralTypeNote.add(new JLabel("Version in use: 2019.3.22"));
-            spectralTypeNote.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab:"));
-            spectralTypeNote.add(new JLabel(LookupTable.MAIN_SEQUENCE.name()));
+            spectralTypeNote.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
             spectralTypeInfo.add(spectralTypeNote);
 

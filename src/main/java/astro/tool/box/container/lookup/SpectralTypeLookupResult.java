@@ -16,25 +16,35 @@ public class SpectralTypeLookupResult {
     // Sun masses
     private final double msun;
 
-    public SpectralTypeLookupResult(String spt, int teff, double rsun, double msun) {
+    // Nearest color
+    private final double nearest;
+
+    // Gap to nearest color
+    private final double gap;
+
+    public SpectralTypeLookupResult(String spt, int teff, double rsun, double msun, double nearest, double gap) {
         this.spt = spt;
         this.teff = teff;
         this.rsun = rsun;
         this.msun = msun;
+        this.nearest = nearest;
+        this.gap = gap;
     }
 
     @Override
     public String toString() {
-        return "SpectralTypeLookupResult{" + "spt=" + spt + ", teff=" + teff + ", rsun=" + rsun + ", msun=" + msun + '}';
+        return "SpectralTypeLookupResult{" + "spt=" + spt + ", teff=" + teff + ", rsun=" + rsun + ", msun=" + msun + ", nearest=" + nearest + ", gap=" + gap + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.spt);
-        hash = 79 * hash + this.teff;
-        hash = 79 * hash + (int) (Double.doubleToLongBits(this.rsun) ^ (Double.doubleToLongBits(this.rsun) >>> 32));
-        hash = 79 * hash + (int) (Double.doubleToLongBits(this.msun) ^ (Double.doubleToLongBits(this.msun) >>> 32));
+        hash = 59 * hash + Objects.hashCode(this.spt);
+        hash = 59 * hash + this.teff;
+        hash = 59 * hash + (int) (Double.doubleToLongBits(this.rsun) ^ (Double.doubleToLongBits(this.rsun) >>> 32));
+        hash = 59 * hash + (int) (Double.doubleToLongBits(this.msun) ^ (Double.doubleToLongBits(this.msun) >>> 32));
+        hash = 59 * hash + (int) (Double.doubleToLongBits(this.nearest) ^ (Double.doubleToLongBits(this.nearest) >>> 32));
+        hash = 59 * hash + (int) (Double.doubleToLongBits(this.gap) ^ (Double.doubleToLongBits(this.gap) >>> 32));
         return hash;
     }
 
@@ -59,6 +69,12 @@ public class SpectralTypeLookupResult {
         if (Double.doubleToLongBits(this.msun) != Double.doubleToLongBits(other.msun)) {
             return false;
         }
+        if (Double.doubleToLongBits(this.nearest) != Double.doubleToLongBits(other.nearest)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.gap) != Double.doubleToLongBits(other.gap)) {
+            return false;
+        }
         return Objects.equals(this.spt, other.spt);
     }
 
@@ -76,6 +92,14 @@ public class SpectralTypeLookupResult {
 
     public double getMsun() {
         return msun;
+    }
+
+    public double getNearest() {
+        return nearest;
+    }
+
+    public double getGap() {
+        return gap;
     }
 
 }

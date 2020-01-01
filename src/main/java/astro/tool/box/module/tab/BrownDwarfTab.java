@@ -182,12 +182,12 @@ public class BrownDwarfTab {
                     matchedColors.append(", ");
                 }
             }
-            String spectralType = key.getSpt() + "," + matchedColors;
-            spectralTypes.add(spectralType.split(",", 2));
+            String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+            spectralTypes.add(spectralType.split(",", 4));
         });
 
-        String titles = "spt,matched colors";
-        String[] columns = titles.split(",", 2);
+        String titles = "spt,matched colors,nearest color,gap to nearest color";
+        String[] columns = titles.split(",", 4);
         Object[][] rows = new Object[][]{};
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
             @Override
