@@ -777,10 +777,13 @@ public class ImageViewerTab {
                     } else {
                         layout.setRows(layout.getRows() - customOverlays.size());
                         customOverlays.values().forEach((customOverlay) -> {
-                            controlPanel.remove(customOverlay.getCheckBox());
-                            controlPanel.updateUI();
+                            JCheckBox checkBox = customOverlay.getCheckBox();
+                            if (checkBox != null) {
+                                controlPanel.remove(checkBox);
+                            }
                         });
                     }
+                    controlPanel.updateUI();
                     baseFrame.setVisible(true);
                 }
             });
