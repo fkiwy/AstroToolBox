@@ -35,7 +35,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 
 public class SettingsTab {
@@ -50,8 +49,8 @@ public class SettingsTab {
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
 
-    // General settings
-    private static final String LOOK_AND_FEEL = "lookAndFeel";
+    // Global settings
+    public static final String LOOK_AND_FEEL = "lookAndFeel";
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
@@ -102,10 +101,7 @@ public class SettingsTab {
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
-        try (InputStream input = new FileInputStream(PROP_PATH)) {
-            USER_SETTINGS.load(input);
-        } catch (IOException ex) {
-        }
+        //loadUserSettings();
     }
 
     public void init() {
@@ -115,13 +111,13 @@ public class SettingsTab {
             JPanel containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
-            // General settings
-            JPanel generalSettings = new JPanel(new GridLayout(6, 2));
-            generalSettings.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "General Settings", TitledBorder.LEFT, TitledBorder.TOP
+            // Global settings
+            JPanel globalSettings = new JPanel(new GridLayout(6, 2));
+            globalSettings.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            generalSettings.setPreferredSize(new Dimension(500, 175));
-            containerPanel.add(generalSettings);
+            globalSettings.setPreferredSize(new Dimension(500, 175));
+            containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
             proxyAddress = USER_SETTINGS.getProperty(PROXY_ADDRESS, "");
@@ -137,12 +133,11 @@ public class SettingsTab {
             }
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            setLookAndFeel(lookAndFeel);
-
-            generalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
+            //setLookAndFeel(lookAndFeel);
+            globalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
-            generalSettings.add(radioPanel);
+            globalSettings.add(radioPanel);
 
             JRadioButton javaRadioButton = new JRadioButton("Java", lookAndFeel.equals(LookAndFeel.Java));
             radioPanel.add(javaRadioButton);
@@ -154,27 +149,27 @@ public class SettingsTab {
             radioGroup.add(javaRadioButton);
             radioGroup.add(osRadioButton);
 
-            generalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
-            generalSettings.add(proxyAddressField);
+            globalSettings.add(proxyAddressField);
 
-            generalSettings.add(new JLabel("Proxy port: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Proxy port: ", JLabel.RIGHT));
             JTextField proxyPortField = new JTextField(String.valueOf(proxyPort));
-            generalSettings.add(proxyPortField);
+            globalSettings.add(proxyPortField);
 
-            generalSettings.add(new JLabel("Use proxy : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use proxy : ", JLabel.RIGHT));
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
-            generalSettings.add(useProxyCheckBox);
+            globalSettings.add(useProxyCheckBox);
 
-            generalSettings.add(new JLabel("Use Simbad mirror : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use Simbad mirror : ", JLabel.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
-            generalSettings.add(useSimbadMirrorCheckBox);
+            globalSettings.add(useSimbadMirrorCheckBox);
 
-            generalSettings.add(new JLabel("File path & name of object collection (.csv): ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("File path & name of object collection (.csv): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
-            generalSettings.add(collectionPathField);
+            globalSettings.add(collectionPathField);
 
             // Catalog search settings
             JPanel catalogQuerySettings = new JPanel(new GridLayout(6, 2));
@@ -314,7 +309,7 @@ public class SettingsTab {
             buttonPanel.add(applyButton);
             applyButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    // General settings
+                    // Global settings
                     lookAndFeel = javaRadioButton.isSelected() ? LookAndFeel.Java : LookAndFeel.OS;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
@@ -357,7 +352,7 @@ public class SettingsTab {
                     return;
                 }
 
-                // General settings
+                // Global settings
                 setLookAndFeel(lookAndFeel);
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
@@ -445,7 +440,14 @@ public class SettingsTab {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
             SwingUtilities.updateComponentTreeUI(baseFrame);
-        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (Exception e) {
+        }
+    }
+
+    public static void loadUserSettings() {
+        try (InputStream input = new FileInputStream(PROP_PATH)) {
+            USER_SETTINGS.load(input);
+        } catch (IOException ex) {
         }
     }
 

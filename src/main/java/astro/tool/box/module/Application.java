@@ -1,6 +1,8 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
+import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.module.tab.AdqlQueryTab;
 import astro.tool.box.module.tab.BatchQueryTab;
 import astro.tool.box.module.tab.BrownDwarfTab;
@@ -17,6 +19,7 @@ import astro.tool.box.module.tab.WiseFlagsTab;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 public class Application {
 
@@ -31,6 +34,17 @@ public class Application {
     private ImageViewerTab imageViewerTab;
 
     public Application() {
+        try {
+            loadUserSettings();
+            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL));
+            if (lookAndFeel.equals(LookAndFeel.Java)) {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            } else {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+        } catch (Exception e) {
+        }
+
     }
 
     public void init() {

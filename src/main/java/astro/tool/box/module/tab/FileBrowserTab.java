@@ -30,7 +30,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
@@ -86,7 +85,6 @@ public class FileBrowserTab {
             decColumnPosition = new JTextField("", 2);
             filePanel.add(decColumnPosition);
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
@@ -130,7 +128,9 @@ public class FileBrowserTab {
                     showErrorDialog(baseFrame, "No file imported yet!");
                     return;
                 }
-                if (!showConfirmDialog(baseFrame, "Confirm reload action for file " + file.getName())) {
+                String confirmMessage = "Any unsaved changes will be lost!" + LINE_SEP
+                        + "Do you really want to reload file " + file.getName() + "?";
+                if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 StringBuilder errors = new StringBuilder();
@@ -152,9 +152,6 @@ public class FileBrowserTab {
             saveButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
                     showErrorDialog(baseFrame, "No file imported yet!");
-                    return;
-                }
-                if (!showConfirmDialog(baseFrame, "Confirm save action for file " + file.getName())) {
                     return;
                 }
                 StringBuilder fileContent = new StringBuilder();
@@ -190,10 +187,10 @@ public class FileBrowserTab {
                     showErrorDialog(baseFrame, "No row selected yet!");
                     return;
                 }
-                String confirmRemoveMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
-                        + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP + LINE_SEP
-                        + "Confirm removel of row # " + resultTable.getValueAt(resultTable.getSelectedRow(), 0);
-                if (!showConfirmDialog(baseFrame, confirmRemoveMessage)) {
+                String confirmMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
+                        + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP
+                        + "Do you really want to remove row # " + resultTable.getValueAt(resultTable.getSelectedRow(), 0);
+                if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
@@ -216,10 +213,10 @@ public class FileBrowserTab {
                 @Override
                 public void windowClosing(WindowEvent evt) {
                     if (file != null) {
-                        String message = "File " + file.getName() + " is still open in the File Browser."
-                                + LINE_SEP + "It may contain unsaved changes!"
-                                + LINE_SEP + "Do you really want to close the program?";
-                        if (showConfirmDialog(baseFrame, message)) {
+                        String confirmMessage = "File " + file.getName() + " is still open in the File Browser." + LINE_SEP
+                                + "It may still contain unsaved changes!" + LINE_SEP
+                                + "Do you really want to close AstroToolBox?";
+                        if (showConfirmDialog(baseFrame, confirmMessage)) {
                             System.exit(0);
                         } else {
                             baseFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

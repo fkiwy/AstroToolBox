@@ -107,7 +107,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.Timer;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
@@ -627,7 +626,6 @@ public class ImageViewerTab {
             saveControls.add(saveAsPngButton);
             saveAsPngButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
                     int returnVal = fileChooser.showSaveDialog(controlPanel);
@@ -645,7 +643,6 @@ public class ImageViewerTab {
             saveControls.add(saveAsGifButton);
             saveAsGifButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
                     int returnVal = fileChooser.showSaveDialog(controlPanel);
@@ -2330,7 +2327,7 @@ public class ImageViewerTab {
                 message.setText("");
             });
 
-            JButton collectButton = new JButton("Collect this object");
+            JButton collectButton = new JButton("Add to collection");
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
                 collectObject(catalogEntry, message, messageTimer);
@@ -2481,7 +2478,7 @@ public class ImageViewerTab {
         // Save object
         String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
         if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
-            showErrorDialog(baseFrame, "Specify a file location for your object collection in the Settings tab.");
+            showErrorDialog(baseFrame, "Specify file path & name of object collection in the Settings tab.");
             return;
         }
 
@@ -2567,7 +2564,7 @@ public class ImageViewerTab {
         smallBodyFrame.setIconImage(getToolBoxImage());
         smallBodyFrame.setTitle("Data to enter into JPL's Small Body Identification tool");
         smallBodyFrame.add(container);
-        smallBodyFrame.setSize(600, 420);
+        smallBodyFrame.setSize(600, 400);
         smallBodyFrame.setAlwaysOnTop(true);
         smallBodyFrame.setResizable(false);
         smallBodyFrame.setVisible(true);

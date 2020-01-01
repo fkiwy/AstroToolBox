@@ -31,7 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.Timer;
-import javax.swing.UIManager;
 
 public class CustomOverlaysTab {
 
@@ -133,7 +132,6 @@ public class CustomOverlaysTab {
                 overlayFileName.setText(file == null ? "" : file.getName());
                 overlayFileName.setEditable(false);
 
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
@@ -217,7 +215,7 @@ public class CustomOverlaysTab {
                 row.add(removeOverlayButton);
                 removeOverlayButton.addActionListener((ActionEvent evt) -> {
                     String name = customOverlay.getName();
-                    if (name == null || !showConfirmDialog(baseFrame, "Confirm delete action for overlay " + name)) {
+                    if (name == null || !showConfirmDialog(baseFrame, "Do you really want to delete overlay " + name + "?")) {
                         return;
                     }
                     customOverlays.remove(name);

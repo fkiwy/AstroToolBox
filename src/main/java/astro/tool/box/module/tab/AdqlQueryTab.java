@@ -44,7 +44,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.Timer;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -139,7 +138,6 @@ public class AdqlQueryTab {
             scrollEditor.setBorder(createEtchedBorder("ADQL query"));
             centerPanel.add(scrollEditor);
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFileChooser fileChooser = new JFileChooser();
 
             JButton importButton = new JButton("Import query");
@@ -181,9 +179,6 @@ public class AdqlQueryTab {
                             showExceptionDialog(baseFrame, ex);
                         }
                     }
-                    return;
-                }
-                if (!showConfirmDialog(baseFrame, "Confirm save action for file " + file.getName())) {
                     return;
                 }
                 try (FileWriter writer = new FileWriter(file)) {

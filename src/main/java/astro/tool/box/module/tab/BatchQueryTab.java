@@ -59,7 +59,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -136,7 +135,6 @@ public class BatchQueryTab {
             JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(bottomRow);
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
