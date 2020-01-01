@@ -69,29 +69,29 @@ public class FileBrowserTab {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            JPanel topPanel = new JPanel(new GridLayout(1, 1));
+            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
-            JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            topPanel.add(filePanel);
+            JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            mainPanel.add(bottomPanel, BorderLayout.PAGE_END);
 
-            filePanel.add(new JLabel("RA position:"));
+            topPanel.add(new JLabel("RA position:"));
 
             raColumnPosition = new JTextField("", 2);
-            filePanel.add(raColumnPosition);
+            topPanel.add(raColumnPosition);
 
-            filePanel.add(new JLabel("dec position:"));
+            topPanel.add(new JLabel("dec position:"));
 
             decColumnPosition = new JTextField("", 2);
-            filePanel.add(decColumnPosition);
+            topPanel.add(decColumnPosition);
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
             JButton importButton = new JButton("Import csv file with header");
-            filePanel.add(importButton);
+            topPanel.add(importButton);
             importButton.addActionListener((ActionEvent evt) -> {
-                int returnVal = fileChooser.showOpenDialog(filePanel);
+                int returnVal = fileChooser.showOpenDialog(topPanel);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     if (raColumnPosition.getText().isEmpty() || decColumnPosition.getText().isEmpty()) {
                         raColumnIndex = 0;
@@ -111,18 +111,20 @@ public class FileBrowserTab {
                 }
             });
 
-            filePanel.add(new JLabel("Columns to add:"));
+            topPanel.add(new JLabel("Columns to add:"));
 
             JTextField addColumnsField = new JTextField("", 15);
-            filePanel.add(addColumnsField);
+            topPanel.add(addColumnsField);
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            JLabel topPanelMessage = createLabel("", JColor.DARKER_GREEN);
+            JLabel bottomPanelMessage = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
-                message.setText("");
+                topPanelMessage.setText("");
+                bottomPanelMessage.setText("");
             });
 
             JButton reloadButton = new JButton("Reload file");
-            filePanel.add(reloadButton);
+            topPanel.add(reloadButton);
             reloadButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
                     showErrorDialog(baseFrame, "No file imported yet!");
@@ -142,13 +144,13 @@ public class FileBrowserTab {
                 removeAndRecreateCenterPanel(mainPanel);
                 readFileContents(addColumnsField.getText());
                 addColumnsField.setText("");
-                message.setText("File has been reloaded!");
+                topPanelMessage.setText("File has been reloaded!");
                 timer.restart();
                 baseFrame.setVisible(true);
             });
 
             JButton saveButton = new JButton("Save file");
-            filePanel.add(saveButton);
+            topPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
                     showErrorDialog(baseFrame, "No file imported yet!");
@@ -169,15 +171,38 @@ public class FileBrowserTab {
                 }
                 try (FileWriter writer = new FileWriter(file)) {
                     writer.write(fileContent.toString());
-                    message.setText("File has been saved!");
+                    topPanelMessage.setText("File has been saved!");
                     timer.restart();
                 } catch (IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
 
+            JButton openButton = new JButton("Open new File Browser");
+            topPanel.add(openButton);
+            openButton.addActionListener((ActionEvent evt) -> {
+                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application, tabIndex + 1);
+                fileBrowserTab.init();
+                tabbedPane.setSelectedIndex(tabIndex + 1);
+            });
+
+            topPanel.add(topPanelMessage);
+
+            JButton addButton = new JButton("Add row");
+            bottomPanel.add(addButton);
+            addButton.addActionListener((ActionEvent evt) -> {
+                if (file == null) {
+                    showErrorDialog(baseFrame, "No file imported yet!");
+                    return;
+                }
+                DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
+                tableModel.addRow((Object[]) null);
+                bottomPanelMessage.setText("Row has been added!");
+                timer.restart();
+            });
+
             JButton removeButton = new JButton("Remove selected row");
-            filePanel.add(removeButton);
+            bottomPanel.add(removeButton);
             removeButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
                     showErrorDialog(baseFrame, "No file imported yet!");
@@ -195,19 +220,11 @@ public class FileBrowserTab {
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
                 tableModel.removeRow(resultTable.getSelectedRow());
-                message.setText("Row has been removed!");
+                bottomPanelMessage.setText("Row has been removed!");
                 timer.restart();
             });
 
-            filePanel.add(message);
-
-            JButton openButton = new JButton("Open new File Browser");
-            filePanel.add(openButton);
-            openButton.addActionListener((ActionEvent evt) -> {
-                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application, tabIndex + 1);
-                fileBrowserTab.init();
-                tabbedPane.setSelectedIndex(tabIndex + 1);
-            });
+            bottomPanel.add(bottomPanelMessage);
 
             baseFrame.addWindowListener(new WindowAdapter() {
                 @Override
