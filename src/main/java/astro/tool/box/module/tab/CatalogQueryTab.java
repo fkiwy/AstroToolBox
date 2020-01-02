@@ -503,7 +503,7 @@ public class CatalogQueryTab {
                     }
                 }
                 String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors
-                        + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+                        + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 

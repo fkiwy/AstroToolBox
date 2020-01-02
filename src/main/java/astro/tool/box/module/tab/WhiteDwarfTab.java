@@ -228,7 +228,7 @@ public class WhiteDwarfTab {
                     matchedColors.append(", ");
                 }
             }
-            String spectralType = key.getTeff() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+            String spectralType = key.getTeff() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 

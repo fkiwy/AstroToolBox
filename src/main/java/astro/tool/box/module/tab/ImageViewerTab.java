@@ -2376,7 +2376,7 @@ public class ImageViewerTab {
                     }
                 }
                 String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors + ","
-                        + key.getNearest() + "," + roundTo3Dec(key.getGap());
+                        + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
@@ -2424,7 +2424,7 @@ public class ImageViewerTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+                String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
                 spectralTypes.add(spectralType.split(",", 4));
             });
 

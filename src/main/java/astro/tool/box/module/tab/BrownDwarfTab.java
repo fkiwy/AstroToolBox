@@ -182,7 +182,7 @@ public class BrownDwarfTab {
                     matchedColors.append(", ");
                 }
             }
-            String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3Dec(key.getGap());
+            String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 
