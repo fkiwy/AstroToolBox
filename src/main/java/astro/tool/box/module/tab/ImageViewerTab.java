@@ -2333,13 +2333,13 @@ public class ImageViewerTab {
 
             collectPanel.add(new JLabel("Object type:"));
 
-            JComboBox objectTypes = new JComboBox<>(ObjectType.values());
+            JComboBox objectTypes = new JComboBox<>(ObjectType.labels());
             collectPanel.add(objectTypes);
 
             JButton collectButton = new JButton("Add to object collection");
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
-                ObjectType selectedObjectType = (ObjectType) objectTypes.getSelectedItem();
+                String selectedObjectType = (String) objectTypes.getSelectedItem();
                 collectObject(selectedObjectType, catalogEntry, message, messageTimer);
             });
 
@@ -2455,7 +2455,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void collectObject(ObjectType objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer) {
+    private void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), mainSequenceSpectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {

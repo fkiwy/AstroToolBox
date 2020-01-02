@@ -1,6 +1,5 @@
 package astro.tool.box.container;
 
-import astro.tool.box.enumeration.ObjectType;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Constants.*;
 import java.time.LocalDateTime;
@@ -12,11 +11,11 @@ public class CollectedObject {
     // Local date and time
     private final LocalDateTime discoveryDate;
 
+    // Object type
+    private final String objectType;
+
     // Catalog name
     private final String catalogName;
-
-    // Object type
-    private final ObjectType objectType;
 
     // Right ascension
     private final double ra;
@@ -42,7 +41,7 @@ public class CollectedObject {
     // Notes
     private final String notes;
 
-    private CollectedObject(LocalDateTime discoveryDate, ObjectType objectType, String catalogName, double ra, double dec, String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes, String notes) {
+    private CollectedObject(LocalDateTime discoveryDate, String objectType, String catalogName, double ra, double dec, String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes, String notes) {
         this.discoveryDate = discoveryDate;
         this.objectType = objectType;
         this.catalogName = catalogName;
@@ -58,7 +57,7 @@ public class CollectedObject {
 
     @Override
     public String toString() {
-        return "CollectedObject{" + "discoveryDate=" + discoveryDate + ", catalogName=" + catalogName + ", objectType=" + objectType + ", ra=" + ra + ", dec=" + dec + ", sourceId=" + sourceId + ", plx=" + plx + ", pmra=" + pmra + ", pmdec=" + pmdec + ", spectralTypes=" + spectralTypes + ", notes=" + notes + '}';
+        return "CollectedObject{" + "discoveryDate=" + discoveryDate + ", objectType=" + objectType + ", catalogName=" + catalogName + ", ra=" + ra + ", dec=" + dec + ", sourceId=" + sourceId + ", plx=" + plx + ", pmra=" + pmra + ", pmdec=" + pmdec + ", spectralTypes=" + spectralTypes + ", notes=" + notes + '}';
     }
 
     public String[] getColumnValues() {
@@ -70,7 +69,7 @@ public class CollectedObject {
     }
 
     public String getValues() {
-        String values = discoveryDate.format(DATE_TIME_FORMATTER) + "," + objectType.name() + "," + catalogName + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + sourceId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + joinSpetralTypes() + "," + notes;
+        String values = discoveryDate.format(DATE_TIME_FORMATTER) + "," + objectType + "," + catalogName + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + sourceId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + joinSpetralTypes() + "," + notes;
         return values;
     }
 
@@ -86,7 +85,7 @@ public class CollectedObject {
     public static class Builder {
 
         private LocalDateTime discoveryDate;
-        private ObjectType objectType;
+        private String objectType;
         private String catalogName;
         private double ra;
         private double dec;
@@ -102,7 +101,7 @@ public class CollectedObject {
             return this;
         }
 
-        public Builder setObjectType(ObjectType objectType) {
+        public Builder setObjectType(String objectType) {
             this.objectType = objectType;
             return this;
         }
