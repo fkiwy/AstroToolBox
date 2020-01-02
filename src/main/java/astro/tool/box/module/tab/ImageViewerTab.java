@@ -27,6 +27,7 @@ import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.Unit;
 import astro.tool.box.enumeration.WiseBand;
@@ -2330,10 +2331,16 @@ public class ImageViewerTab {
                 message.setText("");
             });
 
+            collectPanel.add(new JLabel("Object type:"));
+
+            JComboBox objectTypes = new JComboBox<>(ObjectType.values());
+            collectPanel.add(objectTypes);
+
             JButton collectButton = new JButton("Add to object collection");
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
-                collectObject(catalogEntry, message, messageTimer);
+                ObjectType selectedObjectType = (ObjectType) objectTypes.getSelectedItem();
+                collectObject(selectedObjectType, catalogEntry, message, messageTimer);
             });
 
             collectPanel.add(message);
@@ -2448,7 +2455,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void collectObject(CatalogEntry catalogEntry, JLabel message, Timer messageTimer) {
+    private void collectObject(ObjectType objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), mainSequenceSpectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
@@ -2470,6 +2477,7 @@ public class ImageViewerTab {
         }
         CollectedObject collectedObject = new CollectedObject.Builder()
                 .setDiscoveryDate(LocalDateTime.now())
+                .setObjectType(objectType)
                 .setCatalogName(catalogEntry.getCatalogName())
                 .setRa(catalogEntry.getRa())
                 .setDec(catalogEntry.getDec())
@@ -2477,7 +2485,8 @@ public class ImageViewerTab {
                 .setPlx(catalogEntry.getPlx())
                 .setPmra(catalogEntry.getPmra())
                 .setPmdec(catalogEntry.getPmdec())
-                .setSpectralTypes(spectralTypes).build();
+                .setSpectralTypes(spectralTypes)
+                .setNotes("").build();
 
         // Save object
         String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);

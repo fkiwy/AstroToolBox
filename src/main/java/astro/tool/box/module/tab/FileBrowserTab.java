@@ -212,14 +212,16 @@ public class FileBrowserTab {
                     showErrorDialog(baseFrame, "No row selected yet!");
                     return;
                 }
+                int selectedRow = resultTable.getSelectedRow();
                 String confirmMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
                         + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP
-                        + "Do you really want to remove row # " + resultTable.getValueAt(resultTable.getSelectedRow(), 0);
+                        + "Do you really want to remove row # " + resultTable.getValueAt(selectedRow, 0);
                 if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
-                tableModel.removeRow(resultTable.getSelectedRow());
+                int rowToRemove = resultTable.convertRowIndexToModel(selectedRow);
+                tableModel.removeRow(rowToRemove);
                 bottomPanelMessage.setText("Row has been removed!");
                 timer.restart();
             });
@@ -269,7 +271,7 @@ public class FileBrowserTab {
 
     private void appendCellValue(StringBuilder fileContent, int columnIndex, int columnCount, String cellValue) {
         if (cellValue != null) {
-            fileContent.append(cellValue.trim());
+            fileContent.append(cellValue);
         }
         if (columnIndex < columnCount - 1) {
             fileContent.append(",");

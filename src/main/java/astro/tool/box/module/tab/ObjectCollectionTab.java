@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,26 +26,32 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class ObjectCollectionTab {
 
     public static final String TAB_NAME = "Object Collection";
-    private static final int RA_COLUMN_INDEX = 2;
-    private static final int DEC_COLUMN_INDEX = 3;
+    private static final int RA_COLUMN_INDEX = 3;
+    private static final int DEC_COLUMN_INDEX = 4;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
+    private final TableRowSorter<TableModel> objectCollectionSorter;
 
     private JPanel centerPanel;
     private JTable resultTable;
+    private JTextField searchField;
 
     private File file;
 
@@ -53,6 +60,7 @@ public class ObjectCollectionTab {
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
+        objectCollectionSorter = new TableRowSorter<>();
     }
 
     public void init() {
@@ -81,7 +89,7 @@ public class ObjectCollectionTab {
             topPanel.add(reloadButton);
             reloadButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
                 String confirmMessage = "Any unsaved changes will be lost!" + LINE_SEP
@@ -101,7 +109,7 @@ public class ObjectCollectionTab {
             topPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
                 StringBuilder fileContent = new StringBuilder();
@@ -132,9 +140,10 @@ public class ObjectCollectionTab {
             bottomPanel.add(addButton);
             addButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
+                searchField.setText("");
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
                 tableModel.addRow((Object[]) null);
                 bottomPanelMessage.setText("Row has been added!");
@@ -145,23 +154,44 @@ public class ObjectCollectionTab {
             bottomPanel.add(removeButton);
             removeButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
                 if (resultTable.getSelectedRow() == -1) {
                     showErrorDialog(baseFrame, "No row selected yet!");
                     return;
                 }
+                int selectedRow = resultTable.getSelectedRow();
                 String confirmMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
                         + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP
-                        + "Do you really want to remove row # " + resultTable.getValueAt(resultTable.getSelectedRow(), 0);
+                        + "Do you really want to remove row # " + resultTable.getValueAt(selectedRow, 0);
                 if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
-                tableModel.removeRow(resultTable.getSelectedRow());
+                int rowToRemove = resultTable.convertRowIndexToModel(selectedRow);
+                tableModel.removeRow(rowToRemove);
                 bottomPanelMessage.setText("Row has been removed!");
                 timer.restart();
+            });
+
+            bottomPanel.add(new JLabel("Search:"));
+            searchField = new JTextField(30);
+            bottomPanel.add(searchField);
+            searchField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                }
+
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    createObjectCollectionFilter(searchField.getText());
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    createObjectCollectionFilter(searchField.getText());
+                }
             });
 
             bottomPanel.add(bottomPanelMessage);
@@ -174,14 +204,16 @@ public class ObjectCollectionTab {
                         String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
                         if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
                             return;
-                        } else {
-                            file = new File(objectCollectionPath);
                         }
+                        File objectCollectionFile = new File(objectCollectionPath);
+                        if (!objectCollectionFile.exists()) {
+                            return;
+                        }
+                        file = objectCollectionFile;
                     }
                     removeAndRecreateCenterPanel(mainPanel);
                     readFileContents(addColumnsField.getText());
                     baseFrame.setVisible(true);
-
                 }
             });
 
@@ -191,9 +223,17 @@ public class ObjectCollectionTab {
         }
     }
 
+    private void createObjectCollectionFilter(String filterText) {
+        try {
+            RowFilter filter = RowFilter.regexFilter(filterText);
+            objectCollectionSorter.setRowFilter(filter);
+        } catch (PatternSyntaxException ex) {
+        }
+    }
+
     private void appendCellValue(StringBuilder fileContent, int columnIndex, int columnCount, String cellValue) {
         if (cellValue != null) {
-            fileContent.append(cellValue.trim());
+            fileContent.append(cellValue);
         }
         if (columnIndex < columnCount - 1) {
             fileContent.append(",");
@@ -250,14 +290,15 @@ public class ObjectCollectionTab {
             }
         };
         alignResultColumns(resultTable, rows);
+        addComparatorsToTableSorter(objectCollectionSorter, defaultTableModel, rows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        resultTable.setRowSorter(createResultTableSorter(defaultTableModel, rows));
+        resultTable.setRowSorter(objectCollectionSorter);
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         if (RA_COLUMN_INDEX > 0 || DEC_COLUMN_INDEX > 0) {
             resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
                 int selectedRow = resultTable.getSelectedRow();
-                if (!e.getValueIsAdjusting() && selectedRow > -1) {
+                if (!e.getValueIsAdjusting() && selectedRow > -1 && selectedRow < resultTable.getRowCount()) {
                     String ra = (String) resultTable.getValueAt(selectedRow, RA_COLUMN_INDEX + 1);
                     String dec = (String) resultTable.getValueAt(selectedRow, DEC_COLUMN_INDEX + 1);
                     String coords = ra + " " + dec;

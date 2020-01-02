@@ -1,9 +1,9 @@
 package astro.tool.box.container;
 
+import astro.tool.box.enumeration.ObjectType;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Constants.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,6 +14,9 @@ public class CollectedObject {
 
     // Catalog name
     private final String catalogName;
+
+    // Object type
+    private final ObjectType objectType;
 
     // Right ascension
     private final double ra;
@@ -36,20 +39,12 @@ public class CollectedObject {
     // Spectral types
     private final List<String> spectralTypes;
 
-    public CollectedObject(LocalDateTime discoveryDate) {
-        this.discoveryDate = discoveryDate;
-        this.catalogName = "";
-        this.ra = 0;
-        this.dec = 0;
-        this.sourceId = "";
-        this.plx = 0;
-        this.pmra = 0;
-        this.pmdec = 0;
-        this.spectralTypes = new ArrayList<>();
-    }
+    // Notes
+    private final String notes;
 
-    private CollectedObject(LocalDateTime discoveryDate, String catalogName, double ra, double dec, String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes) {
+    private CollectedObject(LocalDateTime discoveryDate, ObjectType objectType, String catalogName, double ra, double dec, String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes, String notes) {
         this.discoveryDate = discoveryDate;
+        this.objectType = objectType;
         this.catalogName = catalogName;
         this.ra = ra;
         this.dec = dec;
@@ -58,28 +53,29 @@ public class CollectedObject {
         this.pmra = pmra;
         this.pmdec = pmdec;
         this.spectralTypes = spectralTypes;
+        this.notes = notes;
     }
 
     @Override
     public String toString() {
-        return "Candidate{" + "discoveryDate=" + discoveryDate + ", catalogName=" + catalogName + ", ra=" + ra + ", dec=" + dec + ", sourceId=" + sourceId + ", plx=" + plx + ", pmra=" + pmra + ", pmdec=" + pmdec + ", spectralTypes=" + spectralTypes + '}';
+        return "CollectedObject{" + "discoveryDate=" + discoveryDate + ", catalogName=" + catalogName + ", objectType=" + objectType + ", ra=" + ra + ", dec=" + dec + ", sourceId=" + sourceId + ", plx=" + plx + ", pmra=" + pmra + ", pmdec=" + pmdec + ", spectralTypes=" + spectralTypes + ", notes=" + notes + '}';
     }
 
     public String[] getColumnValues() {
-        return getValues().split(",", 13);
+        return getValues().split(",", 11);
     }
 
     public String[] getColumnTitles() {
-        return getTitles().split(",", 13);
+        return getTitles().split(",", 11);
     }
 
     public String getValues() {
-        String values = discoveryDate.format(DATE_TIME_FORMATTER) + "," + catalogName + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + sourceId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + joinSpetralTypes();
+        String values = discoveryDate.format(DATE_TIME_FORMATTER) + "," + objectType.name() + "," + catalogName + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + sourceId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + joinSpetralTypes() + "," + notes;
         return values;
     }
 
     public String getTitles() {
-        String titles = "Discovery date,Catalog,RA,dec,Source id,Plx,pmRA,pmdec,Spectral types";
+        String titles = "Discovery date,Object type,Catalog,RA,dec,Source id,Plx,pmRA,pmdec,Spectral types,Notes";
         return titles;
     }
 
@@ -90,6 +86,7 @@ public class CollectedObject {
     public static class Builder {
 
         private LocalDateTime discoveryDate;
+        private ObjectType objectType;
         private String catalogName;
         private double ra;
         private double dec;
@@ -98,9 +95,15 @@ public class CollectedObject {
         private double pmra;
         private double pmdec;
         private List<String> spectralTypes;
+        private String notes;
 
         public Builder setDiscoveryDate(LocalDateTime discoveryDate) {
             this.discoveryDate = discoveryDate;
+            return this;
+        }
+
+        public Builder setObjectType(ObjectType objectType) {
+            this.objectType = objectType;
             return this;
         }
 
@@ -144,8 +147,13 @@ public class CollectedObject {
             return this;
         }
 
+        public Builder setNotes(String notes) {
+            this.notes = notes;
+            return this;
+        }
+
         public CollectedObject build() {
-            return new CollectedObject(discoveryDate, catalogName, ra, dec, sourceId, plx, pmra, pmdec, spectralTypes);
+            return new CollectedObject(discoveryDate, objectType, catalogName, ra, dec, sourceId, plx, pmra, pmdec, spectralTypes, notes);
         }
 
     }
