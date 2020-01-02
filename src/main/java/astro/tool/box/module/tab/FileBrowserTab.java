@@ -349,7 +349,7 @@ public class FileBrowserTab {
         if (raColumnIndex > 0 || decColumnIndex > 0) {
             resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
                 int selectedRow = resultTable.getSelectedRow();
-                if (!e.getValueIsAdjusting() && selectedRow > -1) {
+                if (!e.getValueIsAdjusting() && selectedRow > -1 && selectedRow < resultTable.getRowCount()) {
                     String ra = (String) resultTable.getValueAt(selectedRow, raColumnIndex + 1);
                     String dec = (String) resultTable.getValueAt(selectedRow, decColumnIndex + 1);
                     String coords = ra + " " + dec;
