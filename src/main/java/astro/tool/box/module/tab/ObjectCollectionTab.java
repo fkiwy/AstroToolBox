@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -38,8 +39,6 @@ import javax.swing.table.TableRowSorter;
 public class ObjectCollectionTab {
 
     public static final String TAB_NAME = "Object Collection";
-    private static final int RA_COLUMN_INDEX = 3;
-    private static final int DEC_COLUMN_INDEX = 4;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -50,6 +49,7 @@ public class ObjectCollectionTab {
     private JPanel centerPanel;
     private JTable resultTable;
     private JTextField searchField;
+    private JCheckBox copyCoords;
 
     private File file;
 
@@ -173,6 +173,8 @@ public class ObjectCollectionTab {
                 timer.restart();
             });
 
+            bottomPanel.add(bottomPanelMessage);
+
             bottomPanel.add(new JLabel("Search:"));
             searchField = new JTextField(30);
             bottomPanel.add(searchField);
@@ -192,7 +194,8 @@ public class ObjectCollectionTab {
                 }
             });
 
-            bottomPanel.add(bottomPanelMessage);
+            copyCoords = new JCheckBox("Copy selected coordinates to the Image Viewer or Catalog Search tab");
+            bottomPanel.add(copyCoords);
 
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
@@ -285,12 +288,12 @@ public class ObjectCollectionTab {
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         resultTable.setRowSorter(objectCollectionSorter);
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        if (RA_COLUMN_INDEX > 0 || DEC_COLUMN_INDEX > 0) {
-            resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+        resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if (copyCoords.isSelected()) {
                 int selectedRow = resultTable.getSelectedRow();
                 if (!e.getValueIsAdjusting() && selectedRow > -1 && selectedRow < resultTable.getRowCount()) {
-                    String ra = (String) resultTable.getValueAt(selectedRow, RA_COLUMN_INDEX + 1);
-                    String dec = (String) resultTable.getValueAt(selectedRow, DEC_COLUMN_INDEX + 1);
+                    String ra = (String) resultTable.getValueAt(selectedRow, 4);
+                    String dec = (String) resultTable.getValueAt(selectedRow, 5);
                     String coords = ra + " " + dec;
                     imageViewerTab.getCoordsField().setText(coords);
                     catalogQueryTab.getCoordsField().setText(coords);
@@ -298,8 +301,8 @@ public class ObjectCollectionTab {
                     catalogQueryTab.removeAndRecreateCenterPanel();
                     catalogQueryTab.removeAndRecreateBottomPanel();
                 }
-            });
-        }
+            }
+        });
         resizeColumnWidth(resultTable);
 
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);
