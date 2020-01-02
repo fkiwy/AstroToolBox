@@ -27,7 +27,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -42,7 +41,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -389,12 +387,12 @@ public class AdqlQueryTab {
 
                         @Override
                         public void insertUpdate(DocumentEvent e) {
-                            createCatalogTableFilter(filterField.getText());
+                            catalogTableSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                         }
 
                         @Override
                         public void removeUpdate(DocumentEvent e) {
-                            createCatalogTableFilter(filterField.getText());
+                            catalogTableSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                         }
                     });
 
@@ -503,12 +501,12 @@ public class AdqlQueryTab {
 
                             @Override
                             public void insertUpdate(DocumentEvent e) {
-                                createCatalogColumnFilter(filterField.getText());
+                                catalogColumnSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                             }
 
                             @Override
                             public void removeUpdate(DocumentEvent e) {
-                                createCatalogColumnFilter(filterField.getText());
+                                catalogColumnSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                             }
                         });
 
@@ -607,22 +605,6 @@ public class AdqlQueryTab {
         statusField.setText("");
         statusField.setBackground(null);
         jobId = null;
-    }
-
-    private void createCatalogTableFilter(String filterText) {
-        try {
-            RowFilter filter = RowFilter.regexFilter(filterText);
-            catalogTableSorter.setRowFilter(filter);
-        } catch (PatternSyntaxException ex) {
-        }
-    }
-
-    private void createCatalogColumnFilter(String filterText) {
-        try {
-            RowFilter filter = RowFilter.regexFilter(filterText);
-            catalogColumnSorter.setRowFilter(filter);
-        } catch (PatternSyntaxException ex) {
-        }
     }
 
     private JColor getStatusColor(String jobStatus) {

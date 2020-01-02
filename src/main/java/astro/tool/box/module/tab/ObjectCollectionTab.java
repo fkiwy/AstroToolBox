@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.PatternSyntaxException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -26,7 +25,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
 import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -185,12 +183,12 @@ public class ObjectCollectionTab {
 
                 @Override
                 public void insertUpdate(DocumentEvent e) {
-                    createObjectCollectionFilter(searchField.getText());
+                    objectCollectionSorter.setRowFilter(getCustomRowFilter(searchField.getText()));
                 }
 
                 @Override
                 public void removeUpdate(DocumentEvent e) {
-                    createObjectCollectionFilter(searchField.getText());
+                    objectCollectionSorter.setRowFilter(getCustomRowFilter(searchField.getText()));
                 }
             });
 
@@ -220,14 +218,6 @@ public class ObjectCollectionTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
-        }
-    }
-
-    private void createObjectCollectionFilter(String filterText) {
-        try {
-            RowFilter filter = RowFilter.regexFilter(filterText);
-            objectCollectionSorter.setRowFilter(filter);
-        } catch (PatternSyntaxException ex) {
         }
     }
 

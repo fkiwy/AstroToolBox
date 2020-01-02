@@ -47,6 +47,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.RowFilter;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -316,6 +317,20 @@ public class ModuleHelper {
             }
             columnModel.getColumn(column).setPreferredWidth(width + 20);
         }
+    }
+
+    public static RowFilter getCustomRowFilter(String filterText) {
+        return new RowFilter<Object, Object>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends Object, ? extends Object> entry) {
+                for (int i = entry.getValueCount() - 1; i >= 0; i--) {
+                    if (entry.getStringValue(i).toUpperCase().contains(filterText.toUpperCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
     }
 
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean sptWithColors) {
