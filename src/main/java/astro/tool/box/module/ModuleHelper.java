@@ -1,10 +1,16 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
@@ -21,6 +27,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -48,6 +56,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.RowFilter;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -357,6 +366,71 @@ public class ModuleHelper {
             spectralTypes.add(spectralType);
         });
         return spectralTypes;
+    }
+
+    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService) {
+        // Collect data
+        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+        if (catalogEntry instanceof SimbadCatalogEntry) {
+            SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+            StringBuilder simbadType = new StringBuilder();
+            simbadType.append("[");
+            simbadType.append(simbadEntry.getObjectType());
+            if (!simbadEntry.getSpectralType().isEmpty()) {
+                simbadType.append(" ").append(simbadEntry.getSpectralType());
+            }
+            simbadType.append("]");
+            spectralTypes.add(0, simbadType.toString());
+        }
+        if (catalogEntry instanceof AllWiseCatalogEntry) {
+            AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+            if (isAPossibleAgn(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
+                spectralTypes.add("[" + AGN_WARNING + "]");
+            }
+        }
+        CollectedObject collectedObject = new CollectedObject.Builder()
+                .setDiscoveryDate(LocalDateTime.now())
+                .setObjectType(objectType)
+                .setCatalogName(catalogEntry.getCatalogName())
+                .setRa(catalogEntry.getRa())
+                .setDec(catalogEntry.getDec())
+                .setSourceId(catalogEntry.getSourceId() + " ")
+                .setPlx(catalogEntry.getPlx())
+                .setPmra(catalogEntry.getPmra())
+                .setPmdec(catalogEntry.getPmdec())
+                .setSpectralTypes(spectralTypes)
+                .setNotes("").build();
+
+        // Save object
+        String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
+        if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
+            showErrorDialog(baseFrame, "Specify file location of object collection in the Settings tab.");
+            return;
+        }
+
+        boolean newFile = false;
+        File objectCollection = new File(objectCollectionPath);
+        if (!objectCollection.exists()) {
+            try {
+                objectCollection.createNewFile();
+                newFile = true;
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+                return;
+            }
+        }
+        try (PrintWriter pw = new PrintWriter(new FileWriter(objectCollection, true))) {
+            if (newFile) {
+                pw.println(collectedObject.getTitles());
+            }
+            pw.println(collectedObject.getValues());
+        } catch (IOException ex) {
+            showExceptionDialog(baseFrame, ex);
+            return;
+        }
+
+        message.setText("Object has been added to collection!");
+        messageTimer.restart();
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

@@ -16,9 +16,9 @@ import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
+import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -43,9 +43,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,6 +54,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -352,7 +353,7 @@ public class CatalogQueryTab {
                     displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     displayCatalogDetails(selected);
                     //displayProperMotions(selected);
-                    displaySpectralTypes(selected.getColors());
+                    displaySpectralTypes(selected);
                     baseFrame.setVisible(true);
                 }
             }
@@ -485,9 +486,9 @@ public class CatalogQueryTab {
         }
     }*/
     //
-    private void displaySpectralTypes(Map<Color, Double> colors) {
+    private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+            Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<Object[]> spectralTypes = new ArrayList<>();
             results.entrySet().forEach(entry -> {
@@ -525,28 +526,50 @@ public class CatalogQueryTab {
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                     : new JScrollPane(spectralTypeTable);
 
-            JPanel spectralTypeInfo = new JPanel(new GridLayout(2, 1));
+            JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
             spectralTypeInfo.add(spectralTypePanel);
 
-            JPanel spectralTypeNote = new JPanel();
-            spectralTypeNote.setLayout(new BoxLayout(spectralTypeNote, BoxLayout.Y_AXIS));
+            JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            spectralTypeInfo.add(remarks);
+            remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
+            remarks.add(new JLabel("to early type as well to late type stars."));
+            remarks.add(new JLabel("The more colors match, the better the results, in general."));
+            remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
 
-            spectralTypeNote.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
-            spectralTypeNote.add(new JLabel("to early type as well to late type stars."));
-            spectralTypeNote.add(new JLabel("The more colors match, the better the results, in general."));
-            spectralTypeNote.add(new JLabel("Be aware that this feature only returns approximate results."));
-            spectralTypeNote.add(new JLabel(" "));
-            spectralTypeNote.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
+            remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            spectralTypeInfo.add(remarks);
+            remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
-            spectralTypeNote.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
-            spectralTypeNote.add(new JLabel("Version in use: 2019.3.22"));
-            spectralTypeNote.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
+            remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
+            remarks.add(new JLabel("Version in use: 2019.3.22"));
+            remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
-            spectralTypeInfo.add(spectralTypeNote);
+            JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            collectPanel.setBorder(BorderFactory.createEtchedBorder());
+            spectralTypeInfo.add(collectPanel);
+
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
+                message.setText("");
+            });
+
+            collectPanel.add(new JLabel("Object type:"));
+
+            JComboBox objectTypes = new JComboBox<>(ObjectType.labels());
+            collectPanel.add(objectTypes);
+
+            JButton collectButton = new JButton("Add to object collection");
+            collectPanel.add(collectButton);
+            collectButton.addActionListener((ActionEvent evt) -> {
+                String selectedObjectType = (String) objectTypes.getSelectedItem();
+                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService);
+            });
+
+            collectPanel.add(message);
 
             bottomPanel.add(spectralTypeInfo);
         } catch (Exception ex) {
