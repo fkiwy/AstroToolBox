@@ -138,13 +138,13 @@ public class CatalogQueryTab {
             JLabel coordsLabel = new JLabel("Coordinates:");
             topPanel.add(coordsLabel);
 
-            coordsField = new JTextField("", 25);
+            coordsField = new JTextField(25);
             topPanel.add(coordsField);
 
             JLabel radiusLabel = new JLabel("Search radius (arcsec):");
             topPanel.add(radiusLabel);
 
-            radiusField = new JTextField("", 5);
+            radiusField = new JTextField(5);
             topPanel.add(radiusField);
 
             JLabel catalogLabel = new JLabel("Catalogs:");

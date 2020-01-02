@@ -37,23 +37,23 @@ public class TransverseVelocityTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("Proper motion in RA (mas/yr): ", JLabel.RIGHT));
-            JTextField pmraField = new JTextField("");
+            JTextField pmraField = new JTextField();
             mainPanel.add(pmraField);
 
             mainPanel.add(new JLabel("Proper motion in dec (mas/yr): ", JLabel.RIGHT));
-            JTextField pmdecField = new JTextField("");
+            JTextField pmdecField = new JTextField();
             mainPanel.add(pmdecField);
 
             mainPanel.add(new JLabel("Parallax (mas): ", JLabel.RIGHT));
-            JTextField parallaxField = new JTextField("");
+            JTextField parallaxField = new JTextField();
             mainPanel.add(parallaxField);
 
             mainPanel.add(new JLabel("or Distance (pc): ", JLabel.RIGHT));
-            JTextField distanceField = new JTextField("");
+            JTextField distanceField = new JTextField();
             mainPanel.add(distanceField);
 
             mainPanel.add(new JLabel("Tangential velocity (km/s): ", JLabel.RIGHT));
-            JTextField resultField = new JTextField("");
+            JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

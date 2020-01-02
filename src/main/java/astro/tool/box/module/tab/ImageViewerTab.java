@@ -282,7 +282,7 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel("Coordinates:"));
 
-            coordsField = new JTextField("");
+            coordsField = new JTextField();
             controlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
                 coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

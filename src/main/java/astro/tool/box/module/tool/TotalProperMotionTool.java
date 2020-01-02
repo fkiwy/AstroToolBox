@@ -37,15 +37,15 @@ public class TotalProperMotionTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("Proper motion in RA: ", JLabel.RIGHT));
-            JTextField pmraField = new JTextField("");
+            JTextField pmraField = new JTextField();
             mainPanel.add(pmraField);
 
             mainPanel.add(new JLabel("Proper motion in dec: ", JLabel.RIGHT));
-            JTextField pmdecField = new JTextField("");
+            JTextField pmdecField = new JTextField();
             mainPanel.add(pmdecField);
 
             mainPanel.add(new JLabel("Total proper motion: ", JLabel.RIGHT));
-            JTextField resultField = new JTextField("");
+            JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

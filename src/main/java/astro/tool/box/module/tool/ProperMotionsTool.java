@@ -41,11 +41,11 @@ public class ProperMotionsTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
-            JTextField fromCoordsField = new JTextField("");
+            JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
             mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
-            JTextField toCoordsField = new JTextField("");
+            JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 
             mainPanel.add(new JLabel("Elapsed time unit: ", JLabel.RIGHT));
@@ -53,7 +53,7 @@ public class ProperMotionsTool {
             mainPanel.add(timeUnits);
 
             mainPanel.add(new JLabel("Elapsed time: ", JLabel.RIGHT));
-            JTextField elapsedTimeField = new JTextField("");
+            JTextField elapsedTimeField = new JTextField();
             mainPanel.add(elapsedTimeField);
 
             mainPanel.add(new JLabel("Proper motions unit: ", JLabel.RIGHT));
@@ -61,7 +61,7 @@ public class ProperMotionsTool {
             mainPanel.add(resultUnits);
 
             mainPanel.add(new JLabel("Proper motions (pmra, pmdec): ", JLabel.RIGHT));
-            JTextField resultField = new JTextField("");
+            JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

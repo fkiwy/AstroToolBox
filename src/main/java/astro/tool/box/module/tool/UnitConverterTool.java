@@ -39,7 +39,7 @@ public class UnitConverterTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("Value to convert: ", JLabel.RIGHT));
-            JTextField valueToConvert = new JTextField("");
+            JTextField valueToConvert = new JTextField();
             mainPanel.add(valueToConvert);
 
             mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
@@ -52,7 +52,7 @@ public class UnitConverterTool {
             mainPanel.add(unitsToConvertTo);
 
             mainPanel.add(new JLabel("Converted value: ", JLabel.RIGHT));
-            JTextField convertedValue = new JTextField("");
+            JTextField convertedValue = new JTextField();
             convertedValue.setEditable(false);
             mainPanel.add(convertedValue);
 

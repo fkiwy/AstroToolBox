@@ -40,7 +40,7 @@ public class CoordsConverterTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("Coordinates to convert: ", JLabel.RIGHT));
-            JTextField coordsToConvert = new JTextField("");
+            JTextField coordsToConvert = new JTextField();
             mainPanel.add(coordsToConvert);
 
             mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
@@ -71,7 +71,7 @@ public class CoordsConverterTool {
             });
 
             mainPanel.add(new JLabel("Converted coordinates: ", JLabel.RIGHT));
-            JTextField convertedCoords = new JTextField("");
+            JTextField convertedCoords = new JTextField();
             convertedCoords.setEditable(false);
             mainPanel.add(convertedCoords);
 

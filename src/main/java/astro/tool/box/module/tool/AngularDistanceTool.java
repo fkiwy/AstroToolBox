@@ -40,11 +40,11 @@ public class AngularDistanceTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
-            JTextField fromCoordsField = new JTextField("");
+            JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
             mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
-            JTextField toCoordsField = new JTextField("");
+            JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 
             mainPanel.add(new JLabel("Angular distance unit: ", JLabel.RIGHT));
@@ -52,7 +52,7 @@ public class AngularDistanceTool {
             mainPanel.add(resultUnits);
 
             mainPanel.add(new JLabel("Angular distance: ", JLabel.RIGHT));
-            JTextField resultField = new JTextField("");
+            JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

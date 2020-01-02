@@ -92,23 +92,23 @@ public class BrownDwarfTab {
             spectralTypeLookup.add(inputPanel);
 
             colorInput.add(new JLabel("W1mag: ", JLabel.RIGHT));
-            JTextField w1Field = new JTextField("");
+            JTextField w1Field = new JTextField();
             colorInput.add(w1Field);
 
             colorInput.add(new JLabel("W2mag: ", JLabel.RIGHT));
-            JTextField w2Field = new JTextField("");
+            JTextField w2Field = new JTextField();
             colorInput.add(w2Field);
 
             colorInput.add(new JLabel("Jmag: ", JLabel.RIGHT));
-            JTextField jField = new JTextField("");
+            JTextField jField = new JTextField();
             colorInput.add(jField);
 
             colorInput.add(new JLabel("Kmag: ", JLabel.RIGHT));
-            JTextField kField = new JTextField("");
+            JTextField kField = new JTextField();
             colorInput.add(kField);
 
             colorInput.add(new JLabel("M Gmag: ", JLabel.RIGHT));
-            JTextField m_gField = new JTextField("");
+            JTextField m_gField = new JTextField();
             colorInput.add(m_gField);
 
             colorInput.add(new JLabel());

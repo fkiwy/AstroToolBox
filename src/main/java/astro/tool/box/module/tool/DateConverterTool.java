@@ -42,7 +42,7 @@ public class DateConverterTool {
             toolPanel.add(containerPanel);
 
             mainPanel.add(new JLabel("Date to convert: ", JLabel.RIGHT));
-            JTextField dateToConvert = new JTextField("");
+            JTextField dateToConvert = new JTextField();
             mainPanel.add(dateToConvert);
 
             mainPanel.add(new JLabel("Calendar date format: ", JLabel.RIGHT));
@@ -79,7 +79,7 @@ public class DateConverterTool {
             });
 
             mainPanel.add(new JLabel("Converted date: ", JLabel.RIGHT));
-            JTextField convertedDate = new JTextField("");
+            JTextField convertedDate = new JTextField();
             convertedDate.setEditable(false);
             mainPanel.add(convertedDate);
 

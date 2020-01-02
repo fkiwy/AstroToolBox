@@ -73,7 +73,7 @@ public class ObjectCollectionTab {
 
             topPanel.add(new JLabel("Columns to add:"));
 
-            JTextField addColumnsField = new JTextField("", 15);
+            JTextField addColumnsField = new JTextField(15);
             topPanel.add(addColumnsField);
 
             JLabel topPanelMessage = createLabel("", JColor.DARKER_GREEN);

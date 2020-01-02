@@ -156,12 +156,12 @@ public class BatchQueryTab {
 
             centerRow.add(new JLabel("RA position:"));
 
-            JTextField raColumnPosition = new JTextField("", 2);
+            JTextField raColumnPosition = new JTextField(2);
             centerRow.add(raColumnPosition);
 
             centerRow.add(new JLabel("dec position:"));
 
-            JTextField decColumnPosition = new JTextField("", 2);
+            JTextField decColumnPosition = new JTextField(2);
             centerRow.add(decColumnPosition);
 
             centerRow.add(new JLabel("Search radius:"));

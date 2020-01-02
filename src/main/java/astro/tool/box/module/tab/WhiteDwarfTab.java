@@ -112,35 +112,35 @@ public class WhiteDwarfTab {
             spectralTypeLookup.add(inputPanel);
 
             colorInput.add(new JLabel("Gmag: ", JLabel.RIGHT));
-            JTextField gField = new JTextField("");
+            JTextField gField = new JTextField();
             colorInput.add(gField);
 
             colorInput.add(new JLabel("BPmag: ", JLabel.RIGHT));
-            JTextField bpField = new JTextField("");
+            JTextField bpField = new JTextField();
             colorInput.add(bpField);
 
             colorInput.add(new JLabel("RPmag: ", JLabel.RIGHT));
-            JTextField rpField = new JTextField("");
+            JTextField rpField = new JTextField();
             colorInput.add(rpField);
 
             colorInput.add(new JLabel("Bmag: ", JLabel.RIGHT));
-            JTextField bField = new JTextField("");
+            JTextField bField = new JTextField();
             colorInput.add(bField);
 
             colorInput.add(new JLabel("Vmag: ", JLabel.RIGHT));
-            JTextField vField = new JTextField("");
+            JTextField vField = new JTextField();
             colorInput.add(vField);
 
             colorInput.add(new JLabel("Jmag: ", JLabel.RIGHT));
-            JTextField jField = new JTextField("");
+            JTextField jField = new JTextField();
             colorInput.add(jField);
 
             colorInput.add(new JLabel("gmag: ", JLabel.RIGHT));
-            JTextField g_Field = new JTextField("");
+            JTextField g_Field = new JTextField();
             colorInput.add(g_Field);
 
             colorInput.add(new JLabel("rmag: ", JLabel.RIGHT));
-            JTextField r_Field = new JTextField("");
+            JTextField r_Field = new JTextField();
             colorInput.add(r_Field);
 
             colorInput.add(new JLabel());

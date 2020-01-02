@@ -77,12 +77,12 @@ public class FileBrowserTab {
 
             topPanel.add(new JLabel("RA position:"));
 
-            raColumnPosition = new JTextField("", 2);
+            raColumnPosition = new JTextField(2);
             topPanel.add(raColumnPosition);
 
             topPanel.add(new JLabel("dec position:"));
 
-            decColumnPosition = new JTextField("", 2);
+            decColumnPosition = new JTextField(2);
             topPanel.add(decColumnPosition);
 
             JFileChooser fileChooser = new JFileChooser();
@@ -113,7 +113,7 @@ public class FileBrowserTab {
 
             topPanel.add(new JLabel("Columns to add:"));
 
-            JTextField addColumnsField = new JTextField("", 15);
+            JTextField addColumnsField = new JTextField(15);
             topPanel.add(addColumnsField);
 
             JLabel topPanelMessage = createLabel("", JColor.DARKER_GREEN);
