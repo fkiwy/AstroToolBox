@@ -20,11 +20,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class SpectralTypeLookupTest {
 
     @Test
+    @Ignore
     public void lookupSpectralType() throws IOException {
         SpectralTypeLookupService spectralTypeLookupService;
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");

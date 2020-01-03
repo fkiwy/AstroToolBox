@@ -145,7 +145,7 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String underLine(String text) {
+    public static String underline(String text) {
         return html("<u>" + text + "</u>");
     }
 
