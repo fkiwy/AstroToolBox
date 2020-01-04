@@ -577,6 +577,11 @@ public class ImageViewerTab {
 
             drawCircle = new JCheckBox("Draw circle (wheel click & spin)");
             controlPanel.add(drawCircle);
+            drawCircle.addActionListener((ActionEvent evt) -> {
+                if (!drawCircle.isSelected()) {
+                    circles.clear();
+                }
+            });
 
             controlPanel.add(new JLabel(underline("Image player controls:")));
 
