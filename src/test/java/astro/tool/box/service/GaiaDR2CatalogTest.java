@@ -1,4 +1,4 @@
-package astro.tool.box.catalog;
+package astro.tool.box.service;
 
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
@@ -9,7 +9,6 @@ import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.proxy.CatalogQueryProxy;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.service.CatalogQueryService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,7 +44,6 @@ public class GaiaDR2CatalogTest {
     }
 
     @Test
-    @Ignore
     public void getCatalogEntriesByCoords() throws IOException {
         List<CatalogEntry> entriesFromProxy = catalogQueryProxy.getCatalogEntriesByCoords(catalogEntry);
         List<CatalogEntry> entriesFromService = catalogQueryService.getCatalogEntriesByCoords(catalogEntry);
@@ -53,7 +51,6 @@ public class GaiaDR2CatalogTest {
     }
 
     @Test
-    @Ignore
     public void parseResponse() throws IOException {
         String irsaUrl = createIrsaUrl(GAIADR2_CATALOG_ID, DEG_RA, DEG_DE, DEG_RADIUS / DEG_ARCSEC);
         HttpURLConnection connection = establishHttpConnection(irsaUrl);
