@@ -1,9 +1,9 @@
 package astro.tool.box.function;
 
-import static astro.tool.box.module.ServiceProviderUtils.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.TestData.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 

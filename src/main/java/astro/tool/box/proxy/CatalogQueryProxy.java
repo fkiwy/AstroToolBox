@@ -1,7 +1,7 @@
 package astro.tool.box.proxy;
 
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.module.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;

@@ -1,4 +1,4 @@
-package astro.tool.box.module;
+package astro.tool.box.util;
 
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.module.ModuleHelper.*;

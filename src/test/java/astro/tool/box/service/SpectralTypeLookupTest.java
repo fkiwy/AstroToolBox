@@ -1,6 +1,6 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;

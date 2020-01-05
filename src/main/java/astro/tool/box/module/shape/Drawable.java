@@ -1,4 +1,4 @@
-package astro.tool.box.module;
+package astro.tool.box.module.shape;
 
 import java.awt.Graphics;
 

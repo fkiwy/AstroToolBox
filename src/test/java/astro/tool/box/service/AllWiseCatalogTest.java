@@ -2,7 +2,7 @@ package astro.tool.box.service;
 
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.module.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.TestData.*;
 
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;

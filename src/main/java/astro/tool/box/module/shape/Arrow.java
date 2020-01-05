@@ -1,11 +1,11 @@
-package astro.tool.box.module;
+package astro.tool.box.module.shape;
 
 import static java.lang.Math.*;
 
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Arrow {
+public class Arrow implements Drawable {
 
     private final double x1;
     private final double y1;
@@ -23,6 +23,7 @@ public class Arrow {
         this.color = color;
     }
 
+    @Override
     public void draw(Graphics graphics) {
         double xDiff = x1 - x2;
         double vectorAngle;

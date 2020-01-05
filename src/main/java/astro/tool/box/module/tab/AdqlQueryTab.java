@@ -1,9 +1,9 @@
 package astro.tool.box.module.tab;
 
-import static astro.tool.box.module.ServiceProviderUtils.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.enumeration.JColor;

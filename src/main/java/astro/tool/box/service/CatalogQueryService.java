@@ -1,6 +1,6 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.module.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
