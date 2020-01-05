@@ -213,7 +213,7 @@ public class ModuleHelper {
 
     public static void addEmptyCatalogElement(JPanel detailPanel) {
         addLabelToPanel(new CatalogElement(), detailPanel);
-        addFieldToPanel(new CatalogElement(), detailPanel);
+        addLabelToPanel(new CatalogElement(), detailPanel);
     }
 
     public static void addLabelToPanel(CatalogElement element, JPanel panel) {
@@ -237,6 +237,8 @@ public class ModuleHelper {
         JTextField field = new JTextField(value == null ? "" : value);
         if (element.isOnFocus()) {
             field.setBackground(JColor.WHITE.val);
+        } else {
+            field.setBackground(new JLabel().getBackground());
         }
         if (element.isComputed()) {
             field.setForeground(JColor.DARKER_GREEN.val);
@@ -245,7 +247,7 @@ public class ModuleHelper {
             field.setForeground(JColor.DARK_RED.val);
         }
         field.setBorder(BorderFactory.createEmptyBorder());
-        field.setEditable(false);
+        field.setEditable(true);
         panel.add(field);
     }
 
