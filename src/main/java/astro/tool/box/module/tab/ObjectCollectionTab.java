@@ -1,10 +1,9 @@
 package astro.tool.box.module.tab;
 
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.JColor;
-import static astro.tool.box.module.tab.SettingsTab.OBJECT_COLLECTION_PATH;
-import static astro.tool.box.module.tab.SettingsTab.getUserSetting;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;

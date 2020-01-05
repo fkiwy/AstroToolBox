@@ -1,4 +1,4 @@
-package astro.tool.box.module;
+package astro.tool.box.container;
 
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Shape;

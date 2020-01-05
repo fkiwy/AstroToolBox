@@ -1,11 +1,11 @@
 package astro.tool.box.module.tab;
 
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.util.Constants.*;
+import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import astro.tool.box.module.CustomOverlay;
-import static astro.tool.box.module.ModuleHelper.*;
-import static astro.tool.box.util.Constants.LINE_SEP;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.Color;
 import java.awt.FlowLayout;
