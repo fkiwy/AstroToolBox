@@ -130,4 +130,12 @@ public class FlipbookComponent {
         return firstEpoch;
     }
 
+    public double getMinObsEpoch() {
+        return minObsEpoch;
+    }
+
+    public double getMaxObsEpoch() {
+        return maxObsEpoch;
+    }
+
 }

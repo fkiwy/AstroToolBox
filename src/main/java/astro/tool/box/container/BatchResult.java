@@ -97,7 +97,7 @@ public class BatchResult {
     }
 
     public String getTitles() {
-        String titles = "row#,obj#,catalog,target ra,target dec,target dist,ra,dec,sourceId,plx,pmra,pmdec,spectral types";
+        String titles = "Row#,Obj#,Catalog,Target RA,Target dec,Target dist,RA,dec,Source id,Plx,pmRA,pmdec,Spectral types";
         return titles;
     }
 

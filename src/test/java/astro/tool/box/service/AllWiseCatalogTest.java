@@ -1,15 +1,14 @@
-package astro.tool.box.catalog;
+package astro.tool.box.service;
 
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.module.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.TestData.*;
 
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.proxy.CatalogQueryProxy;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.service.CatalogQueryService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.Ignore;
 
 public class AllWiseCatalogTest {
 
@@ -45,7 +43,6 @@ public class AllWiseCatalogTest {
     }
 
     @Test
-    @Ignore
     public void getCatalogEntriesByCoords() throws IOException {
         List<CatalogEntry> entriesFromProxy = catalogQueryProxy.getCatalogEntriesByCoords(catalogEntry);
         List<CatalogEntry> entriesFromService = catalogQueryService.getCatalogEntriesByCoords(catalogEntry);
@@ -53,7 +50,6 @@ public class AllWiseCatalogTest {
     }
 
     @Test
-    @Ignore
     public void parseResponse() throws IOException {
         String irsaUrl = createIrsaUrl(ALLWISE_CATALOG_ID, DEG_RA, DEG_DE, DEG_RADIUS / DEG_ARCSEC);
         HttpURLConnection connection = establishHttpConnection(irsaUrl);

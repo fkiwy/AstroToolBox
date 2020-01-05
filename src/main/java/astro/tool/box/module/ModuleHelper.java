@@ -1,24 +1,34 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.CollectedObject;
+import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,10 +38,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -42,6 +55,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.RowFilter;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -54,17 +69,11 @@ import javax.swing.table.TableRowSorter;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v1.1b";
+    public static final String PGM_VERSION = "v1.2.0";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
     public static final String AGN_WARNING = "Possible AGN?";
-
-    public static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
-    public static final Font PLAIN_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
-    public static final Font PLAIN_BOLD_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 12);
-    public static final Font SMALL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-    public static final Font SMALL_BOLD_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 11);
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -76,7 +85,6 @@ public class ModuleHelper {
 
     public static JLabel createHyperlink(String label, String uri) {
         JLabel hyperlink = new JLabel(label);
-        hyperlink.setFont(SMALL_FONT);
         hyperlink.setForeground(JColor.DARK_BLUE.val);
         hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         hyperlink.addMouseListener(new MouseAdapter() {
@@ -91,7 +99,7 @@ public class ModuleHelper {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                hyperlink.setText("<html><a href=''>" + label + "</a></html>");
+                hyperlink.setText(html("<a href=''>" + label + "</a>"));
             }
 
             @Override
@@ -137,58 +145,33 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static JTextField createField(Object text, Font font) {
-        return createField(text, font, 0);
+    public static String underline(String text) {
+        return html("<u>" + text + "</u>");
     }
 
-    public static JTextField createField(Object text, Font font, int cols) {
-        JTextField field = cols == 0 ? new JTextField() : new JTextField(cols);
-        field.setText(text.toString());
-        field.setFont(font);
-        field.setEditable(true);
-        return field;
+    public static String html(String text) {
+        return "<html>" + text + "</html>";
     }
 
-    public static JLabel createLabel(Object text, Font font) {
+    public static JLabel createLabel(Object text, JColor color) {
         JLabel label = new JLabel(text.toString());
-        label.setFont(font);
+        label.setForeground(color.val);
         return label;
-    }
-
-    public static JLabel createLabel(Object text, Font font, int alignment) {
-        JLabel label = new JLabel(text.toString(), alignment);
-        label.setFont(font);
-        return label;
-    }
-
-    public static JLabel createLabel(Object text, Font font, Color color) {
-        JLabel label = new JLabel(text.toString());
-        label.setForeground(color);
-        label.setFont(font);
-        return label;
-    }
-
-    public static String underLine(String text) {
-        return "<html><u>" + text + "</u></html>";
     }
 
     public static Border createEtchedBorder(String boderTitle) {
-        return createEtchedBorder(boderTitle, null, null);
+        return createEtchedBorder(boderTitle, null);
     }
 
-    public static Border createEtchedBorder(String boderTitle, Font titleFont) {
-        return createEtchedBorder(boderTitle, titleFont, null);
-    }
-
-    public static Border createEtchedBorder(String boderTitle, Font titleFont, Color titleColor) {
+    public static Border createEtchedBorder(String boderTitle, Color titleColor) {
         return BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, titleFont, titleColor
+                BorderFactory.createEtchedBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, null, titleColor
         );
     }
 
-    public static Border createEmptyBorder(String boderTitle, Font titleFont) {
+    public static Border createEmptyBorder(String boderTitle) {
         return BorderFactory.createTitledBorder(
-                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, titleFont
+                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP
         );
     }
 
@@ -199,12 +182,12 @@ public class ModuleHelper {
         return new NumberPair(ra, dec);
     }
 
-    public static String[] splitCoordinates(String coords) {
+    private static String[] splitCoordinates(String coords) {
         coords = convertToDecimalCoords(coords);
         return coords.trim().replaceAll("[,;]", " ").split("\\s+");
     }
 
-    public static String convertToDecimalCoords(String coords) {
+    private static String convertToDecimalCoords(String coords) {
         String[] parts = coords.replaceAll("[:hdms°'\"]", " ").split("\\s+");
         if (parts.length == 6) {
             String ra = "";
@@ -230,7 +213,7 @@ public class ModuleHelper {
 
     public static void addEmptyCatalogElement(JPanel detailPanel) {
         addLabelToPanel(new CatalogElement(), detailPanel);
-        addFieldToPanel(new CatalogElement(), detailPanel);
+        addLabelToPanel(new CatalogElement(), detailPanel);
     }
 
     public static void addLabelToPanel(CatalogElement element, JPanel panel) {
@@ -254,6 +237,8 @@ public class ModuleHelper {
         JTextField field = new JTextField(value == null ? "" : value);
         if (element.isOnFocus()) {
             field.setBackground(JColor.WHITE.val);
+        } else {
+            field.setBackground(new JLabel().getBackground());
         }
         if (element.isComputed()) {
             field.setForeground(JColor.DARKER_GREEN.val);
@@ -262,7 +247,7 @@ public class ModuleHelper {
             field.setForeground(JColor.DARK_RED.val);
         }
         field.setBorder(BorderFactory.createEmptyBorder());
-        field.setEditable(false);
+        field.setEditable(true);
         panel.add(field);
     }
 
@@ -343,6 +328,111 @@ public class ModuleHelper {
             }
             columnModel.getColumn(column).setPreferredWidth(width + 20);
         }
+    }
+
+    public static RowFilter getCustomRowFilter(String filterText) {
+        return new RowFilter<Object, Object>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends Object, ? extends Object> entry) {
+                for (int i = entry.getValueCount() - 1; i >= 0; i--) {
+                    if (entry.getStringValue(i).toUpperCase().contains(filterText.toUpperCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean sptWithColors) {
+        Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+        List<String> spectralTypes = new ArrayList<>();
+        results.entrySet().forEach(entry -> {
+            SpectralTypeLookupResult key = entry.getKey();
+            Set<ColorValue> values = entry.getValue();
+            StringBuilder matchedColors = new StringBuilder();
+            Iterator<ColorValue> colorIterator = values.iterator();
+            while (colorIterator.hasNext()) {
+                ColorValue colorValue = colorIterator.next();
+                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
+                if (colorIterator.hasNext()) {
+                    matchedColors.append(" ");
+                }
+            }
+            String spectralType;
+            if (sptWithColors) {
+                spectralType = "[" + key.getSpt() + ": " + matchedColors + "]";
+            } else {
+                spectralType = key.getSpt();
+            }
+            spectralTypes.add(spectralType);
+        });
+        return spectralTypes;
+    }
+
+    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService) {
+        // Collect data
+        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+        if (catalogEntry instanceof SimbadCatalogEntry) {
+            SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+            StringBuilder simbadType = new StringBuilder();
+            simbadType.append("[");
+            simbadType.append(simbadEntry.getObjectType());
+            if (!simbadEntry.getSpectralType().isEmpty()) {
+                simbadType.append(" ").append(simbadEntry.getSpectralType());
+            }
+            simbadType.append("]");
+            spectralTypes.add(0, simbadType.toString());
+        }
+        if (catalogEntry instanceof AllWiseCatalogEntry) {
+            AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+            if (isAPossibleAgn(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
+                spectralTypes.add("[" + AGN_WARNING + "]");
+            }
+        }
+        CollectedObject collectedObject = new CollectedObject.Builder()
+                .setDiscoveryDate(LocalDateTime.now())
+                .setObjectType(objectType)
+                .setCatalogName(catalogEntry.getCatalogName())
+                .setRa(catalogEntry.getRa())
+                .setDec(catalogEntry.getDec())
+                .setSourceId(catalogEntry.getSourceId() + " ")
+                .setPlx(catalogEntry.getPlx())
+                .setPmra(catalogEntry.getPmra())
+                .setPmdec(catalogEntry.getPmdec())
+                .setSpectralTypes(spectralTypes)
+                .setNotes("").build();
+
+        // Save object
+        String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
+        if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
+            showErrorDialog(baseFrame, "Specify file location of object collection in the Settings tab.");
+            return;
+        }
+
+        boolean newFile = false;
+        File objectCollection = new File(objectCollectionPath);
+        if (!objectCollection.exists()) {
+            try {
+                objectCollection.createNewFile();
+                newFile = true;
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+                return;
+            }
+        }
+        try (PrintWriter pw = new PrintWriter(new FileWriter(objectCollection, true))) {
+            if (newFile) {
+                pw.println(collectedObject.getTitles());
+            }
+            pw.println(collectedObject.getValues());
+        } catch (IOException ex) {
+            showExceptionDialog(baseFrame, ex);
+            return;
+        }
+
+        message.setText("Object has been added to collection!");
+        messageTimer.restart();
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

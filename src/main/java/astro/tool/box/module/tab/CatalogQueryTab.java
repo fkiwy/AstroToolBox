@@ -1,10 +1,8 @@
 package astro.tool.box.module.tab;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -18,9 +16,9 @@ import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
+import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -45,9 +43,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,9 +54,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -91,8 +89,8 @@ public class CatalogQueryTab {
     private final Map<String, CatalogEntry> catalogInstances;
     private final Map<Integer, List<CatalogEntry>> catalogResults;
 
-    private AllWiseCatalogEntry selectedAllWiseEntry;
-    private CatWiseCatalogEntry selectedCatWiseEntry;
+    //private AllWiseCatalogEntry selectedAllWiseEntry;
+    //private CatWiseCatalogEntry selectedCatWiseEntry;
     private CatalogEntry selectedEntry;
 
     private boolean copyCoordsToClipboard;
@@ -141,13 +139,13 @@ public class CatalogQueryTab {
             JLabel coordsLabel = new JLabel("Coordinates:");
             topPanel.add(coordsLabel);
 
-            coordsField = createField("", PLAIN_FONT, 25);
+            coordsField = new JTextField(25);
             topPanel.add(coordsField);
 
             JLabel radiusLabel = new JLabel("Search radius (arcsec):");
             topPanel.add(radiusLabel);
 
-            radiusField = createField("", PLAIN_FONT, 5);
+            radiusField = new JTextField(5);
             topPanel.add(radiusField);
 
             JLabel catalogLabel = new JLabel("Catalogs:");
@@ -179,9 +177,9 @@ public class CatalogQueryTab {
                         return;
                     }
                     double searchRadius;
-                    NumberPair coordinates = getCoordinates(coords);
                     List<String> errorMessages = new ArrayList<>();
                     try {
+                        NumberPair coordinates = getCoordinates(coords);
                         targetRa = coordinates.getX();
                         targetDec = coordinates.getY();
                         if (targetRa < 0) {
@@ -273,19 +271,17 @@ public class CatalogQueryTab {
             topPanel.add(searchButton);
 
             searchLabel = new JLabel();
-            searchLabel.setFont(PLAIN_FONT);
             topPanel.add(searchLabel);
 
-            ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     baseFrame.getRootPane().setDefaultButton(searchButton);
                 } else {
                     baseFrame.getRootPane().setDefaultButton(null);
                 }
-            };
-            tabbedPane.addChangeListener(changeListener);
+            });
 
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
         } catch (Exception ex) {
@@ -294,8 +290,8 @@ public class CatalogQueryTab {
     }
 
     private int queryCatalog(CatalogEntry catalogQuery) throws IOException {
-        selectedAllWiseEntry = null;
-        selectedCatWiseEntry = null;
+        //selectedAllWiseEntry = null;
+        //selectedCatWiseEntry = null;
         List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
@@ -323,7 +319,7 @@ public class CatalogQueryTab {
         JTable catalogTable = new JTable(defaultTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return true;
             }
         };
         alignCatalogColumns(catalogTable, catalogEntry);
@@ -357,7 +353,7 @@ public class CatalogQueryTab {
                     displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     displayCatalogDetails(selected);
                     //displayProperMotions(selected);
-                    displaySpectralTypes(selected.getColors());
+                    displaySpectralTypes(selected);
                     baseFrame.setVisible(true);
                 }
             }
@@ -374,17 +370,17 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(18, 2));
-        linkPanel.setPreferredSize(new Dimension(210, 375));
+        linkPanel.setPreferredSize(new Dimension(250, 375));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
-        linkPanel.add(createLabel("Image viewers:", SMALL_FONT));
-        linkPanel.add(createLabel("FoV (arcsec)", SMALL_FONT));
-        panstarrsField = createField(panstarrsFOV, SMALL_FONT);
-        aladinLiteField = createField(aladinLiteFOV, SMALL_FONT);
-        wiseViewField = createField(wiseViewFOV, SMALL_FONT);
-        finderChartField = createField(finderChartFOV, SMALL_FONT);
+        linkPanel.add(new JLabel("Image viewers:"));
+        linkPanel.add(new JLabel("FoV (arcsec)"));
+        panstarrsField = new JTextField(String.valueOf(panstarrsFOV));
+        aladinLiteField = new JTextField(String.valueOf(aladinLiteFOV));
+        wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
+        finderChartField = new JTextField(String.valueOf(finderChartFOV));
         if (degDE >= -30) {
             linkPanel.add(createHyperlink("PanSTARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
             linkPanel.add(panstarrsField);
@@ -398,7 +394,6 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         JButton saveButton = new JButton("Change FoV");
-        saveButton.setFont(SMALL_FONT);
         saveButton.addActionListener((ActionEvent e) -> {
             try {
                 panstarrsFOV = toInteger(panstarrsField.getText());
@@ -416,7 +411,7 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
-        linkPanel.add(createLabel("Databases:", SMALL_FONT));
+        linkPanel.add(new JLabel("Databases:"));
         linkPanel.add(createHyperlink("IRSA Data Discov.", getDataDiscoveryUrl()));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
@@ -425,7 +420,7 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
-        linkPanel.add(createLabel("Single catalogs:", SMALL_FONT));
+        linkPanel.add(new JLabel("Single catalogs:"));
         linkPanel.add(createHyperlink("AllWISE", getSpecificCatalogsUrl("II/328/allwise", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
@@ -473,7 +468,7 @@ public class CatalogQueryTab {
         bottomPanel.add(detailPanel);
     }
 
-    private void displayProperMotions(CatalogEntry selectedEntry) {
+    /*private void displayProperMotions(CatalogEntry selectedEntry) {
         if (selectedEntry instanceof AllWiseCatalogEntry) {
             selectedAllWiseEntry = (AllWiseCatalogEntry) selectedEntry;
         } else if (selectedEntry instanceof CatWiseCatalogEntry) {
@@ -489,14 +484,13 @@ public class CatalogQueryTab {
             );
             System.out.println("Apparent motions: " + properMotions);
         }
-
-    }
-
-    private void displaySpectralTypes(Map<Color, Double> colors) {
+    }*/
+    //
+    private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+            Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
-            List<Object[]> spectralTypes = new ArrayList<>();
+            List<String[]> spectralTypes = new ArrayList<>();
             results.entrySet().forEach(entry -> {
                 SpectralTypeLookupResult key = entry.getKey();
                 Set<ColorValue> values = entry.getValue();
@@ -509,51 +503,74 @@ public class CatalogQueryTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors;
-                spectralTypes.add(spectralType.split(",", 5));
+                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
+                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+                spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,sol rad,sol mass,matched colors";
-            String[] columns = titles.split(",", 5);
+            String titles = "spt,teff,sol rad,sol mass,matched colors,nearest color,gap to nearest color";
+            String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return false;
+                    return true;
                 }
             };
+            alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             spectralTypeTable.setCellSelectionEnabled(false);
             resizeColumnWidth(spectralTypeTable);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", PLAIN_FONT, JColor.DARK_RED.val))
+                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                     : new JScrollPane(spectralTypeTable);
 
-            JPanel spectralTypeInfo = new JPanel(new GridLayout(2, 1));
+            JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(350, 375));
+            spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
             spectralTypeInfo.add(spectralTypePanel);
 
-            JPanel spectralTypeNote = new JPanel();
-            spectralTypeNote.setLayout(new BoxLayout(spectralTypeNote, BoxLayout.Y_AXIS));
+            JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            spectralTypeInfo.add(remarks);
+            remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
+            remarks.add(new JLabel("to early type as well to late type stars."));
+            remarks.add(new JLabel("The more colors match, the better the results, in general."));
+            remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
 
-            spectralTypeNote.add(createLabel("Note that for some colors, results may be contradictory, as they may", SMALL_FONT));
-            spectralTypeNote.add(createLabel("fit to early type as well to late type stars.", SMALL_FONT));
-            spectralTypeNote.add(createLabel("The more colors match, the better the result (for the most part).", SMALL_FONT));
-            spectralTypeNote.add(createLabel("Be aware that, in any case, this feature only returns approximate", SMALL_FONT));
-            spectralTypeNote.add(createLabel("results.", SMALL_FONT));
-            spectralTypeNote.add(createLabel(" ", SMALL_FONT));
-            spectralTypeNote.add(createLabel("The feature uses Eric Mamajek's spectral type lookup table:", SMALL_FONT));
-            spectralTypeNote.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Seq.", "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt"));
-            spectralTypeNote.add(createLabel("Version in use: 2019.3.22", SMALL_FONT));
-            spectralTypeNote.add(createLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab under", SMALL_FONT));
-            spectralTypeNote.add(createLabel(LookupTable.MAIN_SEQUENCE + ".", SMALL_FONT));
+            remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            spectralTypeInfo.add(remarks);
+            remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
+            String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
+            remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
+            remarks.add(new JLabel("Version in use: 2019.3.22"));
+            remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
-            spectralTypeInfo.add(spectralTypeNote);
+            JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            collectPanel.setBorder(BorderFactory.createEtchedBorder());
+            spectralTypeInfo.add(collectPanel);
+
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
+                message.setText("");
+            });
+
+            collectPanel.add(new JLabel("Object type:"));
+
+            JComboBox objectTypes = new JComboBox<>(ObjectType.labels());
+            collectPanel.add(objectTypes);
+
+            JButton collectButton = new JButton("Add to object collection");
+            collectPanel.add(collectButton);
+            collectButton.addActionListener((ActionEvent evt) -> {
+                String selectedObjectType = (String) objectTypes.getSelectedItem();
+                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService);
+            });
+
+            collectPanel.add(message);
 
             bottomPanel.add(spectralTypeInfo);
         } catch (Exception ex) {

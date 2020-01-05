@@ -6,7 +6,6 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
@@ -15,9 +14,7 @@ import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.AsynchResult;
-import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.facade.CatalogQueryFacade;
@@ -44,7 +41,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -63,7 +59,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -140,7 +135,6 @@ public class BatchQueryTab {
             JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(bottomRow);
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
@@ -162,17 +156,17 @@ public class BatchQueryTab {
 
             centerRow.add(new JLabel("RA position:"));
 
-            JTextField raColumnPosition = createField("", PLAIN_FONT, 2);
+            JTextField raColumnPosition = new JTextField(2);
             centerRow.add(raColumnPosition);
 
             centerRow.add(new JLabel("dec position:"));
 
-            JTextField decColumnPosition = createField("", PLAIN_FONT, 2);
+            JTextField decColumnPosition = new JTextField(2);
             centerRow.add(decColumnPosition);
 
             centerRow.add(new JLabel("Search radius:"));
 
-            JTextField radiusField = createField("5", PLAIN_FONT, 3);
+            JTextField radiusField = new JTextField("5", 3);
             centerRow.add(radiusField);
 
             centerRow.add(new JLabel("Catalogs:"));
@@ -411,7 +405,7 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
-                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors());
+                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, sptWithColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                         StringBuilder simbadType = new StringBuilder();
@@ -442,7 +436,7 @@ public class BatchQueryTab {
                             .setTargetDistance(catalogEntry.getTargetDistance())
                             .setRa(catalogEntry.getRa())
                             .setDec(catalogEntry.getDec())
-                            .setSourceId(catalogEntry.getSourceId())
+                            .setSourceId(catalogEntry.getSourceId() + " ")
                             .setPlx(catalogEntry.getPlx())
                             .setPmra(catalogEntry.getPmra())
                             .setPmdec(catalogEntry.getPmdec())
@@ -496,32 +490,6 @@ public class BatchQueryTab {
         return null;
     }
 
-    private List<String> lookupSpectralTypes(Map<Color, Double> colors) {
-        Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
-        List<String> spectralTypes = new ArrayList<>();
-        results.entrySet().forEach(entry -> {
-            SpectralTypeLookupResult key = entry.getKey();
-            Set<ColorValue> values = entry.getValue();
-            StringBuilder matchedColors = new StringBuilder();
-            Iterator<ColorValue> colorIterator = values.iterator();
-            while (colorIterator.hasNext()) {
-                ColorValue colorValue = colorIterator.next();
-                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                if (colorIterator.hasNext()) {
-                    matchedColors.append(" ");
-                }
-            }
-            String spectralType;
-            if (sptWithColors.isSelected()) {
-                spectralType = "[" + key.getSpt() + ": " + matchedColors + "]";
-            } else {
-                spectralType = key.getSpt();
-            }
-            spectralTypes.add(spectralType);
-        });
-        return spectralTypes;
-    }
-
     private void displayQueryResults() {
         List<Object[]> list = new ArrayList<>();
         batchResults.forEach(entry -> {
@@ -534,7 +502,7 @@ public class BatchQueryTab {
         JTable resultTable = new JTable(defaultTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return true;
             }
         };
         alignResultColumns(resultTable);

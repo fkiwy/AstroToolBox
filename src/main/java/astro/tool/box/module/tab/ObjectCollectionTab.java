@@ -1,17 +1,13 @@
 package astro.tool.box.module.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.module.Application;
-import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,7 +16,7 @@ import java.util.List;
 import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,38 +27,37 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
-public class FileBrowserTab {
+public class ObjectCollectionTab {
 
-    public static final String TAB_NAME = "File Browser";
+    public static final String TAB_NAME = "Object Collection";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
-    private final Application application;
-    private final int tabIndex;
+    private final TableRowSorter<TableModel> objectCollectionSorter;
 
     private JPanel centerPanel;
     private JTable resultTable;
-    private JTextField raColumnPosition;
-    private JTextField decColumnPosition;
+    private JTextField searchField;
+    private JCheckBox copyCoords;
 
     private File file;
 
-    private int raColumnIndex;
-    private int decColumnIndex;
-
-    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, Application application, int tabIndex) {
+    public ObjectCollectionTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
-        this.application = application;
-        this.tabIndex = tabIndex;
+        objectCollectionSorter = new TableRowSorter<>();
     }
 
     public void init() {
@@ -74,42 +69,6 @@ public class FileBrowserTab {
 
             JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(bottomPanel, BorderLayout.PAGE_END);
-
-            topPanel.add(new JLabel("RA position:"));
-
-            raColumnPosition = new JTextField(2);
-            topPanel.add(raColumnPosition);
-
-            topPanel.add(new JLabel("dec position:"));
-
-            decColumnPosition = new JTextField(2);
-            topPanel.add(decColumnPosition);
-
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
-
-            JButton importButton = new JButton("Import csv file with header");
-            topPanel.add(importButton);
-            importButton.addActionListener((ActionEvent evt) -> {
-                int returnVal = fileChooser.showOpenDialog(topPanel);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    if (raColumnPosition.getText().isEmpty() || decColumnPosition.getText().isEmpty()) {
-                        raColumnIndex = 0;
-                        decColumnIndex = 0;
-                    } else {
-                        StringBuilder errors = new StringBuilder();
-                        checkRaAndDecColumnPositions(errors);
-                        if (errors.length() > 0) {
-                            showErrorDialog(baseFrame, errors.toString());
-                            return;
-                        }
-                    }
-                    file = fileChooser.getSelectedFile();
-                    removeAndRecreateCenterPanel(mainPanel);
-                    readFileContents("");
-                    baseFrame.setVisible(true);
-                }
-            });
 
             topPanel.add(new JLabel("Columns to add:"));
 
@@ -127,18 +86,12 @@ public class FileBrowserTab {
             topPanel.add(reloadButton);
             reloadButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
                 String confirmMessage = "Any unsaved changes will be lost!" + LINE_SEP
                         + "Do you really want to reload file " + file.getName() + "?";
                 if (!showConfirmDialog(baseFrame, confirmMessage)) {
-                    return;
-                }
-                StringBuilder errors = new StringBuilder();
-                checkRaAndDecColumnPositions(errors);
-                if (errors.length() > 0) {
-                    showErrorDialog(baseFrame, errors.toString());
                     return;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
@@ -153,7 +106,7 @@ public class FileBrowserTab {
             topPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
                 StringBuilder fileContent = new StringBuilder();
@@ -178,23 +131,16 @@ public class FileBrowserTab {
                 }
             });
 
-            JButton openButton = new JButton("Open new File Browser");
-            topPanel.add(openButton);
-            openButton.addActionListener((ActionEvent evt) -> {
-                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application, tabIndex + 1);
-                fileBrowserTab.init();
-                tabbedPane.setSelectedIndex(tabIndex + 1);
-            });
-
             topPanel.add(topPanelMessage);
 
             JButton addButton = new JButton("Add row");
             bottomPanel.add(addButton);
             addButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
+                searchField.setText("");
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
                 tableModel.addRow((Object[]) null);
                 bottomPanelMessage.setText("Row has been added!");
@@ -205,7 +151,7 @@ public class FileBrowserTab {
             bottomPanel.add(removeButton);
             removeButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    showErrorDialog(baseFrame, "No file imported yet!");
+                    showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
                 if (resultTable.getSelectedRow() == -1) {
@@ -228,44 +174,52 @@ public class FileBrowserTab {
 
             bottomPanel.add(bottomPanelMessage);
 
-            baseFrame.addWindowListener(new WindowAdapter() {
+            bottomPanel.add(new JLabel("Search:"));
+            searchField = new JTextField(30);
+            bottomPanel.add(searchField);
+            searchField.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
-                public void windowClosing(WindowEvent evt) {
-                    if (file != null) {
-                        String confirmMessage = "File " + file.getName() + " is still open in the File Browser." + LINE_SEP
-                                + "It may still contain unsaved changes!" + LINE_SEP
-                                + "Do you really want to close AstroToolBox?";
-                        if (showConfirmDialog(baseFrame, confirmMessage)) {
-                            System.exit(0);
-                        } else {
-                            baseFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-                        }
-                    }
+                public void changedUpdate(DocumentEvent e) {
+                }
+
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    objectCollectionSorter.setRowFilter(getCustomRowFilter(searchField.getText()));
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    objectCollectionSorter.setRowFilter(getCustomRowFilter(searchField.getText()));
                 }
             });
 
-            tabbedPane.insertTab(TAB_NAME, null, new JScrollPane(mainPanel), null, tabIndex);
+            copyCoords = new JCheckBox("Copy selected coordinates to the Image Viewer or Catalog Search tab");
+            bottomPanel.add(copyCoords);
+
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
+                int index = sourceTabbedPane.getSelectedIndex();
+                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
+                    if (file == null) {
+                        String objectCollectionPath = getUserSetting(OBJECT_COLLECTION_PATH);
+                        if (objectCollectionPath == null || objectCollectionPath.isEmpty()) {
+                            return;
+                        }
+                        File objectCollectionFile = new File(objectCollectionPath);
+                        if (!objectCollectionFile.exists()) {
+                            return;
+                        }
+                        file = objectCollectionFile;
+                    }
+                    removeAndRecreateCenterPanel(mainPanel);
+                    readFileContents(addColumnsField.getText());
+                    baseFrame.setVisible(true);
+                }
+            });
+
+            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
-        }
-    }
-
-    private void checkRaAndDecColumnPositions(StringBuilder errors) {
-        try {
-            raColumnIndex = toInteger(raColumnPosition.getText()) - 1;
-            if (raColumnIndex < 0) {
-                errors.append("RA position must be greater than 0.").append(LINE_SEP);
-            }
-        } catch (Exception ex) {
-            errors.append("Invalid RA position!").append(LINE_SEP);
-        }
-        try {
-            decColumnIndex = toInteger(decColumnPosition.getText()) - 1;
-            if (decColumnIndex < 0) {
-                errors.append("Dec position must be greater than 0.").append(LINE_SEP);
-            }
-        } catch (Exception ex) {
-            errors.append("Invalid dec position!").append(LINE_SEP);
         }
     }
 
@@ -284,20 +238,6 @@ public class FileBrowserTab {
         try (Scanner scanner = new Scanner(file)) {
             String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
 
-            StringBuilder errors = new StringBuilder();
-            int numberOfColumns = columnNames.length;
-            int lastColumnIndex = numberOfColumns - 1;
-            if (raColumnIndex > lastColumnIndex) {
-                errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
-            }
-            if (decColumnIndex > lastColumnIndex) {
-                errors.append("Dec position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
-            }
-            if (errors.length() > 0) {
-                showErrorDialog(baseFrame, errors.toString());
-                return;
-            }
-
             String[] newNames = columnsToAdd.split(SPLIT_CHAR);
             int columnCount = newNames.length;
             if (columnCount == 1 && newNames[0].isEmpty()) {
@@ -313,7 +253,7 @@ public class FileBrowserTab {
             int rowNumber = 0;
             List<String[]> rows = new ArrayList<>();
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, columnNames.length);
                 String[] values = concatArrays(new String[]{String.valueOf(++rowNumber)}, columnValues);
                 if (columnCount > 0) {
                     values = concatArrays(values, newValues);
@@ -342,16 +282,17 @@ public class FileBrowserTab {
             }
         };
         alignResultColumns(resultTable, rows);
+        addComparatorsToTableSorter(objectCollectionSorter, defaultTableModel, rows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        resultTable.setRowSorter(createResultTableSorter(defaultTableModel, rows));
+        resultTable.setRowSorter(objectCollectionSorter);
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        if (raColumnIndex > 0 || decColumnIndex > 0) {
-            resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+        resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if (copyCoords.isSelected()) {
                 int selectedRow = resultTable.getSelectedRow();
                 if (!e.getValueIsAdjusting() && selectedRow > -1 && selectedRow < resultTable.getRowCount()) {
-                    String ra = (String) resultTable.getValueAt(selectedRow, raColumnIndex + 1);
-                    String dec = (String) resultTable.getValueAt(selectedRow, decColumnIndex + 1);
+                    String ra = (String) resultTable.getValueAt(selectedRow, 4);
+                    String dec = (String) resultTable.getValueAt(selectedRow, 5);
                     String coords = ra + " " + dec;
                     imageViewerTab.getCoordsField().setText(coords);
                     catalogQueryTab.getCoordsField().setText(coords);
@@ -359,8 +300,8 @@ public class FileBrowserTab {
                     catalogQueryTab.removeAndRecreateCenterPanel();
                     catalogQueryTab.removeAndRecreateBottomPanel();
                 }
-            });
-        }
+            }
+        });
         resizeColumnWidth(resultTable);
 
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);

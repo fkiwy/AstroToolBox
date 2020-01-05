@@ -1,7 +1,7 @@
 package astro.tool.box.service;
 
-import astro.tool.box.container.ColorValue;
 import static astro.tool.box.function.PhotometricFunctions.*;
+import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Color;

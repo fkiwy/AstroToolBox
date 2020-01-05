@@ -1,14 +1,18 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
+import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.module.tab.AdqlQueryTab;
 import astro.tool.box.module.tab.BatchQueryTab;
 import astro.tool.box.module.tab.BrownDwarfTab;
 import astro.tool.box.module.tab.CatalogQueryTab;
+import astro.tool.box.module.tab.CustomOverlaysTab;
 import astro.tool.box.module.tab.FileBrowserTab;
 import astro.tool.box.module.tab.HelpTab;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.module.tab.LookupTab;
+import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
@@ -16,6 +20,7 @@ import astro.tool.box.module.tab.WiseFlagsTab;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 public class Application {
 
@@ -30,6 +35,17 @@ public class Application {
     private ImageViewerTab imageViewerTab;
 
     public Application() {
+        try {
+            loadUserSettings();
+            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL));
+            if (lookAndFeel.equals(LookAndFeel.Java)) {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            } else {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+        } catch (Exception e) {
+        }
+
     }
 
     public void init() {
@@ -51,7 +67,9 @@ public class Application {
         WhiteDwarfTab whiteDwarfTab = new WhiteDwarfTab(baseFrame, tabbedPane, catalogQueryTab);
         whiteDwarfTab.init();
 
-        imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
+        CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane);
+
+        imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane, customOverlaysTab);
         imageViewerTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
@@ -60,8 +78,13 @@ public class Application {
         BatchQueryTab batchQueryTab = new BatchQueryTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         batchQueryTab.init();
 
-        FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, this, tabbedPane.getTabCount());
         fileBrowserTab.init();
+
+        ObjectCollectionTab objectCollectionTab = new ObjectCollectionTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        objectCollectionTab.init();
+
+        customOverlaysTab.init();
 
         ToolTab toolTab = new ToolTab(baseFrame, tabbedPane);
         toolTab.init();

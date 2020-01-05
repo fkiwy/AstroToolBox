@@ -1,15 +1,14 @@
-package astro.tool.box.catalog;
+package astro.tool.box.service;
 
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.module.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.TestData.*;
 
+import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.proxy.CatalogQueryProxy;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.SimbadCatalogEntry;
-import astro.tool.box.service.CatalogQueryService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,11 +22,11 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.Ignore;
 
-public class SimbadCatalogTest {
+public class GaiaDR2CatalogTest {
 
     CatalogQueryFacade catalogQueryProxy = new CatalogQueryProxy();
     CatalogQueryFacade catalogQueryService = new CatalogQueryService();
-    SimbadCatalogEntry catalogEntry = new SimbadCatalogEntry();
+    GaiaDR2CatalogEntry catalogEntry = new GaiaDR2CatalogEntry();
 
     @Before
     public void init() {
@@ -45,7 +44,6 @@ public class SimbadCatalogTest {
     }
 
     @Test
-    @Ignore
     public void getCatalogEntriesByCoords() throws IOException {
         List<CatalogEntry> entriesFromProxy = catalogQueryProxy.getCatalogEntriesByCoords(catalogEntry);
         List<CatalogEntry> entriesFromService = catalogQueryService.getCatalogEntriesByCoords(catalogEntry);
@@ -53,10 +51,9 @@ public class SimbadCatalogTest {
     }
 
     @Test
-    @Ignore
     public void parseResponse() throws IOException {
-        String simbadUrl = createSimbadUrl(DEG_RA, DEG_DE, DEG_RADIUS / DEG_ARCSEC);
-        HttpURLConnection connection = establishHttpConnection(simbadUrl);
+        String irsaUrl = createIrsaUrl(GAIADR2_CATALOG_ID, DEG_RA, DEG_DE, DEG_RADIUS / DEG_ARCSEC);
+        HttpURLConnection connection = establishHttpConnection(irsaUrl);
 
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
@@ -64,36 +61,30 @@ public class SimbadCatalogTest {
         BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection)));
         List<String[]> results = reader.lines().map(line -> {
             //System.out.println(line);
-            return line.replace("|", ",").replace(" ", "").replace("\"", "").split(SPLIT_CHAR);
+            return line.split(SPLIT_CHAR);
         }).collect(Collectors.toList());
 
         String[] header = results.get(0);
-        assertEquals("main_id", header[0]);
-        assertEquals("otype_txt", header[1]);
-        assertEquals("sp_type", header[2]);
-        assertEquals("ra", header[3]);
-        assertEquals("dec", header[4]);
-        assertEquals("plx_value", header[5]);
-        assertEquals("plx_err", header[6]);
-        assertEquals("pmra", header[7]);
-        assertEquals("pmdec", header[8]);
-        assertEquals("rvz_radvel", header[9]);
-        assertEquals("rvz_redshift", header[10]);
-        assertEquals("rvz_type", header[11]);
-        assertEquals("U", header[12]);
-        assertEquals("B", header[13]);
-        assertEquals("V", header[14]);
-        assertEquals("R", header[15]);
-        assertEquals("I", header[16]);
-        assertEquals("G", header[17]);
-        assertEquals("J", header[18]);
-        assertEquals("H", header[19]);
-        assertEquals("K", header[20]);
-        assertEquals("u_", header[21]);
-        assertEquals("g_", header[22]);
-        assertEquals("r_", header[23]);
-        assertEquals("i_", header[24]);
-        assertEquals("z_", header[25]);
+        assertEquals("source_id", header[2]);
+        assertEquals("ra", header[5]);
+        assertEquals("dec", header[7]);
+        assertEquals("parallax", header[9]);
+        assertEquals("parallax_error", header[10]);
+        assertEquals("pmra", header[12]);
+        assertEquals("pmra_error", header[13]);
+        assertEquals("pmdec", header[14]);
+        assertEquals("pmdec_error", header[15]);
+        assertEquals("phot_g_mean_mag", header[50]);
+        assertEquals("phot_bp_mean_mag", header[55]);
+        assertEquals("phot_rp_mean_mag", header[60]);
+        assertEquals("bp_rp", header[63]);
+        assertEquals("bp_g", header[64]);
+        assertEquals("g_rp", header[65]);
+        assertEquals("radial_velocity", header[66]);
+        assertEquals("radial_velocity_error", header[67]);
+        assertEquals("teff_val", header[78]);
+        assertEquals("radius_val", header[88]);
+        assertEquals("lum_val", header[91]);
 
         //for (int i = 0; i < header.length; i++) {
         //    System.out.println(header[i] + " : " + i);

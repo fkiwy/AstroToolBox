@@ -1,11 +1,11 @@
 package astro.tool.box.container.catalog;
 
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.module.ServiceProviderUtils.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;

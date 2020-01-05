@@ -40,28 +40,28 @@ public class ProperMotionsTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(createLabel("From coordinates (deg): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField fromCoordsField = createField("", PLAIN_FONT);
+            mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
+            JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(createLabel("To coordinates (deg): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField toCoordsField = createField("", PLAIN_FONT);
+            mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
+            JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 
-            mainPanel.add(createLabel("Elapsed time unit: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(new JLabel("Elapsed time unit: ", JLabel.RIGHT));
             JComboBox<Unit> timeUnits = new JComboBox<>(new Unit[]{Unit.YEAR, Unit.DAY});
             mainPanel.add(timeUnits);
 
-            mainPanel.add(createLabel("Elapsed time: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField elapsedTimeField = createField("", PLAIN_FONT);
+            mainPanel.add(new JLabel("Elapsed time: ", JLabel.RIGHT));
+            JTextField elapsedTimeField = new JTextField();
             mainPanel.add(elapsedTimeField);
 
-            mainPanel.add(createLabel("Proper motions unit: ", PLAIN_FONT, JLabel.RIGHT));
+            mainPanel.add(new JLabel("Proper motions unit: ", JLabel.RIGHT));
             JComboBox<Unit> resultUnits = new JComboBox<>(new Unit[]{Unit.ARCSEC, Unit.MAS});
             mainPanel.add(resultUnits);
 
-            mainPanel.add(createLabel("Proper motions (pmra, pmdec): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField resultField = createField("", PLAIN_FONT);
+            mainPanel.add(new JLabel("Proper motions (pmra, pmdec): ", JLabel.RIGHT));
+            JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);
 

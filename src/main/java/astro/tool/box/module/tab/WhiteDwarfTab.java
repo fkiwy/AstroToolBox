@@ -41,7 +41,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class WhiteDwarfTab {
 
@@ -112,36 +111,36 @@ public class WhiteDwarfTab {
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
-            colorInput.add(createLabel("Gmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField gField = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("Gmag: ", JLabel.RIGHT));
+            JTextField gField = new JTextField();
             colorInput.add(gField);
 
-            colorInput.add(createLabel("BPmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField bpField = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("BPmag: ", JLabel.RIGHT));
+            JTextField bpField = new JTextField();
             colorInput.add(bpField);
 
-            colorInput.add(createLabel("RPmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField rpField = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("RPmag: ", JLabel.RIGHT));
+            JTextField rpField = new JTextField();
             colorInput.add(rpField);
 
-            colorInput.add(createLabel("Bmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField bField = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("Bmag: ", JLabel.RIGHT));
+            JTextField bField = new JTextField();
             colorInput.add(bField);
 
-            colorInput.add(createLabel("Vmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField vField = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("Vmag: ", JLabel.RIGHT));
+            JTextField vField = new JTextField();
             colorInput.add(vField);
 
-            colorInput.add(createLabel("Jmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField jField = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("Jmag: ", JLabel.RIGHT));
+            JTextField jField = new JTextField();
             colorInput.add(jField);
 
-            colorInput.add(createLabel("gmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField g_Field = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("gmag: ", JLabel.RIGHT));
+            JTextField g_Field = new JTextField();
             colorInput.add(g_Field);
 
-            colorInput.add(createLabel("rmag: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField r_Field = createField("", PLAIN_FONT);
+            colorInput.add(new JLabel("rmag: ", JLabel.RIGHT));
+            JTextField r_Field = new JTextField();
             colorInput.add(r_Field);
 
             colorInput.add(new JLabel());
@@ -164,14 +163,14 @@ public class WhiteDwarfTab {
             });
             colorInput.add(lookupButton);
 
-            ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     lookupResult.removeAll();
                     CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", PLAIN_FONT, JColor.DARK_RED.val));
+                        lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
                         StringBuilder catalogEntry = new StringBuilder("for ")
@@ -182,20 +181,19 @@ public class WhiteDwarfTab {
                                 .append(selectedEntry.getRa())
                                 .append(" dec = ")
                                 .append(selectedEntry.getDec());
-                        lookupResult.add(createLabel(catalogEntry.toString(), PLAIN_FONT));
+                        lookupResult.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
                                 String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, PLAIN_FONT, JColor.DARK_RED.val));
+                                lookupResult.add(createLabel(warning, JColor.DARK_RED));
                             }
                         }
                     }
                     lookupWhiteDwarfsByColor(lookupResult, selectedEntry.getColors());
                 }
-            };
+            });
 
-            tabbedPane.addChangeListener(changeListener);
             tabbedPane.addTab(TAB_NAME, spectralTypeLookup);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
@@ -210,13 +208,14 @@ public class WhiteDwarfTab {
         Map<SpectralTypeLookupResult, Set<ColorValue>> whiteDwarfMixResults = whiteDwarfMixLookupService.lookup(colors);
         displaySpectralTypes(whiteDwarfMixResults, lookupResult, "WD type: Mix He/H=0.1");
 
-        lookupResult.add(createLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab under", SMALL_FONT));
-        lookupResult.add(createLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + " and " + LookupTable.WHITE_DWARFS_MIX + ".", SMALL_FONT));
-        lookupResult.add(createLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r and r-J.", SMALL_FONT));
+        lookupResult.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
+        lookupResult.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + ", " + LookupTable.WHITE_DWARFS_MIX));
+        lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
+        lookupResult.add(new JLabel("G-RP, BP-RP, B-V, V-J, g-r and r-J"));
     }
 
     private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult, String panelTitle) {
-        List<Object[]> spectralTypes = new ArrayList<>();
+        List<String[]> spectralTypes = new ArrayList<>();
         results.entrySet().forEach(entry -> {
             SpectralTypeLookupResult key = entry.getKey();
             Set<ColorValue> values = entry.getValue();
@@ -229,26 +228,27 @@ public class WhiteDwarfTab {
                     matchedColors.append(", ");
                 }
             }
-            String spectralType = key.getTeff() + "," + matchedColors;
-            spectralTypes.add(spectralType.split(",", 2));
+            String spectralType = key.getTeff() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            spectralTypes.add(spectralType.split(",", 4));
         });
 
-        String titles = "teff,matched colors";
-        String[] columns = titles.split(",", 2);
+        String titles = "teff,matched colors,nearest color,gap to nearest color";
+        String[] columns = titles.split(",", 4);
         Object[][] rows = new Object[][]{};
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return true;
             }
         };
+        alignResultColumns(spectralTypeTable, spectralTypes);
         spectralTypeTable.setAutoCreateRowSorter(true);
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         spectralTypeTable.setCellSelectionEnabled(false);
         resizeColumnWidth(spectralTypeTable);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", PLAIN_FONT, JColor.DARK_RED.val))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), panelTitle, TitledBorder.LEFT, TitledBorder.TOP

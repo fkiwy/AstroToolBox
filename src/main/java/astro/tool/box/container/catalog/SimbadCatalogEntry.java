@@ -1,11 +1,11 @@
 package astro.tool.box.container.catalog;
 
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.module.ServiceProviderUtils.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -158,7 +158,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("plx err", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("plx err", roundTo4DecNZ(plx_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("rad vel (km/s)", roundTo1DecNZ(radvel), Alignment.RIGHT, getDoubleComparator(), true));

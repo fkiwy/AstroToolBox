@@ -199,9 +199,14 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_9DEC_NZ);
     }
 
-    private static String formatDouble(double number, String pattern) {
+    public static String formatDouble(double number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         df.setRoundingMode(RoundingMode.HALF_UP);
+        return df.format(number);
+    }
+
+    public static String formatInteger(int number, String pattern) {
+        DecimalFormat df = new DecimalFormat(pattern);
         return df.format(number);
     }
 

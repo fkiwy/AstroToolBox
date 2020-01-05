@@ -35,7 +35,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 
 public class SettingsTab {
@@ -50,18 +49,20 @@ public class SettingsTab {
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
 
-    // General settings
-    private static final String LOOK_AND_FEEL = "lookAndFeel";
+    // Global settings
+    public static final String LOOK_AND_FEEL = "lookAndFeel";
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
+    public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
     private boolean useSimbadMirror;
+    private String objectCollectionPath;
 
     // Catalog search settings
     private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
@@ -100,10 +101,7 @@ public class SettingsTab {
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
-        try (InputStream input = new FileInputStream(PROP_PATH)) {
-            USER_SETTINGS.load(input);
-        } catch (IOException ex) {
-        }
+        //loadUserSettings();
     }
 
     public void init() {
@@ -113,13 +111,13 @@ public class SettingsTab {
             JPanel containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
-            // General settings
-            JPanel generalSettings = new JPanel(new GridLayout(6, 2));
-            generalSettings.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "General Settings", TitledBorder.LEFT, TitledBorder.TOP
+            // Global settings
+            JPanel globalSettings = new JPanel(new GridLayout(7, 2));
+            globalSettings.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            generalSettings.setPreferredSize(new Dimension(350, 175));
-            containerPanel.add(generalSettings);
+            globalSettings.setPreferredSize(new Dimension(450, 200));
+            containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
             proxyAddress = USER_SETTINGS.getProperty(PROXY_ADDRESS, "");
@@ -133,13 +131,13 @@ public class SettingsTab {
             } else {
                 useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
             }
+            objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            setLookAndFeel(lookAndFeel);
-
-            generalSettings.add(createLabel("Look & Feel:", PLAIN_FONT, JLabel.RIGHT));
+            //setLookAndFeel(lookAndFeel);
+            globalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
-            generalSettings.add(radioPanel);
+            globalSettings.add(radioPanel);
 
             JRadioButton javaRadioButton = new JRadioButton("Java", lookAndFeel.equals(LookAndFeel.Java));
             radioPanel.add(javaRadioButton);
@@ -151,33 +149,37 @@ public class SettingsTab {
             radioGroup.add(javaRadioButton);
             radioGroup.add(osRadioButton);
 
-            generalSettings.add(createLabel("Proxy host name: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField proxyAddressField = createField(proxyAddress, PLAIN_FONT);
-            generalSettings.add(proxyAddressField);
+            globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
+            JTextField proxyAddressField = new JTextField(proxyAddress);
+            globalSettings.add(proxyAddressField);
 
-            generalSettings.add(createLabel("Proxy port: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField proxyPortField = createField(proxyPort, PLAIN_FONT);
-            generalSettings.add(proxyPortField);
+            globalSettings.add(new JLabel("Proxy port: ", JLabel.RIGHT));
+            JTextField proxyPortField = new JTextField(String.valueOf(proxyPort));
+            globalSettings.add(proxyPortField);
 
-            generalSettings.add(createLabel("Use proxy : ", PLAIN_FONT, JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use proxy : ", JLabel.RIGHT));
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
-            generalSettings.add(useProxyCheckBox);
+            globalSettings.add(useProxyCheckBox);
 
-            generalSettings.add(createLabel("Use Simbad mirror : ", PLAIN_FONT, JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use Simbad mirror : ", JLabel.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
-            generalSettings.add(useSimbadMirrorCheckBox);
+            globalSettings.add(useSimbadMirrorCheckBox);
 
-            generalSettings.add(new JLabel());
-            generalSettings.add(new JLabel());
+            globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
+            JTextField collectionPathField = new JTextField(objectCollectionPath);
+            globalSettings.add(collectionPathField);
+            
+            globalSettings.add(new JLabel("(*) The file will be created by the tool. ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(6, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(7, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 175));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -201,37 +203,37 @@ public class SettingsTab {
             catalogQueryTab.setWiseViewFOV(wiseViewFOV);
             catalogQueryTab.setFinderChartFOV(finderChartFOV);
 
-            catalogQuerySettings.add(createLabel("Copy coordinates to clipboard: ", PLAIN_FONT, JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Copy coordinates to clipboard: ", JLabel.RIGHT));
             JCheckBox clipboardCheckBox = new JCheckBox();
             clipboardCheckBox.setSelected(copyCoordsToClipboard);
             catalogQuerySettings.add(clipboardCheckBox);
 
-            catalogQuerySettings.add(createLabel("Search radius: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField searchRadiusField = createField(searchRadius, PLAIN_FONT);
+            catalogQuerySettings.add(new JLabel("Search radius: ", JLabel.RIGHT));
+            JTextField searchRadiusField = new JTextField(String.valueOf(searchRadius));
             catalogQuerySettings.add(searchRadiusField);
 
-            catalogQuerySettings.add(createLabel("PanSTARRS FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField panstarrsFovField = createField(panstarrsFOV, PLAIN_FONT);
+            catalogQuerySettings.add(new JLabel("PanSTARRS FoV: ", JLabel.RIGHT));
+            JTextField panstarrsFovField = new JTextField(String.valueOf(panstarrsFOV));
             catalogQuerySettings.add(panstarrsFovField);
 
-            catalogQuerySettings.add(createLabel("Aladin Lite FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField aladinLiteFovField = createField(aladinLiteFOV, PLAIN_FONT);
+            catalogQuerySettings.add(new JLabel("Aladin Lite FoV: ", JLabel.RIGHT));
+            JTextField aladinLiteFovField = new JTextField(String.valueOf(aladinLiteFOV));
             catalogQuerySettings.add(aladinLiteFovField);
 
-            catalogQuerySettings.add(createLabel("WiseView FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField wiseViewFovField = createField(wiseViewFOV, PLAIN_FONT);
+            catalogQuerySettings.add(new JLabel("WiseView FoV: ", JLabel.RIGHT));
+            JTextField wiseViewFovField = new JTextField(String.valueOf(wiseViewFOV));
             catalogQuerySettings.add(wiseViewFovField);
 
-            catalogQuerySettings.add(createLabel("IRSA Finder Chart FoV: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField finderChartFovField = createField(finderChartFOV, PLAIN_FONT);
+            catalogQuerySettings.add(new JLabel("IRSA Finder Chart FoV: ", JLabel.RIGHT));
+            JTextField finderChartFovField = new JTextField(String.valueOf(finderChartFOV));
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(6, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(7, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 175));
+            imageViewerSettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
@@ -262,7 +264,7 @@ public class SettingsTab {
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
 
-            imageViewerSettings.add(createLabel("Bands: ", PLAIN_FONT, JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox<>(new WiseBand[]{
                 WiseBand.W1,
                 WiseBand.W2,
@@ -271,7 +273,7 @@ public class SettingsTab {
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
 
-            imageViewerSettings.add(createLabel("Epochs: ", PLAIN_FONT, JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Epochs: ", JLabel.RIGHT));
             JComboBox epochs = new JComboBox<>(new Epoch[]{
                 Epoch.ALL,
                 Epoch.ALL_ASCENDING,
@@ -286,22 +288,22 @@ public class SettingsTab {
             epochs.setSelectedItem(epoch);
             imageViewerSettings.add(epochs);
 
-            imageViewerSettings.add(createLabel("Field of view (arcsec): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField sizeField = createField(String.valueOf(size), PLAIN_FONT);
+            imageViewerSettings.add(new JLabel("Field of view (arcsec): ", JLabel.RIGHT));
+            JTextField sizeField = new JTextField(String.valueOf(size));
             imageViewerSettings.add(sizeField);
 
-            imageViewerSettings.add(createLabel("Speed (ms): ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField speedField = createField(String.valueOf(speed), PLAIN_FONT);
+            imageViewerSettings.add(new JLabel("Speed (ms): ", JLabel.RIGHT));
+            JTextField speedField = new JTextField(String.valueOf(speed));
             imageViewerSettings.add(speedField);
 
-            imageViewerSettings.add(createLabel("Zoom: ", PLAIN_FONT, JLabel.RIGHT));
-            JTextField zoomField = createField(String.valueOf(zoom), PLAIN_FONT);
+            imageViewerSettings.add(new JLabel("Zoom: ", JLabel.RIGHT));
+            JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(buttonPanel, BorderLayout.CENTER);
 
-            JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -310,13 +312,14 @@ public class SettingsTab {
             buttonPanel.add(applyButton);
             applyButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    // General settings
+                    // Global settings
                     lookAndFeel = javaRadioButton.isSelected() ? LookAndFeel.Java : LookAndFeel.OS;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    objectCollectionPath = collectionPathField.getText();
 
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
@@ -352,7 +355,7 @@ public class SettingsTab {
                     return;
                 }
 
-                // General settings
+                // Global settings
                 setLookAndFeel(lookAndFeel);
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
@@ -360,6 +363,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+                USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings
                 catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
@@ -417,10 +421,10 @@ public class SettingsTab {
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
                     USER_SETTINGS.store(output, "User settings");
                     message.setText("Settings have been applied!");
+                    timer.restart();
                 } catch (IOException ex) {
                 }
 
-                timer.restart();
             });
 
             buttonPanel.add(message);
@@ -439,7 +443,14 @@ public class SettingsTab {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
             SwingUtilities.updateComponentTreeUI(baseFrame);
-        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (Exception e) {
+        }
+    }
+
+    public static void loadUserSettings() {
+        try (InputStream input = new FileInputStream(PROP_PATH)) {
+            USER_SETTINGS.load(input);
+        } catch (IOException ex) {
         }
     }
 

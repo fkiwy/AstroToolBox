@@ -1,9 +1,9 @@
 package astro.tool.box.module.tab;
 
-import static astro.tool.box.module.ServiceProviderUtils.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.enumeration.JColor;
@@ -13,6 +13,7 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -26,7 +27,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -41,12 +41,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
 import javax.swing.Timer;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -65,6 +62,7 @@ public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
     private static final String IRSA_TABLES = "IRSA tables";
+    private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -112,8 +110,8 @@ public class AdqlQueryTab {
             textEditor.setEditable(true);
             addUndoManager(textEditor);
 
-            ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     String query = textEditor.getText();
@@ -129,15 +127,13 @@ public class AdqlQueryTab {
                         }
                     }
                 }
-            };
-            tabbedPane.addChangeListener(changeListener);
+            });
 
             JScrollPane scrollEditor = new JScrollPane(textEditor);
             scrollEditor.setPreferredSize(new Dimension(scrollEditor.getWidth(), 250));
             scrollEditor.setBorder(createEtchedBorder("ADQL query"));
             centerPanel.add(scrollEditor);
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFileChooser fileChooser = new JFileChooser();
 
             JButton importButton = new JButton("Import query");
@@ -158,7 +154,7 @@ public class AdqlQueryTab {
             });
 
             String saveMessage = "File has been saved!";
-            JLabel message = createLabel("", PLAIN_FONT, JColor.DARKER_GREEN.val);
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -179,9 +175,6 @@ public class AdqlQueryTab {
                             showExceptionDialog(baseFrame, ex);
                         }
                     }
-                    return;
-                }
-                if (!showConfirmDialog(baseFrame, "Confirm save action for file " + file.getName())) {
                     return;
                 }
                 try (FileWriter writer = new FileWriter(file)) {
@@ -394,12 +387,12 @@ public class AdqlQueryTab {
 
                         @Override
                         public void insertUpdate(DocumentEvent e) {
-                            createCatalogTableFilter(filterField.getText());
+                            catalogTableSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                         }
 
                         @Override
                         public void removeUpdate(DocumentEvent e) {
-                            createCatalogTableFilter(filterField.getText());
+                            catalogTableSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                         }
                     });
 
@@ -508,12 +501,12 @@ public class AdqlQueryTab {
 
                             @Override
                             public void insertUpdate(DocumentEvent e) {
-                                createCatalogColumnFilter(filterField.getText());
+                                catalogColumnSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                             }
 
                             @Override
                             public void removeUpdate(DocumentEvent e) {
-                                createCatalogColumnFilter(filterField.getText());
+                                catalogColumnSorter.setRowFilter(getCustomRowFilter(filterField.getText()));
                             }
                         });
 
@@ -612,22 +605,6 @@ public class AdqlQueryTab {
         statusField.setText("");
         statusField.setBackground(null);
         jobId = null;
-    }
-
-    private void createCatalogTableFilter(String filterText) {
-        try {
-            RowFilter filter = RowFilter.regexFilter(filterText);
-            catalogTableSorter.setRowFilter(filter);
-        } catch (PatternSyntaxException ex) {
-        }
-    }
-
-    private void createCatalogColumnFilter(String filterText) {
-        try {
-            RowFilter filter = RowFilter.regexFilter(filterText);
-            catalogColumnSorter.setRowFilter(filter);
-        } catch (PatternSyntaxException ex) {
-        }
     }
 
     private JColor getStatusColor(String jobStatus) {

@@ -93,6 +93,7 @@ public class LookupTab {
                     default:
                         fileName = "";
                         tableName = "";
+                        break;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
                 InputStream input = getClass().getResourceAsStream(fileName);
@@ -127,7 +128,7 @@ public class LookupTab {
         resultTable = new JTable(defaultTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return true;
             }
         };
         alignResultColumns(resultTable, rows);
