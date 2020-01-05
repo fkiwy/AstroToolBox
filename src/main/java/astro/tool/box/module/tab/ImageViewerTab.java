@@ -2434,7 +2434,7 @@ public class ImageViewerTab {
         try {
             Map<SpectralTypeLookupResult, Set<ColorValue>> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
-            List<Object[]> spectralTypes = new ArrayList<>();
+            List<String[]> spectralTypes = new ArrayList<>();
             results.entrySet().forEach(entry -> {
                 SpectralTypeLookupResult key = entry.getKey();
                 Set<ColorValue> values = entry.getValue();
@@ -2447,8 +2447,8 @@ public class ImageViewerTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors + ","
-                        + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
+                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
+                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
@@ -2461,6 +2461,7 @@ public class ImageViewerTab {
                     return true;
                 }
             };
+            alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             spectralTypeTable.setCellSelectionEnabled(false);
@@ -2483,7 +2484,7 @@ public class ImageViewerTab {
         try {
             Map<SpectralTypeLookupResult, Set<ColorValue>> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
-            List<Object[]> spectralTypes = new ArrayList<>();
+            List<String[]> spectralTypes = new ArrayList<>();
             results.entrySet().forEach(entry -> {
                 SpectralTypeLookupResult key = entry.getKey();
                 Set<ColorValue> values = entry.getValue();
@@ -2496,7 +2497,7 @@ public class ImageViewerTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
+                String spectralType = key.getSpt() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
                 spectralTypes.add(spectralType.split(",", 4));
             });
 
@@ -2509,6 +2510,7 @@ public class ImageViewerTab {
                     return true;
                 }
             };
+            alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             spectralTypeTable.setCellSelectionEnabled(false);

@@ -169,7 +169,7 @@ public class BrownDwarfTab {
     }
 
     private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult) {
-        List<Object[]> spectralTypes = new ArrayList<>();
+        List<String[]> spectralTypes = new ArrayList<>();
         results.entrySet().forEach(entry -> {
             SpectralTypeLookupResult key = entry.getKey();
             Set<ColorValue> values = entry.getValue();
@@ -182,7 +182,7 @@ public class BrownDwarfTab {
                     matchedColors.append(", ");
                 }
             }
-            String spectralType = key.getSpt() + "," + matchedColors + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
+            String spectralType = key.getSpt() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 
@@ -195,6 +195,7 @@ public class BrownDwarfTab {
                 return true;
             }
         };
+        alignResultColumns(spectralTypeTable, spectralTypes);
         spectralTypeTable.setAutoCreateRowSorter(true);
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         spectralTypeTable.setCellSelectionEnabled(false);

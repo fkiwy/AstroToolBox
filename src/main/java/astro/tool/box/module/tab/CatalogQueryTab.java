@@ -89,8 +89,8 @@ public class CatalogQueryTab {
     private final Map<String, CatalogEntry> catalogInstances;
     private final Map<Integer, List<CatalogEntry>> catalogResults;
 
-    private AllWiseCatalogEntry selectedAllWiseEntry;
-    private CatWiseCatalogEntry selectedCatWiseEntry;
+    //private AllWiseCatalogEntry selectedAllWiseEntry;
+    //private CatWiseCatalogEntry selectedCatWiseEntry;
     private CatalogEntry selectedEntry;
 
     private boolean copyCoordsToClipboard;
@@ -290,8 +290,8 @@ public class CatalogQueryTab {
     }
 
     private int queryCatalog(CatalogEntry catalogQuery) throws IOException {
-        selectedAllWiseEntry = null;
-        selectedCatWiseEntry = null;
+        //selectedAllWiseEntry = null;
+        //selectedCatWiseEntry = null;
         List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
@@ -490,7 +490,7 @@ public class CatalogQueryTab {
         try {
             Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
-            List<Object[]> spectralTypes = new ArrayList<>();
+            List<String[]> spectralTypes = new ArrayList<>();
             results.entrySet().forEach(entry -> {
                 SpectralTypeLookupResult key = entry.getKey();
                 Set<ColorValue> values = entry.getValue();
@@ -503,8 +503,8 @@ public class CatalogQueryTab {
                         matchedColors.append(", ");
                     }
                 }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + key.getRsun() + "," + key.getMsun() + "," + matchedColors
-                        + "," + key.getNearest() + "," + roundTo3DecLZ(key.getGap());
+                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
+                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
@@ -517,6 +517,7 @@ public class CatalogQueryTab {
                     return true;
                 }
             };
+            alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             spectralTypeTable.setCellSelectionEnabled(false);
