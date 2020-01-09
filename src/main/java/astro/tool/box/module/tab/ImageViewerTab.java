@@ -2337,15 +2337,7 @@ public class ImageViewerTab {
             double radius = getOverlaySize() / 2;
             if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
-                if (gaiaDR2ProperMotion.isSelected() || catWiseProperMotion.isSelected()) {
-                    double tpm = calculateTotalProperMotion(catalogEntry.getPmra(), catalogEntry.getPmdec());
-                    double pmLimit = toDouble(properMotionField.getText());
-                    if (tpm > pmLimit) {
-                        displayCatalogPanel(catalogEntry, color);
-                    }
-                } else {
-                    displayCatalogPanel(catalogEntry, color);
-                }
+                displayCatalogPanel(catalogEntry, color);
             }
         });
     }
