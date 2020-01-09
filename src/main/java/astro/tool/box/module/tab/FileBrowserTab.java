@@ -156,25 +156,10 @@ public class FileBrowserTab {
                     showErrorDialog(baseFrame, "No file imported yet!");
                     return;
                 }
-                StringBuilder fileContent = new StringBuilder();
-                TableModel model = resultTable.getModel();
-                int columnCount = model.getColumnCount();
-                for (int i = 1; i < columnCount; i++) {
-                    String columnName = model.getColumnName(i);
-                    appendCellValue(fileContent, i, columnCount, columnName);
-                }
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    for (int y = 1; y < columnCount; y++) {
-                        String cellValue = (String) model.getValueAt(i, y);
-                        appendCellValue(fileContent, y, columnCount, cellValue);
-                    }
-                }
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.write(fileContent.toString());
+                boolean hasFileBeenSaved = saveFile();
+                if (hasFileBeenSaved) {
                     topPanelMessage.setText("File has been saved!");
                     timer.restart();
-                } catch (IOException ex) {
-                    showExceptionDialog(baseFrame, ex);
                 }
             });
 
@@ -213,17 +198,18 @@ public class FileBrowserTab {
                     return;
                 }
                 int selectedRow = resultTable.getSelectedRow();
-                String confirmMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
-                        + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP
-                        + "Do you really want to remove row # " + resultTable.getValueAt(selectedRow, 0);
+                String confirmMessage = "Do you really want to delete row # " + resultTable.getValueAt(selectedRow, 0);
                 if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
                 int rowToRemove = resultTable.convertRowIndexToModel(selectedRow);
                 tableModel.removeRow(rowToRemove);
-                bottomPanelMessage.setText("Row has been removed!");
-                timer.restart();
+                boolean hasFileBeenSaved = saveFile();
+                if (hasFileBeenSaved) {
+                    bottomPanelMessage.setText("Row has been removed!");
+                    timer.restart();
+                }
             });
 
             bottomPanel.add(bottomPanelMessage);
@@ -231,16 +217,7 @@ public class FileBrowserTab {
             baseFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent evt) {
-                    if (file != null) {
-                        String confirmMessage = "File " + file.getName() + " is still open in the File Browser." + LINE_SEP
-                                + "It may still contain unsaved changes!" + LINE_SEP
-                                + "Do you really want to close AstroToolBox?";
-                        if (showConfirmDialog(baseFrame, confirmMessage)) {
-                            System.exit(0);
-                        } else {
-                            baseFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-                        }
-                    }
+                    saveFile();
                 }
             });
 
@@ -267,6 +244,31 @@ public class FileBrowserTab {
         } catch (Exception ex) {
             errors.append("Invalid dec position!").append(LINE_SEP);
         }
+    }
+
+    private boolean saveFile() {
+        if (file != null) {
+            StringBuilder fileContent = new StringBuilder();
+            TableModel model = resultTable.getModel();
+            int columnCount = model.getColumnCount();
+            for (int i = 1; i < columnCount; i++) {
+                String columnName = model.getColumnName(i);
+                appendCellValue(fileContent, i, columnCount, columnName);
+            }
+            for (int i = 0; i < model.getRowCount(); i++) {
+                for (int y = 1; y < columnCount; y++) {
+                    String cellValue = (String) model.getValueAt(i, y);
+                    appendCellValue(fileContent, y, columnCount, cellValue);
+                }
+            }
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(fileContent.toString());
+                return true;
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+            }
+        }
+        return false;
     }
 
     private void appendCellValue(StringBuilder fileContent, int columnIndex, int columnCount, String cellValue) {
