@@ -176,6 +176,7 @@ public class ImageViewerTab {
     private JTextField transposeMotionField;
     private JTextField properMotionField;
     private JRadioButton showCatalogsButton;
+    private JTable collectionTable;
     private Timer timer;
 
     private BufferedImage wiseImage;
@@ -2404,7 +2405,7 @@ public class ImageViewerTab {
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, mainSequenceSpectralTypeLookupService);
+                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
             });
 
             collectPanel.add(message);
@@ -2626,6 +2627,10 @@ public class ImageViewerTab {
 
     public void setImageViewer(ImageViewerTab imageViewer) {
         this.imageViewer = imageViewer;
+    }
+
+    public void setCollectionTable(JTable collectionTable) {
+        this.collectionTable = collectionTable;
     }
 
     public void setQuadrantCount(int quadrantCount) {

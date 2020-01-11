@@ -370,7 +370,7 @@ public class ModuleHelper {
         return spectralTypes;
     }
 
-    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService) {
+    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
@@ -429,6 +429,11 @@ public class ModuleHelper {
         } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
             return;
+        }
+
+        if (collectionTable != null) {
+            DefaultTableModel tableModel = (DefaultTableModel) collectionTable.getModel();
+            tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
         }
 
         message.setText("Object has been added to collection!");

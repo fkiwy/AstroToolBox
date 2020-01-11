@@ -198,6 +198,8 @@ public class ObjectCollectionTab {
                             return;
                         }
                         file = objectCollectionFile;
+                    } else {
+                        saveFile();
                     }
                     removeAndRecreateCenterPanel(mainPanel);
                     readFileContents(addColumnsField.getText());
@@ -323,6 +325,9 @@ public class ObjectCollectionTab {
             }
         });
         resizeColumnWidth(resultTable);
+
+        imageViewerTab.setCollectionTable(resultTable);
+        catalogQueryTab.setCollectionTable(resultTable);
 
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);
         resultScrollPanel.setBorder(BorderFactory.createTitledBorder(

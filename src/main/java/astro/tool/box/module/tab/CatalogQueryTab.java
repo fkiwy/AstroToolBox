@@ -82,6 +82,7 @@ public class CatalogQueryTab {
     private JTextField aladinLiteField;
     private JTextField wiseViewField;
     private JTextField finderChartField;
+    private JTable collectionTable;
 
     private final CatalogQueryFacade catalogQueryFacade;
     private final SpectralTypeLookupService spectralTypeLookupService;
@@ -567,7 +568,7 @@ public class CatalogQueryTab {
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService);
+                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService, collectionTable);
             });
 
             collectPanel.add(message);
@@ -650,6 +651,10 @@ public class CatalogQueryTab {
 
     public CatalogEntry getSelectedEntry() {
         return selectedEntry;
+    }
+
+    public void setCollectionTable(JTable collectionTable) {
+        this.collectionTable = collectionTable;
     }
 
     public void setCopyCoordsToClipboard(boolean copyCoordsToClipboard) {
