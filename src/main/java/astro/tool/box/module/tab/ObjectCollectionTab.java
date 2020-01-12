@@ -134,9 +134,9 @@ public class ObjectCollectionTab {
                 timer.restart();
             });
 
-            JButton removeButton = new JButton("Remove selected row");
-            bottomPanel.add(removeButton);
-            removeButton.addActionListener((ActionEvent evt) -> {
+            JButton deleteButton = new JButton("Delete selected row");
+            bottomPanel.add(deleteButton);
+            deleteButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
                     showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
@@ -151,11 +151,11 @@ public class ObjectCollectionTab {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
-                int rowToRemove = resultTable.convertRowIndexToModel(selectedRow);
-                tableModel.removeRow(rowToRemove);
+                int rowToDelete = resultTable.convertRowIndexToModel(selectedRow);
+                tableModel.removeRow(rowToDelete);
                 boolean hasFileBeenSaved = saveFile();
                 if (hasFileBeenSaved) {
-                    bottomPanelMessage.setText("Row has been removed!");
+                    bottomPanelMessage.setText("Row has been deleted!");
                     timer.restart();
                 }
             });
