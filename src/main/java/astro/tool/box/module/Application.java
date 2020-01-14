@@ -37,7 +37,7 @@ public class Application {
     public Application() {
         try {
             loadUserSettings();
-            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL));
+            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, LookAndFeel.OS.name()));
             if (lookAndFeel.equals(LookAndFeel.Java)) {
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             } else {
@@ -45,7 +45,6 @@ public class Application {
             }
         } catch (Exception e) {
         }
-
     }
 
     public void init() {

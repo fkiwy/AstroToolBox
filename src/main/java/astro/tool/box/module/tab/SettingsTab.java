@@ -170,7 +170,7 @@ public class SettingsTab {
             globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
             globalSettings.add(collectionPathField);
-            
+
             globalSettings.add(new JLabel("(*) The file will be created by the tool. ", JLabel.RIGHT));
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
@@ -456,6 +456,10 @@ public class SettingsTab {
 
     public static String getUserSetting(String key) {
         return USER_SETTINGS.getProperty(key);
+    }
+
+    public static String getUserSetting(String key, String defaultValue) {
+        return USER_SETTINGS.getProperty(key, defaultValue);
     }
 
 }
