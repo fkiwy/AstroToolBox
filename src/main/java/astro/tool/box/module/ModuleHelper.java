@@ -4,6 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.ColorValue;
@@ -65,6 +66,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ModuleHelper {
 
@@ -438,6 +441,21 @@ public class ModuleHelper {
 
         message.setText("Object has been added to collection!");
         messageTimer.restart();
+    }
+
+    public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
+        List<JLabel> subjects = new ArrayList<>();
+        try {
+            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
+            String response = readResponse(establishHttpConnection(url));
+            JSONObject obj = new JSONObject(response);
+            JSONArray ids = obj.getJSONArray("ids");
+            for (Object id : ids) {
+                subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+            }
+        } catch (Exception ex) {
+        }
+        return subjects;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

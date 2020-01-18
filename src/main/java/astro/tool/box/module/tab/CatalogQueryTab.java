@@ -22,8 +22,6 @@ import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
-import static astro.tool.box.util.ServiceProviderUtils.establishHttpConnection;
-import static astro.tool.box.util.ServiceProviderUtils.readResponse;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -64,8 +62,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class CatalogQueryTab {
 
@@ -586,21 +582,6 @@ public class CatalogQueryTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
-    }
-
-    private List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
-        List<JLabel> subjects = new ArrayList<>();
-        try {
-            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
-            String response = readResponse(establishHttpConnection(url));
-            JSONObject obj = new JSONObject(response);
-            JSONArray ids = obj.getJSONArray("ids");
-            for (Object id : ids) {
-                subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
-            }
-        } catch (Exception ex) {
-        }
-        return subjects;
     }
 
     public void removeAndRecreateCenterPanel() {

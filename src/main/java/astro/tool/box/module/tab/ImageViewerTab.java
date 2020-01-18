@@ -143,6 +143,8 @@ public class ImageViewerTab {
     private List<CatalogEntry> catWiseEntries;
 
     private JPanel imagePanel;
+    private JPanel zooniversePanel1;
+    private JPanel zooniversePanel2;
     private JCheckBox minMaxLimits;
     private JCheckBox stretchImage;
     private JCheckBox invertColors;
@@ -269,9 +271,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1300;
+            int controlPanelHeight = 1375;
 
-            JPanel controlPanel = new JPanel(new GridLayout(53, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(56, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -527,7 +529,7 @@ public class ImageViewerTab {
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
 
-            controlPanel.add(new JLabel(underline("Image click behaviour:")));
+            controlPanel.add(new JLabel(underline("Image click behaviour w/o overlays:")));
 
             showCatalogsButton = new JRadioButton("Show catalogs", true);
             controlPanel.add(showCatalogsButton);
@@ -538,6 +540,14 @@ public class ImageViewerTab {
             ButtonGroup radioGroup = new ButtonGroup();
             radioGroup.add(showCatalogsButton);
             radioGroup.add(recenterImagesButton);
+
+            controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
+
+            zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanel.add(zooniversePanel1);
+
+            zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
 
@@ -1200,6 +1210,20 @@ public class ImageViewerTab {
                     });
                 }
                 ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
+                zooniversePanel1.removeAll();
+                zooniversePanel2.removeAll();
+                List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
+                int numberOfSubjects = subjects.size();
+                if (numberOfSubjects == 0) {
+                    zooniversePanel1.add(new JLabel("None"));
+                } else {
+                    for (int i = 0; i < 3 && i < numberOfSubjects; i++) {
+                        zooniversePanel1.add(subjects.get(i));
+                    }
+                    for (int i = 3; i < 6 && i < numberOfSubjects; i++) {
+                        zooniversePanel2.add(subjects.get(i));
+                    }
+                }
             }
             previousSize = size;
             previousRa = targetRa;
