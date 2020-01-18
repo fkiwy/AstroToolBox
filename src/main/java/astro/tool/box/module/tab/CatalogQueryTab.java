@@ -22,6 +22,8 @@ import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.util.ServiceProviderUtils.establishHttpConnection;
+import static astro.tool.box.util.ServiceProviderUtils.readResponse;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -62,6 +64,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class CatalogQueryTab {
 
@@ -371,7 +375,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(18, 2));
-        linkPanel.setPreferredSize(new Dimension(250, 375));
+        linkPanel.setPreferredSize(new Dimension(275, 375));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -392,8 +396,7 @@ public class CatalogQueryTab {
         linkPanel.add(wiseViewField);
         linkPanel.add(createHyperlink("IRSA Finder Chart", getFinderChartUrl(degRA, degDE, finderChartFOV)));
         linkPanel.add(finderChartField);
-
-        linkPanel.add(new JLabel());
+        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE)));
         JButton saveButton = new JButton("Change FoV");
         saveButton.addActionListener((ActionEvent e) -> {
             try {
@@ -412,15 +415,14 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
+
         linkPanel.add(new JLabel("Databases:"));
-        linkPanel.add(createHyperlink("IRSA Data Discov.", getDataDiscoveryUrl()));
+        linkPanel.add(createHyperlink("IRSA Data Discovery", getDataDiscoveryUrl()));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("VizieR", getVizierUrl(degRA, degDE, degRadius)));
 
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel());
         linkPanel.add(new JLabel("Single catalogs:"));
         linkPanel.add(createHyperlink("AllWISE", getSpecificCatalogsUrl("II/328/allwise", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
@@ -435,6 +437,13 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("PanSTARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
+
+        linkPanel.add(new JLabel("Nearest Zooniv. Subj.:"));
+        List<JLabel> subjects = getNearestZooniverseSubjects(degRA, degDE);
+        for (JLabel subject : subjects) {
+            linkPanel.add(subject);
+            break;
+        }
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
@@ -577,6 +586,21 @@ public class CatalogQueryTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
+    }
+
+    private List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
+        List<JLabel> subjects = new ArrayList<>();
+        try {
+            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
+            String response = readResponse(establishHttpConnection(url));
+            JSONObject obj = new JSONObject(response);
+            JSONArray ids = obj.getJSONArray("ids");
+            for (Object id : ids) {
+                subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+            }
+        } catch (Exception ex) {
+        }
+        return subjects;
     }
 
     public void removeAndRecreateCenterPanel() {
