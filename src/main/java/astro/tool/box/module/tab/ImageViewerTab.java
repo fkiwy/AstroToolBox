@@ -1114,17 +1114,29 @@ public class ImageViewerTab {
         diffY *= conversionFactor;
         double posX = targetRa + diffX / cos(toRadians(targetDec));
         double posY = targetDec + diffY;
+        // Correct RA if < 0 or > 360
+        posX = posX < 0 ? posX + 360 : posX;
+        posX = posX > 360 ? posX - 360 : posX;
         return new NumberPair(posX, posY);
     }
 
     private NumberPair getPixelCoordinates(double ra, double dec) {
-        double diffX = (targetRa - ra) * cos(toRadians(targetDec));
+        // Correct RA if difference between targetRa and ra > 300
+        double correctedRa = targetRa;
+        if (abs(targetRa - ra) > 300) {
+            if (targetRa > ra) {
+                ra = 360 + ra;
+            } else {
+                correctedRa = 360 + targetRa;
+            }
+        }
+        double diffX = (correctedRa - ra) * cos(toRadians(targetDec));
         double diffY = targetDec - dec;
         double conversionFactor = getConversionFactor();
         diffX /= -conversionFactor;
         diffY /= -conversionFactor;
-        double posX = getScaledValue(pixelX) - (diffX);
-        double posY = getScaledValue(pixelY) - (diffY);
+        double posX = getScaledValue(pixelX) - diffX;
+        double posY = getScaledValue(pixelY) - diffY;
         return new NumberPair(posX, posY);
     }
 
