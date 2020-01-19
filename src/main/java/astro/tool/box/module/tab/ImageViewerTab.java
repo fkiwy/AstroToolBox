@@ -430,7 +430,7 @@ public class ImageViewerTab {
             JLabel zoomLabel = new JLabel(String.format("Zoom: %d", zoom));
             whitePanel.add(zoomLabel);
 
-            zoomSlider = new JSlider(0, 2000, zoom);
+            zoomSlider = new JSlider(100, 2000, zoom);
             controlPanel.add(zoomSlider);
             zoomSlider.setBackground(Color.WHITE);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
