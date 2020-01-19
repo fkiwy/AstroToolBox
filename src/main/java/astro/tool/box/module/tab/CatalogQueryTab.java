@@ -371,7 +371,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(18, 2));
-        linkPanel.setPreferredSize(new Dimension(275, 375));
+        linkPanel.setPreferredSize(new Dimension(250, 375));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -411,7 +411,6 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
-
         linkPanel.add(new JLabel("Databases:"));
         linkPanel.add(createHyperlink("IRSA Data Discovery", getDataDiscoveryUrl()));
         linkPanel.add(new JLabel());
@@ -419,6 +418,8 @@ public class CatalogQueryTab {
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("VizieR", getVizierUrl(degRA, degDE, degRadius)));
 
+        linkPanel.add(new JLabel());
+        linkPanel.add(new JLabel());
         linkPanel.add(new JLabel("Single catalogs:"));
         linkPanel.add(createHyperlink("AllWISE", getSpecificCatalogsUrl("II/328/allwise", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
@@ -433,13 +434,6 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("PanSTARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
-
-        linkPanel.add(new JLabel("Nearest Zooniv. Subj.:"));
-        List<JLabel> subjects = getNearestZooniverseSubjects(degRA, degDE);
-        for (JLabel subject : subjects) {
-            linkPanel.add(subject);
-            break;
-        }
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
