@@ -382,7 +382,7 @@ public class CatalogQueryTab {
         aladinLiteField = new JTextField(String.valueOf(aladinLiteFOV));
         wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
         finderChartField = new JTextField(String.valueOf(finderChartFOV));
-        if (degDE >= -30) {
+        if (degDE >= -31) {
             linkPanel.add(createHyperlink("PanSTARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
             linkPanel.add(panstarrsField);
         }
