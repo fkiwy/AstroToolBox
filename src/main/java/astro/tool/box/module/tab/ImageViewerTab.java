@@ -16,6 +16,7 @@ import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.StringPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
@@ -141,6 +142,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> gaiaDR2Entries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
+    private List<CatalogEntry> catWiseRejectedEntries;
 
     private JPanel imagePanel;
     private JPanel zooniversePanel1;
@@ -154,6 +156,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaDR2Overlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
+    private JCheckBox artifactOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCustomOverlays;
@@ -271,9 +274,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1375;
+            int controlPanelHeight = 1425;
 
-            JPanel controlPanel = new JPanel(new GridLayout(56, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(58, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -511,6 +514,12 @@ public class ImageViewerTab {
             catWiseOverlay = new JCheckBox("CatWise");
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
+
+            artifactOverlay = new JCheckBox("CatWise artifacts (catalog & rejected):");
+            controlPanel.add(artifactOverlay);
+
+            JLabel artifactLabel = new JLabel("<html><span style='color:fuchsia'>Ghosts</span>/<span style='background:black;color:yellow'>Halos</span>/<span style='color:green'>Latents</span>/<span style='background:black;color:orange'>Diff. spikes</span></html>");
+            controlPanel.add(artifactLabel);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -1212,6 +1221,7 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
                 catWiseOverlay.setEnabled(true);
+                artifactOverlay.setEnabled(true);
                 gaiaDR2ProperMotion.setEnabled(true);
                 catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
@@ -1545,6 +1555,12 @@ public class ImageViewerTab {
             fetchCatWiseCatalogEntries();
             drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
         }
+        if (artifactOverlay.isSelected()) {
+            fetchCatWiseCatalogEntries();
+            drawOverlay(image, catWiseEntries, null, null);
+            fetchCatWiseRejectedEntries();
+            drawOverlay(image, catWiseRejectedEntries, null, null);
+        }
 
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -1610,12 +1626,14 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setSelected(false);
                 allWiseOverlay.setSelected(false);
                 catWiseOverlay.setSelected(false);
+                artifactOverlay.setSelected(false);
                 gaiaDR2ProperMotion.setSelected(false);
                 catWiseProperMotion.setSelected(false);
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
                 allWiseOverlay.setEnabled(false);
                 catWiseOverlay.setEnabled(false);
+                artifactOverlay.setEnabled(false);
                 gaiaDR2ProperMotion.setEnabled(false);
                 catWiseProperMotion.setEnabled(false);
                 if (useCustomOverlays.isSelected()) {
@@ -2243,6 +2261,28 @@ public class ImageViewerTab {
         }
     }
 
+    private void fetchCatWiseRejectedEntries() {
+        try {
+            if (catWiseRejectedEntries == null) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                CatalogEntry catalogQuery = new CatWiseRejectedEntry();
+                catalogQuery.setRa(targetRa);
+                catalogQuery.setDec(targetDec);
+                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+                catWiseRejectedEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+                catWiseRejectedEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.loadCatalogElements();
+                });
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void fetchGenericCatalogEntries(CustomOverlay customOverlay) {
         List<CatalogEntry> catalogEntries = customOverlay.getCatalogEntries();
         if (catalogEntries == null) {
@@ -2296,27 +2336,57 @@ public class ImageViewerTab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
-            switch (shape) {
-                case CIRCLE:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case CROSS:
-                    toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case XCROSS:
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case SQUARE:
-                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case TRIANGLE:
-                    toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                default:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
+            if (catalogEntry instanceof CatWiseCatalogEntry || catalogEntry instanceof CatWiseRejectedEntry) {
+                String ab_flags;
+                String cc_flags;
+                if (catalogEntry instanceof CatWiseCatalogEntry) {
+                    CatWiseCatalogEntry catWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
+                    ab_flags = catWiseCatalog.getAb_flags();
+                    cc_flags = catWiseCatalog.getCc_flags();
+                } else {
+                    CatWiseRejectedEntry catWiseRejected = (CatWiseRejectedEntry) catalogEntry;
+                    ab_flags = catWiseRejected.getAb_flags();
+                    cc_flags = catWiseRejected.getCc_flags();
+                }
+                if (ab_flags.contains("D") || cc_flags.contains("D")) {
+                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+                    toDraw.draw(graphics);
+                }
+                if (ab_flags.contains("H") || cc_flags.contains("H")) {
+                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
+                    toDraw.draw(graphics);
+                }
+                if (ab_flags.contains("O") || cc_flags.contains("O")) {
+                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.PINK);
+                    toDraw.draw(graphics);
+                }
+                if (ab_flags.contains("P") || cc_flags.contains("P")) {
+                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
+                    toDraw.draw(graphics);
+                }
+            } else {
+                switch (shape) {
+                    case CIRCLE:
+                        toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case CROSS:
+                        toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case XCROSS:
+                        toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case SQUARE:
+                        toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case TRIANGLE:
+                        toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    default:
+                        toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                }
+                toDraw.draw(graphics);
             }
-            toDraw.draw(graphics);
         });
     }
 
