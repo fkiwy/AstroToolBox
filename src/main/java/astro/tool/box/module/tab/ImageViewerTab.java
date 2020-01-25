@@ -38,6 +38,7 @@ import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
+import astro.tool.box.module.shape.Diamond;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.module.shape.Square;
 import astro.tool.box.module.shape.Triangle;
@@ -515,10 +516,10 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            artifactOverlay = new JCheckBox("CatWise artifacts (catalog & rejected):");
+            artifactOverlay = new JCheckBox("WISE artifacts (includes rejected):");
             controlPanel.add(artifactOverlay);
 
-            JLabel artifactLabel = new JLabel("<html><span style='color:fuchsia'>Ghosts</span>/<span style='background:black;color:yellow'>Halos</span>/<span style='color:green'>Latents</span>/<span style='background:black;color:orange'>Diff. spikes</span></html>");
+            JLabel artifactLabel = new JLabel("<html>&nbsp;&nbsp;<span style='color:fuchsia'>Ghosts</span>&nbsp;<span style='background:black;color:yellow'>&nbsp;Halos&nbsp;</span>&nbsp;<span style='color:green'>Latents</span>&nbsp;<span style='background:black;color:orange'>&nbsp;Diff. spikes&nbsp;</span></html>");
             controlPanel.add(artifactLabel);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
@@ -2336,7 +2337,7 @@ public class ImageViewerTab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
-            if (catalogEntry instanceof CatWiseCatalogEntry || catalogEntry instanceof CatWiseRejectedEntry) {
+            if (artifactOverlay.isSelected() && (catalogEntry instanceof CatWiseCatalogEntry || catalogEntry instanceof CatWiseRejectedEntry)) {
                 String ab_flags;
                 String cc_flags;
                 if (catalogEntry instanceof CatWiseCatalogEntry) {
@@ -2349,15 +2350,15 @@ public class ImageViewerTab {
                     cc_flags = catWiseRejected.getCc_flags();
                 }
                 if (ab_flags.contains("D") || cc_flags.contains("D")) {
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
                     toDraw.draw(graphics);
                 }
                 if (ab_flags.contains("H") || cc_flags.contains("H")) {
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
+                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
                     toDraw.draw(graphics);
                 }
                 if (ab_flags.contains("O") || cc_flags.contains("O")) {
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.PINK);
+                    toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA);
                     toDraw.draw(graphics);
                 }
                 if (ab_flags.contains("P") || cc_flags.contains("P")) {
@@ -2380,6 +2381,9 @@ public class ImageViewerTab {
                         break;
                     case TRIANGLE:
                         toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case DIAMOND:
+                        toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
                         break;
                     default:
                         toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
