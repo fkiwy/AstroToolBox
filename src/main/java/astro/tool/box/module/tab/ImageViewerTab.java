@@ -1281,6 +1281,19 @@ public class ImageViewerTab {
                     }
 
                     break;
+                case ALL_ASCENDING_ALL_DESCENDING:
+                    flipbook = new FlipbookComponent[epochCount];
+
+                    for (int i = 0; i < epochCount; i += 2) {
+                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                    }
+                    for (int i = 1; i < epochCount; i += 2) {
+                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        flipbook[epochCount / 2 + i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                    }
+
+                    break;
                 case YEAR:
                     Fits fits;
                     flipbook = new FlipbookComponent[epochCount / 2];
