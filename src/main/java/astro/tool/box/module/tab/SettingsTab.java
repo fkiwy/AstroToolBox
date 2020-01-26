@@ -265,26 +265,12 @@ public class SettingsTab {
             imageViewerTab.setZoom(zoom);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
-            JComboBox wiseBands = new JComboBox<>(new WiseBand[]{
-                WiseBand.W1,
-                WiseBand.W2,
-                WiseBand.W1W2
-            });
+            JComboBox wiseBands = new JComboBox<>(WiseBand.values());
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
 
             imageViewerSettings.add(new JLabel("Epochs: ", JLabel.RIGHT));
-            JComboBox epochs = new JComboBox<>(new Epoch[]{
-                Epoch.ALL,
-                Epoch.ALL_ASCENDING,
-                Epoch.ALL_DESCENDING,
-                Epoch.FIRST_REMAINING,
-                Epoch.FIRST_REMAINING_PARALLAX,
-                Epoch.FIRST_REMAINING_SUBTRACTED,
-                Epoch.FIRST_LAST,
-                Epoch.FIRST_LAST_PARALLAX,
-                Epoch.FIRST_LAST_SUBTRACTED
-            });
+            JComboBox epochs = new JComboBox<>(Epoch.values());
             epochs.setSelectedItem(epoch);
             imageViewerSettings.add(epochs);
 

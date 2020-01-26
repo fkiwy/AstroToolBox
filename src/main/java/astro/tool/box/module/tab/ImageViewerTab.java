@@ -157,11 +157,13 @@ public class ImageViewerTab {
     private JCheckBox gaiaDR2Overlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
-    private JCheckBox artifactOverlay;
+    private JCheckBox ghostOverlay;
+    private JCheckBox haloOverlay;
+    private JCheckBox latentOverlay;
+    private JCheckBox spikeOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCustomOverlays;
-    private JCheckBox useCoverageMaps;
     private JCheckBox skipBadCoadds;
     private JCheckBox transposeProperMotion;
     private JCheckBox smallBodyHelp;
@@ -516,11 +518,25 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            artifactOverlay = new JCheckBox("Sources affected by WISE artifacts:");
-            controlPanel.add(artifactOverlay);
+            controlPanel.add(new JLabel("Mark sources affected by artifacts:"));
 
-            JLabel artifactLabel = new JLabel("<html>&nbsp;&nbsp;<span style='color:fuchsia'>Ghosts</span>&nbsp;<span style='background:black;color:yellow'>&nbsp;Halos&nbsp;</span>&nbsp;<span style='color:green'>Latents</span>&nbsp;<span style='background:black;color:orange'>&nbsp;Diff. spikes&nbsp;</span></html>");
-            controlPanel.add(artifactLabel);
+            JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(artifactPanel);
+            ghostOverlay = new JCheckBox("Ghosts");
+            ghostOverlay.setForeground(Color.MAGENTA.darker());
+            artifactPanel.add(ghostOverlay);
+            haloOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Halos&nbsp;</span></html>");
+            haloOverlay.setForeground(Color.YELLOW);
+            artifactPanel.add(haloOverlay);
+
+            artifactPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(artifactPanel);
+            latentOverlay = new JCheckBox("Latents");
+            latentOverlay.setForeground(Color.GREEN.darker());
+            artifactPanel.add(latentOverlay);
+            spikeOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Spikes&nbsp;</span></html>");
+            spikeOverlay.setForeground(Color.ORANGE);
+            artifactPanel.add(spikeOverlay);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -561,25 +577,16 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
 
-            useCoverageMaps = new JCheckBox("Use coverage maps");
-            controlPanel.add(useCoverageMaps);
-            useCoverageMaps.addActionListener((ActionEvent evt) -> {
-                useCoverageMaps.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                images.clear();
-                setContrast(getContrast());
-                initMinMaxValues();
-                createFlipbook();
-                useCoverageMaps.setCursor(Cursor.getDefaultCursor());
-            });
-
             skipBadCoadds = new JCheckBox("Skip low weighted coadds");
             controlPanel.add(skipBadCoadds);
             skipBadCoadds.addActionListener((ActionEvent evt) -> {
-                skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                images.clear();
-                initMinMaxValues();
-                createFlipbook();
-                skipBadCoadds.setCursor(Cursor.getDefaultCursor());
+                if (images != null) {
+                    skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    images.clear();
+                    initMinMaxValues();
+                    createFlipbook();
+                    skipBadCoadds.setCursor(Cursor.getDefaultCursor());
+                }
             });
 
             smallBodyHelp = new JCheckBox("Small body help (Epochs: ALL)");
@@ -1223,7 +1230,10 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
                 catWiseOverlay.setEnabled(true);
-                artifactOverlay.setEnabled(true);
+                ghostOverlay.setEnabled(true);
+                haloOverlay.setEnabled(true);
+                latentOverlay.setEnabled(true);
+                spikeOverlay.setEnabled(true);
                 gaiaDR2ProperMotion.setEnabled(true);
                 catWiseProperMotion.setEnabled(true);
                 simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
@@ -1264,7 +1274,7 @@ public class ImageViewerTab {
                     }
 
                     break;
-                case ALL_ASCENDING:
+                case ASCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
 
                     for (int i = 0; i < epochCount; i += 2) {
@@ -1273,7 +1283,7 @@ public class ImageViewerTab {
                     }
 
                     break;
-                case ALL_DESCENDING:
+                case DESCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
 
                     for (int i = 1; i < epochCount; i += 2) {
@@ -1282,7 +1292,7 @@ public class ImageViewerTab {
                     }
 
                     break;
-                case ALL_ASCENDING_ALL_DESCENDING:
+                case ASCENDING_DESCENDING:
                     flipbook = new FlipbookComponent[epochCount];
 
                     for (int i = 0; i < epochCount; i += 2) {
@@ -1570,7 +1580,7 @@ public class ImageViewerTab {
             fetchCatWiseCatalogEntries();
             drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
         }
-        if (artifactOverlay.isSelected()) {
+        if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
             fetchCatWiseCatalogEntries();
             drawArtifactOverlay(image, catWiseEntries);
             fetchCatWiseRejectedEntries();
@@ -1641,14 +1651,20 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setSelected(false);
                 allWiseOverlay.setSelected(false);
                 catWiseOverlay.setSelected(false);
-                artifactOverlay.setSelected(false);
+                ghostOverlay.setSelected(false);
+                haloOverlay.setSelected(false);
+                latentOverlay.setSelected(false);
+                spikeOverlay.setSelected(false);
                 gaiaDR2ProperMotion.setSelected(false);
                 catWiseProperMotion.setSelected(false);
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
                 allWiseOverlay.setEnabled(false);
                 catWiseOverlay.setEnabled(false);
-                artifactOverlay.setEnabled(false);
+                ghostOverlay.setEnabled(false);
+                haloOverlay.setEnabled(false);
+                latentOverlay.setEnabled(false);
+                spikeOverlay.setEnabled(false);
                 gaiaDR2ProperMotion.setEnabled(false);
                 catWiseProperMotion.setEnabled(false);
                 if (useCustomOverlays.isSelected()) {
@@ -1663,7 +1679,7 @@ public class ImageViewerTab {
             pixelX = crpix1;
             pixelY = naxis2 - crpix2;
 
-            addImage(band, epoch, useCoverageMaps.isSelected() ? applyWeights(fits) : fits);
+            addImage(band, epoch, fits);
         }
         return getMinMaxObsEpoch(fits);
     }
@@ -1722,7 +1738,7 @@ public class ImageViewerTab {
     }
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
-        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch + (useCoverageMaps.isSelected() || skipBadCoadds.isSelected() ? "&covmap=true" : "");
+        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch + (skipBadCoadds.isSelected() ? "&covmap=true" : "");
     }
 
     private BufferedImage createImage(int band, int epoch) {
@@ -1895,37 +1911,6 @@ public class ImageViewerTab {
         }
     }
 
-    private Fits applyWeights(Fits fits) {
-        try {
-            ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) imageHDU.getData();
-            float[][] values = (float[][]) imageData.getData();
-
-            imageHDU = (ImageHDU) fits.getHDU(1);
-            imageData = (ImageData) imageHDU.getData();
-            short[][] weights = (short[][]) imageData.getData();
-
-            float[][] weightedValues = new float[size][size];
-            short[][] refactoredWeights = new short[size][size];
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    try {
-                        weightedValues[i][j] = values[i][j] * weights[i][j];
-                        refactoredWeights[i][j] = 1;
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
-                }
-            }
-
-            Fits result = new Fits();
-            result.addHDU(FitsFactory.hduFactory(weightedValues));
-            result.addHDU(FitsFactory.hduFactory(refactoredWeights));
-            return result;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     private void differenceImaging(int epoch1, int epoch2) {
         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
             Fits fits1 = subtractImages(WiseBand.W1.val, epoch1, WiseBand.W1.val, epoch2);
@@ -2013,7 +1998,7 @@ public class ImageViewerTab {
     }
 
     private int getContrast() {
-        return size < 30 || useCoverageMaps.isSelected() ? 25 : 50;
+        return size < 30 ? 25 : 50;
     }
 
     private void setContrast(int contrast) {
@@ -2396,20 +2381,20 @@ public class ImageViewerTab {
                 ab_flags = catWiseRejected.getAb_flags();
                 cc_flags = catWiseRejected.getCc_flags();
             }
-            if (ab_flags.contains("D") || cc_flags.contains("D")) {
-                Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+            if (ghostOverlay.isSelected() && (ab_flags.contains("O") || cc_flags.contains("O"))) {
+                Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA.darker());
                 toDraw.draw(graphics);
             }
-            if (ab_flags.contains("H") || cc_flags.contains("H")) {
+            if (haloOverlay.isSelected() && (ab_flags.contains("H") || cc_flags.contains("H"))) {
                 Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
                 toDraw.draw(graphics);
             }
-            if (ab_flags.contains("O") || cc_flags.contains("O")) {
-                Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA);
+            if (latentOverlay.isSelected() && (ab_flags.contains("P") || cc_flags.contains("P"))) {
+                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
                 toDraw.draw(graphics);
             }
-            if (ab_flags.contains("P") || cc_flags.contains("P")) {
-                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
+            if (spikeOverlay.isSelected() && (ab_flags.contains("D") || cc_flags.contains("D"))) {
+                Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
                 toDraw.draw(graphics);
             }
         });
