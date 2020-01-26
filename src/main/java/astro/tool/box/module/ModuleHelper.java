@@ -72,7 +72,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v1.2.1";
+    public static final String PGM_VERSION = "v1.2.2";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
