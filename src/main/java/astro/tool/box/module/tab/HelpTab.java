@@ -64,6 +64,10 @@ public class HelpTab {
             text.row("The Image Viewer uses data from unwise.me (http://unwise.me) made available through WiseView's cutout service (http://byw.tools/wiseview).");
             text.row("The PanSTARRS images are pulled from MAST PS1 Science Archive (https://panstarrs.stsci.edu).");
             text.newLine();
+            text.row("The fasted way to load some images is by selecting only one band (W1 or W2) and the FIRST_LAST epoch, which is the default. This will load only four images.");
+            text.row("The slowest way is to load all the images (24) by selecting W1W2 and one of the following epochs: ALL, ASCENDING_DESCENDING, FIRST_REMAINING or YEAR.");
+            text.row("But once all the images are loaded, you can switch between bands and epochs instantly.");
+            text.newLine();
             text.row("For most cutouts, you have to adjust the contrast by pulling one of the contrast sliders either to the left or to the right.");
             text.row("I recommend starting with the low scale slider and if that's not enough, use can still use the high scale slider.");
             text.newLine();
@@ -71,9 +75,8 @@ public class HelpTab {
             text.row("or white images, try to pull the 'Min pixel value' slider carefully to the right or left until you see the difference image.");
             text.row("If the image remains too bright, you may pull the 'Max pixel value' slider to the left.");
             text.newLine();
-            text.row("The fasted way to load some images is by selecting only one band (W1 or W2) and the FIRST_LAST epoch, which is the default. This will load only four images.");
-            text.row("The slowest way is to load all the images (24) by selecting W1W2 and one of the following epochs: ALL, ASCENDING_DESCENDING, FIRST_REMAINING or YEAR.");
-            text.row("But once all the images are loaded, you can switch between bands and epochs instantly.");
+            text.row("If you check the 'Skip first epoch' check box, the original WISE epoch of 2010 is replaced by the first NEO epoch, which may improve the subtracted image modes,");
+            text.row("especially for high populated, large field of views.");
             text.newLine();
             text.row("Low weighted coadds may be skipped and replaced by their counterpart of an earlier epoch, to improve the quality of the new coadds produced for one of the following");
             text.row("epochs: FIRST_LAST, FIRST_REMAINING or YEAR. To do so, check the 'Skip low weighted coadds' check box.");

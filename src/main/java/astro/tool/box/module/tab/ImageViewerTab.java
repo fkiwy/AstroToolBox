@@ -163,9 +163,10 @@ public class ImageViewerTab {
     private JCheckBox spikeOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
-    private JCheckBox useCustomOverlays;
-    private JCheckBox skipBadCoadds;
     private JCheckBox transposeProperMotion;
+    private JCheckBox useCustomOverlays;
+    private JCheckBox skipFirstEpoch;
+    private JCheckBox skipBadCoadds;
     private JCheckBox smallBodyHelp;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCircle;
@@ -277,9 +278,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1425;
+            int controlPanelHeight = 1450;
 
-            JPanel controlPanel = new JPanel(new GridLayout(58, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(59, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -518,7 +519,24 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            controlPanel.add(new JLabel("Mark sources affected by artifacts:"));
+            controlPanel.add(new JLabel(underline("PM vectors:")));
+
+            JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(properMotionPanel);
+            gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
+            gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
+            properMotionPanel.add(gaiaDR2ProperMotion);
+            catWiseProperMotion = new JCheckBox("CatWise");
+            catWiseProperMotion.setForeground(Color.MAGENTA);
+            properMotionPanel.add(catWiseProperMotion);
+
+            properMotionPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(properMotionPanel);
+            properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
+            properMotionField = new JTextField(String.valueOf(100));
+            properMotionPanel.add(properMotionField);
+
+            controlPanel.add(new JLabel(underline("Mark sources affected by artifacts:")));
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(artifactPanel);
@@ -537,23 +555,6 @@ public class ImageViewerTab {
             spikeOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Spikes&nbsp;</span></html>");
             spikeOverlay.setForeground(Color.ORANGE);
             artifactPanel.add(spikeOverlay);
-
-            controlPanel.add(new JLabel(underline("PM vectors:")));
-
-            JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(properMotionPanel);
-            gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
-            gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
-            properMotionPanel.add(gaiaDR2ProperMotion);
-            catWiseProperMotion = new JCheckBox("CatWise");
-            catWiseProperMotion.setForeground(Color.MAGENTA);
-            properMotionPanel.add(catWiseProperMotion);
-
-            properMotionPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(properMotionPanel);
-            properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
-            properMotionField = new JTextField(String.valueOf(100));
-            properMotionPanel.add(properMotionField);
 
             controlPanel.add(new JLabel(underline("Image click behaviour w/o overlays:")));
 
@@ -576,6 +577,23 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
+
+            skipFirstEpoch = new JCheckBox("Skip first epoch (year 2010)");
+            controlPanel.add(skipFirstEpoch);
+            skipFirstEpoch.addActionListener((ActionEvent evt) -> {
+                if (skipFirstEpoch.isSelected()) {
+                    epochCount -= 2;
+                } else {
+                    epochCount += 2;
+                }
+                if (images != null) {
+                    skipFirstEpoch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    images.clear();
+                    initMinMaxValues();
+                    createFlipbook();
+                    skipFirstEpoch.setCursor(Cursor.getDefaultCursor());
+                }
+            });
 
             skipBadCoadds = new JCheckBox("Skip low weighted coadds");
             controlPanel.add(skipBadCoadds);
@@ -1718,6 +1736,9 @@ public class ImageViewerTab {
 
     private InputStream getImageData(int band, int epoch) throws Exception {
         String imageUrl;
+        if (skipFirstEpoch.isSelected()) {
+            epoch += 2;
+        }
         if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
             NumberPair properMotion = getCoordinates(transposeMotionField.getText());
             double pmra = properMotion.getX();
