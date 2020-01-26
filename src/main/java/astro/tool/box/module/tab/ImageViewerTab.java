@@ -516,7 +516,7 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            artifactOverlay = new JCheckBox("WISE artifacts (includes rejected):");
+            artifactOverlay = new JCheckBox("Sources affected by WISE artifacts:");
             controlPanel.add(artifactOverlay);
 
             JLabel artifactLabel = new JLabel("<html>&nbsp;&nbsp;<span style='color:fuchsia'>Ghosts</span>&nbsp;<span style='background:black;color:yellow'>&nbsp;Halos&nbsp;</span>&nbsp;<span style='color:green'>Latents</span>&nbsp;<span style='background:black;color:orange'>&nbsp;Diff. spikes&nbsp;</span></html>");
@@ -900,6 +900,7 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     if (!hideMagnifier.isSelected()) {
                         rightPanel.removeAll();
+                        rightPanel.repaint();
                         BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
                         magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
@@ -1571,9 +1572,9 @@ public class ImageViewerTab {
         }
         if (artifactOverlay.isSelected()) {
             fetchCatWiseCatalogEntries();
-            drawOverlay(image, catWiseEntries, null, null);
+            drawArtifactOverlay(image, catWiseEntries);
             fetchCatWiseRejectedEntries();
-            drawOverlay(image, catWiseRejectedEntries, null, null);
+            drawArtifactOverlay(image, catWiseRejectedEntries);
         }
 
         if (useCustomOverlays.isSelected()) {
@@ -2350,58 +2351,65 @@ public class ImageViewerTab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
-            if (artifactOverlay.isSelected() && (catalogEntry instanceof CatWiseCatalogEntry || catalogEntry instanceof CatWiseRejectedEntry)) {
-                String ab_flags;
-                String cc_flags;
-                if (catalogEntry instanceof CatWiseCatalogEntry) {
-                    CatWiseCatalogEntry catWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
-                    ab_flags = catWiseCatalog.getAb_flags();
-                    cc_flags = catWiseCatalog.getCc_flags();
-                } else {
-                    CatWiseRejectedEntry catWiseRejected = (CatWiseRejectedEntry) catalogEntry;
-                    ab_flags = catWiseRejected.getAb_flags();
-                    cc_flags = catWiseRejected.getCc_flags();
-                }
-                if (ab_flags.contains("D") || cc_flags.contains("D")) {
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
-                    toDraw.draw(graphics);
-                }
-                if (ab_flags.contains("H") || cc_flags.contains("H")) {
-                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
-                    toDraw.draw(graphics);
-                }
-                if (ab_flags.contains("O") || cc_flags.contains("O")) {
-                    toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA);
-                    toDraw.draw(graphics);
-                }
-                if (ab_flags.contains("P") || cc_flags.contains("P")) {
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
-                    toDraw.draw(graphics);
-                }
-            } else {
-                switch (shape) {
-                    case CIRCLE:
-                        toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                    case CROSS:
-                        toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                    case XCROSS:
-                        toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                    case SQUARE:
-                        toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                    case TRIANGLE:
-                        toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                    case DIAMOND:
-                        toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                    default:
-                        toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                        break;
-                }
+            switch (shape) {
+                case CIRCLE:
+                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case CROSS:
+                    toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case XCROSS:
+                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case SQUARE:
+                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case TRIANGLE:
+                    toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                case DIAMOND:
+                    toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+                default:
+                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                    break;
+            }
+            toDraw.draw(graphics);
+        });
+    }
+
+    private void drawArtifactOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
+        Graphics graphics = image.getGraphics();
+        catalogEntries.forEach(catalogEntry -> {
+            NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
+            catalogEntry.setPixelRa(position.getX());
+            catalogEntry.setPixelDec(position.getY());
+            String ab_flags = "";
+            String cc_flags = "";
+            if (catalogEntry instanceof CatWiseCatalogEntry) {
+                CatWiseCatalogEntry catWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
+                ab_flags = catWiseCatalog.getAb_flags();
+                cc_flags = catWiseCatalog.getCc_flags();
+            }
+            if (catalogEntry instanceof CatWiseRejectedEntry) {
+                CatWiseRejectedEntry catWiseRejected = (CatWiseRejectedEntry) catalogEntry;
+                ab_flags = catWiseRejected.getAb_flags();
+                cc_flags = catWiseRejected.getCc_flags();
+            }
+            if (ab_flags.contains("D") || cc_flags.contains("D")) {
+                Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+                toDraw.draw(graphics);
+            }
+            if (ab_flags.contains("H") || cc_flags.contains("H")) {
+                Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
+                toDraw.draw(graphics);
+            }
+            if (ab_flags.contains("O") || cc_flags.contains("O")) {
+                Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA);
+                toDraw.draw(graphics);
+            }
+            if (ab_flags.contains("P") || cc_flags.contains("P")) {
+                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
                 toDraw.draw(graphics);
             }
         });
