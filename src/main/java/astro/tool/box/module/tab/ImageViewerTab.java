@@ -2402,6 +2402,13 @@ public class ImageViewerTab {
                 ab_flags = catWiseRejected.getAb_flags();
                 cc_flags = catWiseRejected.getCc_flags();
             }
+            if (cc_flags.length() > 1) {
+                cc_flags = cc_flags.substring(0, 2);
+            } else if (cc_flags.length() > 0) {
+                cc_flags = cc_flags.substring(0, 1);
+            }
+            ab_flags = ab_flags.toUpperCase();
+            cc_flags = cc_flags.toUpperCase();
             if (ghostOverlay.isSelected() && (ab_flags.contains("O") || cc_flags.contains("O"))) {
                 Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA.darker());
                 toDraw.draw(graphics);
