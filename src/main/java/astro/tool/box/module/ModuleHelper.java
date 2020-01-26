@@ -76,7 +76,8 @@ public class ModuleHelper {
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
-    public static final String AGN_WARNING = "Possible AGN?";
+    public static final String AGN_WARNING = "Possible AGN!";
+    public static final String WD_WARNING = "Possible white dwarf!";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -389,7 +390,7 @@ public class ModuleHelper {
         }
         if (catalogEntry instanceof AllWiseCatalogEntry) {
             AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
-            if (isAPossibleAgn(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
+            if (isAPossibleAGN(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
                 spectralTypes.add("[" + AGN_WARNING + "]");
             }
         }

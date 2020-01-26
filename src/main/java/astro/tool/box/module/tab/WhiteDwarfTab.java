@@ -184,9 +184,8 @@ public class WhiteDwarfTab {
                         lookupResult.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
-                            if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
-                                String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, JColor.DARK_RED));
+                            if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                                lookupResult.add(createLabel(AGN_WARNING, JColor.DARK_RED));
                             }
                         }
                     }

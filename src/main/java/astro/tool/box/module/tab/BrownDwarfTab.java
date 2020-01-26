@@ -5,8 +5,9 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
-import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
@@ -151,9 +152,14 @@ public class BrownDwarfTab {
                         lookupResult.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
-                            if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
-                                String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
-                                lookupResult.add(createLabel(warning, JColor.DARK_RED));
+                            if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                                lookupResult.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                            }
+                        }
+                        if (selectedEntry instanceof GaiaDR2CatalogEntry) {
+                            GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) selectedEntry;
+                            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                                lookupResult.add(createLabel(WD_WARNING, JColor.DARK_RED));
                             }
                         }
                     }

@@ -2495,10 +2495,17 @@ public class ImageViewerTab {
             container.add(createMainSequenceSpectralTypePanel(catalogEntry));
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
-                if (isAPossibleAgn(entry.getW1_W2(), entry.getW2_W3())) {
-                    String warning = "W2-W3=" + roundTo3DecNZ(entry.getW2_W3()) + " (> 2.5) " + AGN_WARNING;
+                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(warning, JColor.DARK_RED));
+                    messagePanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    container.add(messagePanel);
+                }
+            }
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                    messagePanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
                     container.add(messagePanel);
                 }
             }

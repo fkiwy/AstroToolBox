@@ -353,4 +353,8 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
         return calculateTotalVelocity(radvel, getTansverseVelocity());
     }
 
+    public double getBP_RP() {
+        return BP_RP;
+    }
+
 }
