@@ -81,8 +81,8 @@ public class HelpTab {
             text.row("Low weighted coadds may be skipped and replaced by their counterpart of an earlier epoch, to improve the quality of the new coadds produced for one of the following");
             text.row("epochs: FIRST_LAST, FIRST_REMAINING or YEAR. To do so, check the 'Skip low weighted coadds' check box.");
             text.newLine();
-            text.row("If you left-click an object of your choice, a new Catalog Search instance will be opened showing all catalog entries within a search radius of 10 arcseconds.");
-            text.row("If you right-click an object, a new Image Viewer instance will be opened, showing your object in the center of the field of view.");
+            text.row("If you left-click an object of your choice, a new Catalog Search instance will be opened, showing all catalog entries within a search radius of 10 arcseconds.");
+            text.row("If you right-click an object, a new Image Viewer instance will be opened, showing your object centered in a smaller field of view.");
             text.row("If you middle-click (mouse wheel) an object, a new window with a PanSTARRS image will be opened, containing your object in a field of view of 15 arcseconds.");
             text.row("The field of view can be changed by spinning the mouse wheel forward (larger) or backward (smaller), before clicking on the object of interest.");
             text.row("This applies only to the PanSTARRS image.");

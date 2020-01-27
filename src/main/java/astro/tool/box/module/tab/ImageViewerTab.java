@@ -2140,7 +2140,7 @@ public class ImageViewerTab {
 
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-        imageViewerTab.getSizeField().setText(sizeField.getText());
+        imageViewerTab.getSizeField().setText("100");
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.getEpochs().setSelectedItem(epoch);
         imageViewerTab.setQuadrantCount(quadrantCount);
