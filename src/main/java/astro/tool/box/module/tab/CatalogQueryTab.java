@@ -1,6 +1,7 @@
 package astro.tool.box.module.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.Urls.*;
@@ -523,23 +524,41 @@ public class CatalogQueryTab {
             spectralTypeTable.setCellSelectionEnabled(false);
             resizeColumnWidth(spectralTypeTable);
 
-            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                    : new JScrollPane(spectralTypeTable);
-
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
+
+            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
+                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                    : new JScrollPane(spectralTypeTable);
             spectralTypeInfo.add(spectralTypePanel);
 
             JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
             spectralTypeInfo.add(remarks);
-            remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
-            remarks.add(new JLabel("to early type as well to late type stars."));
-            remarks.add(new JLabel("The more colors match, the better the results, in general."));
-            remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
+
+            boolean warning = false;
+            if (catalogEntry instanceof AllWiseCatalogEntry) {
+                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                    remarks.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    warning = true;
+                }
+            }
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    warning = true;
+                }
+            }
+            if (!warning) {
+                remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
+                remarks.add(new JLabel("to early type as well to late type stars."));
+                remarks.add(new JLabel("The more colors match, the better the results, in general."));
+                remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
+            }
 
             remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
             spectralTypeInfo.add(remarks);
