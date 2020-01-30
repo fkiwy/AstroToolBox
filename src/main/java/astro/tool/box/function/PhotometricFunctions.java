@@ -91,8 +91,8 @@ public class PhotometricFunctions {
      * @return a boolean indicating that the object is a possible white dwarf
      */
     public static boolean isAPossibleWD(double MGmag, double BP_RP) {
-        //return MGmag >= 10 && MGmag <= 15 && BP_RP <= 1.5;
-        return MGmag >= 10 && MGmag <= 16 && BP_RP <= 1.7;
+        //return MGmag >= 10 && MGmag <= 15 && BP_RP != 0 && BP_RP <= 1.5;
+        return MGmag >= 10 && MGmag <= 16 && BP_RP != 0 && BP_RP <= 1.7;
     }
 
 }
