@@ -172,12 +172,12 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "CatWISE";
+        return "CatWISE Reject Table";
     }
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_YELLOW.val;
+        return JColor.LIGHT_GRAY.val;
     }
 
     @Override

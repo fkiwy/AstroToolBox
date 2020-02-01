@@ -20,6 +20,7 @@ import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
+import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -144,6 +145,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseRejectedEntries;
+    private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
     private JPanel zooniversePanel1;
@@ -157,6 +159,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaDR2Overlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
+    private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
     private JCheckBox latentOverlay;
@@ -278,9 +281,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1450;
+            int controlPanelHeight = 1475;
 
-            JPanel controlPanel = new JPanel(new GridLayout(59, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(60, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -519,6 +522,10 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
+            ssoOverlay = new JCheckBox("Solar System Objects");
+            ssoOverlay.setForeground(Color.BLUE);
+            controlPanel.add(ssoOverlay);
+
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
@@ -536,7 +543,7 @@ public class ImageViewerTab {
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
 
-            controlPanel.add(new JLabel(underline("Mark sources affected by artifacts:")));
+            controlPanel.add(new JLabel(underline("Sources affected by WISE artifacts:")));
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(artifactPanel);
@@ -1006,6 +1013,10 @@ public class ImageViewerTab {
                                             showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
                                             overlays++;
                                         }
+                                        if (ssoOverlay.isSelected() && ssoEntries != null) {
+                                            showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
+                                            overlays++;
+                                        }
                                         if (useCustomOverlays.isSelected()) {
                                             for (CustomOverlay customOverlay : customOverlays.values()) {
                                                 if (customOverlay.getCheckBox().isSelected()) {
@@ -1248,13 +1259,19 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
                 catWiseOverlay.setEnabled(true);
+                ssoOverlay.setEnabled(true);
                 ghostOverlay.setEnabled(true);
                 haloOverlay.setEnabled(true);
                 latentOverlay.setEnabled(true);
                 spikeOverlay.setEnabled(true);
                 gaiaDR2ProperMotion.setEnabled(true);
                 catWiseProperMotion.setEnabled(true);
-                simbadEntries = gaiaDR2Entries = allWiseEntries = catWiseEntries = null;
+                simbadEntries = null;
+                gaiaDR2Entries = null;
+                allWiseEntries = null;
+                catWiseEntries = null;
+                catWiseRejectedEntries = null;
+                ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
                         customOverlay.getCheckBox().setEnabled(true);
@@ -1598,6 +1615,10 @@ public class ImageViewerTab {
             fetchCatWiseCatalogEntries();
             drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
         }
+        if (ssoOverlay.isSelected()) {
+            fetchSSOCatalogEntries();
+            drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
+        }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
             fetchCatWiseCatalogEntries();
             drawArtifactOverlay(image, catWiseEntries);
@@ -1669,6 +1690,7 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setSelected(false);
                 allWiseOverlay.setSelected(false);
                 catWiseOverlay.setSelected(false);
+                ssoOverlay.setSelected(false);
                 ghostOverlay.setSelected(false);
                 haloOverlay.setSelected(false);
                 latentOverlay.setSelected(false);
@@ -1679,6 +1701,7 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setEnabled(false);
                 allWiseOverlay.setEnabled(false);
                 catWiseOverlay.setEnabled(false);
+                ssoOverlay.setEnabled(false);
                 ghostOverlay.setEnabled(false);
                 haloOverlay.setEnabled(false);
                 latentOverlay.setEnabled(false);
@@ -2292,6 +2315,28 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 catWiseRejectedEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 catWiseRejectedEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.loadCatalogElements();
+                });
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void fetchSSOCatalogEntries() {
+        try {
+            if (ssoEntries == null) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                CatalogEntry catalogQuery = new SSOCatalogEntry();
+                catalogQuery.setRa(targetRa);
+                catalogQuery.setDec(targetDec);
+                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+                ssoEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+                ssoEntries.forEach(catalogEntry -> {
                     catalogEntry.setTargetRa(targetRa);
                     catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
