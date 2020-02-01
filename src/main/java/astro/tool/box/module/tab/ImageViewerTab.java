@@ -1286,10 +1286,10 @@ public class ImageViewerTab {
                 if (numberOfSubjects == 0) {
                     zooniversePanel1.add(new JLabel("None"));
                 } else {
-                    for (int i = 0; i < 3 && i < numberOfSubjects; i++) {
+                    for (int i = 0; i < 4 && i < numberOfSubjects; i++) {
                         zooniversePanel1.add(subjects.get(i));
                     }
-                    for (int i = 3; i < 6 && i < numberOfSubjects; i++) {
+                    for (int i = 4; i < 8 && i < numberOfSubjects; i++) {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
