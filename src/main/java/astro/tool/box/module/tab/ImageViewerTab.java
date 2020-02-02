@@ -87,6 +87,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
@@ -563,7 +565,7 @@ public class ImageViewerTab {
             spikeOverlay.setForeground(Color.ORANGE);
             artifactPanel.add(spikeOverlay);
 
-            controlPanel.add(new JLabel(underline("Image click behaviour w/o overlays:")));
+            controlPanel.add(new JLabel(underline("Left mouse click w/o overlays:")));
 
             showCatalogsButton = new JRadioButton("Show catalogs", true);
             controlPanel.add(showCatalogsButton);
@@ -906,14 +908,12 @@ public class ImageViewerTab {
                     // Initialize positions of magnified WISE image
                     int width = 50;
                     int height = 50;
-                    if (centerX == 0 && centerY == 0) {
-                        //centerX = (int) round(getScaledValue(pixelX));
-                        //centerY = (int) round(getScaledValue(pixelY));
-                        centerX = wiseImage.getWidth() / 2;
-                        centerY = wiseImage.getHeight() / 2;
-                    }
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
+                    if (centerX == 0 && centerY == 0) {
+                        centerX = imageWidth / 2;
+                        centerY = imageHeight / 2;
+                    }
                     int upperLeftX = centerX - (width / 2);
                     int upperLeftY = centerY - (height / 2);
                     int upperRightX = upperLeftX + width;
@@ -989,7 +989,8 @@ public class ImageViewerTab {
                                         double circleY = evt.getY() * 1.0 / zoom;
                                         circles.add(new NumberPair(circleX, circleY));
                                     } else {
-                                        displayZoomedPs1Image(newRa, newDec, fieldOfView);
+                                        //displayZoomedPs1Image(newRa, newDec, fieldOfView);
+                                        displayAtlasImages(targetRa, targetDec);
                                     }
                                     break;
                                 default:
@@ -2017,7 +2018,7 @@ public class ImageViewerTab {
         return invertColors.isSelected() ? value : 1 - value;
     }
 
-    private float normalize(float value, int minVal, int maxVal) {
+    private float normalize(float value, float minVal, float maxVal) {
         if (value < minVal) {
             value = minVal;
         }
@@ -2208,12 +2209,130 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&x=%f&y=%f&size=%d&wcs=1&asinh=true&autoscale=98.00&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) (size * SIZE_FACTOR * 4), resolution);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) (size * SIZE_FACTOR * 4), resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             return ImageIO.read(stream);
         } catch (Exception ex) {
             return null;
+        }
+    }
+
+    private void displayAtlasImages(double targetRa, double targetDec) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            SortedMap<Integer, String> coaddInfos = new TreeMap<>();
+            String imageUrl = String.format("https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd?POS=%f,%f&ct=csv&mcen", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(imageUrl));
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int band = 0;
+                int coadd_id = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("band")) {
+                        band = i;
+                    }
+                    if (columnNames[i].equals("coadd_id")) {
+                        coadd_id = i;
+                    }
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    coaddInfos.put(new Integer(columnValues[band]), columnValues[coadd_id]);
+                }
+            }
+            int atlasImageSize = 22;
+            SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
+            for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
+                int band = entry.getKey();
+                String coadd_id = entry.getValue();
+                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%dpix", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, atlasImageSize);
+                HttpURLConnection connection = establishHttpConnection(url);
+                Fits fits = new Fits(connection.getInputStream());
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet minMaxValues = getMinMaxValues(values);
+                float minVal = (float) minMaxValues.getX();
+                float maxVal = (float) minMaxValues.getY();
+                float[][] processedValues = new float[size][size];
+                for (int i = 0; i < atlasImageSize; i++) {
+                    for (int j = 0; j < atlasImageSize; j++) {
+                        try {
+                            processedValues[i][j] = normalize(values[i][j], minVal, maxVal);
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                }
+                Fits result = new Fits();
+                result.addHDU(FitsFactory.hduFactory(processedValues));
+                fitsFiles.put(band, result);
+            }
+            List<BufferedImage> atlasImages = new ArrayList<>();
+            for (Map.Entry<Integer, Fits> entry : fitsFiles.entrySet()) {
+                Fits fits = entry.getValue();
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                BufferedImage image = new BufferedImage(atlasImageSize, atlasImageSize, BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics = image.createGraphics();
+                for (int i = 0; i < atlasImageSize; i++) {
+                    for (int j = 0; j < atlasImageSize; j++) {
+                        try {
+                            float value = 1 - values[i][j];
+                            graphics.setColor(new Color(value, value, value));
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                            graphics.setColor(new Color(1f, 1f, 1f));
+                        }
+                        graphics.fillRect(j, i, 1, 1);
+                    }
+                }
+                atlasImages.add(image);
+            }
+            Fits fits = fitsFiles.get(1);
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] valuesW1 = (float[][]) imageData.getData();
+            fits = fitsFiles.get(2);
+            hdu = (ImageHDU) fits.getHDU(0);
+            imageData = (ImageData) hdu.getData();
+            float[][] valuesW2 = (float[][]) imageData.getData();
+            fits = fitsFiles.get(4);
+            hdu = (ImageHDU) fits.getHDU(0);
+            imageData = (ImageData) hdu.getData();
+            float[][] valuesW4 = (float[][]) imageData.getData();
+            BufferedImage image = new BufferedImage(atlasImageSize, atlasImageSize, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = image.createGraphics();
+            for (int i = 0; i < atlasImageSize; i++) {
+                for (int j = 0; j < atlasImageSize; j++) {
+                    try {
+                        float w1 = valuesW1[i][j];
+                        float w2 = valuesW2[i][j];
+                        float w4 = valuesW4[i][j];
+                        graphics.setColor(new Color(w4, w2, w1));
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        graphics.setColor(new Color(1f, 1f, 1f));
+                    }
+                    graphics.fillRect(j, i, 1, 1);
+                }
+            }
+            atlasImages.add(image);
+            JPanel atlasPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            atlasImages.forEach((atlasImage) -> {
+                atlasPanel.add(new JLabel(new ImageIcon(zoom(flip(atlasImage), 200))));
+            });
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec));
+            imageFrame.getContentPane().add(atlasPanel);
+            imageFrame.setSize(1100, 300);
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
         }
     }
 
