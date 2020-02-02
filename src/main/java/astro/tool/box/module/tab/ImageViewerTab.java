@@ -2326,15 +2326,26 @@ public class ImageViewerTab {
             atlasImages.add(image);
 
             // Display Atlas images
-            JPanel atlasPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            atlasImages.forEach((atlasImage) -> {
-                atlasPanel.add(new JLabel(new ImageIcon(zoom(flip(atlasImage), 200))));
-            });
+            JPanel atlasPanel = new JPanel(new GridLayout(1, 5));
+            int band = 1;
+            for (BufferedImage atlasImage : atlasImages) {
+                String imageHeader = band < 5 ? "W" + band++ : "W4-W2-W1";
+                JPanel panel = new JPanel();
+                panel.setBorder(createEtchedBorder(imageHeader));
+                atlasImage = zoom(flip(atlasImage), 200);
+                double x = atlasImage.getWidth() / 2;
+                double y = atlasImage.getHeight() / 2;
+                Graphics g = atlasImage.getGraphics();
+                Circle circle = new Circle(x, y, 10, Color.MAGENTA);
+                circle.draw(g);
+                panel.add(new JLabel(new ImageIcon(atlasImage)));
+                atlasPanel.add(panel);
+            }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec));
             imageFrame.getContentPane().add(atlasPanel);
-            imageFrame.setSize(1100, 300);
+            imageFrame.setSize(1100, 260);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
