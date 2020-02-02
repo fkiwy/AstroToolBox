@@ -150,6 +150,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public void loadCatalogElements() {
+        catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("objectId", objectId, Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("type", TYPE_TABLE.get(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("predicted ra", roundTo7DecNZ(pra), Alignment.LEFT, getDoubleComparator()));
@@ -164,7 +165,6 @@ public class SSOCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("orbital incl. (deg)", roundTo3DecNZ(incl), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("perih. passage time", convertMJDToDateTime(new BigDecimal(Double.toString(pertime))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("observation time", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         //catalogElements.add(new CatalogElement("dist. to prediced ra (arcsec)", roundTo3DecNZ(dra), Alignment.LEFT, getDoubleComparator()));
         //catalogElements.add(new CatalogElement("dist. to prediced dec (arcsec)", roundTo3DecNZ(ddec), Alignment.LEFT, getDoubleComparator()));
         //catalogElements.add(new CatalogElement("W1mag", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));

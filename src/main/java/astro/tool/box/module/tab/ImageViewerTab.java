@@ -134,6 +134,7 @@ public class ImageViewerTab {
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
+    public static final String CHANGE_FOV_TEXT = "(Spin wheel to change FoV: %d\")";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -190,6 +191,8 @@ public class ImageViewerTab {
     private JTextField transposeMotionField;
     private JTextField properMotionField;
     private JRadioButton showCatalogsButton;
+    private JRadioButton showPanstarrsButton;
+    private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
 
@@ -283,9 +286,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1475;
+            int controlPanelHeight = 1575;
 
-            JPanel controlPanel = new JPanel(new GridLayout(60, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(64, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -576,6 +579,21 @@ public class ImageViewerTab {
             ButtonGroup radioGroup = new ButtonGroup();
             radioGroup.add(showCatalogsButton);
             radioGroup.add(recenterImagesButton);
+
+            controlPanel.add(new JLabel(underline("Mouse wheel click:")));
+
+            changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            controlPanel.add(changeFovLabel);
+
+            showPanstarrsButton = new JRadioButton("Zoomed PanSTARRS image", true);
+            controlPanel.add(showPanstarrsButton);
+
+            JRadioButton showAllwiseButton = new JRadioButton("AllWISE w1/w2/w3/w4 images", false);
+            controlPanel.add(showAllwiseButton);
+
+            radioGroup = new ButtonGroup();
+            radioGroup.add(showPanstarrsButton);
+            radioGroup.add(showAllwiseButton);
 
             controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
 
@@ -989,8 +1007,11 @@ public class ImageViewerTab {
                                         double circleY = evt.getY() * 1.0 / zoom;
                                         circles.add(new NumberPair(circleX, circleY));
                                     } else {
-                                        //displayZoomedPs1Image(newRa, newDec, fieldOfView);
-                                        displayAtlasImages(targetRa, targetDec);
+                                        if (showPanstarrsButton.isSelected()) {
+                                            displayZoomedPs1Image(newRa, newDec, fieldOfView);
+                                        } else {
+                                            displayAtlasImages(targetRa, targetDec, fieldOfView);
+                                        }
                                     }
                                     break;
                                 default:
@@ -1072,6 +1093,7 @@ public class ImageViewerTab {
                             } else if (fieldOfView > 0) {
                                 fieldOfView--;
                             }
+                            changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
                         }
                     });
 
@@ -2176,7 +2198,7 @@ public class ImageViewerTab {
 
     private void displayZoomedPs1Image(double targetRa, double targetDec, int size) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        BufferedImage ps1ImageZoomed = fetchPs1Image(targetRa, targetDec, size, 256);
+        BufferedImage ps1ImageZoomed = fetchPs1Image(targetRa, targetDec, size / SIZE_FACTOR, 256);
         if (ps1ImageZoomed != null) {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -2190,7 +2212,7 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getDefaultCursor());
     }
 
-    private BufferedImage fetchPs1Image(double targetRa, double targetDec, int size, int resolution) {
+    private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size, int resolution) {
         try {
             List<String> fileNames = new ArrayList<>();
             String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=giy&sep=comma", targetRa, targetDec);
@@ -2218,7 +2240,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayAtlasImages(double targetRa, double targetDec) {
+    private void displayAtlasImages(double targetRa, double targetDec, int size) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch coadd id for each WISE band
@@ -2244,12 +2266,12 @@ public class ImageViewerTab {
             }
 
             // Fetch cutout for each WISE band
-            int atlasImageSize = 22;
+            size += 5;
             SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
             for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
                 int band = entry.getKey();
                 String coadd_id = entry.getValue();
-                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%dpix", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, atlasImageSize);
+                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%dpix", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, size);
                 HttpURLConnection connection = establishHttpConnection(url);
                 Fits fits = new Fits(connection.getInputStream());
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
@@ -2258,9 +2280,9 @@ public class ImageViewerTab {
                 NumberTriplet minMaxValues = getMinMaxValues(values);
                 float minVal = (float) minMaxValues.getX();
                 float maxVal = (float) minMaxValues.getY();
-                float[][] processedValues = new float[atlasImageSize][atlasImageSize];
-                for (int i = 0; i < atlasImageSize; i++) {
-                    for (int j = 0; j < atlasImageSize; j++) {
+                float[][] processedValues = new float[size][size];
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
                         try {
                             processedValues[i][j] = normalize(values[i][j], minVal, maxVal);
                         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -2279,10 +2301,10 @@ public class ImageViewerTab {
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] values = (float[][]) imageData.getData();
-                BufferedImage image = new BufferedImage(atlasImageSize, atlasImageSize, BufferedImage.TYPE_INT_RGB);
+                BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = image.createGraphics();
-                for (int i = 0; i < atlasImageSize; i++) {
-                    for (int j = 0; j < atlasImageSize; j++) {
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
                         try {
                             float value = 1 - values[i][j];
                             graphics.setColor(new Color(value, value, value));
@@ -2308,10 +2330,10 @@ public class ImageViewerTab {
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
             float[][] values4 = (float[][]) imageData.getData();
-            BufferedImage image = new BufferedImage(atlasImageSize, atlasImageSize, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < atlasImageSize; i++) {
-                for (int j = 0; j < atlasImageSize; j++) {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
                     try {
                         float w1 = values1[i][j];
                         float w2 = values2[i][j];
