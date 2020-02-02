@@ -587,9 +587,17 @@ public class ImageViewerTab {
 
             showPanstarrsButton = new JRadioButton("Zoomed PanSTARRS image", true);
             controlPanel.add(showPanstarrsButton);
+            showPanstarrsButton.addActionListener((ActionEvent evt) -> {
+                fieldOfView = 15;
+                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            });
 
             JRadioButton showAllwiseButton = new JRadioButton("AllWISE w1/w2/w3/w4 images", false);
             controlPanel.add(showAllwiseButton);
+            showAllwiseButton.addActionListener((ActionEvent evt) -> {
+                fieldOfView = 30;
+                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            });
 
             radioGroup = new ButtonGroup();
             radioGroup.add(showPanstarrsButton);
