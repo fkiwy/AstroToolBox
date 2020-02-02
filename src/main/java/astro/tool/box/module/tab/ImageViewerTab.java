@@ -2221,6 +2221,7 @@ public class ImageViewerTab {
     private void displayAtlasImages(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            // Fetch coadd id for each WISE band
             SortedMap<Integer, String> coaddInfos = new TreeMap<>();
             String imageUrl = String.format("https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd?POS=%f,%f&ct=csv&mcen", targetRa, targetDec);
             String response = readResponse(establishHttpConnection(imageUrl));
@@ -2241,6 +2242,8 @@ public class ImageViewerTab {
                     coaddInfos.put(new Integer(columnValues[band]), columnValues[coadd_id]);
                 }
             }
+
+            // Fetch cutout for each WISE band
             int atlasImageSize = 22;
             SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
             for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
@@ -2255,7 +2258,7 @@ public class ImageViewerTab {
                 NumberTriplet minMaxValues = getMinMaxValues(values);
                 float minVal = (float) minMaxValues.getX();
                 float maxVal = (float) minMaxValues.getY();
-                float[][] processedValues = new float[size][size];
+                float[][] processedValues = new float[atlasImageSize][atlasImageSize];
                 for (int i = 0; i < atlasImageSize; i++) {
                     for (int j = 0; j < atlasImageSize; j++) {
                         try {
@@ -2268,6 +2271,8 @@ public class ImageViewerTab {
                 result.addHDU(FitsFactory.hduFactory(processedValues));
                 fitsFiles.put(band, result);
             }
+
+            // Produce grayscale RGB image for each WISE band
             List<BufferedImage> atlasImages = new ArrayList<>();
             for (Map.Entry<Integer, Fits> entry : fitsFiles.entrySet()) {
                 Fits fits = entry.getValue();
@@ -2289,26 +2294,28 @@ public class ImageViewerTab {
                 }
                 atlasImages.add(image);
             }
+
+            // Produce colored RGB image for each WISE band
             Fits fits = fitsFiles.get(1);
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
-            float[][] valuesW1 = (float[][]) imageData.getData();
+            float[][] values1 = (float[][]) imageData.getData();
             fits = fitsFiles.get(2);
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
-            float[][] valuesW2 = (float[][]) imageData.getData();
+            float[][] values2 = (float[][]) imageData.getData();
             fits = fitsFiles.get(4);
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
-            float[][] valuesW4 = (float[][]) imageData.getData();
+            float[][] values4 = (float[][]) imageData.getData();
             BufferedImage image = new BufferedImage(atlasImageSize, atlasImageSize, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
             for (int i = 0; i < atlasImageSize; i++) {
                 for (int j = 0; j < atlasImageSize; j++) {
                     try {
-                        float w1 = valuesW1[i][j];
-                        float w2 = valuesW2[i][j];
-                        float w4 = valuesW4[i][j];
+                        float w1 = values1[i][j];
+                        float w2 = values2[i][j];
+                        float w4 = values4[i][j];
                         graphics.setColor(new Color(w4, w2, w1));
                     } catch (ArrayIndexOutOfBoundsException ex) {
                         graphics.setColor(new Color(1f, 1f, 1f));
@@ -2317,6 +2324,8 @@ public class ImageViewerTab {
                 }
             }
             atlasImages.add(image);
+
+            // Display Atlas images
             JPanel atlasPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             atlasImages.forEach((atlasImage) -> {
                 atlasPanel.add(new JLabel(new ImageIcon(zoom(flip(atlasImage), 200))));
