@@ -2240,7 +2240,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayAtlasImages(double targetRa, double targetDec, int size) {
+    private void displayAtlasImages(double targetRa, double targetDec, int fieldOfView) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch coadd id for each WISE band
@@ -2266,15 +2266,18 @@ public class ImageViewerTab {
             }
 
             // Fetch cutout for each WISE band
-            size += 5;
+            int size = fieldOfView;
             SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
             for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
                 int band = entry.getKey();
                 String coadd_id = entry.getValue();
-                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%dpix", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, size);
+                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%darcsec", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, fieldOfView);
                 HttpURLConnection connection = establishHttpConnection(url);
                 Fits fits = new Fits(connection.getInputStream());
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                Header header = hdu.getHeader();
+                double naxis1 = header.getDoubleValue("NAXIS1");
+                size = (int) round(naxis1);
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] values = (float[][]) imageData.getData();
                 NumberTriplet minMaxValues = getMinMaxValues(values);
