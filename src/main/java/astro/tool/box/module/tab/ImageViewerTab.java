@@ -13,7 +13,6 @@ import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.container.StringPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectedEntry;
@@ -75,7 +74,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static java.lang.Math.*;
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -173,7 +171,7 @@ public class ImageViewerTab {
     private JCheckBox useCustomOverlays;
     private JCheckBox skipFirstEpoch;
     private JCheckBox skipBadCoadds;
-    private JCheckBox smallBodyHelp;
+    //private JCheckBox smallBodyHelp;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCircle;
     private JComboBox wiseBands;
@@ -229,9 +227,8 @@ public class ImageViewerTab {
     private double pixelX;
     private double pixelY;
 
-    private double shiftX;
-    private double shiftY;
-
+    //private double shiftX;
+    //private double shiftY;
     private int centerX;
     private int centerY;
 
@@ -336,12 +333,12 @@ public class ImageViewerTab {
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
                 epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                if (epochs.getSelectedItem().equals(Epoch.ALL)) {
-                    smallBodyHelp.setEnabled(true);
-                } else {
-                    smallBodyHelp.setSelected(false);
-                    smallBodyHelp.setEnabled(false);
-                }
+                //if (epochs.getSelectedItem().equals(Epoch.ALL)) {
+                //    smallBodyHelp.setEnabled(true);
+                //} else {
+                //    smallBodyHelp.setSelected(false);
+                //    smallBodyHelp.setEnabled(false);
+                //}
                 initMinMaxValues();
                 createFlipbook();
                 epochs.setCursor(Cursor.getDefaultCursor());
@@ -642,10 +639,9 @@ public class ImageViewerTab {
                 }
             });
 
-            smallBodyHelp = new JCheckBox("Small body help (Epochs: ALL)");
-            controlPanel.add(smallBodyHelp);
-            smallBodyHelp.setEnabled(false);
-
+            //smallBodyHelp = new JCheckBox("Small body help (Epochs: ALL)");
+            //controlPanel.add(smallBodyHelp);
+            //smallBodyHelp.setEnabled(false);
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
             hideMagnifier.addActionListener((ActionEvent evt) -> {
@@ -970,7 +966,7 @@ public class ImageViewerTab {
                         BufferedImage processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
 
                         // Create and display magnified PanSTARRS image
-                        if (!hideMagnifier.isSelected()) {
+                        if (!hideMagnifier.isSelected() && !imageCutOff) {
                             BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
                             magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
                             rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
@@ -1023,47 +1019,47 @@ public class ImageViewerTab {
                                     }
                                     break;
                                 default:
-                                    if (smallBodyHelp.isSelected()) {
-                                        displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
-                                    } else {
-                                        int overlays = 0;
-                                        if (simbadOverlay.isSelected() && simbadEntries != null) {
-                                            showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
-                                            overlays++;
-                                        }
-                                        if ((gaiaDR2Overlay.isSelected() || gaiaDR2ProperMotion.isSelected()) && gaiaDR2Entries != null) {
-                                            showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
-                                            overlays++;
-                                        }
-                                        if (allWiseOverlay.isSelected() && allWiseEntries != null) {
-                                            showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
-                                            overlays++;
-                                        }
-                                        if ((catWiseOverlay.isSelected() || catWiseProperMotion.isSelected()) && catWiseEntries != null) {
-                                            showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
-                                            overlays++;
-                                        }
-                                        if (ssoOverlay.isSelected() && ssoEntries != null) {
-                                            showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
-                                            overlays++;
-                                        }
-                                        if (useCustomOverlays.isSelected()) {
-                                            for (CustomOverlay customOverlay : customOverlays.values()) {
-                                                if (customOverlay.getCheckBox().isSelected()) {
-                                                    showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY, customOverlay.getColor());
-                                                    overlays++;
-                                                }
-                                            }
-                                        }
-                                        if (overlays == 0) {
-                                            if (showCatalogsButton.isSelected()) {
-                                                displayCatalogSearchResults(newRa, newDec);
-                                            } else {
-                                                coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
-                                                createFlipbook();
+                                    //if (smallBodyHelp.isSelected()) {
+                                    //    displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
+                                    //} else {
+                                    int overlays = 0;
+                                    if (simbadOverlay.isSelected() && simbadEntries != null) {
+                                        showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
+                                        overlays++;
+                                    }
+                                    if ((gaiaDR2Overlay.isSelected() || gaiaDR2ProperMotion.isSelected()) && gaiaDR2Entries != null) {
+                                        showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
+                                        overlays++;
+                                    }
+                                    if (allWiseOverlay.isSelected() && allWiseEntries != null) {
+                                        showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
+                                        overlays++;
+                                    }
+                                    if ((catWiseOverlay.isSelected() || catWiseProperMotion.isSelected()) && catWiseEntries != null) {
+                                        showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
+                                        overlays++;
+                                    }
+                                    if (ssoOverlay.isSelected() && ssoEntries != null) {
+                                        showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
+                                        overlays++;
+                                    }
+                                    if (useCustomOverlays.isSelected()) {
+                                        for (CustomOverlay customOverlay : customOverlays.values()) {
+                                            if (customOverlay.getCheckBox().isSelected()) {
+                                                showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY, customOverlay.getColor());
+                                                overlays++;
                                             }
                                         }
                                     }
+                                    if (overlays == 0) {
+                                        if (showCatalogsButton.isSelected()) {
+                                            displayCatalogSearchResults(newRa, newDec);
+                                        } else {
+                                            coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
+                                            createFlipbook();
+                                        }
+                                    }
+                                    //}
                                     break;
                             }
                         }
@@ -1282,7 +1278,7 @@ public class ImageViewerTab {
                 hasException = false;
                 setContrast(getContrast());
                 initMinMaxValues();
-                shiftX = shiftY = 0;
+                //shiftX = shiftY = 0;
                 centerX = centerY = 0;
                 windowShift = 0;
                 imageCutOff = false;
@@ -2239,7 +2235,7 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) (size * SIZE_FACTOR * 4), resolution);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             return ImageIO.read(stream);
@@ -2376,7 +2372,7 @@ public class ImageViewerTab {
             }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec));
+            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
             imageFrame.setSize(1100, 260);
             imageFrame.setAlwaysOnTop(true);
@@ -2890,6 +2886,7 @@ public class ImageViewerTab {
         }
     }
 
+    /*
     private void displaySmallBodyPanel(double targetRa, double targetDec, double minObsEpoch, double maxObsEpoch) {
         JPanel detailPanel = new JPanel(new GridLayout(10, 2));
         detailPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -2951,8 +2948,8 @@ public class ImageViewerTab {
         smallBodyFrame.setAlwaysOnTop(true);
         smallBodyFrame.setResizable(false);
         smallBodyFrame.setVisible(true);
-    }
-
+    }*/
+    //
     private double getFovDiagonal() {
         return size * SIZE_FACTOR * sqrt(2);
     }
