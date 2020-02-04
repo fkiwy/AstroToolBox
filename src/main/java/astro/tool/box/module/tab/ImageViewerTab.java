@@ -589,7 +589,7 @@ public class ImageViewerTab {
                 changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
             });
 
-            JRadioButton showAllwiseButton = new JRadioButton("AllWISE w1/w2/w3/w4 images", false);
+            JRadioButton showAllwiseButton = new JRadioButton("AllWise w1/w2/w3/w4 images", false);
             controlPanel.add(showAllwiseButton);
             showAllwiseButton.addActionListener((ActionEvent evt) -> {
                 fieldOfView = 30;
@@ -1282,17 +1282,6 @@ public class ImageViewerTab {
                 centerX = centerY = 0;
                 windowShift = 0;
                 imageCutOff = false;
-                simbadOverlay.setEnabled(true);
-                gaiaDR2Overlay.setEnabled(true);
-                allWiseOverlay.setEnabled(true);
-                catWiseOverlay.setEnabled(true);
-                ssoOverlay.setEnabled(true);
-                ghostOverlay.setEnabled(true);
-                haloOverlay.setEnabled(true);
-                latentOverlay.setEnabled(true);
-                spikeOverlay.setEnabled(true);
-                gaiaDR2ProperMotion.setEnabled(true);
-                catWiseProperMotion.setEnabled(true);
                 simbadEntries = null;
                 gaiaDR2Entries = null;
                 allWiseEntries = null;
@@ -1707,43 +1696,18 @@ public class ImageViewerTab {
 
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
+            header.dumpHeader(System.out);
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (naxis1 != naxis2 && !imageCutOff) {
-                String message = "Image has been cut off. No centering possible. Overlays deactivated. Choose a smaller field of view!";
-                showInfoDialog(baseFrame, message);
-                imageCutOff = true;
-                simbadOverlay.setSelected(false);
-                gaiaDR2Overlay.setSelected(false);
-                allWiseOverlay.setSelected(false);
-                catWiseOverlay.setSelected(false);
-                ssoOverlay.setSelected(false);
-                ghostOverlay.setSelected(false);
-                haloOverlay.setSelected(false);
-                latentOverlay.setSelected(false);
-                spikeOverlay.setSelected(false);
-                gaiaDR2ProperMotion.setSelected(false);
-                catWiseProperMotion.setSelected(false);
-                simbadOverlay.setEnabled(false);
-                gaiaDR2Overlay.setEnabled(false);
-                allWiseOverlay.setEnabled(false);
-                catWiseOverlay.setEnabled(false);
-                ssoOverlay.setEnabled(false);
-                ghostOverlay.setEnabled(false);
-                haloOverlay.setEnabled(false);
-                latentOverlay.setEnabled(false);
-                spikeOverlay.setEnabled(false);
-                gaiaDR2ProperMotion.setEnabled(false);
-                catWiseProperMotion.setEnabled(false);
-                if (useCustomOverlays.isSelected()) {
-                    customOverlays.values().forEach((customOverlay) -> {
-                        customOverlay.getCheckBox().setSelected(false);
-                        customOverlay.getCheckBox().setEnabled(false);
-                    });
-                }
-            }
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
+            if (naxis1 != naxis2 && !imageCutOff) {
+                imageCutOff = true;
+                double naxis = max(naxis1, naxis2);
+                double crpix = max(crpix1, crpix2);
+                crpix1 = crpix2 = crpix;
+                naxis2 = naxis;
+            }
             pixelX = crpix1;
             pixelY = naxis2 - crpix2;
 
@@ -1834,10 +1798,9 @@ public class ImageViewerTab {
                     try {
                         float value = processPixel(values[i][j]);
                         graphics.setColor(new Color(value, value, value));
+                        graphics.fillRect(j, i, 1, 1);
                     } catch (ArrayIndexOutOfBoundsException ex) {
-                        graphics.setColor(new Color(1f, 1f, 1f));
                     }
-                    graphics.fillRect(j, i, 1, 1);
                 }
             }
 
@@ -1885,10 +1848,9 @@ public class ImageViewerTab {
                         float blue = processPixel(valuesW2[i][j]);
                         float green = (red + blue) / 2;
                         graphics.setColor(new Color(red, green, blue));
+                        graphics.fillRect(j, i, 1, 1);
                     } catch (ArrayIndexOutOfBoundsException ex) {
-                        graphics.setColor(new Color(1f, 1f, 1f));
                     }
-                    graphics.fillRect(j, i, 1, 1);
                 }
             }
 
@@ -2315,10 +2277,9 @@ public class ImageViewerTab {
                         try {
                             float value = 1 - values[i][j];
                             graphics.setColor(new Color(value, value, value));
+                            graphics.fillRect(j, i, 1, 1);
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            graphics.setColor(new Color(1f, 1f, 1f));
                         }
-                        graphics.fillRect(j, i, 1, 1);
                     }
                 }
                 atlasImages.add(image);
@@ -2346,10 +2307,9 @@ public class ImageViewerTab {
                         float w2 = values2[i][j];
                         float w4 = values4[i][j];
                         graphics.setColor(new Color(w4, w2, w1));
+                        graphics.fillRect(j, i, 1, 1);
                     } catch (ArrayIndexOutOfBoundsException ex) {
-                        graphics.setColor(new Color(1f, 1f, 1f));
                     }
-                    graphics.fillRect(j, i, 1, 1);
                 }
             }
             atlasImages.add(image);
