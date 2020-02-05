@@ -2660,8 +2660,8 @@ public class ImageViewerTab {
     }
 
     private void displayCatalogPanel(CatalogEntry catalogEntry, Color color) {
-        boolean isGenericCatalog = catalogEntry instanceof GenericCatalogEntry;
-        int maxRows = isGenericCatalog ? 30 : 19;
+        boolean simpleLayout = catalogEntry instanceof GenericCatalogEntry || catalogEntry instanceof SSOCatalogEntry;
+        int maxRows = simpleLayout ? 30 : 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
@@ -2691,7 +2691,7 @@ public class ImageViewerTab {
         container.setBackground(color);
         container.add(detailPanel);
 
-        if (!isGenericCatalog) {
+        if (!simpleLayout) {
             container.add(createMainSequenceSpectralTypePanel(catalogEntry));
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
