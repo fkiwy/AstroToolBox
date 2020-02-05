@@ -1696,7 +1696,6 @@ public class ImageViewerTab {
 
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
-            header.dumpHeader(System.out);
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
             double crpix1 = header.getDoubleValue("CRPIX1");
