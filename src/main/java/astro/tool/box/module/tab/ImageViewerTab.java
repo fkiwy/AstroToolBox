@@ -1014,7 +1014,7 @@ public class ImageViewerTab {
                                         if (showPanstarrsButton.isSelected()) {
                                             displayZoomedPs1Image(newRa, newDec, fieldOfView);
                                         } else {
-                                            displayAtlasImages(targetRa, targetDec, fieldOfView);
+                                            displayAtlasImages(newRa, newDec, fieldOfView);
                                         }
                                     }
                                     break;
