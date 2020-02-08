@@ -232,6 +232,9 @@ public class ImageViewerTab {
     private int centerX;
     private int centerY;
 
+    private int axisX;
+    private int axisY;
+
     private int previousSize;
     private double previousRa;
     private double previousDec;
@@ -933,8 +936,13 @@ public class ImageViewerTab {
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
                     if (centerX == 0 && centerY == 0) {
-                        centerX = imageWidth / 2;
-                        centerY = imageHeight / 2;
+                        if (axisX == axisY) {
+                            centerX = imageWidth / 2;
+                            centerY = imageHeight / 2;
+                        } else {
+                            centerX = (int) round(getScaledValue(pixelX));
+                            centerY = (int) round(getScaledValue(pixelY));
+                        }
                     }
                     int upperLeftX = centerX - (width / 2);
                     int upperLeftY = centerY - (height / 2);
@@ -1280,6 +1288,7 @@ public class ImageViewerTab {
                 initMinMaxValues();
                 //shiftX = shiftY = 0;
                 centerX = centerY = 0;
+                axisX = axisY = 0;
                 windowShift = 0;
                 imageCutOff = false;
                 simbadEntries = null;
@@ -1693,24 +1702,19 @@ public class ImageViewerTab {
                 }
                 fits = getPreviousImage(band, epoch);
             }
-
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
-            double naxis1 = header.getDoubleValue("NAXIS1");
-            double naxis2 = header.getDoubleValue("NAXIS2");
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
+            double naxis1 = header.getDoubleValue("NAXIS1");
+            double naxis2 = header.getDoubleValue("NAXIS2");
             if (naxis1 != naxis2) {
                 imageCutOff = true;
             }
-            if (naxis1 > naxis2) {
-                pixelX = crpix1;
-                pixelY = naxis1 - crpix2;
-            } else {
-                pixelX = crpix1;
-                pixelY = naxis2 - crpix2;
-            }
-
+            pixelX = crpix1;
+            pixelY = naxis2 - crpix2;
+            axisX = (int) round(naxis1);
+            axisY = (int) round(naxis2);
             addImage(band, epoch, fits);
         }
         return getMinMaxObsEpoch(fits);
@@ -1733,10 +1737,10 @@ public class ImageViewerTab {
                 fits = new Fits(getImageData(band, previousEpoch));
             }
         } catch (Exception ex) {
-            float[][] values = new float[size][size];
-            short[][] weights = new short[size][size];
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            float[][] values = new float[axisY][axisX];
+            short[][] weights = new short[axisY][axisX];
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
                     values[i][j] = 0;
                     weights[i][j] = 0;
                 }
@@ -1791,10 +1795,10 @@ public class ImageViewerTab {
                 setMinMaxValues(minVal, maxVal, avgVal);
             }
 
-            BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
                     try {
                         float value = processPixel(values[i][j]);
                         graphics.setColor(new Color(value, value, value));
@@ -1839,10 +1843,10 @@ public class ImageViewerTab {
                 setMinMaxValues(minVal, maxVal, avgVal);
             }
 
-            BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
                     try {
                         float red = processPixel(valuesW1[i][j]);
                         float blue = processPixel(valuesW2[i][j]);
@@ -1872,9 +1876,9 @@ public class ImageViewerTab {
             imageData = (ImageData) imageHDU.getData();
             float[][] values2 = (float[][]) imageData.getData();
 
-            float[][] addedValues = new float[size][size];
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            float[][] addedValues = new float[axisY][axisX];
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
                     try {
                         addedValues[i][j] = values1[i][j] + values2[i][j];
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -1902,9 +1906,9 @@ public class ImageViewerTab {
             imageData = (ImageData) hdu.getData();
             float[][] values2 = (float[][]) imageData.getData();
 
-            float[][] subtractedValues = new float[size][size];
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            float[][] subtractedValues = new float[axisY][axisX];
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
                     try {
                         subtractedValues[i][j] = values1[i][j] - values2[i][j];
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -1926,9 +1930,9 @@ public class ImageViewerTab {
             ImageData imageData = (ImageData) imageHDU.getData();
             float[][] values = (float[][]) imageData.getData();
 
-            float[][] averagedValues = new float[size][size];
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            float[][] averagedValues = new float[axisY][axisX];
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
                     try {
                         averagedValues[i][j] = values[i][j] / numberOfImages;
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -1980,8 +1984,8 @@ public class ImageViewerTab {
     //
     private BufferedImage zoom(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
-        Image scaled = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
-        image = new BufferedImage(zoom, zoom, BufferedImage.TYPE_INT_RGB);
+        Image scaled = image.getScaledInstance((axisX > axisY ? 1 : -1) * zoom, (axisX > axisY ? -1 : 1) * zoom, Image.SCALE_DEFAULT);
+        image = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
         graphics.drawImage(scaled, 0, 0, null);
         graphics.dispose();
