@@ -1700,15 +1700,16 @@ public class ImageViewerTab {
             double naxis2 = header.getDoubleValue("NAXIS2");
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
-            if (naxis1 != naxis2 && !imageCutOff) {
+            if (naxis1 != naxis2) {
                 imageCutOff = true;
-                double naxis = max(naxis1, naxis2);
-                double crpix = max(crpix1, crpix2);
-                crpix1 = crpix2 = crpix;
-                naxis2 = naxis;
             }
-            pixelX = crpix1;
-            pixelY = naxis2 - crpix2;
+            if (naxis1 > naxis2) {
+                pixelX = crpix1;
+                pixelY = naxis1 - crpix2;
+            } else {
+                pixelX = crpix1;
+                pixelY = naxis2 - crpix2;
+            }
 
             addImage(band, epoch, fits);
         }
