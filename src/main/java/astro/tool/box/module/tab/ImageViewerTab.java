@@ -286,9 +286,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1575;
+            int controlPanelHeight = 1525;
 
-            JPanel controlPanel = new JPanel(new GridLayout(64, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(63, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -1708,7 +1708,19 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (naxis1 != naxis2) {
+            if (size > naxis1 && size > naxis2 && !imageCutOff) {
+                previousSize = size = (int) min(naxis1, naxis2);
+                int reducedSize = (int) round(size * SIZE_FACTOR);
+                showInfoDialog(baseFrame, "End of WISE tile reached. The field of view will be reduced to " + reducedSize + "!");
+                sizeField.setText(String.valueOf(reducedSize));
+                fits = new Fits(getImageData(band, epoch));
+                hdu = (ImageHDU) fits.getHDU(0);
+                header = hdu.getHeader();
+                crpix1 = header.getDoubleValue("CRPIX1");
+                crpix2 = header.getDoubleValue("CRPIX2");
+                naxis1 = header.getDoubleValue("NAXIS1");
+                naxis2 = header.getDoubleValue("NAXIS2");
+            } else if (naxis1 != naxis2) {
                 imageCutOff = true;
             }
             pixelX = crpix1;
