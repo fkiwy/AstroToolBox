@@ -936,13 +936,8 @@ public class ImageViewerTab {
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
                     if (centerX == 0 && centerY == 0) {
-                        if (axisX == axisY) {
-                            centerX = imageWidth / 2;
-                            centerY = imageHeight / 2;
-                        } else {
-                            centerX = (int) round(getScaledValue(pixelX));
-                            centerY = (int) round(getScaledValue(pixelY));
-                        }
+                        centerX = imageWidth / 2;
+                        centerY = imageHeight / 2;
                     }
                     int upperLeftX = centerX - (width / 2);
                     int upperLeftY = centerY - (height / 2);
@@ -1711,7 +1706,9 @@ public class ImageViewerTab {
             if (size > naxis1 && size > naxis2 && !imageCutOff) {
                 previousSize = size = (int) min(naxis1, naxis2);
                 int reducedSize = (int) round(size * SIZE_FACTOR);
-                showInfoDialog(baseFrame, "End of WISE tile reached. The field of view will be reduced to " + reducedSize + "!");
+                String message = "Image has been cut off because the specified field of view exceeds the current WISE tile." + LINE_SEP
+                        + "The field of view will be automatically reduced to " + reducedSize + "!";
+                showInfoDialog(baseFrame, message);
                 sizeField.setText(String.valueOf(reducedSize));
                 fits = new Fits(getImageData(band, epoch));
                 hdu = (ImageHDU) fits.getHDU(0);
@@ -1720,7 +1717,8 @@ public class ImageViewerTab {
                 crpix2 = header.getDoubleValue("CRPIX2");
                 naxis1 = header.getDoubleValue("NAXIS1");
                 naxis2 = header.getDoubleValue("NAXIS2");
-            } else if (naxis1 != naxis2) {
+            }
+            if (naxis1 != naxis2) {
                 imageCutOff = true;
             }
             pixelX = crpix1;
