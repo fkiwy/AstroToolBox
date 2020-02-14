@@ -49,7 +49,7 @@ public class PhotometricFunctions {
      * @return the absolute magnitude (mag)
      */
     public static double calculateAbsoluteMagnitudeFromParallax(double apparentMagnitude, double parallax) {
-        if (parallax == 0) {
+        if (apparentMagnitude == 0 || parallax == 0) {
             return 0;
         } else {
             double absoluteMagnitude = apparentMagnitude + 5 - 5 * log10(calculateActualDistance(parallax));
