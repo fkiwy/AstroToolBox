@@ -240,6 +240,7 @@ public class ImageViewerTab {
     private double previousDec;
 
     private boolean imageCutOff;
+    private boolean disableOverlays;
     private boolean hasException;
     private boolean timerStopped;
 
@@ -1286,6 +1287,18 @@ public class ImageViewerTab {
                 axisX = axisY = 0;
                 windowShift = 0;
                 imageCutOff = false;
+                disableOverlays = false;
+                simbadOverlay.setEnabled(true);
+                gaiaDR2Overlay.setEnabled(true);
+                allWiseOverlay.setEnabled(true);
+                catWiseOverlay.setEnabled(true);
+                ssoOverlay.setEnabled(true);
+                ghostOverlay.setEnabled(true);
+                haloOverlay.setEnabled(true);
+                latentOverlay.setEnabled(true);
+                spikeOverlay.setEnabled(true);
+                gaiaDR2ProperMotion.setEnabled(true);
+                catWiseProperMotion.setEnabled(true);
                 simbadEntries = null;
                 gaiaDR2Entries = null;
                 allWiseEntries = null;
@@ -1607,7 +1620,9 @@ public class ImageViewerTab {
         //    image = shift(image);
         //}
         image = zoom(image, zoom);
-        addOverlaysAndPMVectors(image);
+        if (!disableOverlays) {
+            addOverlaysAndPMVectors(image);
+        }
         image = rotate(image, quadrantCount);
         if (drawCircle.isSelected()) {
             for (NumberPair circleCoords : circles) {
@@ -1703,20 +1718,28 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (size > naxis1 && size > naxis2 && !imageCutOff) {
-                previousSize = size = (int) min(naxis1, naxis2);
-                int reducedSize = (int) round(size * SIZE_FACTOR);
+            if (size > naxis1 && size > naxis2 && !disableOverlays) {
                 String message = "Image has been cut off because the specified field of view exceeds the current WISE tile." + LINE_SEP
-                        + "The field of view will be automatically reduced to " + reducedSize + "!";
+                        + "Therefore, some features of the Image Viewer do not work correctly." + LINE_SEP
+                        + "You can avoid this problem by choosing a smaller field of view.";
                 showInfoDialog(baseFrame, message);
-                sizeField.setText(String.valueOf(reducedSize));
-                fits = new Fits(getImageData(band, epoch));
-                hdu = (ImageHDU) fits.getHDU(0);
-                header = hdu.getHeader();
-                crpix1 = header.getDoubleValue("CRPIX1");
-                crpix2 = header.getDoubleValue("CRPIX2");
-                naxis1 = header.getDoubleValue("NAXIS1");
-                naxis2 = header.getDoubleValue("NAXIS2");
+                disableOverlays = true;
+                simbadOverlay.setEnabled(false);
+                gaiaDR2Overlay.setEnabled(false);
+                allWiseOverlay.setEnabled(false);
+                catWiseOverlay.setEnabled(false);
+                ssoOverlay.setEnabled(false);
+                ghostOverlay.setEnabled(false);
+                haloOverlay.setEnabled(false);
+                latentOverlay.setEnabled(false);
+                spikeOverlay.setEnabled(false);
+                gaiaDR2ProperMotion.setEnabled(false);
+                catWiseProperMotion.setEnabled(false);
+                if (useCustomOverlays.isSelected()) {
+                    customOverlays.values().forEach((customOverlay) -> {
+                        customOverlay.getCheckBox().setEnabled(false);
+                    });
+                }
             }
             if (naxis1 != naxis2) {
                 imageCutOff = true;
