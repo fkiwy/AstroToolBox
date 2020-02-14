@@ -65,7 +65,7 @@ public class SimbadCatalogTest {
 
         String[] header = results.get(0);
         assertEquals("main_id", header[0]);
-        assertEquals("otype_txt", header[1]);
+        assertEquals("otype_longname", header[1]);
         assertEquals("sp_type", header[2]);
         assertEquals("ra", header[3]);
         assertEquals("dec", header[4]);
