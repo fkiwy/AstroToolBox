@@ -60,7 +60,7 @@ public class SimbadCatalogTest {
         BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection)));
         List<String[]> results = reader.lines().map(line -> {
             //System.out.println(line);
-            return line.replace("|", ",").replace(" ", "").replace("\"", "").split(SPLIT_CHAR);
+            return line.replace("|", ",").replaceAll(REGEXP_SPACES, "").replace("\"", "").split(SPLIT_CHAR);
         }).collect(Collectors.toList());
 
         String[] header = results.get(0);

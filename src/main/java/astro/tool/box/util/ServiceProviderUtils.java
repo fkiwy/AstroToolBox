@@ -72,7 +72,7 @@ public class ServiceProviderUtils {
     public static String readSimbadResponse(HttpURLConnection connection) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return reader.lines().skip(1).map(line -> {
-                return line.replace("|", ",").replace(" ", "").replace("\"", "");
+                return line.replace("|", ",").replaceAll(REGEXP_SPACES, "").replace("\"", "");
             }).collect(Collectors.joining(LINE_SEP));
         } catch (IOException ex) {
             showInfoDialog(null, SERVICE_NOT_AVAILABLE);

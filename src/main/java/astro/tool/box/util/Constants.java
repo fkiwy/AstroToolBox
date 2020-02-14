@@ -23,7 +23,7 @@ public class Constants {
     public static final String CATWISE_REJECTED_ID = "reject";
 
     public static final String GAIADR2_CATALOG_ID = "gaia_dr2_source";
-    
+
     public static final String SSO_CATALOG_ID = "neowiser_p1ba_mch";
 
     public static final String LINE_SEP = System.lineSeparator();
@@ -31,5 +31,7 @@ public class Constants {
     public static final String LINE_SEP_TEXT_AREA = "\n";
 
     public static final String SPLIT_CHAR = "[,;]";
+
+    public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
 
 }
