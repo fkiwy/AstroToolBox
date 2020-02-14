@@ -1722,7 +1722,7 @@ public class ImageViewerTab {
                 String message = "Image has been cut off because the specified field of view exceeds the current WISE tile." + LINE_SEP
                         + "Therefore, some features of the Image Viewer do not work correctly." + LINE_SEP
                         + "You can avoid this problem by choosing a smaller field of view.";
-                showInfoDialog(baseFrame, message);
+                showWarnDialog(baseFrame, message);
                 disableOverlays = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
