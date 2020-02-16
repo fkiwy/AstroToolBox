@@ -2269,7 +2269,7 @@ public class ImageViewerTab {
             }
 
             // Fetch cutout for each WISE band
-            int size = fieldOfView;
+            int length = fieldOfView;
             SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
             for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
                 int band = entry.getKey();
@@ -2279,16 +2279,15 @@ public class ImageViewerTab {
                 Fits fits = new Fits(connection.getInputStream());
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 Header header = hdu.getHeader();
-                double naxis1 = header.getDoubleValue("NAXIS1");
-                size = (int) round(naxis1);
+                length = (int) round(header.getDoubleValue("NAXIS1"));
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] values = (float[][]) imageData.getData();
                 NumberTriplet minMaxValues = getMinMaxValues(values);
                 float minVal = (float) minMaxValues.getX();
                 float maxVal = (float) minMaxValues.getY();
-                float[][] processedValues = new float[size][size];
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
+                float[][] processedValues = new float[length][length];
+                for (int i = 0; i < length; i++) {
+                    for (int j = 0; j < length; j++) {
                         try {
                             processedValues[i][j] = normalize(values[i][j], minVal, maxVal);
                         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -2307,10 +2306,10 @@ public class ImageViewerTab {
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] values = (float[][]) imageData.getData();
-                BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+                BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = image.createGraphics();
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
+                for (int i = 0; i < length; i++) {
+                    for (int j = 0; j < length; j++) {
                         try {
                             float value = 1 - values[i][j];
                             graphics.setColor(new Color(value, value, value));
@@ -2335,10 +2334,10 @@ public class ImageViewerTab {
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
             float[][] values4 = (float[][]) imageData.getData();
-            BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
+            for (int i = 0; i < length; i++) {
+                for (int j = 0; j < length; j++) {
                     try {
                         float w1 = values1[i][j];
                         float w2 = values2[i][j];
