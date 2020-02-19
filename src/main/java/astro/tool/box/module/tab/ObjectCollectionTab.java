@@ -8,6 +8,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -109,25 +111,10 @@ public class ObjectCollectionTab {
                     showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
                 }
-                StringBuilder fileContent = new StringBuilder();
-                TableModel model = resultTable.getModel();
-                int columnCount = model.getColumnCount();
-                for (int i = 1; i < columnCount; i++) {
-                    String columnName = model.getColumnName(i);
-                    appendCellValue(fileContent, i, columnCount, columnName);
-                }
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    for (int y = 1; y < columnCount; y++) {
-                        String cellValue = (String) model.getValueAt(i, y);
-                        appendCellValue(fileContent, y, columnCount, cellValue);
-                    }
-                }
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.write(fileContent.toString());
+                boolean hasFileBeenSaved = saveFile();
+                if (hasFileBeenSaved) {
                     topPanelMessage.setText("File has been saved!");
                     timer.restart();
-                } catch (IOException ex) {
-                    showExceptionDialog(baseFrame, ex);
                 }
             });
 
@@ -147,9 +134,9 @@ public class ObjectCollectionTab {
                 timer.restart();
             });
 
-            JButton removeButton = new JButton("Remove selected row");
-            bottomPanel.add(removeButton);
-            removeButton.addActionListener((ActionEvent evt) -> {
+            JButton deleteButton = new JButton("Delete selected row");
+            bottomPanel.add(deleteButton);
+            deleteButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
                     showErrorDialog(baseFrame, "Object collection does not exist yet!");
                     return;
@@ -159,17 +146,18 @@ public class ObjectCollectionTab {
                     return;
                 }
                 int selectedRow = resultTable.getSelectedRow();
-                String confirmMessage = "This will only remove the selected row from the table but not from the underlying file." + LINE_SEP
-                        + "To do so, press the 'Save file' button after the row has been removed from the table." + LINE_SEP
-                        + "Do you really want to remove row # " + resultTable.getValueAt(selectedRow, 0);
+                String confirmMessage = "Do you really want to delete row # " + resultTable.getValueAt(selectedRow, 0);
                 if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
-                int rowToRemove = resultTable.convertRowIndexToModel(selectedRow);
-                tableModel.removeRow(rowToRemove);
-                bottomPanelMessage.setText("Row has been removed!");
-                timer.restart();
+                int rowToDelete = resultTable.convertRowIndexToModel(selectedRow);
+                tableModel.removeRow(rowToDelete);
+                boolean hasFileBeenSaved = saveFile();
+                if (hasFileBeenSaved) {
+                    bottomPanelMessage.setText("Row has been deleted!");
+                    timer.restart();
+                }
             });
 
             bottomPanel.add(bottomPanelMessage);
@@ -210,6 +198,8 @@ public class ObjectCollectionTab {
                             return;
                         }
                         file = objectCollectionFile;
+                    } else {
+                        saveFile();
                     }
                     removeAndRecreateCenterPanel(mainPanel);
                     readFileContents(addColumnsField.getText());
@@ -217,10 +207,42 @@ public class ObjectCollectionTab {
                 }
             });
 
+            baseFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent evt) {
+                    saveFile();
+                }
+            });
+
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
+    }
+
+    private boolean saveFile() {
+        if (file != null) {
+            StringBuilder fileContent = new StringBuilder();
+            TableModel model = resultTable.getModel();
+            int columnCount = model.getColumnCount();
+            for (int i = 1; i < columnCount; i++) {
+                String columnName = model.getColumnName(i);
+                appendCellValue(fileContent, i, columnCount, columnName);
+            }
+            for (int i = 0; i < model.getRowCount(); i++) {
+                for (int y = 1; y < columnCount; y++) {
+                    String cellValue = (String) model.getValueAt(i, y);
+                    appendCellValue(fileContent, y, columnCount, cellValue);
+                }
+            }
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(fileContent.toString());
+                return true;
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+            }
+        }
+        return false;
     }
 
     private void appendCellValue(StringBuilder fileContent, int columnIndex, int columnCount, String cellValue) {
@@ -303,6 +325,9 @@ public class ObjectCollectionTab {
             }
         });
         resizeColumnWidth(resultTable);
+
+        imageViewerTab.setCollectionTable(resultTable);
+        catalogQueryTab.setCollectionTable(resultTable);
 
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);
         resultScrollPanel.setBorder(BorderFactory.createTitledBorder(

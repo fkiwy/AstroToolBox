@@ -1,6 +1,7 @@
 package astro.tool.box.module.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.Urls.*;
@@ -82,6 +83,7 @@ public class CatalogQueryTab {
     private JTextField aladinLiteField;
     private JTextField wiseViewField;
     private JTextField finderChartField;
+    private JTable collectionTable;
 
     private final CatalogQueryFacade catalogQueryFacade;
     private final SpectralTypeLookupService spectralTypeLookupService;
@@ -381,7 +383,7 @@ public class CatalogQueryTab {
         aladinLiteField = new JTextField(String.valueOf(aladinLiteFOV));
         wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
         finderChartField = new JTextField(String.valueOf(finderChartFOV));
-        if (degDE >= -30) {
+        if (degDE >= -31) {
             linkPanel.add(createHyperlink("PanSTARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
             linkPanel.add(panstarrsField);
         }
@@ -391,8 +393,7 @@ public class CatalogQueryTab {
         linkPanel.add(wiseViewField);
         linkPanel.add(createHyperlink("IRSA Finder Chart", getFinderChartUrl(degRA, degDE, finderChartFOV)));
         linkPanel.add(finderChartField);
-
-        linkPanel.add(new JLabel());
+        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE)));
         JButton saveButton = new JButton("Change FoV");
         saveButton.addActionListener((ActionEvent e) -> {
             try {
@@ -412,7 +413,7 @@ public class CatalogQueryTab {
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel("Databases:"));
-        linkPanel.add(createHyperlink("IRSA Data Discov.", getDataDiscoveryUrl()));
+        linkPanel.add(createHyperlink("IRSA Data Discovery", getDataDiscoveryUrl()));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
@@ -523,23 +524,41 @@ public class CatalogQueryTab {
             spectralTypeTable.setCellSelectionEnabled(false);
             resizeColumnWidth(spectralTypeTable);
 
-            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                    : new JScrollPane(spectralTypeTable);
-
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
+
+            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
+                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                    : new JScrollPane(spectralTypeTable);
             spectralTypeInfo.add(spectralTypePanel);
 
             JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
             spectralTypeInfo.add(remarks);
-            remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
-            remarks.add(new JLabel("to early type as well to late type stars."));
-            remarks.add(new JLabel("The more colors match, the better the results, in general."));
-            remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
+
+            boolean warning = false;
+            if (catalogEntry instanceof AllWiseCatalogEntry) {
+                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                    remarks.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    warning = true;
+                }
+            }
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    warning = true;
+                }
+            }
+            if (!warning) {
+                remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
+                remarks.add(new JLabel("to early type as well to late type stars."));
+                remarks.add(new JLabel("The more colors match, the better the results, in general."));
+                remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
+            }
 
             remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
             spectralTypeInfo.add(remarks);
@@ -567,7 +586,7 @@ public class CatalogQueryTab {
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService);
+                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService, collectionTable);
             });
 
             collectPanel.add(message);
@@ -650,6 +669,10 @@ public class CatalogQueryTab {
 
     public CatalogEntry getSelectedEntry() {
         return selectedEntry;
+    }
+
+    public void setCollectionTable(JTable collectionTable) {
+        this.collectionTable = collectionTable;
     }
 
     public void setCopyCoordsToClipboard(boolean copyCoordsToClipboard) {

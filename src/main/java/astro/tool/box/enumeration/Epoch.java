@@ -3,8 +3,9 @@ package astro.tool.box.enumeration;
 public enum Epoch {
 
     ALL,
-    ALL_ASCENDING,
-    ALL_DESCENDING,
+    ASCENDING,
+    DESCENDING,
+    ASCENDING_DESCENDING,
     YEAR,
     FIRST_REMAINING,
     FIRST_REMAINING_PARALLAX,

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
 
-public class CatWiseCatalogEntry implements CatalogEntry {
+public class CatWiseRejectedEntry implements CatalogEntry {
 
     // Unique WISE source designation
     private String sourceId;
@@ -91,10 +91,10 @@ public class CatWiseCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
-    public CatWiseCatalogEntry() {
+    public CatWiseRejectedEntry() {
     }
 
-    public CatWiseCatalogEntry(String[] values) {
+    public CatWiseRejectedEntry(String[] values) {
         sourceId = values[0];
         ra = toDouble(values[2]);
         dec = toDouble(values[3]);
@@ -161,28 +161,28 @@ public class CatWiseCatalogEntry implements CatalogEntry {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CatWiseCatalogEntry other = (CatWiseCatalogEntry) obj;
+        final CatWiseRejectedEntry other = (CatWiseRejectedEntry) obj;
         return Objects.equals(this.sourceId, other.sourceId);
     }
 
     @Override
     public CatalogEntry getInstance(String[] values) {
-        return new CatWiseCatalogEntry(values);
+        return new CatWiseRejectedEntry(values);
     }
 
     @Override
     public String getCatalogName() {
-        return "CatWISE";
+        return "CatWISE Reject Table";
     }
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_YELLOW.val;
+        return JColor.LIGHT_GRAY.val;
     }
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(CATWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl(CATWISE_REJECTED_ID, ra, dec, searchRadius / DEG_ARCSEC);
     }
 
     @Override

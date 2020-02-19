@@ -4,7 +4,7 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Color;
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 
 public class PhotometricFunctions {
 
@@ -49,10 +49,10 @@ public class PhotometricFunctions {
      * @return the absolute magnitude (mag)
      */
     public static double calculateAbsoluteMagnitudeFromParallax(double apparentMagnitude, double parallax) {
-        if (parallax == 0) {
+        if (apparentMagnitude == 0 || parallax == 0) {
             return 0;
         } else {
-            double absoluteMagnitude = apparentMagnitude + 5 - 5 * Math.log10(calculateActualDistance(parallax));
+            double absoluteMagnitude = apparentMagnitude + 5 - 5 * log10(calculateActualDistance(parallax));
             return Double.isInfinite(absoluteMagnitude) || Double.isNaN(absoluteMagnitude) ? 0 : absoluteMagnitude;
         }
     }
@@ -68,7 +68,7 @@ public class PhotometricFunctions {
         if (distance == 0) {
             return 0;
         } else {
-            return apparentMagnitude + 5 - 5 * Math.log10(distance);
+            return apparentMagnitude + 5 - 5 * log10(distance);
         }
     }
 
@@ -79,8 +79,19 @@ public class PhotometricFunctions {
      * @param W2_W3
      * @return a boolean indicating that the object is a possible AGN
      */
-    public static boolean isAPossibleAgn(double W1_W2, double W2_W3) {
+    public static boolean isAPossibleAGN(double W1_W2, double W2_W3) {
         return W1_W2 > 0.5 && W1_W2 < 3.0 && W2_W3 > 2.5 && W2_W3 < 6.0;
+    }
+
+    /**
+     * Check if the object in question is a possible white dwarf
+     *
+     * @param MGmag
+     * @param BP_RP
+     * @return a boolean indicating that the object is a possible white dwarf
+     */
+    public static boolean isAPossibleWD(double MGmag, double BP_RP) {
+        return MGmag >= 10 && MGmag <= 15 && BP_RP != 0 && BP_RP <= 1.5;
     }
 
 }

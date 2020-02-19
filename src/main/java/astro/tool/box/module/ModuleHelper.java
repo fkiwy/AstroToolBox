@@ -4,6 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.ColorValue;
@@ -65,15 +66,18 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v1.2.0";
+    public static final String PGM_VERSION = "v1.2.2";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
-    public static final String AGN_WARNING = "Possible AGN?";
+    public static final String AGN_WARNING = "Possible AGN!";
+    public static final String WD_WARNING = "Possible white dwarf!";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -370,7 +374,7 @@ public class ModuleHelper {
         return spectralTypes;
     }
 
-    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService) {
+    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
@@ -386,7 +390,7 @@ public class ModuleHelper {
         }
         if (catalogEntry instanceof AllWiseCatalogEntry) {
             AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
-            if (isAPossibleAgn(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
+            if (isAPossibleAGN(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
                 spectralTypes.add("[" + AGN_WARNING + "]");
             }
         }
@@ -431,8 +435,28 @@ public class ModuleHelper {
             return;
         }
 
+        if (collectionTable != null) {
+            DefaultTableModel tableModel = (DefaultTableModel) collectionTable.getModel();
+            tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
+        }
+
         message.setText("Object has been added to collection!");
         messageTimer.restart();
+    }
+
+    public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
+        List<JLabel> subjects = new ArrayList<>();
+        try {
+            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
+            String response = readResponse(establishHttpConnection(url));
+            JSONObject obj = new JSONObject(response);
+            JSONArray ids = obj.getJSONArray("ids");
+            for (Object id : ids) {
+                subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+            }
+        } catch (Exception ex) {
+        }
+        return subjects;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

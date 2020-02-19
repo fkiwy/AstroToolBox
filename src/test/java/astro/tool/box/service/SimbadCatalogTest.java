@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.Ignore;
 
 public class SimbadCatalogTest {
 
@@ -61,12 +60,12 @@ public class SimbadCatalogTest {
         BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection)));
         List<String[]> results = reader.lines().map(line -> {
             //System.out.println(line);
-            return line.replace("|", ",").replace(" ", "").replace("\"", "").split(SPLIT_CHAR);
+            return line.replace("|", ",").replaceAll(REGEXP_SPACES, "").replace("\"", "").split(SPLIT_CHAR);
         }).collect(Collectors.toList());
 
         String[] header = results.get(0);
         assertEquals("main_id", header[0]);
-        assertEquals("otype_txt", header[1]);
+        assertEquals("otype_longname", header[1]);
         assertEquals("sp_type", header[2]);
         assertEquals("ra", header[3]);
         assertEquals("dec", header[4]);

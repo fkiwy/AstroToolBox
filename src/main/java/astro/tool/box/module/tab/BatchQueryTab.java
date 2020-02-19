@@ -422,9 +422,15 @@ public class BatchQueryTab {
                         spectralTypes.add(0, simbadType.toString());
                     }
                     if (catalogEntry instanceof AllWiseCatalogEntry) {
-                        AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
-                        if (isAPossibleAgn(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
+                        AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                        if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                             spectralTypes.add("[" + AGN_WARNING + "]");
+                        }
+                    }
+                    if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                        GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                        if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                            spectralTypes.add("[" + WD_WARNING + "]");
                         }
                     }
                     BatchResult batchResult = new BatchResult.Builder()
