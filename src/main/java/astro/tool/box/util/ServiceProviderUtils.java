@@ -42,7 +42,7 @@ public class ServiceProviderUtils {
                 .append(String.valueOf(degDE))
                 .append("&radius=")
                 .append(String.valueOf(degRadius))
-                .append("&nDetections.gte=5&columns=[objName,objID,objInfoFlag,raMean,decMean,raMeanErr,decMeanErr,epochMean,nDetections,gMeanPSFMag,gMeanPSFMagErr,rMeanPSFMag,rMeanPSFMagErr,iMeanPSFMag,iMeanPSFMagErr,zMeanPSFMag,zMeanPSFMagErr,yMeanPSFMag,yMeanPSFMagErr]");
+                .append("&nDetections.gt=2&columns=[objName,objID,objInfoFlag,raMean,decMean,raMeanErr,decMeanErr,epochMean,nDetections,gMeanPSFMag,gMeanPSFMagErr,rMeanPSFMag,rMeanPSFMagErr,iMeanPSFMag,iMeanPSFMagErr,zMeanPSFMag,zMeanPSFMagErr,yMeanPSFMag,yMeanPSFMagErr]");
         return url.toString();
     }
 

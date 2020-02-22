@@ -604,7 +604,7 @@ public class CatalogQueryTab {
         if (centerPanel != null) {
             mainPanel.remove(centerPanel);
         }
-        centerPanel = new JPanel(new GridLayout(2, 2));
+        centerPanel = new JPanel(new GridLayout(2, 3));
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         centerPanel.setPreferredSize(new Dimension(centerPanel.getWidth(), 250));
     }
