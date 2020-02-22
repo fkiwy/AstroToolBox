@@ -2,12 +2,14 @@ package astro.tool.box.container.catalog;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
@@ -94,6 +96,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // Catalog number
     private int catalogNumber;
 
+    // Information indicating details of the photometry
+    private List<StringPair> objectInfo;
+
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     public PanStarrsCatalogEntry() {
@@ -125,6 +130,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         zMeanPSFMagErr = toDouble(values[16]);
         yMeanPSFMag = toDouble(values[17]);
         yMeanPSFMagErr = toDouble(values[18]);
+        objectInfo = getPanStarrsObjectInfo(objInfoFlag);
     }
 
     @Override
@@ -153,6 +159,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        objectInfo.forEach((pair) -> {
+            catalogElements.add(new CatalogElement("info flag: " + pair.getS1(), pair.getS2(), Alignment.LEFT, getStringComparator()));
+        });
     }
 
     @Override
@@ -205,13 +214,15 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + objInfoFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3DecNZ(gMeanPSFMag) + "," + roundTo3DecNZ(gMeanPSFMagErr) + "," + roundTo3DecNZ(rMeanPSFMag) + "," + roundTo3DecNZ(rMeanPSFMagErr) + "," + roundTo3DecNZ(iMeanPSFMag) + "," + roundTo3DecNZ(iMeanPSFMagErr) + "," + roundTo3DecNZ(zMeanPSFMag) + "," + roundTo3DecNZ(zMeanPSFMagErr) + "," + roundTo3DecNZ(yMeanPSFMag) + "," + roundTo3DecNZ(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
-        return values.split(",", 24);
+        values = objectInfo.stream().map((pair) -> "," + pair.getS2()).reduce(values, String::concat);
+        return values.split(",", 24 + objectInfo.size());
     }
 
     @Override
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),object ID,object name,object info flag,ra,ra err,dec,dec err,observation time,detections,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,y_mag,y_mag err,g-r,r-i,i-z,z-y";
-        return titles.split(",", 24);
+        titles = objectInfo.stream().map((pair) -> ",info flag: " + pair.getS1()).reduce(titles, String::concat);
+        return titles.split(",", 24 + objectInfo.size());
     }
 
     @Override

@@ -250,6 +250,7 @@ public class ModuleHelper {
         if (element.isFaulty()) {
             field.setForeground(JColor.DARK_RED.val);
         }
+        field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(true);
         panel.add(field);
