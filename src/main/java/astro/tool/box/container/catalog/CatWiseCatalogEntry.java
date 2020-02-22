@@ -2,6 +2,7 @@ package astro.tool.box.container.catalog;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
@@ -16,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
 
 public class CatWiseCatalogEntry implements CatalogEntry {
 

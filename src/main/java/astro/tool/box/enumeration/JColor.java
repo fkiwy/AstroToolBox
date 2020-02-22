@@ -18,6 +18,7 @@ public enum JColor {
     LIGHT_BLUE(new java.awt.Color(204, 229, 255)),
     LIGHT_GREEN(new java.awt.Color(204, 255, 204)),
     LIGHT_YELLOW(new java.awt.Color(255, 255, 204)),
+    LIGHT_BROWN(new java.awt.Color(255,179,102)),
     LIGHT_GRAY(java.awt.Color.LIGHT_GRAY);
 
     public java.awt.Color val;

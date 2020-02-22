@@ -34,6 +34,18 @@ public class ServiceProviderUtils {
         return url.toString();
     }
 
+    public static String createPanStarrsUrl(double degRA, double degDE, double degRadius) {
+        StringBuilder url = new StringBuilder(PANSTARRS_BASE_URL)
+                .append("?ra=")
+                .append(String.valueOf(degRA))
+                .append("&dec=")
+                .append(String.valueOf(degDE))
+                .append("&radius=")
+                .append(String.valueOf(degRadius))
+                .append("&nDetections.gte=1&columns=[objName,objID,objInfoFlag,raMean,decMean,raMeanErr,decMeanErr,epochMean,nDetections,gMeanPSFMag,gMeanPSFMagErr,rMeanPSFMag,rMeanPSFMagErr,iMeanPSFMag,iMeanPSFMagErr,zMeanPSFMag,zMeanPSFMagErr,yMeanPSFMag,yMeanPSFMagErr]");
+        return url.toString();
+    }
+
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
         boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
         StringBuilder url = new StringBuilder(useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL)

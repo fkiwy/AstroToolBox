@@ -197,10 +197,7 @@ public class SSOCatalogEntry implements CatalogEntry {
             return false;
         }
         final SSOCatalogEntry other = (SSOCatalogEntry) obj;
-        if (!Objects.equals(this.objectId, other.objectId)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.objectId, other.objectId);
     }
 
     @Override
