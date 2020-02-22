@@ -106,7 +106,6 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     public PanStarrsCatalogEntry(String[] values) {
         for (int i = 0; i < values.length; i++) {
-            System.out.println(">" + values[i] + "<");
             if (values[i].equals("-999.0")) {
                 values[i] = "0";
             }
