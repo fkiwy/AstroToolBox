@@ -88,6 +88,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
@@ -1324,7 +1325,8 @@ public class ImageViewerTab {
                         customOverlay.setCatalogEntries(null);
                     });
                 }
-                ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024);
+                ps1Image = null;
+                CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024));
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
                 List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
