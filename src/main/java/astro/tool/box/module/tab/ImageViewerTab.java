@@ -569,7 +569,7 @@ public class ImageViewerTab {
             spikeOverlay.setForeground(Color.ORANGE);
             artifactPanel.add(spikeOverlay);
 
-            controlPanel.add(new JLabel(underline("Left mouse click w/o overlays:")));
+            controlPanel.add(new JLabel(underline("Mouse left click w/o overlays:")));
 
             showCatalogsButton = new JRadioButton("Show catalogs", true);
             controlPanel.add(showCatalogsButton);
