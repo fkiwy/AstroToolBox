@@ -19,6 +19,7 @@ import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
@@ -146,6 +147,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseRejectedEntries;
+    private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -160,6 +162,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaDR2Overlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
+    private JCheckBox panStarrsOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -528,9 +531,14 @@ public class ImageViewerTab {
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
-            ssoOverlay = new JCheckBox("Solar System Objects");
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            panStarrsOverlay = new JCheckBox("Pan-STARRS");
+            panStarrsOverlay.setForeground(JColor.BROWN.val);
+            overlayPanel.add(panStarrsOverlay);
+            ssoOverlay = new JCheckBox("Solar Sys. Obj.");
             ssoOverlay.setForeground(Color.BLUE);
-            controlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -586,7 +594,7 @@ public class ImageViewerTab {
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             controlPanel.add(changeFovLabel);
 
-            showPanstarrsButton = new JRadioButton("Zoomed PanSTARRS image", true);
+            showPanstarrsButton = new JRadioButton("Zoomed Pan-STARRS image", true);
             controlPanel.add(showPanstarrsButton);
             showPanstarrsButton.addActionListener((ActionEvent evt) -> {
                 fieldOfView = 15;
@@ -964,19 +972,19 @@ public class ImageViewerTab {
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
 
-                    // Display PanSTARRS images
+                    // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (ps1Image != null) {
                         BufferedImage processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
 
-                        // Create and display magnified PanSTARRS image
+                        // Create and display magnified Pan-STARRS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
                             BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
                             magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
                             rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
                         }
 
-                        // Display regular PanSTARRS image
+                        // Display regular Pan-STARRS image
                         ps1Label = new JLabel(new ImageIcon(processedPs1Image));
                         ps1Label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
                         imagePanel.add(ps1Label);
@@ -1041,6 +1049,10 @@ public class ImageViewerTab {
                                     }
                                     if ((catWiseOverlay.isSelected() || catWiseProperMotion.isSelected()) && catWiseEntries != null) {
                                         showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
+                                        overlays++;
+                                    }
+                                    if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
+                                        showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
                                         overlays++;
                                     }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
@@ -1292,6 +1304,7 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
                 catWiseOverlay.setEnabled(true);
+                panStarrsOverlay.setEnabled(true);
                 ssoOverlay.setEnabled(true);
                 ghostOverlay.setEnabled(true);
                 haloOverlay.setEnabled(true);
@@ -1586,7 +1599,7 @@ public class ImageViewerTab {
         }
         if (ps1Image != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("PanSTARRS-1 stack y/i/g"));
+            pane.setBorder(createEtchedBorder("Pan-STARRS stack y/i/g"));
             grid.add(pane);
         }
         imagePanel.removeAll();
@@ -1649,6 +1662,10 @@ public class ImageViewerTab {
         if (catWiseOverlay.isSelected()) {
             fetchCatWiseCatalogEntries();
             drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
+        }
+        if (panStarrsOverlay.isSelected()) {
+            fetchPanStarrsCatalogEntries();
+            drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
         }
         if (ssoOverlay.isSelected()) {
             fetchSSOCatalogEntries();
@@ -1728,6 +1745,7 @@ public class ImageViewerTab {
                 gaiaDR2Overlay.setEnabled(false);
                 allWiseOverlay.setEnabled(false);
                 catWiseOverlay.setEnabled(false);
+                panStarrsOverlay.setEnabled(false);
                 ssoOverlay.setEnabled(false);
                 ghostOverlay.setEnabled(false);
                 haloOverlay.setEnabled(false);
@@ -2479,6 +2497,28 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 catWiseRejectedEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 catWiseRejectedEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.loadCatalogElements();
+                });
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void fetchPanStarrsCatalogEntries() {
+        try {
+            if (panStarrsEntries == null) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                CatalogEntry catalogQuery = new PanStarrsCatalogEntry();
+                catalogQuery.setRa(targetRa);
+                catalogQuery.setDec(targetDec);
+                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+                panStarrsEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+                panStarrsEntries.forEach(catalogEntry -> {
                     catalogEntry.setTargetRa(targetRa);
                     catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();

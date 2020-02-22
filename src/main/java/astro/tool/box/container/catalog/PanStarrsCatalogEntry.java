@@ -19,11 +19,11 @@ import java.math.BigDecimal;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
-    // IAU name for this object
-    private String objName;
-
     // Unique object identifier
     private long objID;
+
+    // IAU name for this object
+    private String objName;
 
     // Information flag bitmask indicating details of the photometry
     private int objInfoFlag;
@@ -100,8 +100,14 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     public PanStarrsCatalogEntry(String[] values) {
-        objName = values[0];
+        for (int i = 0; i < values.length; i++) {
+            System.out.println(">" + values[i] + "<");
+            if (values[i].equals("-999.0")) {
+                values[i] = "0";
+            }
+        }
         objID = toLong(values[1]);
+        objName = values[0];
         objInfoFlag = toInteger(values[2]);
         raMean = toDouble(values[3]);
         decMean = toDouble(values[4]);
@@ -124,8 +130,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("object ID", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("object info flag", String.valueOf(objInfoFlag), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
@@ -151,7 +157,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String toString() {
-        return "PanStarrsCatalogEntry{" + "objName=" + objName + ", objID=" + objID + ", objInfoFlag=" + objInfoFlag + ", raMean=" + raMean + ", decMean=" + decMean + ", raMeanErr=" + raMeanErr + ", decMeanErr=" + decMeanErr + ", epochMean=" + epochMean + ", nDetections=" + nDetections + ", gMeanPSFMag=" + gMeanPSFMag + ", gMeanPSFMagErr=" + gMeanPSFMagErr + ", rMeanPSFMag=" + rMeanPSFMag + ", rMeanPSFMagErr=" + rMeanPSFMagErr + ", iMeanPSFMag=" + iMeanPSFMag + ", iMeanPSFMagErr=" + iMeanPSFMagErr + ", zMeanPSFMag=" + zMeanPSFMag + ", zMeanPSFMagErr=" + zMeanPSFMagErr + ", yMeanPSFMag=" + yMeanPSFMag + ", yMeanPSFMagErr=" + yMeanPSFMagErr + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", pixelRa=" + pixelRa + ", pixelDec=" + pixelDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
+        return "PanStarrsCatalogEntry{" + "objID=" + objID + ", objName=" + objName + ", objInfoFlag=" + objInfoFlag + ", raMean=" + raMean + ", decMean=" + decMean + ", raMeanErr=" + raMeanErr + ", decMeanErr=" + decMeanErr + ", epochMean=" + epochMean + ", nDetections=" + nDetections + ", gMeanPSFMag=" + gMeanPSFMag + ", gMeanPSFMagErr=" + gMeanPSFMagErr + ", rMeanPSFMag=" + rMeanPSFMag + ", rMeanPSFMagErr=" + rMeanPSFMagErr + ", iMeanPSFMag=" + iMeanPSFMag + ", iMeanPSFMagErr=" + iMeanPSFMagErr + ", zMeanPSFMag=" + zMeanPSFMag + ", zMeanPSFMagErr=" + zMeanPSFMagErr + ", yMeanPSFMag=" + yMeanPSFMag + ", yMeanPSFMagErr=" + yMeanPSFMagErr + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", pixelRa=" + pixelRa + ", pixelDec=" + pixelDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
     }
 
     @Override
@@ -198,13 +204,13 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objName + "," + objID + "," + objInfoFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3DecNZ(gMeanPSFMag) + "," + roundTo3DecNZ(gMeanPSFMagErr) + "," + roundTo3DecNZ(rMeanPSFMag) + "," + roundTo3DecNZ(rMeanPSFMagErr) + "," + roundTo3DecNZ(iMeanPSFMag) + "," + roundTo3DecNZ(iMeanPSFMagErr) + "," + roundTo3DecNZ(zMeanPSFMag) + "," + roundTo3DecNZ(zMeanPSFMagErr) + "," + roundTo3DecNZ(yMeanPSFMag) + "," + roundTo3DecNZ(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + objInfoFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3DecNZ(gMeanPSFMag) + "," + roundTo3DecNZ(gMeanPSFMagErr) + "," + roundTo3DecNZ(rMeanPSFMag) + "," + roundTo3DecNZ(rMeanPSFMagErr) + "," + roundTo3DecNZ(iMeanPSFMag) + "," + roundTo3DecNZ(iMeanPSFMagErr) + "," + roundTo3DecNZ(zMeanPSFMag) + "," + roundTo3DecNZ(zMeanPSFMagErr) + "," + roundTo3DecNZ(yMeanPSFMag) + "," + roundTo3DecNZ(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
         return values.split(",", 24);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),object name,object ID,object info flag,ra,ra err,dec,dec err,observation time,detections,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,y_mag,y_mag err,g-r,r-i,i-z,z-y";
+        String titles = "dist (arcsec),object ID,object name,object info flag,ra,ra err,dec,dec err,observation time,detections,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,y_mag,y_mag err,g-r,r-i,i-z,z-y";
         return titles.split(",", 24);
     }
 

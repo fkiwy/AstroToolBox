@@ -7,6 +7,7 @@ public enum JColor {
     BLUE(java.awt.Color.BLUE),
     GREEN(java.awt.Color.GREEN),
     YELLOW(java.awt.Color.YELLOW),
+    BROWN(new java.awt.Color(102, 51, 0)),
     GRAY(java.awt.Color.GRAY),
     DARK_RED(java.awt.Color.RED.darker()),
     DARK_BLUE(java.awt.Color.BLUE.darker()),

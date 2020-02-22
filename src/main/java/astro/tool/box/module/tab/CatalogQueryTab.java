@@ -12,6 +12,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -131,6 +132,8 @@ public class CatalogQueryTab {
             catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
             CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
             catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
+            PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
+            catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
 
             mainPanel = new JPanel(new BorderLayout());
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
@@ -384,7 +387,7 @@ public class CatalogQueryTab {
         wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
         finderChartField = new JTextField(String.valueOf(finderChartFOV));
         if (degDE >= -31) {
-            linkPanel.add(createHyperlink("PanSTARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
+            linkPanel.add(createHyperlink("Pan-STARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
             linkPanel.add(panstarrsField);
         }
         linkPanel.add(createHyperlink("Aladin Lite", getAladinLiteUrl(degRA, degDE, aladinLiteFOV)));
@@ -432,7 +435,7 @@ public class CatalogQueryTab {
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
-        linkPanel.add(createHyperlink("PanSTARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
 

@@ -100,11 +100,11 @@ public class WhiteDwarfTab {
             lookupResult.setPreferredSize(new Dimension(500, 600));
             spectralTypeLookup.add(lookupResult);
 
-            JPanel colorInput = new JPanel(new GridLayout(9, 2));
+            JPanel colorInput = new JPanel(new GridLayout(10, 2));
             colorInput.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Manual input", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            colorInput.setPreferredSize(new Dimension(200, 250));
+            colorInput.setPreferredSize(new Dimension(200, 275));
 
             JPanel inputPanel = new JPanel();
             inputPanel.setPreferredSize(new Dimension(200, 610));
@@ -135,13 +135,17 @@ public class WhiteDwarfTab {
             JTextField jField = new JTextField();
             colorInput.add(jField);
 
-            colorInput.add(new JLabel("gmag: ", JLabel.RIGHT));
+            colorInput.add(new JLabel("g_mag: ", JLabel.RIGHT));
             JTextField g_Field = new JTextField();
             colorInput.add(g_Field);
 
-            colorInput.add(new JLabel("rmag: ", JLabel.RIGHT));
+            colorInput.add(new JLabel("r_mag: ", JLabel.RIGHT));
             JTextField r_Field = new JTextField();
             colorInput.add(r_Field);
+
+            colorInput.add(new JLabel("i_mag: ", JLabel.RIGHT));
+            JTextField i_Field = new JTextField();
+            colorInput.add(i_Field);
 
             colorInput.add(new JLabel());
             JButton lookupButton = new JButton("Lookup");
@@ -154,6 +158,7 @@ public class WhiteDwarfTab {
                     colors.put(Color.B_V, toDouble(bField.getText()) - toDouble(vField.getText()));
                     colors.put(Color.V_J, toDouble(vField.getText()) - toDouble(jField.getText()));
                     colors.put(Color.g_r, toDouble(g_Field.getText()) - toDouble(r_Field.getText()));
+                    colors.put(Color.r_i, toDouble(r_Field.getText()) - toDouble(i_Field.getText()));
                     colors.put(Color.r_J, toDouble(r_Field.getText()) - toDouble(jField.getText()));
                     lookupWhiteDwarfsByColor(lookupResult, colors);
                     baseFrame.setVisible(true);
@@ -210,7 +215,7 @@ public class WhiteDwarfTab {
         lookupResult.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
         lookupResult.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + ", " + LookupTable.WHITE_DWARFS_MIX));
         lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        lookupResult.add(new JLabel("G-RP, BP-RP, B-V, V-J, g-r and r-J"));
+        lookupResult.add(new JLabel("G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
     }
 
     private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult, String panelTitle) {
