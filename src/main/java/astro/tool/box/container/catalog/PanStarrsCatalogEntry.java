@@ -27,8 +27,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // IAU name for this object
     private String objName;
 
-    // Information flag bitmask indicating details of the photometry
-    private int objInfoFlag;
+    // Subset of objInfoFlag denoting whether this object is real or a likely false positive
+    private int qualityFlag;
 
     // Right ascension from single epoch detections (weighted mean) in equinox J2000 at the mean epoch given by epochMean
     private double raMean;
@@ -97,7 +97,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     private int catalogNumber;
 
     // Information indicating details of the photometry
-    private List<StringPair> objectInfo;
+    private List<StringPair> qualityFlags;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -112,7 +112,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         }
         objID = toLong(values[1]);
         objName = values[0];
-        objInfoFlag = toInteger(values[2]);
+        qualityFlag = toInteger(values[2]);
         raMean = toDouble(values[3]);
         decMean = toDouble(values[4]);
         raMeanErr = toDouble(values[5]);
@@ -129,20 +129,20 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         zMeanPSFMagErr = toDouble(values[16]);
         yMeanPSFMag = toDouble(values[17]);
         yMeanPSFMagErr = toDouble(values[18]);
-        objectInfo = getPanStarrsObjectInfo(objInfoFlag);
+        qualityFlags = getPanStarrsQualityFlags(qualityFlag);
     }
 
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("object ID", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("sourceId", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("object info flag", String.valueOf(objInfoFlag), Alignment.RIGHT, getIntegerComparator()));
+        catalogElements.add(new CatalogElement("quality flag sum (*)", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec err", roundTo4DecNZ(decMeanErr), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("observation time", convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("mean observ. time", convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(nDetections), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("g_mag", roundTo3DecNZ(gMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g_mag err", roundTo3DecNZ(gMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
@@ -158,14 +158,14 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        objectInfo.forEach((pair) -> {
-            catalogElements.add(new CatalogElement("info flag: " + pair.getS1(), pair.getS2(), Alignment.LEFT, getStringComparator()));
+        qualityFlags.forEach((flag) -> {
+            catalogElements.add(new CatalogElement("(*) quality flag " + flag.getS1(), flag.getS2(), Alignment.LEFT, getStringComparator()));
         });
     }
 
     @Override
     public String toString() {
-        return "PanStarrsCatalogEntry{" + "objID=" + objID + ", objName=" + objName + ", objInfoFlag=" + objInfoFlag + ", raMean=" + raMean + ", decMean=" + decMean + ", raMeanErr=" + raMeanErr + ", decMeanErr=" + decMeanErr + ", epochMean=" + epochMean + ", nDetections=" + nDetections + ", gMeanPSFMag=" + gMeanPSFMag + ", gMeanPSFMagErr=" + gMeanPSFMagErr + ", rMeanPSFMag=" + rMeanPSFMag + ", rMeanPSFMagErr=" + rMeanPSFMagErr + ", iMeanPSFMag=" + iMeanPSFMag + ", iMeanPSFMagErr=" + iMeanPSFMagErr + ", zMeanPSFMag=" + zMeanPSFMag + ", zMeanPSFMagErr=" + zMeanPSFMagErr + ", yMeanPSFMag=" + yMeanPSFMag + ", yMeanPSFMagErr=" + yMeanPSFMagErr + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", pixelRa=" + pixelRa + ", pixelDec=" + pixelDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
+        return "PanStarrsCatalogEntry{" + "objID=" + objID + ", objName=" + objName + ", qualityFlag=" + qualityFlag + ", raMean=" + raMean + ", decMean=" + decMean + ", raMeanErr=" + raMeanErr + ", decMeanErr=" + decMeanErr + ", epochMean=" + epochMean + ", nDetections=" + nDetections + ", gMeanPSFMag=" + gMeanPSFMag + ", gMeanPSFMagErr=" + gMeanPSFMagErr + ", rMeanPSFMag=" + rMeanPSFMag + ", rMeanPSFMagErr=" + rMeanPSFMagErr + ", iMeanPSFMag=" + iMeanPSFMag + ", iMeanPSFMagErr=" + iMeanPSFMagErr + ", zMeanPSFMag=" + zMeanPSFMag + ", zMeanPSFMagErr=" + zMeanPSFMagErr + ", yMeanPSFMag=" + yMeanPSFMag + ", yMeanPSFMagErr=" + yMeanPSFMagErr + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", pixelRa=" + pixelRa + ", pixelDec=" + pixelDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
     }
 
     @Override
@@ -212,16 +212,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + objInfoFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3DecNZ(gMeanPSFMag) + "," + roundTo3DecNZ(gMeanPSFMagErr) + "," + roundTo3DecNZ(rMeanPSFMag) + "," + roundTo3DecNZ(rMeanPSFMagErr) + "," + roundTo3DecNZ(iMeanPSFMag) + "," + roundTo3DecNZ(iMeanPSFMagErr) + "," + roundTo3DecNZ(zMeanPSFMag) + "," + roundTo3DecNZ(zMeanPSFMagErr) + "," + roundTo3DecNZ(yMeanPSFMag) + "," + roundTo3DecNZ(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
-        values = objectInfo.stream().map((pair) -> "," + pair.getS2()).reduce(values, String::concat);
-        return values.split(",", 24 + objectInfo.size());
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3DecNZ(gMeanPSFMag) + "," + roundTo3DecNZ(gMeanPSFMagErr) + "," + roundTo3DecNZ(rMeanPSFMag) + "," + roundTo3DecNZ(rMeanPSFMagErr) + "," + roundTo3DecNZ(iMeanPSFMag) + "," + roundTo3DecNZ(iMeanPSFMagErr) + "," + roundTo3DecNZ(zMeanPSFMag) + "," + roundTo3DecNZ(zMeanPSFMagErr) + "," + roundTo3DecNZ(yMeanPSFMag) + "," + roundTo3DecNZ(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        values = qualityFlags.stream().map((flag) -> "," + flag.getS1() + " = " + flag.getS2()).reduce(values, String::concat);
+        return values.split(",", 24 + qualityFlags.size());
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),object ID,object name,object info flag,ra,ra err,dec,dec err,observation time,detections,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,y_mag,y_mag err,g-r,r-i,i-z,z-y";
-        titles = objectInfo.stream().map((pair) -> ",info flag: " + pair.getS1()).reduce(titles, String::concat);
-        return titles.split(",", 24 + objectInfo.size());
+        String titles = "dist (arcsec),sourceId,object name,quality flag (*),ra,ra err,dec,dec err,mean observ. time,detections,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,y_mag,y_mag err,g-r,r-i,i-z,z-y";
+        titles = qualityFlags.stream().map((flag) -> ",(*) quality flag").reduce(titles, String::concat);
+        return titles.split(",", 24 + qualityFlags.size());
     }
 
     @Override

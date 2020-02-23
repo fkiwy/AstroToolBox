@@ -30,6 +30,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,6 +69,10 @@ import javax.swing.table.TableRowSorter;
 public class CatalogQueryTab {
 
     public static final String TAB_NAME = "Catalog Search";
+
+    private static final int BOTTOM_PANEL_HEIGHT = 375;
+    private static final int LINK_PANEL_WIDTH = 250;
+    private static final int SPT_PANEL_WIDTH = 425;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -375,7 +380,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(18, 2));
-        linkPanel.setPreferredSize(new Dimension(250, 375));
+        linkPanel.setPreferredSize(new Dimension(LINK_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -444,9 +449,12 @@ public class CatalogQueryTab {
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = screenSize.getSize().width;
+        int frameWidth = baseFrame.getWidth();
         int maxRows = 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setPreferredSize(new Dimension(650, 375));
+        detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -531,7 +539,7 @@ public class CatalogQueryTab {
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
+            spectralTypeInfo.setPreferredSize(new Dimension(SPT_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))

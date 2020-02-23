@@ -1293,7 +1293,9 @@ public class ImageViewerTab {
                 images = new HashMap<>();
                 circles = new ArrayList<>();
                 hasException = false;
-                setContrast(getContrast());
+                if (size != previousSize) {
+                    setContrast(getContrast());
+                }
                 initMinMaxValues();
                 //shiftX = shiftY = 0;
                 centerX = centerY = 0;
@@ -1318,6 +1320,7 @@ public class ImageViewerTab {
                 allWiseEntries = null;
                 catWiseEntries = null;
                 catWiseRejectedEntries = null;
+                panStarrsEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
@@ -2820,7 +2823,7 @@ public class ImageViewerTab {
         catalogFrame.setSize(650, 550);
         catalogFrame.setLocation(windowShift, windowShift);
         catalogFrame.setAlwaysOnTop(true);
-        catalogFrame.setResizable(false);
+        catalogFrame.setResizable(true);
         catalogFrame.setVisible(true);
         windowShift += 10;
     }
