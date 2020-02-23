@@ -32,6 +32,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -235,6 +237,7 @@ public class CatalogQueryTab {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
                     } else {
+                        selectedEntry = null;
                         if (copyCoordsToClipboard) {
                             copyCoordsToClipboard(targetRa, targetDec);
                         }
@@ -290,6 +293,19 @@ public class CatalogQueryTab {
                     baseFrame.getRootPane().setDefaultButton(searchButton);
                 } else {
                     baseFrame.getRootPane().setDefaultButton(null);
+                }
+            });
+
+            baseFrame.addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent componentEvent) {
+                    String coords = coordsField.getText();
+                    if (!coords.isEmpty() && selectedEntry != null) {
+                        removeAndRecreateBottomPanel();
+                        displayLinks(targetRa, targetDec, targetRa);
+                        displayCatalogDetails(selectedEntry);
+                        displaySpectralTypes(selectedEntry);
+                    }
                 }
             });
 
