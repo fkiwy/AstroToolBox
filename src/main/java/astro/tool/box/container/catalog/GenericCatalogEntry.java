@@ -2,8 +2,8 @@ package astro.tool.box.container.catalog;
 
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,7 +48,17 @@ public class GenericCatalogEntry implements CatalogEntry {
 
     @Override
     public String toString() {
-        return "GenericCatalogEntry{" + "ra=" + ra + ", dec=" + dec + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", pixelRa=" + pixelRa + ", pixelDec=" + pixelDec + ", catalogElements=" + catalogElements + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("GenericCatalogEntry{ra=").append(ra);
+        sb.append(", dec=").append(dec);
+        sb.append(", targetRa=").append(targetRa);
+        sb.append(", targetDec=").append(targetDec);
+        sb.append(", pixelRa=").append(pixelRa);
+        sb.append(", pixelDec=").append(pixelDec);
+        sb.append(", catalogName=").append(catalogName);
+        sb.append(", catalogElements=").append(catalogElements);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
@@ -73,7 +83,7 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Color getCatalogColor() {
+    public java.awt.Color getCatalogColor() {
         return JColor.LIGHT_GRAY.val;
     }
 
@@ -93,7 +103,7 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<astro.tool.box.enumeration.Color, Double> getColors() {
+    public Map<Color, Double> getColors() {
         return new LinkedHashMap<>();
     }
 

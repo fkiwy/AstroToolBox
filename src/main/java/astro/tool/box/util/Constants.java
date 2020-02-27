@@ -12,6 +12,8 @@ public class Constants {
 
     public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr1/mean.csv";
 
+    public static final String SDSS_BASE_URL = "http://skyserver.sdss.org/dr16/SkyServerWS/SearchTools/RadialSearch";
+
     public static final String IRSA_BASE_URL = "https://irsa.ipac.caltech.edu/SCS";
 
     public static final String IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP";

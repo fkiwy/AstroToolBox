@@ -110,8 +110,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
                 values[i] = "0";
             }
         }
-        objID = toLong(values[1]);
         objName = values[0];
+        objID = toLong(values[1]);
         qualityFlag = toInteger(values[2]);
         raMean = toDouble(values[3]);
         decMean = toDouble(values[4]);
@@ -165,13 +165,42 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String toString() {
-        return "PanStarrsCatalogEntry{" + "objID=" + objID + ", objName=" + objName + ", qualityFlag=" + qualityFlag + ", raMean=" + raMean + ", decMean=" + decMean + ", raMeanErr=" + raMeanErr + ", decMeanErr=" + decMeanErr + ", epochMean=" + epochMean + ", nDetections=" + nDetections + ", gMeanPSFMag=" + gMeanPSFMag + ", gMeanPSFMagErr=" + gMeanPSFMagErr + ", rMeanPSFMag=" + rMeanPSFMag + ", rMeanPSFMagErr=" + rMeanPSFMagErr + ", iMeanPSFMag=" + iMeanPSFMag + ", iMeanPSFMagErr=" + iMeanPSFMagErr + ", zMeanPSFMag=" + zMeanPSFMag + ", zMeanPSFMagErr=" + zMeanPSFMagErr + ", yMeanPSFMag=" + yMeanPSFMag + ", yMeanPSFMagErr=" + yMeanPSFMagErr + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", pixelRa=" + pixelRa + ", pixelDec=" + pixelDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("PanStarrsCatalogEntry{objID=").append(objID);
+        sb.append(", objName=").append(objName);
+        sb.append(", qualityFlag=").append(qualityFlag);
+        sb.append(", raMean=").append(raMean);
+        sb.append(", decMean=").append(decMean);
+        sb.append(", raMeanErr=").append(raMeanErr);
+        sb.append(", decMeanErr=").append(decMeanErr);
+        sb.append(", epochMean=").append(epochMean);
+        sb.append(", nDetections=").append(nDetections);
+        sb.append(", gMeanPSFMag=").append(gMeanPSFMag);
+        sb.append(", gMeanPSFMagErr=").append(gMeanPSFMagErr);
+        sb.append(", rMeanPSFMag=").append(rMeanPSFMag);
+        sb.append(", rMeanPSFMagErr=").append(rMeanPSFMagErr);
+        sb.append(", iMeanPSFMag=").append(iMeanPSFMag);
+        sb.append(", iMeanPSFMagErr=").append(iMeanPSFMagErr);
+        sb.append(", zMeanPSFMag=").append(zMeanPSFMag);
+        sb.append(", zMeanPSFMagErr=").append(zMeanPSFMagErr);
+        sb.append(", yMeanPSFMag=").append(yMeanPSFMag);
+        sb.append(", yMeanPSFMagErr=").append(yMeanPSFMagErr);
+        sb.append(", targetRa=").append(targetRa);
+        sb.append(", targetDec=").append(targetDec);
+        sb.append(", pixelRa=").append(pixelRa);
+        sb.append(", pixelDec=").append(pixelDec);
+        sb.append(", searchRadius=").append(searchRadius);
+        sb.append(", catalogNumber=").append(catalogNumber);
+        sb.append(", qualityFlags=").append(qualityFlags);
+        sb.append(", catalogElements=").append(catalogElements);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + (int) (this.objID ^ (this.objID >>> 32));
+        hash = 47 * hash + (int) (this.objID ^ (this.objID >>> 32));
         return hash;
     }
 

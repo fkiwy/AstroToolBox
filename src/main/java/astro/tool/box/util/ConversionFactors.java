@@ -11,6 +11,9 @@ public class ConversionFactors {
     // Degrees - milliarcseconds conversion
     public static final double DEG_MAS = 3600000;
 
+    // Arcminutes - arcseconds conversion
+    public static final double ARCMIN_ARCSEC = 60;
+
     // Arcseconds - milliarcseconds conversion
     public static final double ARCSEC_MAS = 1000;
 

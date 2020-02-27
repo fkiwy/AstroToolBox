@@ -17,6 +17,8 @@ public class PhotometricFunctions {
 
     private static final Map<Integer, String> QUALITY_FLAGS = new HashMap<>();
 
+    private static final Map<Integer, String> OBJECT_TYPES = new HashMap<>();
+
     static {
         OBJECT_INFO_FLAGS.put(1, "used within relphot (FEW) skip star");
         OBJECT_INFO_FLAGS.put(2, "used within relphot (POOR) skip star");
@@ -69,6 +71,30 @@ public class PhotometricFunctions {
         QUALITY_FLAGS.put(32, "the primary stack measurements are the best");
         QUALITY_FLAGS.put(64, "suspect object in the stack (no more than 1 good measurement)");
         QUALITY_FLAGS.put(128, "poor-quality stack object (no more than 1 good or suspect measurement)");
+    }
+
+    static {
+        /*
+        OBJECT_TYPES.put(0, "Unknown: Object type is not known");
+        OBJECT_TYPES.put(1, "Cosmic-ray track (not used)");
+        OBJECT_TYPES.put(2, "Defect (not used)");
+        OBJECT_TYPES.put(3, "Galaxy: An extended object composed of many stars and other matter");
+        OBJECT_TYPES.put(4, "Ghost: Object created by reflected or refracted light (not used)");
+        OBJECT_TYPES.put(5, "KnownObject: Object came from some other catalog (not yet used)");
+        OBJECT_TYPES.put(6, "Star: A a self-luminous gaseous celestial body");
+        OBJECT_TYPES.put(7, "Trail: A satellite or asteroid or meteor trail (not yet used)");
+        OBJECT_TYPES.put(8, "Sky: Blank sky spectrogram (no objects in this arcsecond area)");
+        OBJECT_TYPES.put(9, "NotAType (not used)");*/
+        OBJECT_TYPES.put(0, "Unknown:");
+        OBJECT_TYPES.put(1, "Cosmic-ray track");
+        OBJECT_TYPES.put(2, "Defect");
+        OBJECT_TYPES.put(3, "Galaxy");
+        OBJECT_TYPES.put(4, "Ghost");
+        OBJECT_TYPES.put(5, "Known object");
+        OBJECT_TYPES.put(6, "Star");
+        OBJECT_TYPES.put(7, "Satellite/Asteroid/Meteor trail");
+        OBJECT_TYPES.put(8, "No objects in area");
+        OBJECT_TYPES.put(9, "Not a type");
     }
 
     /**
@@ -140,7 +166,7 @@ public class PhotometricFunctions {
      *
      * @param W1_W2
      * @param W2_W3
-     * @return a boolean indicating that the object is a possible AGN
+     * @return a Boolean indicating that the object is a possible AGN
      */
     public static boolean isAPossibleAGN(double W1_W2, double W2_W3) {
         return W1_W2 > 0.5 && W1_W2 < 3.0 && W2_W3 > 2.5 && W2_W3 < 6.0;
@@ -151,7 +177,7 @@ public class PhotometricFunctions {
      *
      * @param MGmag
      * @param BP_RP
-     * @return a boolean indicating that the object is a possible white dwarf
+     * @return a Boolean indicating that the object is a possible white dwarf
      */
     public static boolean isAPossibleWD(double MGmag, double BP_RP) {
         return MGmag >= 10 && MGmag <= 15 && BP_RP != 0 && BP_RP <= 1.5;
@@ -193,6 +219,16 @@ public class PhotometricFunctions {
             x *= 2;
         }
         return qualityFlags;
+    }
+
+    /**
+     * Get SDSS object type
+     *
+     * @param type
+     * @return the SDSS object type
+     */
+    public static String getSdssObjectType(int type) {
+        return OBJECT_TYPES.get(type);
     }
 
 }

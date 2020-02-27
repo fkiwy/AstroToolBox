@@ -13,6 +13,7 @@ import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -141,6 +142,8 @@ public class CatalogQueryTab {
             catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
             PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
             catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
+            SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
+            catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
 
             mainPanel = new JPanel(new BorderLayout());
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));

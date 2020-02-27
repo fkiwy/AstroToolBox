@@ -140,13 +140,39 @@ public class CatWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String toString() {
-        return "CatWiseCatalogEntry{" + "sourceId=" + sourceId + ", ra=" + ra + ", dec=" + dec + ", W1mag=" + W1mag + ", W1_err=" + W1_err + ", W2mag=" + W2mag + ", W2_err=" + W2_err + ", pmra=" + pmra + ", pmra_err=" + pmra_err + ", pmdec=" + pmdec + ", pmdec_err=" + pmdec_err + ", plx=" + plx + ", cc_flags=" + cc_flags + ", ab_flags=" + ab_flags + ", meanObsMJD=" + meanObsMJD + ", ra_pm=" + ra_pm + ", dec_pm=" + dec_pm + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("CatWiseCatalogEntry{sourceId=").append(sourceId);
+        sb.append(", ra=").append(ra);
+        sb.append(", dec=").append(dec);
+        sb.append(", W1mag=").append(W1mag);
+        sb.append(", W1_err=").append(W1_err);
+        sb.append(", W2mag=").append(W2mag);
+        sb.append(", W2_err=").append(W2_err);
+        sb.append(", pmra=").append(pmra);
+        sb.append(", pmra_err=").append(pmra_err);
+        sb.append(", pmdec=").append(pmdec);
+        sb.append(", pmdec_err=").append(pmdec_err);
+        sb.append(", plx=").append(plx);
+        sb.append(", cc_flags=").append(cc_flags);
+        sb.append(", ab_flags=").append(ab_flags);
+        sb.append(", meanObsMJD=").append(meanObsMJD);
+        sb.append(", ra_pm=").append(ra_pm);
+        sb.append(", dec_pm=").append(dec_pm);
+        sb.append(", targetRa=").append(targetRa);
+        sb.append(", targetDec=").append(targetDec);
+        sb.append(", pixelRa=").append(pixelRa);
+        sb.append(", pixelDec=").append(pixelDec);
+        sb.append(", searchRadius=").append(searchRadius);
+        sb.append(", catalogNumber=").append(catalogNumber);
+        sb.append(", catalogElements=").append(catalogElements);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.sourceId);
+        hash = 53 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
