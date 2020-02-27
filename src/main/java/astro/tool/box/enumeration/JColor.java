@@ -8,7 +8,7 @@ public enum JColor {
     GREEN(java.awt.Color.GREEN),
     YELLOW(java.awt.Color.YELLOW),
     BROWN(new java.awt.Color(115, 77, 38)),
-    OLIVE(new java.awt.Color(122, 122, 82)),
+    STEEL(new java.awt.Color(82, 82, 122)),
     GRAY(java.awt.Color.GRAY),
     DARK_RED(java.awt.Color.RED.darker()),
     DARK_BLUE(java.awt.Color.BLUE.darker()),
@@ -21,7 +21,7 @@ public enum JColor {
     LIGHT_GREEN(new java.awt.Color(204, 255, 204)),
     LIGHT_YELLOW(new java.awt.Color(255, 255, 204)),
     LIGHT_BROWN(new java.awt.Color(230, 204, 179)),
-    LIGHT_OLIVE(new java.awt.Color(214, 214, 194)),
+    LIGHT_STEEL(new java.awt.Color(194, 194, 214)),
     LIGHT_GRAY(java.awt.Color.LIGHT_GRAY);
 
     public java.awt.Color val;

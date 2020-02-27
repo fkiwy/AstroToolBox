@@ -20,6 +20,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
@@ -149,6 +150,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseRejectedEntries;
     private List<CatalogEntry> panStarrsEntries;
+    private List<CatalogEntry> sdssEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -164,6 +166,7 @@ public class ImageViewerTab {
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
     private JCheckBox panStarrsOverlay;
+    private JCheckBox sdssOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -291,9 +294,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1600;
+            int controlPanelHeight = 1625;
 
-            JPanel controlPanel = new JPanel(new GridLayout(66, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(67, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -537,9 +540,14 @@ public class ImageViewerTab {
             panStarrsOverlay = new JCheckBox("Pan-STARRS");
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             overlayPanel.add(panStarrsOverlay);
-            ssoOverlay = new JCheckBox("Solar Sys. Obj.");
+
+            sdssOverlay = new JCheckBox("SDSS DR16");
+            sdssOverlay.setForeground(JColor.STEEL.val);
+            overlayPanel.add(sdssOverlay);
+
+            ssoOverlay = new JCheckBox("Solar System Objects");
             ssoOverlay.setForeground(Color.BLUE);
-            overlayPanel.add(ssoOverlay);
+            controlPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -1102,6 +1110,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
                                         overlays++;
                                     }
+                                    if (sdssOverlay.isSelected() && sdssEntries != null) {
+                                        showCatalogInfo(sdssEntries, mouseX, mouseY, JColor.STEEL.val);
+                                        overlays++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         overlays++;
@@ -1354,6 +1366,7 @@ public class ImageViewerTab {
                 allWiseOverlay.setEnabled(true);
                 catWiseOverlay.setEnabled(true);
                 panStarrsOverlay.setEnabled(true);
+                sdssOverlay.setEnabled(true);
                 ssoOverlay.setEnabled(true);
                 ghostOverlay.setEnabled(true);
                 haloOverlay.setEnabled(true);
@@ -1367,6 +1380,7 @@ public class ImageViewerTab {
                 catWiseEntries = null;
                 catWiseRejectedEntries = null;
                 panStarrsEntries = null;
+                sdssEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
@@ -1718,6 +1732,10 @@ public class ImageViewerTab {
             fetchPanStarrsCatalogEntries();
             drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
         }
+        if (sdssOverlay.isSelected()) {
+            fetchSdssCatalogEntries();
+            drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
+        }
         if (ssoOverlay.isSelected()) {
             fetchSSOCatalogEntries();
             drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
@@ -1797,6 +1815,7 @@ public class ImageViewerTab {
                 allWiseOverlay.setEnabled(false);
                 catWiseOverlay.setEnabled(false);
                 panStarrsOverlay.setEnabled(false);
+                sdssOverlay.setEnabled(false);
                 ssoOverlay.setEnabled(false);
                 ghostOverlay.setEnabled(false);
                 haloOverlay.setEnabled(false);
@@ -2570,6 +2589,28 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 panStarrsEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 panStarrsEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.loadCatalogElements();
+                });
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void fetchSdssCatalogEntries() {
+        try {
+            if (sdssEntries == null) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                CatalogEntry catalogQuery = new SDSSCatalogEntry();
+                catalogQuery.setRa(targetRa);
+                catalogQuery.setDec(targetDec);
+                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+                sdssEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+                sdssEntries.forEach(catalogEntry -> {
                     catalogEntry.setTargetRa(targetRa);
                     catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();

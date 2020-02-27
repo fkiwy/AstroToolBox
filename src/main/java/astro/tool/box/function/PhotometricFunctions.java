@@ -166,7 +166,7 @@ public class PhotometricFunctions {
      *
      * @param W1_W2
      * @param W2_W3
-     * @return a Boolean indicating that the object is a possible AGN
+     * @return a boolean indicating that the object is a possible AGN
      */
     public static boolean isAPossibleAGN(double W1_W2, double W2_W3) {
         return W1_W2 > 0.5 && W1_W2 < 3.0 && W2_W3 > 2.5 && W2_W3 < 6.0;
@@ -177,7 +177,7 @@ public class PhotometricFunctions {
      *
      * @param MGmag
      * @param BP_RP
-     * @return a Boolean indicating that the object is a possible white dwarf
+     * @return a boolean indicating that the object is a possible white dwarf
      */
     public static boolean isAPossibleWD(double MGmag, double BP_RP) {
         return MGmag >= 10 && MGmag <= 15 && BP_RP != 0 && BP_RP <= 1.5;
