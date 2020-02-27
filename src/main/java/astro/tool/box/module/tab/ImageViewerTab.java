@@ -126,6 +126,7 @@ public class ImageViewerTab {
     public static final String TAB_NAME = "Image Viewer";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
+    public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
     public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
@@ -880,7 +881,7 @@ public class ImageViewerTab {
             JButton moveLeftButton = new JButton("Move left");
             navigationButtons.add(moveLeftButton);
             moveLeftButton.addActionListener((ActionEvent evt) -> {
-                double distance = size * SIZE_FACTOR * 0.8 / DEG_ARCSEC;
+                double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa + distance / cos(toRadians(targetDec));
                 newRa = newRa > 360 ? newRa - 360 : newRa;
                 coordsField.setText(roundTo7DecNZ(newRa) + " " + targetDec);
@@ -890,7 +891,7 @@ public class ImageViewerTab {
             JButton moveRightButton = new JButton("Move right");
             navigationButtons.add(moveRightButton);
             moveRightButton.addActionListener((ActionEvent evt) -> {
-                double distance = size * SIZE_FACTOR * 0.8 / DEG_ARCSEC;
+                double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa - distance / cos(toRadians(targetDec));
                 newRa = newRa < 0 ? newRa + 360 : newRa;
                 coordsField.setText(roundTo7DecNZ(newRa) + " " + targetDec);
@@ -903,7 +904,7 @@ public class ImageViewerTab {
             JButton moveUpButton = new JButton("Move up");
             navigationButtons.add(moveUpButton);
             moveUpButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec + size * SIZE_FACTOR * 0.8 / DEG_ARCSEC;
+                double newDec = targetDec + size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 newDec = newDec > 90 ? 90 : newDec;
                 coordsField.setText(targetRa + " " + roundTo7DecNZ(newDec));
                 createFlipbook();
@@ -912,7 +913,7 @@ public class ImageViewerTab {
             JButton moveDownButton = new JButton("Move down");
             navigationButtons.add(moveDownButton);
             moveDownButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec - size * SIZE_FACTOR * 0.8 / DEG_ARCSEC;
+                double newDec = targetDec - size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 newDec = newDec < -90 ? -90 : newDec;
                 coordsField.setText(targetRa + " " + roundTo7DecNZ(newDec));
                 createFlipbook();
