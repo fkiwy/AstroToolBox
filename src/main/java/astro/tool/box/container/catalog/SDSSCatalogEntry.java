@@ -374,6 +374,10 @@ public class SDSSCatalogEntry implements CatalogEntry {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    public BigInteger getSpecObjID() {
+        return specObjID;
+    }
+
     public double get_u_g() {
         if (u_mag == 0 || g_mag == 0) {
             return 0;

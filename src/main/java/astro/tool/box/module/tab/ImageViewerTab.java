@@ -76,6 +76,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static java.lang.Math.*;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -168,6 +169,7 @@ public class ImageViewerTab {
     private JCheckBox catWiseOverlay;
     private JCheckBox panStarrsOverlay;
     private JCheckBox sdssOverlay;
+    private JCheckBox spectrumOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -541,14 +543,18 @@ public class ImageViewerTab {
             panStarrsOverlay = new JCheckBox("Pan-STARRS");
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             overlayPanel.add(panStarrsOverlay);
-
             sdssOverlay = new JCheckBox("SDSS DR16");
             sdssOverlay.setForeground(JColor.STEEL.val);
             overlayPanel.add(sdssOverlay);
 
-            ssoOverlay = new JCheckBox("Solar System Objects");
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            spectrumOverlay = new JCheckBox("SDSS spectra");
+            spectrumOverlay.setForeground(JColor.OLIVE.val);
+            overlayPanel.add(spectrumOverlay);
+            ssoOverlay = new JCheckBox("Solar Sys. Obj.");
             ssoOverlay.setForeground(Color.BLUE);
-            controlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -1115,6 +1121,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(sdssEntries, mouseX, mouseY, JColor.STEEL.val);
                                         overlays++;
                                     }
+                                    if (spectrumOverlay.isSelected() && sdssEntries != null) {
+                                        showSpectrumInfo(sdssEntries, mouseX, mouseY);
+                                        overlays++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         overlays++;
@@ -1368,6 +1378,7 @@ public class ImageViewerTab {
                 catWiseOverlay.setEnabled(true);
                 panStarrsOverlay.setEnabled(true);
                 sdssOverlay.setEnabled(true);
+                spectrumOverlay.setEnabled(true);
                 ssoOverlay.setEnabled(true);
                 ghostOverlay.setEnabled(true);
                 haloOverlay.setEnabled(true);
@@ -1736,6 +1747,10 @@ public class ImageViewerTab {
         if (sdssOverlay.isSelected()) {
             fetchSdssCatalogEntries();
             drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
+        }
+        if (spectrumOverlay.isSelected()) {
+            fetchSdssCatalogEntries();
+            drawSectrumOverlay(image, sdssEntries);
         }
         if (ssoOverlay.isSelected()) {
             fetchSSOCatalogEntries();
@@ -2689,6 +2704,57 @@ public class ImageViewerTab {
                 customOverlay.setCatalogEntries(catalogEntries);
                 baseFrame.setCursor(Cursor.getDefaultCursor());
             }
+        }
+    }
+
+    private void drawSectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
+        Graphics graphics = image.getGraphics();
+        catalogEntries.forEach(catalogEntry -> {
+            NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
+            catalogEntry.setPixelRa(position.getX());
+            catalogEntry.setPixelDec(position.getY());
+            SDSSCatalogEntry sdssCatalogEntry = (SDSSCatalogEntry) catalogEntry;
+            if (!sdssCatalogEntry.getSpecObjID().equals(new BigInteger("0"))) {
+                Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), JColor.OLIVE.val);
+                toDraw.draw(graphics);
+            }
+        });
+    }
+
+    private void showSpectrumInfo(List<CatalogEntry> catalogEntries, int x, int y) {
+        catalogEntries.forEach(catalogEntry -> {
+            double radius = getOverlaySize() / 2;
+            SDSSCatalogEntry sdssCatalogEntry = (SDSSCatalogEntry) catalogEntry;
+            if (!sdssCatalogEntry.getSpecObjID().equals(new BigInteger("0"))
+                    && catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
+                    && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
+                displaySdssSpectrum(catalogEntry);
+            }
+        });
+    }
+
+    private void displaySdssSpectrum(CatalogEntry catalogEntry) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            SDSSCatalogEntry SDSSCatalogEntry = (SDSSCatalogEntry) catalogEntry;
+            String spectrumUrl = "http://skyserver.sdss.org/dr16/en/get/specById.ashx?ID=" + SDSSCatalogEntry.getSpecObjID();
+            HttpURLConnection connection = establishHttpConnection(spectrumUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            BufferedImage spectrum = ImageIO.read(stream);
+            if (spectrum != null) {
+                JFrame imageFrame = new JFrame();
+                imageFrame.setIconImage(getToolBoxImage());
+                imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec));
+                imageFrame.getContentPane().add(new JLabel(new ImageIcon(spectrum)));
+                imageFrame.setSize(1100, 900);
+                imageFrame.setAlwaysOnTop(true);
+                imageFrame.setResizable(true);
+                imageFrame.setVisible(true);
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
         }
     }
 
