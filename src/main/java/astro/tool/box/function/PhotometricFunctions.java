@@ -231,4 +231,14 @@ public class PhotometricFunctions {
         return OBJECT_TYPES.get(type);
     }
 
+    /**
+     * Get SDSS photometry flag
+     *
+     * @param flag
+     * @return the SDSS photometry flag
+     */
+    public static String getSdssPhotometryFlag(int flag) {
+        return flag == 1 ? "clean" : "unclean";
+    }
+
 }

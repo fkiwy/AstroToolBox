@@ -4,6 +4,7 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
@@ -11,6 +12,8 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,14 +39,23 @@ public class SDSSCatalogEntry implements CatalogEntry {
     // Object number within a field (usually changes between reruns of the same field)
     private int obj;
 
-    // Type of object
-    private int type;
-
     // J2000 right ascension
     private double ra;
 
     // J2000 declination
     private double dec;
+
+    // Type of object
+    private int type;
+
+    // Clean photometry flag (1=clean, 0=unclean)
+    private int clean;
+
+    // Date of observation
+    private int mjd;
+
+    // Pointer to the spectrum of object, if exists, else 0
+    private BigInteger specObjID;
 
     // Magnitude in u band
     private double u_mag;
@@ -105,19 +117,22 @@ public class SDSSCatalogEntry implements CatalogEntry {
         camcol = toInteger(values[3]);
         field = toInteger(values[4]);
         obj = toInteger(values[5]);
-        type = toInteger(values[6]);
-        ra = toDouble(values[7]);
-        dec = toDouble(values[8]);
-        u_mag = toDouble(values[9]);
-        g_mag = toDouble(values[10]);
-        r_mag = toDouble(values[11]);
-        i_mag = toDouble(values[12]);
-        z_mag = toDouble(values[13]);
-        u_err = toDouble(values[14]);
-        g_err = toDouble(values[15]);
-        r_err = toDouble(values[16]);
-        i_err = toDouble(values[17]);
-        z_err = toDouble(values[18]);
+        ra = toDouble(values[6]);
+        dec = toDouble(values[7]);
+        type = toInteger(values[8]);
+        clean = toInteger(values[9]);
+        mjd = toInteger(values[10]);
+        specObjID = new BigInteger(values[11]);
+        u_mag = toDouble(values[12]);
+        g_mag = toDouble(values[13]);
+        r_mag = toDouble(values[14]);
+        i_mag = toDouble(values[15]);
+        z_mag = toDouble(values[16]);
+        u_err = toDouble(values[17]);
+        g_err = toDouble(values[18]);
+        r_err = toDouble(values[19]);
+        i_err = toDouble(values[20]);
+        z_err = toDouble(values[21]);
     }
 
     @Override
@@ -126,6 +141,10 @@ public class SDSSCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("sourceId", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("object type", getSdssObjectType(type), Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("photometry flag", getSdssPhotometryFlag(clean), Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("observation date", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("spectrum pointer", String.valueOf(specObjID), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("u_mag", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u_mag err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g_mag", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
@@ -136,7 +155,6 @@ public class SDSSCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("i_mag err", roundTo3DecNZ(i_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("z_mag", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("z_mag err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("object type", getSdssObjectType(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -152,9 +170,12 @@ public class SDSSCatalogEntry implements CatalogEntry {
         sb.append(", camcol=").append(camcol);
         sb.append(", field=").append(field);
         sb.append(", obj=").append(obj);
-        sb.append(", type=").append(type);
         sb.append(", ra=").append(ra);
         sb.append(", dec=").append(dec);
+        sb.append(", type=").append(type);
+        sb.append(", clean=").append(clean);
+        sb.append(", mjd=").append(mjd);
+        sb.append(", specObjID=").append(specObjID);
         sb.append(", u_mag=").append(u_mag);
         sb.append(", g_mag=").append(g_mag);
         sb.append(", r_mag=").append(r_mag);
@@ -178,8 +199,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + (int) (this.objID ^ (this.objID >>> 32));
+        int hash = 5;
+        hash = 43 * hash + (int) (this.objID ^ (this.objID >>> 32));
         return hash;
     }
 
@@ -195,7 +216,10 @@ public class SDSSCatalogEntry implements CatalogEntry {
             return false;
         }
         final SDSSCatalogEntry other = (SDSSCatalogEntry) obj;
-        return this.objID == other.objID;
+        if (this.objID != other.objID) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -220,14 +244,14 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + getSdssObjectType(type) + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return values.split(",", 19);
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + getSdssObjectType(type) + "," + getSdssPhotometryFlag(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        return values.split(",", 22);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,object type,ra,dec,u_mag,u_mag err,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,u-g,g-r,r-i,i-z";
-        return titles.split(",", 19);
+        String titles = "dist (arcsec),sourceId,ra,dec,object type,photometry flag,observation date,spectrum pointer,u_mag,u_mag err,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,u-g,g-r,r-i,i-z";
+        return titles.split(",", 22);
     }
 
     @Override
