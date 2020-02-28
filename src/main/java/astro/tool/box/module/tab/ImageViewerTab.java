@@ -1101,8 +1101,12 @@ public class ImageViewerTab {
                                         showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
                                         overlays++;
                                     }
-                                    if ((gaiaDR2Overlay.isSelected() || gaiaDR2ProperMotion.isSelected()) && gaiaDR2Entries != null) {
+                                    if (gaiaDR2Overlay.isSelected() && gaiaDR2Entries != null) {
                                         showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
+                                        overlays++;
+                                    }
+                                    if (gaiaDR2ProperMotion.isSelected() && gaiaDR2Entries != null) {
+                                        showPMInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
                                     if (allWiseOverlay.isSelected() && allWiseEntries != null) {
@@ -1111,6 +1115,10 @@ public class ImageViewerTab {
                                     }
                                     if ((catWiseOverlay.isSelected() || catWiseProperMotion.isSelected()) && catWiseEntries != null) {
                                         showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
+                                        overlays++;
+                                    }
+                                    if (catWiseProperMotion.isSelected() && catWiseEntries != null) {
+                                        showPMInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
                                         overlays++;
                                     }
                                     if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
@@ -2881,6 +2889,21 @@ public class ImageViewerTab {
 
                 Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
                 arrow.draw(graphics);
+            }
+        });
+    }
+
+    private void showPMInfo(List<CatalogEntry> catalogEntries, int x, int y, Color color) {
+        catalogEntries.forEach(catalogEntry -> {
+            double pmRa = catalogEntry.getPmra();
+            double pmDec = catalogEntry.getPmdec();
+            double tpm = calculateTotalProperMotion(pmRa, pmDec);
+            double pmLimit = toDouble(properMotionField.getText());
+            double radius = getOverlaySize() / 2;
+            if (tpm > pmLimit
+                    && catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
+                    && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
+                displayCatalogPanel(catalogEntry, color);
             }
         });
     }
