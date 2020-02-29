@@ -1113,7 +1113,7 @@ public class ImageViewerTab {
                                         showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
                                         overlays++;
                                     }
-                                    if ((catWiseOverlay.isSelected() || catWiseProperMotion.isSelected()) && catWiseEntries != null) {
+                                    if (catWiseOverlay.isSelected() && catWiseEntries != null) {
                                         showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
                                         overlays++;
                                     }
@@ -2317,7 +2317,7 @@ public class ImageViewerTab {
         if (ps1ImageZoomed != null) {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.setTitle("Pan-STARRS image for target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(new JLabel(new ImageIcon(ps1ImageZoomed)));
             imageFrame.setSize(350, 350);
             imageFrame.setAlwaysOnTop(true);
@@ -2480,7 +2480,7 @@ public class ImageViewerTab {
             }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
+            imageFrame.setTitle("AllWise Atlas images for target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
             imageFrame.setSize(1100, 260);
             imageFrame.setAlwaysOnTop(true);
@@ -2745,14 +2745,14 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             SDSSCatalogEntry SDSSCatalogEntry = (SDSSCatalogEntry) catalogEntry;
-            String spectrumUrl = "http://skyserver.sdss.org/dr16/en/get/specById.ashx?ID=" + SDSSCatalogEntry.getSpecObjID();
+            String spectrumUrl = SDSS_BASE_URL + "/en/get/specById.ashx?ID=" + SDSSCatalogEntry.getSpecObjID();
             HttpURLConnection connection = establishHttpConnection(spectrumUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             BufferedImage spectrum = ImageIO.read(stream);
             if (spectrum != null) {
                 JFrame imageFrame = new JFrame();
                 imageFrame.setIconImage(getToolBoxImage());
-                imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec));
+                imageFrame.setTitle("SDSS spectrum for target: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
                 imageFrame.getContentPane().add(new JLabel(new ImageIcon(spectrum)));
                 imageFrame.setSize(1100, 900);
                 imageFrame.setAlwaysOnTop(true);

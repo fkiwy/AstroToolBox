@@ -30,7 +30,7 @@ public class ServiceProviderUtils {
     }
 
     public static String createSdssUrl(double degRA, double degDE, double degRadius) {
-        return SDSS_BASE_URL + "?ra=" + degRA + "&dec=" + degDE + "&radius=" + degRadius + "&limit=0&format=csv&imgparams=objid,run,rerun,camcol,field,obj,ra,dec,type,clean,mjd,specObjID,u,g,r,i,z,Err_u,Err_g,Err_r,Err_i,Err_z";
+        return SDSS_BASE_URL + "/SkyServerWS/ImagingQuery/Cone?ra=" + degRA + "&dec=" + degDE + "&radius=" + degRadius + "&limit=0&format=csv&imgparams=objid,run,rerun,camcol,field,obj,ra,dec,type,clean,mjd,specObjID,u,g,r,i,z,Err_u,Err_g,Err_r,Err_i,Err_z";
     }
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
