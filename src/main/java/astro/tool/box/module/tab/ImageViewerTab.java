@@ -2317,7 +2317,7 @@ public class ImageViewerTab {
         if (ps1ImageZoomed != null) {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Pan-STARRS image for target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(new JLabel(new ImageIcon(ps1ImageZoomed)));
             imageFrame.setSize(350, 350);
             imageFrame.setAlwaysOnTop(true);
@@ -2480,7 +2480,7 @@ public class ImageViewerTab {
             }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("AllWise Atlas images for target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
+            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
             imageFrame.setSize(1100, 260);
             imageFrame.setAlwaysOnTop(true);
@@ -2752,9 +2752,9 @@ public class ImageViewerTab {
             if (spectrum != null) {
                 JFrame imageFrame = new JFrame();
                 imageFrame.setIconImage(getToolBoxImage());
-                imageFrame.setTitle("SDSS spectrum for target: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
+                imageFrame.setTitle("SDSS spectrum for object: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
                 imageFrame.getContentPane().add(new JLabel(new ImageIcon(spectrum)));
-                imageFrame.setSize(1100, 900);
+                imageFrame.setSize(1200, 900);
                 imageFrame.setAlwaysOnTop(true);
                 imageFrame.setResizable(true);
                 imageFrame.setVisible(true);
