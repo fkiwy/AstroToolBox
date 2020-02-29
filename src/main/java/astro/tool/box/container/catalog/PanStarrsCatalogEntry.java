@@ -159,7 +159,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
         qualityFlags.forEach((flag) -> {
-            catalogElements.add(new CatalogElement("(*) quality flag " + flag.getS1(), flag.getS2(), Alignment.LEFT, getStringComparator()));
+            catalogElements.add(new CatalogElement("(*) quality flag " + flag.getS1(), flag.getS2(), Alignment.LEFT, getStringComparator(), true));
         });
     }
 
