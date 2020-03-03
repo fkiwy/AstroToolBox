@@ -12,6 +12,8 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -29,7 +31,10 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +72,10 @@ import javax.swing.table.TableRowSorter;
 public class CatalogQueryTab {
 
     public static final String TAB_NAME = "Catalog Search";
+
+    private static final int BOTTOM_PANEL_HEIGHT = 375;
+    private static final int LINK_PANEL_WIDTH = 250;
+    private static final int SPT_PANEL_WIDTH = 425;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -131,6 +140,10 @@ public class CatalogQueryTab {
             catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
             CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
             catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
+            PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
+            catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
+            SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
+            catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
 
             mainPanel = new JPanel(new BorderLayout());
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
@@ -227,6 +240,7 @@ public class CatalogQueryTab {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
                     } else {
+                        selectedEntry = null;
                         if (copyCoordsToClipboard) {
                             copyCoordsToClipboard(targetRa, targetDec);
                         }
@@ -282,6 +296,19 @@ public class CatalogQueryTab {
                     baseFrame.getRootPane().setDefaultButton(searchButton);
                 } else {
                     baseFrame.getRootPane().setDefaultButton(null);
+                }
+            });
+
+            baseFrame.addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent componentEvent) {
+                    String coords = coordsField.getText();
+                    if (!coords.isEmpty() && selectedEntry != null) {
+                        removeAndRecreateBottomPanel();
+                        displayLinks(targetRa, targetDec, targetRa);
+                        displayCatalogDetails(selectedEntry);
+                        displaySpectralTypes(selectedEntry);
+                    }
                 }
             });
 
@@ -372,7 +399,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(18, 2));
-        linkPanel.setPreferredSize(new Dimension(250, 375));
+        linkPanel.setPreferredSize(new Dimension(LINK_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -384,7 +411,7 @@ public class CatalogQueryTab {
         wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
         finderChartField = new JTextField(String.valueOf(finderChartFOV));
         if (degDE >= -31) {
-            linkPanel.add(createHyperlink("PanSTARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
+            linkPanel.add(createHyperlink("Pan-STARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
             linkPanel.add(panstarrsField);
         }
         linkPanel.add(createHyperlink("Aladin Lite", getAladinLiteUrl(degRA, degDE, aladinLiteFOV)));
@@ -432,7 +459,7 @@ public class CatalogQueryTab {
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
-        linkPanel.add(createHyperlink("PanSTARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
 
@@ -441,9 +468,12 @@ public class CatalogQueryTab {
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = screenSize.getSize().width;
+        int frameWidth = baseFrame.getWidth();
         int maxRows = 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setPreferredSize(new Dimension(650, 375));
+        detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -528,7 +558,7 @@ public class CatalogQueryTab {
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(425, 375));
+            spectralTypeInfo.setPreferredSize(new Dimension(SPT_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
@@ -601,7 +631,7 @@ public class CatalogQueryTab {
         if (centerPanel != null) {
             mainPanel.remove(centerPanel);
         }
-        centerPanel = new JPanel(new GridLayout(2, 2));
+        centerPanel = new JPanel(new GridLayout(2, 3));
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         centerPanel.setPreferredSize(new Dimension(centerPanel.getWidth(), 250));
     }

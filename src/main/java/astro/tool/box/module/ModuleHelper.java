@@ -72,7 +72,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v1.2.2";
+    public static final String PGM_VERSION = "v1.2.3";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
@@ -250,6 +250,7 @@ public class ModuleHelper {
         if (element.isFaulty()) {
             field.setForeground(JColor.DARK_RED.val);
         }
+        field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(true);
         panel.add(field);

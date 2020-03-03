@@ -18,6 +18,10 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
         colors = new HashMap<>();
         //colors.put(Color.M_W1, toDouble(values[9]));
         colors.put(Color.M_G, toDouble(values[11]));
+        colors.put(Color.g_r, toDouble(values[12]));
+        colors.put(Color.r_i, toDouble(values[13]));
+        //colors.put(Color.i_z, toDouble(values[14]));
+        //colors.put(Color.z_y, toDouble(values[15]));
         //colors.put(Color.J_H, toDouble(values[16]));
         //colors.put(Color.H_K, toDouble(values[17]));
         colors.put(Color.J_K, toDouble(values[18]));

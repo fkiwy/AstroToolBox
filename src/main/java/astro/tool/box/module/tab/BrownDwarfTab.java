@@ -81,11 +81,11 @@ public class BrownDwarfTab {
             lookupResult.setPreferredSize(new Dimension(500, 300));
             spectralTypeLookup.add(lookupResult);
 
-            JPanel colorInput = new JPanel(new GridLayout(6, 2));
+            JPanel colorInput = new JPanel(new GridLayout(9, 2));
             colorInput.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Manual input", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            colorInput.setPreferredSize(new Dimension(200, 175));
+            colorInput.setPreferredSize(new Dimension(200, 250));
 
             JPanel inputPanel = new JPanel();
             inputPanel.setPreferredSize(new Dimension(200, 310));
@@ -108,6 +108,18 @@ public class BrownDwarfTab {
             JTextField kField = new JTextField();
             colorInput.add(kField);
 
+            colorInput.add(new JLabel("g_mag: ", JLabel.RIGHT));
+            JTextField g_Field = new JTextField();
+            colorInput.add(g_Field);
+
+            colorInput.add(new JLabel("r_mag: ", JLabel.RIGHT));
+            JTextField r_Field = new JTextField();
+            colorInput.add(r_Field);
+
+            colorInput.add(new JLabel("i_mag: ", JLabel.RIGHT));
+            JTextField i_Field = new JTextField();
+            colorInput.add(i_Field);
+
             colorInput.add(new JLabel("M Gmag: ", JLabel.RIGHT));
             JTextField m_gField = new JTextField();
             colorInput.add(m_gField);
@@ -121,6 +133,8 @@ public class BrownDwarfTab {
                     colors.put(Color.W1_W2, toDouble(w1Field.getText()) - toDouble(w2Field.getText()));
                     colors.put(Color.J_W2, toDouble(jField.getText()) - toDouble(w2Field.getText()));
                     colors.put(Color.J_K, toDouble(jField.getText()) - toDouble(kField.getText()));
+                    colors.put(Color.g_r, toDouble(g_Field.getText()) - toDouble(r_Field.getText()));
+                    colors.put(Color.r_i, toDouble(r_Field.getText()) - toDouble(i_Field.getText()));
                     colors.put(Color.M_G, toDouble(m_gField.getText()));
                     Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
                     displaySpectralTypes(results, lookupResult);
@@ -214,7 +228,7 @@ public class BrownDwarfTab {
 
         lookupResult.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
         lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        lookupResult.add(new JLabel("W1-W2, J-W2, J-K and absolute Gmag"));
+        lookupResult.add(new JLabel("W1-W2, J-W2, J-K, g-r, r-i and absolute Gmag"));
     }
 
 }

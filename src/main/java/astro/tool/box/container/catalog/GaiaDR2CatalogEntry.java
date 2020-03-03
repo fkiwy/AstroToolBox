@@ -157,13 +157,42 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
 
     @Override
     public String toString() {
-        return "GaiaDR2CatalogEntry{" + "sourceId=" + sourceId + ", ra=" + ra + ", dec=" + dec + ", plx=" + plx + ", plx_err=" + plx_err + ", pmra=" + pmra + ", pmra_err=" + pmra_err + ", pmdec=" + pmdec + ", pmdec_err=" + pmdec_err + ", Gmag=" + Gmag + ", BPmag=" + BPmag + ", RPmag=" + RPmag + ", BP_RP=" + BP_RP + ", BP_G=" + BP_G + ", G_RP=" + G_RP + ", radvel=" + radvel + ", radvel_err=" + radvel_err + ", teff=" + teff + ", radsun=" + radsun + ", lumsun=" + lumsun + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", searchRadius=" + searchRadius + ", catalogNumber=" + catalogNumber + ", catalogElements=" + catalogElements + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("GaiaDR2CatalogEntry{sourceId=").append(sourceId);
+        sb.append(", ra=").append(ra);
+        sb.append(", dec=").append(dec);
+        sb.append(", plx=").append(plx);
+        sb.append(", plx_err=").append(plx_err);
+        sb.append(", pmra=").append(pmra);
+        sb.append(", pmra_err=").append(pmra_err);
+        sb.append(", pmdec=").append(pmdec);
+        sb.append(", pmdec_err=").append(pmdec_err);
+        sb.append(", Gmag=").append(Gmag);
+        sb.append(", BPmag=").append(BPmag);
+        sb.append(", RPmag=").append(RPmag);
+        sb.append(", BP_RP=").append(BP_RP);
+        sb.append(", BP_G=").append(BP_G);
+        sb.append(", G_RP=").append(G_RP);
+        sb.append(", radvel=").append(radvel);
+        sb.append(", radvel_err=").append(radvel_err);
+        sb.append(", teff=").append(teff);
+        sb.append(", radsun=").append(radsun);
+        sb.append(", lumsun=").append(lumsun);
+        sb.append(", targetRa=").append(targetRa);
+        sb.append(", targetDec=").append(targetDec);
+        sb.append(", pixelRa=").append(pixelRa);
+        sb.append(", pixelDec=").append(pixelDec);
+        sb.append(", searchRadius=").append(searchRadius);
+        sb.append(", catalogNumber=").append(catalogNumber);
+        sb.append(", catalogElements=").append(catalogElements);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 73 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
