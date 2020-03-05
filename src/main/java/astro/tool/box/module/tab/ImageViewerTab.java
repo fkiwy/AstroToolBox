@@ -54,6 +54,7 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -85,6 +86,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -110,6 +112,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
@@ -183,7 +186,7 @@ public class ImageViewerTab {
     private JCheckBox skipBadCoadds;
     //private JCheckBox smallBodyHelp;
     private JCheckBox hideMagnifier;
-    private JCheckBox drawCircle;
+    private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -198,6 +201,7 @@ public class ImageViewerTab {
     private JTextField sizeField;
     private JTextField transposeMotionField;
     private JTextField properMotionField;
+    private JTextArea crosshairCoords;
     private JRadioButton showCatalogsButton;
     private JRadioButton showPanstarrsButton;
     private JLabel changeFovLabel;
@@ -208,14 +212,14 @@ public class ImageViewerTab {
     private BufferedImage ps1Image;
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
-    private List<NumberPair> circles;
+    private List<NumberPair> crosshairs;
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
     private int fieldOfView = 15;
-    private int circleSize = 10;
+    private int crosshairSize = 5;
     private int imageNumber = 0;
     private int windowShift = 0;
     private int quadrantCount = 0;
@@ -297,9 +301,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1625;
+            int controlPanelHeight = 1675;
 
-            JPanel controlPanel = new JPanel(new GridLayout(67, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(69, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -680,13 +684,21 @@ public class ImageViewerTab {
                 }
             });
 
-            drawCircle = new JCheckBox("Draw circle (wheel click & spin)");
-            controlPanel.add(drawCircle);
-            drawCircle.addActionListener((ActionEvent evt) -> {
-                if (!drawCircle.isSelected()) {
-                    circles.clear();
+            drawCrosshairs = new JCheckBox("Draw crosshairs (wheel click & spin)");
+            controlPanel.add(drawCrosshairs);
+            drawCrosshairs.addActionListener((ActionEvent evt) -> {
+                if (!drawCrosshairs.isSelected()) {
+                    crosshairs.clear();
+                    crosshairCoords.setText("");
                 }
             });
+
+            controlPanel.add(new JLabel("Crosshairs coordinates:"));
+
+            crosshairCoords = new JTextArea();
+            controlPanel.add(new JScrollPane(crosshairCoords));
+            Font font = coordsField.getFont();
+            crosshairCoords.setFont(font.deriveFont(font.getSize() - 2.0f));
 
             controlPanel.add(new JLabel(underline("Image player controls:")));
 
@@ -1080,10 +1092,29 @@ public class ImageViewerTab {
                                     displayRecenteredWiseImages(newRa, newDec);
                                     break;
                                 case MouseEvent.BUTTON2:
-                                    if (drawCircle.isSelected()) {
-                                        double circleX = evt.getX() * 1.0 / zoom;
-                                        double circleY = evt.getY() * 1.0 / zoom;
-                                        circles.add(new NumberPair(circleX, circleY));
+                                    if (drawCrosshairs.isSelected()) {
+                                        double crosshairX = mouseX * 1.0 / zoom;
+                                        double crosshairY = mouseY * 1.0 / zoom;
+                                        double radius = 0.01;
+                                        boolean removed = false;
+                                        ListIterator<NumberPair> iter = crosshairs.listIterator();
+                                        while (iter.hasNext()) {
+                                            NumberPair pixelCoords = iter.next();
+                                            if (pixelCoords.getX() > crosshairX - radius && pixelCoords.getX() < crosshairX + radius
+                                                    && pixelCoords.getY() > crosshairY - radius && pixelCoords.getY() < crosshairY + radius) {
+                                                iter.remove();
+                                                removed = true;
+                                            }
+                                        }
+                                        if (!removed) {
+                                            crosshairs.add(new NumberPair(crosshairX, crosshairY));
+                                        }
+                                        StringBuilder sb = new StringBuilder();
+                                        for (NumberPair crosshair : crosshairs) {
+                                            NumberPair c = getObjectCoordinates((int) round(crosshair.getX() * zoom), (int) round(crosshair.getY() * zoom));
+                                            sb.append(roundTo7DecNZ(c.getX())).append(" ").append(roundTo7DecNZ(c.getY())).append(LINE_SEP_TEXT_AREA);
+                                        }
+                                        crosshairCoords.setText(sb.toString());
                                     } else {
                                         if (showPanstarrsButton.isSelected()) {
                                             displayZoomedPs1Image(newRa, newDec, fieldOfView);
@@ -1179,11 +1210,11 @@ public class ImageViewerTab {
 
                     imageLabel.addMouseWheelListener((MouseWheelEvent evt) -> {
                         int notches = evt.getWheelRotation();
-                        if (drawCircle.isSelected()) {
+                        if (drawCrosshairs.isSelected()) {
                             if (notches < 0) {
-                                circleSize++;
-                            } else if (circleSize > 0) {
-                                circleSize--;
+                                crosshairSize++;
+                            } else if (crosshairSize > 0) {
+                                crosshairSize--;
                             }
                         } else {
                             if (notches < 0) {
@@ -1368,7 +1399,8 @@ public class ImageViewerTab {
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 images = new HashMap<>();
-                circles = new ArrayList<>();
+                crosshairs = new ArrayList<>();
+                crosshairCoords.setText("");
                 hasException = false;
                 if (size != previousSize) {
                     setContrast(getContrast());
@@ -1721,13 +1753,13 @@ public class ImageViewerTab {
         if (!disableOverlays) {
             addOverlaysAndPMVectors(image);
         }
-        image = rotate(image, quadrantCount);
-        if (drawCircle.isSelected()) {
-            for (NumberPair circleCoords : circles) {
-                Circle circle = new Circle(circleCoords.getX() * zoom, circleCoords.getY() * zoom, circleSize * 2, Color.RED);
-                circle.draw(image.getGraphics());
+        if (drawCrosshairs.isSelected()) {
+            for (NumberPair coords : crosshairs) {
+                Cross crosshair = new Cross(coords.getX() * zoom, coords.getY() * zoom, zoom * crosshairSize / 100, Color.RED);
+                crosshair.draw(image.getGraphics());
             }
         }
+        image = rotate(image, quadrantCount);
         return image;
     }
 
