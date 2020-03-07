@@ -162,7 +162,7 @@ public class SettingsTab {
             useProxyCheckBox.setSelected(useProxy);
             globalSettings.add(useProxyCheckBox);
 
-            globalSettings.add(new JLabel("Use Simbad mirror : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use SIMBAD mirror : ", JLabel.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);

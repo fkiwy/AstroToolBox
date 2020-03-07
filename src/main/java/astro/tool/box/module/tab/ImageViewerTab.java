@@ -526,7 +526,7 @@ public class ImageViewerTab {
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            simbadOverlay = new JCheckBox("Simbad");
+            simbadOverlay = new JCheckBox("SIMBAD");
             simbadOverlay.setForeground(Color.RED);
             overlayPanel.add(simbadOverlay);
             gaiaDR2Overlay = new JCheckBox("Gaia DR2");
@@ -535,10 +535,10 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            allWiseOverlay = new JCheckBox("AllWise");
+            allWiseOverlay = new JCheckBox("AllWISE");
             allWiseOverlay.setForeground(Color.GREEN.darker());
             overlayPanel.add(allWiseOverlay);
-            catWiseOverlay = new JCheckBox("CatWise");
+            catWiseOverlay = new JCheckBox("CatWISE");
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
@@ -567,7 +567,7 @@ public class ImageViewerTab {
             gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
             gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
             properMotionPanel.add(gaiaDR2ProperMotion);
-            catWiseProperMotion = new JCheckBox("CatWise");
+            catWiseProperMotion = new JCheckBox("CatWISE");
             catWiseProperMotion.setForeground(Color.MAGENTA);
             properMotionPanel.add(catWiseProperMotion);
 
@@ -621,7 +621,7 @@ public class ImageViewerTab {
                 changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
             });
 
-            JRadioButton showAllwiseButton = new JRadioButton("AllWise w1/w2/w3/w4 images", false);
+            JRadioButton showAllwiseButton = new JRadioButton("AllWISE w1/w2/w3/w4 images", false);
             controlPanel.add(showAllwiseButton);
             showAllwiseButton.addActionListener((ActionEvent evt) -> {
                 fieldOfView = 30;
