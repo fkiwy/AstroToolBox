@@ -1109,10 +1109,18 @@ public class ImageViewerTab {
                                         if (!removed) {
                                             crosshairs.add(new NumberPair(crosshairX, crosshairY));
                                         }
+                                        int i = 1;
                                         StringBuilder sb = new StringBuilder();
                                         for (NumberPair crosshair : crosshairs) {
-                                            NumberPair c = getObjectCoordinates((int) round(crosshair.getX() * zoom), (int) round(crosshair.getY() * zoom));
-                                            sb.append(roundTo7DecNZ(c.getX())).append(" ").append(roundTo7DecNZ(c.getY())).append(LINE_SEP_TEXT_AREA);
+                                            NumberPair c = getObjectCoordinates(
+                                                    (int) round(crosshair.getX() * zoom),
+                                                    (int) round(crosshair.getY() * zoom)
+                                            );
+                                            sb.append(roundTo7Dec(c.getX()));
+                                            sb.append(" ");
+                                            sb.append(roundTo7Dec(c.getY()));
+                                            sb.append(i % 2 == 0 ? LINE_SEP_TEXT_AREA : "; ");
+                                            i++;
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
