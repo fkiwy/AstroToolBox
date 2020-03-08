@@ -8,6 +8,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
+import astro.tool.box.util.CSVParser;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -361,7 +362,7 @@ public class AdqlQueryTab {
             browseButton.addActionListener((ActionEvent evt) -> {
                 browseButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
-                String query = "SELECT * FROM TAP_SCHEMA.tables";
+                String query = "SELECT * FROM TAP_SCHEMA.TABLES ORDER BY TABLE_INDEX";
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
                     String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)));
@@ -424,12 +425,11 @@ public class AdqlQueryTab {
 
     private JScrollPane readQueryResult(TableRowSorter<TableModel> sorter, String queryResult, String panelName) {
         try (Scanner scanner = new Scanner(queryResult)) {
-            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-            int numberOfColumns = columnNames.length;
+            String[] columnNames = CSVParser.parseLine(scanner.nextLine());
             int rowNumber = 0;
             List<String[]> rows = new ArrayList<>();
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                String[] columnValues = CSVParser.parseLine(scanner.nextLine());
                 String[] values = concatArrays(new String[]{String.valueOf(++rowNumber)}, columnValues);
                 for (int i = 0; i < values.length; i++) {
                     if (isDecimal(values[i])) {
@@ -477,7 +477,7 @@ public class AdqlQueryTab {
                     previousTableName = tableName;
                     resultTable.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     removeColumnPanel();
-                    String query = "SELECT * FROM TAP_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "'";
+                    String query = "SELECT * FROM TAP_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "' ORDER BY COLUMN_INDEX";
                     String encodedQuery = query.replaceAll(" +", "%20");
                     try {
                         String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)));

@@ -253,7 +253,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3DecNZ(ppm) + "," + roundTo3DecNZ(theta) + "," + roundTo3DecNZ(rhelio) + "," + roundTo3DecNZ(amag) + "," + roundTo3DecNZ(vmag) + "," + roundTo3DecNZ(perdist) + "," + roundTo3DecNZ(ecc) + "," + roundTo3DecNZ(incl) + "," + roundTo3DecNZ(pertime) + "," + roundTo3DecNZ(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3Dec(ppm) + "," + roundTo3Dec(theta) + "," + roundTo3Dec(rhelio) + "," + roundTo3Dec(amag) + "," + roundTo3Dec(vmag) + "," + roundTo3Dec(perdist) + "," + roundTo3Dec(ecc) + "," + roundTo3Dec(incl) + "," + roundTo3Dec(pertime) + "," + roundTo3Dec(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
         return values.split(",", 15);
     }
 

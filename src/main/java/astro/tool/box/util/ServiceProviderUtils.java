@@ -64,7 +64,7 @@ public class ServiceProviderUtils {
     public static String readSimbadResponse(HttpURLConnection connection) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return reader.lines().skip(1).map(line -> {
-                return line.replace("|", ",").replaceAll(REGEXP_SPACES, "").replace("\"", "");
+                return line.replace("|", SPLIT_CHAR).replaceAll(REGEXP_SPACES, "");
             }).collect(Collectors.joining(LINE_SEP));
         } catch (IOException ex) {
             showInfoDialog(null, SERVICE_NOT_AVAILABLE);
@@ -75,7 +75,11 @@ public class ServiceProviderUtils {
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(response));
         return reader.lines().skip(catalogEntry instanceof SDSSCatalogEntry ? 2 : 1).map(line -> {
-            return catalogEntry.getInstance(line.split(SPLIT_CHAR));
+            String[] values = CSVParser.parseLine(line);
+            for (int i = 0; i < values.length; i++) {
+                values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+            }
+            return catalogEntry.getInstance(values);
         }).collect(Collectors.toList());
     }
 
