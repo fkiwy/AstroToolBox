@@ -40,6 +40,7 @@ import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
+import astro.tool.box.module.shape.CrossHair;
 import astro.tool.box.module.shape.Diamond;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.module.shape.Square;
@@ -699,6 +700,7 @@ public class ImageViewerTab {
             controlPanel.add(new JScrollPane(crosshairCoords));
             Font font = coordsField.getFont();
             crosshairCoords.setFont(font.deriveFont(font.getSize() - 2.0f));
+            crosshairCoords.setEditable(false);
 
             controlPanel.add(new JLabel(underline("Image player controls:")));
 
@@ -1109,18 +1111,18 @@ public class ImageViewerTab {
                                         if (!removed) {
                                             crosshairs.add(new NumberPair(crosshairX, crosshairY));
                                         }
-                                        int i = 1;
                                         StringBuilder sb = new StringBuilder();
-                                        for (NumberPair crosshair : crosshairs) {
+                                        for (int i = 0; i < crosshairs.size(); i++) {
+                                            NumberPair crosshair = crosshairs.get(i);
                                             NumberPair c = getObjectCoordinates(
                                                     (int) round(crosshair.getX() * zoom),
                                                     (int) round(crosshair.getY() * zoom)
                                             );
+                                            sb.append(i + 1).append(". ");
                                             sb.append(roundTo7Dec(c.getX()));
                                             sb.append(" ");
                                             sb.append(roundTo7Dec(c.getY()));
-                                            sb.append(i % 2 == 0 ? LINE_SEP_TEXT_AREA : "; ");
-                                            i++;
+                                            sb.append(LINE_SEP_TEXT_AREA);
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
@@ -1762,9 +1764,10 @@ public class ImageViewerTab {
             addOverlaysAndPMVectors(image);
         }
         if (drawCrosshairs.isSelected()) {
-            for (NumberPair coords : crosshairs) {
-                Cross crosshair = new Cross(coords.getX() * zoom, coords.getY() * zoom, zoom * crosshairSize / 100, Color.RED);
-                crosshair.draw(image.getGraphics());
+            for (int i = 0; i < crosshairs.size(); i++) {
+                NumberPair crosshair = crosshairs.get(i);
+                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, zoom * crosshairSize / 100, Color.RED, i + 1);
+                drawable.draw(image.getGraphics());
             }
         }
         image = rotate(image, quadrantCount);
