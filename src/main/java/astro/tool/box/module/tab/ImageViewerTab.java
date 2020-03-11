@@ -164,6 +164,7 @@ public class ImageViewerTab {
     private JPanel zooniversePanel2;
     private JCheckBox minMaxLimits;
     private JCheckBox stretchImage;
+    private JCheckBox keepContrast;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
@@ -302,9 +303,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1675;
+            int controlPanelHeight = 1700;
 
-            JPanel controlPanel = new JPanel(new GridLayout(69, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(70, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -495,6 +496,9 @@ public class ImageViewerTab {
 
             stretchImage = new JCheckBox("Apply image stretching", true);
             controlPanel.add(stretchImage);
+
+            keepContrast = new JCheckBox("Keep contrast settings");
+            controlPanel.add(keepContrast);
 
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
@@ -1412,7 +1416,7 @@ public class ImageViewerTab {
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
-                if (size != previousSize) {
+                if (!keepContrast.isSelected()) {
                     setContrast(getContrast());
                 }
                 initMinMaxValues();
