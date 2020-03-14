@@ -151,7 +151,7 @@ public class SSOCatalogEntry implements CatalogEntry {
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("objectId", objectID, Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("object id", objectID, Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("type", TYPE_TABLE.get(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("predicted ra", roundTo7DecNZ(pra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("predicted dec", roundTo7DecNZ(pdec), Alignment.LEFT, getDoubleComparator()));
@@ -167,9 +167,9 @@ public class SSOCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("observation time", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist. to prediced ra (arcsec)", roundTo3DecNZ(dra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist. to prediced dec (arcsec)", roundTo3DecNZ(ddec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1mag", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W2mag", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
     }
 
@@ -259,7 +259,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),objectId,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1mag,W1 err,W2mag,W2 err";
+        String titles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
         return titles.split(",", 15);
     }
 

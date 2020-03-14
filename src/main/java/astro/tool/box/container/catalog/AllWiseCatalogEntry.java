@@ -156,30 +156,30 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", sourceId, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("source id", sourceId, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1mag", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W2mag", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W3mag", roundTo3DecNZ(W3mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W3 (mag)", roundTo3DecNZ(W3mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W3 err", roundTo3DecNZ(W3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W4mag", roundTo3DecNZ(W4mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W4 (mag)", roundTo3DecNZ(W4mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W4 err", roundTo3DecNZ(W4_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo0DecNZ(pmra), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra err", roundTo0DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo0DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo0DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("cc_flags", cc_flags, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("ext_flg", String.valueOf(ext_flg), Alignment.RIGHT, getIntegerComparator()));
-        catalogElements.add(new CatalogElement("var_flg", var_flg, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("ph_qual", ph_qual, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("Jmag", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("ext. flag", String.valueOf(ext_flg), Alignment.RIGHT, getIntegerComparator()));
+        catalogElements.add(new CatalogElement("var. flags", var_flg, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("ph. qual.", ph_qual, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("J (mag)", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(J_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Hmag", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H (mag)", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(H_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Kmag", roundTo3DecNZ(Kmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("K (mag)", roundTo3DecNZ(Kmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("K err", roundTo3DecNZ(K_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true, true));
         catalogElements.add(new CatalogElement("W2-W3", roundTo3DecNZ(getW2_W3()), Alignment.RIGHT, getDoubleComparator(), true, true));
@@ -280,7 +280,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,ra,dec,W1mag,W1 err,W2mag,W2 err,W3mag,W3 err,W4mag,W4 err,pmra,pmra err,pmdec,pmdec err,cc_flags,ext_flg,var_flg,ph_qual,Jmag,J err,Hmag,H err,Kmag,K err,W1-W2,W2-W3,W3-W4,J-H,H-K,J-K";
+        String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,cc flags,ext. flag,var. flag,ph. qual.,J (mag),J err,H (mag),H err,K (mag),K err,W1-W2,W2-W3,W3-W4,J-H,H-K,J-K";
         return titles.split(",", 32);
     }
 

@@ -128,7 +128,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
@@ -137,9 +137,9 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
-        catalogElements.add(new CatalogElement("Gmag", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("BPmag", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("RPmag", roundTo3DecNZ(RPmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("BP (mag)", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("RP (mag)", roundTo3DecNZ(RPmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(BP_RP), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP-G", roundTo3DecNZ(BP_G), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(G_RP), Alignment.RIGHT, getDoubleComparator(), true));
@@ -149,7 +149,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("sol rad", roundTo2DecNZ(radsun), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("sol lum", roundTo3DecNZ(lumsun), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getActualDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("M Gmag", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("Absolute G (mag)", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tang vel (km/s)", roundTo3DecNZ(getTansverseVelocity()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tot vel (km/s)", roundTo3DecNZ(getTotalVelocity()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -239,7 +239,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,ra,dec,plx,plx err,pmra,pmra err,pmdec,pmdec err,Gmag,BPmag,RPmag,BP-RP,BP-G,G-RP,rad vel,rad vel err,teff,sol rad,sol lum,dist (pc),M Gmag,tpm,tang vel,tot vel";
+        String titles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),sol rad,sol lum,dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
         return titles.split(",", 26);
     }
 

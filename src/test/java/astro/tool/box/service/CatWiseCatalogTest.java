@@ -79,6 +79,9 @@ public class CatWiseCatalogTest {
         assertEquals("sigpmra", header[127]);
         assertEquals("sigpmdec", header[128]);
         assertEquals("par_pm", header[166]);
+        assertEquals("par_pmsig", header[167]);
+        assertEquals("par_stat", header[168]);
+        assertEquals("par_sigma", header[169]);
         assertEquals("cc_flags", header[171]);
         assertEquals("ab_flags", header[177]);
 

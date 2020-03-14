@@ -146,7 +146,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(raErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
@@ -155,16 +155,16 @@ public class SDSSCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("photometry flag", getSdssPhotometryFlag(clean), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("observation date", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("spectrum pointer", String.valueOf(specObjID), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("u_mag", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("u_mag err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("g_mag", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("g_mag err", roundTo3DecNZ(g_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag err", roundTo3DecNZ(r_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag err", roundTo3DecNZ(i_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g err", roundTo3DecNZ(g_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r (mag)", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r err", roundTo3DecNZ(r_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i (mag)", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i err", roundTo3DecNZ(i_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z (mag)", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -262,7 +262,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u_mag,u_mag err,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,u-g,g-r,r-i,i-z";
+        String titles = "dist (arcsec),source id,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,u-g,g-r,r-i,i-z";
         return titles.split(",", 24);
     }
 
