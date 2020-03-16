@@ -212,6 +212,7 @@ public class ImageViewerTab {
 
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
+    private BufferedImage sdssImage;
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
     private List<NumberPair> crosshairs;
@@ -1071,6 +1072,23 @@ public class ImageViewerTab {
                         imagePanel.add(ps1Label);
                     }
 
+                    // Display SDSS images
+                    if (sdssImage != null) {
+                        BufferedImage processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
+
+                        // Create and display magnified SDSS image
+                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            BufferedImage magnifiedSdssImage = processedSdssImage.getSubimage(upperLeftX, upperLeftY, width, height);
+                            magnifiedSdssImage = zoom(magnifiedSdssImage, 200);
+                            rightPanel.add(new JLabel(new ImageIcon(magnifiedSdssImage)));
+                        }
+
+                        // Display regular SDSS image
+                        JLabel sdssLabel = new JLabel(new ImageIcon(processedSdssImage));
+                        sdssLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+                        imagePanel.add(sdssLabel);
+                    }
+
                     baseFrame.setVisible(true);
                     imageNumber++;
 
@@ -1456,7 +1474,9 @@ public class ImageViewerTab {
                     });
                 }
                 ps1Image = null;
+                sdssImage = null;
                 CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024));
+                CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
                 List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
@@ -1732,6 +1752,11 @@ public class ImageViewerTab {
         if (ps1Image != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("Pan-STARRS stack y/i/g"));
+            grid.add(pane);
+        }
+        if (sdssImage != null) {
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(sdssImage, quadrantCount), zoom))));
+            pane.setBorder(createEtchedBorder("Sloan Digital Sky Survey (SDSS)"));
             grid.add(pane);
         }
         imagePanel.removeAll();
@@ -2395,6 +2420,18 @@ public class ImageViewerTab {
                 }
             }
             imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), resolution);
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            return ImageIO.read(stream);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private BufferedImage fetchSdssImage(double targetRa, double targetDec, double size) {
+        try {
+            int resolution = 1000;
+            String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * SIZE_FACTOR / resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             return ImageIO.read(stream);
