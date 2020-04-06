@@ -5,7 +5,6 @@ import static astro.tool.box.util.Constants.*;
 import astro.tool.box.function.AstrometricFunctions;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class FlipbookComponent {
@@ -100,14 +99,14 @@ public class FlipbookComponent {
                         titleEpoch = String.valueOf(epoch - (epoch / 100) * 100 + 2);
                         node = ASC_NODE + "&" + DESC_NODE;
                     } else {
-                    firstEpoch = epoch == 101;
-                    if (epoch > 100 && epoch < 200) {
-                        titleEpoch = String.valueOf(epoch - 100);
-                        node = ASC_NODE + "&" + DESC_NODE;
-                    } else {
-                        titleEpoch = "";
-                        node = "";
-                    }
+                        firstEpoch = epoch == 101;
+                        if (epoch > 100 && epoch < 200) {
+                            titleEpoch = String.valueOf(epoch - 100);
+                            node = ASC_NODE + "&" + DESC_NODE;
+                        } else {
+                            titleEpoch = "";
+                            node = "";
+                        }
                     }
                     break;
             }
