@@ -238,6 +238,7 @@ public class ImageViewerTab {
 
     private int minValue;
     private int maxValue;
+    private int avgValue;
 
     private double targetRa;
     private double targetDec;
@@ -1447,6 +1448,7 @@ public class ImageViewerTab {
                 centerX = centerY = 0;
                 axisX = axisY = 0;
                 windowShift = 0;
+                avgValue = 0;
                 imageCutOff = false;
                 disableOverlays = false;
                 simbadOverlay.setEnabled(true);
@@ -1510,6 +1512,49 @@ public class ImageViewerTab {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
                         flipbook[i] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
                     }
+
+                    break;
+                case ALL_SUBTRACTED:
+                    flipbook = new FlipbookComponent[epochCount];
+
+                    for (int i = 0; i < epochCount - 1; i++) {
+                        if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
+                            loadImage(WiseBand.W1.val, i);
+                            fits = getImage(WiseBand.W1.val, i);
+                            addImage(WiseBand.W1.val, 800 + i, fits);
+                        }
+                        if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
+                            loadImage(WiseBand.W2.val, i);
+                            fits = getImage(WiseBand.W2.val, i);
+                            addImage(WiseBand.W2.val, 800 + i, fits);
+                        }
+                        if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
+                            loadImage(WiseBand.W1.val, i + 1);
+                            fits = getImage(WiseBand.W1.val, i + 1);
+                            addImage(WiseBand.W1.val, 900 + i, fits);
+                        }
+                        if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
+                            loadImage(WiseBand.W2.val, i + 1);
+                            fits = getImage(WiseBand.W2.val, i + 1);
+                            addImage(WiseBand.W2.val, 900 + i, fits);
+                        }
+
+                        differenceImaging(800 + i, 900 + i);
+
+                        fits = getImage(wiseBand.val, 800 + i);
+                        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+                        ImageData imageData = (ImageData) imageHDU.getData();
+                        float[][] values = (float[][]) imageData.getData();
+                        NumberTriplet minMaxValues = getMinMaxValues(values);
+                        int minVal = (int) minMaxValues.getX();
+                        int maxVal = (int) minMaxValues.getY();
+                        if (minVal == maxVal) {
+                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i - 1);
+                        } else {
+                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i);
+                        }
+                    }
+                    flipbook[epochCount - 1] = new FlipbookComponent(wiseBand.val, 900 + epochCount - 2);
 
                     break;
                 case ASCENDING:
@@ -1897,9 +1942,13 @@ public class ImageViewerTab {
                 ImageData imageData = (ImageData) imageHDU.getData();
                 float[][] values = (float[][]) imageData.getData();
                 NumberTriplet minMaxValues = getMinMaxValues(values);
+                int minVal = (int) minMaxValues.getX();
+                int maxVal = (int) minMaxValues.getY();
                 int avgVal = (int) minMaxValues.getZ();
-                if (avgVal == 0) {
+                if (minVal == maxVal || (avgValue != 0 && avgVal < avgValue / 2)) {
                     fits = getPreviousImage(band, epoch);
+                } else {
+                    avgValue = avgVal;
                 }
             } catch (Exception ex) {
                 if (ex instanceof NumberFormatException) {
@@ -2355,7 +2404,7 @@ public class ImageViewerTab {
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
         int presetMinVal;
         int presetMaxVal;
-        if (epoch.equals(Epoch.FIRST_LAST_SUBTRACTED) || epoch.equals(Epoch.FIRST_REMAINING_SUBTRACTED)) {
+        if (epoch.equals(Epoch.ALL_SUBTRACTED) || epoch.equals(Epoch.FIRST_LAST_SUBTRACTED) || epoch.equals(Epoch.FIRST_REMAINING_SUBTRACTED)) {
             presetMinVal = -avgVal * size / 10;
             presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
             presetMaxVal = maxVal;
