@@ -164,6 +164,7 @@ public class ImageViewerTab {
     private JPanel zooniversePanel2;
     private JCheckBox minMaxLimits;
     private JCheckBox stretchImage;
+    private JCheckBox smoothImage;
     private JCheckBox keepContrast;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
@@ -304,9 +305,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1700;
+            int controlPanelHeight = 1725;
 
-            JPanel controlPanel = new JPanel(new GridLayout(70, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(71, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -496,8 +497,11 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            stretchImage = new JCheckBox("Apply image stretching", true);
+            stretchImage = new JCheckBox("Stretch images", true);
             controlPanel.add(stretchImage);
+
+            smoothImage = new JCheckBox("Smooth images");
+            controlPanel.add(smoothImage);
 
             keepContrast = new JCheckBox("Keep contrast settings");
             controlPanel.add(keepContrast);
@@ -1889,6 +1893,14 @@ public class ImageViewerTab {
                         fits = getPreviousImage(band, epoch);
                     }
                 }
+                ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) imageHDU.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet minMaxValues = getMinMaxValues(values);
+                int avgVal = (int) minMaxValues.getZ();
+                if (avgVal == 0) {
+                    fits = getPreviousImage(band, epoch);
+                }
             } catch (Exception ex) {
                 if (ex instanceof NumberFormatException) {
                     throw ex;
@@ -2013,6 +2025,10 @@ public class ImageViewerTab {
                 setMinMaxValues(minVal, maxVal, avgVal);
             }
 
+            if (smoothImage.isSelected()) {
+                values = smooth(values);
+            }
+
             BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
             for (int i = 0; i < axisY; i++) {
@@ -2043,6 +2059,11 @@ public class ImageViewerTab {
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
             float[][] valuesW2 = (float[][]) imageData.getData();
+
+            if (smoothImage.isSelected()) {
+                valuesW1 = smooth(valuesW1);
+                valuesW2 = smooth(valuesW2);
+            }
 
             if (minValue == 0 && maxValue == 0) {
                 NumberTriplet minMaxValues1 = getMinMaxValues(valuesW1);
@@ -2179,6 +2200,23 @@ public class ImageViewerTab {
             addImage(WiseBand.W2.val, epoch1, fits1);
             addImage(WiseBand.W2.val, epoch2, fits2);
         }
+    }
+
+    public float[][] smooth(float[][] values) {
+        float[][] smoothedValues = new float[axisY][axisX];
+        for (int i = 0; i < axisY; ++i) {
+            for (int j = 0; j < axisX; ++j) {
+                int sum = 0, c = 0;
+                for (int k = Math.max(0, i - 1); k <= Math.min(i + 1, axisY - 1); k++) {
+                    for (int u = Math.max(0, j - 1); u <= Math.min(j + 1, axisX - 1); u++) {
+                        sum += values[k][u];
+                        c++;
+                    }
+                }
+                smoothedValues[i][j] = sum / c;
+            }
+        }
+        return smoothedValues;
     }
 
     private BufferedImage flip(BufferedImage image) {
