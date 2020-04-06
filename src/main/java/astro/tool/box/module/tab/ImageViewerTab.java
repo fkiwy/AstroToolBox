@@ -1549,12 +1549,12 @@ public class ImageViewerTab {
                         int minVal = (int) minMaxValues.getX();
                         int maxVal = (int) minMaxValues.getY();
                         if (minVal == maxVal) {
-                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i - 1);
+                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i - 1, true);
                         } else {
-                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i);
+                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i, true);
                         }
                     }
-                    flipbook[epochCount - 1] = new FlipbookComponent(wiseBand.val, 900 + epochCount - 2);
+                    flipbook[epochCount - 1] = new FlipbookComponent(wiseBand.val, 900 + epochCount - 2, true);
 
                     break;
                 case ASCENDING:
@@ -1945,11 +1945,15 @@ public class ImageViewerTab {
                 int minVal = (int) minMaxValues.getX();
                 int maxVal = (int) minMaxValues.getY();
                 int avgVal = (int) minMaxValues.getZ();
-                if (minVal == maxVal || (avgValue != 0 && avgVal < avgValue / 2)) {
+                if (minVal == maxVal || (avgValue != 0 && avgVal < avgValue * 0.8)) {
                     fits = getPreviousImage(band, epoch);
                 } else {
                     avgValue = avgVal;
                 }
+                System.out.println("minVal=" + minVal);
+                System.out.println("maxVal=" + maxVal);
+                System.out.println("avgVal=" + avgVal);
+                System.out.println(" ");
             } catch (Exception ex) {
                 if (ex instanceof NumberFormatException) {
                     throw ex;

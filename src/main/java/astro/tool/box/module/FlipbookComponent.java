@@ -88,13 +88,21 @@ public class FlipbookComponent {
                     node = DESC_NODE;
                     break;
                 default:
-                    firstEpoch = epoch == 101;
-                    if (epoch > 100 && epoch < 200) {
-                        titleEpoch = String.valueOf(epoch - 100);
+                    if (epoch >= 800 && epoch < 900) {
+                        titleEpoch = String.valueOf(epoch - (epoch / 100) * 100 + 1);
+                        node = ASC_NODE + "&" + DESC_NODE;
+                    } else if (epoch >= 900 && epoch < 1000) {
+                        titleEpoch = String.valueOf(epoch - (epoch / 100) * 100 + 2);
                         node = ASC_NODE + "&" + DESC_NODE;
                     } else {
-                        titleEpoch = "";
-                        node = "";
+                        firstEpoch = epoch == 101;
+                        if (epoch > 100 && epoch < 200) {
+                            titleEpoch = String.valueOf(epoch - 100);
+                            node = ASC_NODE + "&" + DESC_NODE;
+                        } else {
+                            titleEpoch = "";
+                            node = "";
+                        }
                     }
                     break;
             }
