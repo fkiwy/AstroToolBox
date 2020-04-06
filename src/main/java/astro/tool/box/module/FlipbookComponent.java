@@ -1,9 +1,12 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.NumberPair;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.function.AstrometricFunctions;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FlipbookComponent {
 
@@ -24,6 +27,8 @@ public class FlipbookComponent {
     private double minObsEpoch;
 
     private double maxObsEpoch;
+
+    private List<NumberPair> diffPixels;
 
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
@@ -88,6 +93,13 @@ public class FlipbookComponent {
                     node = DESC_NODE;
                     break;
                 default:
+                    if (epoch >= 800 && epoch < 900) {
+                        titleEpoch = String.valueOf(epoch - (epoch / 100) * 100 + 1);
+                        node = ASC_NODE + "&" + DESC_NODE;
+                    } else if (epoch >= 900 && epoch < 1000) {
+                        titleEpoch = String.valueOf(epoch - (epoch / 100) * 100 + 2);
+                        node = ASC_NODE + "&" + DESC_NODE;
+                    } else {
                     firstEpoch = epoch == 101;
                     if (epoch > 100 && epoch < 200) {
                         titleEpoch = String.valueOf(epoch - 100);
@@ -95,6 +107,7 @@ public class FlipbookComponent {
                     } else {
                         titleEpoch = "";
                         node = "";
+                    }
                     }
                     break;
             }
@@ -136,6 +149,14 @@ public class FlipbookComponent {
 
     public double getMaxObsEpoch() {
         return maxObsEpoch;
+    }
+
+    public List<NumberPair> getDiffPixels() {
+        return diffPixels;
+    }
+
+    public void setDiffPixels(List<NumberPair> diffPixels) {
+        this.diffPixels = diffPixels;
     }
 
 }
