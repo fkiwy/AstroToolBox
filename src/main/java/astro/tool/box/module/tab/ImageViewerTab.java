@@ -2017,11 +2017,6 @@ public class ImageViewerTab {
                 if (avgValue == 0) {
                     avgValue = avgVal;
                 }
-                System.out.println("minVal=" + minVal);
-                System.out.println("maxVal=" + maxVal);
-                System.out.println("avgVal=" + avgVal);
-                System.out.println("avgValue=" + avgValue);
-                System.out.println(" ");
                 if (minVal == maxVal || avgVal < avgValue * 0.7) {
                     return null;
                 }
