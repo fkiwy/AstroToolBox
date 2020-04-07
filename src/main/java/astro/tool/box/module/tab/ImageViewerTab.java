@@ -2020,6 +2020,19 @@ public class ImageViewerTab {
                 if (minVal == maxVal || avgVal < avgValue * 0.7) {
                     return null;
                 }
+                ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) imageHDU.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet minMaxValues = getMinMaxValues(values);
+                int minVal = (int) minMaxValues.getX();
+                int maxVal = (int) minMaxValues.getY();
+                int avgVal = (int) minMaxValues.getZ();
+                if (avgValue == 0) {
+                    avgValue = avgVal;
+                }
+                if (minVal == maxVal || avgVal < avgValue * 0.7) {
+                    fits = getPreviousImage(band, epoch);
+                }
             } catch (Exception ex) {
                 return null;
             }
@@ -2072,6 +2085,30 @@ public class ImageViewerTab {
         double minObsEpoch = header.getDoubleValue("MJDMIN");
         double maxObsEpoch = header.getDoubleValue("MJDMAX");
         return new NumberPair(minObsEpoch, maxObsEpoch);
+    }
+
+    private Fits getPreviousImage(int band, int epoch) throws FitsException {
+        Fits fits;
+        try {
+            int previousEpoch = epoch == 0 ? epoch + 1 : epoch - 1;
+            fits = getImage(band, previousEpoch);
+            if (fits == null) {
+                fits = new Fits(getImageData(band, previousEpoch));
+            }
+        } catch (Exception ex) {
+            float[][] values = new float[axisY][axisX];
+            short[][] weights = new short[axisY][axisX];
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
+                    values[i][j] = 0;
+                    weights[i][j] = 0;
+                }
+            }
+            fits = new Fits();
+            fits.addHDU(FitsFactory.hduFactory(values));
+            fits.addHDU(FitsFactory.hduFactory(weights));
+        }
+        return fits;
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
