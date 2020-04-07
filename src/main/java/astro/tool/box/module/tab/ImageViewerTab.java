@@ -120,7 +120,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
@@ -186,7 +185,6 @@ public class ImageViewerTab {
     private JCheckBox transposeProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox skipFirstEpoch;
-    private JCheckBox skipBadCoadds;
     //private JCheckBox smallBodyHelp;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
@@ -307,9 +305,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1750;
+            int controlPanelHeight = 1725;
 
-            JPanel controlPanel = new JPanel(new GridLayout(72, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(71, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -675,18 +673,6 @@ public class ImageViewerTab {
                     initMinMaxValues();
                     createFlipbook();
                     skipFirstEpoch.setCursor(Cursor.getDefaultCursor());
-                }
-            });
-
-            skipBadCoadds = new JCheckBox("Skip low weighted coadds");
-            controlPanel.add(skipBadCoadds);
-            skipBadCoadds.addActionListener((ActionEvent evt) -> {
-                if (images != null) {
-                    skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
-                    initMinMaxValues();
-                    createFlipbook();
-                    skipBadCoadds.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -1463,7 +1449,6 @@ public class ImageViewerTab {
                 centerX = centerY = 0;
                 axisX = axisY = 0;
                 windowShift = 0;
-                avgValue = 0;
                 imageCutOff = false;
                 disableOverlays = false;
                 simbadOverlay.setEnabled(true);
@@ -1517,102 +1502,114 @@ public class ImageViewerTab {
             previousRa = targetRa;
             previousDec = targetDec;
             imageNumber = 0;
+            avgValue = 0;
 
             Fits fits;
             switch (epoch) {
                 case ALL:
                     flipbook = new FlipbookComponent[epochCount];
-
                     for (int i = 0; i < epochCount; i++) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        if (obsEpochs == null) {
+                            continue;
+                        }
                         flipbook[i] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
                     }
-
+                    recreateFlipbook();
                     break;
                 case ALL_SUBTRACTED:
                     flipbook = new FlipbookComponent[epochCount];
-
                     for (int i = 0; i < epochCount - 1; i++) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W1.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = getImage(WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 800 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W2.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = getImage(WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 800 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i + 1);
+                            NumberPair obsEpochs = loadImage(WiseBand.W1.val, i + 1);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = getImage(WiseBand.W1.val, i + 1);
                             addImage(WiseBand.W1.val, 900 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i + 1);
+                            NumberPair obsEpochs = loadImage(WiseBand.W2.val, i + 1);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = getImage(WiseBand.W2.val, i + 1);
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
-
                         differenceImaging(800 + i, 900 + i);
-
-                        fits = getImage(wiseBand.val, 800 + i);
-                        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-                        ImageData imageData = (ImageData) imageHDU.getData();
-                        float[][] values = (float[][]) imageData.getData();
-                        NumberTriplet minMaxValues = getMinMaxValues(values);
-                        int minVal = (int) minMaxValues.getX();
-                        int maxVal = (int) minMaxValues.getY();
-                        if (minVal == maxVal) {
-                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i - 1, true);
-                        } else {
-                            flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i, true);
-                        }
+                        flipbook[i] = new FlipbookComponent(wiseBand.val, 800 + i, true);
                     }
                     flipbook[epochCount - 1] = new FlipbookComponent(wiseBand.val, 900 + epochCount - 2, true);
-
+                    recreateFlipbook();
                     break;
                 case ASCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
-
                     for (int i = 0; i < epochCount; i += 2) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        if (obsEpochs == null) {
+                            continue;
+                        }
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
                     }
-
+                    recreateFlipbook();
                     break;
                 case DESCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
-
                     for (int i = 1; i < epochCount; i += 2) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        if (obsEpochs == null) {
+                            continue;
+                        }
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
                     }
-
+                    recreateFlipbook();
                     break;
                 case ASCENDING_DESCENDING:
                     flipbook = new FlipbookComponent[epochCount];
-
                     for (int i = 0; i < epochCount; i += 2) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        if (obsEpochs == null) {
+                            continue;
+                        }
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
                     }
                     for (int i = 1; i < epochCount; i += 2) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
+                        if (obsEpochs == null) {
+                            continue;
+                        }
                         flipbook[epochCount / 2 + i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
                     }
-
+                    recreateFlipbook();
                     break;
                 case ASCENDING_DESCENDING_PARALLAX:
                     flipbook = new FlipbookComponent[2];
-
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                         loadImage(WiseBand.W1.val, 0);
                         loadImage(WiseBand.W1.val, 2);
                         fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 2);
                         addImage(WiseBand.W1.val, 600, fits);
                         for (int i = 4; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W1.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W1.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W1.val, 600, WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 600, fits);
                         }
@@ -1624,7 +1621,10 @@ public class ImageViewerTab {
                         fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 2);
                         addImage(WiseBand.W2.val, 600, fits);
                         for (int i = 4; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W2.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W2.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W2.val, 600, WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 600, fits);
                         }
@@ -1636,7 +1636,10 @@ public class ImageViewerTab {
                         fits = addImages(WiseBand.W1.val, 1, WiseBand.W1.val, 3);
                         addImage(WiseBand.W1.val, 700, fits);
                         for (int i = 5; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W1.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W1.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W1.val, 700, WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 700, fits);
                         }
@@ -1648,51 +1651,67 @@ public class ImageViewerTab {
                         fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, 3);
                         addImage(WiseBand.W2.val, 700, fits);
                         for (int i = 5; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W2.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W2.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W2.val, 700, WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 700, fits);
                         }
                         addImage(WiseBand.W2.val, 700, takeAverage(fits, epochCount / 2));
                     }
-
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 600, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 700, true);
                     break;
                 case YEAR:
                     flipbook = new FlipbookComponent[epochCount / 2];
-
                     for (int i = 0; i < epochCount; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i);
-                            loadImage(WiseBand.W1.val, i + 1);
+                            NumberPair obsEpochs = loadImage(WiseBand.W1.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
+                            obsEpochs = loadImage(WiseBand.W1.val, i + 1);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W1.val, i, WiseBand.W1.val, i + 1);
                             addImage(WiseBand.W1.val, 101 + (i / 2), takeAverage(fits, 2));
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i);
-                            loadImage(WiseBand.W2.val, i + 1);
+                            NumberPair obsEpochs = loadImage(WiseBand.W2.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
+                            obsEpochs = loadImage(WiseBand.W2.val, i + 1);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 1);
                             addImage(WiseBand.W2.val, 101 + (i / 2), takeAverage(fits, 2));
                         }
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true);
                     }
-
+                    recreateFlipbook();
                     break;
                 case FIRST_REMAINING:
                 case FIRST_REMAINING_SUBTRACTED:
                     flipbook = new FlipbookComponent[2];
-
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, 1);
-                        fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
-                        addImage(WiseBand.W1.val, 100, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W1.val, 0);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W1.val, 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
+                            addImage(WiseBand.W1.val, 100, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, 1);
-                        fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
-                        addImage(WiseBand.W2.val, 100, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W2.val, 0);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W2.val, 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
+                            addImage(WiseBand.W2.val, 100, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                         loadImage(WiseBand.W1.val, 2);
@@ -1700,7 +1719,10 @@ public class ImageViewerTab {
                         fits = addImages(WiseBand.W1.val, 2, WiseBand.W1.val, 3);
                         addImage(WiseBand.W1.val, 300, fits);
                         for (int i = 4; i < epochCount; i++) {
-                            loadImage(WiseBand.W1.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W1.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W1.val, 300, WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 300, fits);
                         }
@@ -1712,84 +1734,96 @@ public class ImageViewerTab {
                         fits = addImages(WiseBand.W2.val, 2, WiseBand.W2.val, 3);
                         addImage(WiseBand.W2.val, 300, fits);
                         for (int i = 4; i < epochCount; i++) {
-                            loadImage(WiseBand.W2.val, i);
+                            NumberPair obsEpochs = loadImage(WiseBand.W2.val, i);
+                            if (obsEpochs == null) {
+                                continue;
+                            }
                             fits = addImages(WiseBand.W2.val, 300, WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 300, fits);
                         }
                         addImage(WiseBand.W2.val, 300, takeAverage(fits, epochCount - 2));
                     }
-
                     if (epoch.equals(Epoch.FIRST_REMAINING_SUBTRACTED)) {
                         differenceImaging(100, 300);
                     }
-
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 300, true);
                     break;
                 case FIRST_LAST:
                 case FIRST_LAST_SUBTRACTED:
                     flipbook = new FlipbookComponent[2];
-
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, 1);
-                        fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
-                        addImage(WiseBand.W1.val, 100, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W1.val, 0);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W1.val, 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
+                            addImage(WiseBand.W1.val, 100, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, 1);
-                        fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
-                        addImage(WiseBand.W2.val, 100, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W2.val, 0);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W2.val, 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
+                            addImage(WiseBand.W2.val, 100, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, epochCount - 2);
-                        loadImage(WiseBand.W1.val, epochCount - 1);
-                        fits = addImages(WiseBand.W1.val, epochCount - 2, WiseBand.W1.val, epochCount - 1);
-                        addImage(WiseBand.W1.val, 200, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W1.val, epochCount - 2);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W1.val, epochCount - 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W1.val, epochCount - 2, WiseBand.W1.val, epochCount - 1);
+                            addImage(WiseBand.W1.val, 200, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, epochCount - 2);
-                        loadImage(WiseBand.W2.val, epochCount - 1);
-                        fits = addImages(WiseBand.W2.val, epochCount - 2, WiseBand.W2.val, epochCount - 1);
-                        addImage(WiseBand.W2.val, 200, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W2.val, epochCount - 2);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W2.val, epochCount - 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W2.val, epochCount - 2, WiseBand.W2.val, epochCount - 1);
+                            addImage(WiseBand.W2.val, 200, takeAverage(fits, 2));
+                        }
                     }
-
                     if (epoch.equals(Epoch.FIRST_LAST_SUBTRACTED)) {
                         differenceImaging(100, 200);
                     }
-
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 200, true);
                     break;
                 case FIRST_LAST_PARALLAX:
                     flipbook = new FlipbookComponent[2];
-
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, epochCount - 2);
-                        fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, epochCount - 2);
-                        addImage(WiseBand.W1.val, 400, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W1.val, 0);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W1.val, epochCount - 2);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, epochCount - 2);
+                            addImage(WiseBand.W1.val, 400, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, epochCount - 2);
-                        fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, epochCount - 2);
-                        addImage(WiseBand.W2.val, 400, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W2.val, 0);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W2.val, epochCount - 2);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, epochCount - 2);
+                            addImage(WiseBand.W2.val, 400, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 1);
-                        loadImage(WiseBand.W1.val, epochCount - 1);
-                        fits = addImages(WiseBand.W1.val, 1, WiseBand.W1.val, epochCount - 1);
-                        addImage(WiseBand.W1.val, 500, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W1.val, 1);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W1.val, epochCount - 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W1.val, 1, WiseBand.W1.val, epochCount - 1);
+                            addImage(WiseBand.W1.val, 500, takeAverage(fits, 2));
+                        }
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 1);
-                        loadImage(WiseBand.W2.val, epochCount - 1);
-                        fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, epochCount - 1);
-                        addImage(WiseBand.W2.val, 500, takeAverage(fits, 2));
+                        NumberPair obsEpochs1 = loadImage(WiseBand.W2.val, 1);
+                        NumberPair obsEpochs2 = loadImage(WiseBand.W2.val, epochCount - 1);
+                        if (obsEpochs1 != null && obsEpochs2 != null) {
+                            fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, epochCount - 1);
+                            addImage(WiseBand.W2.val, 500, takeAverage(fits, 2));
+                        }
                     }
-
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 400, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true);
                     break;
@@ -1804,6 +1838,24 @@ public class ImageViewerTab {
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
+    }
+
+    private void recreateFlipbook() {
+        int j = 0;
+        for (FlipbookComponent component : flipbook) {
+            if (component != null) {
+                j++;
+            }
+        }
+        FlipbookComponent[] flipbookCopy = new FlipbookComponent[j];
+        int k = 0;
+        for (FlipbookComponent component : flipbook) {
+            if (component != null) {
+                flipbookCopy[k] = component;
+                k++;
+            }
+        }
+        flipbook = flipbookCopy;
     }
 
     private void createStaticBook() {
@@ -1954,14 +2006,6 @@ public class ImageViewerTab {
             }
             try {
                 fits = new Fits(getImageData(band, epoch));
-                if (skipBadCoadds.isSelected()) {
-                    ImageHDU weightHDU = (ImageHDU) fits.getHDU(1);
-                    ImageData weightData = (ImageData) weightHDU.getData();
-                    short[][] weights = (short[][]) weightData.getData();
-                    if (getNumberOfWeightsBelowLimit(weights, 5) > 50) {
-                        fits = getPreviousImage(band, epoch);
-                    }
-                }
                 ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) imageHDU.getData();
                 float[][] values = (float[][]) imageData.getData();
@@ -1969,20 +2013,19 @@ public class ImageViewerTab {
                 int minVal = (int) minMaxValues.getX();
                 int maxVal = (int) minMaxValues.getY();
                 int avgVal = (int) minMaxValues.getZ();
-                if (minVal == maxVal || (avgValue != 0 && avgVal < avgValue * 0.8)) {
-                    fits = getPreviousImage(band, epoch);
-                } else {
+                if (avgValue == 0) {
                     avgValue = avgVal;
                 }
                 System.out.println("minVal=" + minVal);
                 System.out.println("maxVal=" + maxVal);
                 System.out.println("avgVal=" + avgVal);
+                System.out.println("avgValue=" + avgValue);
                 System.out.println(" ");
-            } catch (Exception ex) {
-                if (ex instanceof NumberFormatException) {
-                    throw ex;
+                if (minVal == maxVal || avgVal < avgValue * 0.7) {
+                    return null;
                 }
-                fits = getPreviousImage(band, epoch);
+            } catch (Exception ex) {
+                return null;
             }
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
@@ -2035,30 +2078,6 @@ public class ImageViewerTab {
         return new NumberPair(minObsEpoch, maxObsEpoch);
     }
 
-    private Fits getPreviousImage(int band, int epoch) throws FitsException {
-        Fits fits;
-        try {
-            int previousEpoch = epoch == 0 ? epoch + 1 : epoch - 1;
-            fits = getImage(band, previousEpoch);
-            if (fits == null) {
-                fits = new Fits(getImageData(band, previousEpoch));
-            }
-        } catch (Exception ex) {
-            float[][] values = new float[axisY][axisX];
-            short[][] weights = new short[axisY][axisX];
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
-                    values[i][j] = 0;
-                    weights[i][j] = 0;
-                }
-            }
-            fits = new Fits();
-            fits.addHDU(FitsFactory.hduFactory(values));
-            fits.addHDU(FitsFactory.hduFactory(weights));
-        }
-        return fits;
-    }
-
     private InputStream getImageData(int band, int epoch) throws Exception {
         String imageUrl;
         if (skipFirstEpoch.isSelected()) {
@@ -2084,7 +2103,7 @@ public class ImageViewerTab {
     }
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
-        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch + (skipBadCoadds.isSelected() ? "&covmap=true" : "");
+        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
     }
 
     private void detectDifferences() {

@@ -76,9 +76,6 @@ public class HelpTab {
             text.row("If you check the 'Skip first epoch' check box, the original WISE epoch of 2010 is replaced by the first NEO epoch, which may improve the subtracted image modes,");
             text.row("especially for high populated, large field of views.");
             text.newLine();
-            text.row("Low weighted coadds may be skipped and replaced by their counterpart of an earlier epoch, to improve the quality of the new coadds produced for one of the following");
-            text.row("epochs: FIRST_LAST, FIRST_REMAINING or YEAR. To do so, check the 'Skip low weighted coadds' check box.");
-            text.newLine();
             text.row("If you left-click an object of your choice, a new Catalog Search instance will be opened, showing all catalog entries within a search radius of 10 arcseconds.");
             text.row("If you select the 'Recenter images' radio button and left-click an object, the WISE images will be recentered to the coordinates of the clicked object.");
             text.newLine();
