@@ -2018,19 +2018,6 @@ public class ImageViewerTab {
                     avgValue = avgVal;
                 }
                 if (minVal == maxVal || avgVal < avgValue * 0.7) {
-                    return null;
-                }
-                ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-                ImageData imageData = (ImageData) imageHDU.getData();
-                float[][] values = (float[][]) imageData.getData();
-                NumberTriplet minMaxValues = getMinMaxValues(values);
-                int minVal = (int) minMaxValues.getX();
-                int maxVal = (int) minMaxValues.getY();
-                int avgVal = (int) minMaxValues.getZ();
-                if (avgValue == 0) {
-                    avgValue = avgVal;
-                }
-                if (minVal == maxVal || avgVal < avgValue * 0.7) {
                     fits = getPreviousImage(band, epoch);
                 }
             } catch (Exception ex) {
