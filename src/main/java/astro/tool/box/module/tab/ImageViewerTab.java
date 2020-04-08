@@ -353,6 +353,7 @@ public class ImageViewerTab {
 
             epochs = new JComboBox<>(Epoch.values());
             controlPanel.add(epochs);
+            epochs.setMaximumRowCount(Epoch.values().length);
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
                 epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
