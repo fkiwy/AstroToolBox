@@ -19,7 +19,7 @@ public class CatalogQueryProxy implements CatalogQueryFacade {
         List<String> response = new ArrayList<>();
         if (catalogEntry instanceof SimbadCatalogEntry) {
             response.add("main_id,otype_txt,sp_type,ra,dec,plx_value,plx_err,pmra,pmdec,rvz_radvel,rvz_redshift,rvz_type,U,B,V,R,I,G,J,H,K,u_,g_,r_,i_,z_,.");
-            response.add("2MASSI J1357096+554449,Brown Dwarf (M<0.08solMass),M9,209.2901231711107,55.7470970892187,20.7229,0.5212,-175.57,105.658,13.1,,v,,,,,,18.9409,,,12.874,25.463,23.888,20.937,18.278,16.53,.");
+            response.add("2MASS J13570965+5544496,High proper-motion Star,M9e,209.2901231711107,55.7470970892187,20.7229,0.5212,-175.57,105.658,13.1,,v,,,,,,18.9409,,,12.874,25.463,23.888,20.937,18.278,16.53,.");
             response.add("SDSS J135724.58+554026.7,Brightest galaxy in a Cluster (BCG),,209.352421,55.674095,,,,,96846.3084551172,0.398,z,,,,,,,,,,21.4,20.32,19.08,18.65,18.36,.");
             response.add("TYC 3855-1258-1,Star,,209.2467087753106,55.7689058204165,1.7866,0.0227,-6.198,-0.269,,,,,12.91,12.83,,,12.24,11.404,11.167,11.162,,,,,,.");
             response.add("NVSS J135640+554529,Radio-source,,209.17,55.75816666666667,,,,,,,,,,,,,,,,,,,,,,.");
