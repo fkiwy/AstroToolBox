@@ -239,6 +239,7 @@ public class ImageViewerTab {
 
     private int minValue;
     private int maxValue;
+    private int avgValue;
 
     private double targetRa;
     private double targetDec;
@@ -1516,6 +1517,7 @@ public class ImageViewerTab {
             previousRa = targetRa;
             previousDec = targetDec;
             imageNumber = 0;
+            avgValue = 0;
 
             Fits fits;
             switch (epoch) {
@@ -1901,8 +1903,13 @@ public class ImageViewerTab {
                 ImageData imageData = (ImageData) imageHDU.getData();
                 float[][] values = (float[][]) imageData.getData();
                 NumberTriplet minMaxValues = getMinMaxValues(values);
+                int minVal = (int) minMaxValues.getX();
+                int maxVal = (int) minMaxValues.getY();
                 int avgVal = (int) minMaxValues.getZ();
-                if (avgVal == 0) {
+                if (avgValue == 0) {
+                    avgValue = avgVal;
+                }
+                if (minVal == maxVal || avgVal < avgValue * 0.7) {
                     fits = getPreviousImage(band, epoch);
                 }
             } catch (Exception ex) {
