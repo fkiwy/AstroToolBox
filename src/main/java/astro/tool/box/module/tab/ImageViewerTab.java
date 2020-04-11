@@ -1549,13 +1549,16 @@ public class ImageViewerTab {
                     break;
                 case ASCENDING_DESCENDING:
                     flipbook = new FlipbookComponent[epochCount];
+                    k = 0;
                     for (int i = 0; i < epochCount; i += 2) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        k++;
                     }
                     for (int i = 1; i < epochCount; i += 2) {
                         NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[epochCount / 2 + i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        k++;
                     }
                     break;
                 case ASCENDING_DESCENDING_SUBTRACTED:
