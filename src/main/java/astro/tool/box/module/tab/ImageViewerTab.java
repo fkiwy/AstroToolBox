@@ -345,9 +345,7 @@ public class ImageViewerTab {
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
                 wiseBands.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                if (!Epoch.isSubtracted(epoch) || !Epoch.isSubtracted((Epoch) epochs.getSelectedItem())) {
-                    initMinMaxValues();
-                }
+                initMinMaxValues();
                 createFlipbook();
                 wiseBands.setCursor(Cursor.getDefaultCursor());
             });
@@ -366,7 +364,7 @@ public class ImageViewerTab {
                 //    smallBodyHelp.setSelected(false);
                 //    smallBodyHelp.setEnabled(false);
                 //}
-                if (!Epoch.isSubtracted(epoch) || !Epoch.isSubtracted((Epoch) epochs.getSelectedItem())) {
+                if (Epoch.isSubtracted(epoch) != Epoch.isSubtracted((Epoch) epochs.getSelectedItem())) {
                     initMinMaxValues();
                 }
                 createFlipbook();
@@ -1694,7 +1692,7 @@ public class ImageViewerTab {
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true);
                     }
                     break;
-                case FIRST_SUBSEQUENT_SUBTRACTED:
+                case YEAR_SUBTRACTED:
                     flipbook = new FlipbookComponent[epochCount / 2 - 1];
                     k = 0;
                     for (int i = 2; i < epochCount; i += 2) {
@@ -2016,7 +2014,7 @@ public class ImageViewerTab {
                 if (avgValue == 0) {
                     avgValue = avgVal;
                 }
-                if (minVal == maxVal /* || avgVal < avgValue * 0.7 */) {
+                if (minVal == maxVal || avgVal < avgValue * 0.7) {
                     fits = getPreviousImage(band, epoch);
                 }
             } catch (Exception ex) {
@@ -2529,7 +2527,7 @@ public class ImageViewerTab {
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
         int presetMinVal;
         int presetMaxVal;
-        if (epoch.equals(Epoch.FIRST_LAST_SUBTRACTED) || epoch.equals(Epoch.FIRST_REMAINING_SUBTRACTED)) {
+        if (Epoch.isSubtracted(epoch)) {
             presetMinVal = -avgVal * size / 10;
             presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
             presetMaxVal = maxVal;
