@@ -2587,6 +2587,8 @@ public class ImageViewerTab {
         imageViewerTab.getSizeField().setText("100");
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.getEpochs().setSelectedItem(epoch);
+        imageViewerTab.getMinMaxLimits().setSelected(minMaxLimits.isSelected());
+        imageViewerTab.getSmoothImage().setSelected(smoothImage.isSelected());
         imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
@@ -3493,6 +3495,14 @@ public class ImageViewerTab {
 
     public JSlider getZoomSlider() {
         return zoomSlider;
+    }
+
+    public JCheckBox getMinMaxLimits() {
+        return minMaxLimits;
+    }
+
+    public JCheckBox getSmoothImage() {
+        return smoothImage;
     }
 
     public Timer getTimer() {
