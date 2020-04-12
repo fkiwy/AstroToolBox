@@ -234,10 +234,10 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
-    private int highContrast;
     private int lowContrast = getContrast();
-    private int highContrastSaved;
+    private int highContrast;
     private int lowContrastSaved = getContrast();
+    private int highContrastSaved;
 
     private int minValue;
     private int maxValue;
@@ -1477,6 +1477,8 @@ public class ImageViewerTab {
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
+                lowContrastSaved = getContrast();
+                highContrastSaved = 0;
                 if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
                     setContrast(getContrast(), 0);
                 }
@@ -2613,10 +2615,9 @@ public class ImageViewerTab {
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText("100");
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
-        imageViewerTab.getEpochs().setSelectedItem(epoch);
-        imageViewerTab.getMinMaxLimits().setSelected(minMaxLimits.isSelected());
-        imageViewerTab.getSmoothImage().setSelected(smoothImage.isSelected());
+        //imageViewerTab.getEpochs().setSelectedItem(epoch);
         imageViewerTab.setQuadrantCount(quadrantCount);
+        imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
 
@@ -3522,14 +3523,6 @@ public class ImageViewerTab {
 
     public JSlider getZoomSlider() {
         return zoomSlider;
-    }
-
-    public JCheckBox getMinMaxLimits() {
-        return minMaxLimits;
-    }
-
-    public JCheckBox getSmoothImage() {
-        return smoothImage;
     }
 
     public Timer getTimer() {
