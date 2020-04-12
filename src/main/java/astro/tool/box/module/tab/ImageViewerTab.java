@@ -371,9 +371,9 @@ public class ImageViewerTab {
                     lowContrastSaved = lowContrast;
                     highContrastSaved = highContrast;
                     if (minMaxLimits.isSelected()) {
-                        setContrast(50, 0);
+                        setContrast(getContrast(), 0);
                     } else {
-                        setContrast(50, 500);
+                        setContrast(getContrast(), 500);
                     }
                 } else {
                     setContrast(lowContrastSaved, highContrastSaved);
@@ -558,7 +558,11 @@ public class ImageViewerTab {
                 //minMaxLimits.setSelected(true);
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
-                setContrast(getContrast(), 0);
+                if (Epoch.isSubtracted(epoch) && !minMaxLimits.isSelected()) {
+                    setContrast(getContrast(), 500);
+                } else {
+                    setContrast(getContrast(), 0);
+                }
                 initMinMaxValues();
                 createFlipbook();
             });
