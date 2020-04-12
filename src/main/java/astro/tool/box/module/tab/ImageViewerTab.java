@@ -135,8 +135,8 @@ public class ImageViewerTab {
     public static final double SIZE_FACTOR = 2.75;
     public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
-    public static final int MIN_VALUE = -5000;
-    public static final int MAX_VALUE = 5000;
+    public static final int MIN_VALUE = -2500;
+    public static final int MAX_VALUE = 2500;
     public static final int STRETCH = 100;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
@@ -235,7 +235,9 @@ public class ImageViewerTab {
     private int size = SIZE;
 
     private int highContrast;
-    private int lowContrast;
+    private int lowContrast = getContrast();
+    private int highContrastSaved;
+    private int lowContrastSaved = getContrast();
 
     private int minValue;
     private int maxValue;
@@ -364,8 +366,17 @@ public class ImageViewerTab {
                 //    smallBodyHelp.setSelected(false);
                 //    smallBodyHelp.setEnabled(false);
                 //}
-                if (Epoch.isSubtracted(epoch) != Epoch.isSubtracted((Epoch) epochs.getSelectedItem())) {
-                    initMinMaxValues();
+                initMinMaxValues();
+                if (Epoch.isSubtracted((Epoch) epochs.getSelectedItem())) {
+                    lowContrastSaved = lowContrast;
+                    highContrastSaved = highContrast;
+                    if (minMaxLimits.isSelected()) {
+                        setContrast(50, 0);
+                    } else {
+                        setContrast(50, 500);
+                    }
+                } else {
+                    setContrast(lowContrastSaved, highContrastSaved);
                 }
                 createFlipbook();
                 epochs.setCursor(Cursor.getDefaultCursor());
@@ -387,6 +398,10 @@ public class ImageViewerTab {
                 if (markDifferences.isSelected() && flipbook != null) {
                     detectDifferences();
                 }
+                if (Epoch.isSubtracted(epoch)) {
+                    initMinMaxValues();
+                    createFlipbook();
+                }
             });
 
             JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -404,6 +419,10 @@ public class ImageViewerTab {
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
                 if (markDifferences.isSelected() && flipbook != null) {
                     detectDifferences();
+                }
+                if (Epoch.isSubtracted(epoch)) {
+                    initMinMaxValues();
+                    createFlipbook();
                 }
             });
 
@@ -536,10 +555,10 @@ public class ImageViewerTab {
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                minMaxLimits.setSelected(true);
+                //minMaxLimits.setSelected(true);
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
-                setContrast(getContrast());
+                setContrast(getContrast(), 0);
                 initMinMaxValues();
                 createFlipbook();
             });
@@ -1459,7 +1478,7 @@ public class ImageViewerTab {
                 crosshairCoords.setText("");
                 hasException = false;
                 if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
-                    setContrast(getContrast());
+                    setContrast(getContrast(), 0);
                 }
                 initMinMaxValues();
                 //shiftX = shiftY = 0;
@@ -2007,6 +2026,7 @@ public class ImageViewerTab {
                 ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) imageHDU.getData();
                 float[][] values = (float[][]) imageData.getData();
+                minMaxLimits.setSelected(false); //Experimtenal
                 NumberTriplet minMaxValues = getMinMaxValues(values);
                 int minVal = (int) minMaxValues.getX();
                 int maxVal = (int) minMaxValues.getY();
@@ -2017,6 +2037,13 @@ public class ImageViewerTab {
                 if (minVal == maxVal || avgVal < avgValue * 0.7) {
                     fits = getPreviousImage(band, epoch);
                 }
+                //Experimtenal
+                if (avgValue > 500) {
+                    minMaxLimits.setSelected(false);
+                } else {
+                    minMaxLimits.setSelected(true);
+                }
+                //End
             } catch (Exception ex) {
                 if (ex instanceof NumberFormatException) {
                     throw ex;
@@ -2466,9 +2493,9 @@ public class ImageViewerTab {
         return size < 30 ? 25 : 50;
     }
 
-    private void setContrast(int contrast) {
-        lowScaleSlider.setValue(lowContrast = contrast);
-        highScaleSlider.setValue(highContrast = 0);
+    private void setContrast(int low, int high) {
+        lowScaleSlider.setValue(lowContrast = low);
+        highScaleSlider.setValue(highContrast = high);
     }
 
     private int getNumberOfWeightsBelowLimit(short[][] weights, int limit) {
@@ -2528,8 +2555,8 @@ public class ImageViewerTab {
         int presetMinVal;
         int presetMaxVal;
         if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = -avgVal * size / 10;
-            presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
+            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / 5);
+            presetMinVal = presetMinVal < minVal ? max(minVal, -avgVal) : presetMinVal;
             presetMaxVal = maxVal;
         } else {
             presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
