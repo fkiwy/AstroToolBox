@@ -400,7 +400,6 @@ public class ImageViewerTab {
                 }
                 if (Epoch.isSubtracted(epoch)) {
                     initMinMaxValues();
-                    createFlipbook();
                 }
             });
 
@@ -422,7 +421,6 @@ public class ImageViewerTab {
                 }
                 if (Epoch.isSubtracted(epoch)) {
                     initMinMaxValues();
-                    createFlipbook();
                 }
             });
 
@@ -524,7 +522,6 @@ public class ImageViewerTab {
             controlPanel.add(minMaxLimits);
             minMaxLimits.addActionListener((ActionEvent evt) -> {
                 initMinMaxValues();
-                createFlipbook();
             });
 
             stretchImage = new JCheckBox("Stretch images", true);
@@ -1863,6 +1860,13 @@ public class ImageViewerTab {
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true);
                     break;
             }
+            if (Epoch.isSubtracted(epoch)) {
+                if (minMaxLimits.isSelected()) {
+                    setContrast(getContrast(), 0);
+                } else {
+                    setContrast(getContrast(), 500);
+                }
+            }
             if (markDifferences.isSelected()) {
                 detectDifferences();
             }
@@ -2561,7 +2565,7 @@ public class ImageViewerTab {
         int presetMinVal;
         int presetMaxVal;
         if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / 5);
+            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (maxVal < MAX_VALUE ? 1 : 5));
             presetMinVal = presetMinVal < minVal ? max(minVal, -avgVal) : presetMinVal;
             presetMaxVal = maxVal;
         } else {

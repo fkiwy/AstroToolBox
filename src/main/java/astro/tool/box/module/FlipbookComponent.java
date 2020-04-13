@@ -47,6 +47,21 @@ public class FlipbookComponent {
         this.isMerged = isMerged;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FlipbookComponent{band=").append(band);
+        sb.append(", epoch=").append(epoch);
+        sb.append(", epochCount=").append(epochCount);
+        sb.append(", isMerged=").append(isMerged);
+        sb.append(", firstEpoch=").append(firstEpoch);
+        sb.append(", minObsEpoch=").append(minObsEpoch);
+        sb.append(", maxObsEpoch=").append(maxObsEpoch);
+        sb.append(", diffPixels=").append(diffPixels);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public String getTitle() {
         String titleBand;
         String titleEpoch;
