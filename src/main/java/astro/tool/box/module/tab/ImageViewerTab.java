@@ -367,7 +367,7 @@ public class ImageViewerTab {
                 //    smallBodyHelp.setEnabled(false);
                 //}
                 initMinMaxValues();
-                if (Epoch.isSubtracted((Epoch) epochs.getSelectedItem())) {
+                if (Epoch.isSubtracted((Epoch) epochs.getSelectedItem()) && !Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                     highContrastSaved = highContrast;
                     if (minMaxLimits.isSelected()) {
