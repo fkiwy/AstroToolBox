@@ -1478,9 +1478,11 @@ public class ImageViewerTab {
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
-                lowContrastSaved = getContrast();
-                highContrastSaved = 0;
-                if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
+                if (keepContrast.isSelected() || markDifferences.isSelected()) {
+                    setContrast(lowContrastSaved, highContrastSaved);
+                } else {
+                    lowContrastSaved = getContrast();
+                    highContrastSaved = 0;
                     setContrast(getContrast(), 0);
                 }
                 initMinMaxValues();
