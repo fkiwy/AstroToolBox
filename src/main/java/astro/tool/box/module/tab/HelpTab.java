@@ -63,10 +63,10 @@ public class HelpTab {
             text.row("The Pan-STARRS images are downloaded from MAST PS1 Science Archive (https://panstarrs.stsci.edu).");
             text.row("The SDSS images are pulled from the SLOAN Digital Sky Survey SkyServer (http://skyserver.sdss.org).");
             text.newLine();
-            text.row("The fasted way to load some images is by selecting only one band (W1 or W2) and the FIRST_LAST epoch, which is the default. This will load only four images.");
-            text.row("The slowest way is to load all the images (24) by selecting W1W2 and one of the following epochs: ALL, ASCENDING_DESCENDING, ASCENDING_DESCENDING_SUBTRACTED,");
-            text.row("ASCENDING_DESCENDING_PARALLAX, YEAR, YEAR_SUBTRACTED, FIRST_REMAINING and FIRST_REMAINING_SUBTRACTED.");
-            text.row("But once all the images are loaded, you can switch between bands and epochs instantly (without having to reload any data).");
+            text.row("The fasted way to load some images is to select only one band (W1 or W2) and the FIRST_LAST epoch, which is the default. This will load only four images.");
+            text.row("The download time will be significantly increased, if you select W1W2 and one of the following epochs: ALL, ASCENDING_DESCENDING, ASCENDING_DESCENDING_SUBTRACTED,");
+            text.row("ASCENDING_DESCENDING_PARALLAX, YEAR, YEAR_SUBTRACTED, FIRST_REMAINING and FIRST_REMAINING_SUBTRACTED. This will load all 24 images currently available.");
+            text.row("But once the images are loaded, you can switch between bands and epochs instantly (without having to reload any data).");
             text.newLine();
             text.row("For most cutouts, you have to adjust the contrast by pulling one of the contrast sliders either to the left or to the right.");
             text.row("I recommend starting with the low scale slider and if that's not enough, use can still use the high scale slider.");
