@@ -2567,7 +2567,7 @@ public class ImageViewerTab {
         int presetMinVal;
         int presetMaxVal;
         if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (maxVal < MAX_VALUE ? 1 : 5));
+            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / 5);
             presetMinVal = presetMinVal < minVal ? max(minVal, -avgVal) : presetMinVal;
             presetMaxVal = maxVal;
         } else {
