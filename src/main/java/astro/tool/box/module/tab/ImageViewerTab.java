@@ -347,6 +347,7 @@ public class ImageViewerTab {
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
                 wiseBands.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                wiseBand = (WiseBand) wiseBands.getSelectedItem();
                 initMinMaxValues();
                 createFlipbook();
                 wiseBands.setCursor(Cursor.getDefaultCursor());
@@ -360,6 +361,7 @@ public class ImageViewerTab {
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
                 epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                epoch = (Epoch) epochs.getSelectedItem();
                 //if (epochs.getSelectedItem().equals(Epoch.ALL)) {
                 //    smallBodyHelp.setEnabled(true);
                 //} else {
@@ -367,9 +369,7 @@ public class ImageViewerTab {
                 //    smallBodyHelp.setEnabled(false);
                 //}
                 initMinMaxValues();
-                if (Epoch.isSubtracted((Epoch) epochs.getSelectedItem()) && !Epoch.isSubtracted(epoch)) {
-                    lowContrastSaved = lowContrast;
-                    highContrastSaved = highContrast;
+                if (Epoch.isSubtracted(epoch)) {
                     if (minMaxLimits.isSelected()) {
                         setContrast(getContrast(), 0);
                     } else {
@@ -400,6 +400,8 @@ public class ImageViewerTab {
                 }
                 if (Epoch.isSubtracted(epoch)) {
                     initMinMaxValues();
+                } else {
+                    highContrastSaved = highContrast;
                 }
             });
 
@@ -421,6 +423,8 @@ public class ImageViewerTab {
                 }
                 if (Epoch.isSubtracted(epoch)) {
                     initMinMaxValues();
+                } else {
+                    lowContrastSaved = lowContrast;
                 }
             });
 
@@ -1470,21 +1474,16 @@ public class ImageViewerTab {
             }
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            wiseBand = (WiseBand) wiseBands.getSelectedItem();
-            epoch = (Epoch) epochs.getSelectedItem();
-
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
-                if (keepContrast.isSelected() || markDifferences.isSelected()) {
-                    setContrast(lowContrastSaved, highContrastSaved);
-                } else {
+                if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
                     lowContrastSaved = getContrast();
                     highContrastSaved = 0;
-                    setContrast(getContrast(), 0);
                 }
+                setContrast(lowContrastSaved, highContrastSaved);
                 initMinMaxValues();
                 //shiftX = shiftY = 0;
                 centerX = centerY = 0;
