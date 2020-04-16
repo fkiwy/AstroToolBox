@@ -2039,6 +2039,10 @@ public class ImageViewerTab {
                 float[][] values = (float[][]) imageData.getData();
 
                 // Replace zero values by their counterpart of the preceding image
+                axisY = values.length;
+                if (axisY > 0) {
+                    axisX = values[0].length;
+                }
                 int zeroValues = 0;
                 for (int i = 0; i < axisY; i++) {
                     for (int j = 0; j < axisX; j++) {
@@ -2050,11 +2054,7 @@ public class ImageViewerTab {
                         }
                     }
                 }
-
-                System.out.println(zeroValues + " > " + axisX * axisY / 100);
-
-                //if (zeroValues > 1000) {
-                if (zeroValues > axisX * axisY / 100) {
+                if (zeroValues > 1000) {
                     Fits prevFits = getPreviousImage(band, epoch);
                     imageHDU = (ImageHDU) prevFits.getHDU(0);
                     imageData = (ImageData) imageHDU.getData();
