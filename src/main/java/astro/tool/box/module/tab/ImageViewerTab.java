@@ -2038,24 +2038,52 @@ public class ImageViewerTab {
                 ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) imageHDU.getData();
                 float[][] values = (float[][]) imageData.getData();
-                minMaxLimits.setSelected(false); //Experimtenal
+
+                // Replace zero values by their counterpart of the preceding image
+                int zeroValues = 0;
+                for (int i = 0; i < axisY; i++) {
+                    for (int j = 0; j < axisX; j++) {
+                        try {
+                            if (values[i][j] == 0) {
+                                zeroValues++;
+                            }
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                }
+
+                System.out.println(zeroValues + " > " + axisX * axisY / 100);
+
+                //if (zeroValues > 1000) {
+                if (zeroValues > axisX * axisY / 100) {
+                    Fits prevFits = getPreviousImage(band, epoch);
+                    imageHDU = (ImageHDU) prevFits.getHDU(0);
+                    imageData = (ImageData) imageHDU.getData();
+                    float[][] prevValues = (float[][]) imageData.getData();
+                    for (int i = 0; i < axisY; i++) {
+                        for (int j = 0; j < axisX; j++) {
+                            try {
+                                if (values[i][j] == 0) {
+                                    values[i][j] = prevValues[i][j];
+                                }
+                            } catch (ArrayIndexOutOfBoundsException ex) {
+                            }
+                        }
+                    }
+                }
+
+                // Un/Check the "Set min/max limits" check obx automatically
+                minMaxLimits.setSelected(false);
                 NumberTriplet minMaxValues = getMinMaxValues(values);
-                int minVal = (int) minMaxValues.getX();
-                int maxVal = (int) minMaxValues.getY();
                 int avgVal = (int) minMaxValues.getZ();
                 if (avgValue == 0) {
                     avgValue = avgVal;
                 }
-                if (minVal == maxVal || avgVal < avgValue * 0.7) {
-                    fits = getPreviousImage(band, epoch);
-                }
-                //Experimtenal
                 if (avgValue > 500) {
                     minMaxLimits.setSelected(false);
                 } else {
                     minMaxLimits.setSelected(true);
                 }
-                //End
             } catch (Exception ex) {
                 if (ex instanceof NumberFormatException) {
                     throw ex;
