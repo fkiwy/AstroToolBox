@@ -65,13 +65,13 @@ public class HelpTab {
             text.newLine();
             text.row("The fasted way to load some images is to select only one band (W1 or W2) and the FIRST_LAST epoch, which is the default. This will load only four images.");
             text.row("The download time will be significantly increased, if you select W1W2 and one of the following epochs: ALL, ASCENDING_DESCENDING, ASCENDING_DESCENDING_SUBTRACTED,");
-            text.row("ASCENDING_DESCENDING_PARALLAX, YEAR, YEAR_SUBTRACTED, FIRST_REMAINING and FIRST_REMAINING_SUBTRACTED. This will load all 24 images currently available.");
+            text.row("ASCENDING_DESCENDING_PARALLAX, YEAR, FIRST_REMAINING and FIRST_REMAINING_SUBTRACTED. This will load all 24 images currently available.");
             text.row("But once the images are loaded, you can switch between bands and epochs instantly (without having to reload any data).");
             text.newLine();
             text.row("For most cutouts, you have to adjust the contrast by pulling one of the contrast sliders either to the left or to the right.");
             text.row("I recommend starting with the low scale slider and if that's not enough, use can still use the high scale slider.");
             text.newLine();
-            text.row("There are four subtracted modes you can select from the 'Epochs' selection box: ASCENDING_DESCENDING_SUBTRACTED, YEAR_SUBTRACTED, FIRST_REMAINING_SUBTRACTED");
+            text.row("There are three subtracted modes you can select from the 'Epochs' selection box: ASCENDING_DESCENDING_SUBTRACTED, FIRST_REMAINING_SUBTRACTED");
             text.row("and FIRST_LAST_SUBTRACTED. If the images are too dark, pull the 'Min pixel value' slider carefully to the right until you see the difference image.");
             text.row("If the images are too bright, pull the 'Max pixel value' slider to the left.");
             text.newLine();

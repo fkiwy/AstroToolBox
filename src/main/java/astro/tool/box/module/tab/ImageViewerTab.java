@@ -137,6 +137,8 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int MIN_VALUE = -2500;
     public static final int MAX_VALUE = 2500;
+    public static final int MIN_LIMIT = -250000;
+    public static final int MAX_LIMIT = 250000;
     public static final int STRETCH = 100;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
@@ -361,6 +363,7 @@ public class ImageViewerTab {
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
                 epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
                 //if (epochs.getSelectedItem().equals(Epoch.ALL)) {
                 //    smallBodyHelp.setEnabled(true);
@@ -370,12 +373,16 @@ public class ImageViewerTab {
                 //}
                 initMinMaxValues();
                 if (Epoch.isSubtracted(epoch)) {
+                    smoothImage.setSelected(true);
                     if (minMaxLimits.isSelected()) {
                         setContrast(getContrast(), 0);
                     } else {
                         setContrast(getContrast(), 500);
                     }
                 } else {
+                    if (Epoch.isSubtracted(previousEpoch)) {
+                        smoothImage.setSelected(false);
+                    }
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
                 createFlipbook();
@@ -1715,6 +1722,7 @@ public class ImageViewerTab {
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true);
                     }
                     break;
+                /*
                 case YEAR_SUBTRACTED:
                     flipbook = new FlipbookComponent[epochCount / 2 - 1];
                     k = 0;
@@ -1752,6 +1760,7 @@ public class ImageViewerTab {
                         k++;
                     }
                     break;
+                 */
                 case FIRST_REMAINING:
                 case FIRST_REMAINING_SUBTRACTED:
                     flipbook = new FlipbookComponent[2];
@@ -2096,9 +2105,7 @@ public class ImageViewerTab {
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
             if (size > naxis1 && size > naxis2 && !disableOverlays) {
-                String message = "Image has been cut off because the specified field of view exceeds the current WISE tile." + LINE_SEP
-                        + "Therefore, some features of the Image Viewer do not work correctly." + LINE_SEP
-                        + "You can avoid this problem by choosing a smaller field of view.";
+                String message = "Some features of the Image Viewer have been disabled because the current field of view exceeds the requested WISE tile.";
                 showWarnDialog(baseFrame, message);
                 disableOverlays = true;
                 simbadOverlay.setEnabled(false);
@@ -2107,6 +2114,7 @@ public class ImageViewerTab {
                 catWiseOverlay.setEnabled(false);
                 panStarrsOverlay.setEnabled(false);
                 sdssOverlay.setEnabled(false);
+                spectrumOverlay.setEnabled(false);
                 ssoOverlay.setEnabled(false);
                 ghostOverlay.setEnabled(false);
                 haloOverlay.setEnabled(false);
@@ -2555,8 +2563,8 @@ public class ImageViewerTab {
     private NumberTriplet getMinMaxValues(float[][] values) {
         int x = values.length;
         int y = values[0].length;
-        float minVal = clipToBoundaries(values[0][0]);
-        float maxVal = clipToBoundaries(values[0][0]);
+        float minVal = 0;
+        float maxVal = 0;
         int sum = 0;
         int nbr = 0;
         for (int i = 0; i < x; i++) {
@@ -2566,7 +2574,9 @@ public class ImageViewerTab {
                     continue;
                 }
                 if (minMaxLimits.isSelected()) {
-                    value = clipToBoundaries(value);
+                    value = clipToBoundaries(value, MIN_VALUE, MAX_VALUE);
+                } else {
+                    value = clipToBoundaries(value, MIN_LIMIT, MAX_LIMIT);
                 }
                 if (value < minVal) {
                     minVal = value;
@@ -2582,8 +2592,8 @@ public class ImageViewerTab {
         return new NumberTriplet(minVal, maxVal, avgVal);
     }
 
-    private float clipToBoundaries(float value) {
-        return max(MIN_VALUE, min(MAX_VALUE, value));
+    private float clipToBoundaries(float value, float minValue, float maxValue) {
+        return max(minValue, min(maxValue, value));
     }
 
     private void initMinMaxValues() {
@@ -2594,7 +2604,7 @@ public class ImageViewerTab {
         int presetMinVal;
         int presetMaxVal;
         if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / 5);
+            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (minMaxLimits.isSelected() ? 2 : 5));
             presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
             presetMaxVal = maxVal;
         } else {
