@@ -2576,7 +2576,7 @@ public class ImageViewerTab {
                 if (minMaxLimits.isSelected()) {
                     value = clipToBoundaries(value, MIN_VALUE, MAX_VALUE);
                 } else {
-                    value = clipToBoundaries(value, MIN_LIMIT, MAX_LIMIT);
+                    //value = clipToBoundaries(value, MIN_LIMIT, MAX_LIMIT);
                 }
                 if (value < minVal) {
                     minVal = value;
