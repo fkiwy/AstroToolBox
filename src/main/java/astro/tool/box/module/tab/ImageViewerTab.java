@@ -135,6 +135,8 @@ public class ImageViewerTab {
     public static final double SIZE_FACTOR = 2.75;
     public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
+    public static final int LOW_CONTRAST = 0;
+    public static final int HIGH_CONTRAST = 500;
     public static final int MIN_VALUE = -2500;
     public static final int MAX_VALUE = 2500;
     public static final int MIN_LIMIT = -250000;
@@ -374,15 +376,16 @@ public class ImageViewerTab {
                 initMinMaxValues();
                 if (Epoch.isSubtracted(epoch)) {
                     smoothImage.setSelected(true);
+                } else if (Epoch.isSubtracted(previousEpoch)) {
+                    smoothImage.setSelected(false);
+                }
+                if (Epoch.isSubtracted(epoch)) {
                     if (minMaxLimits.isSelected()) {
-                        setContrast(getContrast(), 0);
+                        setContrast(getContrast(), LOW_CONTRAST);
                     } else {
-                        setContrast(getContrast(), 500);
+                        setContrast(getContrast(), HIGH_CONTRAST);
                     }
                 } else {
-                    if (Epoch.isSubtracted(previousEpoch)) {
-                        smoothImage.setSelected(false);
-                    }
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
                 createFlipbook();
@@ -566,10 +569,14 @@ public class ImageViewerTab {
                 //minMaxLimits.setSelected(true);
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
-                if (Epoch.isSubtracted(epoch) && !minMaxLimits.isSelected()) {
-                    setContrast(getContrast(), 500);
+                if (Epoch.isSubtracted(epoch)) {
+                    if (minMaxLimits.isSelected()) {
+                        setContrast(getContrast(), LOW_CONTRAST);
+                    } else {
+                        setContrast(getContrast(), HIGH_CONTRAST);
+                    }
                 } else {
-                    setContrast(getContrast(), 0);
+                    setContrast(getContrast(), LOW_CONTRAST);
                 }
                 initMinMaxValues();
                 createFlipbook();
@@ -1488,7 +1495,7 @@ public class ImageViewerTab {
                 hasException = false;
                 if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
                     lowContrastSaved = getContrast();
-                    highContrastSaved = 0;
+                    highContrastSaved = LOW_CONTRAST;
                 }
                 setContrast(lowContrastSaved, highContrastSaved);
                 initMinMaxValues();
@@ -1872,9 +1879,9 @@ public class ImageViewerTab {
             }
             if (Epoch.isSubtracted(epoch)) {
                 if (minMaxLimits.isSelected()) {
-                    setContrast(getContrast(), 0);
+                    setContrast(getContrast(), LOW_CONTRAST);
                 } else {
-                    setContrast(getContrast(), 500);
+                    setContrast(getContrast(), HIGH_CONTRAST);
                 }
             }
             if (markDifferences.isSelected()) {
