@@ -135,8 +135,6 @@ public class ImageViewerTab {
     public static final double SIZE_FACTOR = 2.75;
     public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
-    public static final int LOW_CONTRAST = 0;
-    public static final int HIGH_CONTRAST = 500;
     public static final int MIN_VALUE = -2500;
     public static final int MAX_VALUE = 2500;
     public static final int MIN_LIMIT = -250000;
@@ -380,11 +378,7 @@ public class ImageViewerTab {
                     smoothImage.setSelected(false);
                 }
                 if (Epoch.isSubtracted(epoch)) {
-                    if (minMaxLimits.isSelected()) {
-                        setContrast(getContrast(), LOW_CONTRAST);
-                    } else {
-                        setContrast(getContrast(), HIGH_CONTRAST);
-                    }
+                    setSubtractedContrast();
                 } else {
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
@@ -570,13 +564,9 @@ public class ImageViewerTab {
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
                 if (Epoch.isSubtracted(epoch)) {
-                    if (minMaxLimits.isSelected()) {
-                        setContrast(getContrast(), LOW_CONTRAST);
-                    } else {
-                        setContrast(getContrast(), HIGH_CONTRAST);
-                    }
+                    setSubtractedContrast();
                 } else {
-                    setContrast(getContrast(), LOW_CONTRAST);
+                    setContrast(getContrast(), 0);
                 }
                 initMinMaxValues();
                 createFlipbook();
@@ -1495,7 +1485,7 @@ public class ImageViewerTab {
                 hasException = false;
                 if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
                     lowContrastSaved = getContrast();
-                    highContrastSaved = LOW_CONTRAST;
+                    highContrastSaved = 0;
                 }
                 setContrast(lowContrastSaved, highContrastSaved);
                 initMinMaxValues();
@@ -1878,11 +1868,7 @@ public class ImageViewerTab {
                     break;
             }
             if (Epoch.isSubtracted(epoch)) {
-                if (minMaxLimits.isSelected()) {
-                    setContrast(getContrast(), LOW_CONTRAST);
-                } else {
-                    setContrast(getContrast(), HIGH_CONTRAST);
-                }
+                setSubtractedContrast();
             }
             if (markDifferences.isSelected()) {
                 detectDifferences();
@@ -2547,6 +2533,14 @@ public class ImageViewerTab {
         return size < 30 ? 25 : 50;
     }
 
+    private void setSubtractedContrast() {
+        if (minMaxLimits.isSelected()) {
+            setContrast(getContrast(), 0);
+        } else {
+            setContrast(getContrast(), 500);
+        }
+    }
+
     private void setContrast(int low, int high) {
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
@@ -2613,7 +2607,12 @@ public class ImageViewerTab {
         if (Epoch.isSubtracted(epoch)) {
             presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (minMaxLimits.isSelected() ? 2 : 5));
             presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
-            presetMaxVal = maxVal;
+            if (minMaxLimits.isSelected()) {
+                presetMaxVal = maxVal;
+            } else {
+                presetMaxVal = avgVal * size;
+                presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
+            }
         } else {
             presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
             presetMaxVal = avgVal * size;
