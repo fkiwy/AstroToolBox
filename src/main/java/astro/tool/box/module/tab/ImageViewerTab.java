@@ -2144,7 +2144,17 @@ public class ImageViewerTab {
     private Fits getPreviousImage(int band, int epoch) throws FitsException {
         Fits fits;
         try {
-            int previousEpoch = epoch == 0 ? epoch + 1 : epoch - 1;
+            int previousEpoch;
+            switch (epoch) {
+                case 0:
+                    previousEpoch = 2;
+                    break;
+                case 1:
+                    previousEpoch = 3;
+                    break;
+                default:
+                    previousEpoch = epoch - 2;
+            }
             fits = getImage(band, previousEpoch);
             if (fits == null) {
                 fits = new Fits(getImageData(band, previousEpoch));
