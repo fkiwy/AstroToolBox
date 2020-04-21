@@ -1611,11 +1611,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
                         differenceImaging(800 + i, 900 + i);
-                        if (i == 0) {
-                            flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
-                        } else {
-                            flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
-                        }
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
                         k++;
                     }
                     for (int i = 3; i < epochCount; i += 2) {
@@ -1640,11 +1636,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
                         differenceImaging(800 + i, 900 + i);
-                        if (i == 1) {
-                            flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
-                        } else {
-                            flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
-                        }
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
                         k++;
                     }
                     break;
@@ -2147,10 +2139,8 @@ public class ImageViewerTab {
             int previousEpoch;
             switch (epoch) {
                 case 0:
-                    previousEpoch = 2;
-                    break;
                 case 1:
-                    previousEpoch = 3;
+                    previousEpoch = epoch + 2;
                     break;
                 default:
                     previousEpoch = epoch - 2;
@@ -2204,7 +2194,6 @@ public class ImageViewerTab {
     }
 
     private void detectDifferences() {
-        // 92.1944649 18.1008679
         for (int i = 0; i < flipbook.length; i++) {
             FlipbookComponent component1 = flipbook[i];
             FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
