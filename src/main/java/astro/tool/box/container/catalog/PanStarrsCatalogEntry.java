@@ -104,31 +104,31 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     public PanStarrsCatalogEntry() {
     }
 
-    public PanStarrsCatalogEntry(String[] values) {
+    public PanStarrsCatalogEntry(Map<String, Integer> columns, String[] values) {
         for (int i = 0; i < values.length; i++) {
             if (values[i].equals("-999.0")) {
                 values[i] = "0";
             }
         }
-        objName = values[0];
-        objID = toLong(values[1]);
-        qualityFlag = toInteger(values[2]);
-        raMean = toDouble(values[3]);
-        decMean = toDouble(values[4]);
-        raMeanErr = toDouble(values[5]);
-        decMeanErr = toDouble(values[6]);
-        epochMean = toDouble(values[7]);
-        nDetections = toInteger(values[8]);
-        gMeanPSFMag = toDouble(values[9]);
-        gMeanPSFMagErr = toDouble(values[10]);
-        rMeanPSFMag = toDouble(values[11]);
-        rMeanPSFMagErr = toDouble(values[12]);
-        iMeanPSFMag = toDouble(values[13]);
-        iMeanPSFMagErr = toDouble(values[14]);
-        zMeanPSFMag = toDouble(values[15]);
-        zMeanPSFMagErr = toDouble(values[16]);
-        yMeanPSFMag = toDouble(values[17]);
-        yMeanPSFMagErr = toDouble(values[18]);
+        objName = values[columns.get("objName")];
+        objID = toLong(values[columns.get("objID")]);
+        qualityFlag = toInteger(values[columns.get("qualityFlag")]);
+        raMean = toDouble(values[columns.get("raMean")]);
+        decMean = toDouble(values[columns.get("decMean")]);
+        raMeanErr = toDouble(values[columns.get("raMeanErr")]);
+        decMeanErr = toDouble(values[columns.get("decMeanErr")]);
+        epochMean = toDouble(values[columns.get("epochMean")]);
+        nDetections = toInteger(values[columns.get("nDetections")]);
+        gMeanPSFMag = toDouble(values[columns.get("gMeanPSFMag")]);
+        gMeanPSFMagErr = toDouble(values[columns.get("gMeanPSFMagErr")]);
+        rMeanPSFMag = toDouble(values[columns.get("rMeanPSFMag")]);
+        rMeanPSFMagErr = toDouble(values[columns.get("rMeanPSFMagErr")]);
+        iMeanPSFMag = toDouble(values[columns.get("iMeanPSFMag")]);
+        iMeanPSFMagErr = toDouble(values[columns.get("iMeanPSFMagErr")]);
+        zMeanPSFMag = toDouble(values[columns.get("zMeanPSFMag")]);
+        zMeanPSFMagErr = toDouble(values[columns.get("zMeanPSFMagErr")]);
+        yMeanPSFMag = toDouble(values[columns.get("yMeanPSFMag")]);
+        yMeanPSFMagErr = toDouble(values[columns.get("yMeanPSFMagErr")]);
         qualityFlags = getPanStarrsQualityFlags(qualityFlag);
     }
 
@@ -220,8 +220,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new PanStarrsCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new PanStarrsCatalogEntry(columns, values);
     }
 
     @Override

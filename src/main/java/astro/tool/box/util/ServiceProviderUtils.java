@@ -78,14 +78,16 @@ public class ServiceProviderUtils {
 
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(response));
+        if (catalogEntry instanceof SDSSCatalogEntry) {
+            reader.readLine();
+        }
         String headerLine = reader.readLine();
-        System.out.println(headerLine);
         String[] headers = CSVParser.parseLine(headerLine);
         Map<String, Integer> columns = new HashMap<>();
         for (int i = 0; i < headers.length; i++) {
             columns.put(headers[i], i);
         }
-        if (catalogEntry instanceof SimbadCatalogEntry || catalogEntry instanceof SDSSCatalogEntry) {
+        if (catalogEntry instanceof SimbadCatalogEntry) {
             reader.readLine();
         }
         String line;

@@ -116,31 +116,31 @@ public class SDSSCatalogEntry implements CatalogEntry {
     public SDSSCatalogEntry() {
     }
 
-    public SDSSCatalogEntry(String[] values) {
-        objID = toLong(values[0]);
-        run = toInteger(values[1]);
-        rerun = toInteger(values[2]);
-        camcol = toInteger(values[3]);
-        field = toInteger(values[4]);
-        obj = toInteger(values[5]);
-        ra = toDouble(values[6]);
-        dec = toDouble(values[7]);
-        raErr = toDouble(values[8]);
-        decErr = toDouble(values[9]);
-        type = toInteger(values[10]);
-        clean = toInteger(values[11]);
-        mjd = toInteger(values[12]);
-        specObjID = new BigInteger(values[13]);
-        u_mag = toDouble(values[14]);
-        g_mag = toDouble(values[15]);
-        r_mag = toDouble(values[16]);
-        i_mag = toDouble(values[17]);
-        z_mag = toDouble(values[18]);
-        u_err = toDouble(values[19]);
-        g_err = toDouble(values[20]);
-        r_err = toDouble(values[21]);
-        i_err = toDouble(values[22]);
-        z_err = toDouble(values[23]);
+    public SDSSCatalogEntry(Map<String, Integer> columns, String[] values) {
+        objID = toLong(values[columns.get("objid")]);
+        run = toInteger(values[columns.get("run")]);
+        rerun = toInteger(values[columns.get("rerun")]);
+        camcol = toInteger(values[columns.get("camcol")]);
+        field = toInteger(values[columns.get("field")]);
+        obj = toInteger(values[columns.get("obj")]);
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        raErr = toDouble(values[columns.get("raErr")]);
+        decErr = toDouble(values[columns.get("decErr")]);
+        type = toInteger(values[columns.get("type")]);
+        clean = toInteger(values[columns.get("clean")]);
+        mjd = toInteger(values[columns.get("mjd")]);
+        specObjID = new BigInteger(values[columns.get("specObjID")]);
+        u_mag = toDouble(values[columns.get("u")]);
+        g_mag = toDouble(values[columns.get("g")]);
+        r_mag = toDouble(values[columns.get("r")]);
+        i_mag = toDouble(values[columns.get("i")]);
+        z_mag = toDouble(values[columns.get("z")]);
+        u_err = toDouble(values[columns.get("Err_u")]);
+        g_err = toDouble(values[columns.get("Err_g")]);
+        r_err = toDouble(values[columns.get("Err_r")]);
+        i_err = toDouble(values[columns.get("Err_i")]);
+        z_err = toDouble(values[columns.get("Err_z")]);
     }
 
     @Override
@@ -235,8 +235,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new SDSSCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new SDSSCatalogEntry(columns, values);
     }
 
     @Override
