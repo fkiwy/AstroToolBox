@@ -102,27 +102,27 @@ public class CatWiseRejectedEntry implements CatalogEntry {
     public CatWiseRejectedEntry() {
     }
 
-    public CatWiseRejectedEntry(String[] values) {
-        sourceId = values[0];
-        ra = toDouble(values[2]);
-        dec = toDouble(values[3]);
-        W1mag = toDouble(values[23]);
-        W1_err = toDouble(values[24]);
-        W2mag = toDouble(values[26]);
-        W2_err = toDouble(values[27]);
-        meanObsMJD = toDouble(values[119]);
-        ra_pm = toDouble(values[120]);
-        dec_pm = toDouble(values[121]);
-        pmra = toDouble(values[125]) * ARCSEC_MAS;
-        pmdec = toDouble(values[126]) * ARCSEC_MAS;
-        pmra_err = toDouble(values[127]) * ARCSEC_MAS;
-        pmdec_err = toDouble(values[128]) * ARCSEC_MAS;
-        par_pm = toDouble(values[166]) * ARCSEC_MAS;
-        par_pmsig = toDouble(values[167]) * ARCSEC_MAS;
-        par_stat = toDouble(values[168]) * ARCSEC_MAS;
-        par_sigma = toDouble(values[169]) * ARCSEC_MAS;
-        cc_flags = values[171];
-        ab_flags = values[177];
+    public CatWiseRejectedEntry(Map<String, Integer> columns, String[] values) {
+        sourceId = values[columns.get("source_name")];
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        W1mag = toDouble(values[columns.get("w1mpro")]);
+        W1_err = toDouble(values[columns.get("w1sigmpro")]);
+        W2mag = toDouble(values[columns.get("w2mpro")]);
+        W2_err = toDouble(values[columns.get("w2sigmpro")]);
+        meanObsMJD = toDouble(values[columns.get("meanobsmjd")]);
+        ra_pm = toDouble(values[columns.get("ra_pm")]);
+        dec_pm = toDouble(values[columns.get("dec_pm")]);
+        pmra = toDouble(values[columns.get("pmra")]) * ARCSEC_MAS;
+        pmdec = toDouble(values[columns.get("pmdec")]) * ARCSEC_MAS;
+        pmra_err = toDouble(values[columns.get("sigpmra")]) * ARCSEC_MAS;
+        pmdec_err = toDouble(values[columns.get("sigpmdec")]) * ARCSEC_MAS;
+        par_pm = toDouble(values[columns.get("par_pm")]) * ARCSEC_MAS;
+        par_pmsig = toDouble(values[columns.get("par_pmsig")]) * ARCSEC_MAS;
+        par_stat = toDouble(values[columns.get("par_stat")]) * ARCSEC_MAS;
+        par_sigma = toDouble(values[columns.get("par_sigma")]) * ARCSEC_MAS;
+        cc_flags = values[columns.get("cc_flags")];
+        ab_flags = values[columns.get("ab_flags")];
     }
 
     @Override
@@ -205,8 +205,8 @@ public class CatWiseRejectedEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new CatWiseRejectedEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new CatWiseRejectedEntry(columns, values);
     }
 
     @Override

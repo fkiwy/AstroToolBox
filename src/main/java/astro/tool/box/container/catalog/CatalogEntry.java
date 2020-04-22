@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface CatalogEntry {
 
-    CatalogEntry getInstance(String[] values);
+    CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 
     void loadCatalogElements();
 

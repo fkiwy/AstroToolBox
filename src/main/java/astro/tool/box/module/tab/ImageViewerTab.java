@@ -2032,7 +2032,7 @@ public class ImageViewerTab {
                 ImageData imageData = (ImageData) imageHDU.getData();
                 float[][] values = (float[][]) imageData.getData();
 
-                // Replace zero values by their counterpart of the preceding image
+                // Replace an image with too many zero values by a preceding image
                 axisY = values.length;
                 if (axisY > 0) {
                     axisX = values[0].length;
@@ -2049,23 +2049,10 @@ public class ImageViewerTab {
                     }
                 }
                 if (zeroValues > 1000) {
-                    Fits prevFits = getPreviousImage(band, epoch);
-                    imageHDU = (ImageHDU) prevFits.getHDU(0);
-                    imageData = (ImageData) imageHDU.getData();
-                    float[][] prevValues = (float[][]) imageData.getData();
-                    for (int i = 0; i < axisY; i++) {
-                        for (int j = 0; j < axisX; j++) {
-                            try {
-                                if (values[i][j] == 0) {
-                                    values[i][j] = prevValues[i][j];
-                                }
-                            } catch (ArrayIndexOutOfBoundsException ex) {
-                            }
-                        }
-                    }
+                    fits = getPreviousImage(band, epoch);
                 }
 
-                // Un/Check the "Set min/max limits" check obx automatically
+                // Un/Check the "Set min/max limits" check box automatically
                 minMaxLimits.setSelected(false);
                 NumberTriplet minMaxValues = getMinMaxValues(values);
                 int avgVal = (int) minMaxValues.getZ();
@@ -2606,17 +2593,11 @@ public class ImageViewerTab {
         if (Epoch.isSubtracted(epoch)) {
             presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (minMaxLimits.isSelected() ? 2 : 5));
             presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
-            if (minMaxLimits.isSelected()) {
-                presetMaxVal = maxVal;
-            } else {
-                presetMaxVal = avgVal * size;
-                presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
-            }
         } else {
             presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
-            presetMaxVal = avgVal * size;
-            presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
         }
+        presetMaxVal = avgVal * size;
+        presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
 
         minValueSlider.setMinimum(minVal);
         minValueSlider.setMaximum(maxVal);

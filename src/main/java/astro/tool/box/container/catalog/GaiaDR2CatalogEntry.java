@@ -102,27 +102,27 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     public GaiaDR2CatalogEntry() {
     }
 
-    public GaiaDR2CatalogEntry(String[] values) {
-        sourceId = toLong(values[2]);
-        ra = toDouble(values[5]);
-        dec = toDouble(values[7]);
-        plx = toDouble(values[9]);
-        plx_err = toDouble(values[10]);
-        pmra = toDouble(values[12]);
-        pmra_err = toDouble(values[13]);
-        pmdec = toDouble(values[14]);
-        pmdec_err = toDouble(values[15]);
-        Gmag = toDouble(values[50]);
-        BPmag = toDouble(values[55]);
-        RPmag = toDouble(values[60]);
-        BP_RP = toDouble(values[63]);
-        BP_G = toDouble(values[64]);
-        G_RP = toDouble(values[65]);
-        radvel = toDouble(values[66]);
-        radvel_err = toDouble(values[67]);
-        teff = toDouble(values[78]);
-        radsun = toDouble(values[88]);
-        lumsun = toDouble(values[91]);
+    public GaiaDR2CatalogEntry(Map<String, Integer> columns, String[] values) {
+        sourceId = toLong(values[columns.get("source_id")]);
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        plx = toDouble(values[columns.get("parallax")]);
+        plx_err = toDouble(values[columns.get("parallax_error")]);
+        pmra = toDouble(values[columns.get("pmra")]);
+        pmra_err = toDouble(values[columns.get("pmra_error")]);
+        pmdec = toDouble(values[columns.get("pmdec")]);
+        pmdec_err = toDouble(values[columns.get("pmdec_error")]);
+        Gmag = toDouble(values[columns.get("phot_g_mean_mag")]);
+        BPmag = toDouble(values[columns.get("phot_bp_mean_mag")]);
+        RPmag = toDouble(values[columns.get("phot_rp_mean_mag")]);
+        BP_RP = toDouble(values[columns.get("bp_rp")]);
+        BP_G = toDouble(values[columns.get("bp_g")]);
+        G_RP = toDouble(values[columns.get("g_rp")]);
+        radvel = toDouble(values[columns.get("radial_velocity")]);
+        radvel_err = toDouble(values[columns.get("radial_velocity_error")]);
+        teff = toDouble(values[columns.get("teff_val")]);
+        radsun = toDouble(values[columns.get("radius_val")]);
+        lumsun = toDouble(values[columns.get("lum_val")]);
     }
 
     @Override
@@ -212,8 +212,8 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new GaiaDR2CatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new GaiaDR2CatalogEntry(columns, values);
     }
 
     @Override

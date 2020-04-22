@@ -120,33 +120,33 @@ public class SimbadCatalogEntry implements CatalogEntry {
     public SimbadCatalogEntry() {
     }
 
-    public SimbadCatalogEntry(String[] values) {
-        sourceId = values[0];
-        objectType = values[1];
-        spectralType = values[2];
-        ra = toDouble(values[3]);
-        dec = toDouble(values[4]);
-        plx = toDouble(values[5]);
-        plx_err = toDouble(values[6]);
-        pmra = toDouble(values[7]);
-        pmdec = toDouble(values[8]);
-        radvel = toDouble(values[9]);
-        redshift = toDouble(values[10]);
-        rvtype = values[11];
-        Umag = toDouble(values[12]);
-        Bmag = toDouble(values[13]);
-        Vmag = toDouble(values[14]);
-        Rmag = toDouble(values[15]);
-        Imag = toDouble(values[16]);
-        Gmag = toDouble(values[17]);
-        Jmag = toDouble(values[18]);
-        Hmag = toDouble(values[19]);
-        Kmag = toDouble(values[20]);
-        u_mag = toDouble(values[21]);
-        g_mag = toDouble(values[22]);
-        r_mag = toDouble(values[23]);
-        i_mag = toDouble(values[24]);
-        z_mag = toDouble(values[25]);
+    public SimbadCatalogEntry(Map<String, Integer> columns, String[] values) {
+        sourceId = values[columns.get("main_id")];
+        objectType = values[columns.get("otype_longname")];
+        spectralType = values[columns.get("sp_type")];
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        plx = toDouble(values[columns.get("plx_value")]);
+        plx_err = toDouble(values[columns.get("plx_err")]);
+        pmra = toDouble(values[columns.get("pmra")]);
+        pmdec = toDouble(values[columns.get("pmdec")]);
+        radvel = toDouble(values[columns.get("rvz_radvel")]);
+        redshift = toDouble(values[columns.get("rvz_redshift")]);
+        rvtype = values[columns.get("rvz_type")];
+        Umag = toDouble(values[columns.get("U")]);
+        Bmag = toDouble(values[columns.get("B")]);
+        Vmag = toDouble(values[columns.get("V")]);
+        Rmag = toDouble(values[columns.get("R")]);
+        Imag = toDouble(values[columns.get("I")]);
+        Gmag = toDouble(values[columns.get("G")]);
+        Jmag = toDouble(values[columns.get("J")]);
+        Hmag = toDouble(values[columns.get("H")]);
+        Kmag = toDouble(values[columns.get("K")]);
+        u_mag = toDouble(values[columns.get("u_")]);
+        g_mag = toDouble(values[columns.get("g_")]);
+        r_mag = toDouble(values[columns.get("r_")]);
+        i_mag = toDouble(values[columns.get("i_")]);
+        z_mag = toDouble(values[columns.get("z_")]);
     }
 
     @Override
@@ -254,8 +254,8 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new SimbadCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new SimbadCatalogEntry(columns, values);
     }
 
     @Override

@@ -121,27 +121,27 @@ public class SSOCatalogEntry implements CatalogEntry {
     public SSOCatalogEntry() {
     }
 
-    public SSOCatalogEntry(String[] values) {
-        objectID = values[1].replaceAll("\\s+", " ");
-        type = values[2];
-        pra = toDouble(values[3]);
-        pdec = toDouble(values[4]);
-        ppm = toDouble(values[5]);
-        theta = toDouble(values[6]);
-        rhelio = toDouble(values[10]);
-        amag = toDouble(values[13]);
-        vmag = toDouble(values[14]);
-        perdist = toDouble(values[16]);
-        ecc = toDouble(values[17]);
-        incl = toDouble(values[18]);
-        pertime = toDouble(values[25]);
-        mjd = toDouble(values[27]);
-        dra = toDouble(values[34]);
-        ddec = toDouble(values[35]);
-        W1mag = toDouble(values[36]);
-        W1_err = toDouble(values[37]);
-        W2mag = toDouble(values[38]);
-        W2_err = toDouble(values[39]);
+    public SSOCatalogEntry(Map<String, Integer> columns, String[] values) {
+        objectID = values[columns.get("objid")].replaceAll("\\s+", " ");
+        type = values[columns.get("t")];
+        pra = toDouble(values[columns.get("ra")]);
+        pdec = toDouble(values[columns.get("dec")]);
+        ppm = toDouble(values[columns.get("mu")]);
+        theta = toDouble(values[columns.get("theta")]);
+        rhelio = toDouble(values[columns.get("rhelio")]);
+        amag = toDouble(values[columns.get("amag")]);
+        vmag = toDouble(values[columns.get("vmag")]);
+        perdist = toDouble(values[columns.get("perdist")]);
+        ecc = toDouble(values[columns.get("ecc")]);
+        incl = toDouble(values[columns.get("incl")]);
+        pertime = toDouble(values[columns.get("pertime")]);
+        mjd = toDouble(values[columns.get("mjd")]);
+        dra = toDouble(values[columns.get("dra")]);
+        ddec = toDouble(values[columns.get("ddec")]);
+        W1mag = toDouble(values[columns.get("w1mpro")]);
+        W1_err = toDouble(values[columns.get("w1sgmp")]);
+        W2mag = toDouble(values[columns.get("w2mpro")]);
+        W2_err = toDouble(values[columns.get("w2sgmp")]);
         //ra = pra + dra / DEG_ARCSEC;
         //dec = pdec + ddec / DEG_ARCSEC;
         ra = pra;
@@ -232,8 +232,8 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new SSOCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new SSOCatalogEntry(columns, values);
     }
 
     @Override
