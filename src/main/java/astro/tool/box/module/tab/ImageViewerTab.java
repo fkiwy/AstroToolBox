@@ -2649,8 +2649,9 @@ public class ImageViewerTab {
         imageViewerTab.getSizeField().setText("100");
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         //imageViewerTab.getEpochs().setSelectedItem(epoch);
-        imageViewerTab.setQuadrantCount(quadrantCount);
+        imageViewerTab.getZoomSlider().setValue(ZOOM);
         imageViewerTab.setZoom(ZOOM);
+        imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
 
