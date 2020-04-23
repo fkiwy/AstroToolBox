@@ -72,7 +72,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v1.2.3";
+    public static final String PGM_VERSION = "v1.3.2";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
@@ -223,10 +223,10 @@ public class ModuleHelper {
     public static void addLabelToPanel(CatalogElement element, JPanel panel) {
         String name = element.getName();
         JLabel label = new JLabel(name == null ? "" : name + " = ", JLabel.RIGHT);
-        if (element.isOnFocus()) {
-            label.setOpaque(true);
-            label.setBackground(JColor.WHITE.val);
-        }
+        //if (element.isOnFocus()) {
+        //    label.setOpaque(true);
+        //    label.setBackground(JColor.WHITE.val);
+        //}
         if (element.isComputed()) {
             label.setForeground(JColor.DARKER_GREEN.val);
         }
@@ -239,11 +239,11 @@ public class ModuleHelper {
     public static void addFieldToPanel(CatalogElement element, JPanel panel) {
         String value = element.getValue();
         JTextField field = new JTextField(value == null ? "" : value);
-        if (element.isOnFocus()) {
-            field.setBackground(JColor.WHITE.val);
-        } else {
+        //if (element.isOnFocus()) {
+        //    field.setBackground(JColor.WHITE.val);
+        //} else {
             field.setBackground(new JLabel().getBackground());
-        }
+        //}
         if (element.isComputed()) {
             field.setForeground(JColor.DARKER_GREEN.val);
         }

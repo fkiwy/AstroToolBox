@@ -121,27 +121,27 @@ public class SSOCatalogEntry implements CatalogEntry {
     public SSOCatalogEntry() {
     }
 
-    public SSOCatalogEntry(String[] values) {
-        objectID = values[1].replaceAll("\\s+", " ");
-        type = values[2];
-        pra = toDouble(values[3]);
-        pdec = toDouble(values[4]);
-        ppm = toDouble(values[5]);
-        theta = toDouble(values[6]);
-        rhelio = toDouble(values[10]);
-        amag = toDouble(values[13]);
-        vmag = toDouble(values[14]);
-        perdist = toDouble(values[16]);
-        ecc = toDouble(values[17]);
-        incl = toDouble(values[18]);
-        pertime = toDouble(values[25]);
-        mjd = toDouble(values[27]);
-        dra = toDouble(values[34]);
-        ddec = toDouble(values[35]);
-        W1mag = toDouble(values[36]);
-        W1_err = toDouble(values[37]);
-        W2mag = toDouble(values[38]);
-        W2_err = toDouble(values[39]);
+    public SSOCatalogEntry(Map<String, Integer> columns, String[] values) {
+        objectID = values[columns.get("objid")].replaceAll("\\s+", " ");
+        type = values[columns.get("t")];
+        pra = toDouble(values[columns.get("ra")]);
+        pdec = toDouble(values[columns.get("dec")]);
+        ppm = toDouble(values[columns.get("mu")]);
+        theta = toDouble(values[columns.get("theta")]);
+        rhelio = toDouble(values[columns.get("rhelio")]);
+        amag = toDouble(values[columns.get("amag")]);
+        vmag = toDouble(values[columns.get("vmag")]);
+        perdist = toDouble(values[columns.get("perdist")]);
+        ecc = toDouble(values[columns.get("ecc")]);
+        incl = toDouble(values[columns.get("incl")]);
+        pertime = toDouble(values[columns.get("pertime")]);
+        mjd = toDouble(values[columns.get("mjd")]);
+        dra = toDouble(values[columns.get("dra")]);
+        ddec = toDouble(values[columns.get("ddec")]);
+        W1mag = toDouble(values[columns.get("w1mpro")]);
+        W1_err = toDouble(values[columns.get("w1sgmp")]);
+        W2mag = toDouble(values[columns.get("w2mpro")]);
+        W2_err = toDouble(values[columns.get("w2sgmp")]);
         //ra = pra + dra / DEG_ARCSEC;
         //dec = pdec + ddec / DEG_ARCSEC;
         ra = pra;
@@ -151,7 +151,7 @@ public class SSOCatalogEntry implements CatalogEntry {
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("objectId", objectID, Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("object id", objectID, Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("type", TYPE_TABLE.get(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("predicted ra", roundTo7DecNZ(pra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("predicted dec", roundTo7DecNZ(pdec), Alignment.LEFT, getDoubleComparator()));
@@ -167,9 +167,9 @@ public class SSOCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("observation time", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist. to prediced ra (arcsec)", roundTo3DecNZ(dra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist. to prediced dec (arcsec)", roundTo3DecNZ(ddec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1mag", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W2mag", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
     }
 
@@ -232,8 +232,8 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new SSOCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new SSOCatalogEntry(columns, values);
     }
 
     @Override
@@ -253,13 +253,13 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3DecNZ(ppm) + "," + roundTo3DecNZ(theta) + "," + roundTo3DecNZ(rhelio) + "," + roundTo3DecNZ(amag) + "," + roundTo3DecNZ(vmag) + "," + roundTo3DecNZ(perdist) + "," + roundTo3DecNZ(ecc) + "," + roundTo3DecNZ(incl) + "," + roundTo3DecNZ(pertime) + "," + roundTo3DecNZ(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3Dec(ppm) + "," + roundTo3Dec(theta) + "," + roundTo3Dec(rhelio) + "," + roundTo3Dec(amag) + "," + roundTo3Dec(vmag) + "," + roundTo3Dec(perdist) + "," + roundTo3Dec(ecc) + "," + roundTo3Dec(incl) + "," + roundTo3Dec(pertime) + "," + roundTo3Dec(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
         return values.split(",", 15);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),objectId,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1mag,W1 err,W2mag,W2 err";
+        String titles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
         return titles.split(",", 15);
     }
 

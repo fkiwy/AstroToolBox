@@ -102,33 +102,33 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     public GaiaDR2CatalogEntry() {
     }
 
-    public GaiaDR2CatalogEntry(String[] values) {
-        sourceId = toLong(values[2]);
-        ra = toDouble(values[5]);
-        dec = toDouble(values[7]);
-        plx = toDouble(values[9]);
-        plx_err = toDouble(values[10]);
-        pmra = toDouble(values[12]);
-        pmra_err = toDouble(values[13]);
-        pmdec = toDouble(values[14]);
-        pmdec_err = toDouble(values[15]);
-        Gmag = toDouble(values[50]);
-        BPmag = toDouble(values[55]);
-        RPmag = toDouble(values[60]);
-        BP_RP = toDouble(values[63]);
-        BP_G = toDouble(values[64]);
-        G_RP = toDouble(values[65]);
-        radvel = toDouble(values[66]);
-        radvel_err = toDouble(values[67]);
-        teff = toDouble(values[78]);
-        radsun = toDouble(values[88]);
-        lumsun = toDouble(values[91]);
+    public GaiaDR2CatalogEntry(Map<String, Integer> columns, String[] values) {
+        sourceId = toLong(values[columns.get("source_id")]);
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        plx = toDouble(values[columns.get("parallax")]);
+        plx_err = toDouble(values[columns.get("parallax_error")]);
+        pmra = toDouble(values[columns.get("pmra")]);
+        pmra_err = toDouble(values[columns.get("pmra_error")]);
+        pmdec = toDouble(values[columns.get("pmdec")]);
+        pmdec_err = toDouble(values[columns.get("pmdec_error")]);
+        Gmag = toDouble(values[columns.get("phot_g_mean_mag")]);
+        BPmag = toDouble(values[columns.get("phot_bp_mean_mag")]);
+        RPmag = toDouble(values[columns.get("phot_rp_mean_mag")]);
+        BP_RP = toDouble(values[columns.get("bp_rp")]);
+        BP_G = toDouble(values[columns.get("bp_g")]);
+        G_RP = toDouble(values[columns.get("g_rp")]);
+        radvel = toDouble(values[columns.get("radial_velocity")]);
+        radvel_err = toDouble(values[columns.get("radial_velocity_error")]);
+        teff = toDouble(values[columns.get("teff_val")]);
+        radsun = toDouble(values[columns.get("radius_val")]);
+        lumsun = toDouble(values[columns.get("lum_val")]);
     }
 
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
@@ -137,9 +137,9 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
-        catalogElements.add(new CatalogElement("Gmag", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("BPmag", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("RPmag", roundTo3DecNZ(RPmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("BP (mag)", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("RP (mag)", roundTo3DecNZ(RPmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(BP_RP), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP-G", roundTo3DecNZ(BP_G), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(G_RP), Alignment.RIGHT, getDoubleComparator(), true));
@@ -149,7 +149,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("sol rad", roundTo2DecNZ(radsun), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("sol lum", roundTo3DecNZ(lumsun), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getActualDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("M Gmag", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("Absolute G (mag)", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tang vel (km/s)", roundTo3DecNZ(getTansverseVelocity()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tot vel (km/s)", roundTo3DecNZ(getTotalVelocity()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -212,8 +212,8 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new GaiaDR2CatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new GaiaDR2CatalogEntry(columns, values);
     }
 
     @Override
@@ -239,7 +239,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,ra,dec,plx,plx err,pmra,pmra err,pmdec,pmdec err,Gmag,BPmag,RPmag,BP-RP,BP-G,G-RP,rad vel,rad vel err,teff,sol rad,sol lum,dist (pc),M Gmag,tpm,tang vel,tot vel";
+        String titles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),sol rad,sol lum,dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
         return titles.split(",", 26);
     }
 

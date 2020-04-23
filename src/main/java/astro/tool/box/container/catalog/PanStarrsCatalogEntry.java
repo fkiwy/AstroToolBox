@@ -104,38 +104,38 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     public PanStarrsCatalogEntry() {
     }
 
-    public PanStarrsCatalogEntry(String[] values) {
+    public PanStarrsCatalogEntry(Map<String, Integer> columns, String[] values) {
         for (int i = 0; i < values.length; i++) {
             if (values[i].equals("-999.0")) {
                 values[i] = "0";
             }
         }
-        objName = values[0];
-        objID = toLong(values[1]);
-        qualityFlag = toInteger(values[2]);
-        raMean = toDouble(values[3]);
-        decMean = toDouble(values[4]);
-        raMeanErr = toDouble(values[5]);
-        decMeanErr = toDouble(values[6]);
-        epochMean = toDouble(values[7]);
-        nDetections = toInteger(values[8]);
-        gMeanPSFMag = toDouble(values[9]);
-        gMeanPSFMagErr = toDouble(values[10]);
-        rMeanPSFMag = toDouble(values[11]);
-        rMeanPSFMagErr = toDouble(values[12]);
-        iMeanPSFMag = toDouble(values[13]);
-        iMeanPSFMagErr = toDouble(values[14]);
-        zMeanPSFMag = toDouble(values[15]);
-        zMeanPSFMagErr = toDouble(values[16]);
-        yMeanPSFMag = toDouble(values[17]);
-        yMeanPSFMagErr = toDouble(values[18]);
+        objName = values[columns.get("objName")];
+        objID = toLong(values[columns.get("objID")]);
+        qualityFlag = toInteger(values[columns.get("qualityFlag")]);
+        raMean = toDouble(values[columns.get("raMean")]);
+        decMean = toDouble(values[columns.get("decMean")]);
+        raMeanErr = toDouble(values[columns.get("raMeanErr")]);
+        decMeanErr = toDouble(values[columns.get("decMeanErr")]);
+        epochMean = toDouble(values[columns.get("epochMean")]);
+        nDetections = toInteger(values[columns.get("nDetections")]);
+        gMeanPSFMag = toDouble(values[columns.get("gMeanPSFMag")]);
+        gMeanPSFMagErr = toDouble(values[columns.get("gMeanPSFMagErr")]);
+        rMeanPSFMag = toDouble(values[columns.get("rMeanPSFMag")]);
+        rMeanPSFMagErr = toDouble(values[columns.get("rMeanPSFMagErr")]);
+        iMeanPSFMag = toDouble(values[columns.get("iMeanPSFMag")]);
+        iMeanPSFMagErr = toDouble(values[columns.get("iMeanPSFMagErr")]);
+        zMeanPSFMag = toDouble(values[columns.get("zMeanPSFMag")]);
+        zMeanPSFMagErr = toDouble(values[columns.get("zMeanPSFMagErr")]);
+        yMeanPSFMag = toDouble(values[columns.get("yMeanPSFMag")]);
+        yMeanPSFMagErr = toDouble(values[columns.get("yMeanPSFMagErr")]);
         qualityFlags = getPanStarrsQualityFlags(qualityFlag);
     }
 
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("quality flag sum (*)", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
@@ -144,16 +144,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dec err", roundTo4DecNZ(decMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("mean observ. time", convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(nDetections), Alignment.RIGHT, getIntegerComparator()));
-        catalogElements.add(new CatalogElement("g_mag", roundTo3DecNZ(gMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("g_mag err", roundTo3DecNZ(gMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag", roundTo3DecNZ(rMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag err", roundTo3DecNZ(rMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag", roundTo3DecNZ(iMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag err", roundTo3DecNZ(iMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag", roundTo3DecNZ(zMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag err", roundTo3DecNZ(zMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("y_mag", roundTo3DecNZ(yMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("y_mag err", roundTo3DecNZ(yMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(gMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g err", roundTo3DecNZ(gMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r (mag)", roundTo3DecNZ(rMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r err", roundTo3DecNZ(rMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i (mag)", roundTo3DecNZ(iMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i err", roundTo3DecNZ(iMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z (mag)", roundTo3DecNZ(zMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z err", roundTo3DecNZ(zMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("y (mag)", roundTo3DecNZ(yMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("y err", roundTo3DecNZ(yMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -220,8 +220,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new PanStarrsCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new PanStarrsCatalogEntry(columns, values);
     }
 
     @Override
@@ -241,14 +241,14 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3DecNZ(gMeanPSFMag) + "," + roundTo3DecNZ(gMeanPSFMagErr) + "," + roundTo3DecNZ(rMeanPSFMag) + "," + roundTo3DecNZ(rMeanPSFMagErr) + "," + roundTo3DecNZ(iMeanPSFMag) + "," + roundTo3DecNZ(iMeanPSFMagErr) + "," + roundTo3DecNZ(zMeanPSFMag) + "," + roundTo3DecNZ(zMeanPSFMagErr) + "," + roundTo3DecNZ(yMeanPSFMag) + "," + roundTo3DecNZ(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
         values = qualityFlags.stream().map((flag) -> "," + flag.getS1() + " = " + flag.getS2()).reduce(values, String::concat);
         return values.split(",", 24 + qualityFlags.size());
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,object name,quality flag (*),ra,ra err,dec,dec err,mean observ. time,detections,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,y_mag,y_mag err,g-r,r-i,i-z,z-y";
+        String titles = "dist (arcsec),source id,object name,quality flag (*),ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
         titles = qualityFlags.stream().map((flag) -> ",(*) quality flag").reduce(titles, String::concat);
         return titles.split(",", 24 + qualityFlags.size());
     }

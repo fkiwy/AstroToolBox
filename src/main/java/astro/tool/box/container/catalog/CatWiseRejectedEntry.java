@@ -2,7 +2,6 @@ package astro.tool.box.container.catalog;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
@@ -53,8 +52,17 @@ public class CatWiseRejectedEntry implements CatalogEntry {
     // Uncertainty in the Dec motion estimate
     private double pmdec_err;
 
-    // Parallax
-    private double plx;
+    // Parallax from PM desc-asce elon
+    private double par_pm;
+
+    // One-sigma uncertainty in par_pm
+    private double par_pmsig;
+
+    // Parallax estimate from stationary solution
+    private double par_stat;
+
+    // One-sigma uncertainty in par_stat
+    private double par_sigma;
 
     // Prioritized artifacts affecting the source in each band
     private String cc_flags;
@@ -94,48 +102,50 @@ public class CatWiseRejectedEntry implements CatalogEntry {
     public CatWiseRejectedEntry() {
     }
 
-    public CatWiseRejectedEntry(String[] values) {
-        sourceId = values[0];
-        ra = toDouble(values[2]);
-        dec = toDouble(values[3]);
-        W1mag = toDouble(values[23]);
-        W1_err = toDouble(values[24]);
-        W2mag = toDouble(values[26]);
-        W2_err = toDouble(values[27]);
-        meanObsMJD = toDouble(values[119]);
-        ra_pm = toDouble(values[120]);
-        dec_pm = toDouble(values[121]);
-        pmra = toDouble(values[125]) * ARCSEC_MAS;
-        pmdec = toDouble(values[126]) * ARCSEC_MAS;
-        pmra_err = toDouble(values[127]) * ARCSEC_MAS;
-        pmdec_err = toDouble(values[128]) * ARCSEC_MAS;
-        //parallax from PM desc-asce elon
-        plx = toDouble(values[166]) * ARCSEC_MAS;
-        //parallax estimate from stationary solution
-        //plx = toDouble(values[168]) * ARCSEC_MAS;
-        cc_flags = values[171];
-        ab_flags = values[177];
+    public CatWiseRejectedEntry(Map<String, Integer> columns, String[] values) {
+        sourceId = values[columns.get("source_name")];
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        W1mag = toDouble(values[columns.get("w1mpro")]);
+        W1_err = toDouble(values[columns.get("w1sigmpro")]);
+        W2mag = toDouble(values[columns.get("w2mpro")]);
+        W2_err = toDouble(values[columns.get("w2sigmpro")]);
+        meanObsMJD = toDouble(values[columns.get("meanobsmjd")]);
+        ra_pm = toDouble(values[columns.get("ra_pm")]);
+        dec_pm = toDouble(values[columns.get("dec_pm")]);
+        pmra = toDouble(values[columns.get("pmra")]) * ARCSEC_MAS;
+        pmdec = toDouble(values[columns.get("pmdec")]) * ARCSEC_MAS;
+        pmra_err = toDouble(values[columns.get("sigpmra")]) * ARCSEC_MAS;
+        pmdec_err = toDouble(values[columns.get("sigpmdec")]) * ARCSEC_MAS;
+        par_pm = toDouble(values[columns.get("par_pm")]) * ARCSEC_MAS;
+        par_pmsig = toDouble(values[columns.get("par_pmsig")]) * ARCSEC_MAS;
+        par_stat = toDouble(values[columns.get("par_stat")]) * ARCSEC_MAS;
+        par_sigma = toDouble(values[columns.get("par_sigma")]) * ARCSEC_MAS;
+        cc_flags = values[columns.get("cc_flags")];
+        ab_flags = values[columns.get("ab_flags")];
     }
 
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", sourceId, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("source id", sourceId, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1mag", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W2mag", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo2DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmra err", roundTo2DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo2DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmdec err", roundTo2DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
-        catalogElements.add(new CatalogElement("plx (mas)", roundTo1DecNZ(plx), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("cc_flags", cc_flags, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("ab_flags", ab_flags, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("plx PM desc-asc (mas)", roundTo1DecNZ(par_pm), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("plx PM desc-asc err", roundTo1DecNZ(par_pmsig), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("plx stat. sol. (mas)", roundTo1DecNZ(par_stat), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("plx stat. sol. err", roundTo1DecNZ(par_sigma), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("ab flags", ab_flags, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true, true));
-        //catalogElements.add(new CatalogElement("M W1mag", roundTo3DecNZ(getAbsoluteW1mag()), Alignment.RIGHT, getDoubleComparator(), false, true));
     }
 
     @Override
@@ -152,7 +162,10 @@ public class CatWiseRejectedEntry implements CatalogEntry {
         sb.append(", pmra_err=").append(pmra_err);
         sb.append(", pmdec=").append(pmdec);
         sb.append(", pmdec_err=").append(pmdec_err);
-        sb.append(", plx=").append(plx);
+        sb.append(", par_pm=").append(par_pm);
+        sb.append(", par_pmsig=").append(par_pmsig);
+        sb.append(", par_stat=").append(par_stat);
+        sb.append(", par_sigma=").append(par_sigma);
         sb.append(", cc_flags=").append(cc_flags);
         sb.append(", ab_flags=").append(ab_flags);
         sb.append(", meanObsMJD=").append(meanObsMJD);
@@ -171,8 +184,8 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 29 * hash + Objects.hashCode(this.sourceId);
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -192,8 +205,8 @@ public class CatWiseRejectedEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new CatWiseRejectedEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new CatWiseRejectedEntry(columns, values);
     }
 
     @Override
@@ -213,21 +226,20 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(plx) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getW1_W2()) /*+ "," + roundTo3Dec(getAbsoluteW1mag())*/;
-        return values.split(",", 16);
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getW1_W2());
+        return values.split(",", 19);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,ra,dec,W1mag,W1 err,W2mag,W2 err,pmra,pmra err,pmdec,pmdec err,plx,cc_flags,ab_flags,W1-W2" /*,M W1mag"*/;
-        return titles.split(",", 16);
+        String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,W1-W2";
+        return titles.split(",", 19);
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.W1_W2, getW1_W2());
-        colors.put(Color.M_W1, getAbsoluteW1mag());
         return colors;
     }
 
@@ -323,7 +335,7 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public double getPlx() {
-        return plx;
+        return par_pm;
     }
 
     @Override
@@ -339,14 +351,6 @@ public class CatWiseRejectedEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
-    }
-
-    public double getActualDistance() {
-        return calculateActualDistance(Math.abs(plx));
-    }
-
-    public double getAbsoluteW1mag() {
-        return calculateAbsoluteMagnitudeFromParallax(W1mag, Math.abs(plx));
     }
 
     public double getMeanObsMJD() {

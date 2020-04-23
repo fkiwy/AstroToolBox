@@ -62,7 +62,7 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
         return new GenericCatalogEntry();
     }
 

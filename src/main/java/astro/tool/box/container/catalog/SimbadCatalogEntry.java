@@ -120,41 +120,41 @@ public class SimbadCatalogEntry implements CatalogEntry {
     public SimbadCatalogEntry() {
     }
 
-    public SimbadCatalogEntry(String[] values) {
-        sourceId = values[0];
-        objectType = values[1];
-        spectralType = values[2];
-        ra = toDouble(values[3]);
-        dec = toDouble(values[4]);
-        plx = toDouble(values[5]);
-        plx_err = toDouble(values[6]);
-        pmra = toDouble(values[7]);
-        pmdec = toDouble(values[8]);
-        radvel = toDouble(values[9]);
-        redshift = toDouble(values[10]);
-        rvtype = values[11];
-        Umag = toDouble(values[12]);
-        Bmag = toDouble(values[13]);
-        Vmag = toDouble(values[14]);
-        Rmag = toDouble(values[15]);
-        Imag = toDouble(values[16]);
-        Gmag = toDouble(values[17]);
-        Jmag = toDouble(values[18]);
-        Hmag = toDouble(values[19]);
-        Kmag = toDouble(values[20]);
-        u_mag = toDouble(values[21]);
-        g_mag = toDouble(values[22]);
-        r_mag = toDouble(values[23]);
-        i_mag = toDouble(values[24]);
-        z_mag = toDouble(values[25]);
+    public SimbadCatalogEntry(Map<String, Integer> columns, String[] values) {
+        sourceId = values[columns.get("main_id")];
+        objectType = values[columns.get("otype_longname")];
+        spectralType = values[columns.get("sp_type")];
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        plx = toDouble(values[columns.get("plx_value")]);
+        plx_err = toDouble(values[columns.get("plx_err")]);
+        pmra = toDouble(values[columns.get("pmra")]);
+        pmdec = toDouble(values[columns.get("pmdec")]);
+        radvel = toDouble(values[columns.get("rvz_radvel")]);
+        redshift = toDouble(values[columns.get("rvz_redshift")]);
+        rvtype = values[columns.get("rvz_type")];
+        Umag = toDouble(values[columns.get("U")]);
+        Bmag = toDouble(values[columns.get("B")]);
+        Vmag = toDouble(values[columns.get("V")]);
+        Rmag = toDouble(values[columns.get("R")]);
+        Imag = toDouble(values[columns.get("I")]);
+        Gmag = toDouble(values[columns.get("G")]);
+        Jmag = toDouble(values[columns.get("J")]);
+        Hmag = toDouble(values[columns.get("H")]);
+        Kmag = toDouble(values[columns.get("K")]);
+        u_mag = toDouble(values[columns.get("u_")]);
+        g_mag = toDouble(values[columns.get("g_")]);
+        r_mag = toDouble(values[columns.get("r_")]);
+        i_mag = toDouble(values[columns.get("i_")]);
+        z_mag = toDouble(values[columns.get("z_")]);
     }
 
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", sourceId, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("objectType", objectType, Alignment.LEFT, getStringComparator(), true));
-        catalogElements.add(new CatalogElement("spectralType", spectralType, Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("source id", sourceId, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("object type", objectType, Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("spectral type", spectralType, Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
@@ -164,20 +164,20 @@ public class SimbadCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("rad vel (km/s)", roundTo1DecNZ(radvel), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("redshift", roundTo6DecNZ(redshift), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("rv type", rvtype, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("Umag", roundTo3DecNZ(Umag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Bmag", roundTo3DecNZ(Bmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Vmag", roundTo3DecNZ(Vmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Rmag", roundTo3DecNZ(Rmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Imag", roundTo3DecNZ(Imag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Gmag", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Jmag", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Hmag", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Kmag", roundTo3DecNZ(Kmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("u_mag", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("g_mag", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("U (mag)", roundTo3DecNZ(Umag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("B (mag)", roundTo3DecNZ(Bmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("V (mag)", roundTo3DecNZ(Vmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("R (mag)", roundTo3DecNZ(Rmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("I (mag)", roundTo3DecNZ(Imag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J (mag)", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H (mag)", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("K (mag)", roundTo3DecNZ(Kmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r (mag)", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i (mag)", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z (mag)", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("B-V", roundTo3DecNZ(getB_V()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("U-B", roundTo3DecNZ(getU_B()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("V-R", roundTo3DecNZ(getV_R()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -254,8 +254,8 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new SimbadCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new SimbadCatalogEntry(columns, values);
     }
 
     @Override
@@ -281,7 +281,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,type,spt,ra,dec,plx,plx err,pmra,pmdec,rad vel,redshift,rv type,Umag,Bmag,Vmag,Rmag,Imag,Gmag,Jmag,Hmag,Kmag,u_mag,g_mag,r_mag,i_mag,z_mag,B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
+        String titles = "dist (arcsec),source id,object type,spectral type,ra,dec,plx (mas),plx err,pmra (mas/yr),pmdec (mas/yr),rad vel (km/s),redshift,rv type,U (mag),B (mag),V (mag),R (mag),I (mag),G (mag),J (mag),H (mag),K (mag),u (mag),g (mag),r (mag),i (mag),z (mag),B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
         return titles.split(",", 38);
     }
 

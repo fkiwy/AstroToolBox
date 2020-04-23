@@ -116,37 +116,37 @@ public class SDSSCatalogEntry implements CatalogEntry {
     public SDSSCatalogEntry() {
     }
 
-    public SDSSCatalogEntry(String[] values) {
-        objID = toLong(values[0]);
-        run = toInteger(values[1]);
-        rerun = toInteger(values[2]);
-        camcol = toInteger(values[3]);
-        field = toInteger(values[4]);
-        obj = toInteger(values[5]);
-        ra = toDouble(values[6]);
-        dec = toDouble(values[7]);
-        raErr = toDouble(values[8]);
-        decErr = toDouble(values[9]);
-        type = toInteger(values[10]);
-        clean = toInteger(values[11]);
-        mjd = toInteger(values[12]);
-        specObjID = new BigInteger(values[13]);
-        u_mag = toDouble(values[14]);
-        g_mag = toDouble(values[15]);
-        r_mag = toDouble(values[16]);
-        i_mag = toDouble(values[17]);
-        z_mag = toDouble(values[18]);
-        u_err = toDouble(values[19]);
-        g_err = toDouble(values[20]);
-        r_err = toDouble(values[21]);
-        i_err = toDouble(values[22]);
-        z_err = toDouble(values[23]);
+    public SDSSCatalogEntry(Map<String, Integer> columns, String[] values) {
+        objID = toLong(values[columns.get("objid")]);
+        run = toInteger(values[columns.get("run")]);
+        rerun = toInteger(values[columns.get("rerun")]);
+        camcol = toInteger(values[columns.get("camcol")]);
+        field = toInteger(values[columns.get("field")]);
+        obj = toInteger(values[columns.get("obj")]);
+        ra = toDouble(values[columns.get("ra")]);
+        dec = toDouble(values[columns.get("dec")]);
+        raErr = toDouble(values[columns.get("raErr")]);
+        decErr = toDouble(values[columns.get("decErr")]);
+        type = toInteger(values[columns.get("type")]);
+        clean = toInteger(values[columns.get("clean")]);
+        mjd = toInteger(values[columns.get("mjd")]);
+        specObjID = new BigInteger(values[columns.get("specObjID")]);
+        u_mag = toDouble(values[columns.get("u")]);
+        g_mag = toDouble(values[columns.get("g")]);
+        r_mag = toDouble(values[columns.get("r")]);
+        i_mag = toDouble(values[columns.get("i")]);
+        z_mag = toDouble(values[columns.get("z")]);
+        u_err = toDouble(values[columns.get("Err_u")]);
+        g_err = toDouble(values[columns.get("Err_g")]);
+        r_err = toDouble(values[columns.get("Err_r")]);
+        i_err = toDouble(values[columns.get("Err_i")]);
+        z_err = toDouble(values[columns.get("Err_z")]);
     }
 
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sourceId", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(raErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
@@ -155,16 +155,16 @@ public class SDSSCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("photometry flag", getSdssPhotometryFlag(clean), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("observation date", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("spectrum pointer", String.valueOf(specObjID), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("u_mag", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("u_mag err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("g_mag", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("g_mag err", roundTo3DecNZ(g_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("r_mag err", roundTo3DecNZ(r_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("i_mag err", roundTo3DecNZ(i_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("z_mag err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g err", roundTo3DecNZ(g_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r (mag)", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r err", roundTo3DecNZ(r_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i (mag)", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i err", roundTo3DecNZ(i_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z (mag)", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -235,8 +235,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public CatalogEntry getInstance(String[] values) {
-        return new SDSSCatalogEntry(values);
+    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+        return new SDSSCatalogEntry(columns, values);
     }
 
     @Override
@@ -262,7 +262,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),sourceId,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u_mag,u_mag err,g_mag,g_mag err,r_mag,r_mag err,i_mag,i_mag err,z_mag,z_mag err,u-g,g-r,r-i,i-z";
+        String titles = "dist (arcsec),source id,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,u-g,g-r,r-i,i-z";
         return titles.split(",", 24);
     }
 

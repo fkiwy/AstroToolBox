@@ -5,6 +5,7 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,7 +15,10 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ServiceProviderUtils {
@@ -63,8 +67,8 @@ public class ServiceProviderUtils {
 
     public static String readSimbadResponse(HttpURLConnection connection) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            return reader.lines().skip(1).map(line -> {
-                return line.replace("|", ",").replaceAll(REGEXP_SPACES, "").replace("\"", "");
+            return reader.lines().map(line -> {
+                return line.replace("|", SPLIT_CHAR).replaceAll(REGEXP_SPACES, "");
             }).collect(Collectors.joining(LINE_SEP));
         } catch (IOException ex) {
             showInfoDialog(null, SERVICE_NOT_AVAILABLE);
@@ -74,9 +78,28 @@ public class ServiceProviderUtils {
 
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(response));
-        return reader.lines().skip(catalogEntry instanceof SDSSCatalogEntry ? 2 : 1).map(line -> {
-            return catalogEntry.getInstance(line.split(SPLIT_CHAR));
-        }).collect(Collectors.toList());
+        if (catalogEntry instanceof SDSSCatalogEntry) {
+            reader.readLine();
+        }
+        String headerLine = reader.readLine();
+        String[] headers = CSVParser.parseLine(headerLine);
+        Map<String, Integer> columns = new HashMap<>();
+        for (int i = 0; i < headers.length; i++) {
+            columns.put(headers[i], i);
+        }
+        if (catalogEntry instanceof SimbadCatalogEntry) {
+            reader.readLine();
+        }
+        String line;
+        List<CatalogEntry> entries = new ArrayList<>();
+        while ((line = reader.readLine()) != null) {
+            String[] values = CSVParser.parseLine(line);
+            for (int i = 0; i < values.length; i++) {
+                values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+            }
+            entries.add(catalogEntry.getInstance(columns, values));
+        }
+        return entries;
     }
 
 }

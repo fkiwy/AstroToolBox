@@ -1,9 +1,11 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.NumberPair;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.function.AstrometricFunctions;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class FlipbookComponent {
 
@@ -25,6 +27,8 @@ public class FlipbookComponent {
 
     private double maxObsEpoch;
 
+    private List<NumberPair> diffPixels;
+
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
         this.epoch = epoch;
@@ -41,6 +45,21 @@ public class FlipbookComponent {
         this.band = band;
         this.epoch = epoch;
         this.isMerged = isMerged;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FlipbookComponent{band=").append(band);
+        sb.append(", epoch=").append(epoch);
+        sb.append(", epochCount=").append(epochCount);
+        sb.append(", isMerged=").append(isMerged);
+        sb.append(", firstEpoch=").append(firstEpoch);
+        sb.append(", minObsEpoch=").append(minObsEpoch);
+        sb.append(", maxObsEpoch=").append(maxObsEpoch);
+        sb.append(", diffPixels=").append(diffPixels);
+        sb.append('}');
+        return sb.toString();
     }
 
     public String getTitle() {
@@ -88,13 +107,36 @@ public class FlipbookComponent {
                     node = DESC_NODE;
                     break;
                 default:
-                    firstEpoch = epoch == 101;
-                    if (epoch > 100 && epoch < 200) {
-                        titleEpoch = String.valueOf(epoch - 100);
+                    if (epoch >= 800 && epoch < 900) {
+                        if (epoch == 802) {
+                            firstEpoch = true;
+                        }
+                        titleEpoch = String.valueOf((epoch - 800) / 2);
+                        node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
+                    } else if (epoch >= 900 && epoch < 1000) {
+                        if (epoch == 903) {
+                            firstEpoch = true;
+                        }
+                        titleEpoch = String.valueOf((epoch - 900) / 2);
+                        node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
+                    } else if (epoch >= 1000 && epoch < 1100) {
+                        titleEpoch = String.valueOf(epoch - 1000 + 1);
+                        node = ASC_NODE + "&" + DESC_NODE;
+                    } else if (epoch >= 1100 && epoch < 1200) {
+                        if (epoch == 1100) {
+                            firstEpoch = true;
+                        }
+                        titleEpoch = String.valueOf(epoch - 1100 + 1);
                         node = ASC_NODE + "&" + DESC_NODE;
                     } else {
-                        titleEpoch = "";
-                        node = "";
+                        firstEpoch = epoch == 101;
+                        if (epoch > 100 && epoch < 200) {
+                            titleEpoch = String.valueOf(epoch - 100);
+                            node = ASC_NODE + "&" + DESC_NODE;
+                        } else {
+                            titleEpoch = "";
+                            node = "";
+                        }
                     }
                     break;
             }
@@ -136,6 +178,14 @@ public class FlipbookComponent {
 
     public double getMaxObsEpoch() {
         return maxObsEpoch;
+    }
+
+    public List<NumberPair> getDiffPixels() {
+        return diffPixels;
+    }
+
+    public void setDiffPixels(List<NumberPair> diffPixels) {
+        this.diffPixels = diffPixels;
     }
 
 }
