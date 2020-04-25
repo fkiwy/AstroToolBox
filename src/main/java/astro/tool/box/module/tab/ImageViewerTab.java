@@ -137,8 +137,6 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int MIN_VALUE = -2500;
     public static final int MAX_VALUE = 2500;
-    public static final int MIN_LIMIT = -250000;
-    public static final int MAX_LIMIT = 250000;
     public static final int STRETCH = 100;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
@@ -2550,8 +2548,8 @@ public class ImageViewerTab {
     private NumberTriplet getMinMaxValues(float[][] values) {
         int x = values.length;
         int y = values[0].length;
-        float minVal = 0;
-        float maxVal = 0;
+        float minVal = clipToBoundaries(values[0][0]);
+        float maxVal = clipToBoundaries(values[0][0]);
         int sum = 0;
         int nbr = 0;
         for (int i = 0; i < x; i++) {
@@ -2561,9 +2559,7 @@ public class ImageViewerTab {
                     continue;
                 }
                 if (minMaxLimits.isSelected()) {
-                    value = clipToBoundaries(value, MIN_VALUE, MAX_VALUE);
-                } else {
-                    //value = clipToBoundaries(value, MIN_LIMIT, MAX_LIMIT);
+                    value = clipToBoundaries(value);
                 }
                 if (value < minVal) {
                     minVal = value;
@@ -2579,8 +2575,8 @@ public class ImageViewerTab {
         return new NumberTriplet(minVal, maxVal, avgVal);
     }
 
-    private float clipToBoundaries(float value, float minValue, float maxValue) {
-        return max(minValue, min(maxValue, value));
+    private float clipToBoundaries(float value) {
+        return max(MIN_VALUE, min(MAX_VALUE, value));
     }
 
     private void initMinMaxValues() {
