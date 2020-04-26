@@ -7,6 +7,7 @@ import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -17,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaDR2CatalogEntry implements CatalogEntry {
+public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -93,6 +94,9 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
 
     // Search radius
     private double searchRadius;
+
+    // Total proper motion
+    private double tpm;
 
     // Catalog number
     private int catalogNumber;
@@ -183,6 +187,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
         sb.append(", pixelRa=").append(pixelRa);
         sb.append(", pixelDec=").append(pixelDec);
         sb.append(", searchRadius=").append(searchRadius);
+        sb.append(", tpm=").append(tpm);
         sb.append(", catalogNumber=").append(catalogNumber);
         sb.append(", catalogElements=").append(catalogElements);
         sb.append('}');
@@ -192,7 +197,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 73 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 29 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
@@ -229,6 +234,44 @@ public class GaiaDR2CatalogEntry implements CatalogEntry {
     @Override
     public String getCatalogUrl() {
         return createIrsaUrl(GAIADR2_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+    }
+
+    @Override
+    public String getProperMotionQueryUrl() {
+        return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+    }
+
+    private String createProperMotionQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT source_id,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       parallax,");
+        addRow(query, "       parallax_error,");
+        addRow(query, "       pmra,");
+        addRow(query, "       pmra_error,");
+        addRow(query, "       pmdec,");
+        addRow(query, "       pmdec_error,");
+        addRow(query, "       phot_g_mean_mag,");
+        addRow(query, "       phot_bp_mean_mag,");
+        addRow(query, "       phot_rp_mean_mag,");
+        addRow(query, "       bp_rp,");
+        addRow(query, "       bp_g,");
+        addRow(query, "       g_rp,");
+        addRow(query, "       radial_velocity,");
+        addRow(query, "       radial_velocity_error,");
+        addRow(query, "       teff_val,");
+        addRow(query, "       radius_val,");
+        addRow(query, "       lum_val");
+        addRow(query, "FROM   " + GAIADR2_CATALOG_ID);
+        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
+        addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
+        return encodeQuery(query.toString());
+    }
+
+    @Override
+    public void setTpm(double tpm) {
+        this.tpm = tpm;
     }
 
     @Override

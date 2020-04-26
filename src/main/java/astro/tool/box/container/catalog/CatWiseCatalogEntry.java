@@ -11,13 +11,15 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import static astro.tool.box.util.Utils.addRow;
+import static astro.tool.box.util.Utils.encodeQuery;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CatWiseCatalogEntry implements CatalogEntry {
+public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     // Unique WISE source designation
     private String sourceId;
@@ -93,6 +95,9 @@ public class CatWiseCatalogEntry implements CatalogEntry {
 
     // Search radius
     private double searchRadius;
+
+    // Total proper motion
+    private double tpm;
 
     // Catalog number
     private int catalogNumber;
@@ -176,6 +181,7 @@ public class CatWiseCatalogEntry implements CatalogEntry {
         sb.append(", pixelRa=").append(pixelRa);
         sb.append(", pixelDec=").append(pixelDec);
         sb.append(", searchRadius=").append(searchRadius);
+        sb.append(", tpm=").append(tpm);
         sb.append(", catalogNumber=").append(catalogNumber);
         sb.append(", catalogElements=").append(catalogElements);
         sb.append('}');
@@ -184,8 +190,8 @@ public class CatWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + Objects.hashCode(this.sourceId);
+        int hash = 3;
+        hash = 53 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -222,6 +228,44 @@ public class CatWiseCatalogEntry implements CatalogEntry {
     @Override
     public String getCatalogUrl() {
         return createIrsaUrl(CATWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+    }
+
+    @Override
+    public String getProperMotionQueryUrl() {
+        return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+    }
+
+    private String createProperMotionQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT source_name,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       w1mpro,");
+        addRow(query, "       w1sigmpro,");
+        addRow(query, "       w2mpro,");
+        addRow(query, "       w2sigmpro,");
+        addRow(query, "       meanobsmjd,");
+        addRow(query, "       ra_pm,");
+        addRow(query, "       dec_pm,");
+        addRow(query, "       pmra,");
+        addRow(query, "       pmdec,");
+        addRow(query, "       sigpmra,");
+        addRow(query, "       sigpmdec,");
+        addRow(query, "       par_pm,");
+        addRow(query, "       par_pmsig,");
+        addRow(query, "       par_stat,");
+        addRow(query, "       par_sigma,");
+        addRow(query, "       cc_flags,");
+        addRow(query, "       ab_flags");
+        addRow(query, "FROM   " + CATWISE_CATALOG_ID);
+        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
+        addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
+        return encodeQuery(query.toString());
+    }
+
+    @Override
+    public void setTpm(double tpm) {
+        this.tpm = tpm;
     }
 
     @Override

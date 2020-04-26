@@ -20,6 +20,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
@@ -152,8 +153,10 @@ public class ImageViewerTab {
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
     private List<CatalogEntry> simbadEntries;
     private List<CatalogEntry> gaiaDR2Entries;
+    private List<CatalogEntry> gaiaDR2TpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
+    private List<CatalogEntry> catWiseTpmEntries;
     private List<CatalogEntry> catWiseRejectedEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
@@ -624,6 +627,28 @@ public class ImageViewerTab {
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
+            properMotionField.addActionListener((ActionEvent evt) -> {
+                gaiaDR2TpmEntries = null;
+                catWiseTpmEntries = null;
+            });
+            /*
+            properMotionField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                }
+
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    gaiaDR2TpmEntries = null;
+                    catWiseTpmEntries = null;
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    gaiaDR2TpmEntries = null;
+                    catWiseTpmEntries = null;
+                }
+            });*/
 
             controlPanel.add(new JLabel(underline("Sources affected by WISE artifacts:")));
 
@@ -1218,8 +1243,8 @@ public class ImageViewerTab {
                                         showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
-                                    if (gaiaDR2ProperMotion.isSelected() && gaiaDR2Entries != null) {
-                                        showPMInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
+                                    if (gaiaDR2ProperMotion.isSelected() && gaiaDR2TpmEntries != null) {
+                                        showPMInfo(gaiaDR2TpmEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
                                     if (allWiseOverlay.isSelected() && allWiseEntries != null) {
@@ -1230,8 +1255,8 @@ public class ImageViewerTab {
                                         showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
                                         overlays++;
                                     }
-                                    if (catWiseProperMotion.isSelected() && catWiseEntries != null) {
-                                        showPMInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
+                                    if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
+                                        showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
                                         overlays++;
                                     }
                                     if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
@@ -1509,8 +1534,10 @@ public class ImageViewerTab {
                 catWiseProperMotion.setEnabled(true);
                 simbadEntries = null;
                 gaiaDR2Entries = null;
+                gaiaDR2TpmEntries = null;
                 allWiseEntries = null;
                 catWiseEntries = null;
+                catWiseTpmEntries = null;
                 catWiseRejectedEntries = null;
                 panStarrsEntries = null;
                 sdssEntries = null;
@@ -1991,12 +2018,12 @@ public class ImageViewerTab {
             });
         }
         if (gaiaDR2ProperMotion.isSelected()) {
-            fetchGaiaDR2CatalogEntries();
-            drawPMVectors(image, gaiaDR2Entries, Color.CYAN.darker());
+            fetchGaiaDR2TpmCatalogEntries();
+            drawPMVectors(image, gaiaDR2TpmEntries, Color.CYAN.darker());
         }
         if (catWiseProperMotion.isSelected()) {
-            fetchCatWiseCatalogEntries();
-            drawPMVectors(image, catWiseEntries, Color.MAGENTA);
+            fetchCatWiseTpmCatalogEntries();
+            drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
         }
     }
 
@@ -2892,6 +2919,29 @@ public class ImageViewerTab {
         }
     }
 
+    private void fetchGaiaDR2TpmCatalogEntries() {
+        try {
+            if (gaiaDR2TpmEntries == null) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                ProperMotionQuery catalogQuery = new GaiaDR2CatalogEntry();
+                catalogQuery.setRa(targetRa);
+                catalogQuery.setDec(targetDec);
+                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+                catalogQuery.setTpm(toDouble(properMotionField.getText()));
+                gaiaDR2TpmEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
+                gaiaDR2TpmEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.loadCatalogElements();
+                });
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void fetchAllWiseCatalogEntries() {
         try {
             if (allWiseEntries == null) {
@@ -2924,6 +2974,29 @@ public class ImageViewerTab {
                 catalogQuery.setSearchRadius(getFovDiagonal() / 2);
                 catWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
                 catWiseEntries.forEach(catalogEntry -> {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.loadCatalogElements();
+                });
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void fetchCatWiseTpmCatalogEntries() {
+        try {
+            if (catWiseTpmEntries == null) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                ProperMotionQuery catalogQuery = new CatWiseCatalogEntry();
+                catalogQuery.setRa(targetRa);
+                catalogQuery.setDec(targetDec);
+                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+                catalogQuery.setTpm(toDouble(properMotionField.getText()));
+                catWiseTpmEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
+                catWiseTpmEntries.forEach(catalogEntry -> {
                     catalogEntry.setTargetRa(targetRa);
                     catalogEntry.setTargetDec(targetDec);
                     catalogEntry.loadCatalogElements();
@@ -3209,42 +3282,41 @@ public class ImageViewerTab {
             double pmRa = catalogEntry.getPmra();
             double pmDec = catalogEntry.getPmdec();
 
-            double tpm = calculateTotalProperMotion(pmRa, pmDec);
-            double pmLimit = toDouble(properMotionField.getText());
-
-            if (tpm > pmLimit) {
-                double ra = 0;
-                double dec = 0;
-                int numberOfYears = 0;
-                if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                    ra = catalogEntry.getRa();
-                    dec = catalogEntry.getDec();
-                    numberOfYears = 5;
-                }
-                if (catalogEntry instanceof CatWiseCatalogEntry) {
-                    ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
-                    dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
-                    numberOfYears = 4;
-                }
-
-                ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
-                dec = dec - numberOfYears * pmDec / DEG_MAS;
-
-                NumberPair pixelCoords = getPixelCoordinates(ra, dec);
-                double x = pixelCoords.getX();
-                double y = pixelCoords.getY();
-
-                numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
-                double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
-                double newDec = dec + numberOfYears * pmDec / DEG_MAS;
-
-                pixelCoords = getPixelCoordinates(newRa, newDec);
-                double newX = pixelCoords.getX();
-                double newY = pixelCoords.getY();
-
-                Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
-                arrow.draw(graphics);
+            //double tpm = calculateTotalProperMotion(pmRa, pmDec);
+            //double pmLimit = toDouble(properMotionField.getText());
+            //if (tpm > pmLimit) {
+            double ra = 0;
+            double dec = 0;
+            int numberOfYears = 0;
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                ra = catalogEntry.getRa();
+                dec = catalogEntry.getDec();
+                numberOfYears = 5;
             }
+            if (catalogEntry instanceof CatWiseCatalogEntry) {
+                ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
+                dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
+                numberOfYears = 4;
+            }
+
+            ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
+            dec = dec - numberOfYears * pmDec / DEG_MAS;
+
+            NumberPair pixelCoords = getPixelCoordinates(ra, dec);
+            double x = pixelCoords.getX();
+            double y = pixelCoords.getY();
+
+            numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
+            double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
+            double newDec = dec + numberOfYears * pmDec / DEG_MAS;
+
+            pixelCoords = getPixelCoordinates(newRa, newDec);
+            double newX = pixelCoords.getX();
+            double newY = pixelCoords.getY();
+
+            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
+            arrow.draw(graphics);
+            //}
         });
     }
 
@@ -3252,11 +3324,11 @@ public class ImageViewerTab {
         catalogEntries.forEach(catalogEntry -> {
             double pmRa = catalogEntry.getPmra();
             double pmDec = catalogEntry.getPmdec();
-            double tpm = calculateTotalProperMotion(pmRa, pmDec);
-            double pmLimit = toDouble(properMotionField.getText());
+            //double tpm = calculateTotalProperMotion(pmRa, pmDec);
+            //double pmLimit = toDouble(properMotionField.getText());
             double radius = getOverlaySize() / 2;
-            if (tpm > pmLimit
-                    && catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
+            if (/*tpm > pmLimit
+                    &&*/catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
                 displayCatalogPanel(catalogEntry, color);
             }

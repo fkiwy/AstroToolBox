@@ -4,6 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.enumeration.JColor;
@@ -223,10 +224,7 @@ public class AdqlQueryTab {
                 statusField.setBackground(getStatusColor(jobStatus).val);
                 queryResults = null;
                 jobId = null;
-                String encodedQuery = omitQueryComments(query).replaceAll(LINE_SEP_TEXT_AREA, " ")
-                        .replaceAll(" +", "%20")
-                        .replaceAll("\\+", "%2B")
-                        .replaceAll(";", "");
+                String encodedQuery = encodeQuery(query);
                 try {
                     String response;
                     // Validate query
@@ -549,21 +547,6 @@ public class AdqlQueryTab {
         addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.1 AND [PMRA] + ABS([PMRA]) * 0.1");
         addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.1 AND [PMDE] + ABS([PMDE]) * 0.1)");
         return query.toString();
-    }
-
-    private String omitQueryComments(String query) {
-        String[] lines = query.split(LINE_SEP_TEXT_AREA);
-        List<String> results = new ArrayList<>();
-        for (String line : lines) {
-            if (!line.startsWith("--")) {
-                results.add(line);
-            }
-        }
-        return String.join(LINE_SEP_TEXT_AREA, results);
-    }
-
-    private void addRow(StringBuilder query, String row) {
-        query.append(row).append(LINE_SEP_TEXT_AREA);
     }
 
     private String createSynchQueryUrl(String query) {
