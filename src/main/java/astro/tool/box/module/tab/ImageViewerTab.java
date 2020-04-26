@@ -2923,6 +2923,7 @@ public class ImageViewerTab {
         try {
             if (gaiaDR2TpmEntries == null) {
                 baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                properMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 ProperMotionQuery catalogQuery = new GaiaDR2CatalogEntry();
                 catalogQuery.setRa(targetRa);
                 catalogQuery.setDec(targetDec);
@@ -2939,6 +2940,7 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
+            properMotionField.setCursor(Cursor.getDefaultCursor());
         }
     }
 
@@ -2990,6 +2992,7 @@ public class ImageViewerTab {
         try {
             if (catWiseTpmEntries == null) {
                 baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                properMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 ProperMotionQuery catalogQuery = new CatWiseCatalogEntry();
                 catalogQuery.setRa(targetRa);
                 catalogQuery.setDec(targetDec);
@@ -3006,6 +3009,7 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
+            properMotionField.setCursor(Cursor.getDefaultCursor());
         }
     }
 
