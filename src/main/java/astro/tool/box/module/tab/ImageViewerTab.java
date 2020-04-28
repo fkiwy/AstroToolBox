@@ -85,6 +85,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1972,58 +1973,110 @@ public class ImageViewerTab {
 
     private void addOverlaysAndPMVectors(BufferedImage image) {
         if (simbadOverlay.isSelected()) {
-            fetchSimbadCatalogEntries();
-            drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
+            if (simbadEntries == null) {
+                simbadEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> simbadEntries = fetchCatalogEntries(new SimbadCatalogEntry()));
+            } else {
+                drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
+            }
         }
         if (gaiaDR2Overlay.isSelected()) {
-            fetchGaiaDR2CatalogEntries();
-            drawOverlay(image, gaiaDR2Entries, Color.CYAN.darker(), Shape.CIRCLE);
+            if (gaiaDR2Entries == null) {
+                gaiaDR2Entries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaDR2Entries = fetchCatalogEntries(new GaiaDR2CatalogEntry()));
+            } else {
+                drawOverlay(image, gaiaDR2Entries, Color.CYAN.darker(), Shape.CIRCLE);
+            }
         }
         if (allWiseOverlay.isSelected()) {
-            fetchAllWiseCatalogEntries();
-            drawOverlay(image, allWiseEntries, Color.GREEN.darker(), Shape.CIRCLE);
+            if (allWiseEntries == null) {
+                allWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> allWiseEntries = fetchCatalogEntries(new AllWiseCatalogEntry()));
+            } else {
+                drawOverlay(image, allWiseEntries, Color.GREEN.darker(), Shape.CIRCLE);
+            }
         }
         if (catWiseOverlay.isSelected()) {
-            fetchCatWiseCatalogEntries();
-            drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
+            if (catWiseEntries == null) {
+                catWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry()));
+            } else {
+                drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
+            }
         }
         if (panStarrsOverlay.isSelected()) {
-            fetchPanStarrsCatalogEntries();
-            drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
+            if (panStarrsEntries == null) {
+                panStarrsEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> panStarrsEntries = fetchCatalogEntries(new PanStarrsCatalogEntry()));
+            } else {
+                drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
+            }
         }
         if (sdssOverlay.isSelected()) {
-            fetchSdssCatalogEntries();
-            drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
+            if (sdssEntries == null) {
+                sdssEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
+            } else {
+                drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
+            }
         }
         if (spectrumOverlay.isSelected()) {
-            fetchSdssCatalogEntries();
-            drawSectrumOverlay(image, sdssEntries);
+            if (sdssEntries == null) {
+                sdssEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
+            } else {
+                drawSectrumOverlay(image, sdssEntries);
+            }
         }
         if (ssoOverlay.isSelected()) {
-            fetchSSOCatalogEntries();
-            drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
+            if (ssoEntries == null) {
+                ssoEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> ssoEntries = fetchCatalogEntries(new SSOCatalogEntry()));
+            } else {
+                drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
+            }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
-            fetchCatWiseCatalogEntries();
-            drawArtifactOverlay(image, catWiseEntries);
-            fetchCatWiseRejectedEntries();
-            drawArtifactOverlay(image, catWiseRejectedEntries);
+            if (catWiseEntries == null) {
+                catWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry()));
+            } else {
+                drawArtifactOverlay(image, catWiseEntries);
+            }
+            if (catWiseRejectedEntries == null) {
+                catWiseRejectedEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseRejectedEntries = fetchCatalogEntries(new CatWiseRejectedEntry()));
+            } else {
+                drawArtifactOverlay(image, catWiseRejectedEntries);
+            }
         }
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
                 if (customOverlay.getCheckBox().isSelected()) {
-                    fetchGenericCatalogEntries(customOverlay);
-                    drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor(), customOverlay.getShape());
+                    if (customOverlay.getCatalogEntries() == null) {
+                        customOverlay.setCatalogEntries(Collections.emptyList());
+                        CompletableFuture.supplyAsync(() -> fetchGenericCatalogEntries(customOverlay));
+                    } else {
+                        drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor(), customOverlay.getShape());
+                    }
                 }
             });
         }
         if (gaiaDR2ProperMotion.isSelected()) {
-            fetchGaiaDR2TpmCatalogEntries();
-            drawPMVectors(image, gaiaDR2TpmEntries, Color.CYAN.darker());
+            if (gaiaDR2TpmEntries == null) {
+                gaiaDR2TpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaDR2TpmEntries = fetchTpmCatalogEntries(new GaiaDR2CatalogEntry()));
+            } else {
+                drawPMVectors(image, gaiaDR2TpmEntries, Color.CYAN.darker());
+            }
         }
         if (catWiseProperMotion.isSelected()) {
-            fetchCatWiseTpmCatalogEntries();
-            drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
+            if (catWiseTpmEntries == null) {
+                catWiseTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry()));
+            } else {
+                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
+            }
         }
     }
 
@@ -2875,276 +2928,93 @@ public class ImageViewerTab {
         }
     }
 
-    private void fetchSimbadCatalogEntries() {
+    private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {
         try {
-            if (simbadEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new SimbadCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                simbadEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                simbadEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchGaiaDR2CatalogEntries() {
-        try {
-            if (gaiaDR2Entries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new GaiaDR2CatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                gaiaDR2Entries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                gaiaDR2Entries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchGaiaDR2TpmCatalogEntries() {
-        try {
-            if (gaiaDR2TpmEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                properMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                ProperMotionQuery catalogQuery = new GaiaDR2CatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                catalogQuery.setTpm(toDouble(properMotionField.getText()));
-                gaiaDR2TpmEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
-                gaiaDR2TpmEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-            properMotionField.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchAllWiseCatalogEntries() {
-        try {
-            if (allWiseEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new AllWiseCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                allWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                allWiseEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchCatWiseCatalogEntries() {
-        try {
-            if (catWiseEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new CatWiseCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                catWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                catWiseEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchCatWiseTpmCatalogEntries() {
-        try {
-            if (catWiseTpmEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                properMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                ProperMotionQuery catalogQuery = new CatWiseCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                catalogQuery.setTpm(toDouble(properMotionField.getText()));
-                catWiseTpmEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
-                catWiseTpmEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-            properMotionField.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchCatWiseRejectedEntries() {
-        try {
-            if (catWiseRejectedEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new CatWiseRejectedEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                catWiseRejectedEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                catWiseRejectedEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchPanStarrsCatalogEntries() {
-        try {
-            if (panStarrsEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new PanStarrsCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                panStarrsEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                panStarrsEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchSdssCatalogEntries() {
-        try {
-            if (sdssEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new SDSSCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                sdssEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                sdssEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchSSOCatalogEntries() {
-        try {
-            if (ssoEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new SSOCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                ssoEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                ssoEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchGenericCatalogEntries(CustomOverlay customOverlay) {
-        List<CatalogEntry> catalogEntries = customOverlay.getCatalogEntries();
-        if (catalogEntries == null) {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            catalogEntries = new ArrayList<>();
-            try (Scanner scanner = new Scanner(customOverlay.getFile())) {
-                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-                StringBuilder errors = new StringBuilder();
-                int numberOfColumns = columnNames.length;
-                int lastColumnIndex = numberOfColumns - 1;
-                int raColumnIndex = customOverlay.getRaColumnIndex();
-                int decColumnIndex = customOverlay.getDecColumnIndex();
-                if (raColumnIndex > lastColumnIndex) {
-                    errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
-                }
-                if (decColumnIndex > lastColumnIndex) {
-                    errors.append("Dec position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
-                }
-                if (errors.length() > 0) {
-                    showErrorDialog(baseFrame, errors.toString());
-                    return;
-                }
-                while (scanner.hasNextLine()) {
-                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
-                    GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
-                    catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
-                    catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
-                    double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
-                    if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
-                            && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
-                        catalogEntry.setTargetRa(targetRa);
-                        catalogEntry.setTargetDec(targetDec);
-                        catalogEntry.setCatalogName(customOverlay.getName());
-                        catalogEntry.loadCatalogElements();
-                        catalogEntries.add(catalogEntry);
-                    }
-                }
-            } catch (Exception ex) {
-                showExceptionDialog(baseFrame, ex);
-            } finally {
-                customOverlay.setCatalogEntries(catalogEntries);
-                baseFrame.setCursor(Cursor.getDefaultCursor());
-            }
+            catalogQuery.setRa(targetRa);
+            catalogQuery.setDec(targetDec);
+            catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+            catalogEntries.forEach(catalogEntry -> {
+                catalogEntry.setTargetRa(targetRa);
+                catalogEntry.setTargetDec(targetDec);
+                catalogEntry.loadCatalogElements();
+            });
+            return catalogEntries;
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
         }
+        return null;
+    }
+
+    private List<CatalogEntry> fetchTpmCatalogEntries(ProperMotionQuery catalogQuery) {
+        try {
+            baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            properMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            catalogQuery.setRa(targetRa);
+            catalogQuery.setDec(targetDec);
+            catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+            catalogQuery.setTpm(toDouble(properMotionField.getText()));
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
+            catalogEntries.forEach(catalogEntry -> {
+                catalogEntry.setTargetRa(targetRa);
+                catalogEntry.setTargetDec(targetDec);
+                catalogEntry.loadCatalogElements();
+            });
+            return catalogEntries;
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+            properMotionField.setCursor(Cursor.getDefaultCursor());
+        }
+        return null;
+    }
+
+    private Object fetchGenericCatalogEntries(CustomOverlay customOverlay) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        List<CatalogEntry> catalogEntries = new ArrayList<>();
+        try (Scanner scanner = new Scanner(customOverlay.getFile())) {
+            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+            StringBuilder errors = new StringBuilder();
+            int numberOfColumns = columnNames.length;
+            int lastColumnIndex = numberOfColumns - 1;
+            int raColumnIndex = customOverlay.getRaColumnIndex();
+            int decColumnIndex = customOverlay.getDecColumnIndex();
+            if (raColumnIndex > lastColumnIndex) {
+                errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
+            }
+            if (decColumnIndex > lastColumnIndex) {
+                errors.append("Dec position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
+            }
+            if (errors.length() > 0) {
+                showErrorDialog(baseFrame, errors.toString());
+                return null;
+            }
+            while (scanner.hasNextLine()) {
+                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
+                catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
+                catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
+                double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
+                if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
+                        && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.setCatalogName(customOverlay.getName());
+                    catalogEntry.loadCatalogElements();
+                    catalogEntries.add(catalogEntry);
+                }
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            customOverlay.setCatalogEntries(catalogEntries);
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+        return null;
     }
 
     private void drawSectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
