@@ -1225,9 +1225,9 @@ public class ImageViewerTab {
                                         crosshairCoords.setText(sb.toString());
                                     } else {
                                         if (showPanstarrsButton.isSelected()) {
-                                            displayZoomedPs1Image(newRa, newDec, fieldOfView);
+                                            CompletableFuture.supplyAsync(() -> displayZoomedPs1Image(newRa, newDec, fieldOfView));
                                         } else {
-                                            displayAtlasImages(newRa, newDec, fieldOfView);
+                                            CompletableFuture.supplyAsync(() -> displayAtlasImages(newRa, newDec, fieldOfView));
                                         }
                                     }
                                     break;
@@ -2734,7 +2734,7 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getDefaultCursor());
     }
 
-    private void displayZoomedPs1Image(double targetRa, double targetDec, int size) {
+    private Object displayZoomedPs1Image(double targetRa, double targetDec, int size) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         BufferedImage ps1ImageZoomed = fetchPs1Image(targetRa, targetDec, size / SIZE_FACTOR, 256);
         if (ps1ImageZoomed != null) {
@@ -2748,6 +2748,7 @@ public class ImageViewerTab {
             imageFrame.setVisible(true);
         }
         baseFrame.setCursor(Cursor.getDefaultCursor());
+        return null;
     }
 
     private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size, int resolution) {
@@ -2790,7 +2791,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayAtlasImages(double targetRa, double targetDec, int fieldOfView) {
+    private Object displayAtlasImages(double targetRa, double targetDec, int fieldOfView) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch coadd id for each WISE band
@@ -2926,6 +2927,7 @@ public class ImageViewerTab {
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
+        return null;
     }
 
     private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {
