@@ -137,6 +137,7 @@ public class ImageViewerTab {
     public static final double SIZE_FACTOR = 2.75;
     public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
+    public static final int PANEL_HEIGHT = 260;
     public static final int MIN_VALUE = -2500;
     public static final int MAX_VALUE = 2500;
     public static final int STRETCH = 100;
@@ -214,6 +215,7 @@ public class ImageViewerTab {
     private JRadioButton showPanstarrsButton;
     private JRadioButton showAllwiseButton;
     private JRadioButton show2MassButton;
+    private JRadioButton showAllButton;
     private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
@@ -233,6 +235,7 @@ public class ImageViewerTab {
     private int crosshairSize = 5;
     private int imageNumber = 0;
     private int windowShift = 0;
+    private int verticalPos = 0;
     private int quadrantCount = 0;
     private int epochCount = NUMBER_OF_EPOCHS * 2;
     private int stretch = STRETCH;
@@ -315,9 +318,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1775;
+            int controlPanelHeight = 1800;
 
-            JPanel controlPanel = new JPanel(new GridLayout(73, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(74, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -690,7 +693,7 @@ public class ImageViewerTab {
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             controlPanel.add(changeFovLabel);
 
-            showPanstarrsButton = new JRadioButton("Zoomed Pan-STARRS image", true);
+            showPanstarrsButton = new JRadioButton("Pan-STARRS g, r, i, z, y images", true);
             controlPanel.add(showPanstarrsButton);
             showPanstarrsButton.addActionListener((ActionEvent evt) -> {
                 fieldOfView = 15;
@@ -711,10 +714,18 @@ public class ImageViewerTab {
                 changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
             });
 
+            showAllButton = new JRadioButton("Display all images", false);
+            controlPanel.add(showAllButton);
+            showAllButton.addActionListener((ActionEvent evt) -> {
+                fieldOfView = 30;
+                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            });
+
             radioGroup = new ButtonGroup();
             radioGroup.add(showPanstarrsButton);
             radioGroup.add(showAllwiseButton);
             radioGroup.add(show2MassButton);
+            radioGroup.add(showAllButton);
 
             controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
 
@@ -1240,6 +1251,17 @@ public class ImageViewerTab {
                                             CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView));
                                         } else if (show2MassButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView));
+                                        } else {
+                                            verticalPos = 0;
+                                            display2MassAllSkyImages(newRa, newDec, fieldOfView);
+                                            if (showAllButton.isSelected()) {
+                                                verticalPos += PANEL_HEIGHT;
+                                            }
+                                            displayAllwiseAtlasImages(newRa, newDec, fieldOfView);
+                                            if (showAllButton.isSelected()) {
+                                                verticalPos += PANEL_HEIGHT;
+                                            }
+                                            displayPs1Images(newRa, newDec, fieldOfView);
                                         }
                                     }
                                     break;
@@ -2810,6 +2832,10 @@ public class ImageViewerTab {
                     imageInfos.put(columnValues[filter], columnValues[fileName]);
                 }
             }
+            if (imageInfos.isEmpty()) {
+                showInfoDialog(baseFrame, "No Pan-STARRS images available for the specified coordinates.");
+                return null;
+            }
 
             imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g"), targetRa, targetDec, (int) round(size * 4), 256);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
@@ -2827,7 +2853,8 @@ public class ImageViewerTab {
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(ps1Panel);
-            imageFrame.setSize(1320, 260);
+            imageFrame.setSize(1320, PANEL_HEIGHT);
+            imageFrame.setLocation(0, verticalPos);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -2869,6 +2896,10 @@ public class ImageViewerTab {
                     String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
                     imageInfos.put(new Integer(columnValues[band]), columnValues[coadd_id]);
                 }
+            }
+            if (imageInfos.isEmpty()) {
+                showInfoDialog(baseFrame, "No AllWISE images available for the specified coordinates.");
+                return null;
             }
 
             // Fetch cutout for each WISE band
@@ -2948,7 +2979,8 @@ public class ImageViewerTab {
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
-            imageFrame.setSize(1100, 260);
+            imageFrame.setSize(1100, PANEL_HEIGHT);
+            imageFrame.setLocation(0, verticalPos);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -2999,6 +3031,10 @@ public class ImageViewerTab {
                     String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
                     imageInfos.put(columnValues[filter], new String[]{columnValues[ordate], columnValues[hemisphere], columnValues[scanno], columnValues[fname]});
                 }
+            }
+            if (imageInfos.isEmpty()) {
+                showInfoDialog(baseFrame, "No 2MASS images available for the specified coordinates.");
+                return null;
             }
 
             // Fetch cutout for each 2Mass filter
@@ -3085,7 +3121,8 @@ public class ImageViewerTab {
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
-            imageFrame.setSize(880, 260);
+            imageFrame.setSize(880, PANEL_HEIGHT);
+            imageFrame.setLocation(0, verticalPos);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
