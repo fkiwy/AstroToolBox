@@ -1235,7 +1235,7 @@ public class ImageViewerTab {
                                         crosshairCoords.setText(sb.toString());
                                     } else {
                                         if (showPanstarrsButton.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> displayZoomedPs1Image(newRa, newDec, fieldOfView));
+                                            CompletableFuture.supplyAsync(() -> displayPs1Images(newRa, newDec, fieldOfView));
                                         } else if (showAllwiseButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView));
                                         } else if (show2MassButton.isSelected()) {
@@ -1563,7 +1563,7 @@ public class ImageViewerTab {
                 }
                 ps1Image = null;
                 sdssImage = null;
-                CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024));
+                CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
                 CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
@@ -2746,24 +2746,7 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getDefaultCursor());
     }
 
-    private Object displayZoomedPs1Image(double targetRa, double targetDec, int size) {
-        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        BufferedImage ps1ImageZoomed = fetchPs1Image(targetRa, targetDec, size / SIZE_FACTOR, 256);
-        if (ps1ImageZoomed != null) {
-            JFrame imageFrame = new JFrame();
-            imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(new JLabel(new ImageIcon(ps1ImageZoomed)));
-            imageFrame.setSize(350, 350);
-            imageFrame.setAlwaysOnTop(true);
-            imageFrame.setResizable(false);
-            imageFrame.setVisible(true);
-        }
-        baseFrame.setCursor(Cursor.getDefaultCursor());
-        return null;
-    }
-
-    private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size, int resolution) {
+    private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size) {
         try {
             List<String> fileNames = new ArrayList<>();
             String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=giy&sep=comma", targetRa, targetDec);
@@ -2782,7 +2765,7 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), resolution);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             return ImageIO.read(stream);
@@ -2803,11 +2786,71 @@ public class ImageViewerTab {
         }
     }
 
+    private Object displayPs1Images(double targetRa, double targetDec, int size) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            // Fetch file name for each Pan-STARRS filter
+            SortedMap<String, String> imageInfos = new TreeMap<>();
+            String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(imageUrl));
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int filter = 0;
+                int fileName = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filter")) {
+                        filter = i;
+                    }
+                    if (columnNames[i].equals("filename")) {
+                        fileName = i;
+                    }
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    imageInfos.put(columnValues[filter], columnValues[fileName]);
+                }
+            }
+
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g"), targetRa, targetDec, (int) round(size * 4), 256);
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+
+            JPanel ps1Panel = new JPanel(new GridLayout(1, 5));
+            ps1Panel.add(buildImagePanel(producePs1Image(imageInfos.get("g"), targetRa, targetDec, size), "g"));
+            ps1Panel.add(buildImagePanel(producePs1Image(imageInfos.get("r"), targetRa, targetDec, size), "r"));
+            ps1Panel.add(buildImagePanel(producePs1Image(imageInfos.get("i"), targetRa, targetDec, size), "i"));
+            ps1Panel.add(buildImagePanel(producePs1Image(imageInfos.get("z"), targetRa, targetDec, size), "z"));
+            ps1Panel.add(buildImagePanel(producePs1Image(imageInfos.get("y"), targetRa, targetDec, size), "y"));
+            ps1Panel.add(buildImagePanel(ImageIO.read(stream), "y-i-g"));
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(ps1Panel);
+            imageFrame.setSize(1320, 260);
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+        return null;
+    }
+
+    private BufferedImage producePs1Image(String fileName, double targetRa, double targetDec, int size) throws IOException {
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileName, targetRa, targetDec, (int) round(size * 4), 256);
+        HttpURLConnection connection = establishHttpConnection(imageUrl);
+        BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+        return ImageIO.read(stream);
+    }
+
     private Object displayAllwiseAtlasImages(double targetRa, double targetDec, int fieldOfView) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch coadd id for each WISE band
-            SortedMap<Integer, String> coaddInfos = new TreeMap<>();
+            SortedMap<Integer, String> imageInfos = new TreeMap<>();
             String imageUrl = String.format("https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd?POS=%f,%f&ct=csv&mcen", targetRa, targetDec);
             String response = readResponse(establishHttpConnection(imageUrl));
             try (Scanner scanner = new Scanner(response)) {
@@ -2824,14 +2867,14 @@ public class ImageViewerTab {
                 }
                 while (scanner.hasNextLine()) {
                     String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                    coaddInfos.put(new Integer(columnValues[band]), columnValues[coadd_id]);
+                    imageInfos.put(new Integer(columnValues[band]), columnValues[coadd_id]);
                 }
             }
 
             // Fetch cutout for each WISE band
             int length = fieldOfView;
             SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
-            for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
+            for (Map.Entry<Integer, String> entry : imageInfos.entrySet()) {
                 int band = entry.getKey();
                 String coadd_id = entry.getValue();
                 String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%darcsec", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, fieldOfView);
@@ -2899,7 +2942,7 @@ public class ImageViewerTab {
             int band = 1;
             for (BufferedImage atlasImage : atlasImages) {
                 String imageHeader = band < 5 ? "W" + band++ : "W4-W2-W1";
-                atlasPanel.add(buildImagePanel(atlasImage, imageHeader));
+                atlasPanel.add(buildImagePanel(flip(atlasImage), imageHeader));
             }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -2920,8 +2963,8 @@ public class ImageViewerTab {
     private Object display2MassAllSkyImages(double targetRa, double targetDec, int fieldOfView) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            // Fetch image id for each 2Mass filter
-            SortedMap<String, String[]> coaddInfos = new TreeMap<>();
+            // Fetch file name for each 2Mass filter
+            SortedMap<String, String[]> imageInfos = new TreeMap<>();
             String imageUrl = String.format("https://irsa.ipac.caltech.edu/ibe/search/twomass/allsky/allsky?POS=%f,%f&ct=csv&mcen", targetRa, targetDec);
             String response = readResponse(establishHttpConnection(imageUrl));
             try (Scanner scanner = new Scanner(response)) {
@@ -2954,14 +2997,14 @@ public class ImageViewerTab {
                 }
                 while (scanner.hasNextLine()) {
                     String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                    coaddInfos.put(columnValues[filter], new String[]{columnValues[ordate], columnValues[hemisphere], columnValues[scanno], columnValues[fname]});
+                    imageInfos.put(columnValues[filter], new String[]{columnValues[ordate], columnValues[hemisphere], columnValues[scanno], columnValues[fname]});
                 }
             }
 
             // Fetch cutout for each 2Mass filter
             int length = fieldOfView;
             SortedMap<String, Fits> fitsFiles = new TreeMap<>();
-            for (Map.Entry<String, String[]> entry : coaddInfos.entrySet()) {
+            for (Map.Entry<String, String[]> entry : imageInfos.entrySet()) {
                 String filter = entry.getKey();
                 String[] params = entry.getValue();
                 String ordate = params[0];
@@ -3033,10 +3076,10 @@ public class ImageViewerTab {
 
             // Display All-Sky images
             JPanel atlasPanel = new JPanel(new GridLayout(1, 4));
-            atlasPanel.add(buildImagePanel(allSkyImages.get(0), "J"));
-            atlasPanel.add(buildImagePanel(allSkyImages.get(1), "H"));
-            atlasPanel.add(buildImagePanel(allSkyImages.get(2), "K"));
-            atlasPanel.add(buildImagePanel(allSkyImages.get(3), "K-H-J"));
+            atlasPanel.add(buildImagePanel(flip(allSkyImages.get(0)), "J"));
+            atlasPanel.add(buildImagePanel(flip(allSkyImages.get(1)), "H"));
+            atlasPanel.add(buildImagePanel(flip(allSkyImages.get(2)), "K"));
+            atlasPanel.add(buildImagePanel(flip(allSkyImages.get(3)), "K-H-J"));
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -3076,7 +3119,7 @@ public class ImageViewerTab {
     private JPanel buildImagePanel(BufferedImage atlasImage, String imageHeader) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        atlasImage = zoom(flip(atlasImage), 200);
+        atlasImage = zoom(atlasImage, 200);
         double x = atlasImage.getWidth() / 2;
         double y = atlasImage.getHeight() / 2;
         Graphics g = atlasImage.getGraphics();
