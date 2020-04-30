@@ -2765,7 +2765,7 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), 1024);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             return ImageIO.read(stream);
@@ -2811,7 +2811,7 @@ public class ImageViewerTab {
                 }
             }
 
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g"), targetRa, targetDec, (int) round(size * 4), 256);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g"), targetRa, targetDec, (int) round(size * 4), 256);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
 
@@ -2840,7 +2840,7 @@ public class ImageViewerTab {
     }
 
     private BufferedImage producePs1Image(String fileName, double targetRa, double targetDec, int size) throws IOException {
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileName, targetRa, targetDec, (int) round(size * 4), 256);
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileName, targetRa, targetDec, (int) round(size * 4), 256);
         HttpURLConnection connection = establishHttpConnection(imageUrl);
         BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
         return ImageIO.read(stream);
