@@ -212,6 +212,8 @@ public class ImageViewerTab {
     private JTextArea crosshairCoords;
     private JRadioButton showCatalogsButton;
     private JRadioButton showPanstarrsButton;
+    private JRadioButton showAllwiseButton;
+    private JRadioButton show2MassButton;
     private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
@@ -313,9 +315,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1750;
+            int controlPanelHeight = 1775;
 
-            JPanel controlPanel = new JPanel(new GridLayout(72, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(73, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -695,9 +697,16 @@ public class ImageViewerTab {
                 changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
             });
 
-            JRadioButton showAllwiseButton = new JRadioButton("AllWISE w1/w2/w3/w4 images", false);
+            showAllwiseButton = new JRadioButton("AllWISE W1, W2, W3, W4 images", false);
             controlPanel.add(showAllwiseButton);
             showAllwiseButton.addActionListener((ActionEvent evt) -> {
+                fieldOfView = 30;
+                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            });
+
+            show2MassButton = new JRadioButton("2MASS J, H, K images", false);
+            controlPanel.add(show2MassButton);
+            show2MassButton.addActionListener((ActionEvent evt) -> {
                 fieldOfView = 30;
                 changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
             });
@@ -705,6 +714,7 @@ public class ImageViewerTab {
             radioGroup = new ButtonGroup();
             radioGroup.add(showPanstarrsButton);
             radioGroup.add(showAllwiseButton);
+            radioGroup.add(show2MassButton);
 
             controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
 
@@ -1226,8 +1236,9 @@ public class ImageViewerTab {
                                     } else {
                                         if (showPanstarrsButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayZoomedPs1Image(newRa, newDec, fieldOfView));
-                                        } else {
+                                        } else if (showAllwiseButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView));
+                                        } else if (show2MassButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView));
                                         }
                                     }
@@ -2851,23 +2862,7 @@ public class ImageViewerTab {
             // Produce grayscale RGB image for each WISE band
             List<BufferedImage> atlasImages = new ArrayList<>();
             for (Map.Entry<Integer, Fits> entry : fitsFiles.entrySet()) {
-                Fits fits = entry.getValue();
-                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = image.createGraphics();
-                for (int i = 0; i < length; i++) {
-                    for (int j = 0; j < length; j++) {
-                        try {
-                            float value = 1 - values[i][j];
-                            graphics.setColor(new Color(value, value, value));
-                            graphics.fillRect(j, i, 1, 1);
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                atlasImages.add(image);
+                atlasImages.add(produceGrayscaleImage(entry.getValue(), length));
             }
 
             // Produce colored RGB image
@@ -2904,16 +2899,7 @@ public class ImageViewerTab {
             int band = 1;
             for (BufferedImage atlasImage : atlasImages) {
                 String imageHeader = band < 5 ? "W" + band++ : "W4-W2-W1";
-                JPanel panel = new JPanel();
-                panel.setBorder(createEtchedBorder(imageHeader));
-                atlasImage = zoom(flip(atlasImage), 200);
-                double x = atlasImage.getWidth() / 2;
-                double y = atlasImage.getHeight() / 2;
-                Graphics g = atlasImage.getGraphics();
-                Circle circle = new Circle(x, y, 10, Color.MAGENTA);
-                circle.draw(g);
-                panel.add(new JLabel(new ImageIcon(atlasImage)));
-                atlasPanel.add(panel);
+                atlasPanel.add(buildImagePanel(atlasImage, imageHeader));
             }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -2981,6 +2967,9 @@ public class ImageViewerTab {
                 String ordate = params[0];
                 String hemisphere = params[1];
                 String scanno = params[2];
+                if (Integer.valueOf(scanno) < 100) {
+                    scanno = "0" + scanno;
+                }
                 String fname = params[3];
                 String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/twomass/allsky/allsky/%s%s/s%s/image/%s?center=%f,%f&size=%darcsec", ordate, hemisphere, scanno, fname, targetRa, targetDec, fieldOfView);
                 HttpURLConnection connection = establishHttpConnection(url);
@@ -3009,25 +2998,9 @@ public class ImageViewerTab {
 
             // Produce grayscale RGB image for each 2Mass filter
             List<BufferedImage> allSkyImages = new ArrayList<>();
-            for (Map.Entry<String, Fits> entry : fitsFiles.entrySet()) {
-                Fits fits = entry.getValue();
-                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = image.createGraphics();
-                for (int i = 0; i < length; i++) {
-                    for (int j = 0; j < length; j++) {
-                        try {
-                            float value = 1 - values[i][j];
-                            graphics.setColor(new Color(value, value, value));
-                            graphics.fillRect(j, i, 1, 1);
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                allSkyImages.add(image);
-            }
+            allSkyImages.add(produceGrayscaleImage(fitsFiles.get("j"), length));
+            allSkyImages.add(produceGrayscaleImage(fitsFiles.get("h"), length));
+            allSkyImages.add(produceGrayscaleImage(fitsFiles.get("k"), length));
 
             // Produce colored RGB image
             Fits fits = fitsFiles.get("j");
@@ -3058,42 +3031,18 @@ public class ImageViewerTab {
             }
             allSkyImages.add(image);
 
-            // Display All Sky images
-            JPanel atlasPanel = new JPanel(new GridLayout(1, 5));
-            int filter = 1;
-            for (BufferedImage atlasImage : allSkyImages) {
-                String imageHeader;
-                switch (filter) {
-                    case 1:
-                        imageHeader = "H";
-                        break;
-                    case 2:
-                        imageHeader = "J";
-                        break;
-                    case 3:
-                        imageHeader = "K";
-                        break;
-                    default:
-                        imageHeader = "K-H-J";
-                        break;
-                }
-                JPanel panel = new JPanel();
-                panel.setBorder(createEtchedBorder(imageHeader));
-                atlasImage = zoom(flip(atlasImage), 200);
-                double x = atlasImage.getWidth() / 2;
-                double y = atlasImage.getHeight() / 2;
-                Graphics g = atlasImage.getGraphics();
-                Circle circle = new Circle(x, y, 10, Color.MAGENTA);
-                circle.draw(g);
-                panel.add(new JLabel(new ImageIcon(atlasImage)));
-                atlasPanel.add(panel);
-                filter++;
-            }
+            // Display All-Sky images
+            JPanel atlasPanel = new JPanel(new GridLayout(1, 4));
+            atlasPanel.add(buildImagePanel(allSkyImages.get(0), "J"));
+            atlasPanel.add(buildImagePanel(allSkyImages.get(1), "H"));
+            atlasPanel.add(buildImagePanel(allSkyImages.get(2), "K"));
+            atlasPanel.add(buildImagePanel(allSkyImages.get(3), "K-H-J"));
+
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
-            imageFrame.setSize(1100, 260);
+            imageFrame.setSize(880, 260);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -3103,6 +3052,38 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
         return null;
+    }
+
+    private BufferedImage produceGrayscaleImage(Fits fits, int length) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        ImageData imageData = (ImageData) hdu.getData();
+        float[][] values = (float[][]) imageData.getData();
+        BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        for (int i = 0; i < length; i++) {
+            for (int j = 0; j < length; j++) {
+                try {
+                    float value = 1 - values[i][j];
+                    graphics.setColor(new Color(value, value, value));
+                    graphics.fillRect(j, i, 1, 1);
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+        return image;
+    }
+
+    private JPanel buildImagePanel(BufferedImage atlasImage, String imageHeader) {
+        JPanel panel = new JPanel();
+        panel.setBorder(createEtchedBorder(imageHeader));
+        atlasImage = zoom(flip(atlasImage), 200);
+        double x = atlasImage.getWidth() / 2;
+        double y = atlasImage.getHeight() / 2;
+        Graphics g = atlasImage.getGraphics();
+        Circle circle = new Circle(x, y, 10, Color.MAGENTA);
+        circle.draw(g);
+        panel.add(new JLabel(new ImageIcon(atlasImage)));
+        return panel;
     }
 
     private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {
