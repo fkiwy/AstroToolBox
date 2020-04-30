@@ -1227,7 +1227,8 @@ public class ImageViewerTab {
                                         if (showPanstarrsButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayZoomedPs1Image(newRa, newDec, fieldOfView));
                                         } else {
-                                            CompletableFuture.supplyAsync(() -> displayAtlasImages(newRa, newDec, fieldOfView));
+                                            CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView));
+                                            CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView));
                                         }
                                     }
                                     break;
@@ -2791,7 +2792,7 @@ public class ImageViewerTab {
         }
     }
 
-    private Object displayAtlasImages(double targetRa, double targetDec, int fieldOfView) {
+    private Object displayAllwiseAtlasImages(double targetRa, double targetDec, int fieldOfView) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch coadd id for each WISE band
@@ -2837,7 +2838,7 @@ public class ImageViewerTab {
                 for (int i = 0; i < length; i++) {
                     for (int j = 0; j < length; j++) {
                         try {
-                            processedValues[i][j] = normalize(values[i][j], minVal, maxVal);
+                            processedValues[i][j] = min(1, normalize(values[i][j], minVal, maxVal) * 1);
                         } catch (ArrayIndexOutOfBoundsException ex) {
                         }
                     }
@@ -2869,7 +2870,7 @@ public class ImageViewerTab {
                 atlasImages.add(image);
             }
 
-            // Produce colored RGB image for each WISE band
+            // Produce colored RGB image
             Fits fits = fitsFiles.get(1);
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
@@ -2916,7 +2917,181 @@ public class ImageViewerTab {
             }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
+            imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
+            imageFrame.getContentPane().add(atlasPanel);
+            imageFrame.setSize(1100, 260);
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+        return null;
+    }
+
+    private Object display2MassAllSkyImages(double targetRa, double targetDec, int fieldOfView) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            // Fetch image id for each 2Mass filter
+            SortedMap<String, String[]> coaddInfos = new TreeMap<>();
+            String imageUrl = String.format("https://irsa.ipac.caltech.edu/ibe/search/twomass/allsky/allsky?POS=%f,%f&ct=csv&mcen", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(imageUrl));
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int filter = 0;
+                int ordate = 0;
+                int hemisphere = 0;
+                int scanno = 0;
+                int fname = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    switch (columnNames[i]) {
+                        case "filter":
+                            filter = i;
+                            break;
+                        case "ordate":
+                            ordate = i;
+                            break;
+                        case "hemisphere":
+                            hemisphere = i;
+                            break;
+                        case "scanno":
+                            scanno = i;
+                            break;
+                        case "fname":
+                            fname = i;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    coaddInfos.put(columnValues[filter], new String[]{columnValues[ordate], columnValues[hemisphere], columnValues[scanno], columnValues[fname]});
+                }
+            }
+
+            // Fetch cutout for each 2Mass filter
+            int length = fieldOfView;
+            SortedMap<String, Fits> fitsFiles = new TreeMap<>();
+            for (Map.Entry<String, String[]> entry : coaddInfos.entrySet()) {
+                String filter = entry.getKey();
+                String[] params = entry.getValue();
+                String ordate = params[0];
+                String hemisphere = params[1];
+                String scanno = params[2];
+                String fname = params[3];
+                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/twomass/allsky/allsky/%s%s/s%s/image/%s?center=%f,%f&size=%darcsec", ordate, hemisphere, scanno, fname, targetRa, targetDec, fieldOfView);
+                HttpURLConnection connection = establishHttpConnection(url);
+                Fits fits = new Fits(connection.getInputStream());
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                Header header = hdu.getHeader();
+                length = (int) round(header.getDoubleValue("NAXIS1"));
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet minMaxValues = getMinMaxValues(values);
+                float minVal = (float) minMaxValues.getX();
+                float maxVal = (float) minMaxValues.getY();
+                float[][] processedValues = new float[length][length];
+                for (int i = 0; i < length; i++) {
+                    for (int j = 0; j < length; j++) {
+                        try {
+                            processedValues[i][j] = min(1, normalize(values[i][j], minVal, maxVal) * 2);
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                }
+                Fits result = new Fits();
+                result.addHDU(FitsFactory.hduFactory(processedValues));
+                fitsFiles.put(filter, result);
+            }
+
+            // Produce grayscale RGB image for each 2Mass filter
+            List<BufferedImage> allSkyImages = new ArrayList<>();
+            for (Map.Entry<String, Fits> entry : fitsFiles.entrySet()) {
+                Fits fits = entry.getValue();
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics = image.createGraphics();
+                for (int i = 0; i < length; i++) {
+                    for (int j = 0; j < length; j++) {
+                        try {
+                            float value = 1 - values[i][j];
+                            graphics.setColor(new Color(value, value, value));
+                            graphics.fillRect(j, i, 1, 1);
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                }
+                allSkyImages.add(image);
+            }
+
+            // Produce colored RGB image
+            Fits fits = fitsFiles.get("j");
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values1 = (float[][]) imageData.getData();
+            fits = fitsFiles.get("h");
+            hdu = (ImageHDU) fits.getHDU(0);
+            imageData = (ImageData) hdu.getData();
+            float[][] values2 = (float[][]) imageData.getData();
+            fits = fitsFiles.get("k");
+            hdu = (ImageHDU) fits.getHDU(0);
+            imageData = (ImageData) hdu.getData();
+            float[][] values4 = (float[][]) imageData.getData();
+            BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = image.createGraphics();
+            for (int i = 0; i < length; i++) {
+                for (int j = 0; j < length; j++) {
+                    try {
+                        float jFilter = values1[i][j];
+                        float hFilter = values2[i][j];
+                        float kFilter = values4[i][j];
+                        graphics.setColor(new Color(kFilter, hFilter, jFilter));
+                        graphics.fillRect(j, i, 1, 1);
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                    }
+                }
+            }
+            allSkyImages.add(image);
+
+            // Display All Sky images
+            JPanel atlasPanel = new JPanel(new GridLayout(1, 5));
+            int filter = 1;
+            for (BufferedImage atlasImage : allSkyImages) {
+                String imageHeader;
+                switch (filter) {
+                    case 1:
+                        imageHeader = "H";
+                        break;
+                    case 2:
+                        imageHeader = "J";
+                        break;
+                    case 3:
+                        imageHeader = "K";
+                        break;
+                    default:
+                        imageHeader = "K-H-J";
+                        break;
+                }
+                JPanel panel = new JPanel();
+                panel.setBorder(createEtchedBorder(imageHeader));
+                atlasImage = zoom(flip(atlasImage), 200);
+                double x = atlasImage.getWidth() / 2;
+                double y = atlasImage.getHeight() / 2;
+                Graphics g = atlasImage.getGraphics();
+                Circle circle = new Circle(x, y, 10, Color.MAGENTA);
+                circle.draw(g);
+                panel.add(new JLabel(new ImageIcon(atlasImage)));
+                atlasPanel.add(panel);
+                filter++;
+            }
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
             imageFrame.getContentPane().add(atlasPanel);
             imageFrame.setSize(1100, 260);
             imageFrame.setAlwaysOnTop(true);
