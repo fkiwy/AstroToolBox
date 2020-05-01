@@ -236,6 +236,8 @@ public class ImageViewerTab {
     private int imageNumber = 0;
     private int windowShift = 0;
     private int verticalPos = 0;
+    private int requestedCount = 0;
+    private int replacedCount = 0;
     private int quadrantCount = 0;
     private int epochCount = NUMBER_OF_EPOCHS * 2;
     private int stretch = STRETCH;
@@ -270,10 +272,11 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean cutoutsReplaced;
     private boolean imageCutOff;
-    private boolean disableOverlays;
-    private boolean hasException;
+    private boolean overlaysDisabled;
     private boolean timerStopped;
+    private boolean hasException;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
@@ -1549,10 +1552,13 @@ public class ImageViewerTab {
                 initMinMaxValues();
                 //shiftX = shiftY = 0;
                 centerX = centerY = 0;
-                axisX = axisY = 0;
+                axisX = axisY = size;
                 windowShift = 0;
+                requestedCount = 0;
+                replacedCount = 0;
+                cutoutsReplaced = false;
                 imageCutOff = false;
-                disableOverlays = false;
+                overlaysDisabled = false;
                 simbadOverlay.setEnabled(true);
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
@@ -1925,6 +1931,13 @@ public class ImageViewerTab {
             if (markDifferences.isSelected()) {
                 detectDifferences();
             }
+            //268.9187535 70.8374857
+            if (replacedCount > requestedCount / 2 && !cutoutsReplaced) {
+                String message = "Due to the very poor image quality, more than half of the requested cutouts were replaced by a previous one."
+                        + LINE_SEP + "Therefore, motion detection may no longer be possible!";
+                showWarnDialog(baseFrame, message);
+                cutoutsReplaced = true;
+            }
             timer.restart();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
@@ -1991,7 +2004,7 @@ public class ImageViewerTab {
         //if (imageNumber == 0) {
         //    image = shift(image);
         //}
-        if (!disableOverlays) {
+        if (!overlaysDisabled) {
             addOverlaysAndPMVectors(image);
         }
         if (drawCrosshairs.isSelected()) {
@@ -2130,6 +2143,7 @@ public class ImageViewerTab {
             if (fits != null) {
                 continue;
             }
+            requestedCount++;
             try {
                 fits = new Fits(getImageData(band, epoch));
                 if (skipBadCoadds.isSelected()) {
@@ -2160,7 +2174,9 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                if (zeroValues > 1000) {
+                double maxAllowed = axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100;
+                //System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
+                if (zeroValues > maxAllowed) {
                     fits = getPreviousImage(band, epoch);
                 }
 
@@ -2188,10 +2204,10 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (size > naxis1 && size > naxis2 && !disableOverlays) {
+            if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
                 String message = "Some features of the Image Viewer have been disabled because the current field of view exceeds the requested WISE tile.";
                 showWarnDialog(baseFrame, message);
-                disableOverlays = true;
+                overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
                 allWiseOverlay.setEnabled(false);
@@ -2239,10 +2255,14 @@ public class ImageViewerTab {
             switch (epoch) {
                 case 0:
                 case 1:
+                //290.641091 28.079135
+                case 2:
+                case 3:
                     previousEpoch = epoch + 2;
                     break;
                 default:
                     previousEpoch = epoch - 2;
+                    break;
             }
             fits = getImage(band, previousEpoch);
             if (fits == null) {
@@ -2261,6 +2281,7 @@ public class ImageViewerTab {
             fits.addHDU(FitsFactory.hduFactory(values));
             fits.addHDU(FitsFactory.hduFactory(weights));
         }
+        replacedCount++;
         return fits;
     }
 
@@ -3713,6 +3734,10 @@ public class ImageViewerTab {
 
     private double getOverlaySize() {
         return 5 + zoom / 100;
+    }
+
+    public JCheckBox getSmoothImage() {
+        return smoothImage;
     }
 
     public JComboBox getWiseBands() {

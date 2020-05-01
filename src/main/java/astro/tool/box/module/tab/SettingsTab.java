@@ -248,7 +248,7 @@ public class SettingsTab {
             wiseBandsBox.setSelectedItem(wiseBand);
             wiseBandsBox.addActionListener(listener);
 
-            epochsBox = imageViewerTab.getWiseBands();
+            epochsBox = imageViewerTab.getEpochs();
             listener = epochsBox.getActionListeners()[0];
             epochsBox.removeActionListener(listener);
             epochsBox.setSelectedItem(epoch);
@@ -257,6 +257,11 @@ public class SettingsTab {
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
+            if (Epoch.isSubtracted(epoch)) {
+                imageViewerTab.getSmoothImage().setSelected(true);
+            } else {
+                imageViewerTab.getSmoothImage().setSelected(false);
+            }
 
             imageViewerTab.setWiseBand(wiseBand);
             imageViewerTab.setEpoch(epoch);
@@ -391,6 +396,11 @@ public class SettingsTab {
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
+                if (Epoch.isSubtracted(epoch)) {
+                    imageViewerTab.getSmoothImage().setSelected(true);
+                } else {
+                    imageViewerTab.getSmoothImage().setSelected(false);
+                }
 
                 imageViewerTab.setWiseBand(wiseBand);
                 imageViewerTab.setEpoch(epoch);
