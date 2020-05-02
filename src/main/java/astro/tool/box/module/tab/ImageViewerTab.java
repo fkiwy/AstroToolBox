@@ -216,8 +216,10 @@ public class ImageViewerTab {
     private JRadioButton showAllwiseButton;
     private JRadioButton show2MassButton;
     private JRadioButton showAllButton;
+    private JLabel messageLabel;
     private JLabel changeFovLabel;
     private JTable collectionTable;
+    private Timer messageTimer;
     private Timer timer;
 
     private BufferedImage wiseImage;
@@ -303,8 +305,17 @@ public class ImageViewerTab {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
+            messageLabel = new JLabel();
+            messageLabel.setForeground(JColor.DARK_RED.val);
+            JPanel messagePanel = new JPanel();
+            messagePanel.add(messageLabel);
+            mainPanel.add(messagePanel, BorderLayout.NORTH);
+            messageTimer = new Timer(10000, (ActionEvent e) -> {
+                messageLabel.setText("");
+            });
+
             JPanel leftPanel = new JPanel();
-            mainPanel.add(leftPanel, BorderLayout.LINE_START);
+            mainPanel.add(leftPanel, BorderLayout.WEST);
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
             leftPanel.setBorder(new EmptyBorder(0, 5, 5, 20));
 
@@ -316,7 +327,7 @@ public class ImageViewerTab {
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JPanel rightPanel = new JPanel();
-            mainPanel.add(rightPanel, BorderLayout.LINE_END);
+            mainPanel.add(rightPanel, BorderLayout.EAST);
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
@@ -1543,6 +1554,7 @@ public class ImageViewerTab {
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
+                messageLabel.setText("");
                 hasException = false;
                 if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
                     lowContrastSaved = getContrast();
@@ -1933,12 +1945,15 @@ public class ImageViewerTab {
             }
             //268.9187535 70.8374857
             if (replacedCount > requestedCount / 2 && !cutoutsReplaced) {
-                String message = "Due to the very poor image quality, more than half of the requested cutouts were replaced by a previous one."
-                        + LINE_SEP + "Therefore, motion detection may no longer be possible!";
-                showWarnDialog(baseFrame, message);
+                String message = "Due to the very poor image quality, more than half of the requested cutouts were replaced by a previous one. Therefore, motion detection may no longer be possible!";
+                //showWarnDialog(baseFrame, message);
+                messageLabel.setText(message);
                 cutoutsReplaced = true;
             }
             timer.restart();
+            if (!messageLabel.getText().isEmpty()) {
+                messageTimer.restart();
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
@@ -2204,9 +2219,12 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
+            //266.140284 -27.955309
             if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
-                String message = "Some features of the Image Viewer have been disabled because the current field of view exceeds the requested WISE tile.";
-                showWarnDialog(baseFrame, message);
+                String message = "Warning: Some features have been disabled because the current field of view exceeds the requested WISE tile. Other features may not work accurately!";
+                //showWarnDialog(baseFrame, message);
+                //showWarnPopup(baseFrame, message);
+                messageLabel.setText(message);
                 overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);

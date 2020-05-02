@@ -24,8 +24,10 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -57,6 +59,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -132,6 +135,19 @@ public class ModuleHelper {
         } catch (IOException e) {
         }
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void showWarnPopup(JFrame baseFrame, String message) {
+        JLabel messageLabel = new JLabel(html(message + "<br/><br/><p style='color:gray'>(This message box closes automatically after 5 seconds.)</p>"));
+        Timer timer = new Timer(5000, (ActionEvent e) -> {
+            Window window = SwingUtilities.getWindowAncestor(messageLabel);
+            if (window != null) {
+                window.dispose();
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
+        JOptionPane.showMessageDialog(baseFrame, messageLabel, "Warning", JOptionPane.WARNING_MESSAGE);
     }
 
     private static JScrollPane createMessagePanel(String message) {
@@ -242,7 +258,7 @@ public class ModuleHelper {
         //if (element.isOnFocus()) {
         //    field.setBackground(JColor.WHITE.val);
         //} else {
-            field.setBackground(new JLabel().getBackground());
+        field.setBackground(new JLabel().getBackground());
         //}
         if (element.isComputed()) {
             field.setForeground(JColor.DARKER_GREEN.val);

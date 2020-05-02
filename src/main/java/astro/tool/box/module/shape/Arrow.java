@@ -1,9 +1,11 @@
 package astro.tool.box.module.shape;
 
+import java.awt.BasicStroke;
 import static java.lang.Math.*;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public class Arrow implements Drawable {
 
@@ -25,6 +27,7 @@ public class Arrow implements Drawable {
 
     @Override
     public void draw(Graphics graphics) {
+        Graphics2D g2d = (Graphics2D) graphics;
         double xDiff = x1 - x2;
         double vectorAngle;
         if (xDiff == 0) {
@@ -39,10 +42,11 @@ public class Arrow implements Drawable {
         double yRight = size * sin(vectorAngle + arrowAngle);
         //double xPlus = (size / 2) * cos(vectorAngle);
         //double yPlus = (size / 2) * sin(vectorAngle);
-        graphics.setColor(color);
-        graphics.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xLeft), (int) round(y2 + yLeft));
-        graphics.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xRight), (int) round(y2 + yRight));
-        graphics.drawLine((int) round(x1), (int) round(y1), (int) round(x2 /*+ xPlus*/), (int) round(y2 /*+ yPlus*/));
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xLeft), (int) round(y2 + yLeft));
+        g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xRight), (int) round(y2 + yRight));
+        g2d.drawLine((int) round(x1), (int) round(y1), (int) round(x2 /*+ xPlus*/), (int) round(y2 /*+ yPlus*/));
     }
 
 }
