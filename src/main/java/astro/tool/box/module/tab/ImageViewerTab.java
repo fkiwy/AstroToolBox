@@ -306,11 +306,10 @@ public class ImageViewerTab {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
             messageLabel = new JLabel();
-            messageLabel.setForeground(JColor.DARK_RED.val);
             JPanel messagePanel = new JPanel();
             messagePanel.add(messageLabel);
             mainPanel.add(messagePanel, BorderLayout.NORTH);
-            messageTimer = new Timer(10000, (ActionEvent e) -> {
+            messageTimer = new Timer(20000, (ActionEvent e) -> {
                 messageLabel.setText("");
             });
 
@@ -1082,7 +1081,7 @@ public class ImageViewerTab {
             customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
-                    showInfoDialog(baseFrame, "There are no custom overlays.");
+                    showInfoDialog(baseFrame, "No custom overlays have been created yet.");
                     useCustomOverlays.setSelected(false);
                 } else {
                     GridLayout layout = (GridLayout) controlPanel.getLayout();
@@ -1945,9 +1944,10 @@ public class ImageViewerTab {
             }
             //268.9187535 70.8374857
             if (replacedCount > requestedCount / 2 && !cutoutsReplaced) {
-                String message = "Due to the very poor image quality, more than half of the requested cutouts were replaced by a previous one. Therefore, motion detection may no longer be possible!";
+                String message = "!!! Caution !!! Due to the very poor image quality, more than half of the requested cutouts have been replaced by a previous one. Therefore, <u>motion detection may no longer be possible</u>!";
                 //showWarnDialog(baseFrame, message);
-                messageLabel.setText(message);
+                messageLabel.setText(html(message));
+                messageLabel.setForeground(Color.RED);
                 cutoutsReplaced = true;
             }
             timer.restart();
@@ -2221,10 +2221,11 @@ public class ImageViewerTab {
             double naxis2 = header.getDoubleValue("NAXIS2");
             //266.140284 -27.955309
             if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
-                String message = "Warning: Some features have been disabled because the current field of view exceeds the requested WISE tile. Other features may not work accurately!";
+                String message = "Warning: Because the current field of view exceeds the requested WISE tile, some features have been disabled, while others may not work accurately!";
                 //showWarnDialog(baseFrame, message);
                 //showWarnPopup(baseFrame, message);
                 messageLabel.setText(message);
+                messageLabel.setForeground(Color.RED);
                 overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
