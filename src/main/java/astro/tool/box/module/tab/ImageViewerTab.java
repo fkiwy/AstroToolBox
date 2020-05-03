@@ -276,12 +276,15 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
-    private boolean preloadMoreCutouts;
     private boolean cutoutsReplaced;
     private boolean imageCutOff;
     private boolean overlaysDisabled;
     private boolean timerStopped;
     private boolean hasException;
+    private boolean preloadAdditionalEpochs;
+    private boolean additionalEpochs;
+    private boolean panstarrsImages;
+    private boolean sdssImages;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
@@ -1600,8 +1603,12 @@ public class ImageViewerTab {
                 }
                 ps1Image = null;
                 sdssImage = null;
-                CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
-                CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
+                if (panstarrsImages) {
+                    CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
+                }
+                if (sdssImages) {
+                    CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
+                }
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
                 List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
@@ -1616,7 +1623,9 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                preloadMoreCutouts();
+                if (additionalEpochs) {
+                    preloadAdditionalEpochs();
+                }
             }
             previousSize = size;
             previousRa = targetRa;
@@ -2146,15 +2155,15 @@ public class ImageViewerTab {
         return zoom * value / size;
     }
 
-    private void preloadMoreCutouts() throws Exception {
-        preloadMoreCutouts = true;
-        for (int i = NUMBER_OF_EPOCHS * 2; preloadMoreCutouts; i++) {
+    private void preloadAdditionalEpochs() throws Exception {
+        preloadAdditionalEpochs = true;
+        for (int i = NUMBER_OF_EPOCHS * 2; preloadAdditionalEpochs; i++) {
             loadImage(wiseBand.val, i);
             epochCount = i;
-            System.out.println("epochCount=" + epochCount);
+            //System.out.println("epochCount=" + epochCount);
         }
         if (epochCount % 2 == 0) {
-            preloadMoreCutouts = true;
+            preloadAdditionalEpochs = true;
             epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
             ChangeListener listener = epochCountSlider.getChangeListeners()[0];
             epochCountSlider.removeChangeListener(listener);
@@ -2231,8 +2240,8 @@ public class ImageViewerTab {
                 if (ex instanceof NumberFormatException) {
                     throw ex;
                 }
-                if (preloadMoreCutouts) {
-                    preloadMoreCutouts = false;
+                if (preloadAdditionalEpochs) {
+                    preloadAdditionalEpochs = false;
                     return null;
                 }
                 fits = getPreviousImage(band, epoch);
@@ -2827,6 +2836,9 @@ public class ImageViewerTab {
         imageViewerTab.getZoomSlider().setValue(ZOOM);
         imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setQuadrantCount(quadrantCount);
+        imageViewerTab.setAdditionalEpochs(additionalEpochs);
+        imageViewerTab.setPanstarrsImages(panstarrsImages);
+        imageViewerTab.setSdssImages(sdssImages);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
 
@@ -3846,6 +3858,18 @@ public class ImageViewerTab {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public void setAdditionalEpochs(boolean additionalEpochs) {
+        this.additionalEpochs = additionalEpochs;
+    }
+
+    public void setPanstarrsImages(boolean panstarrsImages) {
+        this.panstarrsImages = panstarrsImages;
+    }
+
+    public void setSdssImages(boolean sdssImages) {
+        this.sdssImages = sdssImages;
     }
 
 }

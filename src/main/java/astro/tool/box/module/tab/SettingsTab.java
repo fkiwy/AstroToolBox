@@ -85,12 +85,18 @@ public class SettingsTab {
     private static final String SIZE = "imageSize";
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
+    private static final String ADDITIONAL_EPOCHS = "additionalEpochs";
+    private static final String PANSTARRS_IMAGES = "panstarrsImages";
+    private static final String SDSS_IMAGES = "sdssImages";
 
     private WiseBand wiseBand;
     private Epoch epoch;
     private int size;
     private int speed;
     private int zoom;
+    private boolean additionalEpochs;
+    private boolean panstarrsImages;
+    private boolean sdssImages;
 
     private ActionListener listener;
     private JComboBox wiseBandsBox;
@@ -112,11 +118,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(7, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(8, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 200));
+            globalSettings.setPreferredSize(new Dimension(450, 225));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -157,12 +163,12 @@ public class SettingsTab {
             JTextField proxyPortField = new JTextField(String.valueOf(proxyPort));
             globalSettings.add(proxyPortField);
 
-            globalSettings.add(new JLabel("Use proxy : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use proxy: ", JLabel.RIGHT));
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
             globalSettings.add(useProxyCheckBox);
 
-            globalSettings.add(new JLabel("Use SIMBAD mirror : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use SIMBAD mirror: ", JLabel.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
@@ -175,11 +181,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(7, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(8, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 200));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 225));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -229,11 +235,11 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(7, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(8, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 200));
+            imageViewerSettings.setPreferredSize(new Dimension(350, 225));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
@@ -241,6 +247,9 @@ public class SettingsTab {
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
+            additionalEpochs = Boolean.parseBoolean(USER_SETTINGS.getProperty(ADDITIONAL_EPOCHS, "true"));
+            panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
+            sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 
             wiseBandsBox = imageViewerTab.getWiseBands();
             listener = wiseBandsBox.getActionListeners()[0];
@@ -268,6 +277,9 @@ public class SettingsTab {
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
+            imageViewerTab.setAdditionalEpochs(additionalEpochs);
+            imageViewerTab.setPanstarrsImages(panstarrsImages);
+            imageViewerTab.setSdssImages(sdssImages);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox<>(WiseBand.values());
@@ -290,6 +302,21 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel("Zoom: ", JLabel.RIGHT));
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
+
+            imageViewerSettings.add(new JLabel("Download additional epochs: ", JLabel.RIGHT));
+            JCheckBox additionalEpochsCheckBox = new JCheckBox();
+            additionalEpochsCheckBox.setSelected(additionalEpochs);
+            imageViewerSettings.add(additionalEpochsCheckBox);
+
+            imageViewerSettings.add(new JLabel("Download Pan-STARRS images: ", JLabel.RIGHT));
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox();
+            panstarrsImagesCheckBox.setSelected(panstarrsImages);
+            imageViewerSettings.add(panstarrsImagesCheckBox);
+
+            imageViewerSettings.add(new JLabel("Download SDSS images: ", JLabel.RIGHT));
+            JCheckBox sdssImagesCheckBox = new JCheckBox();
+            sdssImagesCheckBox.setSelected(sdssImages);
+            imageViewerSettings.add(sdssImagesCheckBox);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -341,6 +368,9 @@ public class SettingsTab {
                     size = Integer.parseInt(sizeField.getText());
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
+                    additionalEpochs = additionalEpochsCheckBox.isSelected();
+                    panstarrsImages = panstarrsImagesCheckBox.isSelected();
+                    sdssImages = sdssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
                     return;
@@ -407,12 +437,18 @@ public class SettingsTab {
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
+                imageViewerTab.setAdditionalEpochs(additionalEpochs);
+                imageViewerTab.setPanstarrsImages(panstarrsImages);
+                imageViewerTab.setSdssImages(sdssImages);
 
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
                 USER_SETTINGS.setProperty(EPOCH, epoch.name());
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
+                USER_SETTINGS.setProperty(ADDITIONAL_EPOCHS, String.valueOf(additionalEpochs));
+                USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
+                USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
                     USER_SETTINGS.store(output, "User settings");
