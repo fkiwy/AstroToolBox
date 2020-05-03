@@ -10,6 +10,8 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -120,6 +122,10 @@ public class BatchQueryTab {
             catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
             AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
             catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
+            PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
+            catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
+            SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
+            catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
 
             JPanel mainPanel = new JPanel(new BorderLayout());
 

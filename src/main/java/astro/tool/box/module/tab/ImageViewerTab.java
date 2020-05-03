@@ -121,6 +121,7 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
@@ -165,6 +166,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
+    private JPanel messagePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox minMaxLimits;
@@ -218,6 +220,7 @@ public class ImageViewerTab {
     private JRadioButton showAllButton;
     private JLabel messageLabel;
     private JLabel changeFovLabel;
+    private JLabel epochCountLabel;
     private JTable collectionTable;
     private Timer messageTimer;
     private Timer timer;
@@ -237,7 +240,6 @@ public class ImageViewerTab {
     private int crosshairSize = 5;
     private int imageNumber = 0;
     private int windowShift = 0;
-    private int verticalPos = 0;
     private int requestedCount = 0;
     private int replacedCount = 0;
     private int quadrantCount = 0;
@@ -274,6 +276,7 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean preloadMoreCutouts;
     private boolean cutoutsReplaced;
     private boolean imageCutOff;
     private boolean overlaysDisabled;
@@ -306,11 +309,13 @@ public class ImageViewerTab {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
             messageLabel = new JLabel();
-            JPanel messagePanel = new JPanel();
+            messagePanel = new JPanel();
+            messagePanel.setVisible(false);
             messagePanel.add(messageLabel);
             mainPanel.add(messagePanel, BorderLayout.NORTH);
             messageTimer = new Timer(20000, (ActionEvent e) -> {
                 messageLabel.setText("");
+                messagePanel.setVisible(false);
             });
 
             JPanel leftPanel = new JPanel();
@@ -533,7 +538,7 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            JLabel epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochCount / 2));
+            epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochCount / 2));
             grayPanel.add(epochCountLabel);
 
             epochCountSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
@@ -1258,23 +1263,16 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
-                                        if (showPanstarrsButton.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> displayPs1Images(newRa, newDec, fieldOfView));
+                                        if (show2MassButton.isSelected()) {
+                                            CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView, 0));
                                         } else if (showAllwiseButton.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView));
-                                        } else if (show2MassButton.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView));
+                                            CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView, 0));
+                                        } else if (showPanstarrsButton.isSelected()) {
+                                            CompletableFuture.supplyAsync(() -> displayPs1Images(newRa, newDec, fieldOfView, 0));
                                         } else {
-                                            verticalPos = 0;
-                                            display2MassAllSkyImages(newRa, newDec, fieldOfView);
-                                            if (showAllButton.isSelected()) {
-                                                verticalPos += PANEL_HEIGHT;
-                                            }
-                                            displayAllwiseAtlasImages(newRa, newDec, fieldOfView);
-                                            if (showAllButton.isSelected()) {
-                                                verticalPos += PANEL_HEIGHT;
-                                            }
-                                            displayPs1Images(newRa, newDec, fieldOfView);
+                                            CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView, 0));
+                                            CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView, PANEL_HEIGHT));
+                                            CompletableFuture.supplyAsync(() -> displayPs1Images(newRa, newDec, fieldOfView, PANEL_HEIGHT * 2));
                                         }
                                     }
                                     break;
@@ -1618,6 +1616,7 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
+                preloadMoreCutouts();
             }
             previousSize = size;
             previousRa = targetRa;
@@ -1948,6 +1947,7 @@ public class ImageViewerTab {
                 //showWarnDialog(baseFrame, message);
                 messageLabel.setText(html(message));
                 messageLabel.setForeground(Color.RED);
+                messagePanel.setVisible(true);
                 cutoutsReplaced = true;
             }
             timer.restart();
@@ -2146,6 +2146,26 @@ public class ImageViewerTab {
         return zoom * value / size;
     }
 
+    private void preloadMoreCutouts() throws Exception {
+        preloadMoreCutouts = true;
+        for (int i = NUMBER_OF_EPOCHS * 2; preloadMoreCutouts; i++) {
+            loadImage(wiseBand.val, i);
+            epochCount = i;
+            System.out.println("epochCount=" + epochCount);
+        }
+        if (epochCount % 2 == 0) {
+            preloadMoreCutouts = true;
+            epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
+            ChangeListener listener = epochCountSlider.getChangeListeners()[0];
+            epochCountSlider.removeChangeListener(listener);
+            epochCountSlider.setMaximum(epochCount / 2);
+            epochCountSlider.setValue(epochCount / 2);
+            epochCountSlider.addChangeListener(listener);
+        } else {
+            epochCount = NUMBER_OF_EPOCHS * 2;
+        }
+    }
+
     private NumberPair loadImage(int band_, int epoch) throws Exception {
         String str = Integer.toString(band_);
         int[] bands = new int[str.length()];
@@ -2211,6 +2231,10 @@ public class ImageViewerTab {
                 if (ex instanceof NumberFormatException) {
                     throw ex;
                 }
+                if (preloadMoreCutouts) {
+                    preloadMoreCutouts = false;
+                    return null;
+                }
                 fits = getPreviousImage(band, epoch);
             }
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
@@ -2219,13 +2243,14 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            //266.140284 -27.955309
+            //266.140284 -27.955309 (FoV = 700 arcsec)
             if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
                 String message = "Warning: Because the current field of view exceeds the requested WISE tile, some features have been disabled, while others may not work accurately!";
                 //showWarnDialog(baseFrame, message);
                 //showWarnPopup(baseFrame, message);
                 messageLabel.setText(message);
                 messageLabel.setForeground(Color.RED);
+                messagePanel.setVisible(true);
                 overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
@@ -2848,7 +2873,7 @@ public class ImageViewerTab {
         }
     }
 
-    private Object displayPs1Images(double targetRa, double targetDec, int size) {
+    private Object displayPs1Images(double targetRa, double targetDec, int size, int verticalPos) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch file name for each Pan-STARRS filter
@@ -2913,7 +2938,7 @@ public class ImageViewerTab {
         return ImageIO.read(stream);
     }
 
-    private Object displayAllwiseAtlasImages(double targetRa, double targetDec, int fieldOfView) {
+    private Object displayAllwiseAtlasImages(double targetRa, double targetDec, int fieldOfView, int verticalPos) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch coadd id for each WISE band
@@ -3032,7 +3057,7 @@ public class ImageViewerTab {
         return null;
     }
 
-    private Object display2MassAllSkyImages(double targetRa, double targetDec, int fieldOfView) {
+    private Object display2MassAllSkyImages(double targetRa, double targetDec, int fieldOfView, int verticalPos) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch file name for each 2Mass filter
