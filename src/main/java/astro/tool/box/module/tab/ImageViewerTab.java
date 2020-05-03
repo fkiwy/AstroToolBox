@@ -2836,9 +2836,6 @@ public class ImageViewerTab {
         imageViewerTab.getZoomSlider().setValue(ZOOM);
         imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setQuadrantCount(quadrantCount);
-        imageViewerTab.setAdditionalEpochs(additionalEpochs);
-        imageViewerTab.setPanstarrsImages(panstarrsImages);
-        imageViewerTab.setSdssImages(sdssImages);
         imageViewerTab.setImageViewer(this);
         imageViewerTab.createFlipbook();
 
