@@ -303,7 +303,7 @@ public class SettingsTab {
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
 
-            imageViewerSettings.add(new JLabel("Download additional epochs: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Download additional coadds: ", JLabel.RIGHT));
             JCheckBox additionalEpochsCheckBox = new JCheckBox();
             additionalEpochsCheckBox.setSelected(additionalEpochs);
             imageViewerSettings.add(additionalEpochsCheckBox);
