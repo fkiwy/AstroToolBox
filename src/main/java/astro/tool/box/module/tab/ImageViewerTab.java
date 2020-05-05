@@ -38,6 +38,7 @@ import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
+import astro.tool.box.module.ImageContainer;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
@@ -79,13 +80,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static java.lang.Math.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -285,6 +289,8 @@ public class ImageViewerTab {
     private boolean additionalEpochs;
     private boolean panstarrsImages;
     private boolean sdssImages;
+    private boolean isW1Loaded;
+    private boolean isW2Loaded;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
@@ -1571,6 +1577,7 @@ public class ImageViewerTab {
                 cutoutsReplaced = false;
                 imageCutOff = false;
                 overlaysDisabled = false;
+                isW1Loaded = isW2Loaded = false;
                 simbadOverlay.setEnabled(true);
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
@@ -1623,15 +1630,42 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                if (additionalEpochs) {
-                    preloadAdditionalEpochs();
-                }
+                //if (additionalEpochs) {
+                //    preloadAdditionalEpochs();
+                //}
             }
             previousSize = size;
             previousRa = targetRa;
             previousDec = targetDec;
             imageNumber = 0;
             avgValue = 0;
+
+            if (additionalEpochs) {
+                switch (wiseBand) {
+                    case W1:
+                        if (!isW1Loaded) {
+                            downloadAllAvailableEpochs(1);
+                            isW1Loaded = true;
+                        }
+                        break;
+                    case W2:
+                        if (!isW2Loaded) {
+                            downloadAllAvailableEpochs(2);
+                            isW2Loaded = true;
+                        }
+                        break;
+                    default:
+                        if (!isW1Loaded) {
+                            downloadAllAvailableEpochs(1);
+                            isW1Loaded = true;
+                        }
+                        if (!isW2Loaded) {
+                            downloadAllAvailableEpochs(2);
+                            isW2Loaded = true;
+                        }
+                        break;
+                }
+            }
 
             Fits fits;
             int k;
@@ -2155,6 +2189,123 @@ public class ImageViewerTab {
         return zoom * value / size;
     }
 
+    private void downloadAllAvailableEpochs(int band) throws Exception {
+        int nbrOfEpochs = 0;
+        List<ImageContainer> imageList = new ArrayList<>();
+        boolean imagesAvailable = true;
+        for (int i = 0; imagesAvailable; i++) {
+            try {
+                Fits fits = new Fits(getImageData(band, i));
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                Header header = hdu.getHeader();
+                double minObsEpoch = header.getDoubleValue("MJDMIN");
+                LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+                imageList.add(new ImageContainer(obsDate, fits));
+                nbrOfEpochs = i;
+                System.out.println("nbrOfEpochs=" + nbrOfEpochs);
+            } catch (Exception ex) {
+                imagesAvailable = false;
+            }
+        }
+        if (imageList.isEmpty()) {
+            return;
+        }
+        List<ImageContainer> sortedList = imageList.stream()
+                .sorted(Comparator.comparing(ImageContainer::getDate))
+                .collect(Collectors.toList());
+        List<List<ImageContainer>> epochsList = new ArrayList<>();
+        List<ImageContainer> epochList = new ArrayList<>();
+        int prevYear = sortedList.get(0).getDate().getYear();
+        int prevMonth = sortedList.get(0).getDate().getMonth().getValue();
+        int prevSemester = prevMonth >= 1 || prevMonth <= 6 ? 1 : 2;
+        int semester1 = 0;
+        int semester2 = 0;
+        for (ImageContainer container : sortedList) {
+            int year = container.getDate().getYear();
+            int month = container.getDate().getMonth().getValue();
+            int semester = month >= 1 && month <= 6 ? 1 : 2;
+            System.out.println("year=" + year + " semester=" + semester);
+            if (year == prevYear && semester == prevSemester) {
+                epochList.add(container);
+            } else {
+                epochsList.add(epochList);
+                epochList = new ArrayList<>();
+                epochList.add(container);
+            }
+            if (year == prevYear) {
+                if (semester == 1) {
+                    semester1++;
+                }
+                if (semester == 2) {
+                    semester2++;
+                }
+            } else {
+                if (semester1 == 0 || semester2 == 0) {
+                    epochsList.remove(epochsList.size() - 1);
+                }
+                semester1 = 0;
+                semester2 = 0;
+                if (semester == 1) {
+                    semester1++;
+                }
+                if (semester == 2) {
+                    semester2++;
+                }
+            }
+            prevYear = year;
+            prevSemester = semester;
+        }
+        if (semester1 > 0 && semester2 > 0) {
+            epochsList.add(epochList);
+        }
+        int e = 0;
+        for (List<ImageContainer> epochs : epochsList) {
+            Fits fits = epochs.get(0).getImage();
+            int n = 1;
+            for (int i = 1; i < epochs.size(); i++) {
+                fits = addImages(fits, epochs.get(i).getImage());
+                n++;
+            }
+            addImage(band, e++, n > 1 ? takeAverage(fits, n) : fits);
+        }
+        epochCount = e;
+        epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
+        ChangeListener listener = epochCountSlider.getChangeListeners()[0];
+        epochCountSlider.removeChangeListener(listener);
+        epochCountSlider.setMaximum(epochCount / 2);
+        epochCountSlider.setValue(epochCount / 2);
+        epochCountSlider.addChangeListener(listener);
+    }
+
+    private Fits addImages(Fits fits1, Fits fits2) {
+        try {
+            ImageHDU imageHDU = (ImageHDU) fits1.getHDU(0);
+            ImageData imageData = (ImageData) imageHDU.getData();
+            float[][] values1 = (float[][]) imageData.getData();
+
+            imageHDU = (ImageHDU) fits2.getHDU(0);
+            imageData = (ImageData) imageHDU.getData();
+            float[][] values2 = (float[][]) imageData.getData();
+
+            float[][] addedValues = new float[axisY][axisX];
+            for (int i = 0; i < axisY; i++) {
+                for (int j = 0; j < axisX; j++) {
+                    try {
+                        addedValues[i][j] = values1[i][j] + values2[i][j];
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                    }
+                }
+            }
+
+            Fits result = new Fits();
+            result.addHDU(FitsFactory.hduFactory(addedValues));
+            return result;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /*
     private void preloadAdditionalEpochs() throws Exception {
         //268.9187535 70.8374857
         preloadAdditionalEpochs = true;
@@ -2175,8 +2326,8 @@ public class ImageViewerTab {
             epochCount = numberOfSingleEpochs;
         }
         preloadAdditionalEpochs = false;
-    }
-
+    }*/
+    //
     private NumberPair loadImage(int band_, int epoch) throws Exception {
         String str = Integer.toString(band_);
         int[] bands = new int[str.length()];
