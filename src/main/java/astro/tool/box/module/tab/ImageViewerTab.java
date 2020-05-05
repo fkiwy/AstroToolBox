@@ -2198,15 +2198,12 @@ public class ImageViewerTab {
                 Fits fits = new Fits(getImageData(band, i));
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 Header header = hdu.getHeader();
-
                 double naxis1 = header.getDoubleValue("NAXIS1");
                 double naxis2 = header.getDoubleValue("NAXIS2");
                 axisX = (int) round(naxis1);
                 axisY = (int) round(naxis2);
-
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] values = (float[][]) imageData.getData();
-
                 // Replace an image with too many zero values by a preceding image
                 if (axisY > 0) {
                     axisX = values[0].length;
@@ -2227,11 +2224,10 @@ public class ImageViewerTab {
                 if (zeroValues > maxAllowed) {
                     fits = getPreviousImage(band, i);
                 }
-
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 imageList.add(new ImageContainer(obsDate, fits));
-                System.out.println("epoch=" + i);
+                //System.out.println("epoch=" + i);
             } catch (Exception ex) {
                 imagesAvailable = false;
             }
@@ -2253,7 +2249,7 @@ public class ImageViewerTab {
             int year = container.getDate().getYear();
             int month = container.getDate().getMonth().getValue();
             int semester = month >= 1 && month <= 6 ? 1 : 2;
-            System.out.println("year=" + year + " semester=" + semester);
+            //System.out.println("year=" + year + " semester=" + semester);
             if (year == prevYear && semester == prevSemester) {
                 epochList.add(container);
             } else {
@@ -2290,11 +2286,9 @@ public class ImageViewerTab {
         int e = 0;
         for (List<ImageContainer> epochs : epochsList) {
             Fits fits = epochs.get(0).getImage();
-
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
-
             // Un/Check the "Set min/max limits" check box automatically
             minMaxLimits.setSelected(false);
             NumberTriplet minMaxValues = getMinMaxValues(values);
@@ -2307,7 +2301,6 @@ public class ImageViewerTab {
             } else {
                 minMaxLimits.setSelected(true);
             }
-
             Header header = hdu.getHeader();
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
@@ -2349,7 +2342,6 @@ public class ImageViewerTab {
             pixelY = naxis2 - crpix2;
             axisX = (int) round(naxis1);
             axisY = (int) round(naxis2);
-
             int n = 1;
             for (int i = 1; i < epochs.size(); i++) {
                 fits = addImages(fits, epochs.get(i).getImage());
