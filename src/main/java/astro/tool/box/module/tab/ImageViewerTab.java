@@ -2156,14 +2156,15 @@ public class ImageViewerTab {
     }
 
     private void preloadAdditionalEpochs() throws Exception {
+        //268.9187535 70.8374857
         preloadAdditionalEpochs = true;
-        for (int i = NUMBER_OF_EPOCHS * 2; preloadAdditionalEpochs; i++) {
+        int numberOfSingleEpochs = NUMBER_OF_EPOCHS * 2;
+        for (int i = numberOfSingleEpochs; preloadAdditionalEpochs; i++) {
             loadImage(wiseBand.val, i);
             epochCount = i;
             //System.out.println("epochCount=" + epochCount);
         }
-        if (epochCount % 2 == 0) {
-            preloadAdditionalEpochs = true;
+        if (epochCount > numberOfSingleEpochs && epochCount % 2 == 0) {
             epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
             ChangeListener listener = epochCountSlider.getChangeListeners()[0];
             epochCountSlider.removeChangeListener(listener);
@@ -2171,8 +2172,9 @@ public class ImageViewerTab {
             epochCountSlider.setValue(epochCount / 2);
             epochCountSlider.addChangeListener(listener);
         } else {
-            epochCount = NUMBER_OF_EPOCHS * 2;
+            epochCount = numberOfSingleEpochs;
         }
+        preloadAdditionalEpochs = false;
     }
 
     private NumberPair loadImage(int band_, int epoch) throws Exception {
