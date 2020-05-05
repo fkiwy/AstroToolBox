@@ -1,10 +1,6 @@
 package astro.tool.box.module;
 
 import astro.tool.box.container.NumberPair;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.function.AstrometricFunctions;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class FlipbookComponent {
@@ -23,22 +19,11 @@ public class FlipbookComponent {
 
     private boolean firstEpoch;
 
-    private double minObsEpoch;
-
-    private double maxObsEpoch;
-
     private List<NumberPair> diffPixels;
 
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
         this.epoch = epoch;
-    }
-
-    public FlipbookComponent(int band, int epoch, double minObsEpoch, double maxObsEpoch) {
-        this.band = band;
-        this.epoch = epoch;
-        this.minObsEpoch = minObsEpoch;
-        this.maxObsEpoch = maxObsEpoch;
     }
 
     public FlipbookComponent(int band, int epoch, boolean isMerged) {
@@ -55,8 +40,6 @@ public class FlipbookComponent {
         sb.append(", epochCount=").append(epochCount);
         sb.append(", isMerged=").append(isMerged);
         sb.append(", firstEpoch=").append(firstEpoch);
-        sb.append(", minObsEpoch=").append(minObsEpoch);
-        sb.append(", maxObsEpoch=").append(maxObsEpoch);
         sb.append(", diffPixels=").append(diffPixels);
         sb.append('}');
         return sb.toString();
@@ -145,14 +128,6 @@ public class FlipbookComponent {
             titleEpoch = String.valueOf((epoch / 2) + 1);
             node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
         }
-        if (minObsEpoch > 0) {
-            LocalDateTime ldt = AstrometricFunctions.convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-            minObsTime = "Min obs. time=" + ldt.format(DATE_TIME_FORMATTER);
-        }
-        if (maxObsEpoch > 0) {
-            LocalDateTime ldt = AstrometricFunctions.convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch)));
-            maxObsTime = " ~ Max obs. time=" + ldt.format(DATE_TIME_FORMATTER) + " ~ ";
-        }
         return "WISE: " + minObsTime + maxObsTime + "Band=" + titleBand + " ~ Epoch=" + titleEpoch + " ~ Node=" + node;
     }
 
@@ -170,14 +145,6 @@ public class FlipbookComponent {
 
     public boolean isFirstEpoch() {
         return firstEpoch;
-    }
-
-    public double getMinObsEpoch() {
-        return minObsEpoch;
-    }
-
-    public double getMaxObsEpoch() {
-        return maxObsEpoch;
     }
 
     public List<NumberPair> getDiffPixels() {
