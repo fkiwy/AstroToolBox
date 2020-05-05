@@ -2190,19 +2190,48 @@ public class ImageViewerTab {
     }
 
     private void downloadAllAvailableEpochs(int band) throws Exception {
-        int nbrOfEpochs = 0;
         List<ImageContainer> imageList = new ArrayList<>();
         boolean imagesAvailable = true;
         for (int i = 0; imagesAvailable; i++) {
             try {
+                requestedCount++;
                 Fits fits = new Fits(getImageData(band, i));
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 Header header = hdu.getHeader();
+
+                double naxis1 = header.getDoubleValue("NAXIS1");
+                double naxis2 = header.getDoubleValue("NAXIS2");
+                axisX = (int) round(naxis1);
+                axisY = (int) round(naxis2);
+
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+
+                // Replace an image with too many zero values by a preceding image
+                if (axisY > 0) {
+                    axisX = values[0].length;
+                }
+                int zeroValues = 0;
+                for (int j = 0; j < axisY; j++) {
+                    for (int k = 0; k < axisX; k++) {
+                        try {
+                            if (values[j][k] == 0) {
+                                zeroValues++;
+                            }
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                }
+                double maxAllowed = axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100;
+                //System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
+                if (zeroValues > maxAllowed) {
+                    fits = getPreviousImage(band, i);
+                }
+
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 imageList.add(new ImageContainer(obsDate, fits));
-                nbrOfEpochs = i;
-                System.out.println("nbrOfEpochs=" + nbrOfEpochs);
+                System.out.println("epoch=" + i);
             } catch (Exception ex) {
                 imagesAvailable = false;
             }
@@ -2261,6 +2290,66 @@ public class ImageViewerTab {
         int e = 0;
         for (List<ImageContainer> epochs : epochsList) {
             Fits fits = epochs.get(0).getImage();
+
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+
+            // Un/Check the "Set min/max limits" check box automatically
+            minMaxLimits.setSelected(false);
+            NumberTriplet minMaxValues = getMinMaxValues(values);
+            int avgVal = (int) minMaxValues.getZ();
+            if (avgValue == 0) {
+                avgValue = avgVal;
+            }
+            if (avgValue > 500) {
+                minMaxLimits.setSelected(false);
+            } else {
+                minMaxLimits.setSelected(true);
+            }
+
+            Header header = hdu.getHeader();
+            double crpix1 = header.getDoubleValue("CRPIX1");
+            double crpix2 = header.getDoubleValue("CRPIX2");
+            double naxis1 = header.getDoubleValue("NAXIS1");
+            double naxis2 = header.getDoubleValue("NAXIS2");
+            //266.140284 -27.955309 (FoV = 700 arcsec)
+            if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
+                String message = "Warning: Because the current field of view exceeds the requested WISE tile, some features have been disabled, while others may not work accurately!";
+                //showWarnDialog(baseFrame, message);
+                //showWarnPopup(baseFrame, message);
+                messageLabel.setText(message);
+                messageLabel.setForeground(Color.RED);
+                messagePanel.setVisible(true);
+                overlaysDisabled = true;
+                simbadOverlay.setEnabled(false);
+                gaiaDR2Overlay.setEnabled(false);
+                allWiseOverlay.setEnabled(false);
+                catWiseOverlay.setEnabled(false);
+                panStarrsOverlay.setEnabled(false);
+                sdssOverlay.setEnabled(false);
+                spectrumOverlay.setEnabled(false);
+                ssoOverlay.setEnabled(false);
+                ghostOverlay.setEnabled(false);
+                haloOverlay.setEnabled(false);
+                latentOverlay.setEnabled(false);
+                spikeOverlay.setEnabled(false);
+                gaiaDR2ProperMotion.setEnabled(false);
+                catWiseProperMotion.setEnabled(false);
+                if (useCustomOverlays.isSelected()) {
+                    customOverlays.values().forEach((customOverlay) -> {
+                        customOverlay.getCheckBox().setEnabled(false);
+                    });
+                }
+            }
+            if (naxis1 != naxis2) {
+                imageCutOff = true;
+            }
+            pixelX = crpix1;
+            pixelY = naxis2 - crpix2;
+            axisX = (int) round(naxis1);
+            axisY = (int) round(naxis2);
+
             int n = 1;
             for (int i = 1; i < epochs.size(); i++) {
                 fits = addImages(fits, epochs.get(i).getImage());
