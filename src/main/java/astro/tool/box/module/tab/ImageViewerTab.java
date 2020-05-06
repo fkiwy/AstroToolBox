@@ -229,7 +229,8 @@ public class ImageViewerTab {
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
     private BufferedImage sdssImage;
-    private Map<String, ImageContainer> preloadedImages;
+    private Map<String, ImageContainer> imagesW1;
+    private Map<String, ImageContainer> imagesW2;
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
     private List<NumberPair> crosshairs;
@@ -910,7 +911,8 @@ public class ImageViewerTab {
             transposeProperMotion.addActionListener((ActionEvent evt) -> {
                 if (!transposeMotionField.getText().isEmpty()) {
                     transposeProperMotion.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    preloadedImages.clear();
+                    imagesW1.clear();
+                    imagesW2.clear();
                     createFlipbook();
                     transposeProperMotion.setCursor(Cursor.getDefaultCursor());
                 }
@@ -921,7 +923,8 @@ public class ImageViewerTab {
             transposeMotionField.addActionListener((ActionEvent evt) -> {
                 if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
                     transposeMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    preloadedImages.clear();
+                    imagesW1.clear();
+                    imagesW2.clear();
                     createFlipbook();
                     transposeMotionField.setCursor(Cursor.getDefaultCursor());
                 }
@@ -1394,7 +1397,8 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
-                preloadedImages = new HashMap<>();
+                imagesW1 = new HashMap<>();
+                imagesW2 = new HashMap<>();
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
@@ -1473,37 +1477,36 @@ public class ImageViewerTab {
             imageNumber = 0;
             avgValue = 0;
 
-            if (additionalEpochs) {
-                boolean moreImagesAvailable = true;
-                int standardEpochs = NUMBER_OF_EPOCHS * 2;
-                try {
-                    getImageData(1, standardEpochs);
-                } catch (Exception ex) {
-                    moreImagesAvailable = false;
+            boolean moreImagesAvailable = true;
+            int standardEpochs = NUMBER_OF_EPOCHS * 2;
+            try {
+                getImageData(1, standardEpochs);
+            } catch (Exception ex) {
+                moreImagesAvailable = false;
+            }
+            List<Integer> requestedEpochs = new ArrayList<>();
+            if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
+                requestedEpochs.add(0);
+                requestedEpochs.add(1);
+                requestedEpochs.add(standardEpochs - 2);
+                requestedEpochs.add(standardEpochs - 1);
+            } else {
+                for (int i = 0; i < 100; i++) {
+                    requestedEpochs.add(i);
                 }
-                List<Integer> requestedEpochs = new ArrayList<>();
-                if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
-                    requestedEpochs.add(0);
-                    requestedEpochs.add(1);
-                    requestedEpochs.add(standardEpochs - 2);
-                    requestedEpochs.add(standardEpochs - 1);
-                } else {
-                    for (int i = 0; i < 100; i++) {
-                        requestedEpochs.add(i);
-                    }
-                }
-                switch (wiseBand) {
-                    case W1:
-                        downloadRequestedEpochs(1, requestedEpochs);
-                        break;
-                    case W2:
-                        downloadRequestedEpochs(2, requestedEpochs);
-                        break;
-                    case W1W2:
-                        downloadRequestedEpochs(1, requestedEpochs);
-                        downloadRequestedEpochs(2, requestedEpochs);
-                        break;
-                }
+            }
+            images.clear();
+            switch (wiseBand) {
+                case W1:
+                    downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                    break;
+                case W2:
+                    downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                    break;
+                case W1W2:
+                    downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                    downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                    break;
             }
 
             Fits fits;
@@ -1931,14 +1934,15 @@ public class ImageViewerTab {
         return zoom * value / size;
     }
 
-    private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs) throws Exception {
+    private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
         boolean imagesAvailable = true;
         for (int i = 0; imagesAvailable && i < requestedEpochs.size(); i++) {
             try {
                 int requestedEpoch = requestedEpochs.get(i);
-                String epochKey = band + "_" + requestedEpoch;
-                ImageContainer container = preloadedImages.get(epochKey);
+                String imageKey = band + "_" + requestedEpoch;
+                ImageContainer container = images.get(imageKey);
                 if (container != null) {
+                    //System.out.println("Skipped image=" + imageKey);
                     continue;
                 }
                 requestedCount++;
@@ -1973,16 +1977,16 @@ public class ImageViewerTab {
                 }
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-                preloadedImages.put(epochKey, new ImageContainer(obsDate, fits));
-                System.out.println("epochKey=" + epochKey);
+                images.put(imageKey, new ImageContainer(obsDate, fits));
+                //System.out.println("Added image=" + imageKey);
             } catch (Exception ex) {
                 imagesAvailable = false;
             }
         }
-        if (preloadedImages.isEmpty()) {
+        if (images.isEmpty()) {
             return;
         }
-        List<ImageContainer> sortedList = preloadedImages.values().stream()
+        List<ImageContainer> sortedList = images.values().stream()
                 .sorted(Comparator.comparing(ImageContainer::getDate))
                 .collect(Collectors.toList());
         List<List<ImageContainer>> epochsList = new ArrayList<>();
@@ -1996,7 +2000,7 @@ public class ImageViewerTab {
             int year = container.getDate().getYear();
             int month = container.getDate().getMonth().getValue();
             int semester = month >= 1 && month <= 6 ? 1 : 2;
-            System.out.println("year=" + year + " semester=" + semester);
+            //System.out.println("year=" + year + " semester=" + semester);
             if (year == prevYear && semester == prevSemester) {
                 epochList.add(container);
             } else {
@@ -2030,7 +2034,7 @@ public class ImageViewerTab {
         if (semester1 > 0 && semester2 > 0) {
             epochsList.add(epochList);
         }
-        int e = 0;
+        int epoch = 0;
         for (List<ImageContainer> epochs : epochsList) {
             Fits fits = epochs.get(0).getImage();
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
@@ -2092,11 +2096,11 @@ public class ImageViewerTab {
             for (int i = 1; i < epochs.size(); i++) {
                 fits = addImages(fits, epochs.get(i).getImage());
             }
-            addImage(band, e, fits);
-            System.out.println("band=" + band + " epoch=" + e);
-            e++;
+            addImage(band, epoch, fits);
+            //System.out.println("band=" + band + " epoch=" + epoch);
+            epoch++;
         }
-        epochCount = e;
+        epochCount = epoch;
         epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
         ChangeListener listener = epochCountSlider.getChangeListeners()[0];
         epochCountSlider.removeChangeListener(listener);
@@ -2290,12 +2294,12 @@ public class ImageViewerTab {
 
     private BufferedImage createComposite(int epoch) {
         try {
-            Fits fits = getImage(1, epoch);
+            Fits fits = getImage(WiseBand.W1.val, epoch);
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] valuesW1 = (float[][]) imageData.getData();
 
-            fits = getImage(2, epoch);
+            fits = getImage(WiseBand.W2.val, epoch);
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
             float[][] valuesW2 = (float[][]) imageData.getData();
