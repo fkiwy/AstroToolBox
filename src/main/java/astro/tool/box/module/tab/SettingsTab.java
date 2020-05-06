@@ -85,7 +85,6 @@ public class SettingsTab {
     private static final String SIZE = "imageSize";
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
-    private static final String ADDITIONAL_EPOCHS = "additionalEpochs";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
 
@@ -94,7 +93,6 @@ public class SettingsTab {
     private int size;
     private int speed;
     private int zoom;
-    private boolean additionalEpochs;
     private boolean panstarrsImages;
     private boolean sdssImages;
 
@@ -118,11 +116,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(8, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(7, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 225));
+            globalSettings.setPreferredSize(new Dimension(450, 200));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -181,11 +179,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(8, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(7, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 225));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -235,11 +233,11 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(8, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(7, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 225));
+            imageViewerSettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
@@ -247,7 +245,6 @@ public class SettingsTab {
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
-            additionalEpochs = Boolean.parseBoolean(USER_SETTINGS.getProperty(ADDITIONAL_EPOCHS, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 
@@ -277,7 +274,6 @@ public class SettingsTab {
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
-            imageViewerTab.setAdditionalEpochs(additionalEpochs);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
 
@@ -302,11 +298,6 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel("Zoom: ", JLabel.RIGHT));
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
-
-            imageViewerSettings.add(new JLabel("Download additional coadds: ", JLabel.RIGHT));
-            JCheckBox additionalEpochsCheckBox = new JCheckBox();
-            additionalEpochsCheckBox.setSelected(additionalEpochs);
-            imageViewerSettings.add(additionalEpochsCheckBox);
 
             imageViewerSettings.add(new JLabel("Download Pan-STARRS images: ", JLabel.RIGHT));
             JCheckBox panstarrsImagesCheckBox = new JCheckBox();
@@ -368,7 +359,6 @@ public class SettingsTab {
                     size = Integer.parseInt(sizeField.getText());
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
-                    additionalEpochs = additionalEpochsCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
@@ -437,7 +427,6 @@ public class SettingsTab {
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
-                imageViewerTab.setAdditionalEpochs(additionalEpochs);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setSdssImages(sdssImages);
 
@@ -446,7 +435,6 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
-                USER_SETTINGS.setProperty(ADDITIONAL_EPOCHS, String.valueOf(additionalEpochs));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 

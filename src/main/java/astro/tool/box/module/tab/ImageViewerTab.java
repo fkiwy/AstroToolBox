@@ -282,8 +282,6 @@ public class ImageViewerTab {
     private boolean overlaysDisabled;
     private boolean timerStopped;
     private boolean hasException;
-    private boolean preloadAdditionalEpochs;
-    private boolean additionalEpochs;
     private boolean panstarrsImages;
     private boolean sdssImages;
 
@@ -3594,10 +3592,6 @@ public class ImageViewerTab {
 
     public void setSize(int size) {
         this.size = size;
-    }
-
-    public void setAdditionalEpochs(boolean additionalEpochs) {
-        this.additionalEpochs = additionalEpochs;
     }
 
     public void setPanstarrsImages(boolean panstarrsImages) {
