@@ -9,14 +9,12 @@ import astro.tool.box.module.tab.BrownDwarfTab;
 import astro.tool.box.module.tab.CatalogQueryTab;
 import astro.tool.box.module.tab.CustomOverlaysTab;
 import astro.tool.box.module.tab.FileBrowserTab;
-import astro.tool.box.module.tab.HelpTab;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
-import astro.tool.box.module.tab.WiseFlagsTab;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -51,7 +49,7 @@ public class Application {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
         baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
-        baseFrame.setSize(new Dimension(1250, 855));
+        baseFrame.setSize(new Dimension(1250, 850));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -91,14 +89,8 @@ public class Application {
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
         lookupTab.init();
 
-        WiseFlagsTab wiseFlagsTab = new WiseFlagsTab(baseFrame, tabbedPane);
-        wiseFlagsTab.init();
-
         SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         settingsTab.init();
-
-        HelpTab helpTab = new HelpTab(baseFrame, tabbedPane);
-        helpTab.init();
 
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);

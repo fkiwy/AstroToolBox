@@ -125,7 +125,6 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
@@ -170,7 +169,6 @@ public class ImageViewerTab {
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
-    private JPanel messagePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox minMaxLimits;
@@ -194,11 +192,9 @@ public class ImageViewerTab {
     private JCheckBox spikeOverlay;
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
-    private JCheckBox transposeProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
-    private JCheckBox markDifferences;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -208,10 +204,8 @@ public class ImageViewerTab {
     private JSlider maxValueSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
-    private JSlider epochCountSlider;
     private JTextField coordsField;
     private JTextField sizeField;
-    private JTextField transposeMotionField;
     private JTextField properMotionField;
     private JTextArea crosshairCoords;
     private JRadioButton showCatalogsButton;
@@ -219,11 +213,8 @@ public class ImageViewerTab {
     private JRadioButton showAllwiseButton;
     private JRadioButton show2MassButton;
     private JRadioButton showAllButton;
-    private JLabel messageLabel;
     private JLabel changeFovLabel;
-    private JLabel epochCountLabel;
     private JTable collectionTable;
-    private Timer messageTimer;
     private Timer timer;
 
     private BufferedImage wiseImage;
@@ -243,8 +234,6 @@ public class ImageViewerTab {
     private int crosshairSize = 5;
     private int imageNumber = 0;
     private int windowShift = 0;
-    private int requestedCount = 0;
-    private int replacedCount = 0;
     private int quadrantCount = 0;
     private int epochCount = NUMBER_OF_EPOCHS * 2;
     private int stretch = STRETCH;
@@ -277,7 +266,6 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
-    private boolean cutoutsReplaced;
     private boolean imageCutOff;
     private boolean overlaysDisabled;
     private boolean timerStopped;
@@ -310,16 +298,6 @@ public class ImageViewerTab {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            messageLabel = new JLabel();
-            messagePanel = new JPanel();
-            messagePanel.setVisible(false);
-            messagePanel.add(messageLabel);
-            mainPanel.add(messagePanel, BorderLayout.NORTH);
-            messageTimer = new Timer(20000, (ActionEvent e) -> {
-                messageLabel.setText("");
-                messagePanel.setVisible(false);
-            });
-
             JPanel leftPanel = new JPanel();
             mainPanel.add(leftPanel, BorderLayout.WEST);
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
@@ -338,9 +316,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1800;
+            int controlPanelHeight = 1625;
 
-            JPanel controlPanel = new JPanel(new GridLayout(74, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(67, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -420,9 +398,6 @@ public class ImageViewerTab {
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
                 if (Epoch.isSubtracted(epoch)) {
                     initMinMaxValues();
                 } else {
@@ -443,9 +418,6 @@ public class ImageViewerTab {
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
                 if (Epoch.isSubtracted(epoch)) {
                     initMinMaxValues();
                 } else {
@@ -528,23 +500,6 @@ public class ImageViewerTab {
                 zoom = zoomSlider.getValue();
                 zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Zoom: %d", zoom));
-            });
-
-            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(grayPanel);
-            grayPanel.setBackground(Color.LIGHT_GRAY);
-
-            epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochCount / 2));
-            grayPanel.add(epochCountLabel);
-
-            epochCountSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
-            controlPanel.add(epochCountSlider);
-            epochCountSlider.setBackground(Color.LIGHT_GRAY);
-            epochCountSlider.addChangeListener((ChangeEvent e) -> {
-                epochCount = epochCountSlider.getValue() * 2;
-                epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
-                //initMinMaxValues();
-                createFlipbook();
             });
 
             minMaxLimits = new JCheckBox("Set min/max limits", true);
@@ -743,14 +698,6 @@ public class ImageViewerTab {
                 }
             });
 
-            markDifferences = new JCheckBox("Mark differences");
-            controlPanel.add(markDifferences);
-            markDifferences.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
             drawCrosshairs = new JCheckBox("Draw crosshairs (wheel click & spin)");
             controlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
@@ -904,36 +851,12 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            transposeProperMotion = new JCheckBox(underline("Transpose proper motion:"));
-            controlPanel.add(transposeProperMotion);
-            transposeProperMotion.addActionListener((ActionEvent evt) -> {
-                if (!transposeMotionField.getText().isEmpty()) {
-                    transposeProperMotion.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    imagesW1.clear();
-                    imagesW2.clear();
-                    createFlipbook();
-                    transposeProperMotion.setCursor(Cursor.getDefaultCursor());
-                }
-            });
-
-            transposeMotionField = new JTextField();
-            controlPanel.add(transposeMotionField);
-            transposeMotionField.addActionListener((ActionEvent evt) -> {
-                if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-                    transposeMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    imagesW1.clear();
-                    imagesW2.clear();
-                    createFlipbook();
-                    transposeMotionField.setCursor(Cursor.getDefaultCursor());
-                }
-            });
-
-            useCustomOverlays = new JCheckBox(underline("Work with custom overlays:"));
+            useCustomOverlays = new JCheckBox(underline("Custom overlays:"));
             controlPanel.add(useCustomOverlays);
             customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
-                    showInfoDialog(baseFrame, "No custom overlays have been created yet.");
+                    showInfoDialog(baseFrame, "No custom overlays have been added yet.");
                     useCustomOverlays.setSelected(false);
                 } else {
                     GridLayout layout = (GridLayout) controlPanel.getLayout();
@@ -1124,9 +1047,6 @@ public class ImageViewerTab {
                                     }
                                     break;
                                 default:
-                                    //if (smallBodyHelp.isSelected()) {
-                                    //    displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
-                                    //} else {
                                     int overlays = 0;
                                     if (simbadOverlay.isSelected() && simbadEntries != null) {
                                         showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
@@ -1184,7 +1104,6 @@ public class ImageViewerTab {
                                             createFlipbook();
                                         }
                                     }
-                                    //}
                                     break;
                             }
                         }
@@ -1400,9 +1319,8 @@ public class ImageViewerTab {
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
-                messageLabel.setText("");
                 hasException = false;
-                if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
+                if (!keepContrast.isSelected()) {
                     lowContrastSaved = getContrast();
                     highContrastSaved = 0;
                 }
@@ -1411,9 +1329,6 @@ public class ImageViewerTab {
                 centerX = centerY = 0;
                 axisX = axisY = size;
                 windowShift = 0;
-                requestedCount = 0;
-                replacedCount = 0;
-                cutoutsReplaced = false;
                 imageCutOff = false;
                 overlaysDisabled = false;
                 simbadOverlay.setEnabled(true);
@@ -1727,22 +1642,7 @@ public class ImageViewerTab {
             if (Epoch.isSubtracted(epoch)) {
                 setSubtractedContrast();
             }
-            if (markDifferences.isSelected()) {
-                detectDifferences();
-            }
-            //268.9187535 70.8374857
-            if (replacedCount > requestedCount / 2 && !cutoutsReplaced) {
-                String message = "!!! Caution !!! Due to the very poor image quality, more than half of the requested cutouts have been replaced by a previous one. Therefore, <u>motion detection may no longer be possible</u>!";
-                //showWarnDialog(baseFrame, message);
-                messageLabel.setText(html(message));
-                messageLabel.setForeground(Color.RED);
-                messagePanel.setVisible(true);
-                cutoutsReplaced = true;
-            }
             timer.restart();
-            if (!messageLabel.getText().isEmpty()) {
-                messageTimer.restart();
-            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
@@ -1797,14 +1697,7 @@ public class ImageViewerTab {
         } else {
             image = createImage(component.getBand(), component.getEpoch());
         }
-        image = zoom(image, zoom);
-        if (markDifferences.isSelected()) {
-            for (NumberPair diffPixel : component.getDiffPixels()) {
-                Circle circle = new Circle(getScaledValue(diffPixel.getX()), getScaledValue(diffPixel.getY()), getScaledValue(1), Color.RED);
-                circle.draw(image.getGraphics());
-            }
-        }
-        image = flip(image);
+        image = flip(zoom(image, zoom));
         if (!overlaysDisabled) {
             addOverlaysAndPMVectors(image);
         }
@@ -1815,8 +1708,7 @@ public class ImageViewerTab {
                 drawable.draw(image.getGraphics());
             }
         }
-        image = rotate(image, quadrantCount);
-        return image;
+        return rotate(image, quadrantCount);
     }
 
     private void addOverlaysAndPMVectors(BufferedImage image) {
@@ -1943,7 +1835,6 @@ public class ImageViewerTab {
                     //System.out.println("Skipped image=" + imageKey);
                     continue;
                 }
-                requestedCount++;
                 Fits fits = new Fits(getImageData(band, requestedEpoch));
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 Header header = hdu.getHeader();
@@ -1987,8 +1878,8 @@ public class ImageViewerTab {
         List<ImageContainer> sortedList = images.values().stream()
                 .sorted(Comparator.comparing(ImageContainer::getDate))
                 .collect(Collectors.toList());
-        List<List<ImageContainer>> epochsList = new ArrayList<>();
-        List<ImageContainer> epochList = new ArrayList<>();
+        List<List<ImageContainer>> groupedList = new ArrayList<>();
+        List<ImageContainer> group = new ArrayList<>();
         int prevYear = sortedList.get(0).getDate().getYear();
         int prevMonth = sortedList.get(0).getDate().getMonth().getValue();
         int prevSemester = prevMonth >= 1 || prevMonth <= 6 ? 1 : 2;
@@ -2000,11 +1891,11 @@ public class ImageViewerTab {
             int semester = month >= 1 && month <= 6 ? 1 : 2;
             //System.out.println("year=" + year + " semester=" + semester);
             if (year == prevYear && semester == prevSemester) {
-                epochList.add(container);
+                group.add(container);
             } else {
-                epochsList.add(epochList);
-                epochList = new ArrayList<>();
-                epochList.add(container);
+                groupedList.add(group);
+                group = new ArrayList<>();
+                group.add(container);
             }
             if (year == prevYear) {
                 if (semester == 1) {
@@ -2015,7 +1906,7 @@ public class ImageViewerTab {
                 }
             } else {
                 if (semester1 == 0 || semester2 == 0) {
-                    epochsList.remove(epochsList.size() - 1);
+                    groupedList.remove(groupedList.size() - 1);
                 }
                 semester1 = 0;
                 semester2 = 0;
@@ -2030,11 +1921,11 @@ public class ImageViewerTab {
             prevSemester = semester;
         }
         if (semester1 > 0 && semester2 > 0) {
-            epochsList.add(epochList);
+            groupedList.add(group);
         }
-        int epoch = 0;
-        for (List<ImageContainer> epochs : epochsList) {
-            Fits fits = epochs.get(0).getImage();
+        epochCount = 0;
+        for (List<ImageContainer> containers : groupedList) {
+            Fits fits = containers.get(0).getImage();
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
@@ -2055,14 +1946,7 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            //266.140284 -27.955309 (FoV = 700 arcsec)
             if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
-                String message = "Warning: Because the current field of view exceeds the requested WISE tile, some features have been disabled, while others may not work accurately!";
-                //showWarnDialog(baseFrame, message);
-                //showWarnPopup(baseFrame, message);
-                messageLabel.setText(message);
-                messageLabel.setForeground(Color.RED);
-                messagePanel.setVisible(true);
                 overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
@@ -2091,20 +1975,13 @@ public class ImageViewerTab {
             pixelY = naxis2 - crpix2;
             axisX = (int) round(naxis1);
             axisY = (int) round(naxis2);
-            for (int i = 1; i < epochs.size(); i++) {
-                fits = addImages(fits, epochs.get(i).getImage());
+            for (int i = 1; i < containers.size(); i++) {
+                fits = addImages(fits, containers.get(i).getImage());
             }
-            addImage(band, epoch, fits);
-            //System.out.println("band=" + band + " epoch=" + epoch);
-            epoch++;
+            addImage(band, epochCount, fits);
+            //System.out.println("band=" + band + " epoch=" + epochCount);
+            epochCount++;
         }
-        epochCount = epoch;
-        epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
-        ChangeListener listener = epochCountSlider.getChangeListeners()[0];
-        epochCountSlider.removeChangeListener(listener);
-        epochCountSlider.setMaximum(epochCount / 2);
-        epochCountSlider.setValue(epochCount / 2);
-        epochCountSlider.addChangeListener(listener);
     }
 
     private Fits addImages(Fits fits1, Fits fits2) {
@@ -2142,7 +2019,6 @@ public class ImageViewerTab {
             switch (epoch) {
                 case 0:
                 case 1:
-                //290.641091 28.079135
                 case 2:
                 case 3:
                     previousEpoch = epoch + 2;
@@ -2157,99 +2033,24 @@ public class ImageViewerTab {
             }
         } catch (Exception ex) {
             float[][] values = new float[axisY][axisX];
-            short[][] weights = new short[axisY][axisX];
             for (int i = 0; i < axisY; i++) {
                 for (int j = 0; j < axisX; j++) {
                     values[i][j] = 0;
-                    weights[i][j] = 0;
                 }
             }
             fits = new Fits();
             fits.addHDU(FitsFactory.hduFactory(values));
-            fits.addHDU(FitsFactory.hduFactory(weights));
         }
-        replacedCount++;
         return fits;
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        String imageUrl;
-        if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-            NumberPair properMotion = getCoordinates(transposeMotionField.getText());
-            double pmra = properMotion.getX();
-            double pmdec = properMotion.getY();
-            int numberOfEpochs = epoch > 1 ? epoch + 6 : epoch;
-            double pmraOfOneEpoch = (pmra / 2) / DEG_MAS;
-            double pmdecOfOneEpoch = (pmdec / 2) / DEG_MAS;
-            double pmraOfEpochs = numberOfEpochs * pmraOfOneEpoch;
-            double pmdecOfEpochs = numberOfEpochs * pmdecOfOneEpoch;
-            double ra = targetRa + pmraOfEpochs / cos(toRadians(targetDec));
-            double dec = targetDec + pmdecOfEpochs;
-            imageUrl = createImageUrl(ra, dec, size, band, epoch);
-        } else {
-            imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
-        }
-        HttpURLConnection connection = establishHttpConnection(imageUrl);
+        HttpURLConnection connection = establishHttpConnection(createImageUrl(targetRa, targetDec, size, band, epoch));
         return connection.getInputStream();
     }
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
         return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
-    }
-
-    private void detectDifferences() {
-        for (int i = 0; i < flipbook.length; i++) {
-            FlipbookComponent component1 = flipbook[i];
-            FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
-            int band = component1.getBand();
-            int epoch1 = component1.getEpoch();
-            int epoch2 = component2.getEpoch();
-            List<NumberPair> diffPixels = new ArrayList<>();
-            if (band == 1 || band == 12) {
-                detectDifferencesPerBand(1, epoch1, epoch2, diffPixels);
-            }
-            if (band == 2 || band == 12) {
-                detectDifferencesPerBand(2, epoch1, epoch2, diffPixels);
-            }
-            component2.setDiffPixels(diffPixels);
-        }
-    }
-
-    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberPair> diffPixels) {
-        try {
-            Fits fits = getImage(band, epoch1);
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-
-            fits = getImage(band, epoch2);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-
-            if (minValue == 0 && maxValue == 0) {
-                NumberTriplet minMaxValues = getMinMaxValues(values1);
-                int minVal = (int) minMaxValues.getX();
-                int maxVal = (int) minMaxValues.getY();
-                int avgVal = (int) minMaxValues.getZ();
-                setMinMaxValues(minVal, maxVal, avgVal);
-            }
-
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
-                    float value1 = processPixel(values1[i][j]);
-                    float value2 = processPixel(values2[i][j]);
-                    float max = max(value1, value2);
-                    float min = min(value1, value2);
-                    //if (max - min > (max + min) / 2) {
-                    if (max - min > (max + min) / 2 && value1 == max) {
-                        diffPixels.add(new NumberPair(j, i));
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     private BufferedImage createImage(int band, int epoch) {
