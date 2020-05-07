@@ -1834,6 +1834,7 @@ public class ImageViewerTab {
         //336.4705318 57.55043387
         //101.5957931 0.083207604
         //165.3302887 -59.83407008
+        //147.05514669999999 -58.752758200000002
         for (int i = 0; i < requestedEpochs.size(); i++) {
             int requestedEpoch = requestedEpochs.get(i);
             String imageKey = band + "_" + requestedEpoch;
