@@ -1978,6 +1978,8 @@ public class ImageViewerTab {
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
             if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
+                String message = "Because the current field of view exceeds the requested WISE tile, some features have been disabled, while others may not work accurately!";
+                showWarnPopup(baseFrame, message);
                 overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);

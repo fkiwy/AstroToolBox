@@ -138,7 +138,7 @@ public class ModuleHelper {
     }
 
     public static void showWarnPopup(JFrame baseFrame, String message) {
-        JLabel messageLabel = new JLabel(html(message + "<br/><br/><p style='color:gray'>(This message box closes automatically after 5 seconds.)</p>"));
+        JLabel messageLabel = new JLabel(html(message + "<br/><br/><p style='color:gray'>This message box autocloses after 5 seconds.</p>"));
         Timer timer = new Timer(5000, (ActionEvent e) -> {
             Window window = SwingUtilities.getWindowAncestor(messageLabel);
             if (window != null) {
