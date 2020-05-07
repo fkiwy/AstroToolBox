@@ -76,6 +76,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -212,6 +213,7 @@ public class ImageViewerTab {
     private JRadioButton showAllwiseButton;
     private JRadioButton show2MassButton;
     private JRadioButton showAllButton;
+    private JLabel overlaysLabel;
     private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
@@ -547,7 +549,8 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            controlPanel.add(new JLabel(underline("Overlays:")));
+            overlaysLabel = new JLabel(underline("Overlays:"));
+            controlPanel.add(overlaysLabel);
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
@@ -1330,6 +1333,8 @@ public class ImageViewerTab {
                 windowShift = 0;
                 imageCutOff = false;
                 overlaysDisabled = false;
+                overlaysLabel.setText(underline("Overlays:"));
+                overlaysLabel.setForeground(Color.BLACK);
                 simbadOverlay.setEnabled(true);
                 gaiaDR2Overlay.setEnabled(true);
                 allWiseOverlay.setEnabled(true);
@@ -1393,7 +1398,7 @@ public class ImageViewerTab {
             int standardEpochs = NUMBER_OF_EPOCHS * 2;
             try {
                 getImageData(1, standardEpochs);
-            } catch (Exception ex) {
+            } catch (FileNotFoundException ex) {
                 moreImagesAvailable = false;
             }
             List<Integer> requestedEpochs = new ArrayList<>();
@@ -1840,7 +1845,7 @@ public class ImageViewerTab {
             Fits fits;
             try {
                 fits = new Fits(getImageData(band, requestedEpoch));
-            } catch (Exception ex) {
+            } catch (FileNotFoundException ex) {
                 if (requestedEpochs.size() == 4) {
                     List<Integer> alternativeEpochs = new ArrayList<>();
                     if (requestedEpoch == 0 || requestedEpoch == 1) {
@@ -1978,8 +1983,8 @@ public class ImageViewerTab {
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
             if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
-                String message = "Because the current field of view exceeds the requested WISE tile, some features have been disabled, while others may not work accurately!";
-                showWarnPopup(baseFrame, message);
+                overlaysLabel.setText("Warning: Overlays have been disabled!");
+                overlaysLabel.setForeground(Color.RED);
                 overlaysDisabled = true;
                 simbadOverlay.setEnabled(false);
                 gaiaDR2Overlay.setEnabled(false);
