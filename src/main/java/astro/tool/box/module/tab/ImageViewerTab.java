@@ -126,7 +126,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
@@ -1825,52 +1824,74 @@ public class ImageViewerTab {
     }
 
     private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
-        boolean imagesAvailable = true;
-        for (int i = 0; imagesAvailable && i < requestedEpochs.size(); i++) {
+        //1.654016193 -79.81022232
+        //348.9746045 61.4298542
+        //336.4705318 57.55043387
+        //101.5957931 0.083207604
+        //165.3302887 -59.83407008
+        for (int i = 0; i < requestedEpochs.size(); i++) {
+            int requestedEpoch = requestedEpochs.get(i);
+            String imageKey = band + "_" + requestedEpoch;
+            ImageContainer container = images.get(imageKey);
+            if (container != null) {
+                System.out.println("Skipped image=" + imageKey);
+                continue;
+            }
+            Fits fits;
             try {
-                int requestedEpoch = requestedEpochs.get(i);
-                String imageKey = band + "_" + requestedEpoch;
-                ImageContainer container = images.get(imageKey);
-                if (container != null) {
-                    //System.out.println("Skipped image=" + imageKey);
-                    continue;
+                fits = new Fits(getImageData(band, requestedEpoch));
+            } catch (Exception ex) {
+                if (requestedEpochs.size() == 4) {
+                    List<Integer> alternativeEpochs = new ArrayList<>();
+                    if (requestedEpoch == 0 || requestedEpoch == 1) {
+                        alternativeEpochs.add(requestedEpochs.get(0) + 2);
+                        alternativeEpochs.add(requestedEpochs.get(1) + 2);
+                        alternativeEpochs.add(requestedEpochs.get(2));
+                        alternativeEpochs.add(requestedEpochs.get(3));
+                    } else {
+                        alternativeEpochs.add(requestedEpochs.get(0));
+                        alternativeEpochs.add(requestedEpochs.get(1));
+                        alternativeEpochs.add(requestedEpochs.get(2) - 2);
+                        alternativeEpochs.add(requestedEpochs.get(3) - 2);
+                    }
+                    downloadRequestedEpochs(band, alternativeEpochs, images);
+                    return;
+                } else {
+                    break;
                 }
-                Fits fits = new Fits(getImageData(band, requestedEpoch));
-                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-                Header header = hdu.getHeader();
-                double naxis1 = header.getDoubleValue("NAXIS1");
-                double naxis2 = header.getDoubleValue("NAXIS2");
-                axisX = (int) round(naxis1);
-                axisY = (int) round(naxis2);
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                // Replace an image with too many zero values by a preceding image
-                if (axisY > 0) {
-                    axisX = values[0].length;
-                }
-                int zeroValues = 0;
-                for (int j = 0; j < axisY; j++) {
-                    for (int k = 0; k < axisX; k++) {
-                        try {
-                            if (values[j][k] == 0) {
-                                zeroValues++;
-                            }
-                        } catch (ArrayIndexOutOfBoundsException ex) {
+            }
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            Header header = hdu.getHeader();
+            double naxis1 = header.getDoubleValue("NAXIS1");
+            double naxis2 = header.getDoubleValue("NAXIS2");
+            axisX = (int) round(naxis1);
+            axisY = (int) round(naxis2);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+            // Replace an image with too many zero values by a preceding image
+            if (axisY > 0) {
+                axisX = values[0].length;
+            }
+            int zeroValues = 0;
+            for (int j = 0; j < axisY; j++) {
+                for (int k = 0; k < axisX; k++) {
+                    try {
+                        if (values[j][k] == 0) {
+                            zeroValues++;
                         }
+                    } catch (ArrayIndexOutOfBoundsException ex) {
                     }
                 }
-                double maxAllowed = axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100;
-                //System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
-                if (zeroValues > maxAllowed) {
-                    fits = getPreviousImage(band, requestedEpoch);
-                }
-                double minObsEpoch = header.getDoubleValue("MJDMIN");
-                LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-                images.put(imageKey, new ImageContainer(obsDate, fits));
-                //System.out.println("Added image=" + imageKey);
-            } catch (Exception ex) {
-                imagesAvailable = false;
             }
+            double maxAllowed = axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100;
+            //System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
+            if (zeroValues > maxAllowed) {
+                continue;
+            }
+            double minObsEpoch = header.getDoubleValue("MJDMIN");
+            LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+            images.put(imageKey, new ImageContainer(obsDate, fits));
+            System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
         }
         if (images.isEmpty()) {
             return;
@@ -1880,17 +1901,26 @@ public class ImageViewerTab {
                 .collect(Collectors.toList());
         List<List<ImageContainer>> groupedList = new ArrayList<>();
         List<ImageContainer> group = new ArrayList<>();
-        int prevYear = sortedList.get(0).getDate().getYear();
-        int prevMonth = sortedList.get(0).getDate().getMonth().getValue();
-        int prevSemester = prevMonth >= 1 || prevMonth <= 6 ? 1 : 2;
-        int semester1 = 0;
-        int semester2 = 0;
+        LocalDateTime date = sortedList.get(0).getDate();
+        int prevYear = date.getYear();
+        int prevMonth = date.getMonthValue();
+        int prevNode = 1;
+        int node1 = 0;
+        int node2 = 0;
         for (ImageContainer container : sortedList) {
-            int year = container.getDate().getYear();
-            int month = container.getDate().getMonth().getValue();
-            int semester = month >= 1 && month <= 6 ? 1 : 2;
-            //System.out.println("year=" + year + " semester=" + semester);
-            if (year == prevYear && semester == prevSemester) {
+            date = container.getDate();
+            int year = date.getYear();
+            int month = date.getMonthValue();
+            int node;
+            if (year != prevYear) {
+                node = 1;
+            } else if (month - prevMonth > 4) {
+                node = prevNode == 1 ? 2 : 1;
+            } else {
+                node = prevNode;
+            }
+            System.out.println("year=" + year + " node=" + node);
+            if (year == prevYear && node == prevNode) {
                 group.add(container);
             } else {
                 groupedList.add(group);
@@ -1898,34 +1928,35 @@ public class ImageViewerTab {
                 group.add(container);
             }
             if (year == prevYear) {
-                if (semester == 1) {
-                    semester1++;
+                if (node == 1) {
+                    node1++;
                 }
-                if (semester == 2) {
-                    semester2++;
+                if (node == 2) {
+                    node2++;
                 }
             } else {
-                if (semester1 == 0 || semester2 == 0) {
+                if (node1 == 0 || node2 == 0) {
                     groupedList.remove(groupedList.size() - 1);
                 }
-                semester1 = 0;
-                semester2 = 0;
-                if (semester == 1) {
-                    semester1++;
+                node1 = 0;
+                node2 = 0;
+                if (node == 1) {
+                    node1++;
                 }
-                if (semester == 2) {
-                    semester2++;
+                if (node == 2) {
+                    node2++;
                 }
             }
             prevYear = year;
-            prevSemester = semester;
+            prevMonth = month;
+            prevNode = node;
         }
-        if (semester1 > 0 && semester2 > 0) {
+        if (node1 > 0 && node2 > 0) {
             groupedList.add(group);
         }
         epochCount = 0;
-        for (List<ImageContainer> containers : groupedList) {
-            Fits fits = containers.get(0).getImage();
+        for (List<ImageContainer> imageGroup : groupedList) {
+            Fits fits = imageGroup.get(0).getImage();
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
@@ -1975,11 +2006,12 @@ public class ImageViewerTab {
             pixelY = naxis2 - crpix2;
             axisX = (int) round(naxis1);
             axisY = (int) round(naxis2);
-            for (int i = 1; i < containers.size(); i++) {
-                fits = addImages(fits, containers.get(i).getImage());
+            for (int i = 1; i < imageGroup.size(); i++) {
+                fits = addImages(fits, imageGroup.get(i).getImage());
             }
-            addImage(band, epochCount, fits);
-            //System.out.println("band=" + band + " epoch=" + epochCount);
+            int imageCount = imageGroup.size();
+            addImage(band, epochCount, imageCount > 1 ? takeAverage(fits, imageCount) : fits);
+            System.out.println("band=" + band + " epoch=" + epochCount);
             epochCount++;
         }
     }
@@ -2010,38 +2042,6 @@ public class ImageViewerTab {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    private Fits getPreviousImage(int band, int epoch) throws FitsException {
-        Fits fits;
-        try {
-            int previousEpoch;
-            switch (epoch) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                    previousEpoch = epoch + 2;
-                    break;
-                default:
-                    previousEpoch = epoch - 2;
-                    break;
-            }
-            fits = getImage(band, previousEpoch);
-            if (fits == null) {
-                fits = new Fits(getImageData(band, previousEpoch));
-            }
-        } catch (Exception ex) {
-            float[][] values = new float[axisY][axisX];
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
-                    values[i][j] = 0;
-                }
-            }
-            fits = new Fits();
-            fits.addHDU(FitsFactory.hduFactory(values));
-        }
-        return fits;
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
@@ -3100,7 +3100,8 @@ public class ImageViewerTab {
             double x = pixelCoords.getX();
             double y = pixelCoords.getY();
 
-            numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
+            //numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
+            numberOfYears = NUMBER_OF_EPOCHS + 3; // 3 -> 2011, 2012 & 2013
             double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
             double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
