@@ -646,7 +646,7 @@ public class ImageViewerTab {
             controlPanel.add(new JLabel(underline("Mouse wheel click:")));
 
             controlPanel.add(new JLabel("Select images to display:"));
-            
+
             dssImages = new JCheckBox("DSS 1red, 1blue, 2red, 2blue, 2ir", true);
             controlPanel.add(dssImages);
 
@@ -1328,8 +1328,6 @@ public class ImageViewerTab {
             }
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            boolean moreImagesAvailable = true;
-            int standardEpochs = NUMBER_OF_EPOCHS * 2;
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
@@ -1402,11 +1400,6 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                try {
-                    getImageData(1, standardEpochs);
-                } catch (FileNotFoundException ex) {
-                    moreImagesAvailable = false;
-                }
             }
             previousSize = size;
             previousRa = targetRa;
@@ -1414,6 +1407,13 @@ public class ImageViewerTab {
             imageNumber = 0;
             avgValue = 0;
 
+            boolean moreImagesAvailable = true;
+            int standardEpochs = NUMBER_OF_EPOCHS * 2;
+            try {
+                getImageData(1, standardEpochs + 1);
+            } catch (FileNotFoundException ex) {
+                moreImagesAvailable = false;
+            }
             List<Integer> requestedEpochs = new ArrayList<>();
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                 requestedEpochs.add(0);
@@ -1847,7 +1847,7 @@ public class ImageViewerTab {
             String imageKey = band + "_" + requestedEpoch;
             ImageContainer container = images.get(imageKey);
             if (container != null) {
-                //System.out.println("Skipped image=" + imageKey);
+                System.out.println("Skipped image=" + imageKey);
                 continue;
             }
             Fits fits;
@@ -1904,7 +1904,7 @@ public class ImageViewerTab {
             double minObsEpoch = header.getDoubleValue("MJDMIN");
             LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
             images.put(imageKey, new ImageContainer(obsDate, fits));
-            //System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
+            System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
         }
         if (images.isEmpty()) {
             return;
@@ -1934,7 +1934,7 @@ public class ImageViewerTab {
             } else {
                 node = prevNode;
             }
-            //System.out.println("year=" + year + " node=" + node);
+            System.out.println("year=" + year + " node=" + node);
             if (year == prevYear && node == prevNode) {
                 group.add(container);
             } else {
@@ -1950,7 +1950,7 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (node1 == 0 || node2 == 0) {
+                if (requestedEpochs.size() != 4 && (node1 == 0 || node2 == 0)) {
                     groupedList.remove(groupedList.size() - 1);
                 }
                 node1 = 0;
@@ -1967,7 +1967,7 @@ public class ImageViewerTab {
             prevMonth = month;
             prevNode = node;
         }
-        if (node1 > 0 && node2 > 0) {
+        if (requestedEpochs.size() == 4 || (node1 > 0 && node2 > 0)) {
             groupedList.add(group);
         }
         epochCount = 0;
@@ -2029,7 +2029,7 @@ public class ImageViewerTab {
             }
             int imageCount = imageGroup.size();
             addImage(band, epochCount, imageCount > 1 ? takeAverage(fits, imageCount) : fits);
-            //System.out.println("band=" + band + " epoch=" + epochCount);
+            System.out.println("band=" + band + " epoch=" + epochCount);
             epochCount++;
         }
     }
