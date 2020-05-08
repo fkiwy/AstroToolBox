@@ -1315,6 +1315,8 @@ public class ImageViewerTab {
             }
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+            boolean moreImagesAvailable = true;
+            int standardEpochs = NUMBER_OF_EPOCHS * 2;
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
@@ -1387,6 +1389,11 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
+                try {
+                    getImageData(1, standardEpochs);
+                } catch (FileNotFoundException ex) {
+                    moreImagesAvailable = false;
+                }
             }
             previousSize = size;
             previousRa = targetRa;
@@ -1394,13 +1401,6 @@ public class ImageViewerTab {
             imageNumber = 0;
             avgValue = 0;
 
-            boolean moreImagesAvailable = true;
-            int standardEpochs = NUMBER_OF_EPOCHS * 2;
-            try {
-                getImageData(1, standardEpochs);
-            } catch (FileNotFoundException ex) {
-                moreImagesAvailable = false;
-            }
             List<Integer> requestedEpochs = new ArrayList<>();
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                 requestedEpochs.add(0);
@@ -1913,6 +1913,7 @@ public class ImageViewerTab {
         int prevNode = 1;
         int node1 = 0;
         int node2 = 0;
+        boolean nodeChange = false;
         for (ImageContainer container : sortedList) {
             date = container.getDate();
             int year = date.getYear();
@@ -1920,8 +1921,9 @@ public class ImageViewerTab {
             int node;
             if (year != prevYear) {
                 node = 1;
-            } else if (month - prevMonth > 4) {
+            } else if (month - prevMonth > 4 && !nodeChange) {
                 node = prevNode == 1 ? 2 : 1;
+                nodeChange = true;
             } else {
                 node = prevNode;
             }
@@ -1946,6 +1948,7 @@ public class ImageViewerTab {
                 }
                 node1 = 0;
                 node2 = 0;
+                nodeChange = false;
                 if (node == 1) {
                     node1++;
                 }
