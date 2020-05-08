@@ -193,6 +193,11 @@ public class ImageViewerTab {
     private JCheckBox gaiaDR2ProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCustomOverlays;
+    private JCheckBox dssImages;
+    private JCheckBox sloanImages;
+    private JCheckBox twoMassImages;
+    private JCheckBox allwiseImages;
+    private JCheckBox ps1Images;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
@@ -210,10 +215,6 @@ public class ImageViewerTab {
     private JTextArea crosshairCoords;
     private JRadioButton showImagesButton;
     private JRadioButton showCatalogsButton;
-    private JRadioButton showPanstarrsButton;
-    private JRadioButton showAllwiseButton;
-    private JRadioButton show2MassButton;
-    private JRadioButton showAllButton;
     private JLabel overlaysLabel;
     private JLabel changeFovLabel;
     private JTable collectionTable;
@@ -232,7 +233,7 @@ public class ImageViewerTab {
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
-    private int fieldOfView = 15;
+    private int fieldOfView = 30;
     private int crosshairSize = 5;
     private int imageNumber = 0;
     private int windowShift = 0;
@@ -318,9 +319,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1750;
+            int controlPanelHeight = 1800;
 
-            JPanel controlPanel = new JPanel(new GridLayout(72, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(74, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -644,39 +645,22 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Mouse wheel click:")));
 
-            showPanstarrsButton = new JRadioButton("Pan-STARRS g, r, i, z, y images", true);
-            controlPanel.add(showPanstarrsButton);
-            showPanstarrsButton.addActionListener((ActionEvent evt) -> {
-                fieldOfView = 15;
-                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            });
+            controlPanel.add(new JLabel("Select images to display:"));
+            
+            dssImages = new JCheckBox("DSS 1red, 1blue, 2red, 2blue, 2ir", true);
+            controlPanel.add(dssImages);
 
-            showAllwiseButton = new JRadioButton("AllWISE W1, W2, W3, W4 images", false);
-            controlPanel.add(showAllwiseButton);
-            showAllwiseButton.addActionListener((ActionEvent evt) -> {
-                fieldOfView = 30;
-                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            });
+            sloanImages = new JCheckBox("SDSS u, g, r & z bands", true);
+            controlPanel.add(sloanImages);
 
-            show2MassButton = new JRadioButton("2MASS J, H, K images", false);
-            controlPanel.add(show2MassButton);
-            show2MassButton.addActionListener((ActionEvent evt) -> {
-                fieldOfView = 30;
-                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            });
+            twoMassImages = new JCheckBox("2MASS j, h & k bands", true);
+            controlPanel.add(twoMassImages);
 
-            showAllButton = new JRadioButton("Display all images", false);
-            controlPanel.add(showAllButton);
-            showAllButton.addActionListener((ActionEvent evt) -> {
-                fieldOfView = 30;
-                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            });
+            allwiseImages = new JCheckBox("AllWISE w1, w2, w3& w4 bands", true);
+            controlPanel.add(allwiseImages);
 
-            radioGroup = new ButtonGroup();
-            radioGroup.add(showPanstarrsButton);
-            radioGroup.add(showAllwiseButton);
-            radioGroup.add(show2MassButton);
-            radioGroup.add(showAllButton);
+            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", true);
+            controlPanel.add(ps1Images);
 
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             controlPanel.add(changeFovLabel);
@@ -1059,21 +1043,21 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
-                                        if (show2MassButton.isSelected()) {
-                                            //CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView, 0));
-                                        } else if (showAllwiseButton.isSelected()) {
-                                            //CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView, 0));
-                                        } else if (showPanstarrsButton.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> displayPs1Images(newRa, newDec, fieldOfView, 0));
-                                        } else {
-                                            int verticalSpacing = 200;
+                                        int verticalSpacing = 200;
+                                        if (dssImages.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayDssImages(newRa, newDec, fieldOfView, 0));
+                                        }
+                                        if (sloanImages.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displaySdssImages(newRa, newDec, fieldOfView, verticalSpacing));
+                                        }
+                                        if (twoMassImages.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> display2MassImages(newRa, newDec, fieldOfView, verticalSpacing * 2));
+                                        }
+                                        if (allwiseImages.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayAllwiseImages(newRa, newDec, fieldOfView, verticalSpacing * 3));
+                                        }
+                                        if (ps1Images.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> displayPs1Images(newRa, newDec, fieldOfView, verticalSpacing * 4));
-                                            //CompletableFuture.supplyAsync(() -> display2MassAllSkyImages(newRa, newDec, fieldOfView, 0));
-                                            //CompletableFuture.supplyAsync(() -> displayAllwiseAtlasImages(newRa, newDec, fieldOfView, PANEL_HEIGHT));
                                         }
                                     }
                                     break;
