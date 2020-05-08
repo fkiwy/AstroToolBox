@@ -148,7 +148,7 @@ public class ImageViewerTab {
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
-    public static final String CHANGE_FOV_TEXT = "(Spin wheel to change FoV: %d\")";
+    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -208,6 +208,7 @@ public class ImageViewerTab {
     private JTextField sizeField;
     private JTextField properMotionField;
     private JTextArea crosshairCoords;
+    private JRadioButton showImagesButton;
     private JRadioButton showCatalogsButton;
     private JRadioButton showPanstarrsButton;
     private JRadioButton showAllwiseButton;
@@ -317,9 +318,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1625;
+            int controlPanelHeight = 1750;
 
-            JPanel controlPanel = new JPanel(new GridLayout(67, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(72, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -631,10 +632,10 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Mouse left click w/o overlays:")));
 
-            showCatalogsButton = new JRadioButton("Show catalogs", true);
+            showCatalogsButton = new JRadioButton("Show catalog entries for object", true);
             controlPanel.add(showCatalogsButton);
 
-            JRadioButton recenterImagesButton = new JRadioButton("Recenter images", false);
+            JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
             controlPanel.add(recenterImagesButton);
 
             ButtonGroup radioGroup = new ButtonGroup();
@@ -642,9 +643,6 @@ public class ImageViewerTab {
             radioGroup.add(recenterImagesButton);
 
             controlPanel.add(new JLabel(underline("Mouse wheel click:")));
-
-            changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            controlPanel.add(changeFovLabel);
 
             showPanstarrsButton = new JRadioButton("Pan-STARRS g, r, i, z, y images", true);
             controlPanel.add(showPanstarrsButton);
@@ -680,6 +678,23 @@ public class ImageViewerTab {
             radioGroup.add(show2MassButton);
             radioGroup.add(showAllButton);
 
+            changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            controlPanel.add(changeFovLabel);
+
+            JLabel fovLabel = new JLabel("(*) Spin wheel upon WISE images to change FoV");
+            Font font = fovLabel.getFont();
+            font = font.deriveFont(9f);
+            fovLabel.setFont(font);
+            controlPanel.add(fovLabel);
+
+            controlPanel.add(new JLabel(underline("Mouse right click:")));
+
+            showImagesButton = new JRadioButton("Show object in smaller FoV", true);
+            controlPanel.add(showImagesButton);
+
+            radioGroup = new ButtonGroup();
+            radioGroup.add(showImagesButton);
+
             controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
 
             zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -700,7 +715,7 @@ public class ImageViewerTab {
                 }
             });
 
-            drawCrosshairs = new JCheckBox("Draw crosshairs (wheel click & spin)");
+            drawCrosshairs = new JCheckBox("Draw crosshairs (*)");
             controlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
                 if (!drawCrosshairs.isSelected()) {
@@ -709,12 +724,19 @@ public class ImageViewerTab {
                 }
             });
 
+            JLabel crosshairLabel = new JLabel("(*) Wheel click on desired position / Spin wheel to");
+            crosshairLabel.setFont(font);
+            controlPanel.add(crosshairLabel);
+
+            crosshairLabel = new JLabel("change the size / Wheel click cross center to delete");
+            crosshairLabel.setFont(font);
+            controlPanel.add(crosshairLabel);
+
             controlPanel.add(new JLabel("Crosshairs coordinates:"));
 
             crosshairCoords = new JTextArea();
             controlPanel.add(new JScrollPane(crosshairCoords));
-            Font font = coordsField.getFont();
-            crosshairCoords.setFont(font.deriveFont(font.getSize() - 2.0f));
+            crosshairCoords.setFont(font);
             crosshairCoords.setEditable(false);
 
             controlPanel.add(new JLabel(underline("Image player controls:")));
@@ -1000,7 +1022,9 @@ public class ImageViewerTab {
                             double newDec = coords.getY();
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
-                                    displayRecenteredWiseImages(newRa, newDec);
+                                    if (showImagesButton.isSelected()) {
+                                        displayRecenteredWiseImages(newRa, newDec);
+                                    }
                                     break;
                                 case MouseEvent.BUTTON2:
                                     if (drawCrosshairs.isSelected()) {
