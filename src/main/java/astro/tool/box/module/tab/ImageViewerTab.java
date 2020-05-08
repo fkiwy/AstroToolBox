@@ -1829,18 +1829,12 @@ public class ImageViewerTab {
     }
 
     private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
-        //1.654016193 -79.81022232
-        //348.9746045 61.4298542
-        //336.4705318 57.55043387
-        //101.5957931 0.083207604
-        //165.3302887 -59.83407008
-        //147.05514669999999 -58.752758200000002
         for (int i = 0; i < requestedEpochs.size(); i++) {
             int requestedEpoch = requestedEpochs.get(i);
             String imageKey = band + "_" + requestedEpoch;
             ImageContainer container = images.get(imageKey);
             if (container != null) {
-                System.out.println("Skipped image=" + imageKey);
+                //System.out.println("Skipped image=" + imageKey);
                 continue;
             }
             Fits fits;
@@ -1897,7 +1891,7 @@ public class ImageViewerTab {
             double minObsEpoch = header.getDoubleValue("MJDMIN");
             LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
             images.put(imageKey, new ImageContainer(obsDate, fits));
-            System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
+            //System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
         }
         if (images.isEmpty()) {
             return;
@@ -1927,7 +1921,7 @@ public class ImageViewerTab {
             } else {
                 node = prevNode;
             }
-            System.out.println("year=" + year + " node=" + node);
+            //System.out.println("year=" + year + " node=" + node);
             if (year == prevYear && node == prevNode) {
                 group.add(container);
             } else {
@@ -2022,7 +2016,7 @@ public class ImageViewerTab {
             }
             int imageCount = imageGroup.size();
             addImage(band, epochCount, imageCount > 1 ? takeAverage(fits, imageCount) : fits);
-            System.out.println("band=" + band + " epoch=" + epochCount);
+            //System.out.println("band=" + band + " epoch=" + epochCount);
             epochCount++;
         }
     }
