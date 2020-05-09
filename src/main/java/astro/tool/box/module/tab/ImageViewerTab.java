@@ -76,7 +76,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -214,8 +213,9 @@ public class ImageViewerTab {
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
+    private JTextField differentSizeField;
     private JTextArea crosshairCoords;
-    private JRadioButton showImagesButton;
+    private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
     private JLabel overlaysLabel;
     private JLabel changeFovLabel;
@@ -241,7 +241,8 @@ public class ImageViewerTab {
     private int imageNumber = 0;
     private int windowShift = 0;
     private int quadrantCount = 0;
-    private int epochCount = NUMBER_OF_EPOCHS * 2;
+    private int epochCount = 0;
+    private int epochSliderCount = NUMBER_OF_EPOCHS * 2;
     private int stretch = STRETCH;
     private int speed = SPEED;
     private int zoom = ZOOM;
@@ -324,7 +325,7 @@ public class ImageViewerTab {
             int controlPanelWidth = 250;
             int controlPanelHeight = 1875;
 
-            JPanel controlPanel = new JPanel(new GridLayout(77, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(78, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -504,15 +505,15 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochCount / 2));
+            epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochSliderCount / 2));
             grayPanel.add(epochCountLabel);
 
             epochCountSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
             controlPanel.add(epochCountSlider);
             epochCountSlider.setBackground(Color.LIGHT_GRAY);
             epochCountSlider.addChangeListener((ChangeEvent e) -> {
-                epochCount = epochCountSlider.getValue() * 2;
-                epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
+                epochSliderCount = epochCountSlider.getValue() * 2;
+                epochCountLabel.setText(String.format("Number of epochs: %d", epochSliderCount / 2));
                 createFlipbook();
             });
 
@@ -530,12 +531,6 @@ public class ImageViewerTab {
 
             keepContrast = new JCheckBox("Keep contrast settings");
             controlPanel.add(keepContrast);
-
-            skipSingleNodes = new JCheckBox("Skip single nodes");
-            controlPanel.add(skipSingleNodes);
-            skipSingleNodes.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
-            });
 
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
@@ -689,11 +684,17 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Mouse right click:")));
 
-            showImagesButton = new JRadioButton("Show object in smaller FoV", true);
-            controlPanel.add(showImagesButton);
+            differentSizeButton = new JRadioButton("Show object in different FoV", true);
+            controlPanel.add(differentSizeButton);
 
             radioGroup = new ButtonGroup();
-            radioGroup.add(showImagesButton);
+            radioGroup.add(differentSizeButton);
+
+            JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differentSizePanel);
+            differentSizePanel.add(new JLabel("Enter FoV (arcsec)"));
+            differentSizeField = new JTextField(String.valueOf(100));
+            differentSizePanel.add(differentSizeField);
 
             controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
 
@@ -704,6 +705,12 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
+
+            skipSingleNodes = new JCheckBox("Skip single nodes");
+            controlPanel.add(skipSingleNodes);
+            skipSingleNodes.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
+            });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
@@ -1022,7 +1029,7 @@ public class ImageViewerTab {
                             double newDec = coords.getY();
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
-                                    if (showImagesButton.isSelected()) {
+                                    if (differentSizeButton.isSelected()) {
                                         displayRecenteredWiseImages(newRa, newDec);
                                     }
                                     break;
@@ -1426,28 +1433,27 @@ public class ImageViewerTab {
             boolean moreImagesAvailable = true;
             try {
                 getImageData(1, NUMBER_OF_EPOCHS * 2 + 1);
-            } catch (FileNotFoundException ex) {
+            } catch (Exception ex) {
                 moreImagesAvailable = false;
             }
             List<Integer> requestedEpochs = new ArrayList<>();
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                 requestedEpochs.add(0);
                 requestedEpochs.add(1);
-                requestedEpochs.add(epochCount - 2);
-                requestedEpochs.add(epochCount - 1);
+                requestedEpochs.add(epochSliderCount - 2);
+                requestedEpochs.add(epochSliderCount - 1);
             } else {
                 if (moreImagesAvailable) {
                     for (int i = 0; i < 100; i++) {
                         requestedEpochs.add(i);
                     }
                 } else {
-                    for (int i = 0; i < epochCount; i++) {
+                    for (int i = 0; i < epochSliderCount; i++) {
                         requestedEpochs.add(i);
                     }
                 }
             }
             images.clear();
-            int epochCountSaved = epochCount;
             int epochCountW1 = 0;
             int epochCountW2 = 0;
             switch (wiseBand) {
@@ -1470,7 +1476,7 @@ public class ImageViewerTab {
                 epochCount = min(epochCountW1, epochCountW2);
             }
             epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
-            epochCount = epochCount < epochCountSaved ? epochCount : epochCountSaved;
+            epochCount = epochCount < epochSliderCount ? epochCount : epochSliderCount;
 
             Fits fits;
             int k;
@@ -1886,7 +1892,7 @@ public class ImageViewerTab {
             Fits fits;
             try {
                 fits = new Fits(getImageData(band, requestedEpoch));
-            } catch (FileNotFoundException ex) {
+            } catch (Exception ex) {
                 if (requestedEpochs.size() == 4) {
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                     return;
@@ -1917,7 +1923,7 @@ public class ImageViewerTab {
                     }
                 }
             }
-            double maxAllowed = axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100;
+            int maxAllowed = (int) round(axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100);
             if (zeroValues > maxAllowed) {
                 System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
                 if (requestedEpochs.size() == 4) {
@@ -2501,9 +2507,8 @@ public class ImageViewerTab {
 
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-        imageViewerTab.getSizeField().setText("100");
+        imageViewerTab.getSizeField().setText(differentSizeField.getText());
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
-        //imageViewerTab.getEpochs().setSelectedItem(epoch);
         imageViewerTab.getZoomSlider().setValue(ZOOM);
         imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setQuadrantCount(quadrantCount);
@@ -3546,10 +3551,6 @@ public class ImageViewerTab {
 
     public Timer getTimer() {
         return timer;
-    }
-
-    public ImageViewerTab getImageViewer() {
-        return imageViewer;
     }
 
     public void setImageViewer(ImageViewerTab imageViewer) {
