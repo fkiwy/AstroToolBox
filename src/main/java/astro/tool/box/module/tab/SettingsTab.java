@@ -80,6 +80,7 @@ public class SettingsTab {
     private int finderChartFOV;
 
     // Image viewer settings
+    public static final String NUMBER_OF_EPOCHS = "numberOfEpochs";
     private static final String WISE_BAND = "wiseBand";
     private static final String EPOCH = "epoch";
     private static final String SIZE = "imageSize";
@@ -88,6 +89,7 @@ public class SettingsTab {
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
 
+    private int numberOfEpochs;
     private WiseBand wiseBand;
     private Epoch epoch;
     private int size;
@@ -116,11 +118,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(7, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(8, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 200));
+            globalSettings.setPreferredSize(new Dimension(450, 225));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -179,11 +181,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(7, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(8, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 200));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 225));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -233,13 +235,14 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(7, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(8, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 200));
+            imageViewerSettings.setPreferredSize(new Dimension(450, 225));
             containerPanel.add(imageViewerSettings);
 
+            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, "6"));
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
             epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
@@ -276,6 +279,10 @@ public class SettingsTab {
             imageViewerTab.setZoom(zoom);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
+
+            imageViewerSettings.add(new JLabel("Number of epochs (requires restart): ", JLabel.RIGHT));
+            JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
+            imageViewerSettings.add(numberOfEpochsField);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox<>(WiseBand.values());
@@ -430,6 +437,7 @@ public class SettingsTab {
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setSdssImages(sdssImages);
 
+                USER_SETTINGS.setProperty(NUMBER_OF_EPOCHS, numberOfEpochsField.getText());
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
                 USER_SETTINGS.setProperty(EPOCH, epoch.name());
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());

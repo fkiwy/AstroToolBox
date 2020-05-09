@@ -140,7 +140,7 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
-    public static final int NUMBER_OF_EPOCHS = 6;
+    public static final int NUMBER_OF_EPOCHS = Integer.valueOf(SettingsTab.getUserSetting(SettingsTab.NUMBER_OF_EPOCHS, "6"));
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
@@ -929,7 +929,7 @@ public class ImageViewerTab {
                     imagePanel.removeAll();
 
                     FlipbookComponent component = flipbook[imageNumber];
-                    component.setEpochCount(epochCount / 2);
+                    component.setEpochCount(epochSliderCount / 2);
                     imagePanel.setBorder(createEtchedBorder(component.getTitle()));
                     wiseImage = processImage(component);
 
@@ -1721,7 +1721,7 @@ public class ImageViewerTab {
         timer.stop();
         JPanel grid = new JPanel(new GridLayout(4, 4));
         for (FlipbookComponent component : flipbook) {
-            component.setEpochCount(epochCount / 2);
+            component.setEpochCount(epochSliderCount / 2);
             BufferedImage image = processImage(component);
             JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
             scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
