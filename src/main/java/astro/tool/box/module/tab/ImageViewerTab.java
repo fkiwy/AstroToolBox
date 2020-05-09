@@ -513,6 +513,12 @@ public class ImageViewerTab {
             keepContrast = new JCheckBox("Keep contrast settings");
             controlPanel.add(keepContrast);
 
+            skipSingleNodes = new JCheckBox("Skip single nodes");
+            controlPanel.add(skipSingleNodes);
+            skipSingleNodes.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
+            });
+
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
 
@@ -681,12 +687,6 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
-
-            skipSingleNodes = new JCheckBox("Skip single nodes");
-            controlPanel.add(skipSingleNodes);
-            skipSingleNodes.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
-            });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
@@ -1425,18 +1425,28 @@ public class ImageViewerTab {
                 }
             }
             images.clear();
+            int epochCountW1 = 0;
+            int epochCountW2 = 0;
             switch (wiseBand) {
                 case W1:
                     downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                    epochCountW1 = epochCount;
                     break;
                 case W2:
                     downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                    epochCountW2 = epochCount;
                     break;
                 case W1W2:
                     downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                    epochCountW1 = epochCount;
                     downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                    epochCountW2 = epochCount;
                     break;
             }
+            if (epochCountW1 > 0 && epochCountW2 > 0) {
+                epochCount = min(epochCountW1, epochCountW2);
+            }
+            epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
 
             Fits fits;
             int k;
@@ -1899,7 +1909,6 @@ public class ImageViewerTab {
             System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
         }
         if (images.isEmpty()) {
-            showInfoDialog(baseFrame, "No WISE images available for the specified coordinates.");
             return;
         }
         List<ImageContainer> sortedList = images.values().stream()
