@@ -342,7 +342,9 @@ public class ImageViewerTab {
             coordsField = new JTextField();
             controlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
+                coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
+                coordsField.setCursor(Cursor.getDefaultCursor());
             });
 
             controlPanel.add(new JLabel("Field of view (arcsec):"));
@@ -350,7 +352,9 @@ public class ImageViewerTab {
             sizeField = new JTextField(String.valueOf(size));
             controlPanel.add(sizeField);
             sizeField.addActionListener((ActionEvent evt) -> {
+                sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
+                sizeField.setCursor(Cursor.getDefaultCursor());
             });
 
             controlPanel.add(new JLabel("Bands:"));
@@ -661,19 +665,19 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel("Select images to display:"));
 
-            dssImages = new JCheckBox("DSS 1red, 1blue, 2red, 2blue, 2ir", true);
+            dssImages = new JCheckBox("DSS 1red, 1blue, 2red, 2blue, 2ir", false);
             controlPanel.add(dssImages);
 
-            sloanImages = new JCheckBox("SDSS u, g, r & z bands", true);
+            sloanImages = new JCheckBox("SDSS u, g, r & z bands", false);
             controlPanel.add(sloanImages);
 
-            twoMassImages = new JCheckBox("2MASS j, h & k bands", true);
+            twoMassImages = new JCheckBox("2MASS j, h & k bands", false);
             controlPanel.add(twoMassImages);
 
             allwiseImages = new JCheckBox("AllWISE w1, w2, w3& w4 bands", true);
             controlPanel.add(allwiseImages);
 
-            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", true);
+            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
             controlPanel.add(ps1Images);
 
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
@@ -1071,7 +1075,7 @@ public class ImageViewerTab {
                                     } else {
                                         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                                         int screenHeight = screenSize.height;
-                                        int verticalSpacing = screenHeight / 5;
+                                        int verticalSpacing = screenHeight / 6;
                                         Counter counter = new Counter(verticalSpacing);
                                         if (dssImages.isSelected()) {
                                             displayDssImages(newRa, newDec, fieldOfView, counter);
