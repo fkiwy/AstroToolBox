@@ -210,6 +210,7 @@ public class ImageViewerTab {
     private JSlider maxValueSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
+    private JSlider epochCountSlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -218,6 +219,7 @@ public class ImageViewerTab {
     private JRadioButton showCatalogsButton;
     private JLabel overlaysLabel;
     private JLabel changeFovLabel;
+    private JLabel epochCountLabel;
     private JTable collectionTable;
     private Timer timer;
 
@@ -320,9 +322,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1825;
+            int controlPanelHeight = 1875;
 
-            JPanel controlPanel = new JPanel(new GridLayout(75, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(77, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -498,6 +500,22 @@ public class ImageViewerTab {
                 zoomLabel.setText(String.format("Zoom: %d", zoom));
             });
 
+            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanel.add(grayPanel);
+            grayPanel.setBackground(Color.LIGHT_GRAY);
+
+            epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochCount / 2));
+            grayPanel.add(epochCountLabel);
+
+            epochCountSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
+            controlPanel.add(epochCountSlider);
+            epochCountSlider.setBackground(Color.LIGHT_GRAY);
+            epochCountSlider.addChangeListener((ChangeEvent e) -> {
+                epochCount = epochCountSlider.getValue() * 2;
+                epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
+                createFlipbook();
+            });
+
             minMaxLimits = new JCheckBox("Set min/max limits", true);
             controlPanel.add(minMaxLimits);
             minMaxLimits.addActionListener((ActionEvent evt) -> {
@@ -538,7 +556,6 @@ public class ImageViewerTab {
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                //minMaxLimits.setSelected(true);
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
                 if (Epoch.isSubtracted(epoch)) {
@@ -1407,9 +1424,8 @@ public class ImageViewerTab {
             avgValue = 0;
 
             boolean moreImagesAvailable = true;
-            int standardEpochs = NUMBER_OF_EPOCHS * 2;
             try {
-                getImageData(1, standardEpochs + 1);
+                getImageData(1, NUMBER_OF_EPOCHS * 2 + 1);
             } catch (FileNotFoundException ex) {
                 moreImagesAvailable = false;
             }
@@ -1417,14 +1433,21 @@ public class ImageViewerTab {
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                 requestedEpochs.add(0);
                 requestedEpochs.add(1);
-                requestedEpochs.add(standardEpochs - 2);
-                requestedEpochs.add(standardEpochs - 1);
+                requestedEpochs.add(epochCount - 2);
+                requestedEpochs.add(epochCount - 1);
             } else {
-                for (int i = 0; i < 100; i++) {
-                    requestedEpochs.add(i);
+                if (moreImagesAvailable) {
+                    for (int i = 0; i < 100; i++) {
+                        requestedEpochs.add(i);
+                    }
+                } else {
+                    for (int i = 0; i < epochCount; i++) {
+                        requestedEpochs.add(i);
+                    }
                 }
             }
             images.clear();
+            int epochCountSaved = epochCount;
             int epochCountW1 = 0;
             int epochCountW2 = 0;
             switch (wiseBand) {
@@ -1447,6 +1470,7 @@ public class ImageViewerTab {
                 epochCount = min(epochCountW1, epochCountW2);
             }
             epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
+            epochCount = epochCount < epochCountSaved ? epochCount : epochCountSaved;
 
             Fits fits;
             int k;
