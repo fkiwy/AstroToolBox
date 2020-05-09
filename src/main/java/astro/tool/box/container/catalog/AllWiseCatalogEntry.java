@@ -172,9 +172,9 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo0DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo0DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator(), createToolTip_cc_flags()));
-        catalogElements.add(new CatalogElement("ext. flag", String.valueOf(ext_flg), Alignment.RIGHT, getIntegerComparator()));
-        catalogElements.add(new CatalogElement("var. flag", var_flg, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("ph. qual.", ph_qual, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("ext. flag", String.valueOf(ext_flg), Alignment.RIGHT, getIntegerComparator(), createToolTip_ext_flg()));
+        catalogElements.add(new CatalogElement("var. flag", var_flg, Alignment.LEFT, getStringComparator(), createToolTip_var_flg()));
+        catalogElements.add(new CatalogElement("ph. qual.", ph_qual, Alignment.LEFT, getStringComparator(), createToolTip_ph_qual()));
         catalogElements.add(new CatalogElement("J (mag)", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(J_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("H (mag)", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator()));

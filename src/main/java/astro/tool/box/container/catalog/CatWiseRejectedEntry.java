@@ -143,7 +143,7 @@ public class CatWiseRejectedEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("plx PM desc-asc err", roundTo1DecNZ(par_pmsig), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx stat. sol. (mas)", roundTo1DecNZ(par_stat), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx stat. sol. err", roundTo1DecNZ(par_sigma), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator(), AllWiseCatalogEntry.createToolTip_cc_flags()));
         catalogElements.add(new CatalogElement("ab flags", ab_flags, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true, true));
     }
