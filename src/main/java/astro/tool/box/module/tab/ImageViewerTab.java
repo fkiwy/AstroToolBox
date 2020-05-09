@@ -50,6 +50,7 @@ import astro.tool.box.module.shape.Triangle;
 import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -63,6 +64,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -1067,21 +1069,24 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
-                                        int verticalSpacing = 200;
+                                        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                        int screenHeight = screenSize.height;
+                                        int verticalSpacing = screenHeight / 5;
+                                        Counter counter = new Counter(verticalSpacing);
                                         if (dssImages.isSelected()) {
-                                            displayDssImages(newRa, newDec, fieldOfView, 0);
+                                            displayDssImages(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (sloanImages.isSelected()) {
-                                            displaySdssImages(newRa, newDec, fieldOfView, verticalSpacing);
+                                            displaySdssImages(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (twoMassImages.isSelected()) {
-                                            display2MassImages(newRa, newDec, fieldOfView, verticalSpacing * 2);
+                                            display2MassImages(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (allwiseImages.isSelected()) {
-                                            displayAllwiseImages(newRa, newDec, fieldOfView, verticalSpacing * 3);
+                                            displayAllwiseImages(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (ps1Images.isSelected()) {
-                                            displayPs1Images(newRa, newDec, fieldOfView, verticalSpacing * 4);
+                                            displayPs1Images(newRa, newDec, fieldOfView, counter);
                                         }
                                     }
                                     break;
@@ -2559,7 +2564,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayDssImages(double targetRa, double targetDec, int size, int verticalPos) {
+    private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 6));
@@ -2599,10 +2604,11 @@ public class ImageViewerTab {
             imageFrame.setTitle("DSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, verticalPos);
+            imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2610,7 +2616,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displaySdssImages(double targetRa, double targetDec, int size, int verticalPos) {
+    private void displaySdssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 5));
@@ -2646,10 +2652,11 @@ public class ImageViewerTab {
             imageFrame.setTitle("SDSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, verticalPos);
+            imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2657,7 +2664,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void display2MassImages(double targetRa, double targetDec, int size, int verticalPos) {
+    private void display2MassImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 4));
@@ -2689,10 +2696,11 @@ public class ImageViewerTab {
             imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, verticalPos);
+            imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2700,7 +2708,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayAllwiseImages(double targetRa, double targetDec, int size, int verticalPos) {
+    private void displayAllwiseImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 4));
@@ -2736,10 +2744,11 @@ public class ImageViewerTab {
             imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, verticalPos);
+            imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2761,7 +2770,7 @@ public class ImageViewerTab {
         return bi;
     }
 
-    private void displayPs1Images(double targetRa, double targetDec, int size, int verticalPos) {
+    private void displayPs1Images(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch file name for each Pan-STARRS filter
@@ -2807,10 +2816,11 @@ public class ImageViewerTab {
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(1320, PANEL_HEIGHT);
-            imageFrame.setLocation(0, verticalPos);
+            imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
