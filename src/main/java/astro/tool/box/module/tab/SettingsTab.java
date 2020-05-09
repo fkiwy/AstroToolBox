@@ -280,7 +280,7 @@ public class SettingsTab {
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
 
-            imageViewerSettings.add(new JLabel("Number of epochs (requires restart): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Number of epochs (restart required): ", JLabel.RIGHT));
             JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
             imageViewerSettings.add(numberOfEpochsField);
 
