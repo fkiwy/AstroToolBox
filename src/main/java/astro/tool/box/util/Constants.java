@@ -32,12 +32,14 @@ public class Constants {
 
     public static final String SSO_CATALOG_ID = "neowiser_p1ba_mch";
 
+    public static final String LINE_BREAK = "<br/>";
+
     public static final String LINE_SEP = System.lineSeparator();
 
     public static final String LINE_SEP_TEXT_AREA = "\n";
 
     public static final String SPLIT_CHAR = ",";
-    
+
     public static final String SPLIT_CHAR_REPLACEMENT = ";";
 
     public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";

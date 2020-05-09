@@ -233,6 +233,9 @@ public class ModuleHelper {
         if (element.isFaulty()) {
             label.setForeground(JColor.DARK_RED.val);
         }
+        if (element.getToolTip() != null) {
+            label.setToolTipText(html(element.getToolTip()));
+        }
         panel.add(label);
     }
 
@@ -253,6 +256,9 @@ public class ModuleHelper {
         field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(true);
+        if (element.getToolTip() != null) {
+            field.setToolTipText(html(element.getToolTip()));
+        }
         panel.add(field);
     }
 
