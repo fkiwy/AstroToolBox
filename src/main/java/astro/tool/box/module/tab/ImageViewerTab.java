@@ -3107,8 +3107,7 @@ public class ImageViewerTab {
             double x = pixelCoords.getX();
             double y = pixelCoords.getY();
 
-            //numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
-            numberOfYears = NUMBER_OF_EPOCHS + 3; // 3 -> 2011, 2012 & 2013
+            numberOfYears = (epochSliderCount / 2) + 3; // 3 -> 2011, 2012 & 2013
             double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
             double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
