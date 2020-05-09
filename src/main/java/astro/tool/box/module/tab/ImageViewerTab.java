@@ -3145,7 +3145,7 @@ public class ImageViewerTab {
         int maxRows = simpleLayout ? 30 : 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry / Computed values are shown in green / (*): Further info (mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();

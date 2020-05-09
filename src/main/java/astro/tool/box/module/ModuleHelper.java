@@ -241,7 +241,8 @@ public class ModuleHelper {
 
     public static void addFieldToPanel(CatalogElement element, JPanel panel) {
         String value = element.getValue();
-        JTextField field = new JTextField(value == null ? "" : value);
+        boolean hasToolTip = element.getToolTip() != null;
+        JTextField field = new JTextField(value == null ? "" : value + (hasToolTip ? " (*)" : ""));
         //if (element.isOnFocus()) {
         //    field.setBackground(JColor.WHITE.val);
         //} else {
@@ -256,7 +257,7 @@ public class ModuleHelper {
         field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(true);
-        if (element.getToolTip() != null) {
+        if (hasToolTip) {
             field.setToolTipText(html(element.getToolTip()));
         }
         panel.add(field);

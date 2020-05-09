@@ -475,7 +475,7 @@ public class CatalogQueryTab {
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry / Computed values are shown in green / (*): Further info (mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
