@@ -198,6 +198,7 @@ public class ImageViewerTab {
     private JCheckBox twoMassImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
+    private JCheckBox skipSingleNodes;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
@@ -319,9 +320,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1800;
+            int controlPanelHeight = 1825;
 
-            JPanel controlPanel = new JPanel(new GridLayout(74, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(75, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -335,9 +336,7 @@ public class ImageViewerTab {
             coordsField = new JTextField();
             controlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
-                coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
-                coordsField.setCursor(Cursor.getDefaultCursor());
             });
 
             controlPanel.add(new JLabel("Field of view (arcsec):"));
@@ -345,9 +344,7 @@ public class ImageViewerTab {
             sizeField = new JTextField(String.valueOf(size));
             controlPanel.add(sizeField);
             sizeField.addActionListener((ActionEvent evt) -> {
-                sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
-                sizeField.setCursor(Cursor.getDefaultCursor());
             });
 
             controlPanel.add(new JLabel("Bands:"));
@@ -356,11 +353,9 @@ public class ImageViewerTab {
             controlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
-                wiseBands.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
                 initMinMaxValues();
                 createFlipbook();
-                wiseBands.setCursor(Cursor.getDefaultCursor());
             });
 
             controlPanel.add(new JLabel("Epochs:"));
@@ -370,7 +365,6 @@ public class ImageViewerTab {
             epochs.setMaximumRowCount(Epoch.values().length);
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
-                epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
                 initMinMaxValues();
@@ -385,7 +379,6 @@ public class ImageViewerTab {
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
                 createFlipbook();
-                epochs.setCursor(Cursor.getDefaultCursor());
             });
 
             JPanel whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -688,6 +681,12 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
+
+            skipSingleNodes = new JCheckBox("Skip single nodes");
+            controlPanel.add(skipSingleNodes);
+            skipSingleNodes.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
+            });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
@@ -1855,19 +1854,7 @@ public class ImageViewerTab {
                 fits = new Fits(getImageData(band, requestedEpoch));
             } catch (FileNotFoundException ex) {
                 if (requestedEpochs.size() == 4) {
-                    List<Integer> alternativeEpochs = new ArrayList<>();
-                    if (requestedEpoch == 0 || requestedEpoch == 1) {
-                        alternativeEpochs.add(requestedEpochs.get(0) + 2);
-                        alternativeEpochs.add(requestedEpochs.get(1) + 2);
-                        alternativeEpochs.add(requestedEpochs.get(2));
-                        alternativeEpochs.add(requestedEpochs.get(3));
-                    } else {
-                        alternativeEpochs.add(requestedEpochs.get(0));
-                        alternativeEpochs.add(requestedEpochs.get(1));
-                        alternativeEpochs.add(requestedEpochs.get(2) - 2);
-                        alternativeEpochs.add(requestedEpochs.get(3) - 2);
-                    }
-                    downloadRequestedEpochs(band, alternativeEpochs, images);
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                     return;
                 } else {
                     break;
@@ -1881,7 +1868,7 @@ public class ImageViewerTab {
             axisY = (int) round(naxis2);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
-            // Replace an image with too many zero values by a preceding image
+            // Skip images with too many zero values
             if (axisY > 0) {
                 axisX = values[0].length;
             }
@@ -1897,9 +1884,14 @@ public class ImageViewerTab {
                 }
             }
             double maxAllowed = axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100;
-            //System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
             if (zeroValues > maxAllowed) {
-                continue;
+                System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
+                if (requestedEpochs.size() == 4) {
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                    return;
+                } else {
+                    continue;
+                }
             }
             double minObsEpoch = header.getDoubleValue("MJDMIN");
             LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
@@ -1907,6 +1899,7 @@ public class ImageViewerTab {
             System.out.println("Added image=" + imageKey + " obsDate=" + obsDate);
         }
         if (images.isEmpty()) {
+            showInfoDialog(baseFrame, "No WISE images available for the specified coordinates.");
             return;
         }
         List<ImageContainer> sortedList = images.values().stream()
@@ -1950,7 +1943,7 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (requestedEpochs.size() != 4 && (node1 == 0 || node2 == 0)) {
+                if (skipSingleNodes.isSelected() && requestedEpochs.size() != 4 && (node1 == 0 || node2 == 0)) {
                     groupedList.remove(groupedList.size() - 1);
                 }
                 node1 = 0;
@@ -1967,7 +1960,7 @@ public class ImageViewerTab {
             prevMonth = month;
             prevNode = node;
         }
-        if (requestedEpochs.size() == 4 || (node1 > 0 && node2 > 0)) {
+        if (!skipSingleNodes.isSelected() || requestedEpochs.size() == 4 || (node1 > 0 && node2 > 0)) {
             groupedList.add(group);
         }
         epochCount = 0;
@@ -2032,6 +2025,22 @@ public class ImageViewerTab {
             System.out.println("band=" + band + " epoch=" + epochCount);
             epochCount++;
         }
+    }
+
+    private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
+        List<Integer> alternativeEpochs = new ArrayList<>();
+        if (requestedEpoch == 0 || requestedEpoch == 1) {
+            alternativeEpochs.add(requestedEpochs.get(0) + 2);
+            alternativeEpochs.add(requestedEpochs.get(1) + 2);
+            alternativeEpochs.add(requestedEpochs.get(2));
+            alternativeEpochs.add(requestedEpochs.get(3));
+        } else {
+            alternativeEpochs.add(requestedEpochs.get(0));
+            alternativeEpochs.add(requestedEpochs.get(1));
+            alternativeEpochs.add(requestedEpochs.get(2) - 2);
+            alternativeEpochs.add(requestedEpochs.get(3) - 2);
+        }
+        return alternativeEpochs;
     }
 
     private Fits addImages(Fits fits1, Fits fits2) {
