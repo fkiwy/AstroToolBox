@@ -217,7 +217,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogName() {
-        return "CatWISE";
+        return "CatWISE 2020";
     }
 
     @Override

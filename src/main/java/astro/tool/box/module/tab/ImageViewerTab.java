@@ -595,7 +595,7 @@ public class ImageViewerTab {
             allWiseOverlay = new JCheckBox("AllWISE");
             allWiseOverlay.setForeground(Color.GREEN.darker());
             overlayPanel.add(allWiseOverlay);
-            catWiseOverlay = new JCheckBox("CatWISE");
+            catWiseOverlay = new JCheckBox("CatWISE 2020");
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
@@ -624,7 +624,7 @@ public class ImageViewerTab {
             gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
             gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
             properMotionPanel.add(gaiaDR2ProperMotion);
-            catWiseProperMotion = new JCheckBox("CatWISE");
+            catWiseProperMotion = new JCheckBox("CatWISE 2020");
             catWiseProperMotion.setForeground(Color.MAGENTA);
             properMotionPanel.add(catWiseProperMotion);
 
