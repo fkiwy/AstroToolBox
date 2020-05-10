@@ -693,7 +693,7 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
 
-            skipSingleNodes = new JCheckBox("Skip single nodes");
+            skipSingleNodes = new JCheckBox("Skip single nodes", true);
             controlPanel.add(skipSingleNodes);
             skipSingleNodes.addActionListener((ActionEvent evt) -> {
                 createFlipbook();
@@ -1895,9 +1895,7 @@ public class ImageViewerTab {
                     }
                 }
             }
-            int maxAllowed = (int) round(axisX * SIZE_FACTOR * axisY * SIZE_FACTOR / 100);
-            if (zeroValues > maxAllowed) {
-                System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
+            if (zeroValues > 1000) {
                 if (requestedEpochs.size() == 4) {
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                     return;
