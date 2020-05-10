@@ -138,10 +138,8 @@ public class ImageViewerTab {
     public static final String TAB_NAME = "Image Viewer";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
-    public static final String EPOCH_COUNT_LABEL = "Number of epochs: %d";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
-    public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
@@ -213,7 +211,6 @@ public class ImageViewerTab {
     private JSlider maxValueSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
-    private JSlider epochCountSlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -223,7 +220,6 @@ public class ImageViewerTab {
     private JRadioButton showCatalogsButton;
     private JLabel overlaysLabel;
     private JLabel changeFovLabel;
-    private JLabel epochCountLabel;
     private JTable collectionTable;
     private Timer timer;
 
@@ -246,8 +242,7 @@ public class ImageViewerTab {
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
-    private int epochSliderCount;
-    private int standardEpochs = NUMBER_OF_EPOCHS;
+    private int numberOfEpochs;
     private int stretch = STRETCH;
     private int speed = SPEED;
     private int zoom = ZOOM;
@@ -328,9 +323,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1875;
+            int controlPanelHeight = 1850;
 
-            JPanel controlPanel = new JPanel(new GridLayout(78, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(76, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -536,26 +531,6 @@ public class ImageViewerTab {
                 zoom = zoomSlider.getValue();
                 zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Zoom: %d", zoom));
-            });
-
-            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(grayPanel);
-            grayPanel.setBackground(Color.LIGHT_GRAY);
-
-            epochCountLabel = new JLabel(String.format(EPOCH_COUNT_LABEL, epochSliderCount / 2));
-            grayPanel.add(epochCountLabel);
-
-            epochCountSlider = new JSlider(2, standardEpochs, standardEpochs);
-            controlPanel.add(epochCountSlider);
-            epochCountSlider.setBackground(Color.LIGHT_GRAY);
-            epochCountSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                epochSliderCount = epochCountSlider.getValue() * 2;
-                epochCountLabel.setText(String.format(EPOCH_COUNT_LABEL, epochSliderCount / 2));
-                createFlipbook();
             });
 
             minMaxLimits = new JCheckBox("Set min/max limits", true);
@@ -963,7 +938,7 @@ public class ImageViewerTab {
                     imagePanel.removeAll();
 
                     FlipbookComponent component = flipbook[imageNumber];
-                    component.setEpochCount(epochSliderCount / 2);
+                    component.setEpochCount(numberOfEpochs / 2);
                     imagePanel.setBorder(createEtchedBorder(component.getTitle()));
                     wiseImage = processImage(component);
 
@@ -1476,7 +1451,7 @@ public class ImageViewerTab {
 
             boolean moreImagesAvailable = true;
             try {
-                getImageData(1, standardEpochs * 2 + 1);
+                getImageData(1, numberOfEpochs + 1);
             } catch (Exception ex) {
                 moreImagesAvailable = false;
             }
@@ -1484,15 +1459,15 @@ public class ImageViewerTab {
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                 requestedEpochs.add(0);
                 requestedEpochs.add(1);
-                requestedEpochs.add(epochSliderCount - 2);
-                requestedEpochs.add(epochSliderCount - 1);
+                requestedEpochs.add(numberOfEpochs - 2);
+                requestedEpochs.add(numberOfEpochs - 1);
             } else {
                 if (moreImagesAvailable) {
                     for (int i = 0; i < 100; i++) {
                         requestedEpochs.add(i);
                     }
                 } else {
-                    for (int i = 0; i < epochSliderCount; i++) {
+                    for (int i = 0; i < numberOfEpochs; i++) {
                         requestedEpochs.add(i);
                     }
                 }
@@ -1520,7 +1495,6 @@ public class ImageViewerTab {
                 epochCount = min(epochCountW1, epochCountW2);
             }
             epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
-            epochCount = epochCount < epochSliderCount ? epochCount : epochSliderCount;
 
             Fits fits;
             int k;
@@ -1755,7 +1729,7 @@ public class ImageViewerTab {
         timer.stop();
         JPanel grid = new JPanel(new GridLayout(4, 4));
         for (FlipbookComponent component : flipbook) {
-            component.setEpochCount(epochSliderCount / 2);
+            component.setEpochCount(numberOfEpochs / 2);
             BufferedImage image = processImage(component);
             JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
             scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
@@ -2004,6 +1978,7 @@ public class ImageViewerTab {
             int node;
             if (year != prevYear) {
                 node = 1;
+                nodeChange = false;
             } else if (month - prevMonth > 4 && !nodeChange) {
                 node = prevNode == 1 ? 2 : 1;
                 nodeChange = true;
@@ -2031,7 +2006,6 @@ public class ImageViewerTab {
                 }
                 node1 = 0;
                 node2 = 0;
-                nodeChange = false;
                 if (node == 1) {
                     node1++;
                 }
@@ -3141,7 +3115,7 @@ public class ImageViewerTab {
             double x = pixelCoords.getX();
             double y = pixelCoords.getY();
 
-            numberOfYears = (epochSliderCount / 2) + 3; // 3 -> 2011, 2012 & 2013
+            numberOfYears = (numberOfEpochs / 2) + 3; // 3 -> 2011, 2012 & 2013
             double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
             double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
@@ -3396,14 +3370,6 @@ public class ImageViewerTab {
         return zoomSlider;
     }
 
-    public JLabel getEpochCountLabel() {
-        return epochCountLabel;
-    }
-
-    public JSlider getEpochCountSlider() {
-        return epochCountSlider;
-    }
-
     public Timer getTimer() {
         return timer;
     }
@@ -3420,12 +3386,8 @@ public class ImageViewerTab {
         this.quadrantCount = quadrantCount;
     }
 
-    public void setEpochSliderCount(int epochSliderCount) {
-        this.epochSliderCount = epochSliderCount;
-    }
-
-    public void setStandardEpochs(int standardEpochs) {
-        this.standardEpochs = standardEpochs;
+    public void setNumberOfEpochs(int numberOfEpochs) {
+        this.numberOfEpochs = numberOfEpochs;
     }
 
     public void setWiseBand(WiseBand wiseBand) {
