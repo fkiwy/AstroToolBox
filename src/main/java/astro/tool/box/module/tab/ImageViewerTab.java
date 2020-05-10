@@ -2771,7 +2771,6 @@ public class ImageViewerTab {
     private BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
         BufferedImage bi;
         String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%s&DEC=%s&subsetsize=%s&thumbnail_size=large&survey=%s&%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), roundTo2DecNZ(size / 60f), survey, band);
-        System.out.println(imageUrl);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -3074,7 +3073,7 @@ public class ImageViewerTab {
                 toDraw.draw(graphics);
             }
             if (latentOverlay.isSelected() && (ab_flags.contains("P") || cc_flags.contains("P"))) {
-                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
+                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker(), 2);
                 toDraw.draw(graphics);
             }
             if (spikeOverlay.isSelected() && (ab_flags.contains("D") || cc_flags.contains("D"))) {
@@ -3123,7 +3122,7 @@ public class ImageViewerTab {
             double newX = pixelCoords.getX();
             double newY = pixelCoords.getY();
 
-            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
+            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color, 2);
             arrow.draw(graphics);
         });
     }
