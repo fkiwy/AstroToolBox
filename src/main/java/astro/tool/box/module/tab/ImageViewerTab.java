@@ -404,6 +404,10 @@ public class ImageViewerTab {
             controlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
                 if (Epoch.isSubtracted(epoch)) {
@@ -424,6 +428,10 @@ public class ImageViewerTab {
             controlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
                 if (Epoch.isSubtracted(epoch)) {
@@ -444,6 +452,10 @@ public class ImageViewerTab {
             controlPanel.add(minValueSlider);
             minValueSlider.setBackground(Color.WHITE);
             minValueSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 minValue = minValueSlider.getValue();
                 minValueLabel.setText(String.format("Min pixel value: %d", minValue));
             });
@@ -459,6 +471,10 @@ public class ImageViewerTab {
             controlPanel.add(maxValueSlider);
             maxValueSlider.setBackground(Color.LIGHT_GRAY);
             maxValueSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 maxValue = maxValueSlider.getValue();
                 maxValueLabel.setText(String.format("Max pixel value: %d", maxValue));
             });
@@ -474,6 +490,10 @@ public class ImageViewerTab {
             controlPanel.add(stretchSlider);
             stretchSlider.setBackground(Color.WHITE);
             stretchSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 stretch = stretchSlider.getValue();
                 stretchLabel.setText(String.format("Stretch control: %s", roundTo2Dec(stretch / 100f)));
             });
@@ -489,6 +509,10 @@ public class ImageViewerTab {
             controlPanel.add(speedSlider);
             speedSlider.setBackground(Color.LIGHT_GRAY);
             speedSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 speed = speedSlider.getValue();
                 timer.setDelay(speed);
                 speedLabel.setText(String.format("Speed: %d ms", speed));
@@ -505,6 +529,10 @@ public class ImageViewerTab {
             controlPanel.add(zoomSlider);
             zoomSlider.setBackground(Color.WHITE);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 zoom = zoomSlider.getValue();
                 zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Zoom: %d", zoom));
@@ -521,6 +549,10 @@ public class ImageViewerTab {
             controlPanel.add(epochCountSlider);
             epochCountSlider.setBackground(Color.LIGHT_GRAY);
             epochCountSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 epochSliderCount = epochCountSlider.getValue() * 2;
                 epochCountLabel.setText(String.format(EPOCH_COUNT_LABEL, epochSliderCount / 2));
                 createFlipbook();
