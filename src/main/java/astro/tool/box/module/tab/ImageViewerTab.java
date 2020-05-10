@@ -274,7 +274,6 @@ public class ImageViewerTab {
     private double previousDec;
 
     private boolean imageCutOff;
-    private boolean overlaysDisabled;
     private boolean timerStopped;
     private boolean hasException;
     private boolean panstarrsImages;
@@ -399,10 +398,6 @@ public class ImageViewerTab {
             controlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
                 if (Epoch.isSubtracted(epoch)) {
@@ -423,10 +418,6 @@ public class ImageViewerTab {
             controlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
                 if (Epoch.isSubtracted(epoch)) {
@@ -447,10 +438,6 @@ public class ImageViewerTab {
             controlPanel.add(minValueSlider);
             minValueSlider.setBackground(Color.WHITE);
             minValueSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 minValue = minValueSlider.getValue();
                 minValueLabel.setText(String.format("Min pixel value: %d", minValue));
             });
@@ -466,10 +453,6 @@ public class ImageViewerTab {
             controlPanel.add(maxValueSlider);
             maxValueSlider.setBackground(Color.LIGHT_GRAY);
             maxValueSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 maxValue = maxValueSlider.getValue();
                 maxValueLabel.setText(String.format("Max pixel value: %d", maxValue));
             });
@@ -485,10 +468,6 @@ public class ImageViewerTab {
             controlPanel.add(stretchSlider);
             stretchSlider.setBackground(Color.WHITE);
             stretchSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 stretch = stretchSlider.getValue();
                 stretchLabel.setText(String.format("Stretch control: %s", roundTo2Dec(stretch / 100f)));
             });
@@ -504,10 +483,6 @@ public class ImageViewerTab {
             controlPanel.add(speedSlider);
             speedSlider.setBackground(Color.LIGHT_GRAY);
             speedSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 speed = speedSlider.getValue();
                 timer.setDelay(speed);
                 speedLabel.setText(String.format("Speed: %d ms", speed));
@@ -524,10 +499,6 @@ public class ImageViewerTab {
             controlPanel.add(zoomSlider);
             zoomSlider.setBackground(Color.WHITE);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 zoom = zoomSlider.getValue();
                 zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Zoom: %d", zoom));
@@ -1387,23 +1358,8 @@ public class ImageViewerTab {
                 axisX = axisY = size;
                 windowShift = 0;
                 imageCutOff = false;
-                overlaysDisabled = false;
                 overlaysLabel.setText(underline("Overlays:"));
                 overlaysLabel.setForeground(Color.BLACK);
-                simbadOverlay.setEnabled(true);
-                gaiaDR2Overlay.setEnabled(true);
-                allWiseOverlay.setEnabled(true);
-                catWiseOverlay.setEnabled(true);
-                panStarrsOverlay.setEnabled(true);
-                sdssOverlay.setEnabled(true);
-                spectrumOverlay.setEnabled(true);
-                ssoOverlay.setEnabled(true);
-                ghostOverlay.setEnabled(true);
-                haloOverlay.setEnabled(true);
-                latentOverlay.setEnabled(true);
-                spikeOverlay.setEnabled(true);
-                gaiaDR2ProperMotion.setEnabled(true);
-                catWiseProperMotion.setEnabled(true);
                 simbadEntries = null;
                 gaiaDR2Entries = null;
                 gaiaDR2TpmEntries = null;
@@ -1772,9 +1728,7 @@ public class ImageViewerTab {
             image = createImage(component.getBand(), component.getEpoch());
         }
         image = flip(zoom(image, zoom));
-        if (!overlaysDisabled) {
-            addOverlaysAndPMVectors(image);
-        }
+        addOverlaysAndPMVectors(image);
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
                 NumberPair crosshair = crosshairs.get(i);
@@ -2043,37 +1997,29 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (size > naxis1 && size > naxis2 && !overlaysDisabled) {
-                overlaysLabel.setText("Warning: Overlays have been disabled!");
+            /*
+            if (size > naxis1 && size > naxis2) {
+                overlaysLabel.setText("Warning: Overlays may not work accurately!");
                 overlaysLabel.setForeground(Color.RED);
-                overlaysDisabled = true;
-                simbadOverlay.setEnabled(false);
-                gaiaDR2Overlay.setEnabled(false);
-                allWiseOverlay.setEnabled(false);
-                catWiseOverlay.setEnabled(false);
-                panStarrsOverlay.setEnabled(false);
-                sdssOverlay.setEnabled(false);
-                spectrumOverlay.setEnabled(false);
-                ssoOverlay.setEnabled(false);
-                ghostOverlay.setEnabled(false);
-                haloOverlay.setEnabled(false);
-                latentOverlay.setEnabled(false);
-                spikeOverlay.setEnabled(false);
-                gaiaDR2ProperMotion.setEnabled(false);
-                catWiseProperMotion.setEnabled(false);
-                if (useCustomOverlays.isSelected()) {
-                    customOverlays.values().forEach((customOverlay) -> {
-                        customOverlay.getCheckBox().setEnabled(false);
-                    });
-                }
-            }
+                pixelX = crpix1;
+                pixelY = size - crpix2;
+                axisX = size;
+                axisY = size;
+            } else {
+                pixelX = crpix1;
+                pixelY = naxis2 - crpix2;
+                axisX = (int) round(naxis1);
+                axisY = (int) round(naxis2);
+            }*/
             if (naxis1 != naxis2) {
                 imageCutOff = true;
+                overlaysLabel.setText("Warning: Overlays may not work accurately!");
+                overlaysLabel.setForeground(Color.RED);
             }
             pixelX = crpix1;
-            pixelY = naxis2 - crpix2;
-            axisX = (int) round(naxis1);
-            axisY = (int) round(naxis2);
+            pixelY = size - crpix2;
+            axisX = size;
+            axisY = size;
             for (int i = 1; i < imageGroup.size(); i++) {
                 fits = addImages(fits, imageGroup.get(i).getImage());
             }

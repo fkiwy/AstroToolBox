@@ -239,7 +239,7 @@ public class SettingsTab {
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 225));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 225));
             containerPanel.add(imageViewerSettings);
 
             numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, "6"));
