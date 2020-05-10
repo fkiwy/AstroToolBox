@@ -138,9 +138,10 @@ public class ImageViewerTab {
     public static final String TAB_NAME = "Image Viewer";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
+    public static final String EPOCH_COUNT_LABEL = "Number of epochs: %d";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
-    public static final int NUMBER_OF_EPOCHS = Integer.valueOf(SettingsTab.getUserSetting(SettingsTab.NUMBER_OF_EPOCHS, "6"));
+    public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
@@ -241,11 +242,12 @@ public class ImageViewerTab {
     private Epoch epoch = EPOCH;
     private int fieldOfView = 30;
     private int crosshairSize = 5;
-    private int imageNumber = 0;
-    private int windowShift = 0;
-    private int quadrantCount = 0;
-    private int epochCount = 0;
-    private int epochSliderCount = NUMBER_OF_EPOCHS * 2;
+    private int imageNumber;
+    private int windowShift;
+    private int quadrantCount;
+    private int epochCount;
+    private int epochSliderCount;
+    private int standardEpochs = NUMBER_OF_EPOCHS;
     private int stretch = STRETCH;
     private int speed = SPEED;
     private int zoom = ZOOM;
@@ -512,15 +514,15 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochSliderCount / 2));
+            epochCountLabel = new JLabel(String.format(EPOCH_COUNT_LABEL, epochSliderCount / 2));
             grayPanel.add(epochCountLabel);
 
-            epochCountSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
+            epochCountSlider = new JSlider(2, standardEpochs, standardEpochs);
             controlPanel.add(epochCountSlider);
             epochCountSlider.setBackground(Color.LIGHT_GRAY);
             epochCountSlider.addChangeListener((ChangeEvent e) -> {
                 epochSliderCount = epochCountSlider.getValue() * 2;
-                epochCountLabel.setText(String.format("Number of epochs: %d", epochSliderCount / 2));
+                epochCountLabel.setText(String.format(EPOCH_COUNT_LABEL, epochSliderCount / 2));
                 createFlipbook();
             });
 
@@ -1442,7 +1444,7 @@ public class ImageViewerTab {
 
             boolean moreImagesAvailable = true;
             try {
-                getImageData(1, NUMBER_OF_EPOCHS * 2 + 1);
+                getImageData(1, standardEpochs * 2 + 1);
             } catch (Exception ex) {
                 moreImagesAvailable = false;
             }
@@ -3362,6 +3364,14 @@ public class ImageViewerTab {
         return zoomSlider;
     }
 
+    public JLabel getEpochCountLabel() {
+        return epochCountLabel;
+    }
+
+    public JSlider getEpochCountSlider() {
+        return epochCountSlider;
+    }
+
     public Timer getTimer() {
         return timer;
     }
@@ -3376,6 +3386,14 @@ public class ImageViewerTab {
 
     public void setQuadrantCount(int quadrantCount) {
         this.quadrantCount = quadrantCount;
+    }
+
+    public void setEpochSliderCount(int epochSliderCount) {
+        this.epochSliderCount = epochSliderCount;
+    }
+
+    public void setStandardEpochs(int standardEpochs) {
+        this.standardEpochs = standardEpochs;
     }
 
     public void setWiseBand(WiseBand wiseBand) {

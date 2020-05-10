@@ -30,12 +30,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeListener;
 
 public class SettingsTab {
 
@@ -98,9 +100,11 @@ public class SettingsTab {
     private boolean panstarrsImages;
     private boolean sdssImages;
 
-    private ActionListener listener;
+    private ActionListener actionListener;
+    private ChangeListener changeListener;
     private JComboBox wiseBandsBox;
     private JComboBox epochsBox;
+    private JSlider epochCountSlider;
 
     public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -239,10 +243,10 @@ public class SettingsTab {
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(450, 225));
+            imageViewerSettings.setPreferredSize(new Dimension(350, 225));
             containerPanel.add(imageViewerSettings);
 
-            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, "6"));
+            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
             epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
@@ -252,20 +256,27 @@ public class SettingsTab {
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 
             wiseBandsBox = imageViewerTab.getWiseBands();
-            listener = wiseBandsBox.getActionListeners()[0];
-            wiseBandsBox.removeActionListener(listener);
+            actionListener = wiseBandsBox.getActionListeners()[0];
+            wiseBandsBox.removeActionListener(actionListener);
             wiseBandsBox.setSelectedItem(wiseBand);
-            wiseBandsBox.addActionListener(listener);
+            wiseBandsBox.addActionListener(actionListener);
 
             epochsBox = imageViewerTab.getEpochs();
-            listener = epochsBox.getActionListeners()[0];
-            epochsBox.removeActionListener(listener);
+            actionListener = epochsBox.getActionListeners()[0];
+            epochsBox.removeActionListener(actionListener);
             epochsBox.setSelectedItem(epoch);
-            epochsBox.addActionListener(listener);
+            epochsBox.addActionListener(actionListener);
 
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
+            imageViewerTab.getEpochCountLabel().setText(String.format(ImageViewerTab.EPOCH_COUNT_LABEL, numberOfEpochs));
+            epochCountSlider = imageViewerTab.getEpochCountSlider();
+            changeListener = epochCountSlider.getChangeListeners()[0];
+            epochCountSlider.removeChangeListener(changeListener);
+            epochCountSlider.setMaximum(numberOfEpochs);
+            epochCountSlider.setValue(numberOfEpochs);
+            epochCountSlider.addChangeListener(changeListener);
             if (Epoch.isSubtracted(epoch)) {
                 imageViewerTab.getSmoothImage().setSelected(true);
             } else {
@@ -277,10 +288,12 @@ public class SettingsTab {
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
+            imageViewerTab.setEpochSliderCount(numberOfEpochs * 2);
+            imageViewerTab.setStandardEpochs(numberOfEpochs);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
 
-            imageViewerSettings.add(new JLabel("Number of epochs (restart program): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Number of epochs: ", JLabel.RIGHT));
             JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
             imageViewerSettings.add(numberOfEpochsField);
 
@@ -361,6 +374,7 @@ public class SettingsTab {
                     finderChartFOV = Integer.parseInt(finderChartFovField.getText());
 
                     // Image viewer settings
+                    numberOfEpochs = Integer.parseInt(numberOfEpochsField.getText());
                     wiseBand = (WiseBand) wiseBands.getSelectedItem();
                     epoch = (Epoch) epochs.getSelectedItem();
                     size = Integer.parseInt(sizeField.getText());
@@ -409,20 +423,27 @@ public class SettingsTab {
                 imageViewerTab.getTimer().stop();
 
                 wiseBandsBox = imageViewerTab.getWiseBands();
-                listener = wiseBandsBox.getActionListeners()[0];
-                wiseBandsBox.removeActionListener(listener);
+                actionListener = wiseBandsBox.getActionListeners()[0];
+                wiseBandsBox.removeActionListener(actionListener);
                 wiseBandsBox.setSelectedItem(wiseBand);
-                wiseBandsBox.addActionListener(listener);
+                wiseBandsBox.addActionListener(actionListener);
 
                 epochsBox = imageViewerTab.getEpochs();
-                listener = epochsBox.getActionListeners()[0];
-                epochsBox.removeActionListener(listener);
+                actionListener = epochsBox.getActionListeners()[0];
+                epochsBox.removeActionListener(actionListener);
                 epochsBox.setSelectedItem(epoch);
-                epochsBox.addActionListener(listener);
+                epochsBox.addActionListener(actionListener);
 
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
+                imageViewerTab.getEpochCountLabel().setText(String.format(ImageViewerTab.EPOCH_COUNT_LABEL, numberOfEpochs));
+                epochCountSlider = imageViewerTab.getEpochCountSlider();
+                changeListener = epochCountSlider.getChangeListeners()[0];
+                epochCountSlider.removeChangeListener(changeListener);
+                epochCountSlider.setMaximum(numberOfEpochs);
+                epochCountSlider.setValue(numberOfEpochs);
+                epochCountSlider.addChangeListener(changeListener);
                 if (Epoch.isSubtracted(epoch)) {
                     imageViewerTab.getSmoothImage().setSelected(true);
                 } else {
@@ -434,6 +455,8 @@ public class SettingsTab {
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
+                imageViewerTab.setEpochSliderCount(numberOfEpochs * 2);
+                imageViewerTab.setStandardEpochs(numberOfEpochs);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setSdssImages(sdssImages);
 
