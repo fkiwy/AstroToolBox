@@ -2581,6 +2581,10 @@ public class ImageViewerTab {
             if (result != null) {
                 bandPanel.add(buildImagePanel(result, "r"));
             }
+             result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
+            if (result != null) {
+                bandPanel.add(buildImagePanel(result, "i"));
+            }
             result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
             if (result != null) {
                 bandPanel.add(buildImagePanel(result, "z"));
