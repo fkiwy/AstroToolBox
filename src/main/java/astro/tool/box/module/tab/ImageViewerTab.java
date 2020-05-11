@@ -79,6 +79,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1415,7 +1416,7 @@ public class ImageViewerTab {
             boolean moreImagesAvailable = true;
             try {
                 getImageData(1, numberOfEpochs + 1);
-            } catch (Exception ex) {
+            } catch (FileNotFoundException ex) {
                 moreImagesAvailable = false;
             }
             List<Integer> requestedEpochs = new ArrayList<>();
@@ -1878,7 +1879,7 @@ public class ImageViewerTab {
             Fits fits;
             try {
                 fits = new Fits(getImageData(band, requestedEpoch));
-            } catch (Exception ex) {
+            } catch (FileNotFoundException ex) {
                 if (requestedEpochs.size() == 4) {
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                     return;
@@ -2539,29 +2540,29 @@ public class ImageViewerTab {
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 6));
 
-            BufferedImage result = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "poss1_blue"));
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss1_blue"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "poss1_red"));
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss1_red"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "poss2ukstu_blue"));
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss2ukstu_blue"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "poss2ukstu_red"));
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss2ukstu_red"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "poss2ukstu_ir"));
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss2ukstu_ir"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "dss2IR-dss1Red-dss1Blue"));
+            image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "dss2IR-dss1Red-dss1Blue"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -2591,29 +2592,29 @@ public class ImageViewerTab {
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 5));
 
-            BufferedImage result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "u"));
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "u"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "g"));
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "g"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "r"));
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "r"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "i"));
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "i"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "z"));
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "z"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "z-g-u"));
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "z-g-u"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -2643,21 +2644,21 @@ public class ImageViewerTab {
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 4));
 
-            BufferedImage result = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "j"));
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "j"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "h"));
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "h"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "k"));
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "k"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "k-h-j"));
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "k-h-j"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -2687,25 +2688,25 @@ public class ImageViewerTab {
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 4));
 
-            BufferedImage result = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "w1"));
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "w1"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "w2"));
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "w2"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "w3"));
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "w3"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "w4"));
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "w4"));
             }
-            result = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
-            if (result != null) {
-                bandPanel.add(buildImagePanel(result, "w4-w2-w1"));
+            image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "w4-w2-w1"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -2814,16 +2815,16 @@ public class ImageViewerTab {
         return bi;
     }
 
-    private JPanel buildImagePanel(BufferedImage atlasImage, String imageHeader) {
+    private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        atlasImage = zoom(atlasImage, 200);
-        double x = atlasImage.getWidth() / 2;
-        double y = atlasImage.getHeight() / 2;
-        Graphics g = atlasImage.getGraphics();
+        image = zoom(image, 200);
+        double x = image.getWidth() / 2;
+        double y = image.getHeight() / 2;
+        Graphics g = image.getGraphics();
         Circle circle = new Circle(x, y, 10, Color.MAGENTA);
         circle.draw(g);
-        panel.add(new JLabel(new ImageIcon(atlasImage)));
+        panel.add(new JLabel(new ImageIcon(image)));
         return panel;
     }
 
