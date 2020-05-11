@@ -5,7 +5,6 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
-import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,7 +39,7 @@ public class ServiceProviderUtils {
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
         boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
         String simbadBaseUrl = useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
-        return simbadBaseUrl + "?request=doQuery&lang=adql&format=text&query=SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,'.'%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+        return simbadBaseUrl + "?request=doQuery&lang=adql&format=csv&query=SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,'.'%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
     public static HttpURLConnection establishHttpConnection(String url) throws MalformedURLException, IOException {
@@ -65,17 +64,6 @@ public class ServiceProviderUtils {
         }
     }
 
-    public static String readSimbadResponse(HttpURLConnection connection) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            return reader.lines().map(line -> {
-                return line.replace("|", SPLIT_CHAR).replaceAll(REGEXP_SPACES, "");
-            }).collect(Collectors.joining(LINE_SEP));
-        } catch (IOException ex) {
-            showInfoDialog(null, SERVICE_NOT_AVAILABLE);
-            throw new RuntimeException(ex);
-        }
-    }
-
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(response));
         if (catalogEntry instanceof SDSSCatalogEntry) {
@@ -86,9 +74,6 @@ public class ServiceProviderUtils {
         Map<String, Integer> columns = new HashMap<>();
         for (int i = 0; i < headers.length; i++) {
             columns.put(headers[i], i);
-        }
-        if (catalogEntry instanceof SimbadCatalogEntry) {
-            reader.readLine();
         }
         String line;
         List<CatalogEntry> entries = new ArrayList<>();
