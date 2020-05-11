@@ -1406,15 +1406,10 @@ public class ImageViewerTab {
             }
             List<Integer> requestedEpochs = new ArrayList<>();
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
-                if (Epoch.isFirstLastSingleNode(epoch)) {
-                    requestedEpochs.add(0);
-                    requestedEpochs.add(numberOfEpochs - 2);
-                } else {
-                    requestedEpochs.add(0);
-                    requestedEpochs.add(1);
-                    requestedEpochs.add(numberOfEpochs - 2);
-                    requestedEpochs.add(numberOfEpochs - 1);
-                }
+                requestedEpochs.add(0);
+                requestedEpochs.add(1);
+                requestedEpochs.add(numberOfEpochs - 2);
+                requestedEpochs.add(numberOfEpochs - 1);
             } else {
                 if (moreImagesAvailable) {
                     for (int i = 0; i < 100; i++) {
@@ -1640,27 +1635,6 @@ public class ImageViewerTab {
                     }
                     if (epoch.equals(Epoch.FIRST_LAST_SUBTRACTED)) {
                         differenceImaging(100, 200);
-                    }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true);
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 200, true);
-                    break;
-                case FIRST_LAST_SINGLE_NODE:
-                    flipbook = new FlipbookComponent[2];
-                    if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        fits = getImage(WiseBand.W1.val, 0);
-                        addImage(WiseBand.W1.val, 100, fits);
-                    }
-                    if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        fits = getImage(WiseBand.W2.val, 0);
-                        addImage(WiseBand.W2.val, 100, fits);
-                    }
-                    if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        fits = getImage(WiseBand.W1.val, epochCount - 1);
-                        addImage(WiseBand.W1.val, 200, fits);
-                    }
-                    if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        fits = getImage(WiseBand.W2.val, epochCount - 1);
-                        addImage(WiseBand.W2.val, 200, fits);
                     }
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 200, true);
@@ -1971,7 +1945,7 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (requestedEpochs.size() > 4 && (node1 == 0 || node2 == 0)) {
+                if (requestedEpochs.size() != 4 && (node1 == 0 || node2 == 0)) {
                     groupedList.remove(groupedList.size() - 1);
                 }
                 node1 = 0;
@@ -1987,7 +1961,7 @@ public class ImageViewerTab {
             prevMonth = month;
             prevNode = node;
         }
-        if (requestedEpochs.size() <= 4 || (node1 != 0 && node2 != 0)) {
+        if (requestedEpochs.size() == 4 || (node1 != 0 && node2 != 0)) {
             groupedList.add(group);
         }
         epochCount = 0;
