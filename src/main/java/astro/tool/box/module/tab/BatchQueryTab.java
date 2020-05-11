@@ -13,6 +13,7 @@ import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -116,16 +117,18 @@ public class BatchQueryTab {
             // Plug in catalogs here
             SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
             catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-            GaiaDR2CatalogEntry caiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
-            catalogInstances.put(caiaDR2CatalogEntry.getCatalogName(), caiaDR2CatalogEntry);
-            CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
-            catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
+            GaiaDR2CatalogEntry gaiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
+            catalogInstances.put(gaiaDR2CatalogEntry.getCatalogName(), gaiaDR2CatalogEntry);
             AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
             catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
+            CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
+            catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
             PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
             catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
             SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
             catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
+            VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
+            catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
 
             JPanel mainPanel = new JPanel(new BorderLayout());
 

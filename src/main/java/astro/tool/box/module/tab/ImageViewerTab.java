@@ -24,6 +24,7 @@ import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -167,6 +168,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> catWiseRejectedEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
+    private List<CatalogEntry> vhsEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -186,6 +188,7 @@ public class ImageViewerTab {
     private JCheckBox panStarrsOverlay;
     private JCheckBox sdssOverlay;
     private JCheckBox spectrumOverlay;
+    private JCheckBox vhsOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -321,9 +324,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1825;
+            int controlPanelHeight = 1850;
 
-            JPanel controlPanel = new JPanel(new GridLayout(75, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(76, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -583,6 +586,12 @@ public class ImageViewerTab {
             spectrumOverlay = new JCheckBox("SDSS spectra");
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             overlayPanel.add(spectrumOverlay);
+            vhsOverlay = new JCheckBox("VISTA-VHS");
+            vhsOverlay.setForeground(Color.DARK_GRAY);
+            overlayPanel.add(vhsOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
             ssoOverlay = new JCheckBox("Solar Sys. Obj.");
             ssoOverlay.setForeground(Color.BLUE);
             overlayPanel.add(ssoOverlay);
@@ -1105,6 +1114,10 @@ public class ImageViewerTab {
                                         showSpectrumInfo(sdssEntries, mouseX, mouseY);
                                         overlays++;
                                     }
+                                    if (vhsOverlay.isSelected() && vhsEntries != null) {
+                                        showCatalogInfo(vhsEntries, mouseX, mouseY, Color.DARK_GRAY);
+                                        overlays++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         overlays++;
@@ -1362,6 +1375,7 @@ public class ImageViewerTab {
                 catWiseRejectedEntries = null;
                 panStarrsEntries = null;
                 sdssEntries = null;
+                vhsEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
@@ -1786,6 +1800,14 @@ public class ImageViewerTab {
                 CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
             } else {
                 drawSectrumOverlay(image, sdssEntries);
+            }
+        }
+        if (vhsOverlay.isSelected()) {
+            if (vhsEntries == null) {
+                vhsEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> vhsEntries = fetchCatalogEntries(new VHSCatalogEntry()));
+            } else {
+                drawOverlay(image, vhsEntries, Color.DARK_GRAY, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {
@@ -2581,7 +2603,7 @@ public class ImageViewerTab {
             if (result != null) {
                 bandPanel.add(buildImagePanel(result, "r"));
             }
-             result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
+            result = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
             if (result != null) {
                 bandPanel.add(buildImagePanel(result, "i"));
             }
@@ -3092,7 +3114,7 @@ public class ImageViewerTab {
         int maxRows = simpleLayout ? 30 : 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry / Computed values are shown in green / (*): Further info (mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();

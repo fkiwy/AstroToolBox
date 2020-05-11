@@ -15,6 +15,7 @@ import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
@@ -144,6 +145,8 @@ public class CatalogQueryTab {
             catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
             SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
             catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
+            VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
+            catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
 
             mainPanel = new JPanel(new BorderLayout());
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
@@ -475,7 +478,7 @@ public class CatalogQueryTab {
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry / Computed values are shown in green / (*): Further info (mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();

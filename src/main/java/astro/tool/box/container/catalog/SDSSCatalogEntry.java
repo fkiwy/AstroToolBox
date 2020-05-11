@@ -228,10 +228,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
             return false;
         }
         final SDSSCatalogEntry other = (SDSSCatalogEntry) obj;
-        if (this.objID != other.objID) {
-            return false;
-        }
-        return true;
+        return this.objID == other.objID;
     }
 
     @Override
