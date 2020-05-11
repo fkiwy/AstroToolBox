@@ -81,7 +81,7 @@ public class BatchQueryTab {
 
     private JPanel centerPanel;
     private JTextField echoField;
-    private JCheckBox sptWithColors;
+    private JCheckBox includeColors;
     private JComboBox<LookupTable> lookupTables;
     private JProgressBar progressBar;
     private JButton cancelButton;
@@ -185,11 +185,11 @@ public class BatchQueryTab {
                 centerRow.add(catalog);
             }
 
-            centerRow.add(new JLabel("Spectral types with colors:"));
+            centerRow.add(new JLabel("Include colors:"));
 
-            sptWithColors = new JCheckBox();
-            sptWithColors.setName("sptWithColors");
-            centerRow.add(sptWithColors);
+            includeColors = new JCheckBox();
+            includeColors.setName("includeColors");
+            centerRow.add(includeColors);
 
             centerRow.add(new JLabel("Lookup table:"));
 
@@ -411,18 +411,18 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
-                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, sptWithColors.isSelected());
+                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, includeColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                         StringBuilder simbadType = new StringBuilder();
-                        //if (sptWithColors.isSelected()) {
+                        //if (includeColors.isSelected()) {
                         simbadType.append("[");
                         //}
                         simbadType.append(simbadEntry.getObjectType());
                         if (!simbadEntry.getSpectralType().isEmpty()) {
                             simbadType.append(" ").append(simbadEntry.getSpectralType());
                         }
-                        //if (sptWithColors.isSelected()) {
+                        //if (includeColors.isSelected()) {
                         simbadType.append("]");
                         //}
                         spectralTypes.add(0, simbadType.toString());

@@ -356,7 +356,7 @@ public class ModuleHelper {
         };
     }
 
-    public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean sptWithColors) {
+    public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
         Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
         List<String> spectralTypes = new ArrayList<>();
         results.entrySet().forEach(entry -> {
@@ -372,7 +372,7 @@ public class ModuleHelper {
                 }
             }
             String spectralType;
-            if (sptWithColors) {
+            if (includeColors) {
                 spectralType = "[" + key.getSpt() + ": " + matchedColors + "]";
             } else {
                 spectralType = key.getSpt();

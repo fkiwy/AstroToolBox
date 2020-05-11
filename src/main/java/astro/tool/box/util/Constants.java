@@ -24,9 +24,9 @@ public class Constants {
 
     public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
 
-    public static final String CATWISE_CATALOG_ID = "cwcat2";
+    public static final String CATWISE_CATALOG_ID = "cwcat";
 
-    public static final String CATWISE_REJECTED_ID = "reject2";
+    public static final String CATWISE_REJECTED_ID = "reject";
 
     public static final String GAIADR2_CATALOG_ID = "gaia_dr2_source";
 

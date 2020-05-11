@@ -199,7 +199,6 @@ public class ImageViewerTab {
     private JCheckBox twoMassImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
-    private JCheckBox skipSingleNodes;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
@@ -322,9 +321,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1850;
+            int controlPanelHeight = 1825;
 
-            JPanel controlPanel = new JPanel(new GridLayout(76, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(75, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -566,7 +565,7 @@ public class ImageViewerTab {
             allWiseOverlay = new JCheckBox("AllWISE");
             allWiseOverlay.setForeground(Color.GREEN.darker());
             overlayPanel.add(allWiseOverlay);
-            catWiseOverlay = new JCheckBox("CatWISE 2020");
+            catWiseOverlay = new JCheckBox("CatWISE");
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
@@ -595,7 +594,7 @@ public class ImageViewerTab {
             gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
             gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
             properMotionPanel.add(gaiaDR2ProperMotion);
-            catWiseProperMotion = new JCheckBox("CatWISE 2020");
+            catWiseProperMotion = new JCheckBox("CatWISE");
             catWiseProperMotion.setForeground(Color.MAGENTA);
             properMotionPanel.add(catWiseProperMotion);
 
@@ -692,12 +691,6 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
-
-            skipSingleNodes = new JCheckBox("Skip single nodes", true);
-            controlPanel.add(skipSingleNodes);
-            skipSingleNodes.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
-            });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
@@ -1876,17 +1869,15 @@ public class ImageViewerTab {
             Header header = hdu.getHeader();
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            axisX = (int) round(naxis1);
-            axisY = (int) round(naxis2);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             // Skip images with too many zero values
-            if (axisY > 0) {
-                axisX = values[0].length;
+            if (naxis2 > 0) {
+                naxis1 = values[0].length;
             }
             int zeroValues = 0;
-            for (int j = 0; j < axisY; j++) {
-                for (int k = 0; k < axisX; k++) {
+            for (int j = 0; j < naxis2; j++) {
+                for (int k = 0; k < naxis1; k++) {
                     try {
                         if (values[j][k] == 0) {
                             zeroValues++;
@@ -1895,12 +1886,13 @@ public class ImageViewerTab {
                     }
                 }
             }
-            if (zeroValues > 1000) {
+            double maxAllowed = naxis1 * SIZE_FACTOR * naxis2 * SIZE_FACTOR / 100;
+            if (zeroValues > maxAllowed) {
                 if (requestedEpochs.size() == 4) {
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                     return;
                 } else {
-                    continue;
+                    fits = null;
                 }
             }
             double minObsEpoch = header.getDoubleValue("MJDMIN");
@@ -1912,6 +1904,7 @@ public class ImageViewerTab {
             return;
         }
         List<ImageContainer> sortedList = images.values().stream()
+                .filter(container -> container.getImage() != null)
                 .sorted(Comparator.comparing(ImageContainer::getDate))
                 .collect(Collectors.toList());
         List<List<ImageContainer>> groupedList = new ArrayList<>();
@@ -1953,7 +1946,7 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (skipSingleNodes.isSelected() && requestedEpochs.size() != 4 && (node1 == 0 || node2 == 0)) {
+                if (requestedEpochs.size() != 4 && (node1 == 0 || node2 == 0)) {
                     groupedList.remove(groupedList.size() - 1);
                 }
                 node1 = 0;
@@ -1969,7 +1962,7 @@ public class ImageViewerTab {
             prevMonth = month;
             prevNode = node;
         }
-        if (!skipSingleNodes.isSelected() || requestedEpochs.size() == 4 || (node1 > 0 && node2 > 0)) {
+        if (requestedEpochs.size() == 4 || (node1 != 0 && node2 != 0)) {
             groupedList.add(group);
         }
         epochCount = 0;

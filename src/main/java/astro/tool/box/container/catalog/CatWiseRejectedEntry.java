@@ -211,7 +211,7 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "CatWISE 2020 Reject Table";
+        return "CatWISE Reject Table";
     }
 
     @Override
