@@ -1134,7 +1134,7 @@ public class ImageViewerTab {
                                     if (overlays == 0) {
                                         if (showCatalogsButton.isSelected()) {
                                             //displayCatalogSearchResults(newRa, newDec);
-                                            createPdf(newRa, newDec, fieldOfView);
+                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView).create(baseFrame));
                                         } else {
                                             coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                             createFlipbook();
@@ -2448,17 +2448,6 @@ public class ImageViewerTab {
 
         minValue = presetMinVal;
         maxValue = presetMaxVal;
-    }
-
-    private void createPdf(double targetRa, double targetDec, int size) {
-        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        try {
-            new PdfCreator(targetRa, targetDec, size).create();
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
     }
 
     private void displayCatalogSearchResults(double targetRa, double targetDec) {

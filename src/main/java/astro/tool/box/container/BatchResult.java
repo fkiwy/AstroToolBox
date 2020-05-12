@@ -101,12 +101,20 @@ public class BatchResult {
         return titles;
     }
 
-    private String joinSpetralTypes() {
+    public String joinSpetralTypes() {
         return spectralTypes.stream().collect(Collectors.joining(" "));
     }
 
     public int getRowNumber() {
         return rowNumber;
+    }
+
+    public int getObjectNumber() {
+        return objectNumber;
+    }
+
+    public String getCatalogName() {
+        return catalogName;
     }
 
     public double getTargetRa() {
@@ -115,6 +123,38 @@ public class BatchResult {
 
     public double getTargetDec() {
         return targetDec;
+    }
+
+    public double getTargetDistance() {
+        return targetDistance;
+    }
+
+    public double getRa() {
+        return ra;
+    }
+
+    public double getDec() {
+        return dec;
+    }
+
+    public String getSourceId() {
+        return sourceId;
+    }
+
+    public double getPlx() {
+        return plx;
+    }
+
+    public double getPmra() {
+        return pmra;
+    }
+
+    public double getPmdec() {
+        return pmdec;
+    }
+
+    public List<String> getSpectralTypes() {
+        return spectralTypes;
     }
 
     public static class Builder {
