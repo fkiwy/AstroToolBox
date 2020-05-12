@@ -1,7 +1,24 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.BatchResult;
+import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SDSSCatalogEntry;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.lookup.SpectralTypeLookup;
+import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
+import astro.tool.box.facade.CatalogQueryFacade;
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
 import static astro.tool.box.module.ModuleHelper.*;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -16,11 +33,20 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Desktop;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PdfCreator {
 
@@ -32,10 +58,41 @@ public class PdfCreator {
     private final double targetDec;
     private final int size;
 
+    private final Map<String, CatalogEntry> catalogInstances;
+
+    private final CatalogQueryFacade catalogQueryFacade;
+    private final SpectralTypeLookupService spectralTypeLookupService;
+
     public PdfCreator(double targetRa, double targetDec, int size) {
         this.targetRa = targetRa;
         this.targetDec = targetDec;
         this.size = size;
+
+        // Plug in catalogs here
+        catalogInstances = new LinkedHashMap<>();
+        SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
+        catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
+        GaiaDR2CatalogEntry gaiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
+        catalogInstances.put(gaiaDR2CatalogEntry.getCatalogName(), gaiaDR2CatalogEntry);
+        AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
+        catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
+        CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
+        catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
+        PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
+        catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
+        SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
+        catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
+        VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
+        catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
+
+        catalogQueryFacade = new CatalogQueryService();
+        InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
+        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+            }).collect(Collectors.toList());
+            spectralTypeLookupService = new SpectralTypeLookupService(entries);
+        }
     }
 
     public void create() throws Exception {
@@ -196,6 +253,58 @@ public class PdfCreator {
             createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
         }
 
+        List<BatchResult> batchResults = new ArrayList<>();
+        for (CatalogEntry catalogEntry : catalogInstances.values()) {
+            catalogEntry.setRa(targetRa);
+            catalogEntry.setDec(targetDec);
+            catalogEntry.setSearchRadius(size / 2);
+            catalogEntry = performQuery(catalogEntry);
+            if (catalogEntry == null) {
+                continue;
+            }
+            List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+            if (catalogEntry instanceof SimbadCatalogEntry) {
+                SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+                StringBuilder simbadType = new StringBuilder();
+                //if (includeColors.isSelected()) {
+                simbadType.append("[");
+                //}
+                simbadType.append(simbadEntry.getObjectType());
+                if (!simbadEntry.getSpectralType().isEmpty()) {
+                    simbadType.append(" ").append(simbadEntry.getSpectralType());
+                }
+                //if (includeColors.isSelected()) {
+                simbadType.append("]");
+                //}
+                spectralTypes.add(0, simbadType.toString());
+            }
+            if (catalogEntry instanceof AllWiseCatalogEntry) {
+                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                    spectralTypes.add("[" + AGN_WARNING + "]");
+                }
+            }
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    spectralTypes.add("[" + WD_WARNING + "]");
+                }
+            }
+            BatchResult batchResult = new BatchResult.Builder()
+                    .setCatalogName(catalogEntry.getCatalogName())
+                    .setTargetRa(targetRa)
+                    .setTargetDec(targetDec)
+                    .setTargetDistance(catalogEntry.getTargetDistance())
+                    .setRa(catalogEntry.getRa())
+                    .setDec(catalogEntry.getDec())
+                    .setSourceId(catalogEntry.getSourceId() + " ")
+                    .setPlx(catalogEntry.getPlx())
+                    .setPmra(catalogEntry.getPmra())
+                    .setPmdec(catalogEntry.getPmdec())
+                    .setSpectralTypes(spectralTypes).build();
+            batchResults.add(batchResult);
+        }
+
         document.close();
 
         Desktop.getDesktop().open(tmpFile);
@@ -228,7 +337,7 @@ public class PdfCreator {
             PdfPCell cell = new PdfPCell(new Phrase(imageLabel, SMALL_FONT));
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
             cell.setBorderWidth(0);
-            cell.setPadding(1);
+            cell.setPadding(2);
             table.addCell(cell);
         }
 
@@ -236,11 +345,24 @@ public class PdfCreator {
             Image image = Image.getInstance(writer, bi, 1);
             PdfPCell cell = new PdfPCell(image, true);
             cell.setBorderWidth(0);
-            cell.setPadding(1);
+            cell.setPadding(2);
             table.addCell(cell);
         }
 
         document.add(table);
+    }
+
+    private CatalogEntry performQuery(CatalogEntry catalogQuery) throws IOException {
+        List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+        catalogEntries.forEach(catalogEntry -> {
+            catalogEntry.setTargetRa(catalogQuery.getRa());
+            catalogEntry.setTargetDec(catalogQuery.getDec());
+        });
+        if (!catalogEntries.isEmpty()) {
+            catalogEntries.sort(Comparator.comparing(entry -> entry.getTargetDistance()));
+            return catalogEntries.get(0);
+        }
+        return null;
     }
 
 }
