@@ -17,6 +17,7 @@ import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -49,7 +50,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -485,9 +489,9 @@ public class ModuleHelper {
         return bi;
     }
 
-    public static BufferedImage retrievePs1Image(String fileName, double targetRa, double targetDec, int size) throws IOException {
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
         BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileName, targetRa, targetDec, (int) round(size * 4), 256);
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames, targetRa, targetDec, (int) round(size * 4), 256);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -496,6 +500,30 @@ public class ModuleHelper {
             bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
         }
         return bi;
+    }
+
+    public static SortedMap<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
+        SortedMap<String, String> fileNames = new TreeMap<>();
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+        String response = readResponse(establishHttpConnection(imageUrl));
+        try (Scanner scanner = new Scanner(response)) {
+            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+            int filter = 0;
+            int fileName = 0;
+            for (int i = 0; i < columnNames.length; i++) {
+                if (columnNames[i].equals("filter")) {
+                    filter = i;
+                }
+                if (columnNames[i].equals("filename")) {
+                    fileName = i;
+                }
+            }
+            while (scanner.hasNextLine()) {
+                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                fileNames.put(columnValues[filter], columnValues[fileName]);
+            }
+        }
+        return fileNames;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

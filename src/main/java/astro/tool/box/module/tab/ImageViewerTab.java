@@ -103,7 +103,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -664,7 +663,7 @@ public class ImageViewerTab {
             twoMassImages = new JCheckBox("2MASS j, h & k bands", false);
             controlPanel.add(twoMassImages);
 
-            allwiseImages = new JCheckBox("AllWISE w1, w2, w3& w4 bands", true);
+            allwiseImages = new JCheckBox("AllWISE w1, w2, w3 & w4 bands", true);
             controlPanel.add(allwiseImages);
 
             ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
@@ -2747,43 +2746,20 @@ public class ImageViewerTab {
     private void displayPs1Images(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            // Fetch file name for each Pan-STARRS filter
-            SortedMap<String, String> imageInfos = new TreeMap<>();
-            String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
-            String response = readResponse(establishHttpConnection(imageUrl));
-            try (Scanner scanner = new Scanner(response)) {
-                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-                int filter = 0;
-                int fileName = 0;
-                for (int i = 0; i < columnNames.length; i++) {
-                    if (columnNames[i].equals("filter")) {
-                        filter = i;
-                    }
-                    if (columnNames[i].equals("filename")) {
-                        fileName = i;
-                    }
-                }
-                while (scanner.hasNextLine()) {
-                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                    imageInfos.put(columnValues[filter], columnValues[fileName]);
-                }
-            }
-
+            // Fetch file names for Pan-STARRS filters
+            SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (imageInfos.isEmpty()) {
                 return;
             }
 
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g"), targetRa, targetDec, (int) round(size * 4), 256);
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-
+            // Fetch images for Pan-STARRS filters
             JPanel bandPanel = new JPanel(new GridLayout(1, 6));
-            bandPanel.add(buildImagePanel(retrievePs1Image(imageInfos.get("g"), targetRa, targetDec, size), "g"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(imageInfos.get("r"), targetRa, targetDec, size), "r"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(imageInfos.get("i"), targetRa, targetDec, size), "i"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(imageInfos.get("z"), targetRa, targetDec, size), "z"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(imageInfos.get("y"), targetRa, targetDec, size), "y"));
-            bandPanel.add(buildImagePanel(ImageIO.read(stream), "y-i-g"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size), "r"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size), "i"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size), "z"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());

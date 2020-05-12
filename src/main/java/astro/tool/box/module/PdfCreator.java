@@ -20,11 +20,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
 
 public class PdfCreator {
 
     private static final Font HEADER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 16, BaseColor.DARK_GRAY);
-    private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 12, BaseColor.BLACK);
+    private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.BLACK);
     private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.BLACK);
 
     private final double targetRa;
@@ -45,7 +46,7 @@ public class PdfCreator {
 
         document.open();
 
-        Chunk chunk = new Chunk("Data sheet for object: " + roundTo7DecNZ(targetRa) + " " + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + " FoV: " + size + "\"", HEADER_FONT);
+        Chunk chunk = new Chunk("Data sheet for object: " + roundTo6DecNZ(targetRa) + " " + addPlusSign(roundDouble(targetDec, PATTERN_6DEC_NZ)) + " FoV: " + size + "\"", HEADER_FONT);
         document.add(chunk);
 
         document.add(new Paragraph(" "));
@@ -85,8 +86,6 @@ public class PdfCreator {
 
         createPdfTable("DSS", imageLabels, bufferedImages, writer, document);
 
-        document.add(new Paragraph(" "));
-
         imageLabels = new ArrayList<>();
         bufferedImages = new ArrayList<>();
         bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
@@ -122,6 +121,81 @@ public class PdfCreator {
 
         createPdfTable("SDSS", imageLabels, bufferedImages, writer, document);
 
+        imageLabels = new ArrayList<>();
+        bufferedImages = new ArrayList<>();
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("j");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("h");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("k");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
+        if (bufferedImage != null) {
+            imageLabels.add("k-h-j");
+            bufferedImages.add(bufferedImage);
+        }
+
+        createPdfTable("2MASS", imageLabels, bufferedImages, writer, document);
+
+        imageLabels = new ArrayList<>();
+        bufferedImages = new ArrayList<>();
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("w1");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("w2");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("w3");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
+        if (bufferedImage != null) {
+            imageLabels.add("w4");
+            bufferedImages.add(bufferedImage);
+        }
+        bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
+        if (bufferedImage != null) {
+            imageLabels.add("w4-w2-w1");
+            bufferedImages.add(bufferedImage);
+        }
+
+        createPdfTable("AllWISE", imageLabels, bufferedImages, writer, document);
+
+        SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+        if (!imageInfos.isEmpty()) {
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
+            imageLabels.add("g");
+            bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size));
+            imageLabels.add("r");
+            bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size));
+            imageLabels.add("i");
+            bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size));
+            imageLabels.add("z");
+            bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size));
+            imageLabels.add("y");
+            bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size));
+            imageLabels.add("y");
+            bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size));
+
+            createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
+        }
+
         document.close();
 
         Desktop.getDesktop().open(tmpFile);
@@ -145,7 +219,7 @@ public class PdfCreator {
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
         PdfPCell tableHeader = new PdfPCell(new Phrase(header, LARGE_FONT));
-        tableHeader.setHorizontalAlignment(Element.ALIGN_CENTER);
+        tableHeader.setHorizontalAlignment(Element.ALIGN_LEFT);
         tableHeader.setColspan(numberOfCells);
         tableHeader.setBorderWidth(0);
         table.addCell(tableHeader);
