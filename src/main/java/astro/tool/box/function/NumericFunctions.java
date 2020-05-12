@@ -29,7 +29,7 @@ public class NumericFunctions {
 
     private static final String PATTERN_1DEC_NZ = "#.#";
 
-    private static final String PATTERN_2DEC_NZ = "#.##";
+    public static final String PATTERN_2DEC_NZ = "#.##";
 
     private static final String PATTERN_3DEC_NZ = "#.###";
 
@@ -199,18 +199,18 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_9DEC_NZ);
     }
 
-    public static String formatDouble(double number, String pattern) {
+    public static String formatDouble(Double number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         df.setRoundingMode(RoundingMode.HALF_UP);
         return df.format(number);
     }
 
-    public static String formatInteger(int number, String pattern) {
+    public static String formatInteger(Integer number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         return df.format(number);
     }
 
-    private static double roundDouble(double number, String pattern) {
+    public static double roundDouble(Double number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         df.setRoundingMode(RoundingMode.HALF_UP);
         return Double.parseDouble(df.format(number));
@@ -246,6 +246,10 @@ public class NumericFunctions {
 
     public static String suppressZero(Number arg) {
         return arg.equals(0) ? "" : String.valueOf(arg);
+    }
+
+    public static String addPlusSign(Double value) {
+        return value > 0 ? "+" + value : value.toString();
     }
 
 }

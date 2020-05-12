@@ -28,11 +28,15 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import static java.lang.Math.round;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -46,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -465,6 +470,32 @@ public class ModuleHelper {
         } catch (Exception ex) {
         }
         return subjects;
+    }
+
+    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
+        BufferedImage bi;
+        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%s&DEC=%s&subsetsize=%s&thumbnail_size=large&survey=%s&%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), roundTo2DecNZ(size / 60f), survey, band);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+        } catch (IOException ex) {
+            bi = null;
+        }
+        return bi;
+    }
+
+    public static BufferedImage retrievePs1Image(String fileName, double targetRa, double targetDec, int size) throws IOException {
+        BufferedImage bi;
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileName, targetRa, targetDec, (int) round(size * 4), 256);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+        } catch (IOException ex) {
+            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+        }
+        return bi;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

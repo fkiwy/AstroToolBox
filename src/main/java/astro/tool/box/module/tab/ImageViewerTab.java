@@ -40,6 +40,7 @@ import astro.tool.box.module.Application;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.ImageContainer;
+import astro.tool.box.module.PdfCreator;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
@@ -1133,7 +1134,8 @@ public class ImageViewerTab {
                                     }
                                     if (overlays == 0) {
                                         if (showCatalogsButton.isSelected()) {
-                                            displayCatalogSearchResults(newRa, newDec);
+                                            //displayCatalogSearchResults(newRa, newDec);
+                                            createPdf(newRa, newDec, fieldOfView);
                                         } else {
                                             coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                             createFlipbook();
@@ -2449,6 +2451,17 @@ public class ImageViewerTab {
         maxValue = presetMaxVal;
     }
 
+    private void createPdf(double targetRa, double targetDec, int size) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            new PdfCreator(targetRa, targetDec, size).create();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void displayCatalogSearchResults(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -2731,19 +2744,6 @@ public class ImageViewerTab {
         }
     }
 
-    private BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
-        BufferedImage bi;
-        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%s&DEC=%s&subsetsize=%s&thumbnail_size=large&survey=%s&%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), roundTo2DecNZ(size / 60f), survey, band);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-        } catch (IOException ex) {
-            bi = null;
-        }
-        return bi;
-    }
-
     private void displayPs1Images(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -2800,19 +2800,6 @@ public class ImageViewerTab {
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
-    }
-
-    private BufferedImage retrievePs1Image(String fileName, double targetRa, double targetDec, int size) throws IOException {
-        BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileName, targetRa, targetDec, (int) round(size * 4), 256);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-        } catch (IOException ex) {
-            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
-        }
-        return bi;
     }
 
     private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
