@@ -55,6 +55,9 @@ public class PdfCreator {
     private static final Font HEADER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 16, BaseColor.DARK_GRAY);
     private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.BLACK);
     private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.BLACK);
+    private static final Font SMALL_GREEN_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.GREEN.darker());
+    private static final Font SMALL_ORANGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.ORANGE.darker());
+    private static final Font SMALL_RED_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.RED.darker());
     private static final Font SMALL_WHITE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.WHITE);
 
     private final double targetRa;
@@ -370,16 +373,25 @@ public class PdfCreator {
 
         for (int i = 0; i < batchResults.size(); i++) {
             BatchResult batchResult = batchResults.get(i);
-            addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i);
-            addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i);
-            addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i);
-            addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i);
-            addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i);
-            addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i);
-            addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i);
-            addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i);
-            addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i);
-            addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i);
+            Font font;
+            double targetDistance = batchResult.getTargetDistance();
+            if (targetDistance <= 3) {
+                font = SMALL_GREEN_FONT;
+            } else if (targetDistance > 3 && targetDistance <= 6) {
+                font = SMALL_ORANGE_FONT;
+            } else {
+                font = SMALL_RED_FONT;
+            }
+            addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i, font);
+            addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i, font);
+            addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i, font);
+            addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i, font);
+            addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i, font);
+            addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i, font);
+            addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i, font);
+            addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i, font);
+            addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i, font);
+            addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i, font);
         }
 
         return table;
@@ -437,8 +449,8 @@ public class PdfCreator {
         table.addCell(cell);
     }
 
-    private void addCell(PdfPTable table, Object value, int alignment, int rowIndex) {
-        PdfPCell cell = new PdfPCell(new Phrase(value.toString(), SMALL_FONT));
+    private void addCell(PdfPTable table, Object value, int alignment, int rowIndex, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(value.toString(), font));
         cell.setHorizontalAlignment(alignment);
         cell.setBackgroundColor(rowIndex % 2 == 0 ? BaseColor.WHITE : BaseColor.LIGHT_GRAY);
         cell.setBorderColor(BaseColor.WHITE);
