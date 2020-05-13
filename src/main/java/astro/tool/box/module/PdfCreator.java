@@ -314,13 +314,13 @@ public class PdfCreator {
             }
 
             PdfPTable table = new PdfPTable(10);
-            table.setTotalWidth(new float[]{40, 40, 40, 40, 80, 30, 30, 30, 100, 100});
+            table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 30, 30, 100, 100});
             table.setLockedWidth(true);
             table.setSpacingBefore(10);
             table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
             addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
-            addHeaderCell(table, "Target dist. (max. 5\")", Element.ALIGN_RIGHT);
+            addHeaderCell(table, "Target distance (max. 5\")", Element.ALIGN_RIGHT);
             addHeaderCell(table, "RA", Element.ALIGN_LEFT);
             addHeaderCell(table, "dec", Element.ALIGN_LEFT);
             addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
@@ -405,7 +405,8 @@ public class PdfCreator {
         PdfPCell cell = new PdfPCell(new Phrase(value.toString(), SMALL_WHITE_FONT));
         cell.setHorizontalAlignment(alignment);
         cell.setBackgroundColor(BaseColor.DARK_GRAY);
-        cell.setBorderWidth(0);
+        cell.setBorderColor(BaseColor.WHITE);
+        cell.setBorderWidth(0.5f);
         cell.setPadding(2);
         table.addCell(cell);
     }
@@ -414,7 +415,8 @@ public class PdfCreator {
         PdfPCell cell = new PdfPCell(new Phrase(value.toString(), SMALL_FONT));
         cell.setHorizontalAlignment(alignment);
         cell.setBackgroundColor(rowIndex % 2 == 0 ? BaseColor.WHITE : BaseColor.LIGHT_GRAY);
-        cell.setBorderWidth(0);
+        cell.setBorderColor(BaseColor.WHITE);
+        cell.setBorderWidth(0.5f);
         cell.setPadding(2);
         table.addCell(cell);
     }
