@@ -308,12 +308,13 @@ public class PdfCreator {
                         .setPlx(catalogEntry.getPlx())
                         .setPmra(catalogEntry.getPmra())
                         .setPmdec(catalogEntry.getPmdec())
+                        .setMagnitudes(catalogEntry.getMagnitudes())
                         .setSpectralTypes(spectralTypes).build();
                 batchResults.add(batchResult);
             }
 
-            PdfPTable table = new PdfPTable(9);
-            table.setTotalWidth(new float[]{50, 40, 40, 40, 100, 30, 30, 30, 170});
+            PdfPTable table = new PdfPTable(10);
+            table.setTotalWidth(new float[]{40, 40, 40, 40, 80, 30, 30, 30, 100, 100});
             table.setLockedWidth(true);
             table.setSpacingBefore(10);
             table.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -326,7 +327,8 @@ public class PdfCreator {
             addHeaderCell(table, "Plx", Element.ALIGN_RIGHT);
             addHeaderCell(table, "pmRA", Element.ALIGN_RIGHT);
             addHeaderCell(table, "pmdec", Element.ALIGN_RIGHT);
-            addHeaderCell(table, "Spectral type evaluation", Element.ALIGN_LEFT);
+            addHeaderCell(table, "Magnitudes", Element.ALIGN_LEFT);
+            addHeaderCell(table, "Spectral types", Element.ALIGN_LEFT);
 
             for (int i = 0; i < batchResults.size(); i++) {
                 BatchResult batchResult = batchResults.get(i);
@@ -338,6 +340,7 @@ public class PdfCreator {
                 addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i);
                 addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i);
                 addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i);
+                addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i);
                 addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i);
             }
 
