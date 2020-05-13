@@ -13,6 +13,7 @@ import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
@@ -63,7 +64,8 @@ public class PdfCreator {
     private final Map<String, CatalogEntry> catalogInstances;
 
     private final CatalogQueryFacade catalogQueryFacade;
-    private final SpectralTypeLookupService spectralTypeLookupService;
+    private final SpectralTypeLookupService mainSequenceLookupService;
+    private final SpectralTypeLookupService brownDwarfsLookupService;
 
     public PdfCreator(double targetRa, double targetDec, int size) {
         this.targetRa = targetRa;
@@ -93,7 +95,14 @@ public class PdfCreator {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                 return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
             }).collect(Collectors.toList());
-            spectralTypeLookupService = new SpectralTypeLookupService(entries);
+            mainSequenceLookupService = new SpectralTypeLookupService(entries);
+        }
+        input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
+        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 21));
+            }).collect(Collectors.toList());
+            brownDwarfsLookupService = new SpectralTypeLookupService(entries);
         }
     }
 
@@ -257,99 +266,26 @@ public class PdfCreator {
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
             }
 
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph("CATALOG ENTRIES", LARGE_FONT));
-
-            List<BatchResult> batchResults = new ArrayList<>();
+            List<CatalogEntry> catalogEntries = new ArrayList<>();
             for (CatalogEntry catalogEntry : catalogInstances.values()) {
                 catalogEntry.setRa(targetRa);
                 catalogEntry.setDec(targetDec);
                 catalogEntry.setSearchRadius(5);
                 catalogEntry = performQuery(catalogEntry);
-                if (catalogEntry == null) {
-                    continue;
+                if (catalogEntry != null) {
+                    catalogEntries.add(catalogEntry);
                 }
-                List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
-                if (catalogEntry instanceof SimbadCatalogEntry) {
-                    SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
-                    StringBuilder simbadType = new StringBuilder();
-                    //if (includeColors.isSelected()) {
-                    simbadType.append("[");
-                    //}
-                    simbadType.append(simbadEntry.getObjectType());
-                    if (!simbadEntry.getSpectralType().isEmpty()) {
-                        simbadType.append(" ").append(simbadEntry.getSpectralType());
-                    }
-                    //if (includeColors.isSelected()) {
-                    simbadType.append("]");
-                    //}
-                    spectralTypes.add(0, simbadType.toString());
-                }
-                if (catalogEntry instanceof AllWiseCatalogEntry) {
-                    AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
-                    if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                        spectralTypes.add("[" + AGN_WARNING + "]");
-                    }
-                }
-                if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                    GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
-                    if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                        spectralTypes.add("[" + WD_WARNING + "]");
-                    }
-                }
-                BatchResult batchResult = new BatchResult.Builder()
-                        .setCatalogName(catalogEntry.getCatalogName())
-                        .setTargetRa(targetRa)
-                        .setTargetDec(targetDec)
-                        .setTargetDistance(catalogEntry.getTargetDistance())
-                        .setRa(catalogEntry.getRa())
-                        .setDec(catalogEntry.getDec())
-                        .setSourceId(catalogEntry.getSourceId() + " ")
-                        .setPlx(catalogEntry.getPlx())
-                        .setPmra(catalogEntry.getPmra())
-                        .setPmdec(catalogEntry.getPmdec())
-                        .setMagnitudes(catalogEntry.getMagnitudes())
-                        .setSpectralTypes(spectralTypes).build();
-                batchResults.add(batchResult);
             }
 
-            PdfPTable table = new PdfPTable(10);
-            table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 30, 30, 100, 100});
-            table.setLockedWidth(true);
-            table.setSpacingBefore(10);
-            table.setHorizontalAlignment(Element.ALIGN_LEFT);
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph("CATALOG ENTRIES", LARGE_FONT));
 
-            addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
-            addHeaderCell(table, "Target distance (max. 5\")", Element.ALIGN_RIGHT);
-            addHeaderCell(table, "RA", Element.ALIGN_LEFT);
-            addHeaderCell(table, "dec", Element.ALIGN_LEFT);
-            addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
-            addHeaderCell(table, "Plx", Element.ALIGN_RIGHT);
-            addHeaderCell(table, "pmRA", Element.ALIGN_RIGHT);
-            addHeaderCell(table, "pmdec", Element.ALIGN_RIGHT);
-            addHeaderCell(table, "Magnitudes", Element.ALIGN_LEFT);
-            addHeaderCell(table, "Spectral types", Element.ALIGN_LEFT);
-
-            for (int i = 0; i < batchResults.size(); i++) {
-                BatchResult batchResult = batchResults.get(i);
-                addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i);
-                addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i);
-                addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i);
-                addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i);
-                addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i);
-                addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i);
-                addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i);
-                addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i);
-                addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i);
-                addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i);
-            }
-
-            document.add(table);
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup"));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup"));
 
             document.close();
 
             Desktop.getDesktop().open(tmpFile);
-
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -357,6 +293,95 @@ public class PdfCreator {
         }
 
         return true;
+    }
+
+    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header) throws Exception {
+        List<BatchResult> batchResults = new ArrayList<>();
+        for (CatalogEntry catalogEntry : catalogEntries) {
+            List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+            if (catalogEntry instanceof SimbadCatalogEntry) {
+                SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+                StringBuilder simbadType = new StringBuilder();
+                //if (includeColors.isSelected()) {
+                simbadType.append("[");
+                //}
+                simbadType.append(simbadEntry.getObjectType());
+                if (!simbadEntry.getSpectralType().isEmpty()) {
+                    simbadType.append(" ").append(simbadEntry.getSpectralType());
+                }
+                //if (includeColors.isSelected()) {
+                simbadType.append("]");
+                //}
+                spectralTypes.add(0, simbadType.toString());
+            }
+            if (catalogEntry instanceof AllWiseCatalogEntry) {
+                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                    spectralTypes.add("[" + AGN_WARNING + "]");
+                }
+            }
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    spectralTypes.add("[" + WD_WARNING + "]");
+                }
+            }
+            BatchResult batchResult = new BatchResult.Builder()
+                    .setCatalogName(catalogEntry.getCatalogName())
+                    .setTargetRa(targetRa)
+                    .setTargetDec(targetDec)
+                    .setTargetDistance(catalogEntry.getTargetDistance())
+                    .setRa(catalogEntry.getRa())
+                    .setDec(catalogEntry.getDec())
+                    .setSourceId(catalogEntry.getSourceId() + " ")
+                    .setPlx(catalogEntry.getPlx())
+                    .setPmra(catalogEntry.getPmra())
+                    .setPmdec(catalogEntry.getPmdec())
+                    .setMagnitudes(catalogEntry.getMagnitudes())
+                    .setSpectralTypes(spectralTypes).build();
+            batchResults.add(batchResult);
+        }
+
+        int numberOfCols = 10;
+        PdfPTable table = new PdfPTable(numberOfCols);
+        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 30, 30, 100, 100});
+        table.setLockedWidth(true);
+        table.setSpacingBefore(10);
+        table.setKeepTogether(true);
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+        PdfPCell tableHeader = new PdfPCell(new Phrase(header, LARGE_FONT));
+        tableHeader.setHorizontalAlignment(Element.ALIGN_LEFT);
+        tableHeader.setColspan(numberOfCols);
+        tableHeader.setBorderWidth(0);
+        table.addCell(tableHeader);
+
+        addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
+        addHeaderCell(table, "Target distance (max. 5\")", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "RA", Element.ALIGN_LEFT);
+        addHeaderCell(table, "dec", Element.ALIGN_LEFT);
+        addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
+        addHeaderCell(table, "Plx", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "pmRA", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "pmdec", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "Magnitudes", Element.ALIGN_LEFT);
+        addHeaderCell(table, "Spectral types", Element.ALIGN_LEFT);
+
+        for (int i = 0; i < batchResults.size(); i++) {
+            BatchResult batchResult = batchResults.get(i);
+            addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i);
+            addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i);
+            addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i);
+            addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i);
+            addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i);
+            addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i);
+            addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i);
+            addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i);
+            addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i);
+            addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i);
+        }
+
+        return table;
     }
 
     private void createPdfTable(String header, List<String> imageLabels, List<BufferedImage> bufferedImages, PdfWriter writer, Document document) throws Exception {
