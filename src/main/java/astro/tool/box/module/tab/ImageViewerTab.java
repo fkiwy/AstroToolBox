@@ -2647,19 +2647,19 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "j"));
+                bandPanel.add(buildImagePanel(image, "J"));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "h"));
+                bandPanel.add(buildImagePanel(image, "H"));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "k"));
+                bandPanel.add(buildImagePanel(image, "K"));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "k-h-j"));
+                bandPanel.add(buildImagePanel(image, "K-H-J"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -2691,23 +2691,23 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "w1"));
+                bandPanel.add(buildImagePanel(image, "W1"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "w2"));
+                bandPanel.add(buildImagePanel(image, "W2"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "w3"));
+                bandPanel.add(buildImagePanel(image, "W3"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "w4"));
+                bandPanel.add(buildImagePanel(image, "W4"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "w4-w2-w1"));
+                bandPanel.add(buildImagePanel(image, "W4-W2-W1"));
             }
 
             int componentCount = bandPanel.getComponentCount();

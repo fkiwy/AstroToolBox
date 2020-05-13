@@ -288,6 +288,11 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
     }
 
     @Override
+    public String getMagnitudes() {
+        return String.format("W1=%s; W2=%s", roundTo3Dec(W1mag), roundTo3Dec(W2mag));
+    }
+
+    @Override
     public String getSourceId() {
         return sourceId;
     }

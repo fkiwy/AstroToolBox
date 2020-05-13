@@ -108,6 +108,11 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getMagnitudes() {
+        return "";
+    }
+
+    @Override
     public String getSourceId() {
         return "";
     }

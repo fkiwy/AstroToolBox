@@ -288,17 +288,17 @@ public class BatchQueryTab {
                 mainPanel.add(centerPanel);
 
                 if (progressBar != null) {
-                    topRow.remove(progressBar);
+                    bottomRow.remove(progressBar);
                 }
                 progressBar = new JProgressBar(0, rows);
-                topRow.add(progressBar);
+                bottomRow.add(progressBar);
                 progressBar.setStringPainted(true);
 
                 if (cancelButton != null) {
-                    topRow.remove(cancelButton);
+                    bottomRow.remove(cancelButton);
                 }
                 cancelButton = new JButton("Cancel query");
-                topRow.add(cancelButton);
+                bottomRow.add(cancelButton);
                 cancelButton.addActionListener((ActionEvent e) -> {
                     toCancel = true;
                 });
@@ -458,6 +458,7 @@ public class BatchQueryTab {
                             .setPlx(catalogEntry.getPlx())
                             .setPmra(catalogEntry.getPmra())
                             .setPmdec(catalogEntry.getPmdec())
+                            .setMagnitudes(catalogEntry.getMagnitudes())
                             .setSpectralTypes(spectralTypes).build();
                     batchResults.add(batchResult);
                     resultCount++;
@@ -573,6 +574,7 @@ public class BatchQueryTab {
         table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
         table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
         table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
     }
 
     private TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
@@ -590,6 +592,7 @@ public class BatchQueryTab {
         sorter.setComparator(i++, getDoubleComparator());
         sorter.setComparator(i++, getDoubleComparator());
         sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getStringComparator());
         sorter.setComparator(i++, getStringComparator());
         return sorter;
     }

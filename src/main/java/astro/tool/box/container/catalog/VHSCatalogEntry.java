@@ -188,10 +188,7 @@ public class VHSCatalogEntry implements CatalogEntry {
             return false;
         }
         final VHSCatalogEntry other = (VHSCatalogEntry) obj;
-        if (this.sourceId != other.sourceId) {
-            return false;
-        }
-        return true;
+        return this.sourceId == other.sourceId;
     }
 
     @Override
@@ -233,6 +230,11 @@ public class VHSCatalogEntry implements CatalogEntry {
         colors.put(Color.H_K, h_ks_pnt);
         colors.put(Color.J_K, j_ks_pnt);
         return colors;
+    }
+
+    @Override
+    public String getMagnitudes() {
+        return String.format("Y=%s; J=%s; H=%s; K=%s", roundTo3Dec(y_ap3), roundTo3Dec(j_ap3), roundTo3Dec(h_ap3), roundTo3Dec(ks_ap3));
     }
 
     @Override

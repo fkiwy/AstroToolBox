@@ -186,22 +186,22 @@ public class PdfCreator {
             bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("j");
+                imageLabels.add("J");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("h");
+                imageLabels.add("H");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("k");
+                imageLabels.add("K");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("k-h-j");
+                imageLabels.add("K-H-J");
                 bufferedImages.add(bufferedImage);
             }
 
@@ -211,27 +211,27 @@ public class PdfCreator {
             bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("w1");
+                imageLabels.add("W1");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("w2");
+                imageLabels.add("W2");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("w3");
+                imageLabels.add("W3");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("w4");
+                imageLabels.add("W4");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("w4-w2-w1");
+                imageLabels.add("W4-W2-W1");
                 bufferedImages.add(bufferedImage);
             }
 

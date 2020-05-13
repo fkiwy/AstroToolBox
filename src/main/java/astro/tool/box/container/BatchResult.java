@@ -43,6 +43,9 @@ public class BatchResult {
     // Proper motion in declination direction
     private final double pmdec;
 
+    // Magnitudes
+    private final String magnitudes;
+
     // Spectral types
     private final List<String> spectralTypes;
 
@@ -59,10 +62,11 @@ public class BatchResult {
         this.plx = 0;
         this.pmra = 0;
         this.pmdec = 0;
+        this.magnitudes = "";
         this.spectralTypes = new ArrayList<>();
     }
 
-    private BatchResult(int rowNumber, int objectNumber, String catalogName, double targetRa, double targetDec, double targetDistance, double ra, double dec, String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes) {
+    private BatchResult(int rowNumber, int objectNumber, String catalogName, double targetRa, double targetDec, double targetDistance, double ra, double dec, String sourceId, double plx, double pmra, double pmdec, String magnitudes, List<String> spectralTypes) {
         this.rowNumber = rowNumber;
         this.objectNumber = objectNumber;
         this.catalogName = catalogName;
@@ -75,29 +79,46 @@ public class BatchResult {
         this.plx = plx;
         this.pmra = pmra;
         this.pmdec = pmdec;
+        this.magnitudes = magnitudes;
         this.spectralTypes = spectralTypes;
     }
 
     @Override
     public String toString() {
-        return "BatchResult{" + "rowNumber=" + rowNumber + ", objectNumber=" + objectNumber + ", catalogName=" + catalogName + ", targetRa=" + targetRa + ", targetDec=" + targetDec + ", targetDistance=" + targetDistance + ", ra=" + ra + ", dec=" + dec + ", sourceId=" + sourceId + ", plx=" + plx + ", pmra=" + pmra + ", pmdec=" + pmdec + ", spectralTypes=" + spectralTypes + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("BatchResult{rowNumber=").append(rowNumber);
+        sb.append(", objectNumber=").append(objectNumber);
+        sb.append(", catalogName=").append(catalogName);
+        sb.append(", targetRa=").append(targetRa);
+        sb.append(", targetDec=").append(targetDec);
+        sb.append(", targetDistance=").append(targetDistance);
+        sb.append(", ra=").append(ra);
+        sb.append(", dec=").append(dec);
+        sb.append(", sourceId=").append(sourceId);
+        sb.append(", plx=").append(plx);
+        sb.append(", pmra=").append(pmra);
+        sb.append(", pmdec=").append(pmdec);
+        sb.append(", magnitudes=").append(magnitudes);
+        sb.append(", spectralTypes=").append(spectralTypes);
+        sb.append('}');
+        return sb.toString();
     }
 
     public String[] getColumnValues() {
-        return getValues().split(",", 13);
+        return getValues().split(",", 14);
     }
 
     public String[] getColumnTitles() {
-        return getTitles().split(",", 13);
+        return getTitles().split(",", 14);
     }
 
     public String getValues() {
-        String values = rowNumber + "," + suppressZero(objectNumber) + "," + catalogName + "," + roundTo7Dec(targetRa) + "," + roundTo7Dec(targetDec) + "," + (catalogName.isEmpty() ? roundTo3Dec(targetDistance) : roundTo3DecLZ(targetDistance)) + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + sourceId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + joinSpetralTypes();
+        String values = rowNumber + "," + suppressZero(objectNumber) + "," + catalogName + "," + roundTo7Dec(targetRa) + "," + roundTo7Dec(targetDec) + "," + (catalogName.isEmpty() ? roundTo3Dec(targetDistance) : roundTo3DecLZ(targetDistance)) + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + sourceId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + magnitudes + "," + joinSpetralTypes();
         return values;
     }
 
     public String getTitles() {
-        String titles = "Row#,Obj#,Catalog,Target RA,Target dec,Target dist,RA,dec,Source id,Plx,pmRA,pmdec,Spectral types";
+        String titles = "Row#,Obj#,Catalog,Target RA,Target dec,Target dist,RA,dec,Source id,Plx,pmRA,pmdec,Magnitudes,Spectral types";
         return titles;
     }
 
@@ -153,6 +174,10 @@ public class BatchResult {
         return pmdec;
     }
 
+    public String getMagnitudes() {
+        return magnitudes;
+    }
+
     public List<String> getSpectralTypes() {
         return spectralTypes;
     }
@@ -171,6 +196,7 @@ public class BatchResult {
         private double plx;
         private double pmra;
         private double pmdec;
+        private String magnitudes;
         private List<String> spectralTypes;
 
         public Builder setRowNumber(int rowNumber) {
@@ -233,13 +259,18 @@ public class BatchResult {
             return this;
         }
 
+        public Builder setMagnitudes(String magnitudes) {
+            this.magnitudes = magnitudes;
+            return this;
+        }
+
         public Builder setSpectralTypes(List<String> spectralTypes) {
             this.spectralTypes = spectralTypes;
             return this;
         }
 
         public BatchResult build() {
-            return new BatchResult(rowNumber, objectNumber, catalogName, targetRa, targetDec, targetDistance, ra, dec, sourceId, plx, pmra, pmdec, spectralTypes);
+            return new BatchResult(rowNumber, objectNumber, catalogName, targetRa, targetDec, targetDistance, ra, dec, sourceId, plx, pmra, pmdec, magnitudes, spectralTypes);
         }
 
     }

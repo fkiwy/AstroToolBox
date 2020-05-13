@@ -307,6 +307,11 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getMagnitudes() {
+        return String.format("U=%s; B=%s; V=%s; R=%s; I=%s", roundTo3Dec(Umag), roundTo3Dec(Bmag), roundTo3Dec(Vmag), roundTo3Dec(Rmag), roundTo3Dec(Imag));
+    }
+
+    @Override
     public String getSourceId() {
         return String.valueOf(sourceId);
     }

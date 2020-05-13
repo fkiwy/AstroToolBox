@@ -269,6 +269,11 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getMagnitudes() {
+        return "";
+    }
+
+    @Override
     public String getSourceId() {
         return objectID;
     }
