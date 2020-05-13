@@ -297,7 +297,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getMagnitudes() {
-        return String.format("G=%s; BP=%s; RP=%s", roundTo3Dec(Gmag), roundTo3Dec(BPmag), roundTo3Dec(RPmag));
+        return String.format("G=%s; BP=%s; RP=%s", roundTo3DecNZ(Gmag), roundTo3DecNZ(BPmag), roundTo3DecNZ(RPmag));
     }
 
     @Override

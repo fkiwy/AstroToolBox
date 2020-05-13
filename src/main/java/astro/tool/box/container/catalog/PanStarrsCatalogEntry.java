@@ -269,7 +269,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("g=%s; r=%s; i=%s; z=%s; y=%s", roundTo3Dec(gMeanPSFMag), roundTo3Dec(rMeanPSFMag), roundTo3Dec(iMeanPSFMag), roundTo3Dec(zMeanPSFMag), roundTo3Dec(yMeanPSFMag));
+        return String.format("g=%s; r=%s; i=%s; z=%s; y=%s", roundTo3DecNZ(gMeanPSFMag), roundTo3DecNZ(rMeanPSFMag), roundTo3DecNZ(iMeanPSFMag), roundTo3DecNZ(zMeanPSFMag), roundTo3DecNZ(yMeanPSFMag));
     }
 
     @Override

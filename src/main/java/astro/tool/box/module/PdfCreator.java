@@ -266,19 +266,20 @@ public class PdfCreator {
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
             }
 
+            int searchRadius = size / 2;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
             for (CatalogEntry catalogEntry : catalogInstances.values()) {
                 catalogEntry.setRa(targetRa);
                 catalogEntry.setDec(targetDec);
-                catalogEntry.setSearchRadius(5);
-                catalogEntry = performQuery(catalogEntry);
-                if (catalogEntry != null) {
-                    catalogEntries.add(catalogEntry);
+                catalogEntry.setSearchRadius(searchRadius);
+                List<CatalogEntry> results = performQuery(catalogEntry);
+                if (results != null) {
+                    catalogEntries.addAll(results);
                 }
             }
 
             document.add(new Paragraph(" "));
-            document.add(new Paragraph("CATALOG ENTRIES", LARGE_FONT));
+            document.add(new Paragraph("CATALOG ENTRIES (search radius = FoV/2 = " + roundTo1DecNZ(searchRadius) + "\")", LARGE_FONT));
 
             document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup"));
             document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup"));
@@ -344,7 +345,7 @@ public class PdfCreator {
 
         int numberOfCols = 10;
         PdfPTable table = new PdfPTable(numberOfCols);
-        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 30, 30, 100, 100});
+        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 35, 35, 100, 100});
         table.setLockedWidth(true);
         table.setSpacingBefore(10);
         table.setKeepTogether(true);
@@ -357,13 +358,13 @@ public class PdfCreator {
         table.addCell(tableHeader);
 
         addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
-        addHeaderCell(table, "Target distance (max. 5\")", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "Target distance", Element.ALIGN_RIGHT);
         addHeaderCell(table, "RA", Element.ALIGN_LEFT);
         addHeaderCell(table, "dec", Element.ALIGN_LEFT);
         addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
-        addHeaderCell(table, "Plx", Element.ALIGN_RIGHT);
-        addHeaderCell(table, "pmRA", Element.ALIGN_RIGHT);
-        addHeaderCell(table, "pmdec", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "Plx (mas)", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "pmRA (mas/yr)", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "pmdec (mas/yr)", Element.ALIGN_RIGHT);
         addHeaderCell(table, "Magnitudes", Element.ALIGN_LEFT);
         addHeaderCell(table, "Spectral types", Element.ALIGN_LEFT);
 
@@ -446,7 +447,7 @@ public class PdfCreator {
         table.addCell(cell);
     }
 
-    private CatalogEntry performQuery(CatalogEntry catalogQuery) throws IOException {
+    private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {
         List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
@@ -454,7 +455,7 @@ public class PdfCreator {
         });
         if (!catalogEntries.isEmpty()) {
             catalogEntries.sort(Comparator.comparing(entry -> entry.getTargetDistance()));
-            return catalogEntries.get(0);
+            return catalogEntries;
         }
         return null;
     }

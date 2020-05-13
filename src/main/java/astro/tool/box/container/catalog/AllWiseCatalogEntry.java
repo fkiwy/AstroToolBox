@@ -346,7 +346,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("W1=%s; W2=%s; W3=%s; W4=%s", roundTo3Dec(W1mag), roundTo3Dec(W2mag), roundTo3Dec(W3mag), roundTo3Dec(W4mag));
+        return String.format("W1=%s; W2=%s; W3=%s; W4=%s", roundTo3DecNZ(W1mag), roundTo3DecNZ(W2mag), roundTo3DecNZ(W3mag), roundTo3DecNZ(W4mag));
     }
 
     @Override

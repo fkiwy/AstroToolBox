@@ -234,7 +234,7 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("Y=%s; J=%s; H=%s; K=%s", roundTo3Dec(y_ap3), roundTo3Dec(j_ap3), roundTo3Dec(h_ap3), roundTo3Dec(ks_ap3));
+        return String.format("Y=%s; J=%s; H=%s; K=%s", roundTo3DecNZ(y_ap3), roundTo3DecNZ(j_ap3), roundTo3DecNZ(h_ap3), roundTo3DecNZ(ks_ap3));
     }
 
     @Override

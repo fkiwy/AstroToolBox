@@ -275,7 +275,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3Dec(u_mag), roundTo3Dec(g_mag), roundTo3Dec(r_mag), roundTo3Dec(i_mag), roundTo3Dec(z_mag));
+        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
     }
 
     @Override

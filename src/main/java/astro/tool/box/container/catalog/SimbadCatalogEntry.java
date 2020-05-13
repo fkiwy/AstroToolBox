@@ -308,7 +308,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("U=%s; B=%s; V=%s; R=%s; I=%s; G=%s; J=%s; H=%s; K=%s; u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3Dec(Umag), roundTo3Dec(Bmag), roundTo3Dec(Vmag), roundTo3Dec(Rmag), roundTo3Dec(Imag), roundTo3Dec(Gmag), roundTo3Dec(Jmag), roundTo3Dec(Hmag), roundTo3Dec(Kmag), roundTo3Dec(u_mag), roundTo3Dec(g_mag), roundTo3Dec(r_mag), roundTo3Dec(i_mag), roundTo3Dec(z_mag));
+        return String.format("U=%s; B=%s; V=%s; R=%s; I=%s; G=%s; J=%s; H=%s; K=%s; u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(Umag), roundTo3DecNZ(Bmag), roundTo3DecNZ(Vmag), roundTo3DecNZ(Rmag), roundTo3DecNZ(Imag), roundTo3DecNZ(Gmag), roundTo3DecNZ(Jmag), roundTo3DecNZ(Hmag), roundTo3DecNZ(Kmag), roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
     }
 
     @Override
