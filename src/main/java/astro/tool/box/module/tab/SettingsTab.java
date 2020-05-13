@@ -118,11 +118,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(8, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(7, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 225));
+            globalSettings.setPreferredSize(new Dimension(450, 200));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -181,11 +181,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(8, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(7, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 225));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 200));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -235,11 +235,11 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(8, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(7, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 225));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 200));
             containerPanel.add(imageViewerSettings);
 
             numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, "6"));
@@ -307,15 +307,13 @@ public class SettingsTab {
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
 
-            imageViewerSettings.add(new JLabel("Download Pan-STARRS images: ", JLabel.RIGHT));
-            JCheckBox panstarrsImagesCheckBox = new JCheckBox();
-            panstarrsImagesCheckBox.setSelected(panstarrsImages);
-            imageViewerSettings.add(panstarrsImagesCheckBox);
-
-            imageViewerSettings.add(new JLabel("Download SDSS images: ", JLabel.RIGHT));
-            JCheckBox sdssImagesCheckBox = new JCheckBox();
-            sdssImagesCheckBox.setSelected(sdssImages);
-            imageViewerSettings.add(sdssImagesCheckBox);
+            imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
+            JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
+            imageViewerSettings.add(downloadPanel);
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
+            downloadPanel.add(panstarrsImagesCheckBox);
+            JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
+            downloadPanel.add(sdssImagesCheckBox);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(buttonPanel, BorderLayout.CENTER);

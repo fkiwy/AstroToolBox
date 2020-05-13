@@ -1,5 +1,9 @@
 package astro.tool.box.module;
 
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -12,13 +16,8 @@ import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -55,7 +54,7 @@ public class PdfCreator {
     private static final Font HEADER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 16, BaseColor.DARK_GRAY);
     private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.BLACK);
     private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.BLACK);
-    private static final Font SMALL_BOLD_FONT = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 6, BaseColor.BLACK);
+    private static final Font SMALL_WHITE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.WHITE);
 
     private final double targetRa;
     private final double targetDec;
@@ -101,14 +100,14 @@ public class PdfCreator {
     public Boolean create(JFrame baseFrame) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            File tmpFile = File.createTempFile("DataSheet_" + roundTo2DecNZ(targetRa) + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + "_", ".pdf");
+            File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(targetRa) + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + "_", ".pdf");
 
             Document document = new Document();
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
 
             document.open();
 
-            Chunk chunk = new Chunk("Data sheet for object: " + roundTo6DecNZ(targetRa) + " " + addPlusSign(roundDouble(targetDec, PATTERN_6DEC_NZ)) + " FoV: " + size + "\"", HEADER_FONT);
+            Chunk chunk = new Chunk("Target: " + roundTo6DecNZ(targetRa) + " " + addPlusSign(roundDouble(targetDec, PATTERN_6DEC_NZ)) + " FoV: " + size + "\"", HEADER_FONT);
             document.add(chunk);
 
             document.add(new Paragraph(" "));
@@ -265,7 +264,7 @@ public class PdfCreator {
             for (CatalogEntry catalogEntry : catalogInstances.values()) {
                 catalogEntry.setRa(targetRa);
                 catalogEntry.setDec(targetDec);
-                catalogEntry.setSearchRadius(size / 2);
+                catalogEntry.setSearchRadius(5);
                 catalogEntry = performQuery(catalogEntry);
                 if (catalogEntry == null) {
                     continue;
@@ -320,7 +319,7 @@ public class PdfCreator {
             table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
             addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
-            addHeaderCell(table, "Target dist.", Element.ALIGN_RIGHT);
+            addHeaderCell(table, "Target dist. (max. 5\")", Element.ALIGN_RIGHT);
             addHeaderCell(table, "RA", Element.ALIGN_LEFT);
             addHeaderCell(table, "dec", Element.ALIGN_LEFT);
             addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
@@ -329,16 +328,17 @@ public class PdfCreator {
             addHeaderCell(table, "pmdec", Element.ALIGN_RIGHT);
             addHeaderCell(table, "Spectral type evaluation", Element.ALIGN_LEFT);
 
-            for (BatchResult batchResult : batchResults) {
-                addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT);
-                addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT);
-                addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT);
-                addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT);
-                addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT);
-                addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT);
-                addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT);
-                addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT);
-                addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT);
+            for (int i = 0; i < batchResults.size(); i++) {
+                BatchResult batchResult = batchResults.get(i);
+                addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i);
+                addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i);
+                addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i);
+                addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i);
+                addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i);
+                addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i);
+                addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i);
+                addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i);
+                addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i);
             }
 
             document.add(table);
@@ -399,18 +399,19 @@ public class PdfCreator {
     }
 
     private void addHeaderCell(PdfPTable table, Object value, int alignment) {
-        PdfPCell cell = new PdfPCell(new Phrase(value.toString(), SMALL_BOLD_FONT));
+        PdfPCell cell = new PdfPCell(new Phrase(value.toString(), SMALL_WHITE_FONT));
         cell.setHorizontalAlignment(alignment);
-        cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-        cell.setBorderWidth(0.5f);
+        cell.setBackgroundColor(BaseColor.DARK_GRAY);
+        cell.setBorderWidth(0);
         cell.setPadding(2);
         table.addCell(cell);
     }
 
-    private void addCell(PdfPTable table, Object value, int alignment) {
+    private void addCell(PdfPTable table, Object value, int alignment, int rowIndex) {
         PdfPCell cell = new PdfPCell(new Phrase(value.toString(), SMALL_FONT));
         cell.setHorizontalAlignment(alignment);
-        cell.setBorderWidth(0.5f);
+        cell.setBackgroundColor(rowIndex % 2 == 0 ? BaseColor.WHITE : BaseColor.LIGHT_GRAY);
+        cell.setBorderWidth(0);
         cell.setPadding(2);
         table.addCell(cell);
     }

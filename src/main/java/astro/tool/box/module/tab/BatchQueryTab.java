@@ -132,7 +132,7 @@ public class BatchQueryTab {
 
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            JPanel topPanel = new JPanel(new GridLayout(3, 1));
+            JPanel topPanel = new JPanel(new GridLayout(4, 1));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
             JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -143,6 +143,9 @@ public class BatchQueryTab {
 
             JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(bottomRow);
+
+            JPanel echoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            topPanel.add(echoPanel);
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
@@ -178,16 +181,6 @@ public class BatchQueryTab {
             JTextField radiusField = new JTextField("5", 3);
             centerRow.add(radiusField);
 
-            centerRow.add(new JLabel("Catalogs:"));
-
-            JCheckBox catalog;
-            for (String catalogKey : catalogInstances.keySet()) {
-                catalog = new JCheckBox(catalogKey);
-                catalog.setName("catalog");
-                catalog.setSelected(true);
-                centerRow.add(catalog);
-            }
-
             centerRow.add(new JLabel("Include colors:"));
 
             includeColors = new JCheckBox();
@@ -199,8 +192,18 @@ public class BatchQueryTab {
             lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.MLTY_DWARFS});
             centerRow.add(lookupTables);
 
+            bottomRow.add(new JLabel("Catalogs:"));
+
+            JCheckBox catalog;
+            for (String catalogKey : catalogInstances.keySet()) {
+                catalog = new JCheckBox(catalogKey);
+                catalog.setName("catalog");
+                catalog.setSelected(true);
+                bottomRow.add(catalog);
+            }
+
             JButton queryButton = new JButton("Start query");
-            centerRow.add(queryButton);
+            bottomRow.add(queryButton);
             queryButton.addActionListener((ActionEvent evt) -> {
                 if (isProcessing) {
                     showErrorDialog(baseFrame, "There's still a query being processed!");
@@ -264,7 +267,7 @@ public class BatchQueryTab {
                 }
 
                 selectedCatalogs = new ArrayList<>();
-                for (Component component : centerRow.getComponents()) {
+                for (Component component : bottomRow.getComponents()) {
                     if (component instanceof JCheckBox) {
                         JCheckBox checkbox = (JCheckBox) component;
                         if (checkbox.getName().equals("catalog") && checkbox.isSelected()) {
@@ -305,14 +308,14 @@ public class BatchQueryTab {
                 CompletableFuture.supplyAsync(() -> queryCatalogs());
             });
 
-            bottomRow.add(new JLabel("Echo:"));
+            echoPanel.add(new JLabel("Echo:"));
 
             echoField = new JTextField(90);
-            bottomRow.add(echoField);
+            echoPanel.add(echoField);
             echoField.setEditable(false);
 
             JButton exportButton = new JButton("Export results");
-            bottomRow.add(exportButton);
+            echoPanel.add(exportButton);
             exportButton.addActionListener((ActionEvent evt) -> {
                 if (batchResults == null || batchResults.isEmpty()) {
                     showErrorDialog(baseFrame, "Nothing to export yet!");
