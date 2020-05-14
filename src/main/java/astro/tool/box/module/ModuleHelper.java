@@ -367,9 +367,9 @@ public class ModuleHelper {
         List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(colors);
         List<String> spectralTypes = new ArrayList<>();
         results.forEach(entry -> {
-            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
             String spectralType = entry.getSpt();
             if (includeColors) {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
                 spectralType += ": " + matchedColor;
             }
             spectralType += "; ";

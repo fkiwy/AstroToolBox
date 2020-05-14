@@ -137,7 +137,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("quality flag sum (*)", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTip_qualityFlag()));
+        catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTip_qualityFlag()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
@@ -253,7 +253,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,object name,quality flag (*),ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
+        String titles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
         return titles.split(",", 24);
     }
 

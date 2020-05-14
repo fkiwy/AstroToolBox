@@ -219,7 +219,7 @@ public class WhiteDwarfTab {
         List<String[]> spectralTypes = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-            String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
+            String spectralType = entry.getTeff() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 
