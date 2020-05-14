@@ -203,6 +203,7 @@ public class ImageViewerTab {
     private JCheckBox twoMassImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
+    private JCheckBox createDataSheet;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
@@ -325,9 +326,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1850;
+            int controlPanelHeight = 1875;
 
-            JPanel controlPanel = new JPanel(new GridLayout(76, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(77, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -668,6 +669,16 @@ public class ImageViewerTab {
 
             ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
             controlPanel.add(ps1Images);
+
+            createDataSheet = new JCheckBox("Create data sheet", false);
+            controlPanel.add(createDataSheet);
+            createDataSheet.addActionListener((ActionEvent evt) -> {
+                dssImages.setSelected(false);
+                sloanImages.setSelected(false);
+                twoMassImages.setSelected(false);
+                allwiseImages.setSelected(false);
+                ps1Images.setSelected(false);
+            });
 
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             controlPanel.add(changeFovLabel);
@@ -1075,6 +1086,9 @@ public class ImageViewerTab {
                                         if (ps1Images.isSelected()) {
                                             displayPs1Images(newRa, newDec, fieldOfView, counter);
                                         }
+                                        if (createDataSheet.isSelected()) {
+                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView).create(baseFrame));
+                                        }
                                     }
                                     break;
                                 default:
@@ -1133,8 +1147,7 @@ public class ImageViewerTab {
                                     }
                                     if (overlays == 0) {
                                         if (showCatalogsButton.isSelected()) {
-                                            //displayCatalogSearchResults(newRa, newDec);
-                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView).create(baseFrame));
+                                            displayCatalogSearchResults(newRa, newDec);
                                         } else {
                                             coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                             createFlipbook();

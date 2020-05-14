@@ -28,8 +28,11 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -54,7 +57,9 @@ public class PdfCreator {
 
     private static final Font HEADER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 16, BaseColor.DARK_GRAY);
     private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.BLACK);
+    private static final Font MEDIUM_FONT = FontFactory.getFont(FontFactory.HELVETICA, 7.5f, BaseColor.BLACK);
     private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.BLACK);
+    private static final Font SMALL_BOLD_FONT = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 6, BaseColor.BLACK);
     private static final Font SMALL_GREEN_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.GREEN.darker());
     private static final Font SMALL_ORANGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.ORANGE.darker());
     private static final Font SMALL_RED_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.RED.darker());
@@ -116,6 +121,9 @@ public class PdfCreator {
 
             Document document = new Document();
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
+
+            DocumentFooter event = new DocumentFooter();
+            writer.setPageEvent(event);
 
             document.open();
 
@@ -284,8 +292,42 @@ public class PdfCreator {
             document.add(new Paragraph(" "));
             document.add(new Paragraph("CATALOG ENTRIES (search radius = FoV/2 = " + roundTo1DecNZ(searchRadius) + "\")", LARGE_FONT));
 
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup"));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup"));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)"));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup (***)"));
+
+            PdfPTable table = new PdfPTable(3);
+            table.setTotalWidth(new float[]{11, 40, 100});
+            table.setLockedWidth(true);
+            table.setSpacingBefore(10);
+            table.setKeepTogether(true);
+            table.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+            table.addCell(createTableCell("(*)", SMALL_FONT));
+            table.addCell(createTableCell("Match probability", SMALL_BOLD_FONT));
+            table.addCell(createTableCell("Constraint", SMALL_BOLD_FONT));
+
+            PdfPCell cell = new PdfPCell();
+            cell.setBackgroundColor(BaseColor.GREEN.darker());
+            table.addCell(cell);
+            table.addCell(createTableCell("High", SMALL_FONT));
+            table.addCell(createTableCell("0 <= target distance < 3", SMALL_FONT));
+
+            cell = new PdfPCell();
+            cell.setBackgroundColor(BaseColor.ORANGE.darker());
+            table.addCell(cell);
+            table.addCell(createTableCell("Medium", SMALL_FONT));
+            table.addCell(createTableCell("3 <= target distance < 6", SMALL_FONT));
+
+            cell = new PdfPCell();
+            cell.setBackgroundColor(BaseColor.RED.darker());
+            table.addCell(cell);
+            table.addCell(createTableCell("Low", SMALL_FONT));
+            table.addCell(createTableCell("6 <= target distance", SMALL_FONT));
+
+            document.add(table);
+
+            document.add(new Paragraph("(**) Uses Eric Mamajek's lookup table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses a lookup table compiled from data of the following catalog: Catalog of M, L, & T dwarfs from PS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
 
             document.close();
 
@@ -354,14 +396,15 @@ public class PdfCreator {
         table.setKeepTogether(true);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
-        PdfPCell tableHeader = new PdfPCell(new Phrase(header, LARGE_FONT));
+        PdfPCell tableHeader = new PdfPCell(new Phrase(header, MEDIUM_FONT));
         tableHeader.setHorizontalAlignment(Element.ALIGN_LEFT);
         tableHeader.setColspan(numberOfCols);
         tableHeader.setBorderWidth(0);
+        tableHeader.setPaddingBottom(5);
         table.addCell(tableHeader);
 
         addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
-        addHeaderCell(table, "Target distance", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "Target dist. (*)", Element.ALIGN_RIGHT);
         addHeaderCell(table, "RA", Element.ALIGN_LEFT);
         addHeaderCell(table, "dec", Element.ALIGN_LEFT);
         addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
@@ -375,23 +418,23 @@ public class PdfCreator {
             BatchResult batchResult = batchResults.get(i);
             Font font;
             double targetDistance = batchResult.getTargetDistance();
-            if (targetDistance <= 3) {
+            if (targetDistance < 3) {
                 font = SMALL_GREEN_FONT;
-            } else if (targetDistance > 3 && targetDistance <= 6) {
+            } else if (targetDistance >= 3 && targetDistance < 6) {
                 font = SMALL_ORANGE_FONT;
             } else {
                 font = SMALL_RED_FONT;
             }
-            addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i, font);
+            addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i, SMALL_FONT);
             addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i, font);
-            addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i, font);
-            addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i, font);
-            addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i, font);
-            addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i, font);
-            addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i, font);
-            addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i, font);
-            addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i, font);
-            addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i, font);
+            addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i, SMALL_FONT);
+            addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i, SMALL_FONT);
+            addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i, SMALL_FONT);
+            addCell(table, roundTo3Dec(batchResult.getPlx()), Element.ALIGN_RIGHT, i, SMALL_FONT);
+            addCell(table, roundTo3Dec(batchResult.getPmra()), Element.ALIGN_RIGHT, i, SMALL_FONT);
+            addCell(table, roundTo3Dec(batchResult.getPmdec()), Element.ALIGN_RIGHT, i, SMALL_FONT);
+            addCell(table, batchResult.getMagnitudes(), Element.ALIGN_LEFT, i, SMALL_FONT);
+            addCell(table, batchResult.joinSpetralTypes(), Element.ALIGN_LEFT, i, SMALL_FONT);
         }
 
         return table;
@@ -459,6 +502,14 @@ public class PdfCreator {
         table.addCell(cell);
     }
 
+    private PdfPCell createTableCell(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setBorderWidth(0);
+        cell.setPadding(2);cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
+        return cell;
+    }
+
     private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {
         List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
         catalogEntries.forEach(catalogEntry -> {
@@ -470,6 +521,16 @@ public class PdfCreator {
             return catalogEntries;
         }
         return null;
+    }
+
+    class DocumentFooter extends PdfPageEventHelper {
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContent();
+            Phrase footer = new Phrase(PGM_NAME + " " + PGM_VERSION + " - Page " + writer.getPageNumber(), SMALL_FONT);
+            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, footer, (document.right() - document.left()) / 2 + document.leftMargin(), document.bottom() - 10, 0);
+        }
     }
 
 }
