@@ -9,7 +9,6 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
@@ -46,7 +45,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -522,23 +520,13 @@ public class CatalogQueryTab {
     //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
-            results.entrySet().forEach(entry -> {
-                SpectralTypeLookupResult key = entry.getKey();
-                Set<ColorValue> values = entry.getValue();
-                StringBuilder matchedColors = new StringBuilder();
-                Iterator<ColorValue> colorIterator = values.iterator();
-                while (colorIterator.hasNext()) {
-                    ColorValue colorValue = colorIterator.next();
-                    matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                    if (colorIterator.hasNext()) {
-                        matchedColors.append(", ");
-                    }
-                }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
-                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            results.forEach(entry -> {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
+                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 

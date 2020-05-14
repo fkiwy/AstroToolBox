@@ -348,28 +348,23 @@ public class PdfCreator {
             if (catalogEntry instanceof SimbadCatalogEntry) {
                 SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                 StringBuilder simbadType = new StringBuilder();
-                //if (includeColors.isSelected()) {
-                simbadType.append("[");
-                //}
                 simbadType.append(simbadEntry.getObjectType());
                 if (!simbadEntry.getSpectralType().isEmpty()) {
                     simbadType.append(" ").append(simbadEntry.getSpectralType());
                 }
-                //if (includeColors.isSelected()) {
-                simbadType.append("]");
-                //}
+                simbadType.append("; ");
                 spectralTypes.add(0, simbadType.toString());
             }
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                    spectralTypes.add("[" + AGN_WARNING + "]");
+                    spectralTypes.add(AGN_WARNING);
                 }
             }
             if (catalogEntry instanceof GaiaDR2CatalogEntry) {
                 GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    spectralTypes.add("[" + WD_WARNING + "]");
+                    spectralTypes.add(WD_WARNING);
                 }
             }
             BatchResult batchResult = new BatchResult.Builder()
@@ -506,7 +501,8 @@ public class PdfCreator {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
         cell.setBorderWidth(0);
-        cell.setPadding(2);cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
+        cell.setPadding(2);
+        cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
         return cell;
     }
 

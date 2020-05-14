@@ -8,7 +8,6 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Color;
@@ -23,11 +22,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -136,7 +133,7 @@ public class BrownDwarfTab {
                     colors.put(Color.g_r, toDouble(g_Field.getText()) - toDouble(r_Field.getText()));
                     colors.put(Color.r_i, toDouble(r_Field.getText()) - toDouble(i_Field.getText()));
                     colors.put(Color.M_G, toDouble(m_gField.getText()));
-                    Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+                    List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(colors);
                     displaySpectralTypes(results, lookupResult);
                     baseFrame.setVisible(true);
                 } catch (Exception ex) {
@@ -177,7 +174,7 @@ public class BrownDwarfTab {
                             }
                         }
                     }
-                    Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
+                    List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
                     displaySpectralTypes(results, lookupResult);
                 }
             });
@@ -188,21 +185,11 @@ public class BrownDwarfTab {
         }
     }
 
-    private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult) {
+    private void displaySpectralTypes(List<SpectralTypeLookupResult> results, JPanel lookupResult) {
         List<String[]> spectralTypes = new ArrayList<>();
-        results.entrySet().forEach(entry -> {
-            SpectralTypeLookupResult key = entry.getKey();
-            Set<ColorValue> values = entry.getValue();
-            StringBuilder matchedColors = new StringBuilder();
-            Iterator<ColorValue> colorIterator = values.iterator();
-            while (colorIterator.hasNext()) {
-                ColorValue colorValue = colorIterator.next();
-                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                if (colorIterator.hasNext()) {
-                    matchedColors.append(", ");
-                }
-            }
-            String spectralType = key.getSpt() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+        results.forEach(entry -> {
+            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+            String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 

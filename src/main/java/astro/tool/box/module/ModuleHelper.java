@@ -7,10 +7,10 @@ import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
@@ -47,11 +47,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
@@ -366,26 +364,15 @@ public class ModuleHelper {
     }
 
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
-        Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(colors);
         List<String> spectralTypes = new ArrayList<>();
-        results.entrySet().forEach(entry -> {
-            SpectralTypeLookupResult key = entry.getKey();
-            Set<ColorValue> values = entry.getValue();
-            StringBuilder matchedColors = new StringBuilder();
-            Iterator<ColorValue> colorIterator = values.iterator();
-            while (colorIterator.hasNext()) {
-                ColorValue colorValue = colorIterator.next();
-                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                if (colorIterator.hasNext()) {
-                    matchedColors.append(" ");
-                }
-            }
-            String spectralType;
+        results.forEach(entry -> {
+            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+            String spectralType = entry.getSpt();
             if (includeColors) {
-                spectralType = "[" + key.getSpt() + ": " + matchedColors + "]";
-            } else {
-                spectralType = key.getSpt();
+                spectralType += ": " + matchedColor;
             }
+            spectralType += "; ";
             spectralTypes.add(spectralType);
         });
         return spectralTypes;
@@ -397,18 +384,23 @@ public class ModuleHelper {
         if (catalogEntry instanceof SimbadCatalogEntry) {
             SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
             StringBuilder simbadType = new StringBuilder();
-            simbadType.append("[");
             simbadType.append(simbadEntry.getObjectType());
             if (!simbadEntry.getSpectralType().isEmpty()) {
                 simbadType.append(" ").append(simbadEntry.getSpectralType());
             }
-            simbadType.append("]");
+            simbadType.append("; ");
             spectralTypes.add(0, simbadType.toString());
         }
         if (catalogEntry instanceof AllWiseCatalogEntry) {
             AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
             if (isAPossibleAGN(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
-                spectralTypes.add("[" + AGN_WARNING + "]");
+                spectralTypes.add(AGN_WARNING);
+            }
+        }
+        if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+            GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                spectralTypes.add(WD_WARNING);
             }
         }
         CollectedObject collectedObject = new CollectedObject.Builder()

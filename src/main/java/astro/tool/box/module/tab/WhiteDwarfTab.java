@@ -6,7 +6,6 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.container.lookup.WhiteDwarfLookupEntry;
@@ -22,11 +21,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -205,11 +202,11 @@ public class WhiteDwarfTab {
     }
 
     private void lookupWhiteDwarfsByColor(JPanel lookupResult, Map<Color, Double> colors) {
-        Map<SpectralTypeLookupResult, Set<ColorValue>> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookup(colors);
         displaySpectralTypes(whiteDwarfPureHResults, lookupResult, "WD type: Pure H");
-        Map<SpectralTypeLookupResult, Set<ColorValue>> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookup(colors);
         displaySpectralTypes(whiteDwarfPureHeResults, lookupResult, "WD type: Pure He");
-        Map<SpectralTypeLookupResult, Set<ColorValue>> whiteDwarfMixResults = whiteDwarfMixLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfMixResults = whiteDwarfMixLookupService.lookup(colors);
         displaySpectralTypes(whiteDwarfMixResults, lookupResult, "WD type: Mix He/H=0.1");
 
         lookupResult.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
@@ -218,21 +215,11 @@ public class WhiteDwarfTab {
         lookupResult.add(new JLabel("G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
     }
 
-    private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult, String panelTitle) {
+    private void displaySpectralTypes(List<SpectralTypeLookupResult> results, JPanel lookupResult, String panelTitle) {
         List<String[]> spectralTypes = new ArrayList<>();
-        results.entrySet().forEach(entry -> {
-            SpectralTypeLookupResult key = entry.getKey();
-            Set<ColorValue> values = entry.getValue();
-            StringBuilder matchedColors = new StringBuilder();
-            Iterator<ColorValue> colorIterator = values.iterator();
-            while (colorIterator.hasNext()) {
-                ColorValue colorValue = colorIterator.next();
-                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                if (colorIterator.hasNext()) {
-                    matchedColors.append(", ");
-                }
-            }
-            String spectralType = key.getTeff() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+        results.forEach(entry -> {
+            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+            String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 

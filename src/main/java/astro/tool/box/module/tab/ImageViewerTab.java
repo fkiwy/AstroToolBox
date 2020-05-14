@@ -9,7 +9,6 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
@@ -96,12 +95,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -3164,23 +3161,13 @@ public class ImageViewerTab {
 
     private JScrollPane createMainSequenceSpectralTypePanel(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<SpectralTypeLookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
-            results.entrySet().forEach(entry -> {
-                SpectralTypeLookupResult key = entry.getKey();
-                Set<ColorValue> values = entry.getValue();
-                StringBuilder matchedColors = new StringBuilder();
-                Iterator<ColorValue> colorIterator = values.iterator();
-                while (colorIterator.hasNext()) {
-                    ColorValue colorValue = colorIterator.next();
-                    matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                    if (colorIterator.hasNext()) {
-                        matchedColors.append(", ");
-                    }
-                }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
-                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            results.forEach(entry -> {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
+                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
@@ -3214,22 +3201,12 @@ public class ImageViewerTab {
 
     private JScrollPane createBrownDwarfsSpectralTypePanel(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<SpectralTypeLookupResult> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
-            results.entrySet().forEach(entry -> {
-                SpectralTypeLookupResult key = entry.getKey();
-                Set<ColorValue> values = entry.getValue();
-                StringBuilder matchedColors = new StringBuilder();
-                Iterator<ColorValue> colorIterator = values.iterator();
-                while (colorIterator.hasNext()) {
-                    ColorValue colorValue = colorIterator.next();
-                    matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                    if (colorIterator.hasNext()) {
-                        matchedColors.append(", ");
-                    }
-                }
-                String spectralType = key.getSpt() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            results.forEach(entry -> {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
                 spectralTypes.add(spectralType.split(",", 4));
             });
 
