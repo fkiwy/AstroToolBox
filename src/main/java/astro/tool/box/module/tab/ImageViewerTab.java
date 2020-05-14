@@ -1724,7 +1724,7 @@ public class ImageViewerTab {
         }
         if (imageSet.length > 0) {
             GifSequencer sequencer = new GifSequencer();
-            sequencer.generateFromBI(imageSet, file, 50, true);
+            sequencer.generateFromBI(imageSet, file, speed / 10, true);
         }
     }
 
