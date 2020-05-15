@@ -258,6 +258,9 @@ public class ImageViewerTab {
     private int maxValue;
     private int avgValue;
 
+    private int medianSum;
+    private int medianCount;
+
     private double targetRa;
     private double targetDec;
 
@@ -1448,6 +1451,8 @@ public class ImageViewerTab {
                 }
             }
             images.clear();
+            medianSum = 0;
+            medianCount = 0;
             int epochCountW1 = 0;
             int epochCountW2 = 0;
             switch (wiseBand) {
@@ -1470,6 +1475,20 @@ public class ImageViewerTab {
                 epochCount = min(epochCountW1, epochCountW2);
             }
             epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
+
+            // Un/Check the "Set min/max limits" check box automatically
+            int median = medianSum / medianCount;
+            if (median > 50) {
+                minMaxLimits.setSelected(false);
+                if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
+                    setContrast(getContrast(), 500);
+                }
+            } else {
+                minMaxLimits.setSelected(true);
+            }
+            System.out.println("medianSum  =" + medianSum);
+            System.out.println("medianCount=" + medianCount);
+            System.out.println("median     =" + median);
 
             Fits fits;
             int k;
@@ -2004,18 +2023,8 @@ public class ImageViewerTab {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
-            // Un/Check the "Set min/max limits" check box automatically
-            minMaxLimits.setSelected(false);
-            NumberTriplet minMaxValues = getMinMaxValues(values);
-            int avgVal = (int) minMaxValues.getZ();
-            if (avgValue == 0) {
-                avgValue = avgVal;
-            }
-            if (avgValue > 500) {
-                minMaxLimits.setSelected(false);
-            } else {
-                minMaxLimits.setSelected(true);
-            }
+            medianSum += getMedianValue(values);
+            medianCount++;
             Header header = hdu.getHeader();
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
@@ -2037,8 +2046,8 @@ public class ImageViewerTab {
             }*/
             if (naxis1 != naxis2) {
                 imageCutOff = true;
-                overlaysLabel.setText("Warning: Overlays may not work accurately!");
-                overlaysLabel.setForeground(Color.RED);
+                //overlaysLabel.setText("Warning: Overlays may not work accurately!");
+                //overlaysLabel.setForeground(Color.RED);
             }
             pixelX = crpix1;
             pixelY = size - crpix2;
@@ -2396,6 +2405,22 @@ public class ImageViewerTab {
     private void setContrast(int low, int high) {
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
+    }
+
+    private float getMedianValue(float[][] values) {
+        int x = values.length;
+        int y = values[0].length;
+        List<Float> list = new ArrayList<>();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = values[i][j];
+                if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
+                    list.add(value);
+                }
+            }
+        }
+        list.sort(Comparator.naturalOrder());
+        return list.get((list.size() - 1) / 2);
     }
 
     private NumberTriplet getMinMaxValues(float[][] values) {

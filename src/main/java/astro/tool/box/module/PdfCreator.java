@@ -290,10 +290,10 @@ public class PdfCreator {
             }
 
             document.add(new Paragraph(" "));
-            document.add(new Paragraph("CATALOG ENTRIES (search radius = FoV/2 = " + roundTo1DecNZ(searchRadius) + "\")", LARGE_FONT));
 
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)"));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup (***)"));
+            String mainHeader = "CATALOG ENTRIES (search radius = FoV/2 = " + roundTo1DecNZ(searchRadius) + "\")";
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)", mainHeader));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup (***)", null));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});
@@ -341,7 +341,7 @@ public class PdfCreator {
         return true;
     }
 
-    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header) throws Exception {
+    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader) throws Exception {
         List<BatchResult> batchResults = new ArrayList<>();
         for (CatalogEntry catalogEntry : catalogEntries) {
             List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
@@ -391,7 +391,17 @@ public class PdfCreator {
         table.setKeepTogether(true);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
-        PdfPCell tableHeader = new PdfPCell(new Phrase(header, MEDIUM_FONT));
+        PdfPCell tableHeader;
+        if (mainHeader != null) {
+            tableHeader = new PdfPCell(new Phrase(mainHeader, LARGE_FONT));
+            tableHeader.setHorizontalAlignment(Element.ALIGN_LEFT);
+            tableHeader.setColspan(numberOfCols);
+            tableHeader.setBorderWidth(0);
+            tableHeader.setPaddingBottom(10);
+            table.addCell(tableHeader);
+        }
+
+        tableHeader = new PdfPCell(new Phrase(header, MEDIUM_FONT));
         tableHeader.setHorizontalAlignment(Element.ALIGN_LEFT);
         tableHeader.setColspan(numberOfCols);
         tableHeader.setBorderWidth(0);
