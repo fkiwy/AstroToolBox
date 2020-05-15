@@ -586,12 +586,12 @@ public class ImageViewerTab {
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             overlayPanel.add(spectrumOverlay);
             vhsOverlay = new JCheckBox("VISTA-VHS");
-            vhsOverlay.setForeground(Color.DARK_GRAY);
+            vhsOverlay.setForeground(JColor.PINK.val);
             overlayPanel.add(vhsOverlay);
 
-            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlayPanel = new JPanel(new GridLayout(1, 1));
             controlPanel.add(overlayPanel);
-            ssoOverlay = new JCheckBox("Solar Sys. Obj.");
+            ssoOverlay = new JCheckBox("Solar System Objects");
             ssoOverlay.setForeground(Color.BLUE);
             overlayPanel.add(ssoOverlay);
 
@@ -1127,7 +1127,7 @@ public class ImageViewerTab {
                                         overlays++;
                                     }
                                     if (vhsOverlay.isSelected() && vhsEntries != null) {
-                                        showCatalogInfo(vhsEntries, mouseX, mouseY, Color.DARK_GRAY);
+                                        showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
                                         overlays++;
                                     }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
@@ -1819,7 +1819,7 @@ public class ImageViewerTab {
                 vhsEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> vhsEntries = fetchCatalogEntries(new VHSCatalogEntry()));
             } else {
-                drawOverlay(image, vhsEntries, Color.DARK_GRAY, Shape.CIRCLE);
+                drawOverlay(image, vhsEntries, JColor.PINK.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {
