@@ -1480,9 +1480,9 @@ public class ImageViewerTab {
             int median = medianSum / medianCount;
             if (median > 50) {
                 minMaxLimits.setSelected(false);
-                if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
-                    setContrast(getContrast(), 500);
-                }
+                //if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
+                //    setContrast(getContrast(), 500);
+                //}
             } else {
                 minMaxLimits.setSelected(true);
             }
@@ -2526,7 +2526,7 @@ public class ImageViewerTab {
         imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
-        imageViewerTab.createFlipbook();
+        //imageViewerTab.createFlipbook();
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
     }
