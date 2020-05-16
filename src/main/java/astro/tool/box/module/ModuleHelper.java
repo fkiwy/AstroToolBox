@@ -458,10 +458,12 @@ public class ModuleHelper {
         try {
             String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
             String response = readResponse(establishHttpConnection(url), "Zooniverse");
-            JSONObject obj = new JSONObject(response);
-            JSONArray ids = obj.getJSONArray("ids");
-            for (Object id : ids) {
-                subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+            if (!response.isEmpty()) {
+                JSONObject obj = new JSONObject(response);
+                JSONArray ids = obj.getJSONArray("ids");
+                for (Object id : ids) {
+                    subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+                }
             }
         } catch (Exception ex) {
         }

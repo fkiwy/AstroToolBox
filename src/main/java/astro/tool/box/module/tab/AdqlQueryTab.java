@@ -231,15 +231,17 @@ public class AdqlQueryTab {
                     // Validate query
                     try {
                         response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
-                        isSyntaxChecked = true;
-                        JSONObject obj = new JSONObject(response);
-                        String validation = obj.getString("validation");
-                        if (!validation.equals("ok")) {
-                            JSONArray arr = obj.getJSONArray("errors");
-                            String errorMessage = arr.getJSONObject(0).getString("message");
-                            showQueryErrorMessage(errorMessage);
-                            initStatus();
-                            return;
+                        if (!response.isEmpty()) {
+                            isSyntaxChecked = true;
+                            JSONObject obj = new JSONObject(response);
+                            String validation = obj.getString("validation");
+                            if (!validation.equals("ok")) {
+                                JSONArray arr = obj.getJSONArray("errors");
+                                String errorMessage = arr.getJSONObject(0).getString("message");
+                                showQueryErrorMessage(errorMessage);
+                                initStatus();
+                                return;
+                            }
                         }
                     } catch (Exception ex) {
                     }
@@ -247,9 +249,11 @@ public class AdqlQueryTab {
                     // Execute query
                     startClock();
                     response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)), QUERY_SERVICE);
-                    String[] parts = response.split("<uws:jobId>");
-                    parts = parts[1].split("</uws:jobId>");
-                    jobId = parts[0];
+                    if (!response.isEmpty()) {
+                        String[] parts = response.split("<uws:jobId>");
+                        parts = parts[1].split("</uws:jobId>");
+                        jobId = parts[0];
+                    }
                 } catch (IOException ex) {
                     stopClock();
                     initStatus();

@@ -62,7 +62,7 @@ public class ServiceProviderUtils {
     public static String readResponse(HttpURLConnection connection, String serviceProvider) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return reader.lines().collect(Collectors.joining(LINE_SEP));
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             showInfoDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
             return "";
         }
