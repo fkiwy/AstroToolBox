@@ -64,6 +64,7 @@ public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
     private static final String IRSA_TABLES = "IRSA tables";
+    private static final String QUERY_SERVICE = "ADQL query";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -133,7 +134,7 @@ public class AdqlQueryTab {
 
             JScrollPane scrollEditor = new JScrollPane(textEditor);
             scrollEditor.setPreferredSize(new Dimension(scrollEditor.getWidth(), 250));
-            scrollEditor.setBorder(createEtchedBorder("ADQL query"));
+            scrollEditor.setBorder(createEtchedBorder(QUERY_SERVICE));
             centerPanel.add(scrollEditor);
 
             JFileChooser fileChooser = new JFileChooser();
@@ -229,7 +230,7 @@ public class AdqlQueryTab {
                     String response;
                     // Validate query
                     try {
-                        response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)));
+                        response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
                         isSyntaxChecked = true;
                         JSONObject obj = new JSONObject(response);
                         String validation = obj.getString("validation");
@@ -245,7 +246,7 @@ public class AdqlQueryTab {
 
                     // Execute query
                     startClock();
-                    response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)));
+                    response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)), QUERY_SERVICE);
                     String[] parts = response.split("<uws:jobId>");
                     parts = parts[1].split("</uws:jobId>");
                     jobId = parts[0];
@@ -273,7 +274,7 @@ public class AdqlQueryTab {
                     return;
                 }
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)));
+                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.ERROR.toString())) {
@@ -310,7 +311,7 @@ public class AdqlQueryTab {
                 fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)));
+                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
 
@@ -319,7 +320,7 @@ public class AdqlQueryTab {
                     } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
-                        queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)));
+                        queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)), QUERY_SERVICE);
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
@@ -363,7 +364,7 @@ public class AdqlQueryTab {
                 String query = "SELECT * FROM TAP_SCHEMA.TABLES ORDER BY TABLE_INDEX";
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
-                    String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)));
+                    String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
                     catalogPanel = new JPanel(new GridLayout(1, 2));
                     centerPanel.add(catalogPanel);
 
@@ -478,7 +479,7 @@ public class AdqlQueryTab {
                     String query = "SELECT * FROM TAP_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "' ORDER BY COLUMN_INDEX";
                     String encodedQuery = query.replaceAll(" +", "%20");
                     try {
-                        String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)));
+                        String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
 
                         JPanel catalogColumnPanel = new JPanel();
                         catalogPanel.add(catalogColumnPanel);

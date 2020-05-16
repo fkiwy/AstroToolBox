@@ -11,12 +11,12 @@ public class CatalogQueryService implements CatalogQueryFacade {
 
     @Override
     public List<CatalogEntry> getCatalogEntriesByCoords(CatalogEntry catalogEntry) throws IOException {
-        return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getCatalogUrl())), catalogEntry);
+        return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getCatalogUrl()), catalogEntry.getCatalogName()), catalogEntry);
     }
 
     @Override
-    public List<CatalogEntry> getCatalogEntriesByCoordsAndTpm(ProperMotionQuery properMotionQuery) throws IOException {
-        return transformResponseToCatalogEntries(readResponse(establishHttpConnection(properMotionQuery.getProperMotionQueryUrl())), properMotionQuery);
+    public List<CatalogEntry> getCatalogEntriesByCoordsAndTpm(ProperMotionQuery catalogEntry) throws IOException {
+        return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getProperMotionQueryUrl()), catalogEntry.getCatalogName()), catalogEntry);
     }
 
 }

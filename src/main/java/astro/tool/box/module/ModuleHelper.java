@@ -457,7 +457,7 @@ public class ModuleHelper {
         List<JLabel> subjects = new ArrayList<>();
         try {
             String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
-            String response = readResponse(establishHttpConnection(url));
+            String response = readResponse(establishHttpConnection(url), "Zooniverse");
             JSONObject obj = new JSONObject(response);
             JSONArray ids = obj.getJSONArray("ids");
             for (Object id : ids) {
@@ -497,7 +497,7 @@ public class ModuleHelper {
     public static SortedMap<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
         SortedMap<String, String> fileNames = new TreeMap<>();
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
-        String response = readResponse(establishHttpConnection(imageUrl));
+        String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
         try (Scanner scanner = new Scanner(response)) {
             String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
             int filter = 0;

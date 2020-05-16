@@ -25,7 +25,7 @@ public class CatWiseCatalogTest {
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
 
-        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection)));
+        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection, "CatWISE")));
         List<String[]> results = reader.lines().map(line -> {
             System.out.println(line);
             return line.split(SPLIT_CHAR);

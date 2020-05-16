@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class ServiceProviderUtils {
 
-    private static final String SERVICE_NOT_AVAILABLE = "One of the service providers is currently not reachable.";
+    private static final String SERVICE_NOT_AVAILABLE = "The %s service is currently not available.";
 
     public static String createIrsaUrl(String catalogId, double degRA, double degDE, double degRadius) {
         return IRSA_BASE_URL + "?table=" + catalogId + "&RA=" + degRA + "&DEC=" + degDE + "&SR=" + degRadius + "&format=csv";
@@ -59,12 +59,12 @@ public class ServiceProviderUtils {
         return (HttpURLConnection) new URL(url).openConnection(webProxy == null ? Proxy.NO_PROXY : webProxy);
     }
 
-    public static String readResponse(HttpURLConnection connection) {
+    public static String readResponse(HttpURLConnection connection, String serviceProvider) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return reader.lines().collect(Collectors.joining(LINE_SEP));
         } catch (IOException ex) {
-            showInfoDialog(null, SERVICE_NOT_AVAILABLE);
-            throw new RuntimeException(ex);
+            showInfoDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
+            return "";
         }
     }
 

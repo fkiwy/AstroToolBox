@@ -2535,7 +2535,7 @@ public class ImageViewerTab {
         try {
             List<String> fileNames = new ArrayList<>();
             String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=giy&sep=comma", targetRa, targetDec);
-            String response = readResponse(establishHttpConnection(imageUrl));
+            String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
                 int j = 0;
