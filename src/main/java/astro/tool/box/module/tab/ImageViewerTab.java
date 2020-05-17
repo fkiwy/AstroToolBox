@@ -256,9 +256,9 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
-    private int lowContrast = getContrast();
+    private int lowContrast = getLowContrast();
     private int highContrast;
-    private int lowContrastSaved = getContrast();
+    private int lowContrastSaved = getLowContrast();
     private int highContrastSaved;
 
     private int minValue;
@@ -575,7 +575,7 @@ public class ImageViewerTab {
                 if (Epoch.isSubtracted(epoch)) {
                     setSubtractedContrast();
                 } else {
-                    setContrast(getContrast(), 0);
+                    setContrast(getLowContrast(), 0);
                 }
                 initMinMaxValues();
                 createFlipbook();
@@ -1422,7 +1422,7 @@ public class ImageViewerTab {
                 crosshairCoords.setText("");
                 hasException = false;
                 if (!keepContrast.isSelected()) {
-                    lowContrastSaved = getContrast();
+                    lowContrastSaved = getLowContrast();
                     highContrastSaved = 0;
                 }
                 setContrast(lowContrastSaved, highContrastSaved);
@@ -1540,9 +1540,9 @@ public class ImageViewerTab {
             int median = medianSum / medianCount;
             if (median > 50) {
                 minMaxLimits.setSelected(false);
-                //if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
-                //    setContrast(getContrast(), 500);
-                //}
+                if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
+                    setContrast(getLowContrast(), getHighContrast());
+                }
             } else {
                 minMaxLimits.setSelected(true);
             }
@@ -2466,15 +2466,19 @@ public class ImageViewerTab {
         return (float) log(x + sqrt(x * x + 1.0));
     }
 
-    private int getContrast() {
+    private int getLowContrast() {
         return size < 30 ? 25 : 50;
+    }
+
+    private int getHighContrast() {
+        return size < 90 ? 0 : 500;
     }
 
     private void setSubtractedContrast() {
         if (minMaxLimits.isSelected()) {
-            setContrast(getContrast(), 0);
+            setContrast(getLowContrast(), 0);
         } else {
-            setContrast(getContrast(), 500);
+            setContrast(getLowContrast(), 500);
         }
     }
 
