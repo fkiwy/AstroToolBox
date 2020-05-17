@@ -140,6 +140,7 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
+    public static final int NUMBER_OF_EPOCHS = 6;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
@@ -204,6 +205,7 @@ public class ImageViewerTab {
     private JCheckBox createDataSheet;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
+    private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -218,6 +220,7 @@ public class ImageViewerTab {
     private JTextField sizeField;
     private JTextField properMotionField;
     private JTextField differentSizeField;
+    private JTextField transposeMotionField;
     private JTextArea crosshairCoords;
     private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
@@ -246,7 +249,7 @@ public class ImageViewerTab {
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
-    private int numberOfEpochs = 6;
+    private int numberOfEpochs = NUMBER_OF_EPOCHS;
     private int selectedEpochs;
     private int stretch = STRETCH;
     private int speed = SPEED;
@@ -286,6 +289,7 @@ public class ImageViewerTab {
     private boolean hasException;
     private boolean panstarrsImages;
     private boolean sdssImages;
+    private boolean epochChange;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
@@ -330,9 +334,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1900;
+            int controlPanelHeight = 1950;
 
-            JPanel controlPanel = new JPanel(new GridLayout(79, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -529,6 +533,7 @@ public class ImageViewerTab {
                 }
                 selectedEpochs = epochSlider.getValue();
                 epochLabel.setText(String.format(EPOCH_LABEL, selectedEpochs));
+                epochChange = true;
                 createFlipbook();
             });
 
@@ -905,6 +910,28 @@ public class ImageViewerTab {
                 newDec = newDec < -90 ? -90 : newDec;
                 coordsField.setText(targetRa + " " + roundTo7DecNZ(newDec));
                 createFlipbook();
+            });
+
+            transposeProperMotion = new JCheckBox(underline("Transpose proper motion:"));
+            controlPanel.add(transposeProperMotion);
+            transposeProperMotion.addActionListener((ActionEvent evt) -> {
+                if (!transposeMotionField.getText().isEmpty()) {
+                    transposeProperMotion.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    images.clear();
+                    createFlipbook();
+                    transposeProperMotion.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
+            transposeMotionField = new JTextField();
+            controlPanel.add(transposeMotionField);
+            transposeMotionField.addActionListener((ActionEvent evt) -> {
+                if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
+                    transposeMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    images.clear();
+                    createFlipbook();
+                    transposeMotionField.setCursor(Cursor.getDefaultCursor());
+                }
             });
 
             useCustomOverlays = new JCheckBox(underline("Custom overlays:"));
@@ -1461,8 +1488,10 @@ public class ImageViewerTab {
             System.out.println("---------------->totalEpochs=" + totalEpochs);
             List<Integer> requestedEpochs = new ArrayList<>();
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
-                imagesW1.clear();
-                imagesW2.clear();
+                if (epochChange) {
+                    imagesW1.clear();
+                    imagesW2.clear();
+                }
                 requestedEpochs.add(0);
                 requestedEpochs.add(1);
                 requestedEpochs.add(totalEpochs - 2);
@@ -1478,6 +1507,7 @@ public class ImageViewerTab {
                     }
                 }
             }
+            epochChange = false;
             images.clear();
             medianSum = 0;
             medianCount = 0;
@@ -2139,7 +2169,23 @@ public class ImageViewerTab {
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        HttpURLConnection connection = establishHttpConnection(createImageUrl(targetRa, targetDec, size, band, epoch));
+        String imageUrl;
+        if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
+            NumberPair properMotion = getCoordinates(transposeMotionField.getText());
+            double pmra = properMotion.getX();
+            double pmdec = properMotion.getY();
+            int totalEpochs = epoch > 1 ? epoch + numberOfEpochs : epoch;
+            double pmraOfOneEpoch = (pmra / 2) / DEG_MAS;
+            double pmdecOfOneEpoch = (pmdec / 2) / DEG_MAS;
+            double pmraOfEpochs = totalEpochs * pmraOfOneEpoch;
+            double pmdecOfEpochs = totalEpochs * pmdecOfOneEpoch;
+            double ra = targetRa + pmraOfEpochs / cos(toRadians(targetDec));
+            double dec = targetDec + pmdecOfEpochs;
+            imageUrl = createImageUrl(ra, dec, size, band, epoch);
+        } else {
+            imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
+        }
+        HttpURLConnection connection = establishHttpConnection(imageUrl);
         return connection.getInputStream();
     }
 

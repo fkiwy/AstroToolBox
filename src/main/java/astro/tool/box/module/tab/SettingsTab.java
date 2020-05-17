@@ -246,7 +246,7 @@ public class SettingsTab {
             imageViewerSettings.setPreferredSize(new Dimension(400, 200));
             containerPanel.add(imageViewerSettings);
 
-            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, "6"));
+            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
             epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
