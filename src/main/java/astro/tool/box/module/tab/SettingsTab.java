@@ -30,12 +30,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeListener;
 
 public class SettingsTab {
 
@@ -99,8 +101,10 @@ public class SettingsTab {
     private boolean sdssImages;
 
     private ActionListener actionListener;
+    private ChangeListener changeListener;
     private JComboBox wiseBandsBox;
     private JComboBox epochsBox;
+    private JSlider epochSlider;
 
     public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -266,6 +270,15 @@ public class SettingsTab {
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
+
+            imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
+            epochSlider = imageViewerTab.getEpochSlider();
+            changeListener = epochSlider.getChangeListeners()[0];
+            epochSlider.removeChangeListener(changeListener);
+            epochSlider.setMaximum(numberOfEpochs);
+            epochSlider.setValue(numberOfEpochs);
+            epochSlider.addChangeListener(changeListener);
+
             if (Epoch.isSubtracted(epoch)) {
                 imageViewerTab.getSmoothImage().setSelected(true);
             } else {
@@ -423,6 +436,15 @@ public class SettingsTab {
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
+
+                imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
+                epochSlider = imageViewerTab.getEpochSlider();
+                changeListener = epochSlider.getChangeListeners()[0];
+                epochSlider.removeChangeListener(changeListener);
+                epochSlider.setMaximum(numberOfEpochs);
+                epochSlider.setValue(numberOfEpochs);
+                epochSlider.addChangeListener(changeListener);
+
                 if (Epoch.isSubtracted(epoch)) {
                     imageViewerTab.getSmoothImage().setSelected(true);
                 } else {
