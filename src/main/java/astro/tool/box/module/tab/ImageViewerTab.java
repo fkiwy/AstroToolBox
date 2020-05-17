@@ -263,7 +263,6 @@ public class ImageViewerTab {
 
     private int minValue;
     private int maxValue;
-    private int avgValue;
 
     private int medianSum;
     private int medianCount;
@@ -917,7 +916,8 @@ public class ImageViewerTab {
             transposeProperMotion.addActionListener((ActionEvent evt) -> {
                 if (!transposeMotionField.getText().isEmpty()) {
                     transposeProperMotion.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
+                    imagesW1.clear();
+                    imagesW2.clear();
                     createFlipbook();
                     transposeProperMotion.setCursor(Cursor.getDefaultCursor());
                 }
@@ -928,7 +928,8 @@ public class ImageViewerTab {
             transposeMotionField.addActionListener((ActionEvent evt) -> {
                 if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
                     transposeMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
+                    imagesW1.clear();
+                    imagesW2.clear();
                     createFlipbook();
                     transposeMotionField.setCursor(Cursor.getDefaultCursor());
                 }
@@ -1476,7 +1477,6 @@ public class ImageViewerTab {
             previousRa = targetRa;
             previousDec = targetDec;
             imageNumber = 0;
-            avgValue = 0;
 
             boolean moreImagesAvailable = true;
             try {
@@ -1485,7 +1485,6 @@ public class ImageViewerTab {
                 moreImagesAvailable = false;
             }
             int totalEpochs = selectedEpochs * 2;
-            System.out.println("---------------->totalEpochs=" + totalEpochs);
             List<Integer> requestedEpochs = new ArrayList<>();
             if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                 if (epochChange) {
@@ -2174,7 +2173,7 @@ public class ImageViewerTab {
             NumberPair properMotion = getCoordinates(transposeMotionField.getText());
             double pmra = properMotion.getX();
             double pmdec = properMotion.getY();
-            int totalEpochs = epoch > 1 ? epoch + numberOfEpochs : epoch;
+            int totalEpochs = epoch > 1 ? epoch + numberOfEpochs / 2 : epoch;
             double pmraOfOneEpoch = (pmra / 2) / DEG_MAS;
             double pmdecOfOneEpoch = (pmdec / 2) / DEG_MAS;
             double pmraOfEpochs = totalEpochs * pmraOfOneEpoch;
