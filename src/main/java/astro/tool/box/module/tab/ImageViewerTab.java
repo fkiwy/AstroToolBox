@@ -140,7 +140,7 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
-    public static final int NUMBER_OF_EPOCHS = 6;
+    public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
