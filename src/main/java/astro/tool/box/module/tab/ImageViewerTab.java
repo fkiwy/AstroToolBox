@@ -579,7 +579,9 @@ public class ImageViewerTab {
                 if (Epoch.isSubtracted(epoch)) {
                     setSubtractedContrast();
                 } else {
-                    setContrast(LOW_CONTRAST, 0);
+                    lowContrastSaved = LOW_CONTRAST;
+                    highContrastSaved = minMaxLimits.isSelected() ? 0 : HIGH_CONTRAST;
+                    setContrast(lowContrastSaved, highContrastSaved);
                 }
             });
 
@@ -1544,7 +1546,9 @@ public class ImageViewerTab {
             if (median > 50) {
                 minMaxLimits.setSelected(false);
                 if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
-                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                    lowContrastSaved = LOW_CONTRAST;
+                    highContrastSaved = HIGH_CONTRAST;
+                    setContrast(lowContrastSaved, highContrastSaved);
                 }
             } else {
                 minMaxLimits.setSelected(true);
