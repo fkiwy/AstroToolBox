@@ -706,11 +706,13 @@ public class ImageViewerTab {
             controlPanel.add(createDataSheet);
             createDataSheet.addActionListener((ActionEvent evt) -> {
                 setImageViewer(this);
-                dssImages.setSelected(false);
-                sloanImages.setSelected(false);
-                twoMassImages.setSelected(false);
-                allwiseImages.setSelected(false);
-                ps1Images.setSelected(false);
+                if (createDataSheet.isSelected()) {
+                    dssImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
+                }
             });
 
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
