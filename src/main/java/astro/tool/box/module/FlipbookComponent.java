@@ -5,9 +5,9 @@ import java.util.List;
 
 public class FlipbookComponent {
 
-    private static final String ASC_NODE = "ascending";
+    private static final String ASC_NODE = "ASC";
 
-    private static final String DESC_NODE = "descending";
+    private static final String DESC_NODE = "DESC";
 
     private final int band;
 
@@ -49,10 +49,8 @@ public class FlipbookComponent {
         String titleBand;
         String titleEpoch;
         String node;
-        String minObsTime = "";
-        String maxObsTime = "";
         if (band == 12) {
-            titleBand = "W1&W2";
+            titleBand = "W1+W2";
         } else {
             titleBand = "W" + band;
         }
@@ -61,23 +59,23 @@ public class FlipbookComponent {
                 case 100:
                     firstEpoch = true;
                     titleEpoch = "1";
-                    node = ASC_NODE + "&" + DESC_NODE;
+                    node = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 200:
                     titleEpoch = "" + epochCount;
-                    node = ASC_NODE + "&" + DESC_NODE;
+                    node = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 300:
                     titleEpoch = "2-" + epochCount;
-                    node = ASC_NODE + "&" + DESC_NODE;
+                    node = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 400:
                     firstEpoch = true;
-                    titleEpoch = "1&" + epochCount;
+                    titleEpoch = "1+" + epochCount;
                     node = ASC_NODE;
                     break;
                 case 500:
-                    titleEpoch = "1&" + epochCount;
+                    titleEpoch = "1+" + epochCount;
                     node = DESC_NODE;
                     break;
                 case 600:
@@ -104,18 +102,18 @@ public class FlipbookComponent {
                         node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
                     } else if (epoch >= 1000 && epoch < 1100) {
                         titleEpoch = String.valueOf(epoch - 1000 + 1);
-                        node = ASC_NODE + "&" + DESC_NODE;
+                        node = ASC_NODE + "+" + DESC_NODE;
                     } else if (epoch >= 1100 && epoch < 1200) {
                         if (epoch == 1100) {
                             firstEpoch = true;
                         }
                         titleEpoch = String.valueOf(epoch - 1100 + 1);
-                        node = ASC_NODE + "&" + DESC_NODE;
+                        node = ASC_NODE + "+" + DESC_NODE;
                     } else {
                         firstEpoch = epoch == 101;
                         if (epoch > 100 && epoch < 200) {
                             titleEpoch = String.valueOf(epoch - 100);
-                            node = ASC_NODE + "&" + DESC_NODE;
+                            node = ASC_NODE + "+" + DESC_NODE;
                         } else {
                             titleEpoch = "";
                             node = "";
@@ -128,7 +126,7 @@ public class FlipbookComponent {
             titleEpoch = String.valueOf((epoch / 2) + 1);
             node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
         }
-        return "WISE: " + minObsTime + maxObsTime + "Band=" + titleBand + " ~ Epoch=" + titleEpoch + " ~ Node=" + node;
+        return "Band=" + titleBand + "   Epoch=" + titleEpoch + "   Node=" + node;
     }
 
     public int getBand() {

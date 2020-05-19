@@ -17,6 +17,7 @@ import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import com.itextpdf.text.BaseColor;
@@ -68,6 +69,9 @@ public class PdfCreator {
     private final double targetRa;
     private final double targetDec;
     private final int size;
+    private final FlipbookComponent[] flipbook;
+    private final int selectedEpochs;
+    private final ImageViewerTab imageViewerTab;
 
     private final Map<String, CatalogEntry> catalogInstances;
 
@@ -75,10 +79,13 @@ public class PdfCreator {
     private final SpectralTypeLookupService mainSequenceLookupService;
     private final SpectralTypeLookupService brownDwarfsLookupService;
 
-    public PdfCreator(double targetRa, double targetDec, int size) {
+    public PdfCreator(double targetRa, double targetDec, int size, FlipbookComponent[] flipbook, int selectedEpochs, ImageViewerTab imageViewerTab) {
         this.targetRa = targetRa;
         this.targetDec = targetDec;
         this.size = size;
+        this.flipbook = flipbook;
+        this.selectedEpochs = selectedEpochs;
+        this.imageViewerTab = imageViewerTab;
 
         // Plug in catalogs here
         catalogInstances = new LinkedHashMap<>();
@@ -127,7 +134,7 @@ public class PdfCreator {
 
             document.open();
 
-            Chunk chunk = new Chunk("Target: " + roundTo6DecNZ(targetRa) + " " + addPlusSign(roundDouble(targetDec, PATTERN_6DEC_NZ)) + " FoV: " + size + "\"", HEADER_FONT);
+            Chunk chunk = new Chunk("Target: " + roundTo6DecNZ(targetRa) + " " + addPlusSign(roundDouble(targetDec, PATTERN_6DEC_NZ)), HEADER_FONT);
             document.add(chunk);
 
             document.add(new Paragraph(" "));
@@ -165,7 +172,7 @@ public class PdfCreator {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("DSS", imageLabels, bufferedImages, writer, document);
+            createPdfTable("DSS (FoV: " + size + "\")", imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -200,7 +207,7 @@ public class PdfCreator {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("SDSS", imageLabels, bufferedImages, writer, document);
+            createPdfTable("SDSS (FoV: " + size + "\")", imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -225,7 +232,7 @@ public class PdfCreator {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("2MASS", imageLabels, bufferedImages, writer, document);
+            createPdfTable("2MASS (FoV: " + size + "\")", imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -255,7 +262,17 @@ public class PdfCreator {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("AllWISE", imageLabels, bufferedImages, writer, document);
+            createPdfTable("AllWISE (FoV: " + size + "\")", imageLabels, bufferedImages, writer, document);
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
+            for (FlipbookComponent component : flipbook) {
+                component.setEpochCount(selectedEpochs);
+                imageLabels.add(component.getTitle());
+                bufferedImages.add(imageViewerTab.processImage(component));
+            }
+
+            createPdfTable("NeoWISE (FoV: " + imageViewerTab.getSizeField().getText() + "\")", imageLabels, bufferedImages, writer, document);
 
             SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
@@ -274,7 +291,7 @@ public class PdfCreator {
                 imageLabels.add("y");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size));
 
-                createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
+                createPdfTable("Pan-STARRS (FoV: " + size + "\")", imageLabels, bufferedImages, writer, document);
             }
 
             int searchRadius = size / 2;

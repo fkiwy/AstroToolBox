@@ -144,6 +144,8 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
+    public static final int LOW_CONTRAST = 50;
+    public static final int HIGH_CONTRAST = 500;
     public static final int MIN_VALUE = -2500;
     public static final int MAX_VALUE = 2500;
     public static final int STRETCH = 100;
@@ -256,9 +258,9 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
-    private int lowContrast = getLowContrast();
+    private int lowContrast = LOW_CONTRAST;
     private int highContrast;
-    private int lowContrastSaved = getLowContrast();
+    private int lowContrastSaved = LOW_CONTRAST;
     private int highContrastSaved;
 
     private int minValue;
@@ -385,17 +387,17 @@ public class ImageViewerTab {
                 Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
                 initMinMaxValues();
-                if (Epoch.isSubtracted(epoch)) {
-                    smoothImage.setSelected(true);
-                } else if (Epoch.isSubtracted(previousEpoch)) {
-                    smoothImage.setSelected(false);
-                }
+                createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
                     setSubtractedContrast();
                 } else {
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
-                createFlipbook();
+                if (Epoch.isSubtracted(epoch)) {
+                    smoothImage.setSelected(true);
+                } else if (Epoch.isSubtracted(previousEpoch)) {
+                    smoothImage.setSelected(false);
+                }
             });
 
             JPanel whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -572,13 +574,13 @@ public class ImageViewerTab {
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
+                initMinMaxValues();
+                createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
                     setSubtractedContrast();
                 } else {
-                    setContrast(getLowContrast(), 0);
+                    setContrast(LOW_CONTRAST, 0);
                 }
-                initMinMaxValues();
-                createFlipbook();
             });
 
             overlaysLabel = new JLabel(underline("Overlays:"));
@@ -701,6 +703,7 @@ public class ImageViewerTab {
             createDataSheet = new JCheckBox("Create data sheet", false);
             controlPanel.add(createDataSheet);
             createDataSheet.addActionListener((ActionEvent evt) -> {
+                setImageViewer(this);
                 dssImages.setSelected(false);
                 sloanImages.setSelected(false);
                 twoMassImages.setSelected(false);
@@ -1139,7 +1142,7 @@ public class ImageViewerTab {
                                             displayPs1Images(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (createDataSheet.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView).create(baseFrame));
+                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView, flipbook, selectedEpochs, getImageViewer()).create(baseFrame));
                                         }
                                     }
                                     break;
@@ -1422,7 +1425,7 @@ public class ImageViewerTab {
                 crosshairCoords.setText("");
                 hasException = false;
                 if (!keepContrast.isSelected()) {
-                    lowContrastSaved = getLowContrast();
+                    lowContrastSaved = LOW_CONTRAST;
                     highContrastSaved = 0;
                 }
                 setContrast(lowContrastSaved, highContrastSaved);
@@ -1541,7 +1544,7 @@ public class ImageViewerTab {
             if (median > 50) {
                 minMaxLimits.setSelected(false);
                 if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
-                    setContrast(getLowContrast(), getHighContrast());
+                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 }
             } else {
                 minMaxLimits.setSelected(true);
@@ -1817,7 +1820,7 @@ public class ImageViewerTab {
         }
     }
 
-    private BufferedImage processImage(FlipbookComponent component) {
+    public BufferedImage processImage(FlipbookComponent component) {
         BufferedImage image;
         if (wiseBand.equals(WiseBand.W1W2)) {
             image = createComposite(component.getEpoch());
@@ -2466,19 +2469,11 @@ public class ImageViewerTab {
         return (float) log(x + sqrt(x * x + 1.0));
     }
 
-    private int getLowContrast() {
-        return size < 30 ? 25 : 50;
-    }
-
-    private int getHighContrast() {
-        return size < 90 ? 0 : 500;
-    }
-
     private void setSubtractedContrast() {
         if (minMaxLimits.isSelected()) {
-            setContrast(getLowContrast(), 0);
+            setContrast(LOW_CONTRAST, 0);
         } else {
-            setContrast(getLowContrast(), 500);
+            setContrast(LOW_CONTRAST, HIGH_CONTRAST);
         }
     }
 
@@ -3389,6 +3384,10 @@ public class ImageViewerTab {
 
     public Timer getTimer() {
         return timer;
+    }
+
+    public ImageViewerTab getImageViewer() {
+        return imageViewer;
     }
 
     public void setImageViewer(ImageViewerTab imageViewer) {
