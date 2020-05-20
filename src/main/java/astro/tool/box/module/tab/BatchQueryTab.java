@@ -7,13 +7,9 @@ import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
-import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
-import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -40,7 +36,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -108,28 +103,12 @@ public class BatchQueryTab {
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
+        catalogInstances = getCatalogInstances();
         catalogQueryFacade = new CatalogQueryService();
-        catalogInstances = new LinkedHashMap<>();
     }
 
     public void init() {
         try {
-            // Plug in catalogs here
-            SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
-            catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-            GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
-            catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
-            AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
-            catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
-            CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
-            catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
-            PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
-            catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
-            SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
-            catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
-            VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
-            catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
-
             JPanel mainPanel = new JPanel(new BorderLayout());
 
             JPanel topPanel = new JPanel(new GridLayout(4, 1));

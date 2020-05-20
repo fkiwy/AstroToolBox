@@ -6,13 +6,9 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
-import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
-import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -46,7 +42,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -86,24 +81,7 @@ public class PdfCreator {
         this.flipbook = flipbook;
         this.selectedEpochs = selectedEpochs;
         this.imageViewerTab = imageViewerTab;
-
-        // Plug in catalogs here
-        catalogInstances = new LinkedHashMap<>();
-        SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
-        catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-        GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
-        catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
-        AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
-        catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
-        CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
-        catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
-        PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
-        catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
-        SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
-        catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
-        VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
-        catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
-
+        catalogInstances = getCatalogInstances();
         catalogQueryFacade = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {

@@ -9,9 +9,13 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
@@ -47,6 +51,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -92,6 +97,28 @@ public class ModuleHelper {
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();
+    }
+
+    public static Map<String, CatalogEntry> getCatalogInstances() {
+        Map<String, CatalogEntry> catalogInstances = new LinkedHashMap<>();
+
+        // Plug in catalogs here
+        SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
+        catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
+        GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
+        catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
+        AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
+        catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
+        CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
+        catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
+        PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
+        catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
+        SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
+        catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
+        VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
+        catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
+
+        return catalogInstances;
     }
 
     public static JLabel createHyperlink(String label, String uri) {

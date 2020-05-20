@@ -56,7 +56,6 @@ public class WhiteDwarfTab {
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         InputStream input;
-
         input = getClass().getResourceAsStream("/WhiteDwarfPureHLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -64,7 +63,6 @@ public class WhiteDwarfTab {
             }).collect(Collectors.toList());
             whiteDwarfPureHLookupService = new SpectralTypeLookupService(entries);
         }
-
         input = getClass().getResourceAsStream("/WhiteDwarfPureHeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -72,7 +70,6 @@ public class WhiteDwarfTab {
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new SpectralTypeLookupService(entries);
         }
-
         input = getClass().getResourceAsStream("/WhiteDwarfMixLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
