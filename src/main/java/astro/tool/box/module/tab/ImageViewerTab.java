@@ -689,18 +689,33 @@ public class ImageViewerTab {
 
             dssImages = new JCheckBox("DSS 1red, 1blue, 2red, 2blue, 2ir", false);
             controlPanel.add(dssImages);
+            dssImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
 
             sloanImages = new JCheckBox("SDSS u, g, r & z bands", false);
             controlPanel.add(sloanImages);
+            sloanImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
 
             twoMassImages = new JCheckBox("2MASS j, h & k bands", false);
             controlPanel.add(twoMassImages);
+            twoMassImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
 
             allwiseImages = new JCheckBox("AllWISE w1, w2, w3 & w4 bands", true);
             controlPanel.add(allwiseImages);
+            allwiseImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
 
             ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
             controlPanel.add(ps1Images);
+            ps1Images.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
 
             createDataSheet = new JCheckBox("Create data sheet", false);
             controlPanel.add(createDataSheet);
@@ -1146,7 +1161,7 @@ public class ImageViewerTab {
                                             displayPs1Images(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (createDataSheet.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView, flipbook, selectedEpochs, getImageViewer()).create(baseFrame));
+                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
                                         }
                                     }
                                     break;
@@ -3390,6 +3405,10 @@ public class ImageViewerTab {
 
     public Timer getTimer() {
         return timer;
+    }
+
+    public FlipbookComponent[] getFlipbook() {
+        return flipbook;
     }
 
     public ImageViewerTab getImageViewer() {

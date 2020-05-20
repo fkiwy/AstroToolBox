@@ -11,14 +11,14 @@ public class CrossHair implements Drawable {
     private final int y;
     private final int size;
     private final Color color;
-    private final String number;
+    private final int number;
 
     public CrossHair(double x, double y, double size, Color color, int number) {
         this.x = (int) round(x);
         this.y = (int) round(y);
         this.size = (int) round(size / 2);
         this.color = color;
-        this.number = String.valueOf(number);
+        this.number = number;
     }
 
     @Override
@@ -26,7 +26,9 @@ public class CrossHair implements Drawable {
         graphics.setColor(color);
         graphics.drawLine(x - size, y, x + size, y);
         graphics.drawLine(x, y - size, x, y + size);
-        graphics.drawString(number, x, y - size);
+        if (number > 0) {
+            graphics.drawString(String.valueOf(number), x, y - size);
+        }
     }
 
 }
