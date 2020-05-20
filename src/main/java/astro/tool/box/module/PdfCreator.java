@@ -112,6 +112,7 @@ public class PdfCreator {
             imageViewerTab.getZoomSlider().setValue(250);
 
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            showAutocloseDialog(baseFrame, "This feature requires some time ... If necessary, adjust the contrast of the WISE images now!");
 
             File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(targetRa) + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + "_", ".pdf");
 
