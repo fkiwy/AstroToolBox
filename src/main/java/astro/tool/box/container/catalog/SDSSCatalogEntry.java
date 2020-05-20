@@ -21,6 +21,8 @@ import java.util.Map;
 
 public class SDSSCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "SDSS DR16";
+
     // Unique object identifier
     private long objID;
 
@@ -238,7 +240,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "SDSS DR16";
+        return CATALOG_NAME;
     }
 
     @Override

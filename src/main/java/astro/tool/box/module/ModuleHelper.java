@@ -10,7 +10,7 @@ import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
@@ -397,8 +397,8 @@ public class ModuleHelper {
                 spectralTypes.add(AGN_WARNING);
             }
         }
-        if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-            GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+        if (catalogEntry instanceof GaiaCatalogEntry) {
+            GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                 spectralTypes.add(WD_WARNING);
             }

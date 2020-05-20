@@ -10,7 +10,7 @@ import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
@@ -133,8 +133,8 @@ public class CatalogQueryTab {
             // Plug in catalogs here
             SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
             catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-            GaiaDR2CatalogEntry gaiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
-            catalogInstances.put(gaiaDR2CatalogEntry.getCatalogName(), gaiaDR2CatalogEntry);
+            GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
+            catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
             AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
             catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
             CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
@@ -399,7 +399,7 @@ public class CatalogQueryTab {
     }
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
-        JPanel linkPanel = new JPanel(new GridLayout(18, 2));
+        JPanel linkPanel = new JPanel(new GridLayout(19, 2));
         linkPanel.setPreferredSize(new Dimension(LINK_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
@@ -569,8 +569,8 @@ public class CatalogQueryTab {
                     warning = true;
                 }
             }
-            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof GaiaCatalogEntry) {
+                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
                     warning = true;

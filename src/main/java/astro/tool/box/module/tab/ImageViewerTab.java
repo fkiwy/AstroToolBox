@@ -16,7 +16,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.ProperMotionQuery;
@@ -162,8 +162,8 @@ public class ImageViewerTab {
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
     private List<CatalogEntry> simbadEntries;
-    private List<CatalogEntry> gaiaDR2Entries;
-    private List<CatalogEntry> gaiaDR2TpmEntries;
+    private List<CatalogEntry> gaiaEntries;
+    private List<CatalogEntry> gaiaTpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseTpmEntries;
@@ -184,7 +184,7 @@ public class ImageViewerTab {
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
     private JCheckBox simbadOverlay;
-    private JCheckBox gaiaDR2Overlay;
+    private JCheckBox gaiaOverlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
     private JCheckBox panStarrsOverlay;
@@ -196,7 +196,7 @@ public class ImageViewerTab {
     private JCheckBox haloOverlay;
     private JCheckBox latentOverlay;
     private JCheckBox spikeOverlay;
-    private JCheckBox gaiaDR2ProperMotion;
+    private JCheckBox gaiaProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImages;
@@ -590,28 +590,28 @@ public class ImageViewerTab {
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            simbadOverlay = new JCheckBox("SIMBAD");
+            simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME);
             simbadOverlay.setForeground(Color.RED);
             overlayPanel.add(simbadOverlay);
-            gaiaDR2Overlay = new JCheckBox("Gaia DR2");
-            gaiaDR2Overlay.setForeground(Color.CYAN.darker());
-            overlayPanel.add(gaiaDR2Overlay);
+            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaOverlay.setForeground(Color.CYAN.darker());
+            overlayPanel.add(gaiaOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            allWiseOverlay = new JCheckBox("AllWISE");
+            allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME);
             allWiseOverlay.setForeground(Color.GREEN.darker());
             overlayPanel.add(allWiseOverlay);
-            catWiseOverlay = new JCheckBox("CatWISE");
+            catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            panStarrsOverlay = new JCheckBox("Pan-STARRS");
+            panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME);
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             overlayPanel.add(panStarrsOverlay);
-            sdssOverlay = new JCheckBox("SDSS DR16");
+            sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
             sdssOverlay.setForeground(JColor.STEEL.val);
             overlayPanel.add(sdssOverlay);
 
@@ -620,13 +620,13 @@ public class ImageViewerTab {
             spectrumOverlay = new JCheckBox("SDSS spectra");
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             overlayPanel.add(spectrumOverlay);
-            vhsOverlay = new JCheckBox("VISTA-VHS");
+            vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             overlayPanel.add(vhsOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 1));
             controlPanel.add(overlayPanel);
-            ssoOverlay = new JCheckBox("Solar System Objects");
+            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
             overlayPanel.add(ssoOverlay);
 
@@ -634,10 +634,10 @@ public class ImageViewerTab {
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
-            gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
-            gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
-            properMotionPanel.add(gaiaDR2ProperMotion);
-            catWiseProperMotion = new JCheckBox("CatWISE");
+            gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaProperMotion.setForeground(Color.CYAN.darker());
+            properMotionPanel.add(gaiaProperMotion);
+            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseProperMotion.setForeground(Color.MAGENTA);
             properMotionPanel.add(catWiseProperMotion);
 
@@ -647,7 +647,7 @@ public class ImageViewerTab {
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
             properMotionField.addActionListener((ActionEvent evt) -> {
-                gaiaDR2TpmEntries = null;
+                gaiaTpmEntries = null;
                 catWiseTpmEntries = null;
             });
 
@@ -1156,12 +1156,12 @@ public class ImageViewerTab {
                                         showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
                                         overlays++;
                                     }
-                                    if (gaiaDR2Overlay.isSelected() && gaiaDR2Entries != null) {
-                                        showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
+                                    if (gaiaOverlay.isSelected() && gaiaEntries != null) {
+                                        showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
-                                    if (gaiaDR2ProperMotion.isSelected() && gaiaDR2TpmEntries != null) {
-                                        showPMInfo(gaiaDR2TpmEntries, mouseX, mouseY, Color.CYAN.darker());
+                                    if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
+                                        showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
                                     if (allWiseOverlay.isSelected() && allWiseEntries != null) {
@@ -1441,8 +1441,8 @@ public class ImageViewerTab {
                 overlaysLabel.setText(underline("Overlays:"));
                 overlaysLabel.setForeground(Color.BLACK);
                 simbadEntries = null;
-                gaiaDR2Entries = null;
-                gaiaDR2TpmEntries = null;
+                gaiaEntries = null;
+                gaiaTpmEntries = null;
                 allWiseEntries = null;
                 catWiseEntries = null;
                 catWiseTpmEntries = null;
@@ -1854,12 +1854,12 @@ public class ImageViewerTab {
                 drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
             }
         }
-        if (gaiaDR2Overlay.isSelected()) {
-            if (gaiaDR2Entries == null) {
-                gaiaDR2Entries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> gaiaDR2Entries = fetchCatalogEntries(new GaiaDR2CatalogEntry()));
+        if (gaiaOverlay.isSelected()) {
+            if (gaiaEntries == null) {
+                gaiaEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry()));
             } else {
-                drawOverlay(image, gaiaDR2Entries, Color.CYAN.darker(), Shape.CIRCLE);
+                drawOverlay(image, gaiaEntries, Color.CYAN.darker(), Shape.CIRCLE);
             }
         }
         if (allWiseOverlay.isSelected()) {
@@ -1944,12 +1944,12 @@ public class ImageViewerTab {
                 }
             });
         }
-        if (gaiaDR2ProperMotion.isSelected()) {
-            if (gaiaDR2TpmEntries == null) {
-                gaiaDR2TpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> gaiaDR2TpmEntries = fetchTpmCatalogEntries(new GaiaDR2CatalogEntry()));
+        if (gaiaProperMotion.isSelected()) {
+            if (gaiaTpmEntries == null) {
+                gaiaTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry()));
             } else {
-                drawPMVectors(image, gaiaDR2TpmEntries, Color.CYAN.darker());
+                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker());
             }
         }
         if (catWiseProperMotion.isSelected()) {
@@ -3127,7 +3127,7 @@ public class ImageViewerTab {
             double ra = 0;
             double dec = 0;
             int numberOfYears = 0;
-            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
+            if (catalogEntry instanceof GaiaCatalogEntry) {
                 ra = catalogEntry.getRa();
                 dec = catalogEntry.getDec();
                 numberOfYears = 5;
@@ -3220,8 +3220,8 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof GaiaCatalogEntry) {
+                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                     messagePanel.add(createLabel(WD_WARNING, JColor.DARK_RED));

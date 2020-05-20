@@ -9,7 +9,7 @@ import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
@@ -117,8 +117,8 @@ public class BatchQueryTab {
             // Plug in catalogs here
             SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
             catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-            GaiaDR2CatalogEntry gaiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
-            catalogInstances.put(gaiaDR2CatalogEntry.getCatalogName(), gaiaDR2CatalogEntry);
+            GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
+            catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
             AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
             catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
             CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
@@ -434,8 +434,8 @@ public class BatchQueryTab {
                             spectralTypes.add(AGN_WARNING);
                         }
                     }
-                    if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                        GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                    if (catalogEntry instanceof GaiaCatalogEntry) {
+                        GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                         if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                             spectralTypes.add(WD_WARNING);
                         }

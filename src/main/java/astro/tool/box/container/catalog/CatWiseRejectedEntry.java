@@ -19,6 +19,8 @@ import java.util.Objects;
 
 public class CatWiseRejectedEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "CatWISE Reject Table";
+
     // Unique WISE source designation
     private String sourceId;
 
@@ -211,7 +213,7 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "CatWISE Reject Table";
+        return CATALOG_NAME;
     }
 
     @Override

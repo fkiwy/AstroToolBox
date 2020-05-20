@@ -1,5 +1,6 @@
 package astro.tool.box.service;
 
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
@@ -15,17 +16,17 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
-public class GaiaDR2CatalogTest {
+public class GaiaCatalogTest {
 
     @Test
     public void parseResponse() throws IOException {
-        String irsaUrl = createIrsaUrl(GAIADR2_CATALOG_ID, DEG_RA, DEG_DE, DEG_RADIUS / DEG_ARCSEC);
+        String irsaUrl = createIrsaUrl(GAIA_CATALOG_ID, DEG_RA, DEG_DE, DEG_RADIUS / DEG_ARCSEC);
         HttpURLConnection connection = establishHttpConnection(irsaUrl);
 
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
 
-        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection, "Gaia DR2")));
+        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection, GaiaCatalogEntry.CATALOG_NAME)));
         List<String[]> results = reader.lines().map(line -> {
             System.out.println(line);
             return line.split(SPLIT_CHAR);

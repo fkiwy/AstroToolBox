@@ -19,6 +19,8 @@ import java.util.Objects;
 
 public class SimbadCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "SIMBAD";
+
     // Unique source identifier
     private String sourceId;
 
@@ -260,7 +262,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "SIMBAD";
+        return CATALOG_NAME;
     }
 
     @Override

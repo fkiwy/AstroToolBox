@@ -6,7 +6,7 @@ import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.util.CSVParser;
@@ -120,7 +120,7 @@ public class AdqlQueryTab {
                     String query = textEditor.getText();
                     if (query.isEmpty() || query.contains("Find all comovers")) {
                         CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                        if (selectedEntry != null && selectedEntry instanceof GaiaDR2CatalogEntry) {
+                        if (selectedEntry != null && selectedEntry instanceof GaiaCatalogEntry) {
                             String comoverQuery = createComoverQuery();
                             comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
                             comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));

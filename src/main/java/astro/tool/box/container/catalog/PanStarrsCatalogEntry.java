@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "Pan-STARRS";
+
     // Unique object identifier
     private long objID;
 
@@ -232,7 +234,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "Pan-STARRS";
+        return CATALOG_NAME;
     }
 
     @Override

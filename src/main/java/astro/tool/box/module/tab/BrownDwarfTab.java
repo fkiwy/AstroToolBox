@@ -6,7 +6,7 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
@@ -167,8 +167,8 @@ public class BrownDwarfTab {
                                 lookupResult.add(createLabel(AGN_WARNING, JColor.DARK_RED));
                             }
                         }
-                        if (selectedEntry instanceof GaiaDR2CatalogEntry) {
-                            GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) selectedEntry;
+                        if (selectedEntry instanceof GaiaCatalogEntry) {
+                            GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
                             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                                 lookupResult.add(createLabel(WD_WARNING, JColor.DARK_RED));
                             }

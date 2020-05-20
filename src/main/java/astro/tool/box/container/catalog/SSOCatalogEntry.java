@@ -21,6 +21,8 @@ import java.util.Objects;
 
 public class SSOCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "Solar System Objects";
+
     // Solar System object identifier
     private String objectID;
 
@@ -238,7 +240,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "Solar System Objects";
+        return CATALOG_NAME;
     }
 
     @Override

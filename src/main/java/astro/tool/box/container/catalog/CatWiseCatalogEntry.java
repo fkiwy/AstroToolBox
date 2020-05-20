@@ -21,6 +21,8 @@ import java.util.Objects;
 
 public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
+    public static final String CATALOG_NAME = "CatWISE";
+
     // Unique WISE source designation
     private String sourceId;
 
@@ -217,7 +219,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogName() {
-        return "CatWISE";
+        return CATALOG_NAME;
     }
 
     @Override

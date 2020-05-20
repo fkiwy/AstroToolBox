@@ -1,5 +1,6 @@
 package astro.tool.box.service;
 
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
@@ -25,7 +26,7 @@ public class SimbadCatalogTest {
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
 
-        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection, "SIMBAD")));
+        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection, SimbadCatalogEntry.CATALOG_NAME)));
         List<String[]> results = reader.lines().map(line -> {
             System.out.println(line);
             return line.replace("|", ",").replaceAll(REGEXP_SPACES, "").replace("\"", "").split(SPLIT_CHAR);

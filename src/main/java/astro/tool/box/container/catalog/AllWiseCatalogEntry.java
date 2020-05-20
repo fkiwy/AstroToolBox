@@ -19,6 +19,8 @@ import java.util.Objects;
 
 public class AllWiseCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "AllWISE";
+
     // Unique WISE source designation
     private String sourceId;
 
@@ -305,7 +307,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "AllWISE";
+        return CATALOG_NAME;
     }
 
     @Override

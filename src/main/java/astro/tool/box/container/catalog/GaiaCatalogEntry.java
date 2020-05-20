@@ -18,7 +18,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
+public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
+
+    public static final String CATALOG_NAME = "Gaia DR2";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -103,10 +105,10 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
-    public GaiaDR2CatalogEntry() {
+    public GaiaCatalogEntry() {
     }
 
-    public GaiaDR2CatalogEntry(Map<String, Integer> columns, String[] values) {
+    public GaiaCatalogEntry(Map<String, Integer> columns, String[] values) {
         sourceId = toLong(values[columns.get("source_id")]);
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -162,7 +164,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("GaiaDR2CatalogEntry{sourceId=").append(sourceId);
+        sb.append("GaiaCatalogEntry{sourceId=").append(sourceId);
         sb.append(", ra=").append(ra);
         sb.append(", dec=").append(dec);
         sb.append(", plx=").append(plx);
@@ -212,18 +214,18 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GaiaDR2CatalogEntry other = (GaiaDR2CatalogEntry) obj;
+        final GaiaCatalogEntry other = (GaiaCatalogEntry) obj;
         return this.sourceId == other.sourceId;
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new GaiaDR2CatalogEntry(columns, values);
+        return new GaiaCatalogEntry(columns, values);
     }
 
     @Override
     public String getCatalogName() {
-        return "Gaia DR2";
+        return CATALOG_NAME;
     }
 
     @Override
@@ -233,7 +235,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(GAIADR2_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl(GAIA_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
     }
 
     @Override
@@ -263,7 +265,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       teff_val,");
         addRow(query, "       radius_val,");
         addRow(query, "       lum_val");
-        addRow(query, "FROM   " + GAIADR2_CATALOG_ID);
+        addRow(query, "FROM   " + GAIA_CATALOG_ID);
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
         return encodeQuery(query.toString());
