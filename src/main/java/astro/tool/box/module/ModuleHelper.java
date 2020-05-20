@@ -4,6 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
@@ -21,7 +22,6 @@ import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.service.SpectralTypeLookupService;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -29,8 +29,10 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -69,6 +71,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -166,6 +169,19 @@ public class ModuleHelper {
         } catch (IOException e) {
         }
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void showAutocloseDialog(JFrame baseFrame, String message) {
+        JLabel messageLabel = new JLabel(html(message + "<br/><br/><p style='color:gray'>This info box autocloses after 5 seconds.</p>"));
+        Timer timer = new Timer(5000, (ActionEvent e) -> {
+            Window window = SwingUtilities.getWindowAncestor(messageLabel);
+            if (window != null) {
+                window.dispose();
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
+        JOptionPane.showMessageDialog(baseFrame, messageLabel, "Info", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static JScrollPane createMessagePanel(String message) {

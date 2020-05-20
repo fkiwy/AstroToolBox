@@ -165,6 +165,31 @@ public class PdfCreator {
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("J");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("H");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("K");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
+            if (bufferedImage != null) {
+                imageLabels.add("K-H-J");
+                bufferedImages.add(bufferedImage);
+            }
+
+            createPdfTable("2MASS", imageLabels, bufferedImages, writer, document);
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
             if (bufferedImage != null) {
                 imageLabels.add("u");
@@ -200,31 +225,6 @@ public class PdfCreator {
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
-            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
-            if (bufferedImage != null) {
-                imageLabels.add("J");
-                bufferedImages.add(bufferedImage);
-            }
-            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
-            if (bufferedImage != null) {
-                imageLabels.add("H");
-                bufferedImages.add(bufferedImage);
-            }
-            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
-            if (bufferedImage != null) {
-                imageLabels.add("K");
-                bufferedImages.add(bufferedImage);
-            }
-            bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
-            if (bufferedImage != null) {
-                imageLabels.add("K-H-J");
-                bufferedImages.add(bufferedImage);
-            }
-
-            createPdfTable("2MASS", imageLabels, bufferedImages, writer, document);
-
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (bufferedImage != null) {
                 imageLabels.add("W1");
@@ -253,15 +253,6 @@ public class PdfCreator {
 
             createPdfTable("AllWISE", imageLabels, bufferedImages, writer, document);
 
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
-            for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
-                imageLabels.add(component.getTitle());
-                bufferedImages.add(imageViewerTab.processImage(component));
-            }
-
-            createPdfTable("NeoWISE", imageLabels, bufferedImages, writer, document);
-
             SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
                 imageLabels = new ArrayList<>();
@@ -282,7 +273,16 @@ public class PdfCreator {
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
             }
 
-            int searchRadius = size / 2;
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
+            for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
+                imageLabels.add(component.getTitle());
+                bufferedImages.add(imageViewerTab.processImage(component));
+            }
+
+            createPdfTable("NeoWISE", imageLabels, bufferedImages, writer, document);
+
+            int searchRadius = size / 3;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
             for (CatalogEntry catalogEntry : catalogInstances.values()) {
                 catalogEntry.setRa(targetRa);
@@ -296,7 +296,7 @@ public class PdfCreator {
 
             document.add(new Paragraph(" "));
 
-            String mainHeader = "CATALOG ENTRIES (search radius = FoV/2 = " + roundTo1DecNZ(searchRadius) + "\")";
+            String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
             document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)", mainHeader));
             document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup (***)", null));
 

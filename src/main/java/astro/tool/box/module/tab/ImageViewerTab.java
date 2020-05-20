@@ -717,7 +717,7 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            createDataSheet = new JCheckBox("Create data sheet", false);
+            createDataSheet = new JCheckBox("Create object info sheet", false);
             controlPanel.add(createDataSheet);
             createDataSheet.addActionListener((ActionEvent evt) -> {
                 setImageViewer(this);
@@ -1161,6 +1161,8 @@ public class ImageViewerTab {
                                             displayPs1Images(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (createDataSheet.isSelected()) {
+                                            showAutocloseDialog(baseFrame, "This feature requires some time ...<br/>Selected target: "
+                                                    + roundTo2DecNZ(newRa) + " " + roundTo2DecNZ(newDec) + " FoV: " + fieldOfView + "\"");
                                             CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
                                         }
                                     }
