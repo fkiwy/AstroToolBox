@@ -14,7 +14,7 @@ import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.facade.CatalogQueryFacade;
-import astro.tool.box.module.shape.CrossHair;
+import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -486,7 +486,7 @@ public class PdfCreator {
             double x = bi.getWidth() / 2;
             double y = bi.getHeight() / 2;
             Graphics g = bi.getGraphics();
-            CrossHair cross = new CrossHair(x, y, 30, Color.YELLOW, 0);
+            Cross cross = new Cross(x, y, 30, Color.YELLOW);
             cross.draw(g);
             Image image = Image.getInstance(writer, bi, 1);
             PdfPCell cell = new PdfPCell(image, true);
