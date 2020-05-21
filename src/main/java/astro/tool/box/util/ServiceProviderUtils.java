@@ -1,5 +1,6 @@
 package astro.tool.box.util;
 
+import astro.tool.box.exception.ADQLException;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
@@ -11,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class ServiceProviderUtils {
         return simbadBaseUrl + "?request=doQuery&lang=adql&format=csv&query=SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,%27.%27%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
-    public static HttpURLConnection establishHttpConnection(String url) throws MalformedURLException, IOException {
+    public static HttpURLConnection establishHttpConnection(String url) throws IOException {
         Proxy webProxy = null;
         boolean useProxy = Boolean.parseBoolean(getUserSetting(USE_PROXY));
         if (useProxy) {
@@ -63,6 +63,9 @@ public class ServiceProviderUtils {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return reader.lines().collect(Collectors.joining(LINE_SEP));
         } catch (Exception ex) {
+            if (ex.getMessage().contains(IRSA_TAP_URL)) {
+                throw new ADQLException();
+            }
             showInfoDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
             return "";
         }

@@ -9,6 +9,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
+import astro.tool.box.exception.ADQLException;
 import astro.tool.box.util.CSVParser;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -58,6 +59,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AdqlQueryTab {
@@ -218,7 +220,6 @@ public class AdqlQueryTab {
                     showErrorDialog(baseFrame, "No query to run!");
                     return;
                 }
-                runButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 jobStatus = JobStatus.QUEUED.toString();
                 statusField.setText(jobStatus);
@@ -226,38 +227,38 @@ public class AdqlQueryTab {
                 queryResults = null;
                 jobId = null;
                 String encodedQuery = encodeQuery(query);
+                String response;
+                // Validate query
                 try {
-                    String response;
-                    // Validate query
-                    try {
-                        response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
-                        if (!response.isEmpty()) {
-                            isSyntaxChecked = true;
-                            JSONObject obj = new JSONObject(response);
-                            String validation = obj.getString("validation");
-                            if (!validation.equals("ok")) {
-                                JSONArray arr = obj.getJSONArray("errors");
-                                String errorMessage = arr.getJSONObject(0).getString("message");
-                                showQueryErrorMessage(errorMessage);
-                                initStatus();
-                                return;
-                            }
+                    response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
+                    if (!response.isEmpty()) {
+                        isSyntaxChecked = true;
+                        JSONObject obj = new JSONObject(response);
+                        String validation = obj.getString("validation");
+                        if (!validation.equals("ok")) {
+                            JSONArray arr = obj.getJSONArray("errors");
+                            String errorMessage = arr.getJSONObject(0).getString("message");
+                            showQueryErrorMessage(errorMessage);
+                            initStatus();
+                            return;
                         }
-                    } catch (Exception ex) {
                     }
-
-                    // Execute query
-                    startClock();
+                } catch (IOException | JSONException ex) {
+                }
+                // Execute query
+                startClock();
+                try {
+                    runButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)), QUERY_SERVICE);
                     if (!response.isEmpty()) {
                         String[] parts = response.split("<uws:jobId>");
                         parts = parts[1].split("</uws:jobId>");
                         jobId = parts[0];
                     }
-                } catch (IOException ex) {
+                } catch (IOException | ADQLException ex) {
                     stopClock();
                     initStatus();
-                    showExceptionDialog(baseFrame, ex);
+                    showQueryErrorMessage(getQueryErrorMessage());
                 } finally {
                     runButton.setCursor(Cursor.getDefaultCursor());
                 }
@@ -658,13 +659,12 @@ public class AdqlQueryTab {
     private String getQueryErrorMessage() {
         StringBuilder message = new StringBuilder();
         if (isSyntaxChecked) {
-            addRow(message, "There seems to be some kind of error not related to ADQL syntax.");
-            addRow(message, "Check the table and column names, they might be misspelled.");
-            addRow(message, "Use the 'Browse IRSA tables' button to do so.");
-            addRow(message, "If the error persists, please send a bug report including your query to " + HELP_EMAIL);
+            addRow(message, "There seems to be an error not related to ADQL syntax.");
+            addRow(message, "Check the table column names, they might be misspelled.");
         } else {
-            addRow(message, "Syntax check service not available. Error unknown!");
-            addRow(message, "Review the ADQL syntax and the table and column names.");
+            addRow(message, "The ADQL syntax checker is currently not available.");
+            addRow(message, "Therefore, the exact cause of the error can't be identified.");
+            addRow(message, "Review the ADQL syntax and check the table column names.");
         }
         return message.toString();
     }

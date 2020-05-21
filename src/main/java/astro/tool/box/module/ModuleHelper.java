@@ -90,7 +90,6 @@ public class ModuleHelper {
     public static final String PGM_VERSION = "v2.0";
 
     public static final String USER_HOME = System.getProperty("user.home");
-    public static final String HELP_EMAIL = "AstroToolSet@gmail.com";
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
 
