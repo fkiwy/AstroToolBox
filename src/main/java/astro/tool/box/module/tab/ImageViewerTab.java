@@ -580,7 +580,7 @@ public class ImageViewerTab {
                     setSubtractedContrast();
                 } else {
                     lowContrastSaved = LOW_CONTRAST;
-                    highContrastSaved = minMaxLimits.isSelected() ? 0 : HIGH_CONTRAST;
+                    highContrastSaved = 0;
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
             });
@@ -1562,11 +1562,6 @@ public class ImageViewerTab {
             int median = medianSum / medianCount;
             if (median > 50) {
                 minMaxLimits.setSelected(false);
-                if (!Epoch.isSubtracted(epoch) && !keepContrast.isSelected()) {
-                    lowContrastSaved = LOW_CONTRAST;
-                    highContrastSaved = HIGH_CONTRAST;
-                    setContrast(lowContrastSaved, highContrastSaved);
-                }
             } else {
                 minMaxLimits.setSelected(true);
             }
@@ -2562,11 +2557,12 @@ public class ImageViewerTab {
         int presetMaxVal;
         if (Epoch.isSubtracted(epoch)) {
             presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (minMaxLimits.isSelected() ? 2 : 5));
-            presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
+            presetMaxVal = avgVal * size;
         } else {
-            presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
+            presetMinVal = minVal;
+            presetMaxVal = avgVal * size / (minMaxLimits.isSelected() ? 1 : 5);
         }
-        presetMaxVal = avgVal * size;
+        presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
         presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
 
         minValueSlider.setMinimum(minVal);
