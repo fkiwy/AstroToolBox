@@ -251,7 +251,7 @@ public class ImageViewerTab {
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
-    private int numberOfEpochs = NUMBER_OF_EPOCHS;
+    private int numberOfEpochs;
     private int selectedEpochs;
     private int stretch = STRETCH;
     private int speed = SPEED;
@@ -524,7 +524,7 @@ public class ImageViewerTab {
             epochLabel = new JLabel(String.format(EPOCH_LABEL, selectedEpochs));
             grayPanel.add(epochLabel);
 
-            epochSlider = new JSlider(2, numberOfEpochs, numberOfEpochs);
+            epochSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
             controlPanel.add(epochSlider);
             epochSlider.setBackground(Color.LIGHT_GRAY);
             epochSlider.addChangeListener((ChangeEvent e) -> {
@@ -1502,7 +1502,7 @@ public class ImageViewerTab {
 
             boolean moreImagesAvailable = true;
             try {
-                getImageData(1, numberOfEpochs + 1);
+                getImageData(1, numberOfEpochs + 3);
             } catch (FileNotFoundException ex) {
                 moreImagesAvailable = false;
             }
