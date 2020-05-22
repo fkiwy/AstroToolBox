@@ -21,6 +21,8 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     public static final String CATALOG_NAME = "2MASS";
 
+    public static final String NEW_LINE = "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+
     // Source designation formed from sexigesimal coordinates
     private String sourceId;
 
@@ -140,14 +142,14 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         toolTip.append("<b>Photometric quality flag (ph. qual.):</b>").append(LINE_BREAK);
         toolTip.append("\"X\" - There is a detection at this location, but no valid brightness estimate can be extracted using any algorithm. rd_flg=\"9\" and default magnitude is null.").append(LINE_BREAK);
         toolTip.append("\"U\" - Upper limit on magnitude. Source is not detected in this band (rd_flg=\"0\"), or it is detected, but not resolved in a consistent fashion with other bands (rd_flg=\"6\").")
-                .append(LINE_BREAK).append("A value of ph_qual=\"U\" does not necessarily mean that there is no flux detected in this band at the location.")
-                .append(LINE_BREAK).append("Whether or not flux has been detected can be determined from the value of rd_flg. When rd_flg=\"0\", no flux has been detected.")
-                .append(LINE_BREAK).append("When rd_flg=\"6\", flux has been detected at the location where the images were not deblended consistently in all three bands (JHKs).").append(LINE_BREAK);
+                .append(NEW_LINE).append("A value of ph_qual=\"U\" does not necessarily mean that there is no flux detected in this band at the location.")
+                .append(NEW_LINE).append("Whether or not flux has been detected can be determined from the value of rd_flg. When rd_flg=\"0\", no flux has been detected.")
+                .append(NEW_LINE).append("When rd_flg=\"6\", flux has been detected at the location where the images were not deblended consistently in all three bands (JHKs).").append(LINE_BREAK);
         toolTip.append("\"F\" - This category includes rd_flg=\"1\" or rd_flg=\"3\" sources where a reliable estimate of the photometric error, [jhk]_cmsig, could not be determined.")
-                .append(LINE_BREAK).append("The uncertainties reported for these sources in [jhk]_cmsig and [jhk]_msigcom are flags and have numeric values >8.0.").append(LINE_BREAK);
+                .append(NEW_LINE).append("The uncertainties reported for these sources in [jhk]_cmsig and [jhk]_msigcom are flags and have numeric values >8.0.").append(LINE_BREAK);
         toolTip.append("\"E\" - This category includes detections where the goodness-of-fit quality of the profile-fit photometry was very poor (rd_flg=2 and [jhk]psf_chi>10.0),")
-                .append(LINE_BREAK).append("or detections where psf fit photometry did not converge and an aperture magnitude is reported (rd_flg=4),")
-                .append(LINE_BREAK).append("or detections where the number of frames was too small in relation to the number of frames in which a detection was geometrically possible (rd_flg=\"1\" or rd_flg=\"2\").").append(LINE_BREAK);
+                .append(NEW_LINE).append("or detections where psf fit photometry did not converge and an aperture magnitude is reported (rd_flg=4),")
+                .append(NEW_LINE).append("or detections where the number of frames was too small in relation to the number of frames in which a detection was geometrically possible (rd_flg=\"1\" or rd_flg=\"2\").").append(LINE_BREAK);
         toolTip.append("\"A\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr>10 AND [jhk]_cmsig<0.10857.").append(LINE_BREAK);
         toolTip.append("\"B\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr>7 AND [jhk]_cmsig<0.15510.").append(LINE_BREAK);
         toolTip.append("\"C\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr>5 AND [jhk]_cmsig<0.21714.").append(LINE_BREAK);
@@ -159,27 +161,27 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Read flag:</b>").append(LINE_BREAK);
         toolTip.append("\"0\" - Source is not detected in this band. The default magnitude is the 95% confidence upper limit derived from a 4\" radius aperture measurement taken at the position")
-                .append(LINE_BREAK).append(" of the source on the Atlas Image. The sky background is estimated in an annular region with inner radius of 14\" and outer radius of 20\".").append(LINE_BREAK);
+                .append(NEW_LINE).append(" of the source on the Atlas Image. The sky background is estimated in an annular region with inner radius of 14\" and outer radius of 20\".").append(LINE_BREAK);
         toolTip.append("\"1\" - The default magnitude is derived from aperture photometry measurements on the 51 ms \"Read_1\" exposures.")
-                .append(LINE_BREAK).append("The aperture radius is 4\", with the sky background measured in an annulus with an inner radius of 14\" and an outer radius of 20\".")
-                .append(LINE_BREAK).append("Used for sources that saturate one or more of the 1.3s \"Read_2\" exposures, but are not saturated on at least one of the 51 ms \"Read_1\" frames.").append(LINE_BREAK);
+                .append(NEW_LINE).append("The aperture radius is 4\", with the sky background measured in an annulus with an inner radius of 14\" and an outer radius of 20\".")
+                .append(NEW_LINE).append("Used for sources that saturate one or more of the 1.3s \"Read_2\" exposures, but are not saturated on at least one of the 51 ms \"Read_1\" frames.").append(LINE_BREAK);
         toolTip.append("\"2\" - The default magnitude is derived from a profile-fitting measurement made on the 1.3 sec \"Read_2\" exposures.")
-                .append(LINE_BREAK).append("The profile-fit magnitudes are normalized to curve-of-growth-corrected aperture magnitudes.")
-                .append(LINE_BREAK).append("This is the most common type in the PSC, and is used for sources that have no saturated pixels in any of the 1.3 sec exposures.").append(LINE_BREAK);
+                .append(NEW_LINE).append("The profile-fit magnitudes are normalized to curve-of-growth-corrected aperture magnitudes.")
+                .append(NEW_LINE).append("This is the most common type in the PSC, and is used for sources that have no saturated pixels in any of the 1.3 sec exposures.").append(LINE_BREAK);
         toolTip.append("\"3\" - The default magnitude is derived from a 1-d radial profile fitting measurement made on the 51 ms \"Read_1\" exposures.")
-                .append(LINE_BREAK).append("Used for very bright sources that saturate all of the 51 ms \"Read 1\" exposures.").append(LINE_BREAK);
+                .append(NEW_LINE).append("Used for very bright sources that saturate all of the 51 ms \"Read 1\" exposures.").append(LINE_BREAK);
         toolTip.append("\"4\" - The default magnitude is derived from curve-of-growth-corrected 4\" radius aperture photometry measurements on the 1.3 s \"Read_2\" exposures.")
-                .append(LINE_BREAK).append("This is used for sources that are not saturated in any of the Read_2 frames,")
-                .append(LINE_BREAK).append("but where the profile-fitting measurements fail to converge to a solution. These magnitudes are the same as the standard aperture magnitudes (j_m_stdap, h_m_stdap, k_m_stdap),")
-                .append(LINE_BREAK).append("but when they are the default magnitudes, it generally implies that they are low quality measurements.").append(LINE_BREAK);
+                .append(NEW_LINE).append("This is used for sources that are not saturated in any of the Read_2 frames,")
+                .append(NEW_LINE).append("but where the profile-fitting measurements fail to converge to a solution. These magnitudes are the same as the standard aperture magnitudes (j_m_stdap, h_m_stdap, k_m_stdap),")
+                .append(NEW_LINE).append("but when they are the default magnitudes, it generally implies that they are low quality measurements.").append(LINE_BREAK);
         toolTip.append("\"6\" - The default magnitude is the 95% confidence upper limit derived from a 4\" radius aperture measurement taken at the position of the source on the Atlas Image.")
-                .append(LINE_BREAK).append("The sky background is estimated in an annular region with inner radius of 14\" and outer radius of 20\".")
-                .append(LINE_BREAK).append("This is used for pairs of sources which are detected and resolved in another band, but are detected and not resolved in this band.")
-                .append(LINE_BREAK).append("This differs from a rd_flg=\"0\" because in this case there is a detection of the source in this band, but it is not consistently resolved across all bands.").append(LINE_BREAK);
+                .append(NEW_LINE).append("The sky background is estimated in an annular region with inner radius of 14\" and outer radius of 20\".")
+                .append(NEW_LINE).append("This is used for pairs of sources which are detected and resolved in another band, but are detected and not resolved in this band.")
+                .append(NEW_LINE).append("This differs from a rd_flg=\"0\" because in this case there is a detection of the source in this band, but it is not consistently resolved across all bands.").append(LINE_BREAK);
         toolTip.append("\"9\" - The default magnitude is the 95% confidence upper limit derived from a 4\" radius aperture measurement taken at the position of the source on the Atlas Image.")
-                .append(LINE_BREAK).append("The sky background is estimated in an annular region with inner radius of 14\" and outer radius of 20\".")
-                .append(LINE_BREAK).append("This is used for sources that were nominally detected in this band, but which could not have a useful brightness measurement from either profile fitting or aperture photometry.")
-                .append(LINE_BREAK).append("This often occurs in highly confused regions, or very near Tile edges where a significant fraction of the measurement aperture of sky annulus falls off the focal plane.");
+                .append(NEW_LINE).append("The sky background is estimated in an annular region with inner radius of 14\" and outer radius of 20\".")
+                .append(NEW_LINE).append("This is used for sources that were nominally detected in this band, but which could not have a useful brightness measurement from either profile fitting or aperture photometry.")
+                .append(NEW_LINE).append("This often occurs in highly confused regions, or very near Tile edges where a significant fraction of the measurement aperture of sky annulus falls off the focal plane.");
         return toolTip.toString();
     }
 
@@ -188,11 +190,11 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         toolTip.append("<b>Blend flag:</b>").append(LINE_BREAK);
         toolTip.append("\"0\" - Source is not detected, or is inconsistently deblended in that band.").append(LINE_BREAK);
         toolTip.append("\"1\" - One component was fit to the source in R_2 profile-fitting photometry (rd_flg=\"2\"), or default magnitudes are from aperture photometry (rd_flg=\"1\" or \"4\")")
-                .append(LINE_BREAK).append("or saturated star 1-d radial profile-fitting (rd_flg=\"3\").").append(LINE_BREAK);
+                .append(NEW_LINE).append("or saturated star 1-d radial profile-fitting (rd_flg=\"3\").").append(LINE_BREAK);
         toolTip.append("\">1\" - More than one component was fit simultaneously during R2 profile-fit photometry, where the value of the field is the number of components simultaneously fit.")
-                .append(LINE_BREAK).append("The maximum number of components is 7 in any band for the PSC, so this bl_flg is always a three character flag.")
-                .append(LINE_BREAK).append("Multi-component fitting occurs only for profile-fitting, and only when more than one detection is found within ~5\".")
-                .append(LINE_BREAK).append("Single detections that are not well-fit by a single PSF are not split.");
+                .append(NEW_LINE).append("The maximum number of components is 7 in any band for the PSC, so this bl_flg is always a three character flag.")
+                .append(NEW_LINE).append("Multi-component fitting occurs only for profile-fitting, and only when more than one detection is found within ~5\".")
+                .append(NEW_LINE).append("Single detections that are not well-fit by a single PSF are not split.");
         return toolTip.toString();
     }
 
@@ -201,12 +203,12 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         toolTip.append("<b>Contamination and confusion flags (cc flags):</b>").append(LINE_BREAK);
         toolTip.append("\"p\" = Persistence. Source may be contaminated by a latent image left by a nearby bright star.").append(LINE_BREAK);
         toolTip.append("\"c\" = Photometric Confusion. Source photometry is biased by a nearby star that has contaminated the background estimation.")
-                .append(LINE_BREAK).append("This is very common in high source density regions.").append(LINE_BREAK);
+                .append(NEW_LINE).append("This is very common in high source density regions.").append(LINE_BREAK);
         toolTip.append("\"d\" = Diffraction spike confusion. Source may be contaminated by a diffraction spike from a nearby star.").append(LINE_BREAK);
         toolTip.append("\"s\" = Electronic stripe. Source measurement may be contaminated by a stripe from a nearby bright star.").append(LINE_BREAK);
         toolTip.append("\"b\" = Bandmerge confusion. In the process of merging detections in the different bands for this source,")
-                .append(LINE_BREAK).append("there was more than one possible match between the different band components.")
-                .append(LINE_BREAK).append("This occurs in regions of very high source density, or when multiple sources were split in one band but not another.").append(LINE_BREAK);
+                .append(NEW_LINE).append("there was more than one possible match between the different band components.")
+                .append(NEW_LINE).append("This occurs in regions of very high source density, or when multiple sources were split in one band but not another.").append(LINE_BREAK);
         toolTip.append("\"0\" = Source is unaffected by known artifacts, or is not detected in the band.");
         return toolTip.toString();
     }
@@ -215,8 +217,8 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Extended source flag (ext. flag):</b>").append(LINE_BREAK);
         toolTip.append("\"0\" - Source does not fall within the elliptical profile of an extended source with semi-major axis >10'',")
-                .append(LINE_BREAK).append("or it is not identified exactly with an XSC source with semi-major axis >10''.")
-                .append(LINE_BREAK).append("However, the source may correspond exactly to a smaller XSC source.").append(LINE_BREAK);
+                .append(NEW_LINE).append("or it is not identified exactly with an XSC source with semi-major axis >10''.")
+                .append(NEW_LINE).append("However, the source may correspond exactly to a smaller XSC source.").append(LINE_BREAK);
         toolTip.append("\"1\" - Source is resolved by 2MASS, and is equivalent to a source in the XSC that has a semi-major axis >10'' in size.").append(LINE_BREAK);
         toolTip.append("\"2\" - Source falls within the elliptical boundary of an XSC source that has a semi-major axis >10'' in size.");
         return toolTip.toString();
