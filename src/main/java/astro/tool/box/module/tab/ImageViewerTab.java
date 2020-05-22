@@ -2637,7 +2637,6 @@ public class ImageViewerTab {
         imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
-        //imageViewerTab.createFlipbook();
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
     }

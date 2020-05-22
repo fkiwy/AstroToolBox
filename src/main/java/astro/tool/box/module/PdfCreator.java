@@ -103,8 +103,13 @@ public class PdfCreator {
 
     public Boolean create(JFrame baseFrame) {
         try {
+            JTextField coordsField = imageViewerTab.getCoordsField();
+            ActionListener actionListener = coordsField.getActionListeners()[0];
+            coordsField.removeActionListener(actionListener);
+            coordsField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
+            coordsField.addActionListener(actionListener);
             JTextField sizeField = imageViewerTab.getSizeField();
-            ActionListener actionListener = sizeField.getActionListeners()[0];
+            actionListener = sizeField.getActionListeners()[0];
             sizeField.removeActionListener(actionListener);
             sizeField.setText(String.valueOf(size));
             sizeField.addActionListener(actionListener);
@@ -112,7 +117,7 @@ public class PdfCreator {
             imageViewerTab.getZoomSlider().setValue(250);
 
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            showAutocloseDialog(baseFrame, "This feature requires some time ... If necessary, adjust the contrast of the WISE images now!");
+            showAutocloseDialog(baseFrame, "As this feature takes some time, you can now adjust the contrast of the WISE images if necessary.");
 
             File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(targetRa) + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + "_", ".pdf");
 
