@@ -227,7 +227,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public static String createToolTip_mp_flg() {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Minor planet flag:</b>").append(LINE_BREAK);
-        toolTip.append("\"0\" - Source is not associated with a known solar system object").append(LINE_BREAK);
+        toolTip.append("\"0\" - Source is not associated with a known solar system object.").append(LINE_BREAK);
         toolTip.append("\"1\" - Source is associated with the predicted position of a known solar system object.");
         return toolTip.toString();
     }
