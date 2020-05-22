@@ -18,6 +18,7 @@ import astro.tool.box.module.tab.WhiteDwarfTab;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 public class Application {
@@ -41,6 +42,7 @@ public class Application {
             } else {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
+            ToolTipManager.sharedInstance().setDismissDelay(60000);
         } catch (Exception e) {
         }
     }
