@@ -16,7 +16,6 @@ public enum Color {
     J_W2("J-W2"),
     H_K("H-K"),
     K_W1("K-W1"),
-    M_W1("MW1mag"),
     W1_W2("W1-W2"),
     W1_W3("W1-W3"),
     W1_W4("W1-W4"),
