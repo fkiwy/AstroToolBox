@@ -16,6 +16,7 @@ import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.function.AstrometricFunctions;
@@ -117,6 +118,8 @@ public class ModuleHelper {
         catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
         SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
+        TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
+        catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
 

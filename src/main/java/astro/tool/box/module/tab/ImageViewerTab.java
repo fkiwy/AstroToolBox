@@ -23,6 +23,7 @@ import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -170,6 +171,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> catWiseRejectedEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
+    private List<CatalogEntry> twoMassEntries;
     private List<CatalogEntry> vhsEntries;
     private List<CatalogEntry> ssoEntries;
 
@@ -190,6 +192,7 @@ public class ImageViewerTab {
     private JCheckBox panStarrsOverlay;
     private JCheckBox sdssOverlay;
     private JCheckBox spectrumOverlay;
+    private JCheckBox twoMassOverlay;
     private JCheckBox vhsOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
@@ -620,12 +623,15 @@ public class ImageViewerTab {
             spectrumOverlay = new JCheckBox("SDSS spectra");
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             overlayPanel.add(spectrumOverlay);
+            twoMassOverlay = new JCheckBox(TwoMassCatalogEntry.CATALOG_NAME);
+            twoMassOverlay.setForeground(JColor.ORANGE.val);
+            overlayPanel.add(twoMassOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             overlayPanel.add(vhsOverlay);
-
-            overlayPanel = new JPanel(new GridLayout(1, 1));
-            controlPanel.add(overlayPanel);
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
             overlayPanel.add(ssoOverlay);
@@ -1203,6 +1209,10 @@ public class ImageViewerTab {
                                         showSpectrumInfo(sdssEntries, mouseX, mouseY);
                                         overlays++;
                                     }
+                                    if (twoMassOverlay.isSelected() && twoMassEntries != null) {
+                                        showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
+                                        overlays++;
+                                    }
                                     if (vhsOverlay.isSelected() && vhsEntries != null) {
                                         showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
                                         overlays++;
@@ -1464,6 +1474,7 @@ public class ImageViewerTab {
                 catWiseRejectedEntries = null;
                 panStarrsEntries = null;
                 sdssEntries = null;
+                twoMassEntries = null;
                 vhsEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
@@ -1910,6 +1921,14 @@ public class ImageViewerTab {
                 CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
             } else {
                 drawSectrumOverlay(image, sdssEntries);
+            }
+        }
+        if (twoMassOverlay.isSelected()) {
+            if (twoMassEntries == null) {
+                twoMassEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> twoMassEntries = fetchCatalogEntries(new TwoMassCatalogEntry()));
+            } else {
+                drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
             }
         }
         if (vhsOverlay.isSelected()) {

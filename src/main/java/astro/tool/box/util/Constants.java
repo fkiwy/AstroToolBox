@@ -26,6 +26,8 @@ public class Constants {
 
     public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
 
+    public static final String TWO_MASS_CATALOG_ID = "fp_psc";
+
     public static final String CATWISE_CATALOG_ID = "cwcat";
 
     public static final String CATWISE_REJECTED_ID = "reject";
