@@ -230,7 +230,6 @@ public class ImageViewerTab {
     private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
     private JLabel epochLabel;
-    private JLabel overlaysLabel;
     private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
@@ -392,11 +391,6 @@ public class ImageViewerTab {
                 initMinMaxValues();
                 createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
-                    setSubtractedContrast();
-                } else {
-                    setContrast(lowContrastSaved, highContrastSaved);
-                }
-                if (Epoch.isSubtracted(epoch)) {
                     smoothImage.setSelected(true);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     smoothImage.setSelected(false);
@@ -545,6 +539,11 @@ public class ImageViewerTab {
             controlPanel.add(minMaxLimits);
             minMaxLimits.addActionListener((ActionEvent evt) -> {
                 initMinMaxValues();
+                if (Epoch.isSubtracted(epoch)) {
+                    setSubtractedContrast();
+                } else {
+                    setRegularContrast();
+                }
             });
 
             stretchImage = new JCheckBox("Stretch images", true);
@@ -579,17 +578,9 @@ public class ImageViewerTab {
                 stretchSlider.setValue(stretch = STRETCH);
                 initMinMaxValues();
                 createFlipbook();
-                if (Epoch.isSubtracted(epoch)) {
-                    setSubtractedContrast();
-                } else {
-                    lowContrastSaved = LOW_CONTRAST;
-                    highContrastSaved = 0;
-                    setContrast(lowContrastSaved, highContrastSaved);
-                }
             });
 
-            overlaysLabel = new JLabel(underline("Overlays:"));
-            controlPanel.add(overlaysLabel);
+            controlPanel.add(new JLabel(underline("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
@@ -1447,24 +1438,17 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
+                initMinMaxValues();
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
-                if (!keepContrast.isSelected()) {
-                    lowContrastSaved = LOW_CONTRAST;
-                    highContrastSaved = 0;
-                }
-                setContrast(lowContrastSaved, highContrastSaved);
-                initMinMaxValues();
                 centerX = centerY = 0;
                 axisX = axisY = size;
                 windowShift = 0;
                 imageCutOff = false;
-                overlaysLabel.setText(underline("Overlays:"));
-                overlaysLabel.setForeground(Color.BLACK);
                 simbadEntries = null;
                 gaiaEntries = null;
                 gaiaTpmEntries = null;
@@ -1479,7 +1463,6 @@ public class ImageViewerTab {
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
-                        customOverlay.getCheckBox().setEnabled(true);
                         customOverlay.setCatalogEntries(null);
                     });
                 }
@@ -1801,11 +1784,7 @@ public class ImageViewerTab {
             if (Epoch.isSubtracted(epoch)) {
                 setSubtractedContrast();
             } else {
-                if (!minMaxLimits.isSelected() && !keepContrast.isSelected()) {
-                    lowContrastSaved = LOW_CONTRAST;
-                    highContrastSaved = size;
-                    setContrast(lowContrastSaved, highContrastSaved);
-                }
+                setRegularContrast();
             }
             timer.restart();
         } catch (Exception ex) {
@@ -2136,24 +2115,8 @@ public class ImageViewerTab {
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            /*
-            if (size > naxis1 && size > naxis2) {
-                overlaysLabel.setText("Warning: Overlays may not work accurately!");
-                overlaysLabel.setForeground(Color.RED);
-                pixelX = crpix1;
-                pixelY = size - crpix2;
-                axisX = size;
-                axisY = size;
-            } else {
-                pixelX = crpix1;
-                pixelY = naxis2 - crpix2;
-                axisX = (int) round(naxis1);
-                axisY = (int) round(naxis2);
-            }*/
             if (naxis1 != naxis2) {
                 imageCutOff = true;
-                //overlaysLabel.setText("Warning: Overlays may not work accurately!");
-                //overlaysLabel.setForeground(Color.RED);
             }
             pixelX = crpix1;
             pixelY = size - crpix2;
@@ -2510,6 +2473,18 @@ public class ImageViewerTab {
 
     private float asinh(float x) {
         return (float) log(x + sqrt(x * x + 1.0));
+    }
+
+    private void setRegularContrast() {
+        if (keepContrast.isSelected()) {
+            setContrast(lowContrastSaved, highContrastSaved);
+        } else {
+            if (minMaxLimits.isSelected()) {
+                setContrast(LOW_CONTRAST, 0);
+            } else {
+                setContrast(LOW_CONTRAST, size);
+            }
+        }
     }
 
     private void setSubtractedContrast() {
