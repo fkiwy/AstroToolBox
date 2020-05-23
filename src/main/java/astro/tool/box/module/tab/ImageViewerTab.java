@@ -2061,7 +2061,7 @@ public class ImageViewerTab {
             if (year != prevYear) {
                 node = 1;
                 nodeChange = false;
-            } else if ((month - prevMonth > 4 || month > 8) && !nodeChange) {
+            } else if (month - prevMonth > 4 && !nodeChange) {
                 node = prevNode == 1 ? 2 : 1;
                 nodeChange = true;
             } else {
