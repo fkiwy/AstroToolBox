@@ -1570,15 +1570,17 @@ public class ImageViewerTab {
             }
 
             // Un/Check the "Set min/max limits" check box automatically
-            int median = medianSum / medianCount;
-            if (median > 50) {
-                minMaxLimits.setSelected(false);
-            } else {
-                minMaxLimits.setSelected(true);
+            if (medianCount > 0) {
+                int median = medianSum / medianCount;
+                if (median > 50) {
+                    minMaxLimits.setSelected(false);
+                } else {
+                    minMaxLimits.setSelected(true);
+                }
+                System.out.println("medianSum  =" + medianSum);
+                System.out.println("medianCount=" + medianCount);
+                System.out.println("median     =" + median);
             }
-            System.out.println("medianSum  =" + medianSum);
-            System.out.println("medianCount=" + medianCount);
-            System.out.println("median     =" + median);
 
             Fits fits;
             int k;
@@ -1798,6 +1800,12 @@ public class ImageViewerTab {
             }
             if (Epoch.isSubtracted(epoch)) {
                 setSubtractedContrast();
+            } else {
+                if (!minMaxLimits.isSelected() && !keepContrast.isSelected()) {
+                    lowContrastSaved = LOW_CONTRAST;
+                    highContrastSaved = size;
+                    setContrast(lowContrastSaved, highContrastSaved);
+                }
             }
             timer.restart();
         } catch (Exception ex) {
@@ -2074,7 +2082,7 @@ public class ImageViewerTab {
             if (year != prevYear) {
                 node = 1;
                 nodeChange = false;
-            } else if (month - prevMonth > 4 && !nodeChange) {
+            } else if ((month - prevMonth > 4 || month > 8) && !nodeChange) {
                 node = prevNode == 1 ? 2 : 1;
                 nodeChange = true;
             } else {
@@ -2575,11 +2583,17 @@ public class ImageViewerTab {
         int presetMinVal;
         int presetMaxVal;
         if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (minMaxLimits.isSelected() ? 2 : 5));
-            presetMaxVal = avgVal * size;
+            int totalContrast = lowContrast + highContrast;
+            int divisor = minMaxLimits.isSelected() ? 2 : 5;
+            int rectifiedContrast = totalContrast / divisor;
+            presetMinVal = -avgVal * size / rectifiedContrast;
         } else {
             presetMinVal = minVal;
-            presetMaxVal = avgVal * size / (minMaxLimits.isSelected() ? 1 : 5);
+        }
+        if (maxVal < 500) {
+            presetMaxVal = maxVal = 500;
+        } else {
+            presetMaxVal = avgVal * size;
         }
         presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
         presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
