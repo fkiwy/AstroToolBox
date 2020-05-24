@@ -1483,7 +1483,7 @@ public class ImageViewerTab {
                 requestedEpochs.add(totalEpochs - 1);
             } else {
                 if (moreImagesAvailable) {
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < totalEpochs * 4; i++) {
                         requestedEpochs.add(i);
                     }
                 } else {
@@ -1511,6 +1511,11 @@ public class ImageViewerTab {
                     downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
                     epochCountW2 = epochCount;
                     break;
+            }
+            if (images.isEmpty()) {
+                showInfoDialog(baseFrame, "No decent images found for the specified coordinates and FoV.");
+                hasException = true;
+                return;
             }
             if (epochCountW1 > 0 && epochCountW2 > 0) {
                 epochCount = min(epochCountW1, epochCountW2);
@@ -2016,8 +2021,9 @@ public class ImageViewerTab {
                     }
                 }
             }
-            double maxAllowed = naxis1 * SIZE_FACTOR * naxis2 * SIZE_FACTOR / 100;
+            double maxAllowed = naxis1 * naxis2 / 20;
             if (zeroValues > maxAllowed) {
+                System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
                 if (requestedEpochs.size() == 4) {
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                     return;
