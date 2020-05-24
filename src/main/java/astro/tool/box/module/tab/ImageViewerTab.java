@@ -176,7 +176,6 @@ public class ImageViewerTab {
     private JPanel imagePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
-    private JCheckBox stretchImage;
     private JCheckBox smoothImage;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
@@ -330,7 +329,7 @@ public class ImageViewerTab {
             int controlPanelWidth = 250;
             int controlPanelHeight = 1900;
 
-            JPanel controlPanel = new JPanel(new GridLayout(79, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(78, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -458,7 +457,7 @@ public class ImageViewerTab {
             stretchSlider.setBackground(Color.WHITE);
             stretchSlider.addChangeListener((ChangeEvent e) -> {
                 stretch = stretchSlider.getValue();
-                stretchLabel.setText(String.format("Stretch control: %s", roundTo2Dec(stretch / 100f)));
+                stretchLabel.setText(String.format("Stretch image: %s", roundTo2Dec(stretch / 100f)));
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -514,9 +513,6 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            stretchImage = new JCheckBox("Stretch images", true);
-            controlPanel.add(stretchImage);
-
             smoothImage = new JCheckBox("Smooth images");
             controlPanel.add(smoothImage);
 
@@ -539,7 +535,6 @@ public class ImageViewerTab {
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
@@ -2402,9 +2397,7 @@ public class ImageViewerTab {
 
     private float processPixel(float value) {
         value = normalize(value, minValue, maxValue);
-        if (stretchImage.isSelected()) {
-            value = stretch(value);
-        }
+        value = stretch(value);
         value = contrast(value);
         value = min(1, value);
         return invertColors.isSelected() ? value : 1 - value;
@@ -2459,7 +2452,6 @@ public class ImageViewerTab {
     }
 
     // 151.4119996 -57.862234899999997 BD ???
-    
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
         boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
 
