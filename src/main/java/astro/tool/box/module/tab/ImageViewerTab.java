@@ -146,9 +146,7 @@ public class ImageViewerTab {
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
     public static final int LOW_CONTRAST = 50;
-    public static final int HIGH_CONTRAST = 500;
-    public static final int MIN_VALUE = -2500;
-    public static final int MAX_VALUE = 2500;
+    public static final int HIGH_CONTRAST = 0;
     public static final int STRETCH = 100;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
@@ -178,10 +176,8 @@ public class ImageViewerTab {
     private JPanel imagePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
-    private JCheckBox minMaxLimits;
     private JCheckBox stretchImage;
     private JCheckBox smoothImage;
-    private JCheckBox keepContrast;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
@@ -261,15 +257,10 @@ public class ImageViewerTab {
     private int size = SIZE;
 
     private int lowContrast = LOW_CONTRAST;
-    private int highContrast;
-    private int lowContrastSaved = LOW_CONTRAST;
-    private int highContrastSaved;
+    private int highContrast = HIGH_CONTRAST;
 
     private int minValue;
     private int maxValue;
-
-    private int medianSum;
-    private int medianCount;
 
     private double targetRa;
     private double targetDec;
@@ -337,9 +328,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1950;
+            int controlPanelHeight = 1900;
 
-            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(79, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -375,7 +366,6 @@ public class ImageViewerTab {
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                initMinMaxValues();
                 createFlipbook();
             });
 
@@ -388,7 +378,6 @@ public class ImageViewerTab {
             epochs.addActionListener((ActionEvent evt) -> {
                 Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
-                initMinMaxValues();
                 createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
                     smoothImage.setSelected(true);
@@ -410,11 +399,6 @@ public class ImageViewerTab {
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
-                if (Epoch.isSubtracted(epoch)) {
-                    initMinMaxValues();
-                } else {
-                    highContrastSaved = highContrast;
-                }
             });
 
             JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -430,11 +414,6 @@ public class ImageViewerTab {
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
-                if (Epoch.isSubtracted(epoch)) {
-                    initMinMaxValues();
-                } else {
-                    lowContrastSaved = lowContrast;
-                }
             });
 
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -535,25 +514,11 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            minMaxLimits = new JCheckBox("Set min/max limits", true);
-            controlPanel.add(minMaxLimits);
-            minMaxLimits.addActionListener((ActionEvent evt) -> {
-                initMinMaxValues();
-                if (Epoch.isSubtracted(epoch)) {
-                    setSubtractedContrast();
-                } else {
-                    setRegularContrast();
-                }
-            });
-
             stretchImage = new JCheckBox("Stretch images", true);
             controlPanel.add(stretchImage);
 
             smoothImage = new JCheckBox("Smooth images");
             controlPanel.add(smoothImage);
-
-            keepContrast = new JCheckBox("Keep contrast settings");
-            controlPanel.add(keepContrast);
 
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
@@ -576,7 +541,7 @@ public class ImageViewerTab {
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
-                initMinMaxValues();
+                setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
 
@@ -1438,7 +1403,6 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
-                initMinMaxValues();
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
                 images = new HashMap<>();
@@ -1467,10 +1431,10 @@ public class ImageViewerTab {
                     });
                 }
                 ps1Image = null;
-                sdssImage = null;
                 if (panstarrsImages) {
                     CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
                 }
+                sdssImage = null;
                 if (sdssImages) {
                     CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
                 }
@@ -1488,6 +1452,7 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
+                setContrast(LOW_CONTRAST, HIGH_CONTRAST);
             }
             previousSize = size;
             previousRa = targetRa;
@@ -1524,8 +1489,6 @@ public class ImageViewerTab {
             }
             epochChange = false;
             images.clear();
-            medianSum = 0;
-            medianCount = 0;
             int epochCountW1 = 0;
             int epochCountW2 = 0;
             switch (wiseBand) {
@@ -1550,19 +1513,6 @@ public class ImageViewerTab {
             epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
             if (!Epoch.isFirstLast(epoch) || moreImagesAvailable) {
                 epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
-            }
-
-            // Un/Check the "Set min/max limits" check box automatically
-            if (medianCount > 0) {
-                int median = medianSum / medianCount;
-                if (median > 50) {
-                    minMaxLimits.setSelected(false);
-                } else {
-                    minMaxLimits.setSelected(true);
-                }
-                System.out.println("medianSum  =" + medianSum);
-                System.out.println("medianCount=" + medianCount);
-                System.out.println("median     =" + median);
             }
 
             Fits fits;
@@ -1781,11 +1731,49 @@ public class ImageViewerTab {
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true);
                     break;
             }
-            if (Epoch.isSubtracted(epoch)) {
-                setSubtractedContrast();
-            } else {
-                setRegularContrast();
+
+            int divisor = 0;
+
+            int minValW1 = 0;
+            int maxValW1 = 0;
+            int avgValW1 = 0;
+            fits = getImage(WiseBand.W1.val, 0);
+            if (fits != null) {
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet refValues = getRefValues(values);
+                minValW1 = (int) refValues.getX();
+                maxValW1 = (int) refValues.getY();
+                avgValW1 = (int) refValues.getZ();
+                divisor++;
             }
+
+            int minValW2 = 0;
+            int maxValW2 = 0;
+            int avgValW2 = 0;
+            fits = getImage(WiseBand.W2.val, 0);
+            if (fits != null) {
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet refValues = getRefValues(values);
+                minValW2 = (int) refValues.getX();
+                maxValW2 = (int) refValues.getY();
+                avgValW2 = (int) refValues.getZ();
+                divisor++;
+            }
+
+            int minVal = (minValW1 + minValW2) / divisor;
+            int maxVal = (maxValW1 + maxValW2) / divisor;
+            int avgVal = (avgValW1 + avgValW2) / divisor;
+
+            System.out.println("minVal=" + minVal);
+            System.out.println("maxVal=" + maxVal);
+            System.out.println("avgVal=" + avgVal);
+
+            setMinMaxValues(minVal, maxVal, avgVal);
+
             timer.restart();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
@@ -2106,10 +2094,6 @@ public class ImageViewerTab {
         for (List<ImageContainer> imageGroup : groupedList) {
             Fits fits = imageGroup.get(0).getImage();
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values = (float[][]) imageData.getData();
-            medianSum += getMedianValue(values);
-            medianCount++;
             Header header = hdu.getHeader();
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
@@ -2208,14 +2192,6 @@ public class ImageViewerTab {
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
 
-            if (minValue == 0 && maxValue == 0) {
-                NumberTriplet minMaxValues = getMinMaxValues(values);
-                int minVal = (int) minMaxValues.getX();
-                int maxVal = (int) minMaxValues.getY();
-                int avgVal = (int) minMaxValues.getZ();
-                setMinMaxValues(minVal, maxVal, avgVal);
-            }
-
             if (smoothImage.isSelected()) {
                 values = smooth(values);
             }
@@ -2254,23 +2230,6 @@ public class ImageViewerTab {
             if (smoothImage.isSelected()) {
                 valuesW1 = smooth(valuesW1);
                 valuesW2 = smooth(valuesW2);
-            }
-
-            if (minValue == 0 && maxValue == 0) {
-                NumberTriplet minMaxValues1 = getMinMaxValues(valuesW1);
-                int minVal1 = (int) minMaxValues1.getX();
-                int maxVal1 = (int) minMaxValues1.getY();
-                int avgVal1 = (int) minMaxValues1.getZ();
-
-                NumberTriplet minMaxValues2 = getMinMaxValues(valuesW2);
-                int minVal2 = (int) minMaxValues2.getX();
-                int maxVal2 = (int) minMaxValues2.getY();
-                int avgVal2 = (int) minMaxValues2.getZ();
-
-                int minVal = min(minVal1, minVal2);
-                int maxVal = max(maxVal1, maxVal2);
-                int avgVal = (avgVal1 + avgVal2) / 2;
-                setMinMaxValues(minVal, maxVal, avgVal);
             }
 
             BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
@@ -2475,112 +2434,76 @@ public class ImageViewerTab {
         return (float) log(x + sqrt(x * x + 1.0));
     }
 
-    private void setRegularContrast() {
-        if (keepContrast.isSelected()) {
-            setContrast(lowContrastSaved, highContrastSaved);
-        } else {
-            if (minMaxLimits.isSelected()) {
-                setContrast(LOW_CONTRAST, 0);
-            } else {
-                setContrast(LOW_CONTRAST, size);
-            }
-        }
-    }
-
-    private void setSubtractedContrast() {
-        if (minMaxLimits.isSelected()) {
-            setContrast(LOW_CONTRAST, 0);
-        } else {
-            setContrast(LOW_CONTRAST, HIGH_CONTRAST);
-        }
-    }
-
     private void setContrast(int low, int high) {
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
     }
 
-    private float getMedianValue(float[][] values) {
-        int x = values.length;
-        int y = values[0].length;
-        List<Float> list = new ArrayList<>();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float value = values[i][j];
+    private NumberTriplet getRefValues(float[][] values) {
+        int total = 0, count = 0;
+        List<Float> numbers = new ArrayList<>();
+        for (float[] row : values) {
+            for (float value : row) {
                 if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
-                    list.add(value);
+                    numbers.add(value);
+                    total += abs(value);
+                    count++;
                 }
             }
         }
-        list.sort(Comparator.naturalOrder());
-        return list.get((list.size() - 1) / 2);
-    }
-
-    private NumberTriplet getMinMaxValues(float[][] values) {
-        int x = values.length;
-        int y = values[0].length;
-        float minVal = clipToBoundaries(values[0][0]);
-        float maxVal = clipToBoundaries(values[0][0]);
-        int sum = 0;
-        int nbr = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float value = values[i][j];
-                if (value == Float.POSITIVE_INFINITY || value == Float.NEGATIVE_INFINITY || value == Float.NaN) {
-                    continue;
-                }
-                if (minMaxLimits.isSelected()) {
-                    value = clipToBoundaries(value);
-                }
-                if (value < minVal) {
-                    minVal = value;
-                }
-                if (value > maxVal) {
-                    maxVal = value;
-                }
-                sum += abs(value);
-                nbr++;
-            }
-        }
-        float avgVal = sum / nbr;
+        numbers.sort(Comparator.naturalOrder());
+        float minVal = numbers.get(0);
+        float maxVal = numbers.get(numbers.size() - 1);
+        float avgVal = total / count;
         return new NumberTriplet(minVal, maxVal, avgVal);
     }
 
-    private float clipToBoundaries(float value) {
-        return max(MIN_VALUE, min(MAX_VALUE, value));
-    }
-
-    private void initMinMaxValues() {
-        minValue = maxValue = 0;
-    }
-
+    // 151.4119996 -57.862234899999997 BD ???
+    
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
-        int presetMinVal;
-        int presetMaxVal;
-        if (Epoch.isSubtracted(epoch)) {
-            int totalContrast = lowContrast + highContrast;
-            int divisor = minMaxLimits.isSelected() ? 2 : 5;
-            int rectifiedContrast = totalContrast / divisor;
-            presetMinVal = -avgVal * size / rectifiedContrast;
-        } else {
-            presetMinVal = minVal;
+        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
+
+        // Preset minimum value
+        int minLimit = isLowValues ? -2500 : -50000;
+        if (Epoch.isSubtracted(epoch) || minVal < minLimit) {
+            minVal = minLimit;
         }
+        int presetMinVal;
+        if (Epoch.isSubtracted(epoch)) {
+            presetMinVal = isLowValues ? -avgVal * 5 : -avgVal / 2;
+        } else {
+            presetMinVal = minVal < -5000 ? -avgVal : minVal;
+        }
+        presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
+
+        // Preset maximum value
+        int maxLimit = isLowValues ? 2500 : 50000;
+        if (maxVal > maxLimit) {
+            maxVal = maxLimit;
+        }
+        int presetMaxVal;
         if (maxVal < 500) {
             presetMaxVal = maxVal = 500;
         } else {
-            presetMaxVal = avgVal * size;
+            if (Epoch.isSubtracted(epoch)) {
+                presetMaxVal = avgVal * (isLowValues ? 100 : 5);
+            } else {
+                presetMaxVal = avgVal * 100;
+            }
         }
-        presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
         presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
 
+        // Set minimum slider values
         minValueSlider.setMinimum(minVal);
         minValueSlider.setMaximum(maxVal);
         minValueSlider.setValue(presetMinVal);
 
+        // Set maximum slider values
         maxValueSlider.setMinimum(minVal);
         maxValueSlider.setMaximum(maxVal);
         maxValueSlider.setValue(presetMaxVal);
 
+        // Set minimum & maximum values
         minValue = presetMinVal;
         maxValue = presetMaxVal;
     }
