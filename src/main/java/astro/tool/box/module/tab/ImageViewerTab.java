@@ -257,6 +257,8 @@ public class ImageViewerTab {
 
     private int lowContrast = LOW_CONTRAST;
     private int highContrast = HIGH_CONTRAST;
+    private int lowContrastSaved = lowContrast;
+    private int highContrastSaved = highContrast;
 
     private int minValue;
     private int maxValue;
@@ -380,8 +382,10 @@ public class ImageViewerTab {
                 createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
                     smoothImage.setSelected(true);
+                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     smoothImage.setSelected(false);
+                    setContrast(lowContrastSaved, highContrastSaved);
                 }
             });
 
@@ -398,6 +402,9 @@ public class ImageViewerTab {
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
+                if (!Epoch.isSubtracted(epoch)) {
+                    highContrastSaved = highContrast;
+                }
             });
 
             JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -413,6 +420,9 @@ public class ImageViewerTab {
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
+                if (!Epoch.isSubtracted(epoch)) {
+                    lowContrastSaved = lowContrast;
+                }
             });
 
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
