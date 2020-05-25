@@ -176,6 +176,8 @@ public class ImageViewerTab {
     private JPanel imagePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
+    private JCheckBox applyLimits;
+    private JCheckBox saveContrast;
     private JCheckBox smoothImage;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
@@ -329,9 +331,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1900;
+            int controlPanelHeight = 1950;
 
-            JPanel controlPanel = new JPanel(new GridLayout(78, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(80, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -467,7 +469,7 @@ public class ImageViewerTab {
             stretchSlider.setBackground(Color.WHITE);
             stretchSlider.addChangeListener((ChangeEvent e) -> {
                 stretch = stretchSlider.getValue();
-                stretchLabel.setText(String.format("Stretch image: %s", roundTo2Dec(stretch / 100f)));
+                stretchLabel.setText(String.format("Stretch control: %s", roundTo2Dec(stretch / 100f)));
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -523,6 +525,15 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            applyLimits = new JCheckBox("Apply limits", true);
+            controlPanel.add(applyLimits);
+            applyLimits.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
+            });
+
+            saveContrast = new JCheckBox("Keep contrast");
+            controlPanel.add(saveContrast);
+
             smoothImage = new JCheckBox("Smooth images");
             controlPanel.add(smoothImage);
 
@@ -535,10 +546,12 @@ public class ImageViewerTab {
             staticDisplay = new JCheckBox("Static display");
             controlPanel.add(staticDisplay);
             staticDisplay.addActionListener((ActionEvent evt) -> {
-                if (staticDisplay.isSelected() && flipbook != null) {
-                    createStaticBook();
-                } else {
-                    createFlipbook();
+                if (flipbook != null) {
+                    if (staticDisplay.isSelected()) {
+                        createStaticBook();
+                    } else {
+                        createFlipbook();
+                    }
                 }
             });
 
@@ -547,6 +560,7 @@ public class ImageViewerTab {
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 stretchSlider.setValue(stretch = STRETCH);
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                applyLimits.setSelected(true);
                 createFlipbook();
             });
 
@@ -1457,7 +1471,9 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                if (!saveContrast.isSelected()) {
+                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                }
             }
             previousSize = size;
             previousRa = targetRa;
@@ -2444,6 +2460,10 @@ public class ImageViewerTab {
     }
 
     private void setContrast(int low, int high) {
+        if (!Epoch.isSubtracted(epoch)) {
+            lowContrastSaved = low;
+            highContrastSaved = high;
+        }
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
     }
@@ -2472,9 +2492,11 @@ public class ImageViewerTab {
         boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
 
         // Preset minimum value
-        int minLimit = isLowValues ? -2500 : -50000;
-        if (Epoch.isSubtracted(epoch) || minVal < minLimit) {
-            minVal = minLimit;
+        if (applyLimits.isSelected()) {
+            int minLimit = isLowValues ? -2500 : -50000;
+            if (Epoch.isSubtracted(epoch) || minVal < minLimit) {
+                minVal = minLimit;
+            }
         }
         int presetMinVal;
         if (Epoch.isSubtracted(epoch)) {
@@ -2485,9 +2507,11 @@ public class ImageViewerTab {
         presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
 
         // Preset maximum value
-        int maxLimit = isLowValues ? 2500 : 50000;
-        if (maxVal > maxLimit) {
-            maxVal = maxLimit;
+        if (applyLimits.isSelected()) {
+            int maxLimit = isLowValues ? 2500 : 50000;
+            if (maxVal > maxLimit) {
+                maxVal = maxLimit;
+            }
         }
         int presetMaxVal;
         if (maxVal < 500) {
