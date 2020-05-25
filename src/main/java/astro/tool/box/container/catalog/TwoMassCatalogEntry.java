@@ -191,7 +191,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         toolTip.append("\"0\" - Source is not detected, or is inconsistently deblended in that band.").append(LINE_BREAK);
         toolTip.append("\"1\" - One component was fit to the source in R_2 profile-fitting photometry (rd_flg=\"2\"), or default magnitudes are from aperture photometry (rd_flg=\"1\" or \"4\")")
                 .append(NEW_LINE).append("or saturated star 1-d radial profile-fitting (rd_flg=\"3\").").append(LINE_BREAK);
-        toolTip.append("\">1\" - More than one component was fit simultaneously during R2 profile-fit photometry, where the value of the field is the number of components simultaneously fit.")
+        toolTip.append("\"&gt;1\" - More than one component was fit simultaneously during R2 profile-fit photometry, where the value of the field is the number of components simultaneously fit.")
                 .append(NEW_LINE).append("The maximum number of components is 7 in any band for the PSC, so this bl_flg is always a three character flag.")
                 .append(NEW_LINE).append("Multi-component fitting occurs only for profile-fitting, and only when more than one detection is found within ~5\".")
                 .append(NEW_LINE).append("Single detections that are not well-fit by a single PSF are not split.");

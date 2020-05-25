@@ -5,13 +5,20 @@ import nom.tam.fits.Fits;
 
 public class ImageContainer {
 
+    private final int epoch;
+
     private final LocalDateTime date;
 
     private final Fits image;
 
-    public ImageContainer(LocalDateTime date, Fits image) {
+    public ImageContainer(int epoch, LocalDateTime date, Fits image) {
+        this.epoch = epoch;
         this.date = date;
         this.image = image;
+    }
+
+    public int getEpoch() {
+        return epoch;
     }
 
     public LocalDateTime getDate() {
