@@ -146,13 +146,13 @@ public class TwoMassCatalogEntry implements CatalogEntry {
                 .append(NEW_LINE).append("Whether or not flux has been detected can be determined from the value of rd_flg. When rd_flg=\"0\", no flux has been detected.")
                 .append(NEW_LINE).append("When rd_flg=\"6\", flux has been detected at the location where the images were not deblended consistently in all three bands (JHKs).").append(LINE_BREAK);
         toolTip.append("\"F\" - This category includes rd_flg=\"1\" or rd_flg=\"3\" sources where a reliable estimate of the photometric error, [jhk]_cmsig, could not be determined.")
-                .append(NEW_LINE).append("The uncertainties reported for these sources in [jhk]_cmsig and [jhk]_msigcom are flags and have numeric values >8.0.").append(LINE_BREAK);
-        toolTip.append("\"E\" - This category includes detections where the goodness-of-fit quality of the profile-fit photometry was very poor (rd_flg=2 and [jhk]psf_chi>10.0),")
+                .append(NEW_LINE).append("The uncertainties reported for these sources in [jhk]_cmsig and [jhk]_msigcom are flags and have numeric values &gt; 8.0.").append(LINE_BREAK);
+        toolTip.append("\"E\" - This category includes detections where the goodness-of-fit quality of the profile-fit photometry was very poor (rd_flg=2 and [jhk]psf_chi &gt; 10.0),")
                 .append(NEW_LINE).append("or detections where psf fit photometry did not converge and an aperture magnitude is reported (rd_flg=4),")
                 .append(NEW_LINE).append("or detections where the number of frames was too small in relation to the number of frames in which a detection was geometrically possible (rd_flg=\"1\" or rd_flg=\"2\").").append(LINE_BREAK);
-        toolTip.append("\"A\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr>10 AND [jhk]_cmsig<0.10857.").append(LINE_BREAK);
-        toolTip.append("\"B\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr>7 AND [jhk]_cmsig<0.15510.").append(LINE_BREAK);
-        toolTip.append("\"C\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr>5 AND [jhk]_cmsig<0.21714.").append(LINE_BREAK);
+        toolTip.append("\"A\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr &gt; 10 AND [jhk]_cmsig &lt; 0.10857.").append(LINE_BREAK);
+        toolTip.append("\"B\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr &gt; 7 AND [jhk]_cmsig &lt; 0.15510.").append(LINE_BREAK);
+        toolTip.append("\"C\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with [jhk]_snr &gt; 5 AND [jhk]_cmsig &lt; 0.21714.").append(LINE_BREAK);
         toolTip.append("\"D\" - Detections in any brightness regime where valid measurements were made (rd_flg=\"1\",\"2\" or \"3\") with no [jhk]_snr or [jhk]_cmsig requirement.");
         return toolTip.toString();
     }
@@ -216,11 +216,11 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public static String createToolTip_gal_contam() {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Extended source flag (ext. flag):</b>").append(LINE_BREAK);
-        toolTip.append("\"0\" - Source does not fall within the elliptical profile of an extended source with semi-major axis >10'',")
-                .append(NEW_LINE).append("or it is not identified exactly with an XSC source with semi-major axis >10''.")
+        toolTip.append("\"0\" - Source does not fall within the elliptical profile of an extended source with semi-major axis &gt; 10'',")
+                .append(NEW_LINE).append("or it is not identified exactly with an XSC source with semi-major axis &gt; 10''.")
                 .append(NEW_LINE).append("However, the source may correspond exactly to a smaller XSC source.").append(LINE_BREAK);
-        toolTip.append("\"1\" - Source is resolved by 2MASS, and is equivalent to a source in the XSC that has a semi-major axis >10'' in size.").append(LINE_BREAK);
-        toolTip.append("\"2\" - Source falls within the elliptical boundary of an XSC source that has a semi-major axis >10'' in size.");
+        toolTip.append("\"1\" - Source is resolved by 2MASS, and is equivalent to a source in the XSC that has a semi-major axis &gt; 10'' in size.").append(LINE_BREAK);
+        toolTip.append("\"2\" - Source falls within the elliptical boundary of an XSC source that has a semi-major axis &gt; 10'' in size.");
         return toolTip.toString();
     }
 
