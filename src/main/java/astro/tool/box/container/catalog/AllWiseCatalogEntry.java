@@ -206,11 +206,11 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Extended source flag (ext. flag):</b>").append(LINE_BREAK);
         toolTip.append("0 - The source shape is consistent with a point-source and the source is not associated with or superimposed on a 2MASS XSC source.").append(LINE_BREAK);
-        toolTip.append("1 - The profile-fit photometry goodness-of-fit, w?rchi2, is >3.0 in one or more bands.").append(LINE_BREAK);
+        toolTip.append("1 - The profile-fit photometry goodness-of-fit, w?rchi2, is > 3.0 in one or more bands.").append(LINE_BREAK);
         toolTip.append("2 - The source falls within the extrapolated isophotal footprint of a 2MASS XSC source.").append(LINE_BREAK);
-        toolTip.append("3 - The profile-fit photometry goodness-of-fit, w?rchi2, is >3.0 in one or more bands, and The source falls within the extrapolated isophotal footprint of a 2MASS XSC source.").append(LINE_BREAK);
+        toolTip.append("3 - The profile-fit photometry goodness-of-fit, w?rchi2, is > 3.0 in one or more bands, and The source falls within the extrapolated isophotal footprint of a 2MASS XSC source.").append(LINE_BREAK);
         toolTip.append("4 - The source position falls within 5\" of a 2MASS XSC source.").append(LINE_BREAK);
-        toolTip.append("5 - The profile-fit photometry goodness-of-fit, w?rchi2, is >3.0 in one or more bands, and the source position falls within 5\" of a 2MASS XSC source.");
+        toolTip.append("5 - The profile-fit photometry goodness-of-fit, w?rchi2, is > 3.0 in one or more bands, and the source position falls within 5\" of a 2MASS XSC source.");
         return toolTip.toString();
     }
 
@@ -228,10 +228,10 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     public static String createToolTip_ph_qual() {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Photometric quality flag (ph. qual.):</b>").append(LINE_BREAK);
-        toolTip.append("A - Source is detected in this band with a flux signal-to-noise ratio w?snr>10.").append(LINE_BREAK);
-        toolTip.append("B - Source is detected in this band with a flux signal-to-noise ratio 3<w?snr<10.").append(LINE_BREAK);
-        toolTip.append("C - Source is detected in this band with a flux signal-to-noise ratio 2<w?snr<3.").append(LINE_BREAK);
-        toolTip.append("U - Upper limit on magnitude. Source measurement has w?snr<2. The profile-fit magnitude w?mpro is a 95% confidence upper limit.").append(LINE_BREAK);
+        toolTip.append("A - Source is detected in this band with a flux signal-to-noise ratio w?snr > 10.").append(LINE_BREAK);
+        toolTip.append("B - Source is detected in this band with a flux signal-to-noise ratio 3 < w?snr < 10.").append(LINE_BREAK);
+        toolTip.append("C - Source is detected in this band with a flux signal-to-noise ratio 2 < w?snr < 3.").append(LINE_BREAK);
+        toolTip.append("U - Upper limit on magnitude. Source measurement has w?snr < 2. The profile-fit magnitude w?mpro is a 95% confidence upper limit.").append(LINE_BREAK);
         toolTip.append("X - A profile-fit measurement was not possible at this location in this band. The value of w?mpro and w?sigmpro will be \"null\" in this band.").append(LINE_BREAK);
         toolTip.append("Z - A profile-fit source flux measurement was made at this location, but the flux uncertainty could not be measured.");
         return toolTip.toString();
