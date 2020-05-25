@@ -383,9 +383,6 @@ public class ImageViewerTab {
                 Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
                 createFlipbook();
-                if (!Epoch.isFirstLast(epoch)) {
-                    allImagesLoaded = true;
-                }
                 if (Epoch.isSubtracted(epoch)) {
                     smoothImage.setSelected(true);
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
@@ -529,7 +526,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            applyLimits = new JCheckBox("Apply limits", true);
+            applyLimits = new JCheckBox("Apply min/max limits", true);
             controlPanel.add(applyLimits);
             applyLimits.addActionListener((ActionEvent evt) -> {
                 createFlipbook();
@@ -1763,6 +1760,10 @@ public class ImageViewerTab {
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 400, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true);
                     break;
+            }
+
+            if (!Epoch.isFirstLast(epoch)) {
+                allImagesLoaded = true;
             }
 
             int divisor = 0;
