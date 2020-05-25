@@ -2487,7 +2487,6 @@ public class ImageViewerTab {
         return new NumberTriplet(minVal, maxVal, avgVal);
     }
 
-    // 151.4119996 -57.862234899999997 BD ???
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
         boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
 
