@@ -75,6 +75,7 @@ public class BatchQueryTab {
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
 
+    private JPanel bottomRow;
     private JPanel centerPanel;
     private JTextField echoField;
     private JCheckBox includeColors;
@@ -120,7 +121,7 @@ public class BatchQueryTab {
             JPanel centerRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(centerRow);
 
-            JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(bottomRow);
 
             JPanel echoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -176,7 +177,6 @@ public class BatchQueryTab {
             JCheckBox catalog;
             for (String catalogKey : catalogInstances.keySet()) {
                 catalog = new JCheckBox(catalogKey);
-                catalog.setName("catalog");
                 catalog.setSelected(true);
                 bottomRow.add(catalog);
             }
@@ -248,9 +248,9 @@ public class BatchQueryTab {
                 selectedCatalogs = new ArrayList<>();
                 for (Component component : bottomRow.getComponents()) {
                     if (component instanceof JCheckBox) {
-                        JCheckBox checkbox = (JCheckBox) component;
-                        if (checkbox.getName().equals("catalog") && checkbox.isSelected()) {
-                            selectedCatalogs.add(checkbox.getText());
+                        JCheckBox catalogBox = (JCheckBox) component;
+                        if (catalogBox.isSelected()) {
+                            selectedCatalogs.add(catalogBox.getText());
                         }
                     }
                 }
@@ -569,6 +569,10 @@ public class BatchQueryTab {
         sorter.setComparator(i++, getStringComparator());
         sorter.setComparator(i++, getStringComparator());
         return sorter;
+    }
+
+    public JPanel getBottomRow() {
+        return bottomRow;
     }
 
 }

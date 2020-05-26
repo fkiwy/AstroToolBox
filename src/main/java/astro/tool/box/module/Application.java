@@ -91,7 +91,7 @@ public class Application {
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
         lookupTab.init();
 
-        SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
         settingsTab.init();
 
         baseFrame.setLocationRelativeTo(null);

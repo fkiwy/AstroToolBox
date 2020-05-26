@@ -145,11 +145,11 @@ public class CatalogQueryTab {
             JLabel catalogLabel = new JLabel("Catalogs:");
             topPanel.add(catalogLabel);
 
-            JCheckBox checkbox;
+            JCheckBox catalog;
             for (String catalogKey : catalogInstances.keySet()) {
-                checkbox = new JCheckBox(catalogKey);
-                checkbox.setSelected(true);
-                topPanel.add(checkbox);
+                catalog = new JCheckBox(catalogKey);
+                catalog.setSelected(true);
+                topPanel.add(catalog);
             }
 
             searchButton = new JButton("Search");
@@ -205,9 +205,9 @@ public class CatalogQueryTab {
                     List<String> selectedCatalogs = new ArrayList<>();
                     for (Component component : topPanel.getComponents()) {
                         if (component instanceof JCheckBox) {
-                            JCheckBox choice = (JCheckBox) component;
-                            if (choice.isSelected()) {
-                                selectedCatalogs.add(choice.getText());
+                            JCheckBox catalogBox = (JCheckBox) component;
+                            if (catalogBox.isSelected()) {
+                                selectedCatalogs.add(catalogBox.getText());
                             }
                         }
                     }
@@ -634,6 +634,10 @@ public class CatalogQueryTab {
             sorter.setComparator(i, elements.get(i).getComparator());
         }
         return sorter;
+    }
+
+    public JPanel getTopPanel() {
+        return topPanel;
     }
 
     public JButton getSearchButton() {

@@ -1,5 +1,6 @@
 package astro.tool.box.module.tab;
 
+import astro.tool.box.container.catalog.CatalogEntry;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.Epoch;
@@ -7,6 +8,7 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.WiseBand;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -18,8 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -50,6 +55,7 @@ public class SettingsTab {
     private final JTabbedPane tabbedPane;
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
+    private final BatchQueryTab batchQueryTab;
 
     // Global settings
     public static final String LOOK_AND_FEEL = "lookAndFeel";
@@ -82,7 +88,7 @@ public class SettingsTab {
     private int finderChartFOV;
 
     // Image viewer settings
-    public static final String NUMBER_OF_EPOCHS = "numberOfEpochs";
+    private static final String NUMBER_OF_EPOCHS = "numberOfEpochs";
     private static final String WISE_BAND = "wiseBand";
     private static final String EPOCH = "epoch";
     private static final String SIZE = "imageSize";
@@ -100,17 +106,23 @@ public class SettingsTab {
     private boolean panstarrsImages;
     private boolean sdssImages;
 
+    // Catalogs
+    private static final String CATALOGS = "catalogs";
+    private String catalogs;
+
+    private JPanel catalogPanel;
     private ActionListener actionListener;
     private ChangeListener changeListener;
     private JComboBox wiseBandsBox;
     private JComboBox epochsBox;
     private JSlider epochSlider;
 
-    public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
+    public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
+        this.batchQueryTab = batchQueryTab;
         //loadUserSettings();
     }
 
@@ -328,8 +340,32 @@ public class SettingsTab {
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
 
+            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            settingsPanel.add(containerPanel, BorderLayout.CENTER);
+
+            // Catalogs
+            catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            catalogPanel.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
+            ));
+            containerPanel.add(catalogPanel);
+
+            Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
+            String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
+            catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
+
+            setCheckBoxValue(catalogQueryTab.getTopPanel());
+            setCheckBoxValue(batchQueryTab.getBottomRow());
+
+            JCheckBox checkbox;
+            for (String catalogKey : catalogInstances.keySet()) {
+                checkbox = new JCheckBox(catalogKey);
+                checkbox.setSelected(Arrays.stream(catalogs.split(",")).anyMatch(catalogKey::equals));
+                catalogPanel.add(checkbox);
+            }
+
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            settingsPanel.add(buttonPanel, BorderLayout.CENTER);
+            containerPanel.add(buttonPanel);
 
             JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -381,6 +417,18 @@ public class SettingsTab {
                     zoom = Integer.parseInt(zoomField.getText());
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
+
+                    // Catalogs
+                    List<String> selectedCatalogs = new ArrayList<>();
+                    for (Component component : catalogPanel.getComponents()) {
+                        if (component instanceof JCheckBox) {
+                            JCheckBox catalogBox = (JCheckBox) component;
+                            if (catalogBox.isSelected()) {
+                                selectedCatalogs.add(catalogBox.getText());
+                            }
+                        }
+                    }
+                    catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
                     return;
@@ -469,6 +517,12 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 
+                // Catalogs
+                setCheckBoxValue(catalogQueryTab.getTopPanel());
+                setCheckBoxValue(batchQueryTab.getBottomRow());
+
+                USER_SETTINGS.setProperty(CATALOGS, catalogs);
+
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
                     USER_SETTINGS.store(output, "User settings");
                     message.setText("Settings have been applied!");
@@ -483,6 +537,15 @@ public class SettingsTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(settingsPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void setCheckBoxValue(JPanel panel) {
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JCheckBox) {
+                JCheckBox catalogBox = (JCheckBox) component;
+                catalogBox.setSelected(Arrays.stream(catalogs.split(",")).anyMatch(catalogBox.getText()::equals));
+            }
         }
     }
 
