@@ -108,6 +108,7 @@ public class SettingsTab {
 
     // Catalogs
     private static final String CATALOGS = "catalogs";
+    private List<String> selectedCatalogs;
     private String catalogs;
 
     private JPanel catalogPanel;
@@ -353,14 +354,15 @@ public class SettingsTab {
             Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
             String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
             catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
+            selectedCatalogs = Arrays.asList(catalogs.split(","));
 
-            setCheckBoxValue(catalogQueryTab.getTopPanel());
-            setCheckBoxValue(batchQueryTab.getBottomRow());
+            setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
+            setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
 
             JCheckBox checkbox;
             for (String catalogKey : catalogInstances.keySet()) {
                 checkbox = new JCheckBox(catalogKey);
-                checkbox.setSelected(Arrays.stream(catalogs.split(",")).anyMatch(catalogKey::equals));
+                checkbox.setSelected(selectedCatalogs.contains(catalogKey));
                 catalogPanel.add(checkbox);
             }
 
@@ -384,7 +386,6 @@ public class SettingsTab {
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
                     objectCollectionPath = collectionPathField.getText();
-
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
                         if (proxyAddress.isEmpty()) {
@@ -417,18 +418,6 @@ public class SettingsTab {
                     zoom = Integer.parseInt(zoomField.getText());
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
-
-                    // Catalogs
-                    List<String> selectedCatalogs = new ArrayList<>();
-                    for (Component component : catalogPanel.getComponents()) {
-                        if (component instanceof JCheckBox) {
-                            JCheckBox catalogBox = (JCheckBox) component;
-                            if (catalogBox.isSelected()) {
-                                selectedCatalogs.add(catalogBox.getText());
-                            }
-                        }
-                    }
-                    catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
                     return;
@@ -518,9 +507,20 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 
                 // Catalogs
-                setCheckBoxValue(catalogQueryTab.getTopPanel());
-                setCheckBoxValue(batchQueryTab.getBottomRow());
+                selectedCatalogs = new ArrayList<>();
+                for (Component component : catalogPanel.getComponents()) {
+                    if (component instanceof JCheckBox) {
+                        JCheckBox catalogBox = (JCheckBox) component;
+                        if (catalogBox.isSelected()) {
+                            selectedCatalogs.add(catalogBox.getText());
+                        }
+                    }
+                }
 
+                setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
+                setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
+
+                catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
@@ -540,11 +540,11 @@ public class SettingsTab {
         }
     }
 
-    private void setCheckBoxValue(JPanel panel) {
+    private void setCheckBoxValue(JPanel panel, List<String> catalogList) {
         for (Component component : panel.getComponents()) {
             if (component instanceof JCheckBox) {
                 JCheckBox catalogBox = (JCheckBox) component;
-                catalogBox.setSelected(Arrays.stream(catalogs.split(",")).anyMatch(catalogBox.getText()::equals));
+                catalogBox.setSelected(catalogList.contains(catalogBox.getText()));
             }
         }
     }
