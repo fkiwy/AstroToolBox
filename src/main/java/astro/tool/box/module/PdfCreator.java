@@ -3,6 +3,7 @@ package astro.tool.box.module;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
@@ -289,13 +290,16 @@ public class PdfCreator {
 
             int searchRadius = size / 3;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
+            List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
             for (CatalogEntry catalogEntry : catalogInstances.values()) {
-                catalogEntry.setRa(targetRa);
-                catalogEntry.setDec(targetDec);
-                catalogEntry.setSearchRadius(searchRadius);
-                List<CatalogEntry> results = performQuery(catalogEntry);
-                if (results != null) {
-                    catalogEntries.addAll(results);
+                if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
+                    catalogEntry.setRa(targetRa);
+                    catalogEntry.setDec(targetDec);
+                    catalogEntry.setSearchRadius(searchRadius);
+                    List<CatalogEntry> results = performQuery(catalogEntry);
+                    if (results != null) {
+                        catalogEntries.addAll(results);
+                    }
                 }
             }
 

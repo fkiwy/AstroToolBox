@@ -1,8 +1,8 @@
 package astro.tool.box.module.tab;
 
-import astro.tool.box.container.catalog.CatalogEntry;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
+import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
@@ -109,7 +109,6 @@ public class SettingsTab {
     // Catalogs
     private static final String CATALOGS = "catalogs";
     private List<String> selectedCatalogs;
-    private String catalogs;
 
     private JPanel catalogPanel;
     private ActionListener actionListener;
@@ -352,9 +351,7 @@ public class SettingsTab {
             containerPanel.add(catalogPanel);
 
             Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
-            String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
-            catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
-            selectedCatalogs = Arrays.asList(catalogs.split(","));
+            selectedCatalogs = getSelectedCatalogs(catalogInstances);
 
             setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
             setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
@@ -520,7 +517,7 @@ public class SettingsTab {
                 setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
                 setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
 
-                catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
+                String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
@@ -574,6 +571,12 @@ public class SettingsTab {
 
     public static String getUserSetting(String key, String defaultValue) {
         return USER_SETTINGS.getProperty(key, defaultValue);
+    }
+
+    public static List<String> getSelectedCatalogs(Map<String, CatalogEntry> catalogInstances) {
+        String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
+        String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
+        return Arrays.asList(catalogs.split(","));
     }
 
 }
