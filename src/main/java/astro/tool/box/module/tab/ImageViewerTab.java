@@ -2018,7 +2018,7 @@ public class ImageViewerTab {
                 fits = new Fits(getImageData(band, requestedEpoch));
             } catch (FileNotFoundException ex) {
                 if (requestedEpochs.size() == 4) {
-                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, 0, requestedEpochs), images);
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, requestedEpochs), images);
                     return;
                 } else {
                     break;
@@ -2049,7 +2049,7 @@ public class ImageViewerTab {
             if (zeroValues > maxAllowed) {
                 System.out.println("zeroValues=" + zeroValues + " maxAllowed=" + maxAllowed);
                 if (requestedEpochs.size() == 4) {
-                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, 0, requestedEpochs), images);
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, requestedEpochs), images);
                     return;
                 } else {
                     fits = null;
@@ -2108,16 +2108,15 @@ public class ImageViewerTab {
             } else {
                 if ((node1 == 0 || node2 == 0)) {
                     if (requestedEpochs.size() == 4) {
-                        int totalEpochs = images.size() / 2;
                         int requestedEpoch = container.getEpoch();
                         int alternativeEpoch;
-                        if (requestedEpoch < totalEpochs) {
+                        if (requestedEpoch < selectedEpochs) {
                             alternativeEpoch = node1 == 0 ? 1 : 2;
                         } else {
                             alternativeEpoch = node1 == 0 ? 2 : 1;
                         }
                         images.clear();
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, alternativeEpoch, totalEpochs, requestedEpochs), images);
+                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, alternativeEpoch, requestedEpochs), images);
                         return;
                     } else {
                         groupedList.remove(groupedList.size() - 1);
@@ -2165,9 +2164,9 @@ public class ImageViewerTab {
         }
     }
 
-    private List<Integer> provideAlternativeEpochs(int requestedEpoch, int alternativeEpoch, int totalEpochs, List<Integer> requestedEpochs) {
+    private List<Integer> provideAlternativeEpochs(int requestedEpoch, int alternativeEpoch, List<Integer> requestedEpochs) {
         List<Integer> alternativeEpochs = new ArrayList<>();
-        if (requestedEpoch < (totalEpochs == 0 ? selectedEpochs : totalEpochs)) {
+        if (requestedEpoch < selectedEpochs) {
             alternativeEpochs.add(requestedEpochs.get(0) + alternativeEpoch);
             alternativeEpochs.add(requestedEpochs.get(1) + alternativeEpoch);
             alternativeEpochs.add(requestedEpochs.get(2));
