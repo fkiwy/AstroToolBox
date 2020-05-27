@@ -122,9 +122,9 @@ public class PhotometricFunctions {
         }
         double avgColorValue = (minColorValue + maxColorValue) / 2;
         if (colorValue >= minColorValue && colorValue < avgColorValue) {
-            return new SpectralTypeLookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minColorValue, abs(colorValue - minColorValue));
+            return new SpectralTypeLookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
         } else if (colorValue >= avgColorValue && colorValue <= maxColorValue) {
-            return new SpectralTypeLookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxColorValue, abs(colorValue - maxColorValue));
+            return new SpectralTypeLookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
         } else {
             return null;
         }

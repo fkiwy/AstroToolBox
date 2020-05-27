@@ -23,19 +23,27 @@ public class SpectralTypeLookupResult {
     // Sun masses
     private final double msun;
 
+    // Surface gravity (log g)
+    private final double logG;
+
+    // Age
+    private final String age;
+
     // Nearest color
     private final double nearest;
 
     // Gap to nearest color
     private final double gap;
 
-    public SpectralTypeLookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun, double nearest, double gap) {
+    public SpectralTypeLookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun, double logG, String age, double nearest, double gap) {
         this.colorKey = colorKey;
         this.colorValue = colorValue;
         this.spt = spt;
         this.teff = teff;
         this.rsun = rsun;
         this.msun = msun;
+        this.logG = logG;
+        this.age = age;
         this.nearest = nearest;
         this.gap = gap;
     }
@@ -49,6 +57,8 @@ public class SpectralTypeLookupResult {
         sb.append(", teff=").append(teff);
         sb.append(", rsun=").append(rsun);
         sb.append(", msun=").append(msun);
+        sb.append(", logG=").append(logG);
+        sb.append(", age=").append(age);
         sb.append(", nearest=").append(nearest);
         sb.append(", gap=").append(gap);
         sb.append('}');
@@ -57,15 +67,17 @@ public class SpectralTypeLookupResult {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + Objects.hashCode(this.colorKey);
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.colorValue) ^ (Double.doubleToLongBits(this.colorValue) >>> 32));
-        hash = 89 * hash + Objects.hashCode(this.spt);
-        hash = 89 * hash + this.teff;
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.rsun) ^ (Double.doubleToLongBits(this.rsun) >>> 32));
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.msun) ^ (Double.doubleToLongBits(this.msun) >>> 32));
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.nearest) ^ (Double.doubleToLongBits(this.nearest) >>> 32));
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.gap) ^ (Double.doubleToLongBits(this.gap) >>> 32));
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.colorKey);
+        hash = 29 * hash + (int) (Double.doubleToLongBits(this.colorValue) ^ (Double.doubleToLongBits(this.colorValue) >>> 32));
+        hash = 29 * hash + Objects.hashCode(this.spt);
+        hash = 29 * hash + this.teff;
+        hash = 29 * hash + (int) (Double.doubleToLongBits(this.rsun) ^ (Double.doubleToLongBits(this.rsun) >>> 32));
+        hash = 29 * hash + (int) (Double.doubleToLongBits(this.msun) ^ (Double.doubleToLongBits(this.msun) >>> 32));
+        hash = 29 * hash + (int) (Double.doubleToLongBits(this.logG) ^ (Double.doubleToLongBits(this.logG) >>> 32));
+        hash = 29 * hash + Objects.hashCode(this.age);
+        hash = 29 * hash + (int) (Double.doubleToLongBits(this.nearest) ^ (Double.doubleToLongBits(this.nearest) >>> 32));
+        hash = 29 * hash + (int) (Double.doubleToLongBits(this.gap) ^ (Double.doubleToLongBits(this.gap) >>> 32));
         return hash;
     }
 
@@ -93,6 +105,9 @@ public class SpectralTypeLookupResult {
         if (Double.doubleToLongBits(this.msun) != Double.doubleToLongBits(other.msun)) {
             return false;
         }
+        if (Double.doubleToLongBits(this.logG) != Double.doubleToLongBits(other.logG)) {
+            return false;
+        }
         if (Double.doubleToLongBits(this.nearest) != Double.doubleToLongBits(other.nearest)) {
             return false;
         }
@@ -102,10 +117,10 @@ public class SpectralTypeLookupResult {
         if (!Objects.equals(this.spt, other.spt)) {
             return false;
         }
-        if (this.colorKey != other.colorKey) {
+        if (!Objects.equals(this.age, other.age)) {
             return false;
         }
-        return true;
+        return this.colorKey == other.colorKey;
     }
 
     public Color getColorKey() {
@@ -130,6 +145,14 @@ public class SpectralTypeLookupResult {
 
     public double getMsun() {
         return msun;
+    }
+
+    public double getLogG() {
+        return logG;
+    }
+
+    public String getAge() {
+        return age;
     }
 
     public double getNearest() {

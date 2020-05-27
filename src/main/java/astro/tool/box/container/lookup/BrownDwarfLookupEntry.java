@@ -54,6 +54,16 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
     }
 
     @Override
+    public double getLogG() {
+        return 0;
+    }
+
+    @Override
+    public String getAge() {
+        return "";
+    }
+
+    @Override
     public Map<Color, Double> getColors() {
         return colors;
     }

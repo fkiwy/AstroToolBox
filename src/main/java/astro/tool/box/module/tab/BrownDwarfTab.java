@@ -157,9 +157,9 @@ public class BrownDwarfTab {
                                 .append(": sourceId = ")
                                 .append(selectedEntry.getSourceId())
                                 .append(" RA = ")
-                                .append(selectedEntry.getRa())
+                                .append(roundTo7DecNZ(selectedEntry.getRa()))
                                 .append(" dec = ")
-                                .append(selectedEntry.getDec());
+                                .append(roundTo7DecNZ(selectedEntry.getDec()));
                         lookupResult.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
