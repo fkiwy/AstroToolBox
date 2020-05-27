@@ -281,7 +281,8 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
-    private boolean allImagesLoaded;
+    private boolean firstLastLoaded;
+    private boolean allEpochsLoaded;
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
@@ -1423,7 +1424,8 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
-                allImagesLoaded = false;
+                firstLastLoaded = false;
+                allEpochsLoaded = false;
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
                 images = new HashMap<>();
@@ -1482,7 +1484,8 @@ public class ImageViewerTab {
             previousDec = targetDec;
             imageNumber = 0;
 
-            if (!allImagesLoaded || epochChange) {
+            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded)
+                    || epochChange || transposeProperMotion.isSelected()) {
                 boolean moreImagesAvailable = true;
                 try {
                     getImageData(1, numberOfEpochs + 3);
@@ -1762,8 +1765,10 @@ public class ImageViewerTab {
                     break;
             }
 
-            if (!Epoch.isFirstLast(epoch)) {
-                allImagesLoaded = true;
+            if (Epoch.isFirstLast(epoch)) {
+                firstLastLoaded = true;
+            } else {
+                allEpochsLoaded = true;
             }
 
             int divisor = 0;
