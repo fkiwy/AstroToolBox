@@ -62,7 +62,7 @@ public class LookupTab {
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = "Main sequence lookup table";
+                        tableName = "Main sequence lookup table (A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence by Eric Mamajek: www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)";
                         break;
                     case MLTY_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
@@ -82,11 +82,11 @@ public class LookupTab {
                         break;
                     case WHITE_DWARFS_DA:
                         fileName = "/WhiteDwarfDALookupTable.csv";
-                        tableName = "White dwarfs DA lookup table (Cooling models by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels)";
+                        tableName = "White dwarfs DA lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels)";
                         break;
                     case WHITE_DWARFS_DB:
                         fileName = "/WhiteDwarfDBLookupTable.csv";
-                        tableName = "White dwarfs DB lookup table (Cooling models by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels)";
+                        tableName = "White dwarfs DB lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels)";
                         break;
                     default:
                         fileName = "";

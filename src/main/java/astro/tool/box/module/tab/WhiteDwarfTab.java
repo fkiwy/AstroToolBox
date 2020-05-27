@@ -105,7 +105,7 @@ public class WhiteDwarfTab {
 
             JPanel lookupResult = new JPanel();
             lookupResult.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Effective temperatures and ages", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Effective temperatures", TitledBorder.LEFT, TitledBorder.TOP
             ));
             lookupResult.setLayout(new BoxLayout(lookupResult, BoxLayout.Y_AXIS));
             lookupResult.setPreferredSize(new Dimension(500, 700));
@@ -118,7 +118,7 @@ public class WhiteDwarfTab {
             colorInput.setPreferredSize(new Dimension(200, 275));
 
             JPanel inputPanel = new JPanel();
-            inputPanel.setPreferredSize(new Dimension(200, 610));
+            inputPanel.setPreferredSize(new Dimension(200, 710));
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
@@ -227,13 +227,15 @@ public class WhiteDwarfTab {
         List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookup(colors);
         displayAges(whiteDwarfDBResults, lookupResult, "WD type: DB (pure He)");
 
-        lookupResult.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
-        lookupResult.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + ", " + LookupTable.WHITE_DWARFS_MIX + ","));
-        lookupResult.add(new JLabel(LookupTable.WHITE_DWARFS_DA + "(*), " + LookupTable.WHITE_DWARFS_DB + "(*)"));
-        lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        lookupResult.add(new JLabel("G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
+        JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        remarks.setPreferredSize(new Dimension(500, 400));
+        lookupResult.add(remarks);
+        remarks.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
+        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + ", " + LookupTable.WHITE_DWARFS_MIX + ","));
+        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_DA + " (*), " + LookupTable.WHITE_DWARFS_DB + " (*)"));
+        remarks.add(new JLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
         String hyperlink = "http://www.astro.umontreal.ca/~bergeron/CoolingModels";
-        lookupResult.add(createHyperlink("(*) Tables by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels", hyperlink));
+        remarks.add(createHyperlink("(*) Tables by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels", hyperlink));
     }
 
     private void displayTemperatures(List<SpectralTypeLookupResult> results, JPanel lookupResult, String panelTitle) {
@@ -272,13 +274,13 @@ public class WhiteDwarfTab {
         List<String[]> resultRows = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-            String resultValues = entry.getTeff() + "," + roundTo3Dec(entry.getMsun()) + "," + roundTo1Dec(entry.getLogG()) + "," + entry.getAge() + "," + matchedColor + ","
-                    + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-            resultRows.add(resultValues.split(",", 6));
+            String resultValues = entry.getTeff() + "," + roundTo3Dec(entry.getMsun()) + "," + roundTo1Dec(entry.getLogG()) + "," + entry.getAge() + ","
+                    + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
+            resultRows.add(resultValues.split(",", 7));
         });
 
         String titles = "teff,sol mass,log g,age,matched colors,nearest color,gap to nearest color";
-        String[] columns = titles.split(",", 6);
+        String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
         JTable ageTable = new JTable(resultRows.toArray(rows), columns) {
             @Override
@@ -289,7 +291,6 @@ public class WhiteDwarfTab {
         alignResultColumns(ageTable, resultRows);
         ageTable.setAutoCreateRowSorter(true);
         ageTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        ageTable.setCellSelectionEnabled(false);
         resizeColumnWidth(ageTable);
 
         JScrollPane agePanel = resultRows.isEmpty()

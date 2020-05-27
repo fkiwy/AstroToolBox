@@ -213,9 +213,12 @@ public class BrownDwarfTab {
                 : new JScrollPane(spectralTypeTable);
         lookupResult.add(spectralTypePanel);
 
-        lookupResult.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
-        lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        lookupResult.add(new JLabel("W1-W2, J-W2, J-K, g-r, r-i and absolute Gmag"));
+        JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        remarks.setPreferredSize(new Dimension(500, 200));
+        lookupResult.add(remarks);
+        remarks.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
+        remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
+        remarks.add(new JLabel("W1-W2, J-W2, J-K, g-r, r-i and absolute Gmag"));
     }
 
 }
