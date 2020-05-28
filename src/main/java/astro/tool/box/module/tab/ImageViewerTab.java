@@ -250,8 +250,6 @@ public class ImageViewerTab {
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
-    private int epochCountW1;
-    private int epochCountW2;
     private int numberOfEpochs;
     private int selectedEpochs;
     private int stretch = STRETCH;
@@ -1435,8 +1433,6 @@ public class ImageViewerTab {
                 centerX = centerY = 0;
                 axisX = axisY = size;
                 windowShift = 0;
-                epochCountW1 = 0;
-                epochCountW2 = 0;
                 imageCutOff = false;
                 simbadEntries = null;
                 gaiaEntries = null;
@@ -1486,13 +1482,6 @@ public class ImageViewerTab {
             previousDec = targetDec;
             imageNumber = 0;
 
-            if ((wiseBand.equals(WiseBand.W1) && imagesW1.isEmpty())
-                    || (wiseBand.equals(WiseBand.W2) && imagesW2.isEmpty())
-                    || (wiseBand.equals(WiseBand.W1W2) && (imagesW1.isEmpty() || imagesW2.isEmpty()))) {
-                firstLastLoaded = false;
-                allEpochsLoaded = false;
-            }
-
             if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || reloadImages) {
                 boolean moreImagesAvailable = true;
                 try {
@@ -1523,6 +1512,8 @@ public class ImageViewerTab {
                     }
                 }
                 images.clear();
+                int epochCountW1 = 0;
+                int epochCountW2 = 0;
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
@@ -1555,7 +1546,6 @@ public class ImageViewerTab {
             if (Epoch.isFirstLast(epoch)) {
                 firstLastLoaded = true;
             } else {
-                firstLastLoaded = true;
                 allEpochsLoaded = true;
             }
             reloadImages = false;
