@@ -10,11 +10,23 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
     // Effective temperature
     private final int teff;
 
+    // Sun masses
+    private final double msun;
+
+    // Surface gravity (log g)
+    private final double logG;
+
+    // Age
+    private final String age;
+
     // Colors
     private final Map<Color, Double> colors;
 
     public WhiteDwarfLookupEntry(String[] values) {
-        teff = toInteger(values[0]);
+        teff = toInteger(values[0].replace(".0", ""));
+        logG = toDouble(values[15]);
+        msun = toDouble(values[16]);
+        age = values[17];
         colors = new HashMap<>();
         //colors.put(Color.U_B, toDouble(values[1]));
         colors.put(Color.B_V, toDouble(values[2]));
@@ -34,7 +46,7 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
 
     @Override
     public String toString() {
-        return "WhiteDwarfLookupEntry{" + "teff=" + teff + ", colors=" + colors + '}';
+        return "WhiteDwarfLookupEntry{" + "teff=" + teff + ", msun=" + msun + ", logG=" + logG + ", age=" + age + ", colors=" + colors + '}';
     }
 
     @Override
@@ -54,17 +66,17 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
 
     @Override
     public double getMsun() {
-        return 0;
+        return msun;
     }
 
     @Override
     public double getLogG() {
-        return 0;
+        return logG;
     }
 
     @Override
     public String getAge() {
-        return "";
+        return age;
     }
 
     @Override

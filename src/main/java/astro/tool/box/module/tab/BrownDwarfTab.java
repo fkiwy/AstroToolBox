@@ -152,6 +152,8 @@ public class BrownDwarfTab {
                         lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
+                        JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        lookupResult.add(entryPanel);
                         StringBuilder catalogEntry = new StringBuilder("for ")
                                 .append(selectedEntry.getCatalogName())
                                 .append(": sourceId = ")
@@ -160,7 +162,7 @@ public class BrownDwarfTab {
                                 .append(roundTo7DecNZ(selectedEntry.getRa()))
                                 .append(" dec = ")
                                 .append(roundTo7DecNZ(selectedEntry.getDec()));
-                        lookupResult.add(new JLabel(catalogEntry.toString()));
+                        entryPanel.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
@@ -211,6 +213,9 @@ public class BrownDwarfTab {
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder()
+        ));
         lookupResult.add(spectralTypePanel);
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));

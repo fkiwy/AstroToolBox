@@ -41,7 +41,7 @@ public class SpectralTypeLookupTest {
         colors.put(Color.W1_W2, 0.205);
         List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(colors);
         //System.out.println(results);
-        assertEquals("[SpectralTypeLookupResult{colorKey=B_V, colorValue=1.95, spt=M5.5V, teff=3000, rsun=0.149, msun=0.12, nearest=1.91, gap=0.040000000000000036}, SpectralTypeLookupResult{colorKey=BP_RP, colorValue=3.9, spt=M6V, teff=2850, rsun=0.127, msun=0.1, nearest=3.95, gap=0.050000000000000266}, SpectralTypeLookupResult{colorKey=G_RP, colorValue=1.44, spt=M6V, teff=2850, rsun=0.127, msun=0.1, nearest=1.45, gap=0.010000000000000009}, SpectralTypeLookupResult{colorKey=W1_W2, colorValue=0.205, spt=M6V, teff=2850, rsun=0.127, msun=0.1, nearest=0.21, gap=0.0050000000000000044}]", results.toString());
+        assertEquals("[SpectralTypeLookupResult{colorKey=B_V, colorValue=1.95, spt=M5.5V, teff=3000, rsun=0.149, msun=0.12, logG=0.0, age=, nearest=1.91, gap=0.040000000000000036}, SpectralTypeLookupResult{colorKey=BP_RP, colorValue=3.9, spt=M6V, teff=2850, rsun=0.127, msun=0.1, logG=0.0, age=, nearest=3.95, gap=0.050000000000000266}, SpectralTypeLookupResult{colorKey=G_RP, colorValue=1.44, spt=M6V, teff=2850, rsun=0.127, msun=0.1, logG=0.0, age=, nearest=1.45, gap=0.010000000000000009}, SpectralTypeLookupResult{colorKey=W1_W2, colorValue=0.205, spt=M6V, teff=2850, rsun=0.127, msun=0.1, logG=0.0, age=, nearest=0.21, gap=0.0050000000000000044}]", results.toString());
     }
 
 }

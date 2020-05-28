@@ -120,10 +120,11 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
+        double toleranceValue = 0.2;
         double avgColorValue = (minColorValue + maxColorValue) / 2;
-        if (colorValue >= minColorValue && colorValue < avgColorValue) {
+        if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + toleranceValue) {
             return new SpectralTypeLookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
-        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue) {
+        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - toleranceValue) {
             return new SpectralTypeLookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
         } else {
             return null;

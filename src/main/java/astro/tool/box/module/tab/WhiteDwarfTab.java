@@ -39,6 +39,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableColumnModel;
 
 public class WhiteDwarfTab {
 
@@ -62,21 +63,21 @@ public class WhiteDwarfTab {
         input = getClass().getResourceAsStream("/WhiteDwarfPureHLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 15));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfPureHeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 15));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfMixLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 15));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfMixLookupService = new SpectralTypeLookupService(entries);
         }
@@ -108,7 +109,7 @@ public class WhiteDwarfTab {
                     BorderFactory.createEtchedBorder(), "Effective temperatures", TitledBorder.LEFT, TitledBorder.TOP
             ));
             lookupResult.setLayout(new BoxLayout(lookupResult, BoxLayout.Y_AXIS));
-            lookupResult.setPreferredSize(new Dimension(500, 700));
+            lookupResult.setPreferredSize(new Dimension(500, 750));
             spectralTypeLookup.add(lookupResult);
 
             JPanel colorInput = new JPanel(new GridLayout(10, 2));
@@ -189,6 +190,8 @@ public class WhiteDwarfTab {
                         lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
+                        JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        lookupResult.add(entryPanel);
                         StringBuilder catalogEntry = new StringBuilder("for ")
                                 .append(selectedEntry.getCatalogName())
                                 .append(": sourceId = ")
@@ -197,7 +200,7 @@ public class WhiteDwarfTab {
                                 .append(roundTo7DecNZ(selectedEntry.getRa()))
                                 .append(" dec = ")
                                 .append(roundTo7DecNZ(selectedEntry.getDec()));
-                        lookupResult.add(new JLabel(catalogEntry.toString()));
+                        entryPanel.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
@@ -223,54 +226,24 @@ public class WhiteDwarfTab {
         List<SpectralTypeLookupResult> whiteDwarfMixResults = whiteDwarfMixLookupService.lookup(colors);
         displayTemperatures(whiteDwarfMixResults, lookupResult, "WD type: Mix He/H=0.1");
         List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookup(colors);
-        displayAges(whiteDwarfDAResults, lookupResult, "WD type: DA (pure H)");
+        displayTemperatures(whiteDwarfDAResults, lookupResult, "WD type: DA (pure H)");
         List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookup(colors);
-        displayAges(whiteDwarfDBResults, lookupResult, "WD type: DB (pure He)");
+        displayTemperatures(whiteDwarfDBResults, lookupResult, "WD type: DB (pure He)");
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(500, 400));
+        remarks.setPreferredSize(new Dimension(500, 600));
         lookupResult.add(remarks);
         remarks.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
-        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + ", " + LookupTable.WHITE_DWARFS_PURE_HE + ", " + LookupTable.WHITE_DWARFS_MIX + ","));
-        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_DA + " (*), " + LookupTable.WHITE_DWARFS_DB + " (*)"));
+        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " (*), " + LookupTable.WHITE_DWARFS_PURE_HE + " (*), " + LookupTable.WHITE_DWARFS_MIX + " (*),"));
+        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_DA + " (**), " + LookupTable.WHITE_DWARFS_DB + " (**)"));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
-        String hyperlink = "http://www.astro.umontreal.ca/~bergeron/CoolingModels";
-        remarks.add(createHyperlink("(*) Tables by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels", hyperlink));
+        String hyperlink = "https://vizier.u-strasbg.fr/viz-bin/VizieR?-source=J/A%2BA/565/A11";
+        remarks.add(createHyperlink("(*) Gaia photometry for white dwarfs (Carrasco+, 2014)", hyperlink));
+        hyperlink = "http://www.astro.umontreal.ca/~bergeron/CoolingModels";
+        remarks.add(createHyperlink("(**) Tables by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels", hyperlink));
     }
 
     private void displayTemperatures(List<SpectralTypeLookupResult> results, JPanel lookupResult, String panelTitle) {
-        List<String[]> resultRows = new ArrayList<>();
-        results.forEach(entry -> {
-            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-            String resultValues = entry.getTeff() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-            resultRows.add(resultValues.split(",", 4));
-        });
-
-        String titles = "teff,matched colors,nearest color,gap to nearest color";
-        String[] columns = titles.split(",", 4);
-        Object[][] rows = new Object[][]{};
-        JTable temperatureTable = new JTable(resultRows.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
-        alignResultColumns(temperatureTable, resultRows);
-        temperatureTable.setAutoCreateRowSorter(true);
-        temperatureTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        temperatureTable.setCellSelectionEnabled(false);
-        resizeColumnWidth(temperatureTable);
-
-        JScrollPane temperaturePanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                : new JScrollPane(temperatureTable);
-        temperaturePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), panelTitle, TitledBorder.LEFT, TitledBorder.TOP
-        ));
-        lookupResult.add(temperaturePanel);
-    }
-
-    private void displayAges(List<SpectralTypeLookupResult> results, JPanel lookupResult, String panelTitle) {
         List<String[]> resultRows = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
@@ -282,24 +255,31 @@ public class WhiteDwarfTab {
         String titles = "teff,sol mass,log g,age,matched colors,nearest color,gap to nearest color";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
-        JTable ageTable = new JTable(resultRows.toArray(rows), columns) {
+        JTable temperatureTable = new JTable(resultRows.toArray(rows), columns) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return true;
             }
         };
-        alignResultColumns(ageTable, resultRows);
-        ageTable.setAutoCreateRowSorter(true);
-        ageTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        resizeColumnWidth(ageTable);
+        alignResultColumns(temperatureTable, resultRows);
+        temperatureTable.setAutoCreateRowSorter(true);
+        temperatureTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = temperatureTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(50);
+        columnModel.getColumn(2).setPreferredWidth(50);
+        columnModel.getColumn(3).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(100);
+        columnModel.getColumn(5).setPreferredWidth(50);
+        columnModel.getColumn(6).setPreferredWidth(50);
 
-        JScrollPane agePanel = resultRows.isEmpty()
+        JScrollPane temperaturePanel = resultRows.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                : new JScrollPane(ageTable);
-        agePanel.setBorder(BorderFactory.createTitledBorder(
+                : new JScrollPane(temperatureTable);
+        temperaturePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), panelTitle, TitledBorder.LEFT, TitledBorder.TOP
         ));
-        lookupResult.add(agePanel);
+        lookupResult.add(temperaturePanel);
     }
 
 }
