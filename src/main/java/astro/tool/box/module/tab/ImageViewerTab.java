@@ -281,6 +281,7 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean reloadImages;
     private boolean firstLastLoaded;
     private boolean allEpochsLoaded;
     private boolean imageCutOff;
@@ -288,7 +289,6 @@ public class ImageViewerTab {
     private boolean hasException;
     private boolean panstarrsImages;
     private boolean sdssImages;
-    private boolean epochChange;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
@@ -523,7 +523,7 @@ public class ImageViewerTab {
                 }
                 selectedEpochs = epochSlider.getValue();
                 epochLabel.setText(String.format(EPOCH_LABEL, selectedEpochs));
-                epochChange = true;
+                reloadImages = true;
                 createFlipbook();
             });
 
@@ -920,11 +920,10 @@ public class ImageViewerTab {
             controlPanel.add(transposeProperMotion);
             transposeProperMotion.addActionListener((ActionEvent evt) -> {
                 if (!transposeMotionField.getText().isEmpty()) {
-                    transposeProperMotion.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     imagesW1.clear();
                     imagesW2.clear();
+                    reloadImages = true;
                     createFlipbook();
-                    transposeProperMotion.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -932,11 +931,10 @@ public class ImageViewerTab {
             controlPanel.add(transposeMotionField);
             transposeMotionField.addActionListener((ActionEvent evt) -> {
                 if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-                    transposeMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     imagesW1.clear();
                     imagesW2.clear();
+                    reloadImages = true;
                     createFlipbook();
-                    transposeMotionField.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -1484,8 +1482,7 @@ public class ImageViewerTab {
             previousDec = targetDec;
             imageNumber = 0;
 
-            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded)
-                    || epochChange || transposeProperMotion.isSelected()) {
+            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || reloadImages) {
                 boolean moreImagesAvailable = true;
                 try {
                     getImageData(1, numberOfEpochs + 3);
@@ -1495,7 +1492,7 @@ public class ImageViewerTab {
                 int totalEpochs = selectedEpochs * 2;
                 List<Integer> requestedEpochs = new ArrayList<>();
                 if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
-                    if (epochChange) {
+                    if (reloadImages) {
                         imagesW1.clear();
                         imagesW2.clear();
                     }
@@ -1514,7 +1511,6 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                epochChange = false;
                 images.clear();
                 int epochCountW1 = 0;
                 int epochCountW2 = 0;
@@ -1547,6 +1543,12 @@ public class ImageViewerTab {
                     epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
                 }
             }
+            if (Epoch.isFirstLast(epoch)) {
+                firstLastLoaded = true;
+            } else {
+                allEpochsLoaded = true;
+            }
+            reloadImages = false;
 
             Fits fits;
             int k;
@@ -1763,12 +1765,6 @@ public class ImageViewerTab {
                     flipbook[0] = new FlipbookComponent(wiseBand.val, 400, true);
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true);
                     break;
-            }
-
-            if (Epoch.isFirstLast(epoch)) {
-                firstLastLoaded = true;
-            } else {
-                allEpochsLoaded = true;
             }
 
             int divisor = 0;
