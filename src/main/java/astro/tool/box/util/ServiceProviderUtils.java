@@ -36,8 +36,12 @@ public class ServiceProviderUtils {
         return SDSS_BASE_URL + "/SkyServerWS/ImagingQuery/Cone?ra=" + degRA + "&dec=" + degDE + "&radius=" + degRadius + "&limit=0&format=csv&imgparams=objid,run,rerun,camcol,field,obj,ra,dec,raErr,decErr,type,clean,mjd,specObjID,u,g,r,i,z,Err_u,Err_g,Err_r,Err_i,Err_z";
     }
 
-    public static String createVizierUrl(double degRA, double degDE, double degRadius) {
+    public static String createVHSUrl(double degRA, double degDE, double degRadius) {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20SrcID,%20RAJ2000,%20DEJ2000,%20Mclass,%20Yap3,%20Jap3,%20Hap3,%20Ksap3,%20e_Yap3,%20e_Jap3,%20e_Hap3,%20e_Ksap3,%20%22Y-Jpnt%22,%20%22J-Hpnt%22,%20%22H-Kspnt%22,%20%22J-Kspnt%22%20FROM%20%22II/359/vhs_dr4%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RAJ2000,%20DEJ2000),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+    }
+
+    public static String createGaiaWDUrl(double degRA, double degDE, double degRadius) {
+        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20WD,%20%20Source,%20%20RA_ICRS,%20%20DE_ICRS,%20%20Plx,%20%20pmRA,%20pmDE,%20%20%22Gmag%22,%20%20BPmag,%20%20RPmag,%20%20SDSS,%20%20umag,%20%20%22gmag%22,%20%20rmag,%20%20imag,%20%20zmag,%20%20Pwd,%20%20TeffH,%20%20loggH,%20%20MassH,%20%20TeffHe,%20%20loggHe,%20MassHe%20FROM%20%22J/MNRAS/482/4570/gaia2wd%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RAJ2000,%20DEJ2000),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
@@ -66,6 +70,7 @@ public class ServiceProviderUtils {
             if (ex.getMessage().contains(IRSA_TAP_URL)) {
                 throw new ADQLException();
             }
+            System.out.println(ex.toString());
             showInfoDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
             return "";
         }

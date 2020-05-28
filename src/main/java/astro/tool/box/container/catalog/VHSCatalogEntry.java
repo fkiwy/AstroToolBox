@@ -210,7 +210,7 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizierUrl(ra, dec, searchRadius / DEG_ARCSEC);
+        return createVHSUrl(ra, dec, searchRadius / DEG_ARCSEC);
     }
 
     @Override
