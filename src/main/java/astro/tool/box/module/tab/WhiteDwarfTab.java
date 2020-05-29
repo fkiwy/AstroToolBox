@@ -52,7 +52,6 @@ public class WhiteDwarfTab {
 
     private final SpectralTypeLookupService whiteDwarfPureHLookupService;
     private final SpectralTypeLookupService whiteDwarfPureHeLookupService;
-    private final SpectralTypeLookupService whiteDwarfMixLookupService;
     private final SpectralTypeLookupService whiteDwarfDALookupService;
     private final SpectralTypeLookupService whiteDwarfDBLookupService;
 
@@ -76,13 +75,6 @@ public class WhiteDwarfTab {
                 return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new SpectralTypeLookupService(entries);
-        }
-        input = getClass().getResourceAsStream("/WhiteDwarfMixLookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
-            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
-            }).collect(Collectors.toList());
-            whiteDwarfMixLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfDALookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
@@ -235,8 +227,6 @@ public class WhiteDwarfTab {
         displayTemperatures(whiteDwarfPureHResults, lookupResult, "WD type: Pure H");
         List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookupTeff(colors, loggHe, massHe);
         displayTemperatures(whiteDwarfPureHeResults, lookupResult, "WD type: Pure He");
-        List<SpectralTypeLookupResult> whiteDwarfMixResults = whiteDwarfMixLookupService.lookupTeff(colors, loggH, massH);
-        displayTemperatures(whiteDwarfMixResults, lookupResult, "WD type: Mix He/H=0.1");
         List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookupTeff(colors, loggH, massH);
         displayTemperatures(whiteDwarfDAResults, lookupResult, "WD type: DA (pure H)");
         List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookupTeff(colors, loggHe, massHe);
@@ -246,7 +236,7 @@ public class WhiteDwarfTab {
         remarks.setPreferredSize(new Dimension(500, 600));
         lookupResult.add(remarks);
         remarks.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
-        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " (*), " + LookupTable.WHITE_DWARFS_PURE_HE + " (*), " + LookupTable.WHITE_DWARFS_MIX + " (*),"));
+        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " (*), " + LookupTable.WHITE_DWARFS_PURE_HE + " (*),"));
         remarks.add(new JLabel(LookupTable.WHITE_DWARFS_DA + " (**), " + LookupTable.WHITE_DWARFS_DB + " (**)"));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
         String hyperlink = "https://vizier.u-strasbg.fr/viz-bin/VizieR?-source=J/A%2BA/565/A11";
