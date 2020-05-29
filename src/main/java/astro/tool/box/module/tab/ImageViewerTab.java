@@ -1103,7 +1103,7 @@ public class ImageViewerTab {
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
                                     if (differentSizeButton.isSelected()) {
-                                        displayRecenteredWiseImages(newRa, newDec);
+                                        CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
                                     }
                                     break;
                                 case MouseEvent.BUTTON2:
@@ -1231,7 +1231,7 @@ public class ImageViewerTab {
                                     }
                                     if (overlays == 0) {
                                         if (showCatalogsButton.isSelected()) {
-                                            displayCatalogSearchResults(newRa, newDec);
+                                            CompletableFuture.supplyAsync(() -> openNewCatalogSearch(newRa, newDec));
                                         } else {
                                             coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                             createFlipbook();
@@ -2612,7 +2612,7 @@ public class ImageViewerTab {
         maxValue = presetMaxVal;
     }
 
-    private void displayCatalogSearchResults(double targetRa, double targetDec) {
+    private boolean openNewCatalogSearch(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         timer.stop();
@@ -2630,9 +2630,11 @@ public class ImageViewerTab {
         catalogQueryTab.getSearchButton().getActionListeners()[0].actionPerformed(null);
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
+
+        return true;
     }
 
-    private void displayRecenteredWiseImages(double targetRa, double targetDec) {
+    private boolean openNewImageViewer(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         timer.stop();
@@ -2655,6 +2657,8 @@ public class ImageViewerTab {
         imageViewerTab.setImageViewer(this);
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
+
+        return true;
     }
 
     private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size) {
