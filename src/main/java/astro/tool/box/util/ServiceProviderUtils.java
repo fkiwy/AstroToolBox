@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import static java.lang.Math.cos;
+import static java.lang.Math.toRadians;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -45,7 +47,7 @@ public class ServiceProviderUtils {
     }
 
     public static String createUnWiseUrl(double degRA, double degDE, double degRadius) {
-        return NOAO_TAP_URL + "?request=doQuery&lang=ADQL&format=csv&query=SELECT%20unwise_objid,%20ra,%20dec,%20mag_w1_vg,%20mag_w2_vg,%20w1_w2_vg,%20qf_w1,%20qf_w2,%20flags_unwise_w1,%20flags_unwise_w2,%20flags_info_w1,%20flags_info_w2%20FROM%20unwise_dr1.object%20WHERE%20ra%20BETWEEN%20" + (degRA - degRadius) + "%20AND%20" + (degRA + degRadius) + "%20AND%20dec%20BETWEEN%20" + (degDE - degRadius) + "%20AND%20" + (degDE + degRadius) + ";";
+        return NOAO_TAP_URL + "?request=doQuery&lang=ADQL&format=csv&query=SELECT%20unwise_objid,%20ra,%20dec,%20mag_w1_vg,%20mag_w2_vg,%20w1_w2_vg,%20qf_w1,%20qf_w2,%20flags_unwise_w1,%20flags_unwise_w2,%20flags_info_w1,%20flags_info_w2%20FROM%20unwise_dr1.object%20WHERE%20ra%20BETWEEN%20" + (degRA - degRadius / cos(toRadians(degDE))) + "%20AND%20" + (degRA + degRadius / cos(toRadians(degDE))) + "%20AND%20dec%20BETWEEN%20" + (degDE - degRadius) + "%20AND%20" + (degDE + degRadius) + ";";
     }
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
