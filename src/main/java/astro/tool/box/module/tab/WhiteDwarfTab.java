@@ -9,7 +9,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.container.lookup.WhiteDwarfAgeLookupEntry;
-import astro.tool.box.container.lookup.WhiteDwarfLookupEntry;
+import astro.tool.box.container.lookup.WhiteDwarfTeffLookupEntry;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
@@ -63,21 +63,21 @@ public class WhiteDwarfTab {
         input = getClass().getResourceAsStream("/WhiteDwarfPureHLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfPureHeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfMixLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfMixLookupService = new SpectralTypeLookupService(entries);
         }

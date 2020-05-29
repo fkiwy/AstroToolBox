@@ -5,7 +5,7 @@ import astro.tool.box.enumeration.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
+public class WhiteDwarfTeffLookupEntry implements SpectralTypeLookup {
 
     // Effective temperature
     private final int teff;
@@ -22,8 +22,8 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
     // Colors
     private final Map<Color, Double> colors;
 
-    public WhiteDwarfLookupEntry(String[] values) {
-        teff = toInteger(values[0].replace(".0", ""));
+    public WhiteDwarfTeffLookupEntry(String[] values) {
+        teff = (int) toDouble(values[0]);
         logG = toDouble(values[15]);
         msun = toDouble(values[16]);
         age = values[17];

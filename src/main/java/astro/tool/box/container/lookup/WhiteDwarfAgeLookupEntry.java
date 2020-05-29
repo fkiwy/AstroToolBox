@@ -23,7 +23,7 @@ public class WhiteDwarfAgeLookupEntry implements SpectralTypeLookup {
     private final Map<Color, Double> colors;
 
     public WhiteDwarfAgeLookupEntry(String[] values) {
-        teff = toInteger(values[0].replace(".", ""));
+        teff = toInteger(values[0]);
         logG = toDouble(values[1]);
         msun = toDouble(values[2]);
         age = values[40];
