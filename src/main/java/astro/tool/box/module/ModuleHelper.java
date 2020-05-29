@@ -169,11 +169,15 @@ public class ModuleHelper {
     }
 
     public static void showExceptionDialog(JFrame baseFrame, Exception ex) {
+        writeErrorLog(ex);
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void writeErrorLog(Exception ex) {
         try {
             Files.write(Paths.get(ERROR_FILE_PATH), getStackTrace(ex).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {
         }
-        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private static JScrollPane createMessagePanel(String message) {

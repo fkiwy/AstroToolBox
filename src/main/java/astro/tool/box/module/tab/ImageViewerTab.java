@@ -17,6 +17,7 @@ import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.ProperMotionQuery;
@@ -24,6 +25,7 @@ import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
+import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -167,10 +169,12 @@ public class ImageViewerTab {
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseTpmEntries;
     private List<CatalogEntry> catWiseRejectedEntries;
+    private List<CatalogEntry> unWiseEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
     private List<CatalogEntry> twoMassEntries;
     private List<CatalogEntry> vhsEntries;
+    private List<CatalogEntry> gaiaWDEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -186,11 +190,13 @@ public class ImageViewerTab {
     private JCheckBox gaiaOverlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
+    private JCheckBox unWiseOverlay;
     private JCheckBox panStarrsOverlay;
     private JCheckBox sdssOverlay;
     private JCheckBox spectrumOverlay;
     private JCheckBox twoMassOverlay;
     private JCheckBox vhsOverlay;
+    private JCheckBox gaiaWDOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -335,9 +341,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1950;
+            int controlPanelHeight = 1975;
 
-            JPanel controlPanel = new JPanel(new GridLayout(80, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -590,27 +596,36 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
+            unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME);
+            unWiseOverlay.setForeground(JColor.MINT.val);
+            overlayPanel.add(unWiseOverlay);
             panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME);
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             overlayPanel.add(panStarrsOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
             sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
             sdssOverlay.setForeground(JColor.STEEL.val);
             overlayPanel.add(sdssOverlay);
-
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
             spectrumOverlay = new JCheckBox("SDSS spectra");
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             overlayPanel.add(spectrumOverlay);
-            twoMassOverlay = new JCheckBox(TwoMassCatalogEntry.CATALOG_NAME);
-            twoMassOverlay.setForeground(JColor.ORANGE.val);
-            overlayPanel.add(twoMassOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
+            twoMassOverlay = new JCheckBox(TwoMassCatalogEntry.CATALOG_NAME);
+            twoMassOverlay.setForeground(JColor.ORANGE.val);
+            overlayPanel.add(twoMassOverlay);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             overlayPanel.add(vhsOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_SHORT_NAME);
+            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
+            overlayPanel.add(gaiaWDOverlay);
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
             overlayPanel.add(ssoOverlay);
@@ -1174,6 +1189,10 @@ public class ImageViewerTab {
                                         showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
                                         overlays++;
                                     }
+                                    if (unWiseOverlay.isSelected() && unWiseEntries != null) {
+                                        showCatalogInfo(unWiseEntries, mouseX, mouseY, JColor.MINT.val);
+                                        overlays++;
+                                    }
                                     if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
                                         showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
                                         overlays++;
@@ -1192,6 +1211,10 @@ public class ImageViewerTab {
                                     }
                                     if (vhsOverlay.isSelected() && vhsEntries != null) {
                                         showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
+                                        overlays++;
+                                    }
+                                    if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
+                                        showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
                                         overlays++;
                                     }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
@@ -1445,10 +1468,12 @@ public class ImageViewerTab {
                 catWiseEntries = null;
                 catWiseTpmEntries = null;
                 catWiseRejectedEntries = null;
+                unWiseEntries = null;
                 panStarrsEntries = null;
                 sdssEntries = null;
                 twoMassEntries = null;
                 vhsEntries = null;
+                gaiaWDEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
@@ -1919,6 +1944,14 @@ public class ImageViewerTab {
                 drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
             }
         }
+        if (unWiseOverlay.isSelected()) {
+            if (unWiseEntries == null) {
+                unWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> unWiseEntries = fetchCatalogEntries(new UnWiseCatalogEntry()));
+            } else {
+                drawOverlay(image, unWiseEntries, JColor.MINT.val, Shape.CIRCLE);
+            }
+        }
         if (panStarrsOverlay.isSelected()) {
             if (panStarrsEntries == null) {
                 panStarrsEntries = Collections.emptyList();
@@ -1957,6 +1990,14 @@ public class ImageViewerTab {
                 CompletableFuture.supplyAsync(() -> vhsEntries = fetchCatalogEntries(new VHSCatalogEntry()));
             } else {
                 drawOverlay(image, vhsEntries, JColor.PINK.val, Shape.CIRCLE);
+            }
+        }
+        if (gaiaWDOverlay.isSelected()) {
+            if (gaiaWDEntries == null) {
+                gaiaWDEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry()));
+            } else {
+                drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {

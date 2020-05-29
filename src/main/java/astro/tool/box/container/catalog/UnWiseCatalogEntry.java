@@ -223,7 +223,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_GRAY.val;
+        return JColor.LIGHT_MINT.val;
     }
 
     @Override

@@ -74,7 +74,7 @@ public class ServiceProviderUtils {
             if (ex.getMessage().contains(IRSA_TAP_URL)) {
                 throw new ADQLException();
             }
-            System.out.println(ex.toString());
+            writeErrorLog(ex);
             showInfoDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
             return "";
         }
