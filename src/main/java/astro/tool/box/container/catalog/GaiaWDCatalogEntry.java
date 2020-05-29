@@ -280,7 +280,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("G=%s; BP=%s; RP=%s", roundTo3DecNZ(Gmag), roundTo3DecNZ(BPmag), roundTo3DecNZ(RPmag));
+        return String.format("G=%s; BP=%s; RP=%s; u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(Gmag), roundTo3DecNZ(BPmag), roundTo3DecNZ(RPmag), roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
     }
 
     @Override

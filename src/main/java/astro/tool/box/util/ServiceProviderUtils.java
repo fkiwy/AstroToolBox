@@ -44,6 +44,10 @@ public class ServiceProviderUtils {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20WD,%20%20Source,%20%20RA_ICRS,%20%20DE_ICRS,%20%20Plx,%20%20pmRA,%20pmDE,%20%20%22Gmag%22,%20%20BPmag,%20%20RPmag,%20%20SDSS,%20%20umag,%20%20%22gmag%22,%20%20rmag,%20%20imag,%20%20zmag,%20%20Pwd,%20%20TeffH,%20%20loggH,%20%20MassH,%20%20TeffHe,%20%20loggHe,%20MassHe%20FROM%20%22J/MNRAS/482/4570/gaia2wd%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RAJ2000,%20DEJ2000),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
+    public static String createUnWiseUrl(double degRA, double degDE, double degRadius) {
+        return NOAO_TAP_URL + "?request=doQuery&lang=ADQL&format=csv&query=SELECT%20unwise_objid,%20ra,%20dec,%20mag_w1_vg,%20mag_w2_vg,%20w1_w2_vg,%20qf_w1,%20qf_w2,%20flags_unwise_w1,%20flags_unwise_w2,%20flags_info_w1,%20flags_info_w2%20FROM%20unwise_dr1.object%20WHERE%20ra%20BETWEEN%20" + (degRA - degRadius) + "%20AND%20" + (degRA + degRadius) + "%20AND%20dec%20BETWEEN%20" + (degDE - degRadius) + "%20AND%20" + (degDE + degRadius) + ";";
+    }
+
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
         boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
         String simbadBaseUrl = useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;

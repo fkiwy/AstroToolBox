@@ -8,6 +8,8 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    public static final String NOAO_TAP_URL = "https://datalab.noao.edu/tap/sync";
+
     public static final String VIZIER_TAP_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap/sync/";
 
     public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap/sync";
