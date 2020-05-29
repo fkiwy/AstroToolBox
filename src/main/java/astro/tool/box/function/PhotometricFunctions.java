@@ -132,6 +132,27 @@ public class PhotometricFunctions {
     }
 
     /**
+     * Look up temperature
+     *
+     * @param colorKey
+     * @param colorValue
+     * @param logG
+     * @param msun
+     * @param minEntry
+     * @param maxEntry
+     * @return the temperature
+     */
+    public static SpectralTypeLookupResult evaluateTemperature(Color colorKey, double colorValue, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
+        if (logG != 0 && (logG < minEntry.getLogG() || logG > maxEntry.getLogG())) {
+            return null;
+        }
+        if (msun != 0 && (msun < minEntry.getMsun() || msun > maxEntry.getMsun())) {
+            return null;
+        }
+        return evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
+    }
+
+    /**
      * Calculate absolute magnitude from parallax
      *
      * @param apparentMagnitude (mag)

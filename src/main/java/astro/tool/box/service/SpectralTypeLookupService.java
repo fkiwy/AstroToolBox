@@ -35,6 +35,23 @@ public class SpectralTypeLookupService {
         return results.stream().distinct().collect(Collectors.toList());
     }
 
+    public List<SpectralTypeLookupResult> lookupTeff(Map<Color, Double> colors, double logG, double msun) {
+        List<SpectralTypeLookupResult> results = new ArrayList<>();
+        SpectralTypeLookup minEntry = entries.get(0);
+        for (SpectralTypeLookup maxEntry : entries) {
+            for (Entry<Color, Double> color : colors.entrySet()) {
+                Color colorKey = color.getKey();
+                Double colorValue = color.getValue();
+                SpectralTypeLookupResult result = evaluateTemperature(colorKey, colorValue, logG, msun, minEntry, maxEntry);
+                if (result != null) {
+                    results.add(result);
+                }
+            }
+            minEntry = maxEntry;
+        }
+        return results.stream().distinct().collect(Collectors.toList());
+    }
+
     public List<SpectralTypeLookup> getEntries() {
         return entries;
     }

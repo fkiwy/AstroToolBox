@@ -393,6 +393,22 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    public double getLoggH() {
+        return loggH;
+    }
+
+    public double getMassH() {
+        return massH;
+    }
+
+    public double getLoggHe() {
+        return loggHe;
+    }
+
+    public double getMassHe() {
+        return massHe;
+    }
+
     public double getActualDistance() {
         return calculateActualDistance(plx);
     }

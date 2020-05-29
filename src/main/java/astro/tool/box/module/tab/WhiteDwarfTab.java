@@ -6,6 +6,7 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.container.lookup.WhiteDwarfAgeLookupEntry;
@@ -54,6 +55,8 @@ public class WhiteDwarfTab {
     private final SpectralTypeLookupService whiteDwarfMixLookupService;
     private final SpectralTypeLookupService whiteDwarfDALookupService;
     private final SpectralTypeLookupService whiteDwarfDBLookupService;
+
+    private CatalogEntry selectedEntry;
 
     public WhiteDwarfTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
         this.baseFrame = baseFrame;
@@ -185,7 +188,7 @@ public class WhiteDwarfTab {
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     lookupResult.removeAll();
-                    CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
+                    selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
                         lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
@@ -219,15 +222,24 @@ public class WhiteDwarfTab {
     }
 
     private void lookupWhiteDwarfsByColor(JPanel lookupResult, Map<Color, Double> colors) {
-        List<SpectralTypeLookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookup(colors);
+        double loggH = 0, loggHe = 0, massH = 0, massHe = 0;
+        if (selectedEntry instanceof GaiaWDCatalogEntry) {
+            GaiaWDCatalogEntry entry = (GaiaWDCatalogEntry) selectedEntry;
+            loggH = entry.getLoggH();
+            loggHe = entry.getLoggHe();
+            massH = entry.getMassH();
+            massHe = entry.getMassHe();
+        }
+
+        List<SpectralTypeLookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookupTeff(colors, loggH, massH);
         displayTemperatures(whiteDwarfPureHResults, lookupResult, "WD type: Pure H");
-        List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookupTeff(colors, loggHe, massHe);
         displayTemperatures(whiteDwarfPureHeResults, lookupResult, "WD type: Pure He");
-        List<SpectralTypeLookupResult> whiteDwarfMixResults = whiteDwarfMixLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfMixResults = whiteDwarfMixLookupService.lookupTeff(colors, loggH, massH);
         displayTemperatures(whiteDwarfMixResults, lookupResult, "WD type: Mix He/H=0.1");
-        List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookupTeff(colors, loggH, massH);
         displayTemperatures(whiteDwarfDAResults, lookupResult, "WD type: DA (pure H)");
-        List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookup(colors);
+        List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookupTeff(colors, loggHe, massHe);
         displayTemperatures(whiteDwarfDBResults, lookupResult, "WD type: DB (pure He)");
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
