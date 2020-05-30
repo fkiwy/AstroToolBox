@@ -129,6 +129,7 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableColumnModel;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
@@ -3338,8 +3339,14 @@ public class ImageViewerTab {
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            spectralTypeTable.setCellSelectionEnabled(false);
-            resizeColumnWidth(spectralTypeTable);
+            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);
+            columnModel.getColumn(1).setPreferredWidth(50);
+            columnModel.getColumn(2).setPreferredWidth(55);
+            columnModel.getColumn(3).setPreferredWidth(50);
+            columnModel.getColumn(4).setPreferredWidth(100);
+            columnModel.getColumn(5).setPreferredWidth(100);
+            columnModel.getColumn(6).setPreferredWidth(100);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
@@ -3377,8 +3384,11 @@ public class ImageViewerTab {
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            spectralTypeTable.setCellSelectionEnabled(false);
-            resizeColumnWidth(spectralTypeTable);
+            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);
+            columnModel.getColumn(1).setPreferredWidth(100);
+            columnModel.getColumn(2).setPreferredWidth(100);
+            columnModel.getColumn(3).setPreferredWidth(100);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))

@@ -59,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -522,8 +523,14 @@ public class CatalogQueryTab {
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            spectralTypeTable.setCellSelectionEnabled(false);
-            resizeColumnWidth(spectralTypeTable);
+            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);
+            columnModel.getColumn(1).setPreferredWidth(50);
+            columnModel.getColumn(2).setPreferredWidth(55);
+            columnModel.getColumn(3).setPreferredWidth(50);
+            columnModel.getColumn(4).setPreferredWidth(100);
+            columnModel.getColumn(5).setPreferredWidth(50);
+            columnModel.getColumn(6).setPreferredWidth(50);
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
