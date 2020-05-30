@@ -3,7 +3,6 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
@@ -112,51 +111,13 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(mag_w1_vg), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(mag_w2_vg), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("qual. fact. W1", roundTo3DecNZLZ(qf_w1), Alignment.RIGHT, getDoubleComparator(), createToolTip_qf()));
-        catalogElements.add(new CatalogElement("qual. fact. W2", roundTo3DecNZLZ(qf_w2), Alignment.RIGHT, getDoubleComparator(), createToolTip_qf()));
-        catalogElements.add(new CatalogElement("coadd flags W1", String.valueOf(flags_unwise_w1), Alignment.RIGHT, getDoubleComparator(), createToolTip_flags_unwise()));
-        catalogElements.add(new CatalogElement("coadd flags W2", String.valueOf(flags_unwise_w2), Alignment.RIGHT, getDoubleComparator(), createToolTip_flags_unwise()));
-        catalogElements.add(new CatalogElement("info flags W1", String.valueOf(flags_info_w1), Alignment.RIGHT, getDoubleComparator(), createToolTip_flags_info()));
-        catalogElements.add(new CatalogElement("info flags W2", String.valueOf(flags_info_w2), Alignment.RIGHT, getDoubleComparator(), createToolTip_flags_info()));
+        catalogElements.add(new CatalogElement("qual. fact. W1", roundTo3DecNZLZ(qf_w1), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("qual. fact. W2", roundTo3DecNZLZ(qf_w2), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("coadd flags W1", String.valueOf(flags_unwise_w1), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("coadd flags W2", String.valueOf(flags_unwise_w2), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("info flags W1", String.valueOf(flags_info_w1), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("info flags W2", String.valueOf(flags_info_w2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(w1_w2_vg), Alignment.RIGHT, getDoubleComparator(), true));
-    }
-
-    public static String createToolTip_qf() {
-        StringBuilder toolTip = new StringBuilder();
-        toolTip.append("<b>Quality factor:</b>").append(LINE_BREAK);
-        toolTip.append("The \"quality factor\" is a concept inherited from PS1.").append(LINE_BREAK);
-        toolTip.append("It tabulates the PSF-weighted fraction of pixels contributing to this detection.").append(LINE_BREAK);
-        toolTip.append("- Good detections will have quality factors close to one.").append(LINE_BREAK);
-        toolTip.append("- Heavily saturated detections will have quality factors close to zero.");
-        return toolTip.toString();
-    }
-
-    public static String createToolTip_flags_unwise() {
-        StringBuilder toolTip = new StringBuilder();
-        toolTip.append("<b>unWISE coadd flags:</b>").append(LINE_BREAK);
-        toolTip.append("0 - In core or wings").append(LINE_BREAK);
-        toolTip.append("1 - In diffraction spike").append(LINE_BREAK);
-        toolTip.append("2 - In ghost").append(LINE_BREAK);
-        toolTip.append("3 - In first latent").append(LINE_BREAK);
-        toolTip.append("4 - In second latetnt").append(LINE_BREAK);
-        toolTip.append("5 - In circular halo").append(LINE_BREAK);
-        toolTip.append("6 - Saturated").append(LINE_BREAK);
-        toolTip.append("7 - In geometric diffraction spike");
-        return toolTip.toString();
-    }
-
-    public static String createToolTip_flags_info() {
-        StringBuilder toolTip = new StringBuilder();
-        toolTip.append("<b>unWISE info flags:</b>").append(LINE_BREAK);
-        toolTip.append("0 - In PSF of bright star falling off coadd").append(LINE_BREAK);
-        toolTip.append("1 - In HyperLeda large galaxy").append(LINE_BREAK);
-        toolTip.append("2 - In \"big object\" (e.g. a Magellanic cloud)").append(LINE_BREAK);
-        toolTip.append("3 - Pixel may contain the centroid of a very bright star").append(LINE_BREAK);
-        toolTip.append("4 - Pixel potentially affected by saturation").append(LINE_BREAK);
-        toolTip.append("5 - Pixel may contain nebulosity ").append(LINE_BREAK);
-        toolTip.append("6 - Sources in this pixel will not be aggressively deblended").append(LINE_BREAK);
-        toolTip.append("7 - Candidate sources in this pixel must be \"sharp\" to be optimized");
-        return toolTip.toString();
     }
 
     @Override
