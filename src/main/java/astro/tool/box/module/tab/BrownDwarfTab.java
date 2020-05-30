@@ -39,6 +39,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableColumnModel;
 
 public class BrownDwarfTab {
 
@@ -207,8 +208,11 @@ public class BrownDwarfTab {
         alignResultColumns(spectralTypeTable, spectralTypes);
         spectralTypeTable.setAutoCreateRowSorter(true);
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        spectralTypeTable.setCellSelectionEnabled(false);
-        resizeColumnWidth(spectralTypeTable);
+        TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(100);
+        columnModel.getColumn(3).setPreferredWidth(100);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
@@ -219,7 +223,7 @@ public class BrownDwarfTab {
         lookupResult.add(spectralTypePanel);
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(500, 200));
+        remarks.setPreferredSize(new Dimension(100, 200));
         lookupResult.add(remarks);
         remarks.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));

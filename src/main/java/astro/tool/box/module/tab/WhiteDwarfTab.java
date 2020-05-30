@@ -104,7 +104,7 @@ public class WhiteDwarfTab {
                     BorderFactory.createEtchedBorder(), "Effective temperatures", TitledBorder.LEFT, TitledBorder.TOP
             ));
             lookupResult.setLayout(new BoxLayout(lookupResult, BoxLayout.Y_AXIS));
-            lookupResult.setPreferredSize(new Dimension(500, 750));
+            lookupResult.setPreferredSize(new Dimension(600, 750));
             spectralTypeLookup.add(lookupResult);
 
             JPanel colorInput = new JPanel(new GridLayout(10, 2));
@@ -214,9 +214,11 @@ public class WhiteDwarfTab {
     }
 
     private void lookupWhiteDwarfsByColor(JPanel lookupResult, Map<Color, Double> colors) {
-        double loggH = 0, loggHe = 0, massH = 0, massHe = 0;
+        double teffH = 0, teffHe = 0, loggH = 0, loggHe = 0, massH = 0, massHe = 0;
         if (selectedEntry instanceof GaiaWDCatalogEntry) {
             GaiaWDCatalogEntry entry = (GaiaWDCatalogEntry) selectedEntry;
+            teffH = entry.getTeffH();
+            teffHe = entry.getTeffHe();
             loggH = entry.getLoggH();
             loggHe = entry.getLoggHe();
             massH = entry.getMassH();
@@ -224,16 +226,16 @@ public class WhiteDwarfTab {
         }
 
         List<SpectralTypeLookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookupTeff(colors, loggH, massH);
-        displayTemperatures(whiteDwarfPureHResults, lookupResult, "WD type: Pure H");
+        displayTemperatures(whiteDwarfPureHResults, lookupResult, String.format("Carrasco (*): Pure H - %s: teff H = %s; logg H = %s; mass H = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(loggH), roundTo3DecNZ(massH)));
         List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookupTeff(colors, loggHe, massHe);
-        displayTemperatures(whiteDwarfPureHeResults, lookupResult, "WD type: Pure He");
+        displayTemperatures(whiteDwarfPureHeResults, lookupResult, String.format("Carrasco (*): Pure He - %s: teff He = %s; logg He = %s; mass He = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(loggHe), roundTo3DecNZ(massHe)));
         List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookupTeff(colors, loggH, massH);
-        displayTemperatures(whiteDwarfDAResults, lookupResult, "WD type: DA (pure H)");
+        displayTemperatures(whiteDwarfDAResults, lookupResult, String.format("Bergeron (**): DA (pure H) - %s: teff H = %s; logg H = %s; mass H = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(loggH), roundTo3DecNZ(massH)));
         List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookupTeff(colors, loggHe, massHe);
-        displayTemperatures(whiteDwarfDBResults, lookupResult, "WD type: DB (pure He)");
+        displayTemperatures(whiteDwarfDBResults, lookupResult, String.format("Bergeron (**): DB (pure He) - %s: teff He = %s; logg He = %s; mass He = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(loggHe), roundTo3DecNZ(massHe)));
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(500, 600));
+        remarks.setPreferredSize(new Dimension(100, 600));
         lookupResult.add(remarks);
         remarks.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
         remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " (*), " + LookupTable.WHITE_DWARFS_PURE_HE + " (*),"));
@@ -272,8 +274,8 @@ public class WhiteDwarfTab {
         columnModel.getColumn(2).setPreferredWidth(50);
         columnModel.getColumn(3).setPreferredWidth(100);
         columnModel.getColumn(4).setPreferredWidth(100);
-        columnModel.getColumn(5).setPreferredWidth(50);
-        columnModel.getColumn(6).setPreferredWidth(50);
+        columnModel.getColumn(5).setPreferredWidth(100);
+        columnModel.getColumn(6).setPreferredWidth(100);
 
         JScrollPane temperaturePanel = resultRows.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
