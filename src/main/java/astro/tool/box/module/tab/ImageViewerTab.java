@@ -1520,13 +1520,19 @@ public class ImageViewerTab {
             }
 
             if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || reloadImages) {
-                boolean moreImagesAvailable = true;
+                boolean moreImagesAvailable = false;
+                boolean oneMoreImageAvailable = false;
                 try {
                     getImageData(1, numberOfEpochs + 3);
+                    moreImagesAvailable = true;
                 } catch (FileNotFoundException ex) {
-                    moreImagesAvailable = false;
+                    try {
+                        getImageData(1, numberOfEpochs);
+                        oneMoreImageAvailable = true;
+                    } catch (FileNotFoundException ex2) {
+                    }
                 }
-                int totalEpochs = selectedEpochs * 2;
+                int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
                 List<Integer> requestedEpochs = new ArrayList<>();
                 if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                     if (reloadImages) {
@@ -1539,7 +1545,7 @@ public class ImageViewerTab {
                     requestedEpochs.add(totalEpochs - 1);
                 } else {
                     if (moreImagesAvailable) {
-                        for (int i = 0; i < totalEpochs * 4; i++) {
+                        for (int i = 0; i < 100; i++) {
                             requestedEpochs.add(i);
                         }
                     } else {
@@ -2593,7 +2599,7 @@ public class ImageViewerTab {
             if (Epoch.isSubtracted(epoch)) {
                 presetMaxVal = avgVal * (isLowValues ? 100 : 5);
             } else {
-                presetMaxVal = avgVal * 50;
+                presetMaxVal = avgVal * 100;
             }
         }
         presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;

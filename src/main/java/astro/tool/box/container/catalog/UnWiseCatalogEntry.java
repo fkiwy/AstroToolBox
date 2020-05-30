@@ -111,8 +111,8 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(mag_w1_vg), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(mag_w2_vg), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("qual. fact. W1", roundTo3DecNZLZ(qf_w1), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("qual. fact. W2", roundTo3DecNZLZ(qf_w2), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("quality factor W1", roundTo3DecNZLZ(qf_w1), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("quality factor W2", roundTo3DecNZLZ(qf_w2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("coadd flags W1", String.valueOf(flags_unwise_w1), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("coadd flags W2", String.valueOf(flags_unwise_w2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W1", String.valueOf(flags_info_w1), Alignment.RIGHT, getDoubleComparator()));
