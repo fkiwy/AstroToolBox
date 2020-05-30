@@ -136,17 +136,24 @@ public class PhotometricFunctions {
      *
      * @param colorKey
      * @param colorValue
+     * @param teff
      * @param logG
      * @param msun
      * @param minEntry
      * @param maxEntry
      * @return the temperature
      */
-    public static SpectralTypeLookupResult evaluateTemperature(Color colorKey, double colorValue, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
-        if (logG != 0 && (logG < minEntry.getLogG() || logG > maxEntry.getLogG())) {
+    public static SpectralTypeLookupResult evaluateTemperature(Color colorKey, double colorValue, double teff, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
+        double teffError = 1000;
+        if (teff != 0 && (teff < minEntry.getTeff() - teffError || teff > maxEntry.getTeff() + teffError)) {
             return null;
         }
-        if (msun != 0 && (msun < minEntry.getMsun() || msun > maxEntry.getMsun())) {
+        double logGError = 0.5;
+        if (logG != 0 && (logG < minEntry.getLogG() - logGError || logG > maxEntry.getLogG() + logGError)) {
+            return null;
+        }
+        double msunError = 0.2;
+        if (msun != 0 && (msun < minEntry.getMsun() - msunError || msun > maxEntry.getMsun() + msunError)) {
             return null;
         }
         return evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);

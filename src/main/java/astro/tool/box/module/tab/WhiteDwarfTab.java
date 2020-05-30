@@ -225,14 +225,14 @@ public class WhiteDwarfTab {
             massHe = entry.getMassHe();
         }
 
-        List<SpectralTypeLookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookupTeff(colors, loggH, massH);
-        displayTemperatures(whiteDwarfPureHResults, lookupResult, String.format("Carrasco (*): Pure H - %s: teff H = %s; logg H = %s; mass H = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(loggH), roundTo3DecNZ(massH)));
-        List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookupTeff(colors, loggHe, massHe);
-        displayTemperatures(whiteDwarfPureHeResults, lookupResult, String.format("Carrasco (*): Pure He - %s: teff He = %s; logg He = %s; mass He = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(loggHe), roundTo3DecNZ(massHe)));
-        List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookupTeff(colors, loggH, massH);
-        displayTemperatures(whiteDwarfDAResults, lookupResult, String.format("Bergeron (**): DA (pure H) - %s: teff H = %s; logg H = %s; mass H = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(loggH), roundTo3DecNZ(massH)));
-        List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookupTeff(colors, loggHe, massHe);
-        displayTemperatures(whiteDwarfDBResults, lookupResult, String.format("Bergeron (**): DB (pure He) - %s: teff He = %s; logg He = %s; mass He = %s", GaiaWDCatalogEntry.CATALOG_SHORT_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(loggHe), roundTo3DecNZ(massHe)));
+        List<SpectralTypeLookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookupTeff(colors, teffH, loggH, massH);
+        displayTemperatures(whiteDwarfPureHResults, lookupResult, String.format("Carrasco (*): Pure H - %s: teff H = <span style='color:blue'>%s</span>; mass H = <span style='color:blue'>%s</span>; logg H = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
+        List<SpectralTypeLookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookupTeff(colors, teffHe, loggHe, massHe);
+        displayTemperatures(whiteDwarfPureHeResults, lookupResult, String.format("Carrasco (*): Pure He - %s: teff He = <span style='color:blue'>%s</span>; mass He = <span style='color:blue'>%s</span>; logg He = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
+        List<SpectralTypeLookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookupTeff(colors, teffH, loggH, massH);
+        displayTemperatures(whiteDwarfDAResults, lookupResult, String.format("Bergeron (**): DA (pure H) - %s: teff H = <span style='color:blue'>%s</span>; mass H = <span style='color:blue'>%s</span>; logg H = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
+        List<SpectralTypeLookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookupTeff(colors, teffHe, loggHe, massHe);
+        displayTemperatures(whiteDwarfDBResults, lookupResult, String.format("Bergeron (**): DB (pure He) - %s: teff He = <span style='color:blue'>%s</span>; mass He = <span style='color:blue'>%s</span>; logg He = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(100, 600));
@@ -256,7 +256,7 @@ public class WhiteDwarfTab {
             resultRows.add(resultValues.split(",", 7));
         });
 
-        String titles = "teff,sol mass,log g,age,matched colors,nearest color,gap to nearest color";
+        String titles = "teff,mass (Msun),logg,age,matched colors,nearest color,gap to nearest color";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
         JTable temperatureTable = new JTable(resultRows.toArray(rows), columns) {
@@ -281,7 +281,7 @@ public class WhiteDwarfTab {
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(temperatureTable);
         temperaturePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), panelTitle, TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html(panelTitle), TitledBorder.LEFT, TitledBorder.TOP
         ));
         lookupResult.add(temperaturePanel);
     }
