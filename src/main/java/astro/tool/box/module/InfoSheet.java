@@ -56,7 +56,7 @@ import java.util.stream.Stream;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-public class PdfCreator {
+public class InfoSheet {
 
     private static final Font HEADER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 16, BaseColor.DARK_GRAY);
     private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.BLACK);
@@ -79,7 +79,7 @@ public class PdfCreator {
     private final SpectralTypeLookupService mainSequenceLookupService;
     private final SpectralTypeLookupService brownDwarfsLookupService;
 
-    public PdfCreator(double targetRa, double targetDec, int size, ImageViewerTab imageViewerTab) {
+    public InfoSheet(double targetRa, double targetDec, int size, ImageViewerTab imageViewerTab) {
         this.targetRa = targetRa;
         this.targetDec = targetDec;
         this.size = size;

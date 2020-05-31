@@ -42,7 +42,7 @@ import astro.tool.box.module.Application;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.ImageContainer;
-import astro.tool.box.module.PdfCreator;
+import astro.tool.box.module.InfoSheet;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
@@ -1160,7 +1160,7 @@ public class ImageViewerTab {
                                             displayPs1Images(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (createDataSheet.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> new PdfCreator(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
+                                            CompletableFuture.supplyAsync(() -> new InfoSheet(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
                                         }
                                     }
                                     break;
