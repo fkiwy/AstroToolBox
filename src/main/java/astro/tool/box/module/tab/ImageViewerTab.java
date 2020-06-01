@@ -697,7 +697,7 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel("Select images to display:"));
 
-            dssImages = new JCheckBox("DSS 1red, 1blue, 2red, 2blue, 2ir", false);
+            dssImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
             controlPanel.add(dssImages);
             dssImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
@@ -709,13 +709,13 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            twoMassImages = new JCheckBox("2MASS j, h & k bands", false);
+            twoMassImages = new JCheckBox("2MASS J, H & K bands", false);
             controlPanel.add(twoMassImages);
             twoMassImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            allwiseImages = new JCheckBox("AllWISE w1, w2, w3 & w4 bands", true);
+            allwiseImages = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
             controlPanel.add(allwiseImages);
             allwiseImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
