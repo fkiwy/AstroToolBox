@@ -25,6 +25,7 @@ import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.SpitzerCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
@@ -177,6 +178,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> twoMassEntries;
     private List<CatalogEntry> vhsEntries;
     private List<CatalogEntry> gaiaWDEntries;
+    private List<CatalogEntry> spitzerEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -199,6 +201,7 @@ public class ImageViewerTab {
     private JCheckBox twoMassOverlay;
     private JCheckBox vhsOverlay;
     private JCheckBox gaiaWDOverlay;
+    private JCheckBox spitzerOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -344,9 +347,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1975;
+            int controlPanelHeight = 2000;
 
-            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(82, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -617,21 +620,25 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            twoMassOverlay = new JCheckBox(TwoMassCatalogEntry.CATALOG_NAME);
-            twoMassOverlay.setForeground(JColor.ORANGE.val);
-            overlayPanel.add(twoMassOverlay);
+            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_SHORT_NAME);
+            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
+            overlayPanel.add(gaiaWDOverlay);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             overlayPanel.add(vhsOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_SHORT_NAME);
-            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
-            overlayPanel.add(gaiaWDOverlay);
+            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
+            twoMassOverlay.setForeground(JColor.ORANGE.val);
+            overlayPanel.add(twoMassOverlay);
+            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_SHORT_NAME + "&nbsp;</span>"));
+            spitzerOverlay.setForeground(JColor.YELLOW.val);
+            overlayPanel.add(spitzerOverlay);
+
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
-            overlayPanel.add(ssoOverlay);
+            controlPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -661,7 +668,7 @@ public class ImageViewerTab {
             ghostOverlay = new JCheckBox("Ghosts");
             ghostOverlay.setForeground(Color.MAGENTA.darker());
             artifactPanel.add(ghostOverlay);
-            haloOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Halos&nbsp;</span></html>");
+            haloOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Halos&nbsp;</span>"));
             haloOverlay.setForeground(Color.YELLOW);
             artifactPanel.add(haloOverlay);
 
@@ -670,7 +677,7 @@ public class ImageViewerTab {
             latentOverlay = new JCheckBox("Latents");
             latentOverlay.setForeground(Color.GREEN.darker());
             artifactPanel.add(latentOverlay);
-            spikeOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Spikes&nbsp;</span></html>");
+            spikeOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spikes&nbsp;</span>"));
             spikeOverlay.setForeground(Color.ORANGE);
             artifactPanel.add(spikeOverlay);
 
@@ -1220,6 +1227,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
                                         overlays++;
                                     }
+                                    if (spitzerOverlay.isSelected() && spitzerEntries != null) {
+                                        showCatalogInfo(spitzerEntries, mouseX, mouseY, JColor.YELLOW.val);
+                                        overlays++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         overlays++;
@@ -1477,6 +1488,7 @@ public class ImageViewerTab {
                 twoMassEntries = null;
                 vhsEntries = null;
                 gaiaWDEntries = null;
+                spitzerEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
@@ -1854,7 +1866,6 @@ public class ImageViewerTab {
             //System.out.println("minVal=" + minVal);
             //System.out.println("maxVal=" + maxVal);
             //System.out.println("avgVal=" + avgVal);
-
             setMinMaxValues(minVal, maxVal, avgVal);
 
             timer.restart();
@@ -2011,6 +2022,14 @@ public class ImageViewerTab {
                 CompletableFuture.supplyAsync(() -> gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry()));
             } else {
                 drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
+            }
+        }
+        if (spitzerOverlay.isSelected()) {
+            if (spitzerEntries == null) {
+                spitzerEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> spitzerEntries = fetchCatalogEntries(new SpitzerCatalogEntry()));
+            } else {
+                drawOverlay(image, spitzerEntries, JColor.YELLOW.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {
