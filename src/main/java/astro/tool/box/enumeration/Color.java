@@ -19,6 +19,7 @@ public enum Color {
     W1_W2("W1-W2"),
     W1_W3("W1-W3"),
     W1_W4("W1-W4"),
+    CH1_CH2("CH1-CH2"),
     u_g("u-g"),
     g_r("g-r"),
     r_i("r-i"),

@@ -1576,7 +1576,7 @@ public class ImageViewerTab {
                         break;
                 }
                 addRow(downloadLog, "");
-                writeDownloadLog(downloadLog.toString());
+                //writeDownloadLog(downloadLog.toString());
                 if (images.isEmpty()) {
                     showInfoDialog(baseFrame, "No decent images found for the specified coordinates and FoV.");
                     hasException = true;
@@ -1851,9 +1851,9 @@ public class ImageViewerTab {
             int maxVal = (maxValW1 + maxValW2) / divisor;
             int avgVal = (avgValW1 + avgValW2) / divisor;
 
-            System.out.println("minVal=" + minVal);
-            System.out.println("maxVal=" + maxVal);
-            System.out.println("avgVal=" + avgVal);
+            //System.out.println("minVal=" + minVal);
+            //System.out.println("maxVal=" + maxVal);
+            //System.out.println("avgVal=" + avgVal);
 
             setMinMaxValues(minVal, maxVal, avgVal);
 

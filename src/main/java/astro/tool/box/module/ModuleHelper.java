@@ -17,6 +17,7 @@ import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.SpitzerCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
@@ -128,6 +129,8 @@ public class ModuleHelper {
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
         GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
+        SpitzerCatalogEntry spitzerCatalogEntry = new SpitzerCatalogEntry();
+        catalogInstances.put(spitzerCatalogEntry.getCatalogName(), spitzerCatalogEntry);
 
         return catalogInstances;
     }
