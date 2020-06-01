@@ -120,7 +120,7 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         //RAJ2000,DEJ2000,[3_6],e_[3_6],[4_5],e_[4_5],S/G1,S/G2,[3_4],e_[3_4],[4_6],e_[4_6],[12],e_[12],[22],e_[22],Jmag,e_Jmag,Hmag,e_Hmag,Kmag,e_Kmag
         ra = toDouble(values[columns.get("RAJ2000")]);
         dec = toDouble(values[columns.get("DEJ2000")]);
-        sourceId = roundTo2DecNZ(ra) + addPlusSign(roundDouble(dec, PATTERN_2DEC_NZ));
+        sourceId = roundTo6DecNZ(ra) + addPlusSign(roundDouble(dec, PATTERN_6DEC_NZ));
         CH1mag = toDouble(values[columns.get("[3_6]")]);
         CH1_err = toDouble(values[columns.get("e_[3_6]")]);
         CH2mag = toDouble(values[columns.get("[4_5]")]);
@@ -153,8 +153,8 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("CH1 err", roundTo3DecNZ(CH1_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("CH2 (mag)", roundTo3DecNZ(CH2mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("CH2 err", roundTo3DecNZ(CH2_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Galaxy-Star (0-1) CH1", roundTo3DecNZ(extCH1), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Galaxy-Star (0-1) CH2", roundTo3DecNZ(extCH2), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Galaxy-Star (0-1) CH1", roundTo1DecNZ(extCH1), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Galaxy-Star (0-1) CH2", roundTo1DecNZ(extCH2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
@@ -260,7 +260,7 @@ public class SpitzerCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(CH1mag) + "," + roundTo3Dec(CH1_err) + "," + roundTo3Dec(CH2mag) + "," + roundTo3Dec(CH2_err) + "," + roundTo3Dec(extCH1) + "," + roundTo3Dec(extCH2) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getCH1_CH2()) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
+        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(CH1mag) + "," + roundTo3Dec(CH1_err) + "," + roundTo3Dec(CH2mag) + "," + roundTo3Dec(CH2_err) + "," + roundTo1Dec(extCH1) + "," + roundTo1Dec(extCH2) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getCH1_CH2()) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
         return values.split(",", 31);
     }
 
