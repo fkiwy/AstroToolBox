@@ -96,6 +96,9 @@ public class ModuleHelper {
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
 
+    private static final String LOG_FILE_NAME = "/AstroToolBoxLog.txt";
+    private static final String LOG_FILE_PATH = USER_HOME + LOG_FILE_NAME;
+
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();
@@ -176,6 +179,13 @@ public class ModuleHelper {
     public static void writeErrorLog(Exception ex) {
         try {
             Files.write(Paths.get(ERROR_FILE_PATH), getStackTrace(ex).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+        }
+    }
+
+    public static void writeDownloadLog(String downloadLog) {
+        try {
+            Files.write(Paths.get(LOG_FILE_PATH), downloadLog.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {
         }
     }
