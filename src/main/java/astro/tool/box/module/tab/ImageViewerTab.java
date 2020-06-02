@@ -131,6 +131,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableColumnModel;
+import javax.swing.text.DefaultCaret;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
@@ -181,6 +182,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
+    private JPanel rightPanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox applyLimits;
@@ -234,6 +236,7 @@ public class ImageViewerTab {
     private JTextField differentSizeField;
     private JTextField transposeMotionField;
     private JTextArea crosshairCoords;
+    private JTextArea downloadLog;
     private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
     private JLabel epochLabel;
@@ -339,7 +342,7 @@ public class ImageViewerTab {
             mainPanel.add(imageScrollPanel, BorderLayout.CENTER);
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-            JPanel rightPanel = new JPanel();
+            rightPanel = new JPanel();
             mainPanel.add(rightPanel, BorderLayout.EAST);
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
@@ -1572,8 +1575,15 @@ public class ImageViewerTab {
                 }
                 images.clear();
                 imagePanel.removeAll();
+                rightPanel.removeAll();
+                downloadLog = new JTextArea();
+                downloadLog.setFont(new JLabel().getFont());
+                downloadLog.setEditable(false);
+                DefaultCaret caret = (DefaultCaret) downloadLog.getCaret();
+                caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+                imagePanel.add(downloadLog);
                 baseFrame.setVisible(true);
-                writeLogEntry("Target: " + roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec) + " FoV: " + size + "\"");
+                writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
@@ -1591,6 +1601,7 @@ public class ImageViewerTab {
                         break;
                 }
                 writeLogEntry("Ready.");
+                downloadLog.setCaretPosition(0);
                 if (images.isEmpty()) {
                     showInfoDialog(baseFrame, "No decent images found for the specified coordinates and FoV.");
                     hasException = true;
@@ -2265,9 +2276,9 @@ public class ImageViewerTab {
     }
 
     private void writeLogEntry(String log) {
-        imagePanel.add(new JLabel(log));
+        downloadLog.append(log + LINE_SEP_TEXT_AREA);
         baseFrame.setVisible(true);
-        System.out.println(log);
+        //System.out.println(log);
     }
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, int alternativeEpoch, List<Integer> requestedEpochs) {
