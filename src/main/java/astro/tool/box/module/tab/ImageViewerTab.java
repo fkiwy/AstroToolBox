@@ -1411,14 +1411,13 @@ public class ImageViewerTab {
     }
 
     private void createFlipbook() {
-        timerStopped = true;
         CompletableFuture.supplyAsync(() -> assembleFlipbook());
-        timerStopped = false;
     }
 
     private boolean assembleFlipbook() {
         try {
             timer.stop();
+            timerStopped = true;
             String coords = coordsField.getText();
             if (coords.isEmpty()) {
                 showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -1884,6 +1883,7 @@ public class ImageViewerTab {
             setMinMaxValues(minVal, maxVal, avgVal);
 
             timer.restart();
+            timerStopped = false;
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
