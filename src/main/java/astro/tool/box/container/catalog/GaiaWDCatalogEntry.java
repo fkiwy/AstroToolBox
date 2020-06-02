@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class GaiaWDCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Gaia DR2 WD candidates";
+    public static final String CATALOG_NAME = "Gaia DR2 white dwarf candidates";
     public static final String CATALOG_SHORT_NAME = "Gaia WD cand.";
 
     // Unique source identifier (unique within a particular Data Release)

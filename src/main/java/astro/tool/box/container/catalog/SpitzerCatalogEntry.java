@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class SpitzerCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Spitzer/WISE photometry";
+    public static final String CATALOG_NAME = "Spitzer/WISE photometric catalog";
     public static final String CATALOG_SHORT_NAME = "Spitzer/WISE";
 
     // Unique source identifier
