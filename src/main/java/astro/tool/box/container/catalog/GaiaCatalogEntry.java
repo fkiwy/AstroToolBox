@@ -152,8 +152,8 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("rad vel (km/s)", roundTo3DecNZ(radvel), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("rad vel err", roundTo3DecNZ(radvel_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("teff (K)", roundTo2DecNZ(teff), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("sol rad", roundTo2DecNZ(radsun), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("sol lum", roundTo3DecNZ(lumsun), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("radius (Rsun)", roundTo2DecNZ(radsun), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("luminosity (Lsun)", roundTo3DecNZ(lumsun), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getActualDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("Absolute G (mag)", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -284,7 +284,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),sol rad,sol lum,dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
+        String titles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),radius (Rsun),luminosity (Lsun),dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
         return titles.split(",", 26);
     }
 
