@@ -704,7 +704,7 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            sloanImages = new JCheckBox("SDSS u, g, r & z bands", false);
+            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
             controlPanel.add(sloanImages);
             sloanImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
