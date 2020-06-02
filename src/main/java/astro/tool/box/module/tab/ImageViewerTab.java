@@ -1411,7 +1411,9 @@ public class ImageViewerTab {
     }
 
     private void createFlipbook() {
+        timerStopped = true;
         CompletableFuture.supplyAsync(() -> assembleFlipbook());
+        timerStopped = false;
     }
 
     private boolean assembleFlipbook() {
@@ -2147,20 +2149,21 @@ public class ImageViewerTab {
                     }
                 }
             }
+            String imageDate = obsDate.getYear() + "-" + obsDate.getMonthValue() + "-" + obsDate.getDayOfMonth();
             double maxAllowed = naxis1 * naxis2 / 20;
             if (zeroValues > maxAllowed) {
                 if (requestedEpochs.size() == 4) {
-                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + obsDate + " - skipped (bad image quality), trying to find surrogates");
+                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + imageDate + " - skipped (bad image quality), trying to find surrogates");
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, requestedEpochs), images);
                     return;
                 } else {
-                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + obsDate + " - skipped (bad image quality)");
+                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + imageDate + " - skipped (bad image quality)");
                     //fits = null;
                     continue;
                 }
             }
             images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-            writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + obsDate + " - downloaded");
+            writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + imageDate + " - downloaded");
             baseFrame.setVisible(true);
         }
         if (images.isEmpty()) {
