@@ -194,10 +194,10 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     public static String createToolTip_cc_flags() {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Contamination and confusion flags (cc flags):</b>").append(LINE_BREAK);
-        toolTip.append("D,d - Diffraction spike. Source may be a spurious detection of (D) or contaminated by (d) a diffraction spike from a nearby bright star on the same image, or ").append(LINE_BREAK);
-        toolTip.append("P,p - Persistence. Source may be a spurious detection of (P) or contaminated by (p) a short-term latent image left by a bright source, or ").append(LINE_BREAK);
+        toolTip.append("D,d - Diffraction spike. Source may be a spurious detection of (D) or contaminated by (d) a diffraction spike from a nearby bright star on the same image, or").append(LINE_BREAK);
+        toolTip.append("P,p - Persistence. Source may be a spurious detection of (P) or contaminated by (p) a short-term latent image left by a bright source, or").append(LINE_BREAK);
         toolTip.append("H,h - Halo. Source may be a spurious detection of (H) or contaminated by (h) the scattered light halo surrounding a nearby bright source, or").append(LINE_BREAK);
-        toolTip.append("O,o (letter \"o\") - Optical ghost. Source may be a spurious detection of (O) or contaminated by (o) an optical ghost image caused by a nearby bright source, or ").append(LINE_BREAK);
+        toolTip.append("O,o (letter \"o\") - Optical ghost. Source may be a spurious detection of (O) or contaminated by (o) an optical ghost image caused by a nearby bright source, or").append(LINE_BREAK);
         toolTip.append("0 (number zero) - Source is unaffected by known artifacts. ");
         return toolTip.toString();
     }
@@ -221,7 +221,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         toolTip.append("Values of \"0\" through \"9\" indicate increasing probabilities of variation.").append(LINE_BREAK);
         toolTip.append("Values of \"0\" through \"5\" are most likely not variables.").append(LINE_BREAK);
         toolTip.append("Values of \"6\" and \"7\" are likely flux variables, but are the most susceptible to false-positive variability.").append(LINE_BREAK);
-        toolTip.append("Values greater than \"7\" have the highest probability of being true flux variables in a band. ");
+        toolTip.append("Values greater than \"7\" have the highest probability of being true flux variables in a band.");
         return toolTip.toString();
     }
 

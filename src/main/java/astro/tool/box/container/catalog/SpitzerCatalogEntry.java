@@ -155,13 +155,13 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("CH2 err", roundTo3DecNZ(CH2_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Galaxy-Star (0-1) CH1", roundTo1DecNZ(extCH1), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Galaxy-Star (0-1) CH2", roundTo1DecNZ(extCH2), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator(), createToolTip_wise_phot()));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), createToolTip_wise_phot()));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W3 (mag)", roundTo3DecNZ(W3mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W3 (mag)", roundTo3DecNZ(W3mag), Alignment.RIGHT, getDoubleComparator(), createToolTip_wise_phot()));
         catalogElements.add(new CatalogElement("W3 err", roundTo3DecNZ(W3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W4 (mag)", roundTo3DecNZ(W4mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W4 (mag)", roundTo3DecNZ(W4mag), Alignment.RIGHT, getDoubleComparator(), createToolTip_wise_phot()));
         catalogElements.add(new CatalogElement("W4 err", roundTo3DecNZ(W4_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("J (mag)", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(J_err), Alignment.RIGHT, getDoubleComparator()));
@@ -176,6 +176,12 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(getJ_H()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("H-K", roundTo3DecNZ(getH_K()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("J-K", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator(), false, true));
+    }
+
+    public static String createToolTip_wise_phot() {
+        StringBuilder toolTip = new StringBuilder();
+        toolTip.append("This is WISE All-Sky and not AllWISE photometry.");
+        return toolTip.toString();
     }
 
     @Override
