@@ -114,7 +114,7 @@ public class WhiteDwarfTab {
             colorInput.setPreferredSize(new Dimension(200, 275));
 
             JPanel inputPanel = new JPanel();
-            inputPanel.setPreferredSize(new Dimension(200, 710));
+            inputPanel.setPreferredSize(new Dimension(200, 760));
             inputPanel.add(colorInput);
             spectralTypeLookup.add(inputPanel);
 
