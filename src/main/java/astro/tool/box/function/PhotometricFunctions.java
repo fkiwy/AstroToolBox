@@ -109,9 +109,6 @@ public class PhotometricFunctions {
     public static SpectralTypeLookupResult evaluateSpectralType(Color colorKey, double colorValue, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
         Double minColorValue = minEntry.getColors().get(colorKey);
         Double maxColorValue = maxEntry.getColors().get(colorKey);
-        if (maxColorValue == null || maxColorValue == 0) {
-            maxEntry.getColors().put(colorKey, minColorValue);
-        }
         if (minColorValue == null || maxColorValue == null || minColorValue == 0 || maxColorValue == 0 || colorValue == 0) {
             return null;
         }

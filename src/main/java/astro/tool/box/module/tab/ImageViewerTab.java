@@ -2158,7 +2158,6 @@ public class ImageViewerTab {
                     return;
                 } else {
                     writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
-                    //fits = null;
                     continue;
                 }
             }
@@ -2287,7 +2286,7 @@ public class ImageViewerTab {
     private void writeLogEntry(String log) {
         downloadLog.append(log + LINE_SEP_TEXT_AREA);
         baseFrame.setVisible(true);
-        System.out.println(log);
+        //System.out.println(log);
     }
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
