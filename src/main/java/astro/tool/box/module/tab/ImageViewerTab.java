@@ -296,6 +296,7 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean bandChanded;
     private boolean reloadImages;
     private boolean firstLastLoaded;
     private boolean allEpochsLoaded;
@@ -386,7 +387,7 @@ public class ImageViewerTab {
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                reloadImages = true;
+                bandChanded = true;
                 createFlipbook();
             });
 
@@ -1537,7 +1538,7 @@ public class ImageViewerTab {
             previousDec = targetDec;
             imageNumber = 0;
 
-            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || reloadImages) {
+            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || bandChanded || reloadImages) {
                 boolean moreImagesAvailable = false;
                 boolean oneMoreImageAvailable = false;
                 try {
@@ -1620,6 +1621,7 @@ public class ImageViewerTab {
                 firstLastLoaded = true;
                 allEpochsLoaded = true;
             }
+            bandChanded = false;
             reloadImages = false;
 
             Fits fits;
