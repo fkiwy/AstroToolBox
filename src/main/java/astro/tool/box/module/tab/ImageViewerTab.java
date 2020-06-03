@@ -2176,7 +2176,8 @@ public class ImageViewerTab {
                 .collect(Collectors.toList());
         List<List<ImageContainer>> groupedList = new ArrayList<>();
         List<ImageContainer> group = new ArrayList<>();
-        LocalDateTime date = sortedList.get(0).getDate();
+        ImageContainer containerSaved = sortedList.get(0);
+        LocalDateTime date = containerSaved.getDate();
         int prevYear = date.getYear();
         int prevMonth = date.getMonthValue();
         int prevNode = 1;
@@ -2184,6 +2185,7 @@ public class ImageViewerTab {
         int node2 = 0;
         boolean nodeChange = false;
         for (ImageContainer container : sortedList) {
+            containerSaved = container;
             date = container.getDate();
             int year = date.getYear();
             int month = date.getMonthValue();
@@ -2244,7 +2246,24 @@ public class ImageViewerTab {
             prevNode = node;
             writeLogEntry("year " + year + " | node " + node);
         }
-        if (node1 != 0 && node2 != 0) {
+        if (node1 == 0 || node2 == 0) {
+            if (requestedEpochs.size() == 4) {
+                int requestedEpoch = containerSaved.getEpoch();
+                int alternativeEpoch;
+                if (requestedEpoch < selectedEpochs) {
+                    alternativeEpoch = node1 == 0 ? 1 : 2;
+                } else {
+                    alternativeEpoch = node1 == 0 ? 2 : 1;
+                }
+                images.clear();
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node), looking for surrogates");
+                downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, alternativeEpoch, requestedEpochs), images);
+                return;
+            } else {
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
+                groupedList.remove(groupedList.size() - 1);
+            }
+        } else {
             groupedList.add(group);
         }
         writeLogEntry("Stacking ...");
@@ -2281,7 +2300,7 @@ public class ImageViewerTab {
     private void writeLogEntry(String log) {
         downloadLog.append(log + LINE_SEP_TEXT_AREA);
         baseFrame.setVisible(true);
-        //System.out.println(log);
+        System.out.println(log);
     }
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, int alternativeEpoch, List<Integer> requestedEpochs) {
