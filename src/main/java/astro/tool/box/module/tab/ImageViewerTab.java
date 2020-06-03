@@ -386,6 +386,7 @@ public class ImageViewerTab {
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
+                reloadImages = true;
                 createFlipbook();
             });
 
@@ -398,6 +399,10 @@ public class ImageViewerTab {
             epochs.addActionListener((ActionEvent evt) -> {
                 Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
+                if (Epoch.isFirstLast(previousEpoch) && !Epoch.isFirstLast(epoch)) {
+                    epochCountW1 = 0;
+                    epochCountW2 = 0;
+                }
                 createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
                     smoothImage.setSelected(true);
@@ -1532,13 +1537,6 @@ public class ImageViewerTab {
             previousDec = targetDec;
             imageNumber = 0;
 
-            if ((wiseBand.equals(WiseBand.W1) && imagesW1.isEmpty())
-                    || (wiseBand.equals(WiseBand.W2) && imagesW2.isEmpty())
-                    || (wiseBand.equals(WiseBand.W1W2) && (imagesW1.isEmpty() || imagesW2.isEmpty()))) {
-                firstLastLoaded = false;
-                allEpochsLoaded = false;
-            }
-
             if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || reloadImages) {
                 boolean moreImagesAvailable = false;
                 boolean oneMoreImageAvailable = false;
@@ -2111,7 +2109,7 @@ public class ImageViewerTab {
             String imageKey = band + "_" + requestedEpoch;
             ImageContainer container = images.get(imageKey);
             if (container != null) {
-                writeLogEntry("band " + band + " - image " + requestedEpoch + " - already downloaded");
+                writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
                 continue;
             }
             Fits fits;
@@ -2119,7 +2117,7 @@ public class ImageViewerTab {
                 fits = new Fits(getImageData(band, requestedEpoch));
             } catch (FileNotFoundException ex) {
                 if (requestedEpochs.size() == 4) {
-                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - not found, trying to find surrogates");
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, requestedEpochs), images);
                     return;
                 } else {
@@ -2149,21 +2147,21 @@ public class ImageViewerTab {
                     }
                 }
             }
-            String imageDate = obsDate.getYear() + "-" + obsDate.getMonthValue() + "-" + obsDate.getDayOfMonth();
+            String imageDate = obsDate.format(DATE_FORMATTER);
             double maxAllowed = naxis1 * naxis2 / 20;
             if (zeroValues > maxAllowed) {
                 if (requestedEpochs.size() == 4) {
-                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + imageDate + " - skipped (bad image quality), trying to find surrogates");
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
                     downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, 2, requestedEpochs), images);
                     return;
                 } else {
-                    writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + imageDate + " - skipped (bad image quality)");
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
                     //fits = null;
                     continue;
                 }
             }
             images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-            writeLogEntry("band " + band + " - image " + requestedEpoch + " - " + imageDate + " - downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
             baseFrame.setVisible(true);
         }
         if (images.isEmpty()) {
@@ -2222,11 +2220,11 @@ public class ImageViewerTab {
                             alternativeEpoch = node1 == 0 ? 2 : 1;
                         }
                         images.clear();
-                        writeLogEntry("year " + prevYear + " - node " + prevNode + " - skipped (single node), trying to find surrogates");
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node), looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, alternativeEpoch, requestedEpochs), images);
                         return;
                     } else {
-                        writeLogEntry("year " + prevYear + " - node " + prevNode + " - skipped (single node)");
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
                         groupedList.remove(groupedList.size() - 1);
                     }
                 }
@@ -2242,7 +2240,7 @@ public class ImageViewerTab {
             prevYear = year;
             prevMonth = month;
             prevNode = node;
-            writeLogEntry("year " + year + " - node " + node);
+            writeLogEntry("year " + year + " | node " + node);
         }
         if (node1 != 0 && node2 != 0) {
             groupedList.add(group);
@@ -2273,7 +2271,7 @@ public class ImageViewerTab {
             }
             int imageCount = imageGroup.size();
             addImage(band, epochCount, imageCount > 1 ? takeAverage(fits, imageCount) : fits);
-            writeLogEntry("band " + band + " - image " + epochCount + " - year " + year + " - month " + month);
+            writeLogEntry("band " + band + " | image " + epochCount + " | year " + year + " | month " + month);
             epochCount++;
         }
     }
@@ -2629,7 +2627,7 @@ public class ImageViewerTab {
     }
 
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
-        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
+        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 300);
 
         // Preset minimum value
         if (applyLimits.isSelected()) {
