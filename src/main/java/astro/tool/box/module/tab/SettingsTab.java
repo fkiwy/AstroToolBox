@@ -343,12 +343,16 @@ public class SettingsTab {
             containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.CENTER);
 
+            JPanel gridPanel = new JPanel(new GridLayout(2, 1));
+            containerPanel.add(gridPanel);
+            gridPanel.setPreferredSize(new Dimension(1210, 120));
+
             // Catalogs
             catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             catalogPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            containerPanel.add(catalogPanel);
+            gridPanel.add(catalogPanel);
 
             Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
             selectedCatalogs = getSelectedCatalogs(catalogInstances);
@@ -364,7 +368,7 @@ public class SettingsTab {
             }
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            containerPanel.add(buttonPanel);
+            gridPanel.add(buttonPanel);
 
             JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
