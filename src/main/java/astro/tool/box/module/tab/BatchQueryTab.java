@@ -172,17 +172,8 @@ public class BatchQueryTab {
             lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.MLTY_DWARFS});
             centerRow.add(lookupTables);
 
-            bottomRow.add(new JLabel("Catalogs:"));
-
-            JCheckBox catalog;
-            for (String catalogKey : catalogInstances.keySet()) {
-                catalog = new JCheckBox(catalogKey);
-                catalog.setSelected(true);
-                bottomRow.add(catalog);
-            }
-
             JButton queryButton = new JButton("Start query");
-            bottomRow.add(queryButton);
+            centerRow.add(queryButton);
             queryButton.addActionListener((ActionEvent evt) -> {
                 if (isProcessing) {
                     showErrorDialog(baseFrame, "There's still a query being processed!");
@@ -267,17 +258,17 @@ public class BatchQueryTab {
                 mainPanel.add(centerPanel);
 
                 if (progressBar != null) {
-                    bottomRow.remove(progressBar);
+                    centerRow.remove(progressBar);
                 }
                 progressBar = new JProgressBar(0, rows);
-                bottomRow.add(progressBar);
+                centerRow.add(progressBar);
                 progressBar.setStringPainted(true);
 
                 if (cancelButton != null) {
-                    bottomRow.remove(cancelButton);
+                    centerRow.remove(cancelButton);
                 }
                 cancelButton = new JButton("Cancel query");
-                bottomRow.add(cancelButton);
+                centerRow.add(cancelButton);
                 cancelButton.addActionListener((ActionEvent e) -> {
                     toCancel = true;
                 });
@@ -286,6 +277,15 @@ public class BatchQueryTab {
 
                 CompletableFuture.supplyAsync(() -> queryCatalogs());
             });
+
+            bottomRow.add(new JLabel("Catalogs:"));
+
+            JCheckBox catalog;
+            for (String catalogKey : catalogInstances.keySet()) {
+                catalog = new JCheckBox(catalogKey);
+                catalog.setSelected(true);
+                bottomRow.add(catalog);
+            }
 
             echoPanel.add(new JLabel("Echo:"));
 
