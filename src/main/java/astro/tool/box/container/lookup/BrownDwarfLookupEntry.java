@@ -16,7 +16,6 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
     public BrownDwarfLookupEntry(String[] values) {
         spt = values[0];
         colors = new HashMap<>();
-        //colors.put(Color.M_W1, toDouble(values[9]));
         colors.put(Color.M_G, toDouble(values[11]));
         colors.put(Color.g_r, toDouble(values[12]));
         colors.put(Color.r_i, toDouble(values[13]));
@@ -27,6 +26,7 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
         colors.put(Color.J_K, toDouble(values[18]));
         colors.put(Color.W1_W2, toDouble(values[19]));
         colors.put(Color.J_W2, toDouble(values[20]));
+        colors.put(Color.CH1_CH2, toDouble(values[21]));
     }
 
     @Override
@@ -52,6 +52,16 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
     @Override
     public double getMsun() {
         return 0;
+    }
+
+    @Override
+    public double getLogG() {
+        return 0;
+    }
+
+    @Override
+    public String getAge() {
+        return "";
     }
 
     @Override

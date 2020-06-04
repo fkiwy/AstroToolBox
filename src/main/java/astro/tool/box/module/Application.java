@@ -9,17 +9,16 @@ import astro.tool.box.module.tab.BrownDwarfTab;
 import astro.tool.box.module.tab.CatalogQueryTab;
 import astro.tool.box.module.tab.CustomOverlaysTab;
 import astro.tool.box.module.tab.FileBrowserTab;
-import astro.tool.box.module.tab.HelpTab;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
-import astro.tool.box.module.tab.WiseFlagsTab;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 public class Application {
@@ -43,6 +42,7 @@ public class Application {
             } else {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
+            ToolTipManager.sharedInstance().setDismissDelay(60000);
         } catch (Exception e) {
         }
     }
@@ -91,14 +91,8 @@ public class Application {
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
         lookupTab.init();
 
-        WiseFlagsTab wiseFlagsTab = new WiseFlagsTab(baseFrame, tabbedPane);
-        wiseFlagsTab.init();
-
-        SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
         settingsTab.init();
-
-        HelpTab helpTab = new HelpTab(baseFrame, tabbedPane);
-        helpTab.init();
 
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);

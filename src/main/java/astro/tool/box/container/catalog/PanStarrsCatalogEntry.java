@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "Pan-STARRS";
+
     // Unique object identifier
     private long objID;
 
@@ -137,7 +139,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("quality flag sum (*)", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator()));
+        catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTip_qualityFlag()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
@@ -158,9 +160,15 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
+    }
+
+    public String createToolTip_qualityFlag() {
+        StringBuilder toolTip = new StringBuilder();
+        toolTip.append("<b>Quality flag details:</b>");
         qualityFlags.forEach((flag) -> {
-            catalogElements.add(new CatalogElement("(*) quality flag " + flag.getS1(), flag.getS2(), Alignment.LEFT, getStringComparator(), true));
+            toolTip.append(LINE_BREAK).append(flag.getS1()).append(" = ").append(flag.getS2());
         });
+        return toolTip.toString();
     }
 
     @Override
@@ -226,7 +234,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "Pan-STARRS";
+        return CATALOG_NAME;
     }
 
     @Override
@@ -242,15 +250,13 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
-        values = qualityFlags.stream().map((flag) -> "," + flag.getS1() + " = " + flag.getS2()).reduce(values, String::concat);
-        return values.split(",", 24 + qualityFlags.size());
+        return values.split(",", 24);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,object name,quality flag (*),ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
-        titles = qualityFlags.stream().map((flag) -> ",(*) quality flag").reduce(titles, String::concat);
-        return titles.split(",", 24 + qualityFlags.size());
+        String titles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
+        return titles.split(",", 24);
     }
 
     @Override
@@ -261,6 +267,11 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         colors.put(Color.i_z, get_i_z());
         colors.put(Color.z_y, get_z_y());
         return colors;
+    }
+
+    @Override
+    public String getMagnitudes() {
+        return String.format("g=%s; r=%s; i=%s; z=%s; y=%s", roundTo3DecNZ(gMeanPSFMag), roundTo3DecNZ(rMeanPSFMag), roundTo3DecNZ(iMeanPSFMag), roundTo3DecNZ(zMeanPSFMag), roundTo3DecNZ(yMeanPSFMag));
     }
 
     @Override

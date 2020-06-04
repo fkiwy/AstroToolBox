@@ -19,6 +19,8 @@ import java.util.Objects;
 
 public class CatWiseRejectedEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "CatWISE Reject Table";
+
     // Unique WISE source designation
     private String sourceId;
 
@@ -143,7 +145,7 @@ public class CatWiseRejectedEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("plx PM desc-asc err", roundTo1DecNZ(par_pmsig), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx stat. sol. (mas)", roundTo1DecNZ(par_stat), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx stat. sol. err", roundTo1DecNZ(par_sigma), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("cc flags", cc_flags, Alignment.LEFT, getStringComparator(), AllWiseCatalogEntry.createToolTip_cc_flags()));
         catalogElements.add(new CatalogElement("ab flags", ab_flags, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true, true));
     }
@@ -211,7 +213,7 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "CatWISE Reject Table";
+        return CATALOG_NAME;
     }
 
     @Override
@@ -241,6 +243,11 @@ public class CatWiseRejectedEntry implements CatalogEntry {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.W1_W2, getW1_W2());
         return colors;
+    }
+
+    @Override
+    public String getMagnitudes() {
+        return String.format("W1=%s; W2=%s", roundTo3DecNZ(W1mag), roundTo3DecNZ(W2mag));
     }
 
     @Override

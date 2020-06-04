@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -55,24 +54,15 @@ public class LookupTab {
 
             filePanel.add(new JLabel("Lookup table:"));
 
-            JComboBox lookupTables = new JComboBox<>(new LookupTable[]{
-                LookupTable.MAIN_SEQUENCE,
-                LookupTable.MLTY_DWARFS,
-                LookupTable.WHITE_DWARFS_PURE_H,
-                LookupTable.WHITE_DWARFS_PURE_HE,
-                LookupTable.WHITE_DWARFS_MIX
-            });
+            JComboBox lookupTables = new JComboBox<>(LookupTable.values());
             filePanel.add(lookupTables);
-
-            JButton viewButton = new JButton("View");
-            filePanel.add(viewButton);
-            viewButton.addActionListener((ActionEvent evt) -> {
+            lookupTables.addActionListener((ActionEvent evt) -> {
                 String fileName;
                 String tableName;
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = "Main sequence lookup table";
+                        tableName = "Main sequence lookup table (A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence by Eric Mamajek)";
                         break;
                     case MLTY_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
@@ -80,15 +70,19 @@ public class LookupTab {
                         break;
                     case WHITE_DWARFS_PURE_H:
                         fileName = "/WhiteDwarfPureHLookupTable.csv";
-                        tableName = "White dwarfs pure H lookup table";
+                        tableName = "White dwarfs pure H lookup table (Gaia photometry for white dwarfs by J. M. Carrasco)";
                         break;
                     case WHITE_DWARFS_PURE_HE:
                         fileName = "/WhiteDwarfPureHeLookupTable.csv";
-                        tableName = "White dwarfs pure He lookup table";
+                        tableName = "White dwarfs pure He lookup table (Gaia photometry for white dwarfs by J. M. Carrasco)";
                         break;
-                    case WHITE_DWARFS_MIX:
-                        fileName = "/WhiteDwarfMixLookupTable.csv";
-                        tableName = "White dwarfs mix He/H=0.1 lookup table";
+                    case WHITE_DWARFS_DA:
+                        fileName = "/WhiteDwarfDALookupTable.csv";
+                        tableName = "White dwarfs DA lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs by Pierre Bergeron)";
+                        break;
+                    case WHITE_DWARFS_DB:
+                        fileName = "/WhiteDwarfDBLookupTable.csv";
+                        tableName = "White dwarfs DB lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs by Pierre Bergeron)";
                         break;
                     default:
                         fileName = "";
@@ -100,6 +94,7 @@ public class LookupTab {
                 readFileContents(input, tableName);
                 baseFrame.setVisible(true);
             });
+            lookupTables.setSelectedItem(LookupTable.MAIN_SEQUENCE);
 
             tabbedPane.addTab(TAB_NAME, mainPanel);
         } catch (Exception ex) {

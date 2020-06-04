@@ -2,11 +2,13 @@ package astro.tool.box.module.tab;
 
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
+import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.WiseBand;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -18,8 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -30,12 +35,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeListener;
 
 public class SettingsTab {
 
@@ -48,6 +55,7 @@ public class SettingsTab {
     private final JTabbedPane tabbedPane;
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
+    private final BatchQueryTab batchQueryTab;
 
     // Global settings
     public static final String LOOK_AND_FEEL = "lookAndFeel";
@@ -80,27 +88,41 @@ public class SettingsTab {
     private int finderChartFOV;
 
     // Image viewer settings
+    private static final String NUMBER_OF_EPOCHS = "numberOfEpochs";
     private static final String WISE_BAND = "wiseBand";
     private static final String EPOCH = "epoch";
     private static final String SIZE = "imageSize";
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
+    private static final String PANSTARRS_IMAGES = "panstarrsImages";
+    private static final String SDSS_IMAGES = "sdssImages";
 
+    private int numberOfEpochs;
     private WiseBand wiseBand;
     private Epoch epoch;
     private int size;
     private int speed;
     private int zoom;
+    private boolean panstarrsImages;
+    private boolean sdssImages;
 
-    private ActionListener listener;
+    // Catalogs
+    private static final String CATALOGS = "catalogs";
+    private List<String> selectedCatalogs;
+
+    private JPanel catalogPanel;
+    private ActionListener actionListener;
+    private ChangeListener changeListener;
     private JComboBox wiseBandsBox;
     private JComboBox epochsBox;
+    private JSlider epochSlider;
 
-    public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
+    public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
+        this.batchQueryTab = batchQueryTab;
         //loadUserSettings();
     }
 
@@ -157,12 +179,12 @@ public class SettingsTab {
             JTextField proxyPortField = new JTextField(String.valueOf(proxyPort));
             globalSettings.add(proxyPortField);
 
-            globalSettings.add(new JLabel("Use proxy : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use proxy: ", JLabel.RIGHT));
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
             globalSettings.add(useProxyCheckBox);
 
-            globalSettings.add(new JLabel("Use SIMBAD mirror : ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use SIMBAD mirror: ", JLabel.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
@@ -233,36 +255,60 @@ public class SettingsTab {
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(350, 200));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 200));
             containerPanel.add(imageViewerSettings);
 
+            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
             epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
+            panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
+            sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 
             wiseBandsBox = imageViewerTab.getWiseBands();
-            listener = wiseBandsBox.getActionListeners()[0];
-            wiseBandsBox.removeActionListener(listener);
+            actionListener = wiseBandsBox.getActionListeners()[0];
+            wiseBandsBox.removeActionListener(actionListener);
             wiseBandsBox.setSelectedItem(wiseBand);
-            wiseBandsBox.addActionListener(listener);
+            wiseBandsBox.addActionListener(actionListener);
 
-            epochsBox = imageViewerTab.getWiseBands();
-            listener = epochsBox.getActionListeners()[0];
-            epochsBox.removeActionListener(listener);
+            epochsBox = imageViewerTab.getEpochs();
+            actionListener = epochsBox.getActionListeners()[0];
+            epochsBox.removeActionListener(actionListener);
             epochsBox.setSelectedItem(epoch);
-            epochsBox.addActionListener(listener);
+            epochsBox.addActionListener(actionListener);
 
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
+
+            imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
+            epochSlider = imageViewerTab.getEpochSlider();
+            changeListener = epochSlider.getChangeListeners()[0];
+            epochSlider.removeChangeListener(changeListener);
+            epochSlider.setMaximum(numberOfEpochs);
+            epochSlider.setValue(numberOfEpochs);
+            epochSlider.addChangeListener(changeListener);
+
+            if (Epoch.isSubtracted(epoch)) {
+                imageViewerTab.getSmoothImage().setSelected(true);
+            } else {
+                imageViewerTab.getSmoothImage().setSelected(false);
+            }
 
             imageViewerTab.setWiseBand(wiseBand);
             imageViewerTab.setEpoch(epoch);
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
+            imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
+            imageViewerTab.setPanstarrsImages(panstarrsImages);
+            imageViewerTab.setSdssImages(sdssImages);
+
+            imageViewerSettings.add(new JLabel("Number of epochs: ", JLabel.RIGHT));
+            JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
+            imageViewerSettings.add(numberOfEpochsField);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox<>(WiseBand.values());
@@ -286,8 +332,39 @@ public class SettingsTab {
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
 
+            imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
+            JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
+            imageViewerSettings.add(downloadPanel);
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
+            downloadPanel.add(panstarrsImagesCheckBox);
+            JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
+            downloadPanel.add(sdssImagesCheckBox);
+
+            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            settingsPanel.add(containerPanel, BorderLayout.CENTER);
+
+            // Catalogs
+            catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            catalogPanel.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
+            ));
+            containerPanel.add(catalogPanel);
+
+            Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
+            selectedCatalogs = getSelectedCatalogs(catalogInstances);
+
+            setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
+            setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
+
+            JCheckBox checkbox;
+            for (String catalogKey : catalogInstances.keySet()) {
+                checkbox = new JCheckBox(catalogKey);
+                checkbox.setSelected(selectedCatalogs.contains(catalogKey));
+                catalogPanel.add(checkbox);
+            }
+
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            settingsPanel.add(buttonPanel, BorderLayout.CENTER);
+            containerPanel.add(buttonPanel);
 
             JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -306,7 +383,6 @@ public class SettingsTab {
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
                     objectCollectionPath = collectionPathField.getText();
-
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
                         if (proxyAddress.isEmpty()) {
@@ -331,11 +407,14 @@ public class SettingsTab {
                     finderChartFOV = Integer.parseInt(finderChartFovField.getText());
 
                     // Image viewer settings
+                    numberOfEpochs = Integer.parseInt(numberOfEpochsField.getText());
                     wiseBand = (WiseBand) wiseBands.getSelectedItem();
                     epoch = (Epoch) epochs.getSelectedItem();
                     size = Integer.parseInt(sizeField.getText());
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
+                    panstarrsImages = panstarrsImagesCheckBox.isSelected();
+                    sdssImages = sdssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
                     return;
@@ -377,32 +456,69 @@ public class SettingsTab {
                 imageViewerTab.getTimer().stop();
 
                 wiseBandsBox = imageViewerTab.getWiseBands();
-                listener = wiseBandsBox.getActionListeners()[0];
-                wiseBandsBox.removeActionListener(listener);
+                actionListener = wiseBandsBox.getActionListeners()[0];
+                wiseBandsBox.removeActionListener(actionListener);
                 wiseBandsBox.setSelectedItem(wiseBand);
-                wiseBandsBox.addActionListener(listener);
+                wiseBandsBox.addActionListener(actionListener);
 
                 epochsBox = imageViewerTab.getEpochs();
-                listener = epochsBox.getActionListeners()[0];
-                epochsBox.removeActionListener(listener);
+                actionListener = epochsBox.getActionListeners()[0];
+                epochsBox.removeActionListener(actionListener);
                 epochsBox.setSelectedItem(epoch);
-                epochsBox.addActionListener(listener);
+                epochsBox.addActionListener(actionListener);
 
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
+
+                imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
+                epochSlider = imageViewerTab.getEpochSlider();
+                changeListener = epochSlider.getChangeListeners()[0];
+                epochSlider.removeChangeListener(changeListener);
+                epochSlider.setMaximum(numberOfEpochs);
+                epochSlider.setValue(numberOfEpochs);
+                epochSlider.addChangeListener(changeListener);
+
+                if (Epoch.isSubtracted(epoch)) {
+                    imageViewerTab.getSmoothImage().setSelected(true);
+                } else {
+                    imageViewerTab.getSmoothImage().setSelected(false);
+                }
 
                 imageViewerTab.setWiseBand(wiseBand);
                 imageViewerTab.setEpoch(epoch);
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
+                imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
+                imageViewerTab.setPanstarrsImages(panstarrsImages);
+                imageViewerTab.setSdssImages(sdssImages);
 
+                USER_SETTINGS.setProperty(NUMBER_OF_EPOCHS, numberOfEpochsField.getText());
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
                 USER_SETTINGS.setProperty(EPOCH, epoch.name());
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
+                USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
+                USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
+
+                // Catalogs
+                selectedCatalogs = new ArrayList<>();
+                for (Component component : catalogPanel.getComponents()) {
+                    if (component instanceof JCheckBox) {
+                        JCheckBox catalogBox = (JCheckBox) component;
+                        if (catalogBox.isSelected()) {
+                            selectedCatalogs.add(catalogBox.getText());
+                        }
+                    }
+                }
+
+                setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
+                setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
+
+                String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
+                USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
                     USER_SETTINGS.store(output, "User settings");
@@ -418,6 +534,15 @@ public class SettingsTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(settingsPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void setCheckBoxValue(JPanel panel, List<String> catalogList) {
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JCheckBox) {
+                JCheckBox catalogBox = (JCheckBox) component;
+                catalogBox.setSelected(catalogList.contains(catalogBox.getText()));
+            }
         }
     }
 
@@ -446,6 +571,12 @@ public class SettingsTab {
 
     public static String getUserSetting(String key, String defaultValue) {
         return USER_SETTINGS.getProperty(key, defaultValue);
+    }
+
+    public static List<String> getSelectedCatalogs(Map<String, CatalogEntry> catalogInstances) {
+        String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
+        String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
+        return Arrays.asList(catalogs.split(","));
     }
 
 }

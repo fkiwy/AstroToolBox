@@ -8,6 +8,10 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    public static final String NOAO_TAP_URL = "https://datalab.noao.edu/tap/sync";
+
+    public static final String VIZIER_TAP_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap/sync/";
+
     public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap/sync";
 
     public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap/sync";
@@ -24,20 +28,24 @@ public class Constants {
 
     public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
 
+    public static final String TWO_MASS_CATALOG_ID = "fp_psc";
+
     public static final String CATWISE_CATALOG_ID = "cwcat";
 
     public static final String CATWISE_REJECTED_ID = "reject";
 
-    public static final String GAIADR2_CATALOG_ID = "gaia_dr2_source";
+    public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
 
     public static final String SSO_CATALOG_ID = "neowiser_p1ba_mch";
+
+    public static final String LINE_BREAK = "<br/>";
 
     public static final String LINE_SEP = System.lineSeparator();
 
     public static final String LINE_SEP_TEXT_AREA = "\n";
 
     public static final String SPLIT_CHAR = ",";
-    
+
     public static final String SPLIT_CHAR_REPLACEMENT = ";";
 
     public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";

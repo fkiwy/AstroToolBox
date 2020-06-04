@@ -23,6 +23,8 @@ public interface CatalogEntry {
 
     Map<Color, Double> getColors();
 
+    String getMagnitudes();
+
     String getSourceId();
 
     double getRa();

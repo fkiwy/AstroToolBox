@@ -21,6 +21,8 @@ import java.util.Map;
 
 public class SDSSCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "SDSS DR16";
+
     // Unique object identifier
     private long objID;
 
@@ -228,10 +230,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
             return false;
         }
         final SDSSCatalogEntry other = (SDSSCatalogEntry) obj;
-        if (this.objID != other.objID) {
-            return false;
-        }
-        return true;
+        return this.objID == other.objID;
     }
 
     @Override
@@ -241,7 +240,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "SDSS DR16";
+        return CATALOG_NAME;
     }
 
     @Override
@@ -274,6 +273,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
         return colors;
+    }
+
+    @Override
+    public String getMagnitudes() {
+        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
     }
 
     @Override

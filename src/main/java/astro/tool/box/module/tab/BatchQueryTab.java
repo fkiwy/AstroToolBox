@@ -7,9 +7,8 @@ import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
-import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -37,7 +36,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -77,9 +75,10 @@ public class BatchQueryTab {
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
 
+    private JPanel bottomRow;
     private JPanel centerPanel;
     private JTextField echoField;
-    private JCheckBox sptWithColors;
+    private JCheckBox includeColors;
     private JComboBox<LookupTable> lookupTables;
     private JProgressBar progressBar;
     private JButton cancelButton;
@@ -105,25 +104,15 @@ public class BatchQueryTab {
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
+        catalogInstances = getCatalogInstances();
         catalogQueryFacade = new CatalogQueryService();
-        catalogInstances = new LinkedHashMap<>();
     }
 
     public void init() {
         try {
-            // Plug in catalogs here
-            SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
-            catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-            GaiaDR2CatalogEntry caiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
-            catalogInstances.put(caiaDR2CatalogEntry.getCatalogName(), caiaDR2CatalogEntry);
-            CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
-            catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
-            AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
-            catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
-
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            JPanel topPanel = new JPanel(new GridLayout(3, 1));
+            JPanel topPanel = new JPanel(new GridLayout(4, 1));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
             JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -132,8 +121,11 @@ public class BatchQueryTab {
             JPanel centerRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(centerRow);
 
-            JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(bottomRow);
+
+            JPanel echoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            topPanel.add(echoPanel);
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
@@ -169,29 +161,28 @@ public class BatchQueryTab {
             JTextField radiusField = new JTextField("5", 3);
             centerRow.add(radiusField);
 
-            centerRow.add(new JLabel("Catalogs:"));
+            centerRow.add(new JLabel("Include colors:"));
 
-            JCheckBox catalog;
-            for (String catalogKey : catalogInstances.keySet()) {
-                catalog = new JCheckBox(catalogKey);
-                catalog.setName("catalog");
-                catalog.setSelected(true);
-                centerRow.add(catalog);
-            }
-
-            centerRow.add(new JLabel("Spectral types with colors:"));
-
-            sptWithColors = new JCheckBox();
-            sptWithColors.setName("sptWithColors");
-            centerRow.add(sptWithColors);
+            includeColors = new JCheckBox();
+            includeColors.setName("includeColors");
+            centerRow.add(includeColors);
 
             centerRow.add(new JLabel("Lookup table:"));
 
             lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.MLTY_DWARFS});
             centerRow.add(lookupTables);
 
+            bottomRow.add(new JLabel("Catalogs:"));
+
+            JCheckBox catalog;
+            for (String catalogKey : catalogInstances.keySet()) {
+                catalog = new JCheckBox(catalogKey);
+                catalog.setSelected(true);
+                bottomRow.add(catalog);
+            }
+
             JButton queryButton = new JButton("Start query");
-            centerRow.add(queryButton);
+            bottomRow.add(queryButton);
             queryButton.addActionListener((ActionEvent evt) -> {
                 if (isProcessing) {
                     showErrorDialog(baseFrame, "There's still a query being processed!");
@@ -255,11 +246,11 @@ public class BatchQueryTab {
                 }
 
                 selectedCatalogs = new ArrayList<>();
-                for (Component component : centerRow.getComponents()) {
+                for (Component component : bottomRow.getComponents()) {
                     if (component instanceof JCheckBox) {
-                        JCheckBox checkbox = (JCheckBox) component;
-                        if (checkbox.getName().equals("catalog") && checkbox.isSelected()) {
-                            selectedCatalogs.add(checkbox.getText());
+                        JCheckBox catalogBox = (JCheckBox) component;
+                        if (catalogBox.isSelected()) {
+                            selectedCatalogs.add(catalogBox.getText());
                         }
                     }
                 }
@@ -276,17 +267,17 @@ public class BatchQueryTab {
                 mainPanel.add(centerPanel);
 
                 if (progressBar != null) {
-                    topRow.remove(progressBar);
+                    bottomRow.remove(progressBar);
                 }
                 progressBar = new JProgressBar(0, rows);
-                topRow.add(progressBar);
+                bottomRow.add(progressBar);
                 progressBar.setStringPainted(true);
 
                 if (cancelButton != null) {
-                    topRow.remove(cancelButton);
+                    bottomRow.remove(cancelButton);
                 }
                 cancelButton = new JButton("Cancel query");
-                topRow.add(cancelButton);
+                bottomRow.add(cancelButton);
                 cancelButton.addActionListener((ActionEvent e) -> {
                     toCancel = true;
                 });
@@ -296,14 +287,14 @@ public class BatchQueryTab {
                 CompletableFuture.supplyAsync(() -> queryCatalogs());
             });
 
-            bottomRow.add(new JLabel("Echo:"));
+            echoPanel.add(new JLabel("Echo:"));
 
             echoField = new JTextField(90);
-            bottomRow.add(echoField);
+            echoPanel.add(echoField);
             echoField.setEditable(false);
 
             JButton exportButton = new JButton("Export results");
-            bottomRow.add(exportButton);
+            echoPanel.add(exportButton);
             exportButton.addActionListener((ActionEvent evt) -> {
                 if (batchResults == null || batchResults.isEmpty()) {
                     showErrorDialog(baseFrame, "Nothing to export yet!");
@@ -355,7 +346,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 21));
+                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -405,32 +396,27 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
-                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, sptWithColors.isSelected());
+                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, includeColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                         StringBuilder simbadType = new StringBuilder();
-                        //if (sptWithColors.isSelected()) {
-                        simbadType.append("[");
-                        //}
                         simbadType.append(simbadEntry.getObjectType());
                         if (!simbadEntry.getSpectralType().isEmpty()) {
                             simbadType.append(" ").append(simbadEntry.getSpectralType());
                         }
-                        //if (sptWithColors.isSelected()) {
-                        simbadType.append("]");
-                        //}
+                        simbadType.append("; ");
                         spectralTypes.add(0, simbadType.toString());
                     }
                     if (catalogEntry instanceof AllWiseCatalogEntry) {
                         AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                         if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                            spectralTypes.add("[" + AGN_WARNING + "]");
+                            spectralTypes.add(AGN_WARNING);
                         }
                     }
-                    if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                        GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+                    if (catalogEntry instanceof GaiaCatalogEntry) {
+                        GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                         if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                            spectralTypes.add("[" + WD_WARNING + "]");
+                            spectralTypes.add(WD_WARNING);
                         }
                     }
                     BatchResult batchResult = new BatchResult.Builder()
@@ -446,6 +432,7 @@ public class BatchQueryTab {
                             .setPlx(catalogEntry.getPlx())
                             .setPmra(catalogEntry.getPmra())
                             .setPmdec(catalogEntry.getPmdec())
+                            .setMagnitudes(catalogEntry.getMagnitudes())
                             .setSpectralTypes(spectralTypes).build();
                     batchResults.add(batchResult);
                     resultCount++;
@@ -561,6 +548,7 @@ public class BatchQueryTab {
         table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
         table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
         table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
     }
 
     private TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
@@ -579,7 +567,12 @@ public class BatchQueryTab {
         sorter.setComparator(i++, getDoubleComparator());
         sorter.setComparator(i++, getDoubleComparator());
         sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getStringComparator());
         return sorter;
+    }
+
+    public JPanel getBottomRow() {
+        return bottomRow;
     }
 
 }

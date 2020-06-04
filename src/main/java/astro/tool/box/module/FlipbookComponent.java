@@ -1,17 +1,10 @@
 package astro.tool.box.module;
 
-import astro.tool.box.container.NumberPair;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.function.AstrometricFunctions;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
 public class FlipbookComponent {
 
-    private static final String ASC_NODE = "ascending";
+    private static final String ASC_NODE = "ASC";
 
-    private static final String DESC_NODE = "descending";
+    private static final String DESC_NODE = "DESC";
 
     private final int band;
 
@@ -23,22 +16,9 @@ public class FlipbookComponent {
 
     private boolean firstEpoch;
 
-    private double minObsEpoch;
-
-    private double maxObsEpoch;
-
-    private List<NumberPair> diffPixels;
-
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
         this.epoch = epoch;
-    }
-
-    public FlipbookComponent(int band, int epoch, double minObsEpoch, double maxObsEpoch) {
-        this.band = band;
-        this.epoch = epoch;
-        this.minObsEpoch = minObsEpoch;
-        this.maxObsEpoch = maxObsEpoch;
     }
 
     public FlipbookComponent(int band, int epoch, boolean isMerged) {
@@ -55,105 +35,74 @@ public class FlipbookComponent {
         sb.append(", epochCount=").append(epochCount);
         sb.append(", isMerged=").append(isMerged);
         sb.append(", firstEpoch=").append(firstEpoch);
-        sb.append(", minObsEpoch=").append(minObsEpoch);
-        sb.append(", maxObsEpoch=").append(maxObsEpoch);
-        sb.append(", diffPixels=").append(diffPixels);
         sb.append('}');
         return sb.toString();
     }
 
     public String getTitle() {
         String titleBand;
-        String titleEpoch;
-        String node;
-        String minObsTime = "";
-        String maxObsTime = "";
         if (band == 12) {
-            titleBand = "W1&W2";
+            titleBand = "W1+W2";
         } else {
             titleBand = "W" + band;
         }
+        String titleEpoch = "";
+        String titleNode = "";
         if (isMerged) {
             switch (epoch) {
                 case 100:
                     firstEpoch = true;
                     titleEpoch = "1";
-                    node = ASC_NODE + "&" + DESC_NODE;
+                    titleNode = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 200:
                     titleEpoch = "" + epochCount;
-                    node = ASC_NODE + "&" + DESC_NODE;
+                    titleNode = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 300:
                     titleEpoch = "2-" + epochCount;
-                    node = ASC_NODE + "&" + DESC_NODE;
+                    titleNode = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 400:
                     firstEpoch = true;
-                    titleEpoch = "1&" + epochCount;
-                    node = ASC_NODE;
+                    titleEpoch = "1+" + epochCount;
+                    titleNode = ASC_NODE;
                     break;
                 case 500:
-                    titleEpoch = "1&" + epochCount;
-                    node = DESC_NODE;
+                    titleEpoch = "1+" + epochCount;
+                    titleNode = DESC_NODE;
                     break;
                 case 600:
                     firstEpoch = true;
                     titleEpoch = "1-" + epochCount;
-                    node = ASC_NODE;
+                    titleNode = ASC_NODE;
                     break;
                 case 700:
                     titleEpoch = "1-" + epochCount;
-                    node = DESC_NODE;
+                    titleNode = DESC_NODE;
                     break;
                 default:
-                    if (epoch >= 800 && epoch < 900) {
-                        if (epoch == 802) {
-                            firstEpoch = true;
-                        }
-                        titleEpoch = String.valueOf((epoch - 800) / 2);
-                        node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
-                    } else if (epoch >= 900 && epoch < 1000) {
-                        if (epoch == 903) {
-                            firstEpoch = true;
-                        }
-                        titleEpoch = String.valueOf((epoch - 900) / 2);
-                        node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
-                    } else if (epoch >= 1000 && epoch < 1100) {
-                        titleEpoch = String.valueOf(epoch - 1000 + 1);
-                        node = ASC_NODE + "&" + DESC_NODE;
-                    } else if (epoch >= 1100 && epoch < 1200) {
-                        if (epoch == 1100) {
-                            firstEpoch = true;
-                        }
-                        titleEpoch = String.valueOf(epoch - 1100 + 1);
-                        node = ASC_NODE + "&" + DESC_NODE;
-                    } else {
+                    if (epoch > 100 && epoch < 200) {
                         firstEpoch = epoch == 101;
-                        if (epoch > 100 && epoch < 200) {
-                            titleEpoch = String.valueOf(epoch - 100);
-                            node = ASC_NODE + "&" + DESC_NODE;
-                        } else {
-                            titleEpoch = "";
-                            node = "";
-                        }
+                        titleEpoch = String.valueOf(epoch - 100);
+                        titleNode = ASC_NODE + "+" + DESC_NODE;
+                    } else if (epoch >= 800 && epoch < 900) {
+                        firstEpoch = epoch == 802;
+                        titleEpoch = String.valueOf((epoch - 800) / 2);
+                        titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
+                    } else if (epoch >= 900 && epoch < 1000) {
+                        firstEpoch = epoch == 903;
+                        titleEpoch = String.valueOf((epoch - 900) / 2);
+                        titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
                     }
                     break;
             }
         } else {
             firstEpoch = epoch == 0 || epoch == 1;
             titleEpoch = String.valueOf((epoch / 2) + 1);
-            node = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
+            titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
         }
-        if (minObsEpoch > 0) {
-            LocalDateTime ldt = AstrometricFunctions.convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-            minObsTime = "Min obs. time=" + ldt.format(DATE_TIME_FORMATTER);
-        }
-        if (maxObsEpoch > 0) {
-            LocalDateTime ldt = AstrometricFunctions.convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch)));
-            maxObsTime = " ~ Max obs. time=" + ldt.format(DATE_TIME_FORMATTER) + " ~ ";
-        }
-        return "WISE: " + minObsTime + maxObsTime + "Band=" + titleBand + " ~ Epoch=" + titleEpoch + " ~ Node=" + node;
+        return "Band=" + titleBand + "   Epoch=" + titleEpoch + "   Node=" + titleNode;
     }
 
     public int getBand() {
@@ -170,22 +119,6 @@ public class FlipbookComponent {
 
     public boolean isFirstEpoch() {
         return firstEpoch;
-    }
-
-    public double getMinObsEpoch() {
-        return minObsEpoch;
-    }
-
-    public double getMaxObsEpoch() {
-        return maxObsEpoch;
-    }
-
-    public List<NumberPair> getDiffPixels() {
-        return diffPixels;
-    }
-
-    public void setDiffPixels(List<NumberPair> diffPixels) {
-        this.diffPixels = diffPixels;
     }
 
 }

@@ -6,9 +6,8 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
 import astro.tool.box.enumeration.Color;
@@ -23,11 +22,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -42,6 +39,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableColumnModel;
 
 public class BrownDwarfTab {
 
@@ -60,7 +58,7 @@ public class BrownDwarfTab {
         InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 21));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
@@ -81,11 +79,11 @@ public class BrownDwarfTab {
             lookupResult.setPreferredSize(new Dimension(500, 300));
             spectralTypeLookup.add(lookupResult);
 
-            JPanel colorInput = new JPanel(new GridLayout(9, 2));
+            JPanel colorInput = new JPanel(new GridLayout(11, 2));
             colorInput.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Manual input", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            colorInput.setPreferredSize(new Dimension(200, 250));
+            colorInput.setPreferredSize(new Dimension(200, 300));
 
             JPanel inputPanel = new JPanel();
             inputPanel.setPreferredSize(new Dimension(200, 310));
@@ -99,6 +97,14 @@ public class BrownDwarfTab {
             colorInput.add(new JLabel("W2mag: ", JLabel.RIGHT));
             JTextField w2Field = new JTextField();
             colorInput.add(w2Field);
+
+            colorInput.add(new JLabel("CH1mag: ", JLabel.RIGHT));
+            JTextField ch1Field = new JTextField();
+            colorInput.add(ch1Field);
+
+            colorInput.add(new JLabel("CH2mag: ", JLabel.RIGHT));
+            JTextField ch2Field = new JTextField();
+            colorInput.add(ch2Field);
 
             colorInput.add(new JLabel("Jmag: ", JLabel.RIGHT));
             JTextField jField = new JTextField();
@@ -131,12 +137,13 @@ public class BrownDwarfTab {
                     lookupResult.removeAll();
                     Map<Color, Double> colors = new LinkedHashMap<>();
                     colors.put(Color.W1_W2, toDouble(w1Field.getText()) - toDouble(w2Field.getText()));
+                    colors.put(Color.CH1_CH2, toDouble(ch1Field.getText()) - toDouble(ch2Field.getText()));
                     colors.put(Color.J_W2, toDouble(jField.getText()) - toDouble(w2Field.getText()));
                     colors.put(Color.J_K, toDouble(jField.getText()) - toDouble(kField.getText()));
                     colors.put(Color.g_r, toDouble(g_Field.getText()) - toDouble(r_Field.getText()));
                     colors.put(Color.r_i, toDouble(r_Field.getText()) - toDouble(i_Field.getText()));
                     colors.put(Color.M_G, toDouble(m_gField.getText()));
-                    Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(colors);
+                    List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(colors);
                     displaySpectralTypes(results, lookupResult);
                     baseFrame.setVisible(true);
                 } catch (Exception ex) {
@@ -155,29 +162,31 @@ public class BrownDwarfTab {
                         lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
+                        JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        lookupResult.add(entryPanel);
                         StringBuilder catalogEntry = new StringBuilder("for ")
                                 .append(selectedEntry.getCatalogName())
                                 .append(": sourceId = ")
                                 .append(selectedEntry.getSourceId())
                                 .append(" RA = ")
-                                .append(selectedEntry.getRa())
+                                .append(roundTo7DecNZ(selectedEntry.getRa()))
                                 .append(" dec = ")
-                                .append(selectedEntry.getDec());
-                        lookupResult.add(new JLabel(catalogEntry.toString()));
+                                .append(roundTo7DecNZ(selectedEntry.getDec()));
+                        entryPanel.add(new JLabel(catalogEntry.toString()));
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                                 lookupResult.add(createLabel(AGN_WARNING, JColor.DARK_RED));
                             }
                         }
-                        if (selectedEntry instanceof GaiaDR2CatalogEntry) {
-                            GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) selectedEntry;
+                        if (selectedEntry instanceof GaiaCatalogEntry) {
+                            GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
                             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                                 lookupResult.add(createLabel(WD_WARNING, JColor.DARK_RED));
                             }
                         }
                     }
-                    Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
+                    List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
                     displaySpectralTypes(results, lookupResult);
                 }
             });
@@ -188,21 +197,11 @@ public class BrownDwarfTab {
         }
     }
 
-    private void displaySpectralTypes(Map<SpectralTypeLookupResult, Set<ColorValue>> results, JPanel lookupResult) {
+    private void displaySpectralTypes(List<SpectralTypeLookupResult> results, JPanel lookupResult) {
         List<String[]> spectralTypes = new ArrayList<>();
-        results.entrySet().forEach(entry -> {
-            SpectralTypeLookupResult key = entry.getKey();
-            Set<ColorValue> values = entry.getValue();
-            StringBuilder matchedColors = new StringBuilder();
-            Iterator<ColorValue> colorIterator = values.iterator();
-            while (colorIterator.hasNext()) {
-                ColorValue colorValue = colorIterator.next();
-                matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                if (colorIterator.hasNext()) {
-                    matchedColors.append(", ");
-                }
-            }
-            String spectralType = key.getSpt() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+        results.forEach(entry -> {
+            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+            String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
             spectralTypes.add(spectralType.split(",", 4));
         });
 
@@ -218,17 +217,26 @@ public class BrownDwarfTab {
         alignResultColumns(spectralTypeTable, spectralTypes);
         spectralTypeTable.setAutoCreateRowSorter(true);
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        spectralTypeTable.setCellSelectionEnabled(false);
-        resizeColumnWidth(spectralTypeTable);
+        TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(100);
+        columnModel.getColumn(3).setPreferredWidth(100);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder()
+        ));
         lookupResult.add(spectralTypePanel);
 
-        lookupResult.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
-        lookupResult.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        lookupResult.add(new JLabel("W1-W2, J-W2, J-K, g-r, r-i and absolute Gmag"));
+        JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        remarks.setPreferredSize(new Dimension(100, 200));
+        lookupResult.add(remarks);
+        remarks.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
+        remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
+        remarks.add(new JLabel("W1-W2, CH1-CH2, J-W2, J-K, g-r, r-i and absolute Gmag"));
     }
 
 }

@@ -6,15 +6,10 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
-import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
-import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookupResult;
@@ -42,10 +37,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -66,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -117,6 +111,8 @@ public class CatalogQueryTab {
     public CatalogQueryTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
+        catalogResults = new HashMap<>();
+        catalogInstances = getCatalogInstances();
         catalogQueryFacade = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
@@ -125,26 +121,10 @@ public class CatalogQueryTab {
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
-        catalogInstances = new LinkedHashMap<>();
-        catalogResults = new HashMap<>();
     }
 
     public void init() {
         try {
-            // Plug in catalogs here
-            SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
-            catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-            GaiaDR2CatalogEntry gaiaDR2CatalogEntry = new GaiaDR2CatalogEntry();
-            catalogInstances.put(gaiaDR2CatalogEntry.getCatalogName(), gaiaDR2CatalogEntry);
-            AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
-            catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
-            CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
-            catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
-            PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
-            catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
-            SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
-            catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
-
             mainPanel = new JPanel(new BorderLayout());
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
 
@@ -166,11 +146,11 @@ public class CatalogQueryTab {
             JLabel catalogLabel = new JLabel("Catalogs:");
             topPanel.add(catalogLabel);
 
-            JCheckBox checkbox;
+            JCheckBox catalog;
             for (String catalogKey : catalogInstances.keySet()) {
-                checkbox = new JCheckBox(catalogKey);
-                checkbox.setSelected(true);
-                topPanel.add(checkbox);
+                catalog = new JCheckBox(catalogKey);
+                catalog.setSelected(true);
+                topPanel.add(catalog);
             }
 
             searchButton = new JButton("Search");
@@ -226,9 +206,9 @@ public class CatalogQueryTab {
                     List<String> selectedCatalogs = new ArrayList<>();
                     for (Component component : topPanel.getComponents()) {
                         if (component instanceof JCheckBox) {
-                            JCheckBox choice = (JCheckBox) component;
-                            if (choice.isSelected()) {
-                                selectedCatalogs.add(choice.getText());
+                            JCheckBox catalogBox = (JCheckBox) component;
+                            if (catalogBox.isSelected()) {
+                                selectedCatalogs.add(catalogBox.getText());
                             }
                         }
                     }
@@ -398,7 +378,7 @@ public class CatalogQueryTab {
     }
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
-        JPanel linkPanel = new JPanel(new GridLayout(18, 2));
+        JPanel linkPanel = new JPanel(new GridLayout(19, 2));
         linkPanel.setPreferredSize(new Dimension(LINK_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
@@ -462,6 +442,8 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
+        linkPanel.add(new JLabel());
+        linkPanel.add(createHyperlink("VHS DR4", getSpecificCatalogsUrl("II/359/vhs_dr4", degRA, degDE, degRadius)));
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
@@ -475,7 +457,7 @@ public class CatalogQueryTab {
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
@@ -519,27 +501,17 @@ public class CatalogQueryTab {
     //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
-            results.entrySet().forEach(entry -> {
-                SpectralTypeLookupResult key = entry.getKey();
-                Set<ColorValue> values = entry.getValue();
-                StringBuilder matchedColors = new StringBuilder();
-                Iterator<ColorValue> colorIterator = values.iterator();
-                while (colorIterator.hasNext()) {
-                    ColorValue colorValue = colorIterator.next();
-                    matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                    if (colorIterator.hasNext()) {
-                        matchedColors.append(", ");
-                    }
-                }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
-                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            results.forEach(entry -> {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
+                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,sol rad,sol mass,matched colors,nearest color,gap to nearest color";
+            String titles = "spt,teff,radius (Rsun),mass (Msun),matched colors,nearest color,gap to nearest color";
             String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
@@ -551,8 +523,14 @@ public class CatalogQueryTab {
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            spectralTypeTable.setCellSelectionEnabled(false);
-            resizeColumnWidth(spectralTypeTable);
+            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);
+            columnModel.getColumn(1).setPreferredWidth(50);
+            columnModel.getColumn(2).setPreferredWidth(55);
+            columnModel.getColumn(3).setPreferredWidth(50);
+            columnModel.getColumn(4).setPreferredWidth(100);
+            columnModel.getColumn(5).setPreferredWidth(50);
+            columnModel.getColumn(6).setPreferredWidth(50);
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
@@ -576,8 +554,8 @@ public class CatalogQueryTab {
                     warning = true;
                 }
             }
-            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof GaiaCatalogEntry) {
+                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
                     warning = true;
@@ -663,6 +641,10 @@ public class CatalogQueryTab {
             sorter.setComparator(i, elements.get(i).getComparator());
         }
         return sorter;
+    }
+
+    public JPanel getTopPanel() {
+        return topPanel;
     }
 
     public JButton getSearchButton() {

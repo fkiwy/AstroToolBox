@@ -5,45 +5,45 @@ import java.text.DecimalFormat;
 
 public class NumericFunctions {
 
-    private static final String PATTERN_0DEC = "0";
+    public static final String PATTERN_0DEC = "0";
 
-    private static final String PATTERN_1DEC = "0.0";
+    public static final String PATTERN_1DEC = "0.0";
 
-    private static final String PATTERN_2DEC = "0.00";
+    public static final String PATTERN_2DEC = "0.00";
 
-    private static final String PATTERN_3DEC = "0.000";
+    public static final String PATTERN_3DEC = "0.000";
 
-    private static final String PATTERN_4DEC = "0.0000";
+    public static final String PATTERN_4DEC = "0.0000";
 
-    private static final String PATTERN_5DEC = "0.00000";
+    public static final String PATTERN_5DEC = "0.00000";
 
-    private static final String PATTERN_6DEC = "0.000000";
+    public static final String PATTERN_6DEC = "0.000000";
 
-    private static final String PATTERN_7DEC = "0.0000000";
+    public static final String PATTERN_7DEC = "0.0000000";
 
-    private static final String PATTERN_8DEC = "0.00000000";
+    public static final String PATTERN_8DEC = "0.00000000";
 
-    private static final String PATTERN_9DEC = "0.000000000";
+    public static final String PATTERN_9DEC = "0.000000000";
 
-    private static final String PATTERN_0DEC_NZ = "#";
+    public static final String PATTERN_0DEC_NZ = "#";
 
-    private static final String PATTERN_1DEC_NZ = "#.#";
+    public static final String PATTERN_1DEC_NZ = "#.#";
 
-    private static final String PATTERN_2DEC_NZ = "#.##";
+    public static final String PATTERN_2DEC_NZ = "#.##";
 
-    private static final String PATTERN_3DEC_NZ = "#.###";
+    public static final String PATTERN_3DEC_NZ = "#.###";
 
-    private static final String PATTERN_4DEC_NZ = "#.####";
+    public static final String PATTERN_4DEC_NZ = "#.####";
 
-    private static final String PATTERN_5DEC_NZ = "#.#####";
+    public static final String PATTERN_5DEC_NZ = "#.#####";
 
-    private static final String PATTERN_6DEC_NZ = "#.######";
+    public static final String PATTERN_6DEC_NZ = "#.######";
 
-    private static final String PATTERN_7DEC_NZ = "#.#######";
+    public static final String PATTERN_7DEC_NZ = "#.#######";
 
-    private static final String PATTERN_8DEC_NZ = "#.########";
+    public static final String PATTERN_8DEC_NZ = "#.########";
 
-    private static final String PATTERN_9DEC_NZ = "#.#########";
+    public static final String PATTERN_9DEC_NZ = "#.#########";
 
     public static String roundTo0Dec(double number) {
         if (number == 0) {
@@ -199,18 +199,18 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_9DEC_NZ);
     }
 
-    public static String formatDouble(double number, String pattern) {
+    public static String formatDouble(Double number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         df.setRoundingMode(RoundingMode.HALF_UP);
         return df.format(number);
     }
 
-    public static String formatInteger(int number, String pattern) {
+    public static String formatInteger(Integer number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         return df.format(number);
     }
 
-    private static double roundDouble(double number, String pattern) {
+    public static double roundDouble(Double number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         df.setRoundingMode(RoundingMode.HALF_UP);
         return Double.parseDouble(df.format(number));
@@ -246,6 +246,10 @@ public class NumericFunctions {
 
     public static String suppressZero(Number arg) {
         return arg.equals(0) ? "" : String.valueOf(arg);
+    }
+
+    public static String addPlusSign(Double value) {
+        return value > 0 ? "+" + value : value.toString();
     }
 
 }

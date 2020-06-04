@@ -9,7 +9,6 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.ColorValue;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
@@ -17,12 +16,18 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.SpitzerCatalogEntry;
+import astro.tool.box.container.catalog.TwoMassCatalogEntry;
+import astro.tool.box.container.catalog.UnWiseCatalogEntry;
+import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -37,6 +42,8 @@ import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
+import astro.tool.box.module.ImageContainer;
+import astro.tool.box.module.InfoSheet;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
@@ -48,6 +55,7 @@ import astro.tool.box.module.shape.Triangle;
 import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -61,6 +69,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -74,25 +83,27 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static java.lang.Math.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -119,8 +130,9 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.DefaultCaret;
 import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
@@ -129,21 +141,22 @@ import nom.tam.fits.ImageHDU;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
+    public static final String EPOCH_LABEL = "Number of epochs: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double SIZE_FACTOR = 2.75;
-    public static final int NUMBER_OF_EPOCHS = 6;
+    public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
-    public static final int MIN_VALUE = -2500;
-    public static final int MAX_VALUE = 2500;
-    public static final int MIN_LIMIT = -250000;
-    public static final int MAX_LIMIT = 250000;
+    public static final int PANEL_HEIGHT = 260;
+    public static final int PANEL_WIDTH = 220;
+    public static final int LOW_CONTRAST = 50;
+    public static final int HIGH_CONTRAST = 0;
     public static final int STRETCH = 100;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
-    public static final String CHANGE_FOV_TEXT = "(Spin wheel to change FoV: %d\")";
+    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -153,46 +166,60 @@ public class ImageViewerTab {
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
     private List<CatalogEntry> simbadEntries;
-    private List<CatalogEntry> gaiaDR2Entries;
+    private List<CatalogEntry> gaiaEntries;
+    private List<CatalogEntry> gaiaTpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
+    private List<CatalogEntry> catWiseTpmEntries;
     private List<CatalogEntry> catWiseRejectedEntries;
+    private List<CatalogEntry> unWiseEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
+    private List<CatalogEntry> twoMassEntries;
+    private List<CatalogEntry> vhsEntries;
+    private List<CatalogEntry> gaiaWDEntries;
+    private List<CatalogEntry> spitzerEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
+    private JPanel rightPanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
-    private JCheckBox minMaxLimits;
-    private JCheckBox stretchImage;
+    private JCheckBox applyLimits;
+    private JCheckBox saveContrast;
     private JCheckBox smoothImage;
-    private JCheckBox keepContrast;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
     private JCheckBox simbadOverlay;
-    private JCheckBox gaiaDR2Overlay;
+    private JCheckBox gaiaOverlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
+    private JCheckBox unWiseOverlay;
     private JCheckBox panStarrsOverlay;
     private JCheckBox sdssOverlay;
     private JCheckBox spectrumOverlay;
+    private JCheckBox twoMassOverlay;
+    private JCheckBox vhsOverlay;
+    private JCheckBox gaiaWDOverlay;
+    private JCheckBox spitzerOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
     private JCheckBox latentOverlay;
     private JCheckBox spikeOverlay;
-    private JCheckBox gaiaDR2ProperMotion;
+    private JCheckBox gaiaProperMotion;
     private JCheckBox catWiseProperMotion;
-    private JCheckBox transposeProperMotion;
     private JCheckBox useCustomOverlays;
-    private JCheckBox skipFirstEpoch;
-    private JCheckBox skipBadCoadds;
-    //private JCheckBox smallBodyHelp;
+    private JCheckBox dssImages;
+    private JCheckBox sloanImages;
+    private JCheckBox twoMassImages;
+    private JCheckBox allwiseImages;
+    private JCheckBox ps1Images;
+    private JCheckBox createDataSheet;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
-    private JCheckBox markDifferences;
+    private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JSlider highScaleSlider;
@@ -202,14 +229,17 @@ public class ImageViewerTab {
     private JSlider maxValueSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
-    private JSlider epochCountSlider;
+    private JSlider epochSlider;
     private JTextField coordsField;
     private JTextField sizeField;
-    private JTextField transposeMotionField;
     private JTextField properMotionField;
+    private JTextField differentSizeField;
+    private JTextField transposeMotionField;
     private JTextArea crosshairCoords;
+    private JTextArea downloadLog;
+    private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
-    private JRadioButton showPanstarrsButton;
+    private JLabel epochLabel;
     private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
@@ -217,6 +247,8 @@ public class ImageViewerTab {
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
     private BufferedImage sdssImage;
+    private Map<String, ImageContainer> imagesW1;
+    private Map<String, ImageContainer> imagesW2;
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
     private List<NumberPair> crosshairs;
@@ -225,25 +257,28 @@ public class ImageViewerTab {
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
-    private int fieldOfView = 15;
+    private int fieldOfView = 30;
     private int crosshairSize = 5;
-    private int imageNumber = 0;
-    private int windowShift = 0;
-    private int quadrantCount = 0;
-    private int epochCount = NUMBER_OF_EPOCHS * 2;
+    private int imageNumber;
+    private int windowShift;
+    private int quadrantCount;
+    private int epochCount;
+    private int epochCountW1;
+    private int epochCountW2;
+    private int numberOfEpochs;
+    private int selectedEpochs;
     private int stretch = STRETCH;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
 
-    private int lowContrast = getContrast();
-    private int highContrast;
-    private int lowContrastSaved = getContrast();
-    private int highContrastSaved;
+    private int lowContrast = LOW_CONTRAST;
+    private int highContrast = HIGH_CONTRAST;
+    private int lowContrastSaved = lowContrast;
+    private int highContrastSaved = highContrast;
 
     private int minValue;
     private int maxValue;
-    private int avgValue;
 
     private double targetRa;
     private double targetDec;
@@ -251,8 +286,6 @@ public class ImageViewerTab {
     private double pixelX;
     private double pixelY;
 
-    //private double shiftX;
-    //private double shiftY;
     private int centerX;
     private int centerY;
 
@@ -263,10 +296,15 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean bandChanded;
+    private boolean reloadImages;
+    private boolean firstLastLoaded;
+    private boolean allEpochsLoaded;
     private boolean imageCutOff;
-    private boolean disableOverlays;
-    private boolean hasException;
     private boolean timerStopped;
+    private boolean hasException;
+    private boolean panstarrsImages;
+    private boolean sdssImages;
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
@@ -283,7 +321,7 @@ public class ImageViewerTab {
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 21));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
@@ -294,7 +332,7 @@ public class ImageViewerTab {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
             JPanel leftPanel = new JPanel();
-            mainPanel.add(leftPanel, BorderLayout.LINE_START);
+            mainPanel.add(leftPanel, BorderLayout.WEST);
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
             leftPanel.setBorder(new EmptyBorder(0, 5, 5, 20));
 
@@ -305,15 +343,15 @@ public class ImageViewerTab {
             mainPanel.add(imageScrollPanel, BorderLayout.CENTER);
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-            JPanel rightPanel = new JPanel();
-            mainPanel.add(rightPanel, BorderLayout.LINE_END);
+            rightPanel = new JPanel();
+            mainPanel.add(rightPanel, BorderLayout.EAST);
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1750;
+            int controlPanelHeight = 2000;
 
-            JPanel controlPanel = new JPanel(new GridLayout(72, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(82, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -348,11 +386,9 @@ public class ImageViewerTab {
             controlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
-                wiseBands.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                initMinMaxValues();
+                bandChanded = true;
                 createFlipbook();
-                wiseBands.setCursor(Cursor.getDefaultCursor());
             });
 
             controlPanel.add(new JLabel("Epochs:"));
@@ -362,28 +398,20 @@ public class ImageViewerTab {
             epochs.setMaximumRowCount(Epoch.values().length);
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
-                epochs.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Epoch previousEpoch = epoch;
                 epoch = (Epoch) epochs.getSelectedItem();
-                //if (epochs.getSelectedItem().equals(Epoch.ALL)) {
-                //    smallBodyHelp.setEnabled(true);
-                //} else {
-                //    smallBodyHelp.setSelected(false);
-                //    smallBodyHelp.setEnabled(false);
-                //}
-                initMinMaxValues();
-                if (Epoch.isSubtracted(epoch)) {
-                    smoothImage.setSelected(true);
-                } else if (Epoch.isSubtracted(previousEpoch)) {
-                    smoothImage.setSelected(false);
-                }
-                if (Epoch.isSubtracted(epoch)) {
-                    setSubtractedContrast();
-                } else {
-                    setContrast(lowContrastSaved, highContrastSaved);
+                if (Epoch.isFirstLast(previousEpoch) && !Epoch.isFirstLast(epoch)) {
+                    epochCountW1 = 0;
+                    epochCountW2 = 0;
                 }
                 createFlipbook();
-                epochs.setCursor(Cursor.getDefaultCursor());
+                if (Epoch.isSubtracted(epoch)) {
+                    smoothImage.setSelected(true);
+                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                } else if (Epoch.isSubtracted(previousEpoch)) {
+                    smoothImage.setSelected(false);
+                    setContrast(lowContrastSaved, highContrastSaved);
+                }
             });
 
             JPanel whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -399,12 +427,7 @@ public class ImageViewerTab {
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-                if (Epoch.isSubtracted(epoch)) {
-                    initMinMaxValues();
-                } else {
+                if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
                 }
             });
@@ -422,12 +445,7 @@ public class ImageViewerTab {
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-                if (Epoch.isSubtracted(epoch)) {
-                    initMinMaxValues();
-                } else {
+                if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
             });
@@ -513,33 +531,34 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            JLabel epochCountLabel = new JLabel(String.format("Number of epochs: %d", epochCount / 2));
-            grayPanel.add(epochCountLabel);
+            epochLabel = new JLabel(String.format(EPOCH_LABEL, selectedEpochs));
+            grayPanel.add(epochLabel);
 
-            epochCountSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
-            controlPanel.add(epochCountSlider);
-            epochCountSlider.setBackground(Color.LIGHT_GRAY);
-            epochCountSlider.addChangeListener((ChangeEvent e) -> {
-                epochCount = epochCountSlider.getValue() * 2;
-                epochCountLabel.setText(String.format("Number of epochs: %d", epochCount / 2));
-                //initMinMaxValues();
+            epochSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
+            controlPanel.add(epochSlider);
+            epochSlider.setBackground(Color.LIGHT_GRAY);
+            epochSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                selectedEpochs = epochSlider.getValue();
+                epochLabel.setText(String.format(EPOCH_LABEL, selectedEpochs));
+                reloadImages = true;
                 createFlipbook();
             });
 
-            minMaxLimits = new JCheckBox("Set min/max limits", true);
-            controlPanel.add(minMaxLimits);
-            minMaxLimits.addActionListener((ActionEvent evt) -> {
-                initMinMaxValues();
+            applyLimits = new JCheckBox("Apply min/max limits", true);
+            controlPanel.add(applyLimits);
+            applyLimits.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
             });
 
-            stretchImage = new JCheckBox("Stretch images", true);
-            controlPanel.add(stretchImage);
+            saveContrast = new JCheckBox("Keep contrast");
+            controlPanel.add(saveContrast);
 
             smoothImage = new JCheckBox("Smooth images");
             controlPanel.add(smoothImage);
-
-            keepContrast = new JCheckBox("Keep contrast settings");
-            controlPanel.add(keepContrast);
 
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
@@ -550,25 +569,21 @@ public class ImageViewerTab {
             staticDisplay = new JCheckBox("Static display");
             controlPanel.add(staticDisplay);
             staticDisplay.addActionListener((ActionEvent evt) -> {
-                if (staticDisplay.isSelected() && flipbook != null) {
-                    createStaticBook();
-                } else {
-                    createFlipbook();
+                if (flipbook != null) {
+                    if (staticDisplay.isSelected()) {
+                        createStaticBook();
+                    } else {
+                        createFlipbook();
+                    }
                 }
             });
 
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                //minMaxLimits.setSelected(true);
-                stretchImage.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
-                if (Epoch.isSubtracted(epoch)) {
-                    setSubtractedContrast();
-                } else {
-                    setContrast(getContrast(), 0);
-                }
-                initMinMaxValues();
+                setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                applyLimits.setSelected(true);
                 createFlipbook();
             });
 
@@ -576,48 +591,70 @@ public class ImageViewerTab {
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            simbadOverlay = new JCheckBox("SIMBAD");
+            simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME);
             simbadOverlay.setForeground(Color.RED);
             overlayPanel.add(simbadOverlay);
-            gaiaDR2Overlay = new JCheckBox("Gaia DR2");
-            gaiaDR2Overlay.setForeground(Color.CYAN.darker());
-            overlayPanel.add(gaiaDR2Overlay);
+            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaOverlay.setForeground(Color.CYAN.darker());
+            overlayPanel.add(gaiaOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            allWiseOverlay = new JCheckBox("AllWISE");
+            allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME);
             allWiseOverlay.setForeground(Color.GREEN.darker());
             overlayPanel.add(allWiseOverlay);
-            catWiseOverlay = new JCheckBox("CatWISE");
+            catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseOverlay.setForeground(Color.MAGENTA);
             overlayPanel.add(catWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            panStarrsOverlay = new JCheckBox("Pan-STARRS");
+            unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME);
+            unWiseOverlay.setForeground(JColor.MINT.val);
+            overlayPanel.add(unWiseOverlay);
+            panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME);
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             overlayPanel.add(panStarrsOverlay);
-            sdssOverlay = new JCheckBox("SDSS DR16");
-            sdssOverlay.setForeground(JColor.STEEL.val);
-            overlayPanel.add(sdssOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
+            sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
+            sdssOverlay.setForeground(JColor.STEEL.val);
+            overlayPanel.add(sdssOverlay);
             spectrumOverlay = new JCheckBox("SDSS spectra");
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             overlayPanel.add(spectrumOverlay);
-            ssoOverlay = new JCheckBox("Solar Sys. Obj.");
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_SHORT_NAME);
+            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
+            overlayPanel.add(gaiaWDOverlay);
+            vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
+            vhsOverlay.setForeground(JColor.PINK.val);
+            overlayPanel.add(vhsOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
+            twoMassOverlay.setForeground(JColor.ORANGE.val);
+            overlayPanel.add(twoMassOverlay);
+            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_SHORT_NAME + "&nbsp;</span>"));
+            spitzerOverlay.setForeground(JColor.YELLOW.val);
+            overlayPanel.add(spitzerOverlay);
+
+            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
-            overlayPanel.add(ssoOverlay);
+            controlPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
-            gaiaDR2ProperMotion = new JCheckBox("Gaia DR2");
-            gaiaDR2ProperMotion.setForeground(Color.CYAN.darker());
-            properMotionPanel.add(gaiaDR2ProperMotion);
-            catWiseProperMotion = new JCheckBox("CatWISE");
+            gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaProperMotion.setForeground(Color.CYAN.darker());
+            properMotionPanel.add(gaiaProperMotion);
+            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseProperMotion.setForeground(Color.MAGENTA);
             properMotionPanel.add(catWiseProperMotion);
 
@@ -626,6 +663,10 @@ public class ImageViewerTab {
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
+            properMotionField.addActionListener((ActionEvent evt) -> {
+                gaiaTpmEntries = null;
+                catWiseTpmEntries = null;
+            });
 
             controlPanel.add(new JLabel(underline("Sources affected by WISE artifacts:")));
 
@@ -634,7 +675,7 @@ public class ImageViewerTab {
             ghostOverlay = new JCheckBox("Ghosts");
             ghostOverlay.setForeground(Color.MAGENTA.darker());
             artifactPanel.add(ghostOverlay);
-            haloOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Halos&nbsp;</span></html>");
+            haloOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Halos&nbsp;</span>"));
             haloOverlay.setForeground(Color.YELLOW);
             artifactPanel.add(haloOverlay);
 
@@ -643,16 +684,16 @@ public class ImageViewerTab {
             latentOverlay = new JCheckBox("Latents");
             latentOverlay.setForeground(Color.GREEN.darker());
             artifactPanel.add(latentOverlay);
-            spikeOverlay = new JCheckBox("<html><span style='background:black'>&nbsp;Spikes&nbsp;</span></html>");
+            spikeOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spikes&nbsp;</span>"));
             spikeOverlay.setForeground(Color.ORANGE);
             artifactPanel.add(spikeOverlay);
 
             controlPanel.add(new JLabel(underline("Mouse left click w/o overlays:")));
 
-            showCatalogsButton = new JRadioButton("Show catalogs", true);
+            showCatalogsButton = new JRadioButton("Show catalog entries for object", true);
             controlPanel.add(showCatalogsButton);
 
-            JRadioButton recenterImagesButton = new JRadioButton("Recenter images", false);
+            JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
             controlPanel.add(recenterImagesButton);
 
             ButtonGroup radioGroup = new ButtonGroup();
@@ -661,26 +702,73 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Mouse wheel click:")));
 
+            controlPanel.add(new JLabel("Select images to display:"));
+
+            dssImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
+            controlPanel.add(dssImages);
+            dssImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
+            controlPanel.add(sloanImages);
+            sloanImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            twoMassImages = new JCheckBox("2MASS J, H & K bands", false);
+            controlPanel.add(twoMassImages);
+            twoMassImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            allwiseImages = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
+            controlPanel.add(allwiseImages);
+            allwiseImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
+            controlPanel.add(ps1Images);
+            ps1Images.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            createDataSheet = new JCheckBox("Create object info sheet", false);
+            controlPanel.add(createDataSheet);
+            createDataSheet.addActionListener((ActionEvent evt) -> {
+                setImageViewer(this);
+                if (createDataSheet.isSelected()) {
+                    dssImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
+                }
+            });
+
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             controlPanel.add(changeFovLabel);
 
-            showPanstarrsButton = new JRadioButton("Zoomed Pan-STARRS image", true);
-            controlPanel.add(showPanstarrsButton);
-            showPanstarrsButton.addActionListener((ActionEvent evt) -> {
-                fieldOfView = 15;
-                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            });
+            JLabel fovLabel = new JLabel("(*) Spin wheel upon WISE images to change FoV");
+            Font font = fovLabel.getFont();
+            font = font.deriveFont(9f);
+            fovLabel.setFont(font);
+            controlPanel.add(fovLabel);
 
-            JRadioButton showAllwiseButton = new JRadioButton("AllWISE w1/w2/w3/w4 images", false);
-            controlPanel.add(showAllwiseButton);
-            showAllwiseButton.addActionListener((ActionEvent evt) -> {
-                fieldOfView = 30;
-                changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            });
+            controlPanel.add(new JLabel(underline("Mouse right click:")));
+
+            differentSizeButton = new JRadioButton("Show object in different FoV", true);
+            controlPanel.add(differentSizeButton);
 
             radioGroup = new ButtonGroup();
-            radioGroup.add(showPanstarrsButton);
-            radioGroup.add(showAllwiseButton);
+            radioGroup.add(differentSizeButton);
+
+            JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differentSizePanel);
+            differentSizePanel.add(new JLabel("Enter FoV (arcsec)"));
+            differentSizeField = new JTextField(String.valueOf(100));
+            differentSizePanel.add(differentSizeField);
 
             controlPanel.add(new JLabel(underline("Nearest Zooniverse Subjects:")));
 
@@ -692,38 +780,6 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
 
-            skipFirstEpoch = new JCheckBox("Skip first epoch (year 2010)");
-            controlPanel.add(skipFirstEpoch);
-            skipFirstEpoch.addActionListener((ActionEvent evt) -> {
-                if (skipFirstEpoch.isSelected()) {
-                    epochCount -= 2;
-                } else {
-                    epochCount += 2;
-                }
-                if (images != null) {
-                    skipFirstEpoch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
-                    initMinMaxValues();
-                    createFlipbook();
-                    skipFirstEpoch.setCursor(Cursor.getDefaultCursor());
-                }
-            });
-
-            skipBadCoadds = new JCheckBox("Skip low weighted coadds");
-            controlPanel.add(skipBadCoadds);
-            skipBadCoadds.addActionListener((ActionEvent evt) -> {
-                if (images != null) {
-                    skipBadCoadds.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
-                    initMinMaxValues();
-                    createFlipbook();
-                    skipBadCoadds.setCursor(Cursor.getDefaultCursor());
-                }
-            });
-
-            //smallBodyHelp = new JCheckBox("Small body help (Epochs: ALL)");
-            //controlPanel.add(smallBodyHelp);
-            //smallBodyHelp.setEnabled(false);
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
             hideMagnifier.addActionListener((ActionEvent evt) -> {
@@ -734,15 +790,7 @@ public class ImageViewerTab {
                 }
             });
 
-            markDifferences = new JCheckBox("Mark differences");
-            controlPanel.add(markDifferences);
-            markDifferences.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            drawCrosshairs = new JCheckBox("Draw crosshairs (wheel click & spin)");
+            drawCrosshairs = new JCheckBox("Draw crosshairs (*)");
             controlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
                 if (!drawCrosshairs.isSelected()) {
@@ -751,12 +799,19 @@ public class ImageViewerTab {
                 }
             });
 
+            JLabel crosshairLabel = new JLabel("(*) Wheel click on desired position / Spin wheel to");
+            crosshairLabel.setFont(font);
+            controlPanel.add(crosshairLabel);
+
+            crosshairLabel = new JLabel("change the size / Wheel click cross center to delete");
+            crosshairLabel.setFont(font);
+            controlPanel.add(crosshairLabel);
+
             controlPanel.add(new JLabel("Crosshairs coordinates:"));
 
             crosshairCoords = new JTextArea();
             controlPanel.add(new JScrollPane(crosshairCoords));
-            Font font = coordsField.getFont();
-            crosshairCoords.setFont(font.deriveFont(font.getSize() - 2.0f));
+            crosshairCoords.setFont(font);
             crosshairCoords.setEditable(false);
 
             controlPanel.add(new JLabel(underline("Image player controls:")));
@@ -849,107 +904,6 @@ public class ImageViewerTab {
                 }
             });
 
-            //
-            /*controlPanel.add(new JLabel(underLine("Image alignment controls:")));
-
-            int delay = 100;
-
-            JPanel alignmentControls = new JPanel(new GridLayout(1, 3));
-            controlPanel.add(alignmentControls);
-
-            JButton shiftLeft = new JButton(html("Shift &larr;"));
-            alignmentControls.add(shiftLeft);
-
-            JButton shiftRight = new JButton(html("Shift &rarr;"));
-            alignmentControls.add(shiftRight);
-
-            JTextField shiftXValue = new JTextField(roundTo1Dec(shiftX));
-            alignmentControls.add(shiftXValue);
-            shiftXValue.setHorizontalAlignment(JTextField.CENTER);
-            shiftXValue.setEditable(false);
-
-            shiftLeft.addMouseListener(new MouseAdapter() {
-                Timer timer = new Timer(delay, (ActionEvent e) -> {
-                    shiftX -= 0.1;
-                    shiftXValue.setText(roundTo1Dec(shiftX));
-                });
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    timer.start();
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    timer.stop();
-                }
-            });
-
-            shiftRight.addMouseListener(new MouseAdapter() {
-                Timer timer = new Timer(delay, (ActionEvent e) -> {
-                    shiftX += 0.1;
-                    shiftXValue.setText(roundTo1Dec(shiftX));
-                });
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    timer.start();
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    timer.stop();
-                }
-            });
-
-            alignmentControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(alignmentControls);
-
-            JButton shiftUp = new JButton(html("Shift &uarr;"));
-            alignmentControls.add(shiftUp);
-
-            JButton shiftDown = new JButton(html("Shift &darr;"));
-            alignmentControls.add(shiftDown);
-
-            JTextField shiftYValue = new JTextField(roundTo1Dec(shiftY));
-            alignmentControls.add(shiftYValue);
-            shiftYValue.setHorizontalAlignment(JTextField.CENTER);
-            shiftYValue.setEditable(false);
-
-            shiftUp.addMouseListener(new MouseAdapter() {
-                Timer timer = new Timer(delay, (ActionEvent e) -> {
-                    shiftY -= 0.1;
-                    shiftYValue.setText(roundTo1Dec(shiftY));
-                });
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    timer.start();
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    timer.stop();
-                }
-            });
-
-            shiftDown.addMouseListener(new MouseAdapter() {
-                Timer timer = new Timer(delay, (ActionEvent e) -> {
-                    shiftY += 0.1;
-                    shiftYValue.setText(roundTo1Dec(shiftY));
-                });
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    timer.start();
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    timer.stop();
-                }
-            });*/
-            //
             controlPanel.add(new JLabel(underline("Navigation buttons:")));
 
             JPanel navigationButtons = new JPanel(new GridLayout(1, 2));
@@ -1000,10 +954,10 @@ public class ImageViewerTab {
             controlPanel.add(transposeProperMotion);
             transposeProperMotion.addActionListener((ActionEvent evt) -> {
                 if (!transposeMotionField.getText().isEmpty()) {
-                    transposeProperMotion.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
+                    imagesW1.clear();
+                    imagesW2.clear();
+                    reloadImages = true;
                     createFlipbook();
-                    transposeProperMotion.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -1011,19 +965,19 @@ public class ImageViewerTab {
             controlPanel.add(transposeMotionField);
             transposeMotionField.addActionListener((ActionEvent evt) -> {
                 if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-                    transposeMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    images.clear();
+                    imagesW1.clear();
+                    imagesW2.clear();
+                    reloadImages = true;
                     createFlipbook();
-                    transposeMotionField.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
-            useCustomOverlays = new JCheckBox(underline("Work with custom overlays:"));
+            useCustomOverlays = new JCheckBox(underline("Custom overlays:"));
             controlPanel.add(useCustomOverlays);
             customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
-                    showInfoDialog(baseFrame, "There are no custom overlays.");
+                    showInfoDialog(baseFrame, "No custom overlays have been added yet.");
                     useCustomOverlays.setSelected(false);
                 } else {
                     GridLayout layout = (GridLayout) controlPanel.getLayout();
@@ -1058,7 +1012,7 @@ public class ImageViewerTab {
                     imagePanel.removeAll();
 
                     FlipbookComponent component = flipbook[imageNumber];
-                    component.setEpochCount(epochCount / 2);
+                    component.setEpochCount(selectedEpochs);
                     imagePanel.setBorder(createEtchedBorder(component.getTitle()));
                     wiseImage = processImage(component);
 
@@ -1165,7 +1119,9 @@ public class ImageViewerTab {
                             double newDec = coords.getY();
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
-                                    displayRecenteredWiseImages(newRa, newDec);
+                                    if (differentSizeButton.isSelected()) {
+                                        CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
+                                    }
                                     break;
                                 case MouseEvent.BUTTON2:
                                     if (drawCrosshairs.isSelected()) {
@@ -1200,28 +1156,42 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
-                                        if (showPanstarrsButton.isSelected()) {
-                                            displayZoomedPs1Image(newRa, newDec, fieldOfView);
-                                        } else {
-                                            displayAtlasImages(newRa, newDec, fieldOfView);
+                                        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                        int screenHeight = screenSize.height;
+                                        int verticalSpacing = screenHeight / 6;
+                                        Counter counter = new Counter(verticalSpacing);
+                                        if (dssImages.isSelected()) {
+                                            displayDssImages(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (sloanImages.isSelected()) {
+                                            displaySdssImages(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (twoMassImages.isSelected()) {
+                                            display2MassImages(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (allwiseImages.isSelected()) {
+                                            displayAllwiseImages(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (ps1Images.isSelected()) {
+                                            displayPs1Images(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (createDataSheet.isSelected()) {
+                                            CompletableFuture.supplyAsync(() -> new InfoSheet(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
                                         }
                                     }
                                     break;
                                 default:
-                                    //if (smallBodyHelp.isSelected()) {
-                                    //    displaySmallBodyPanel(newRa, newDec, component.getMinObsEpoch(), component.getMaxObsEpoch());
-                                    //} else {
                                     int overlays = 0;
                                     if (simbadOverlay.isSelected() && simbadEntries != null) {
                                         showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
                                         overlays++;
                                     }
-                                    if (gaiaDR2Overlay.isSelected() && gaiaDR2Entries != null) {
-                                        showCatalogInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
+                                    if (gaiaOverlay.isSelected() && gaiaEntries != null) {
+                                        showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
-                                    if (gaiaDR2ProperMotion.isSelected() && gaiaDR2Entries != null) {
-                                        showPMInfo(gaiaDR2Entries, mouseX, mouseY, Color.CYAN.darker());
+                                    if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
+                                        showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
                                     if (allWiseOverlay.isSelected() && allWiseEntries != null) {
@@ -1232,8 +1202,12 @@ public class ImageViewerTab {
                                         showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
                                         overlays++;
                                     }
-                                    if (catWiseProperMotion.isSelected() && catWiseEntries != null) {
-                                        showPMInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
+                                    if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
+                                        showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
+                                        overlays++;
+                                    }
+                                    if (unWiseOverlay.isSelected() && unWiseEntries != null) {
+                                        showCatalogInfo(unWiseEntries, mouseX, mouseY, JColor.MINT.val);
                                         overlays++;
                                     }
                                     if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
@@ -1246,6 +1220,22 @@ public class ImageViewerTab {
                                     }
                                     if (spectrumOverlay.isSelected() && sdssEntries != null) {
                                         showSpectrumInfo(sdssEntries, mouseX, mouseY);
+                                        overlays++;
+                                    }
+                                    if (twoMassOverlay.isSelected() && twoMassEntries != null) {
+                                        showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
+                                        overlays++;
+                                    }
+                                    if (vhsOverlay.isSelected() && vhsEntries != null) {
+                                        showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
+                                        overlays++;
+                                    }
+                                    if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
+                                        showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
+                                        overlays++;
+                                    }
+                                    if (spitzerOverlay.isSelected() && spitzerEntries != null) {
+                                        showCatalogInfo(spitzerEntries, mouseX, mouseY, JColor.YELLOW.val);
                                         overlays++;
                                     }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
@@ -1262,13 +1252,12 @@ public class ImageViewerTab {
                                     }
                                     if (overlays == 0) {
                                         if (showCatalogsButton.isSelected()) {
-                                            displayCatalogSearchResults(newRa, newDec);
+                                            CompletableFuture.supplyAsync(() -> openNewCatalogSearch(newRa, newDec));
                                         } else {
                                             coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
                                             createFlipbook();
                                         }
                                     }
-                                    //}
                                     break;
                             }
                         }
@@ -1428,17 +1417,22 @@ public class ImageViewerTab {
     }
 
     private void createFlipbook() {
+        CompletableFuture.supplyAsync(() -> assembleFlipbook());
+    }
+
+    private boolean assembleFlipbook() {
         try {
             timer.stop();
+            timerStopped = true;
             String coords = coordsField.getText();
             if (coords.isEmpty()) {
                 showErrorDialog(baseFrame, "Coordinates must not be empty!");
-                return;
+                return false;
             }
             String imageSize = sizeField.getText();
             if (imageSize.isEmpty()) {
                 showErrorDialog(baseFrame, "Field of view must not be empty!");
-                return;
+                return false;
             }
             List<String> errorMessages = new ArrayList<>();
             try {
@@ -1474,59 +1468,53 @@ public class ImageViewerTab {
             if (!errorMessages.isEmpty()) {
                 String errorMessage = String.join(LINE_SEP, errorMessages);
                 showErrorDialog(baseFrame, errorMessage);
-                return;
+                return false;
             }
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
+                firstLastLoaded = false;
+                allEpochsLoaded = false;
+                imagesW1 = new HashMap<>();
+                imagesW2 = new HashMap<>();
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
-                if (!keepContrast.isSelected() && !markDifferences.isSelected()) {
-                    lowContrastSaved = getContrast();
-                    highContrastSaved = 0;
-                }
-                setContrast(lowContrastSaved, highContrastSaved);
-                initMinMaxValues();
-                //shiftX = shiftY = 0;
                 centerX = centerY = 0;
-                axisX = axisY = 0;
+                axisX = axisY = size;
                 windowShift = 0;
+                epochCountW1 = 0;
+                epochCountW2 = 0;
                 imageCutOff = false;
-                disableOverlays = false;
-                simbadOverlay.setEnabled(true);
-                gaiaDR2Overlay.setEnabled(true);
-                allWiseOverlay.setEnabled(true);
-                catWiseOverlay.setEnabled(true);
-                panStarrsOverlay.setEnabled(true);
-                sdssOverlay.setEnabled(true);
-                spectrumOverlay.setEnabled(true);
-                ssoOverlay.setEnabled(true);
-                ghostOverlay.setEnabled(true);
-                haloOverlay.setEnabled(true);
-                latentOverlay.setEnabled(true);
-                spikeOverlay.setEnabled(true);
-                gaiaDR2ProperMotion.setEnabled(true);
-                catWiseProperMotion.setEnabled(true);
                 simbadEntries = null;
-                gaiaDR2Entries = null;
+                gaiaEntries = null;
+                gaiaTpmEntries = null;
                 allWiseEntries = null;
                 catWiseEntries = null;
+                catWiseTpmEntries = null;
                 catWiseRejectedEntries = null;
+                unWiseEntries = null;
                 panStarrsEntries = null;
                 sdssEntries = null;
+                twoMassEntries = null;
+                vhsEntries = null;
+                gaiaWDEntries = null;
+                spitzerEntries = null;
                 ssoEntries = null;
                 if (useCustomOverlays.isSelected()) {
                     customOverlays.values().forEach((customOverlay) -> {
-                        customOverlay.getCheckBox().setEnabled(true);
                         customOverlay.setCatalogEntries(null);
                     });
                 }
                 ps1Image = null;
+                if (panstarrsImages) {
+                    CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
+                }
                 sdssImage = null;
-                CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size, 1024));
-                CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
+                if (sdssImages) {
+                    CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
+                }
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
                 List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
@@ -1541,12 +1529,100 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
+                if (!saveContrast.isSelected()) {
+                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                }
             }
             previousSize = size;
             previousRa = targetRa;
             previousDec = targetDec;
             imageNumber = 0;
-            avgValue = 0;
+
+            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || bandChanded || reloadImages) {
+                boolean moreImagesAvailable = false;
+                boolean oneMoreImageAvailable = false;
+                try {
+                    getImageData(1, numberOfEpochs + 3);
+                    moreImagesAvailable = true;
+                } catch (FileNotFoundException ex) {
+                    try {
+                        getImageData(1, numberOfEpochs);
+                        oneMoreImageAvailable = true;
+                    } catch (FileNotFoundException ex2) {
+                    }
+                }
+                int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
+                List<Integer> requestedEpochs = new ArrayList<>();
+                if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
+                    if (reloadImages) {
+                        imagesW1.clear();
+                        imagesW2.clear();
+                    }
+                    requestedEpochs.add(0);
+                    requestedEpochs.add(1);
+                    requestedEpochs.add(totalEpochs - 2);
+                    requestedEpochs.add(totalEpochs - 1);
+                } else {
+                    if (moreImagesAvailable) {
+                        for (int i = 0; i < 100; i++) {
+                            requestedEpochs.add(i);
+                        }
+                    } else {
+                        for (int i = 0; i < totalEpochs; i++) {
+                            requestedEpochs.add(i);
+                        }
+                    }
+                }
+                images.clear();
+                imagePanel.removeAll();
+                rightPanel.removeAll();
+                downloadLog = new JTextArea();
+                downloadLog.setFont(new JLabel().getFont());
+                downloadLog.setEditable(false);
+                DefaultCaret caret = (DefaultCaret) downloadLog.getCaret();
+                caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+                imagePanel.add(downloadLog);
+                baseFrame.setVisible(true);
+                writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
+                switch (wiseBand) {
+                    case W1:
+                        downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        epochCountW1 = epochCount;
+                        break;
+                    case W2:
+                        downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        epochCountW2 = epochCount;
+                        break;
+                    case W1W2:
+                        downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        epochCountW1 = epochCount;
+                        downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        epochCountW2 = epochCount;
+                        break;
+                }
+                writeLogEntry("Ready.");
+                downloadLog.setCaretPosition(0);
+                if (images.isEmpty()) {
+                    showInfoDialog(baseFrame, "No decent images found for the specified coordinates and FoV.");
+                    hasException = true;
+                    return false;
+                }
+                if (epochCountW1 > 0 && epochCountW2 > 0) {
+                    epochCount = min(epochCountW1, epochCountW2);
+                }
+                epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
+                if (!Epoch.isFirstLast(epoch) || moreImagesAvailable) {
+                    epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
+                }
+            }
+            if (Epoch.isFirstLast(epoch)) {
+                firstLastLoaded = true;
+            } else {
+                firstLastLoaded = true;
+                allEpochsLoaded = true;
+            }
+            bandChanded = false;
+            reloadImages = false;
 
             Fits fits;
             int k;
@@ -1554,35 +1630,30 @@ public class ImageViewerTab {
                 case ALL:
                     flipbook = new FlipbookComponent[epochCount];
                     for (int i = 0; i < epochCount; i++) {
-                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[i] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[i] = new FlipbookComponent(wiseBand.val, i);
                     }
                     break;
                 case ASCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 0; i < epochCount; i += 2) {
-                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i);
                     }
                     break;
                 case DESCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 1; i < epochCount; i += 2) {
-                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i);
                     }
                     break;
                 case ASCENDING_DESCENDING:
                     flipbook = new FlipbookComponent[epochCount];
                     k = 0;
                     for (int i = 0; i < epochCount; i += 2) {
-                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, i);
                         k++;
                     }
                     for (int i = 1; i < epochCount; i += 2) {
-                        NumberPair obsEpochs = loadImage(wiseBand.val, i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, obsEpochs.getX(), obsEpochs.getY());
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, i);
                         k++;
                     }
                     break;
@@ -1591,22 +1662,18 @@ public class ImageViewerTab {
                     k = 0;
                     for (int i = 2; i < epochCount; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, 0);
                             fits = getImage(WiseBand.W1.val, 0);
                             addImage(WiseBand.W1.val, 800 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, 0);
                             fits = getImage(WiseBand.W2.val, 0);
                             addImage(WiseBand.W2.val, 800 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i);
                             fits = getImage(WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 900 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i);
                             fits = getImage(WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
@@ -1616,22 +1683,18 @@ public class ImageViewerTab {
                     }
                     for (int i = 3; i < epochCount; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, 1);
                             fits = getImage(WiseBand.W1.val, 1);
                             addImage(WiseBand.W1.val, 800 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, 1);
                             fits = getImage(WiseBand.W2.val, 1);
                             addImage(WiseBand.W2.val, 800 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i);
                             fits = getImage(WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 900 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i);
                             fits = getImage(WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
@@ -1643,48 +1706,36 @@ public class ImageViewerTab {
                 case ASCENDING_DESCENDING_PARALLAX:
                     flipbook = new FlipbookComponent[2];
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, 2);
                         fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 2);
                         addImage(WiseBand.W1.val, 600, fits);
                         for (int i = 4; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W1.val, i);
                             fits = addImages(WiseBand.W1.val, 600, WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 600, fits);
                         }
                         addImage(WiseBand.W1.val, 600, takeAverage(fits, epochCount / 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, 2);
                         fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 2);
                         addImage(WiseBand.W2.val, 600, fits);
                         for (int i = 4; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W2.val, i);
                             fits = addImages(WiseBand.W2.val, 600, WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 600, fits);
                         }
                         addImage(WiseBand.W2.val, 600, takeAverage(fits, epochCount / 2));
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 1);
-                        loadImage(WiseBand.W1.val, 3);
                         fits = addImages(WiseBand.W1.val, 1, WiseBand.W1.val, 3);
                         addImage(WiseBand.W1.val, 700, fits);
                         for (int i = 5; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W1.val, i);
                             fits = addImages(WiseBand.W1.val, 700, WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 700, fits);
                         }
                         addImage(WiseBand.W1.val, 700, takeAverage(fits, epochCount / 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 1);
-                        loadImage(WiseBand.W2.val, 3);
                         fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, 3);
                         addImage(WiseBand.W2.val, 700, fits);
                         for (int i = 5; i < epochCount; i += 2) {
-                            loadImage(WiseBand.W2.val, i);
                             fits = addImages(WiseBand.W2.val, 700, WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 700, fits);
                         }
@@ -1697,93 +1748,40 @@ public class ImageViewerTab {
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 0; i < epochCount; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i);
-                            loadImage(WiseBand.W1.val, i + 1);
                             fits = addImages(WiseBand.W1.val, i, WiseBand.W1.val, i + 1);
                             addImage(WiseBand.W1.val, 101 + (i / 2), takeAverage(fits, 2));
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i);
-                            loadImage(WiseBand.W2.val, i + 1);
                             fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 1);
                             addImage(WiseBand.W2.val, 101 + (i / 2), takeAverage(fits, 2));
                         }
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true);
                     }
                     break;
-                /*
-                case YEAR_SUBTRACTED:
-                    flipbook = new FlipbookComponent[epochCount / 2 - 1];
-                    k = 0;
-                    for (int i = 2; i < epochCount; i += 2) {
-                        if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, 0);
-                            loadImage(WiseBand.W1.val, 1);
-                            fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
-                            addImage(WiseBand.W1.val, 1000 + k, takeAverage(fits, 2));
-                        }
-                        if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, 0);
-                            loadImage(WiseBand.W2.val, 1);
-                            fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
-                            addImage(WiseBand.W2.val, 1000 + k, takeAverage(fits, 2));
-                        }
-                        if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W1.val, i);
-                            loadImage(WiseBand.W1.val, i + 1);
-                            fits = addImages(WiseBand.W1.val, i, WiseBand.W1.val, i + 1);
-                            addImage(WiseBand.W1.val, 1100 + k, takeAverage(fits, 2));
-                        }
-                        if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                            loadImage(WiseBand.W2.val, i);
-                            loadImage(WiseBand.W2.val, i + 1);
-                            fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 1);
-                            addImage(WiseBand.W2.val, 1100 + k, takeAverage(fits, 2));
-                        }
-                        differenceImaging(1000 + k, 1100 + k);
-                        if (k == 0) {
-                            flipbook[k] = new FlipbookComponent(wiseBand.val, 1100 + k, true);
-                        } else {
-                            flipbook[k] = new FlipbookComponent(wiseBand.val, 1000 + k, true);
-                        }
-                        k++;
-                    }
-                    break;
-                 */
                 case FIRST_REMAINING:
                 case FIRST_REMAINING_SUBTRACTED:
                     flipbook = new FlipbookComponent[2];
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, 1);
                         fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
                         addImage(WiseBand.W1.val, 100, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, 1);
                         fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
                         addImage(WiseBand.W2.val, 100, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 2);
-                        loadImage(WiseBand.W1.val, 3);
                         fits = addImages(WiseBand.W1.val, 2, WiseBand.W1.val, 3);
                         addImage(WiseBand.W1.val, 300, fits);
                         for (int i = 4; i < epochCount; i++) {
-                            loadImage(WiseBand.W1.val, i);
                             fits = addImages(WiseBand.W1.val, 300, WiseBand.W1.val, i);
                             addImage(WiseBand.W1.val, 300, fits);
                         }
                         addImage(WiseBand.W1.val, 300, takeAverage(fits, epochCount - 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 2);
-                        loadImage(WiseBand.W2.val, 3);
                         fits = addImages(WiseBand.W2.val, 2, WiseBand.W2.val, 3);
                         addImage(WiseBand.W2.val, 300, fits);
                         for (int i = 4; i < epochCount; i++) {
-                            loadImage(WiseBand.W2.val, i);
                             fits = addImages(WiseBand.W2.val, 300, WiseBand.W2.val, i);
                             addImage(WiseBand.W2.val, 300, fits);
                         }
@@ -1799,30 +1797,21 @@ public class ImageViewerTab {
                 case FIRST_LAST_SUBTRACTED:
                     flipbook = new FlipbookComponent[2];
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, 1);
                         fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, 1);
                         addImage(WiseBand.W1.val, 100, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, 1);
                         fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, 1);
                         addImage(WiseBand.W2.val, 100, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, epochCount - 2);
-                        loadImage(WiseBand.W1.val, epochCount - 1);
                         fits = addImages(WiseBand.W1.val, epochCount - 2, WiseBand.W1.val, epochCount - 1);
                         addImage(WiseBand.W1.val, 200, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, epochCount - 2);
-                        loadImage(WiseBand.W2.val, epochCount - 1);
                         fits = addImages(WiseBand.W2.val, epochCount - 2, WiseBand.W2.val, epochCount - 1);
                         addImage(WiseBand.W2.val, 200, takeAverage(fits, 2));
                     }
-
                     if (epoch.equals(Epoch.FIRST_LAST_SUBTRACTED)) {
                         differenceImaging(100, 200);
                     }
@@ -1832,26 +1821,18 @@ public class ImageViewerTab {
                 case FIRST_LAST_PARALLAX:
                     flipbook = new FlipbookComponent[2];
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 0);
-                        loadImage(WiseBand.W1.val, epochCount - 2);
                         fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, epochCount - 2);
                         addImage(WiseBand.W1.val, 400, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 0);
-                        loadImage(WiseBand.W2.val, epochCount - 2);
                         fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, epochCount - 2);
                         addImage(WiseBand.W2.val, 400, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W1.val, 1);
-                        loadImage(WiseBand.W1.val, epochCount - 1);
                         fits = addImages(WiseBand.W1.val, 1, WiseBand.W1.val, epochCount - 1);
                         addImage(WiseBand.W1.val, 500, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
-                        loadImage(WiseBand.W2.val, 1);
-                        loadImage(WiseBand.W2.val, epochCount - 1);
                         fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, epochCount - 1);
                         addImage(WiseBand.W2.val, 500, takeAverage(fits, 2));
                     }
@@ -1859,26 +1840,64 @@ public class ImageViewerTab {
                     flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true);
                     break;
             }
-            if (Epoch.isSubtracted(epoch)) {
-                setSubtractedContrast();
+
+            int divisor = 0;
+
+            int minValW1 = 0;
+            int maxValW1 = 0;
+            int avgValW1 = 0;
+            fits = getImage(WiseBand.W1.val, 0);
+            if (fits != null) {
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet refValues = getRefValues(values);
+                minValW1 = (int) refValues.getX();
+                maxValW1 = (int) refValues.getY();
+                avgValW1 = (int) refValues.getZ();
+                divisor++;
             }
-            if (markDifferences.isSelected()) {
-                detectDifferences();
+
+            int minValW2 = 0;
+            int maxValW2 = 0;
+            int avgValW2 = 0;
+            fits = getImage(WiseBand.W2.val, 0);
+            if (fits != null) {
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                NumberTriplet refValues = getRefValues(values);
+                minValW2 = (int) refValues.getX();
+                maxValW2 = (int) refValues.getY();
+                avgValW2 = (int) refValues.getZ();
+                divisor++;
             }
+
+            int minVal = (minValW1 + minValW2) / divisor;
+            int maxVal = (maxValW1 + maxValW2) / divisor;
+            int avgVal = (avgValW1 + avgValW2) / divisor;
+
+            //System.out.println("minVal=" + minVal);
+            //System.out.println("maxVal=" + maxVal);
+            //System.out.println("avgVal=" + avgVal);
+            setMinMaxValues(minVal, maxVal, avgVal);
+
             timer.restart();
+            timerStopped = false;
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
+        return true;
     }
 
     private void createStaticBook() {
         timer.stop();
         JPanel grid = new JPanel(new GridLayout(4, 4));
         for (FlipbookComponent component : flipbook) {
-            component.setEpochCount(epochCount / 2);
+            component.setEpochCount(selectedEpochs);
             BufferedImage image = processImage(component);
             JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
             scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
@@ -1909,31 +1928,19 @@ public class ImageViewerTab {
         }
         if (imageSet.length > 0) {
             GifSequencer sequencer = new GifSequencer();
-            sequencer.generateFromBI(imageSet, file, 50, true);
+            sequencer.generateFromBI(imageSet, file, speed / 10, true);
         }
     }
 
-    private BufferedImage processImage(FlipbookComponent component) {
+    public BufferedImage processImage(FlipbookComponent component) {
         BufferedImage image;
         if (wiseBand.equals(WiseBand.W1W2)) {
             image = createComposite(component.getEpoch());
         } else {
             image = createImage(component.getBand(), component.getEpoch());
         }
-        image = zoom(image, zoom);
-        if (markDifferences.isSelected()) {
-            for (NumberPair diffPixel : component.getDiffPixels()) {
-                Circle circle = new Circle(getScaledValue(diffPixel.getX()), getScaledValue(diffPixel.getY()), getScaledValue(1), Color.RED);
-                circle.draw(image.getGraphics());
-            }
-        }
-        image = flip(image);
-        //if (imageNumber == 0) {
-        //    image = shift(image);
-        //}
-        if (!disableOverlays) {
-            addOverlaysAndPMVectors(image);
-        }
+        image = flip(zoom(image, zoom));
+        addOverlaysAndPMVectors(image);
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
                 NumberPair crosshair = crosshairs.get(i);
@@ -1941,64 +1948,155 @@ public class ImageViewerTab {
                 drawable.draw(image.getGraphics());
             }
         }
-        image = rotate(image, quadrantCount);
-        return image;
+        return rotate(image, quadrantCount);
     }
 
     private void addOverlaysAndPMVectors(BufferedImage image) {
         if (simbadOverlay.isSelected()) {
-            fetchSimbadCatalogEntries();
-            drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
+            if (simbadEntries == null) {
+                simbadEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> simbadEntries = fetchCatalogEntries(new SimbadCatalogEntry()));
+            } else {
+                drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
+            }
         }
-        if (gaiaDR2Overlay.isSelected()) {
-            fetchGaiaDR2CatalogEntries();
-            drawOverlay(image, gaiaDR2Entries, Color.CYAN.darker(), Shape.CIRCLE);
+        if (gaiaOverlay.isSelected()) {
+            if (gaiaEntries == null) {
+                gaiaEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry()));
+            } else {
+                drawOverlay(image, gaiaEntries, Color.CYAN.darker(), Shape.CIRCLE);
+            }
         }
         if (allWiseOverlay.isSelected()) {
-            fetchAllWiseCatalogEntries();
-            drawOverlay(image, allWiseEntries, Color.GREEN.darker(), Shape.CIRCLE);
+            if (allWiseEntries == null) {
+                allWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> allWiseEntries = fetchCatalogEntries(new AllWiseCatalogEntry()));
+            } else {
+                drawOverlay(image, allWiseEntries, Color.GREEN.darker(), Shape.CIRCLE);
+            }
         }
         if (catWiseOverlay.isSelected()) {
-            fetchCatWiseCatalogEntries();
-            drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
+            if (catWiseEntries == null) {
+                catWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry()));
+            } else {
+                drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
+            }
+        }
+        if (unWiseOverlay.isSelected()) {
+            if (unWiseEntries == null) {
+                unWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> unWiseEntries = fetchCatalogEntries(new UnWiseCatalogEntry()));
+            } else {
+                drawOverlay(image, unWiseEntries, JColor.MINT.val, Shape.CIRCLE);
+            }
         }
         if (panStarrsOverlay.isSelected()) {
-            fetchPanStarrsCatalogEntries();
-            drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
+            if (panStarrsEntries == null) {
+                panStarrsEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> panStarrsEntries = fetchCatalogEntries(new PanStarrsCatalogEntry()));
+            } else {
+                drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
+            }
         }
         if (sdssOverlay.isSelected()) {
-            fetchSdssCatalogEntries();
-            drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
+            if (sdssEntries == null) {
+                sdssEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
+            } else {
+                drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
+            }
         }
         if (spectrumOverlay.isSelected()) {
-            fetchSdssCatalogEntries();
-            drawSectrumOverlay(image, sdssEntries);
+            if (sdssEntries == null) {
+                sdssEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
+            } else {
+                drawSectrumOverlay(image, sdssEntries);
+            }
+        }
+        if (twoMassOverlay.isSelected()) {
+            if (twoMassEntries == null) {
+                twoMassEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> twoMassEntries = fetchCatalogEntries(new TwoMassCatalogEntry()));
+            } else {
+                drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
+            }
+        }
+        if (vhsOverlay.isSelected()) {
+            if (vhsEntries == null) {
+                vhsEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> vhsEntries = fetchCatalogEntries(new VHSCatalogEntry()));
+            } else {
+                drawOverlay(image, vhsEntries, JColor.PINK.val, Shape.CIRCLE);
+            }
+        }
+        if (gaiaWDOverlay.isSelected()) {
+            if (gaiaWDEntries == null) {
+                gaiaWDEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry()));
+            } else {
+                drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
+            }
+        }
+        if (spitzerOverlay.isSelected()) {
+            if (spitzerEntries == null) {
+                spitzerEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> spitzerEntries = fetchCatalogEntries(new SpitzerCatalogEntry()));
+            } else {
+                drawOverlay(image, spitzerEntries, JColor.YELLOW.val, Shape.CIRCLE);
+            }
         }
         if (ssoOverlay.isSelected()) {
-            fetchSSOCatalogEntries();
-            drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
+            if (ssoEntries == null) {
+                ssoEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> ssoEntries = fetchCatalogEntries(new SSOCatalogEntry()));
+            } else {
+                drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
+            }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
-            fetchCatWiseCatalogEntries();
-            drawArtifactOverlay(image, catWiseEntries);
-            fetchCatWiseRejectedEntries();
-            drawArtifactOverlay(image, catWiseRejectedEntries);
+            if (catWiseEntries == null) {
+                catWiseEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry()));
+            } else {
+                drawArtifactOverlay(image, catWiseEntries);
+            }
+            if (catWiseRejectedEntries == null) {
+                catWiseRejectedEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseRejectedEntries = fetchCatalogEntries(new CatWiseRejectedEntry()));
+            } else {
+                drawArtifactOverlay(image, catWiseRejectedEntries);
+            }
         }
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
                 if (customOverlay.getCheckBox().isSelected()) {
-                    fetchGenericCatalogEntries(customOverlay);
-                    drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor(), customOverlay.getShape());
+                    if (customOverlay.getCatalogEntries() == null) {
+                        customOverlay.setCatalogEntries(Collections.emptyList());
+                        CompletableFuture.supplyAsync(() -> fetchGenericCatalogEntries(customOverlay));
+                    } else {
+                        drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor(), customOverlay.getShape());
+                    }
                 }
             });
         }
-        if (gaiaDR2ProperMotion.isSelected()) {
-            fetchGaiaDR2CatalogEntries();
-            drawPMVectors(image, gaiaDR2Entries, Color.CYAN.darker());
+        if (gaiaProperMotion.isSelected()) {
+            if (gaiaTpmEntries == null) {
+                gaiaTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry()));
+            } else {
+                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker());
+            }
         }
         if (catWiseProperMotion.isSelected()) {
-            fetchCatWiseCatalogEntries();
-            drawPMVectors(image, catWiseEntries, Color.MAGENTA);
+            if (catWiseTpmEntries == null) {
+                catWiseTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry()));
+            } else {
+                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
+            }
         }
     }
 
@@ -2006,166 +2104,246 @@ public class ImageViewerTab {
         return zoom * value / size;
     }
 
-    private NumberPair loadImage(int band_, int epoch) throws Exception {
-        String str = Integer.toString(band_);
-        int[] bands = new int[str.length()];
-        for (int i = 0; i < str.length(); i++) {
-            bands[i] = str.charAt(i) - '0';
-        }
-        Fits fits = null;
-        for (int band : bands) {
-            fits = getImage(band, epoch);
-            if (fits != null) {
+    private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
+        writeLogEntry("Downloading ...");
+        for (int i = 0; i < requestedEpochs.size(); i++) {
+            int requestedEpoch = requestedEpochs.get(i);
+            String imageKey = band + "_" + requestedEpoch;
+            ImageContainer container = images.get(imageKey);
+            if (container != null) {
+                writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
                 continue;
             }
+            Fits fits;
             try {
-                fits = new Fits(getImageData(band, epoch));
-                if (skipBadCoadds.isSelected()) {
-                    ImageHDU weightHDU = (ImageHDU) fits.getHDU(1);
-                    ImageData weightData = (ImageData) weightHDU.getData();
-                    short[][] weights = (short[][]) weightData.getData();
-                    if (getNumberOfWeightsBelowLimit(weights, 5) > 50) {
-                        fits = getPreviousImage(band, epoch);
-                    }
-                }
-                ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-                ImageData imageData = (ImageData) imageHDU.getData();
-                float[][] values = (float[][]) imageData.getData();
-
-                // Replace an image with too many zero values by a preceding image
-                axisY = values.length;
-                if (axisY > 0) {
-                    axisX = values[0].length;
-                }
-                int zeroValues = 0;
-                for (int i = 0; i < axisY; i++) {
-                    for (int j = 0; j < axisX; j++) {
-                        try {
-                            if (values[i][j] == 0) {
-                                zeroValues++;
-                            }
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                if (zeroValues > 1000) {
-                    fits = getPreviousImage(band, epoch);
-                }
-
-                // Un/Check the "Set min/max limits" check box automatically
-                minMaxLimits.setSelected(false);
-                NumberTriplet minMaxValues = getMinMaxValues(values);
-                int avgVal = (int) minMaxValues.getZ();
-                if (avgValue == 0) {
-                    avgValue = avgVal;
-                }
-                if (avgValue > 500) {
-                    minMaxLimits.setSelected(false);
+                fits = new Fits(getImageData(band, requestedEpoch));
+            } catch (FileNotFoundException ex) {
+                if (requestedEpochs.size() == 4) {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                    return;
                 } else {
-                    minMaxLimits.setSelected(true);
+                    break;
                 }
-            } catch (Exception ex) {
-                if (ex instanceof NumberFormatException) {
-                    throw ex;
-                }
-                fits = getPreviousImage(band, epoch);
             }
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            Header header = hdu.getHeader();
+            double naxis1 = header.getDoubleValue("NAXIS1");
+            double naxis2 = header.getDoubleValue("NAXIS2");
+            double minObsEpoch = header.getDoubleValue("MJDMIN");
+            LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+            // Skip images with too many zero values
+            if (naxis2 > 0) {
+                naxis1 = values[0].length;
+            }
+            int zeroValues = 0;
+            for (int j = 0; j < naxis2; j++) {
+                for (int k = 0; k < naxis1; k++) {
+                    try {
+                        if (values[j][k] == 0) {
+                            zeroValues++;
+                        }
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                    }
+                }
+            }
+            String imageDate = obsDate.format(DATE_FORMATTER);
+            double maxAllowed = naxis1 * naxis2 / 20;
+            if (zeroValues > maxAllowed) {
+                if (requestedEpochs.size() == 4) {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                    return;
+                } else {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
+                    continue;
+                }
+            }
+            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
+            baseFrame.setVisible(true);
+        }
+        if (images.isEmpty()) {
+            return;
+        }
+        writeLogEntry("Grouping ...");
+        List<ImageContainer> sortedList = images.values().stream()
+                .filter(container -> container.getImage() != null)
+                .sorted(Comparator.comparing(ImageContainer::getDate))
+                .collect(Collectors.toList());
+        List<List<ImageContainer>> groupedList = new ArrayList<>();
+        List<ImageContainer> group = new ArrayList<>();
+        ImageContainer containerSaved = sortedList.get(0);
+        LocalDateTime date = containerSaved.getDate();
+        int prevYear = date.getYear();
+        int prevMonth = date.getMonthValue();
+        int prevNode = 1;
+        int node1 = 0;
+        int node2 = 0;
+        boolean nodeChange = false;
+        for (ImageContainer container : sortedList) {
+            containerSaved = container;
+            date = container.getDate();
+            int year = date.getYear();
+            int month = date.getMonthValue();
+            int node;
+            if (year != prevYear) {
+                node = 1;
+                nodeChange = false;
+            } else if (month - prevMonth > 4 && !nodeChange) {
+                node = prevNode == 1 ? 2 : 1;
+                nodeChange = true;
+            } else {
+                node = prevNode;
+            }
+            if (year == prevYear && node == prevNode) {
+                group.add(container);
+            } else {
+                groupedList.add(group);
+                group = new ArrayList<>();
+                group.add(container);
+            }
+            if (year == prevYear) {
+                if (node == 1) {
+                    node1++;
+                }
+                if (node == 2) {
+                    node2++;
+                }
+            } else {
+                if (node1 == 0 || node2 == 0) {
+                    if (requestedEpochs.size() == 4) {
+                        images.clear();
+                        int requestedEpoch = container.getEpoch();
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node), looking for surrogates");
+                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                        return;
+                    } else {
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
+                        groupedList.remove(groupedList.size() - 1);
+                    }
+                }
+                node1 = 0;
+                node2 = 0;
+                if (node == 1) {
+                    node1++;
+                }
+                if (node == 2) {
+                    node2++;
+                }
+            }
+            prevYear = year;
+            prevMonth = month;
+            prevNode = node;
+            writeLogEntry("year " + year + " | node " + node);
+        }
+        if (node1 == 0 || node2 == 0) {
+            if (requestedEpochs.size() == 4) {
+                images.clear();
+                int requestedEpoch = containerSaved.getEpoch();
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node), looking for surrogates");
+                downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                return;
+            } else {
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
+            }
+        } else {
+            groupedList.add(group);
+        }
+        writeLogEntry("Stacking ...");
+        epochCount = 0;
+        for (List<ImageContainer> imageGroup : groupedList) {
+            ImageContainer container = imageGroup.get(0);
+            LocalDateTime time = container.getDate();
+            int year = time.getYear();
+            int month = time.getMonthValue();
+            Fits fits = container.getImage();
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
             double crpix1 = header.getDoubleValue("CRPIX1");
             double crpix2 = header.getDoubleValue("CRPIX2");
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
-            if (size > naxis1 && size > naxis2 && !disableOverlays) {
-                String message = "Some features of the Image Viewer have been disabled because the current field of view exceeds the requested WISE tile.";
-                showWarnDialog(baseFrame, message);
-                disableOverlays = true;
-                simbadOverlay.setEnabled(false);
-                gaiaDR2Overlay.setEnabled(false);
-                allWiseOverlay.setEnabled(false);
-                catWiseOverlay.setEnabled(false);
-                panStarrsOverlay.setEnabled(false);
-                sdssOverlay.setEnabled(false);
-                spectrumOverlay.setEnabled(false);
-                ssoOverlay.setEnabled(false);
-                ghostOverlay.setEnabled(false);
-                haloOverlay.setEnabled(false);
-                latentOverlay.setEnabled(false);
-                spikeOverlay.setEnabled(false);
-                gaiaDR2ProperMotion.setEnabled(false);
-                catWiseProperMotion.setEnabled(false);
-                if (useCustomOverlays.isSelected()) {
-                    customOverlays.values().forEach((customOverlay) -> {
-                        customOverlay.getCheckBox().setEnabled(false);
-                    });
-                }
-            }
             if (naxis1 != naxis2) {
                 imageCutOff = true;
             }
             pixelX = crpix1;
-            pixelY = naxis2 - crpix2;
-            axisX = (int) round(naxis1);
-            axisY = (int) round(naxis2);
-            addImage(band, epoch, fits);
+            pixelY = size - crpix2;
+            axisX = size;
+            axisY = size;
+            for (int i = 1; i < imageGroup.size(); i++) {
+                fits = addImages(fits, imageGroup.get(i).getImage());
+            }
+            int imageCount = imageGroup.size();
+            addImage(band, epochCount, imageCount > 1 ? takeAverage(fits, imageCount) : fits);
+            writeLogEntry("band " + band + " | image " + epochCount + " | year " + year + " | month " + month);
+            epochCount++;
         }
-        return getMinMaxObsEpoch(fits);
     }
 
-    private NumberPair getMinMaxObsEpoch(Fits fits) throws Exception {
-        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-        Header header = hdu.getHeader();
-        double minObsEpoch = header.getDoubleValue("MJDMIN");
-        double maxObsEpoch = header.getDoubleValue("MJDMAX");
-        return new NumberPair(minObsEpoch, maxObsEpoch);
+    private void writeLogEntry(String log) {
+        downloadLog.append(log + LINE_SEP_TEXT_AREA);
+        baseFrame.setVisible(true);
+        //System.out.println(log);
     }
 
-    private Fits getPreviousImage(int band, int epoch) throws FitsException {
-        Fits fits;
+    private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
+        List<Integer> alternativeEpochs = new ArrayList<>();
+        if (requestedEpoch < selectedEpochs) {
+            alternativeEpochs.add(requestedEpochs.get(0) + 1);
+            alternativeEpochs.add(requestedEpochs.get(1) + 1);
+            alternativeEpochs.add(requestedEpochs.get(2));
+            alternativeEpochs.add(requestedEpochs.get(3));
+        } else {
+            alternativeEpochs.add(requestedEpochs.get(0));
+            alternativeEpochs.add(requestedEpochs.get(1));
+            alternativeEpochs.add(requestedEpochs.get(2) - 1);
+            alternativeEpochs.add(requestedEpochs.get(3) - 1);
+        }
+        return alternativeEpochs;
+    }
+
+    private Fits addImages(Fits fits1, Fits fits2) {
         try {
-            int previousEpoch;
-            switch (epoch) {
-                case 0:
-                case 1:
-                    previousEpoch = epoch + 2;
-                    break;
-                default:
-                    previousEpoch = epoch - 2;
-            }
-            fits = getImage(band, previousEpoch);
-            if (fits == null) {
-                fits = new Fits(getImageData(band, previousEpoch));
-            }
-        } catch (Exception ex) {
-            float[][] values = new float[axisY][axisX];
-            short[][] weights = new short[axisY][axisX];
+            ImageHDU imageHDU = (ImageHDU) fits1.getHDU(0);
+            ImageData imageData = (ImageData) imageHDU.getData();
+            float[][] values1 = (float[][]) imageData.getData();
+
+            imageHDU = (ImageHDU) fits2.getHDU(0);
+            imageData = (ImageData) imageHDU.getData();
+            float[][] values2 = (float[][]) imageData.getData();
+
+            float[][] addedValues = new float[axisY][axisX];
             for (int i = 0; i < axisY; i++) {
                 for (int j = 0; j < axisX; j++) {
-                    values[i][j] = 0;
-                    weights[i][j] = 0;
+                    try {
+                        addedValues[i][j] = values1[i][j] + values2[i][j];
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                    }
                 }
             }
-            fits = new Fits();
-            fits.addHDU(FitsFactory.hduFactory(values));
-            fits.addHDU(FitsFactory.hduFactory(weights));
+
+            Fits result = new Fits();
+            result.addHDU(FitsFactory.hduFactory(addedValues));
+            return result;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
-        return fits;
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
         String imageUrl;
-        if (skipFirstEpoch.isSelected()) {
-            epoch += 2;
-        }
         if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
             NumberPair properMotion = getCoordinates(transposeMotionField.getText());
             double pmra = properMotion.getX();
             double pmdec = properMotion.getY();
-            int numberOfEpochs = epoch > 1 ? epoch + 6 : epoch;
+            int totalEpochs = epoch > 1 ? epoch + numberOfEpochs / 2 : epoch;
             double pmraOfOneEpoch = (pmra / 2) / DEG_MAS;
             double pmdecOfOneEpoch = (pmdec / 2) / DEG_MAS;
-            double pmraOfEpochs = numberOfEpochs * pmraOfOneEpoch;
-            double pmdecOfEpochs = numberOfEpochs * pmdecOfOneEpoch;
+            double pmraOfEpochs = totalEpochs * pmraOfOneEpoch;
+            double pmdecOfEpochs = totalEpochs * pmdecOfOneEpoch;
             double ra = targetRa + pmraOfEpochs / cos(toRadians(targetDec));
             double dec = targetDec + pmdecOfEpochs;
             imageUrl = createImageUrl(ra, dec, size, band, epoch);
@@ -2177,62 +2355,7 @@ public class ImageViewerTab {
     }
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
-        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch + (skipBadCoadds.isSelected() ? "&covmap=true" : "");
-    }
-
-    private void detectDifferences() {
-        for (int i = 0; i < flipbook.length; i++) {
-            FlipbookComponent component1 = flipbook[i];
-            FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
-            int band = component1.getBand();
-            int epoch1 = component1.getEpoch();
-            int epoch2 = component2.getEpoch();
-            List<NumberPair> diffPixels = new ArrayList<>();
-            if (band == 1 || band == 12) {
-                detectDifferencesPerBand(1, epoch1, epoch2, diffPixels);
-            }
-            if (band == 2 || band == 12) {
-                detectDifferencesPerBand(2, epoch1, epoch2, diffPixels);
-            }
-            component2.setDiffPixels(diffPixels);
-        }
-    }
-
-    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberPair> diffPixels) {
-        try {
-            Fits fits = getImage(band, epoch1);
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-
-            fits = getImage(band, epoch2);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-
-            if (minValue == 0 && maxValue == 0) {
-                NumberTriplet minMaxValues = getMinMaxValues(values1);
-                int minVal = (int) minMaxValues.getX();
-                int maxVal = (int) minMaxValues.getY();
-                int avgVal = (int) minMaxValues.getZ();
-                setMinMaxValues(minVal, maxVal, avgVal);
-            }
-
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
-                    float value1 = processPixel(values1[i][j]);
-                    float value2 = processPixel(values2[i][j]);
-                    float max = max(value1, value2);
-                    float min = min(value1, value2);
-                    //if (max - min > (max + min) / 2) {
-                    if (max - min > (max + min) / 2 && value1 == max) {
-                        diffPixels.add(new NumberPair(j, i));
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
     }
 
     private BufferedImage createImage(int band, int epoch) {
@@ -2241,14 +2364,6 @@ public class ImageViewerTab {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
-
-            if (minValue == 0 && maxValue == 0) {
-                NumberTriplet minMaxValues = getMinMaxValues(values);
-                int minVal = (int) minMaxValues.getX();
-                int maxVal = (int) minMaxValues.getY();
-                int avgVal = (int) minMaxValues.getZ();
-                setMinMaxValues(minVal, maxVal, avgVal);
-            }
 
             if (smoothImage.isSelected()) {
                 values = smooth(values);
@@ -2275,12 +2390,12 @@ public class ImageViewerTab {
 
     private BufferedImage createComposite(int epoch) {
         try {
-            Fits fits = getImage(1, epoch);
+            Fits fits = getImage(WiseBand.W1.val, epoch);
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] valuesW1 = (float[][]) imageData.getData();
 
-            fits = getImage(2, epoch);
+            fits = getImage(WiseBand.W2.val, epoch);
             hdu = (ImageHDU) fits.getHDU(0);
             imageData = (ImageData) hdu.getData();
             float[][] valuesW2 = (float[][]) imageData.getData();
@@ -2288,23 +2403,6 @@ public class ImageViewerTab {
             if (smoothImage.isSelected()) {
                 valuesW1 = smooth(valuesW1);
                 valuesW2 = smooth(valuesW2);
-            }
-
-            if (minValue == 0 && maxValue == 0) {
-                NumberTriplet minMaxValues1 = getMinMaxValues(valuesW1);
-                int minVal1 = (int) minMaxValues1.getX();
-                int maxVal1 = (int) minMaxValues1.getY();
-                int avgVal1 = (int) minMaxValues1.getZ();
-
-                NumberTriplet minMaxValues2 = getMinMaxValues(valuesW2);
-                int minVal2 = (int) minMaxValues2.getX();
-                int maxVal2 = (int) minMaxValues2.getY();
-                int avgVal2 = (int) minMaxValues2.getZ();
-
-                int minVal = min(minVal1, minVal2);
-                int maxVal = max(maxVal1, maxVal2);
-                int avgVal = (avgVal1 + avgVal2) / 2;
-                setMinMaxValues(minVal, maxVal, avgVal);
             }
 
             BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
@@ -2457,12 +2555,6 @@ public class ImageViewerTab {
         return op.filter(image, null);
     }
 
-    /*private BufferedImage shift(BufferedImage image) {
-        AffineTransform tx = AffineTransform.getTranslateInstance(shiftX, shiftY);
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(image, new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB));
-    }*/
-    //
     private BufferedImage zoom(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
         Image scaled = image.getScaledInstance((axisX > axisY ? 1 : -1) * zoom, (axisX > axisY ? -1 : 1) * zoom, Image.SCALE_DEFAULT);
@@ -2483,9 +2575,7 @@ public class ImageViewerTab {
 
     private float processPixel(float value) {
         value = normalize(value, minValue, maxValue);
-        if (stretchImage.isSelected()) {
-            value = stretch(value);
-        }
+        value = stretch(value);
         value = contrast(value);
         value = min(1, value);
         return invertColors.isSelected() ? value : 1 - value;
@@ -2515,103 +2605,87 @@ public class ImageViewerTab {
         return (float) log(x + sqrt(x * x + 1.0));
     }
 
-    private int getContrast() {
-        return size < 30 ? 25 : 50;
-    }
-
-    private void setSubtractedContrast() {
-        if (minMaxLimits.isSelected()) {
-            setContrast(getContrast(), 0);
-        } else {
-            setContrast(getContrast(), 500);
-        }
-    }
-
     private void setContrast(int low, int high) {
+        if (!Epoch.isSubtracted(epoch)) {
+            lowContrastSaved = low;
+            highContrastSaved = high;
+        }
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
     }
 
-    private int getNumberOfWeightsBelowLimit(short[][] weights, int limit) {
-        int x = weights.length;
-        int y = weights[0].length;
-        int numberOfWeightsBelowLimit = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                short weight = weights[i][j];
-                if (weight < limit) {
-                    numberOfWeightsBelowLimit++;
+    private NumberTriplet getRefValues(float[][] values) {
+        int total = 0, count = 0;
+        List<Float> numbers = new ArrayList<>();
+        for (float[] row : values) {
+            for (float value : row) {
+                if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
+                    numbers.add(value);
+                    total += abs(value);
+                    count++;
                 }
             }
         }
-        return numberOfWeightsBelowLimit;
-    }
-
-    private NumberTriplet getMinMaxValues(float[][] values) {
-        int x = values.length;
-        int y = values[0].length;
-        float minVal = 0;
-        float maxVal = 0;
-        int sum = 0;
-        int nbr = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float value = values[i][j];
-                if (value == Float.POSITIVE_INFINITY || value == Float.NEGATIVE_INFINITY || value == Float.NaN) {
-                    continue;
-                }
-                if (minMaxLimits.isSelected()) {
-                    value = clipToBoundaries(value, MIN_VALUE, MAX_VALUE);
-                } else {
-                    //value = clipToBoundaries(value, MIN_LIMIT, MAX_LIMIT);
-                }
-                if (value < minVal) {
-                    minVal = value;
-                }
-                if (value > maxVal) {
-                    maxVal = value;
-                }
-                sum += abs(value);
-                nbr++;
-            }
-        }
-        float avgVal = sum / nbr;
+        numbers.sort(Comparator.naturalOrder());
+        float minVal = numbers.get(0);
+        float maxVal = numbers.get(numbers.size() - 1);
+        float avgVal = total / count;
         return new NumberTriplet(minVal, maxVal, avgVal);
     }
 
-    private float clipToBoundaries(float value, float minValue, float maxValue) {
-        return max(minValue, min(maxValue, value));
-    }
-
-    private void initMinMaxValues() {
-        minValue = maxValue = 0;
-    }
-
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
-        int presetMinVal;
-        int presetMaxVal;
-        if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = -avgVal * size / ((lowContrast + highContrast) / (minMaxLimits.isSelected() ? 2 : 5));
-            presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
-        } else {
-            presetMinVal = minVal <= MIN_VALUE ? -avgVal : minVal;
+        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 300);
+
+        // Preset minimum value
+        if (applyLimits.isSelected()) {
+            int minLimit = isLowValues ? -2500 : -50000;
+            if (Epoch.isSubtracted(epoch) || minVal < minLimit) {
+                minVal = minLimit;
+            }
         }
-        presetMaxVal = avgVal * size;
+        int presetMinVal;
+        if (Epoch.isSubtracted(epoch)) {
+            presetMinVal = isLowValues ? -avgVal * 5 : -avgVal / 2;
+        } else {
+            presetMinVal = minVal < -5000 ? -avgVal : minVal;
+        }
+        presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
+
+        // Preset maximum value
+        if (applyLimits.isSelected()) {
+            int maxLimit = isLowValues ? 2500 : 50000;
+            if (maxVal > maxLimit) {
+                maxVal = maxLimit;
+            }
+        }
+        int presetMaxVal;
+        if (maxVal < 500) {
+            presetMaxVal = maxVal = 500;
+        } else {
+            if (Epoch.isSubtracted(epoch)) {
+                presetMaxVal = avgVal * (isLowValues ? 100 : 5);
+            } else {
+                presetMaxVal = avgVal * 100;
+            }
+        }
         presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
 
+        // Set minimum slider values
         minValueSlider.setMinimum(minVal);
         minValueSlider.setMaximum(maxVal);
         minValueSlider.setValue(presetMinVal);
 
+        // Set maximum slider values
         maxValueSlider.setMinimum(minVal);
         maxValueSlider.setMaximum(maxVal);
         maxValueSlider.setValue(presetMaxVal);
 
+        // Set minimum & maximum values
         minValue = presetMinVal;
         maxValue = presetMaxVal;
     }
 
-    private void displayCatalogSearchResults(double targetRa, double targetDec) {
+    private boolean openNewCatalogSearch(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         timer.stop();
@@ -2629,9 +2703,11 @@ public class ImageViewerTab {
         catalogQueryTab.getSearchButton().getActionListeners()[0].actionPerformed(null);
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
+
+        return true;
     }
 
-    private void displayRecenteredWiseImages(double targetRa, double targetDec) {
+    private boolean openNewImageViewer(double targetRa, double targetDec) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         timer.stop();
@@ -2646,39 +2722,23 @@ public class ImageViewerTab {
 
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-        imageViewerTab.getSizeField().setText("100");
+        imageViewerTab.getSizeField().setText(differentSizeField.getText());
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
-        //imageViewerTab.getEpochs().setSelectedItem(epoch);
         imageViewerTab.getZoomSlider().setValue(ZOOM);
         imageViewerTab.setZoom(ZOOM);
         imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
-        imageViewerTab.createFlipbook();
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
+
+        return true;
     }
 
-    private void displayZoomedPs1Image(double targetRa, double targetDec, int size) {
-        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        BufferedImage ps1ImageZoomed = fetchPs1Image(targetRa, targetDec, size / SIZE_FACTOR, 256);
-        if (ps1ImageZoomed != null) {
-            JFrame imageFrame = new JFrame();
-            imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(new JLabel(new ImageIcon(ps1ImageZoomed)));
-            imageFrame.setSize(350, 350);
-            imageFrame.setAlwaysOnTop(true);
-            imageFrame.setResizable(false);
-            imageFrame.setVisible(true);
-        }
-        baseFrame.setCursor(Cursor.getDefaultCursor());
-    }
-
-    private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size, int resolution) {
+    private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size) {
         try {
             List<String> fileNames = new ArrayList<>();
             String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=giy&sep=comma", targetRa, targetDec);
-            String response = readResponse(establishHttpConnection(imageUrl));
+            String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
                 int j = 0;
@@ -2693,7 +2753,7 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&asinh=true&autoscale=98.0&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), resolution);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             return ImageIO.read(stream);
@@ -2714,137 +2774,51 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayAtlasImages(double targetRa, double targetDec, int fieldOfView) {
+    private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            // Fetch coadd id for each WISE band
-            SortedMap<Integer, String> coaddInfos = new TreeMap<>();
-            String imageUrl = String.format("https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd?POS=%f,%f&ct=csv&mcen", targetRa, targetDec);
-            String response = readResponse(establishHttpConnection(imageUrl));
-            try (Scanner scanner = new Scanner(response)) {
-                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-                int band = 0;
-                int coadd_id = 0;
-                for (int i = 0; i < columnNames.length; i++) {
-                    if (columnNames[i].equals("band")) {
-                        band = i;
-                    }
-                    if (columnNames[i].equals("coadd_id")) {
-                        coadd_id = i;
-                    }
-                }
-                while (scanner.hasNextLine()) {
-                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                    coaddInfos.put(new Integer(columnValues[band]), columnValues[coadd_id]);
-                }
+            JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss1_blue"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss1_red"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss2ukstu_blue"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss2ukstu_red"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "poss2ukstu_ir"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "dss2IR-dss1Red-dss1Blue"));
             }
 
-            // Fetch cutout for each WISE band
-            int length = fieldOfView;
-            SortedMap<Integer, Fits> fitsFiles = new TreeMap<>();
-            for (Map.Entry<Integer, String> entry : coaddInfos.entrySet()) {
-                int band = entry.getKey();
-                String coadd_id = entry.getValue();
-                String url = String.format("https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/%s/%s/%s/%s-w%d-int-3.fits?center=%f,%f&size=%darcsec", coadd_id.substring(0, 2), coadd_id.substring(0, 4), coadd_id, coadd_id, band, targetRa, targetDec, fieldOfView);
-                HttpURLConnection connection = establishHttpConnection(url);
-                Fits fits = new Fits(connection.getInputStream());
-                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-                Header header = hdu.getHeader();
-                length = (int) round(header.getDoubleValue("NAXIS1"));
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                NumberTriplet minMaxValues = getMinMaxValues(values);
-                float minVal = (float) minMaxValues.getX();
-                float maxVal = (float) minMaxValues.getY();
-                float[][] processedValues = new float[length][length];
-                for (int i = 0; i < length; i++) {
-                    for (int j = 0; j < length; j++) {
-                        try {
-                            processedValues[i][j] = normalize(values[i][j], minVal, maxVal);
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                Fits result = new Fits();
-                result.addHDU(FitsFactory.hduFactory(processedValues));
-                fitsFiles.put(band, result);
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
             }
 
-            // Produce grayscale RGB image for each WISE band
-            List<BufferedImage> atlasImages = new ArrayList<>();
-            for (Map.Entry<Integer, Fits> entry : fitsFiles.entrySet()) {
-                Fits fits = entry.getValue();
-                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = image.createGraphics();
-                for (int i = 0; i < length; i++) {
-                    for (int j = 0; j < length; j++) {
-                        try {
-                            float value = 1 - values[i][j];
-                            graphics.setColor(new Color(value, value, value));
-                            graphics.fillRect(j, i, 1, 1);
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                atlasImages.add(image);
-            }
-
-            // Produce colored RGB image for each WISE band
-            Fits fits = fitsFiles.get(1);
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-            fits = fitsFiles.get(2);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-            fits = fitsFiles.get(4);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values4 = (float[][]) imageData.getData();
-            BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < length; i++) {
-                for (int j = 0; j < length; j++) {
-                    try {
-                        float w1 = values1[i][j];
-                        float w2 = values2[i][j];
-                        float w4 = values4[i][j];
-                        graphics.setColor(new Color(w4, w2, w1));
-                        graphics.fillRect(j, i, 1, 1);
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
-                }
-            }
-            atlasImages.add(image);
-
-            // Display Atlas images
-            JPanel atlasPanel = new JPanel(new GridLayout(1, 5));
-            int band = 1;
-            for (BufferedImage atlasImage : atlasImages) {
-                String imageHeader = band < 5 ? "W" + band++ : "W4-W2-W1";
-                JPanel panel = new JPanel();
-                panel.setBorder(createEtchedBorder(imageHeader));
-                atlasImage = zoom(flip(atlasImage), 200);
-                double x = atlasImage.getWidth() / 2;
-                double y = atlasImage.getHeight() / 2;
-                Graphics g = atlasImage.getGraphics();
-                Circle circle = new Circle(x, y, 10, Color.MAGENTA);
-                circle.draw(g);
-                panel.add(new JLabel(new ImageIcon(atlasImage)));
-                atlasPanel.add(panel);
-            }
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + fieldOfView + "\"");
-            imageFrame.getContentPane().add(atlasPanel);
-            imageFrame.setSize(1100, 260);
+            imageFrame.setTitle("DSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2852,21 +2826,51 @@ public class ImageViewerTab {
         }
     }
 
-    private void fetchSimbadCatalogEntries() {
+    private void displaySdssImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            if (simbadEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new SimbadCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                simbadEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                simbadEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
+            JPanel bandPanel = new JPanel(new GridLayout(1, 5));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "u"));
             }
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "g"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "r"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "i"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "z"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "z-g-u"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("SDSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2874,21 +2878,43 @@ public class ImageViewerTab {
         }
     }
 
-    private void fetchGaiaDR2CatalogEntries() {
+    private void display2MassImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            if (gaiaDR2Entries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new GaiaDR2CatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                gaiaDR2Entries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                gaiaDR2Entries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
+            JPanel bandPanel = new JPanel(new GridLayout(1, 4));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "J"));
             }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "H"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "K"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "K-H-J"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2896,21 +2922,47 @@ public class ImageViewerTab {
         }
     }
 
-    private void fetchAllWiseCatalogEntries() {
+    private void displayAllwiseImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            if (allWiseEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new AllWiseCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                allWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                allWiseEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
+            JPanel bandPanel = new JPanel(new GridLayout(1, 4));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "W1"));
             }
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "W2"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "W3"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "W4"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "W4-W2-W1"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2918,21 +2970,34 @@ public class ImageViewerTab {
         }
     }
 
-    private void fetchCatWiseCatalogEntries() {
+    private void displayPs1Images(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            if (catWiseEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new CatWiseCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                catWiseEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                catWiseEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
+            // Fetch file names for Pan-STARRS filters
+            SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+            if (imageInfos.isEmpty()) {
+                return;
             }
+
+            // Fetch images for Pan-STARRS filters
+            JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size), "r"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size), "i"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size), "z"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(1320, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -2940,138 +3005,106 @@ public class ImageViewerTab {
         }
     }
 
-    private void fetchCatWiseRejectedEntries() {
+    private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
+        JPanel panel = new JPanel();
+        panel.setBorder(createEtchedBorder(imageHeader));
+        image = zoom(image, 200);
+        double x = image.getWidth() / 2;
+        double y = image.getHeight() / 2;
+        Graphics g = image.getGraphics();
+        Circle circle = new Circle(x, y, 10, Color.MAGENTA);
+        circle.draw(g);
+        panel.add(new JLabel(new ImageIcon(image)));
+        return panel;
+    }
+
+    private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {
         try {
-            if (catWiseRejectedEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new CatWiseRejectedEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                catWiseRejectedEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                catWiseRejectedEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchPanStarrsCatalogEntries() {
-        try {
-            if (panStarrsEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new PanStarrsCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                panStarrsEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                panStarrsEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchSdssCatalogEntries() {
-        try {
-            if (sdssEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new SDSSCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                sdssEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                sdssEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchSSOCatalogEntries() {
-        try {
-            if (ssoEntries == null) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                CatalogEntry catalogQuery = new SSOCatalogEntry();
-                catalogQuery.setRa(targetRa);
-                catalogQuery.setDec(targetDec);
-                catalogQuery.setSearchRadius(getFovDiagonal() / 2);
-                ssoEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
-                ssoEntries.forEach(catalogEntry -> {
-                    catalogEntry.setTargetRa(targetRa);
-                    catalogEntry.setTargetDec(targetDec);
-                    catalogEntry.loadCatalogElements();
-                });
-            }
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void fetchGenericCatalogEntries(CustomOverlay customOverlay) {
-        List<CatalogEntry> catalogEntries = customOverlay.getCatalogEntries();
-        if (catalogEntries == null) {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            catalogEntries = new ArrayList<>();
-            try (Scanner scanner = new Scanner(customOverlay.getFile())) {
-                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-                StringBuilder errors = new StringBuilder();
-                int numberOfColumns = columnNames.length;
-                int lastColumnIndex = numberOfColumns - 1;
-                int raColumnIndex = customOverlay.getRaColumnIndex();
-                int decColumnIndex = customOverlay.getDecColumnIndex();
-                if (raColumnIndex > lastColumnIndex) {
-                    errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
-                }
-                if (decColumnIndex > lastColumnIndex) {
-                    errors.append("Dec position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
-                }
-                if (errors.length() > 0) {
-                    showErrorDialog(baseFrame, errors.toString());
-                    return;
-                }
-                while (scanner.hasNextLine()) {
-                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
-                    GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
-                    catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
-                    catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
-                    double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
-                    if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
-                            && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
-                        catalogEntry.setTargetRa(targetRa);
-                        catalogEntry.setTargetDec(targetDec);
-                        catalogEntry.setCatalogName(customOverlay.getName());
-                        catalogEntry.loadCatalogElements();
-                        catalogEntries.add(catalogEntry);
-                    }
-                }
-            } catch (Exception ex) {
-                showExceptionDialog(baseFrame, ex);
-            } finally {
-                customOverlay.setCatalogEntries(catalogEntries);
-                baseFrame.setCursor(Cursor.getDefaultCursor());
-            }
+            catalogQuery.setRa(targetRa);
+            catalogQuery.setDec(targetDec);
+            catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+            catalogEntries.forEach(catalogEntry -> {
+                catalogEntry.setTargetRa(targetRa);
+                catalogEntry.setTargetDec(targetDec);
+                catalogEntry.loadCatalogElements();
+            });
+            return catalogEntries;
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
         }
+        return null;
+    }
+
+    private List<CatalogEntry> fetchTpmCatalogEntries(ProperMotionQuery catalogQuery) {
+        try {
+            baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            properMotionField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            catalogQuery.setRa(targetRa);
+            catalogQuery.setDec(targetDec);
+            catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+            catalogQuery.setTpm(toDouble(properMotionField.getText()));
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
+            catalogEntries.forEach(catalogEntry -> {
+                catalogEntry.setTargetRa(targetRa);
+                catalogEntry.setTargetDec(targetDec);
+                catalogEntry.loadCatalogElements();
+            });
+            return catalogEntries;
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+            properMotionField.setCursor(Cursor.getDefaultCursor());
+        }
+        return null;
+    }
+
+    private Object fetchGenericCatalogEntries(CustomOverlay customOverlay) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        List<CatalogEntry> catalogEntries = new ArrayList<>();
+        try (Scanner scanner = new Scanner(customOverlay.getFile())) {
+            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+            StringBuilder errors = new StringBuilder();
+            int numberOfColumns = columnNames.length;
+            int lastColumnIndex = numberOfColumns - 1;
+            int raColumnIndex = customOverlay.getRaColumnIndex();
+            int decColumnIndex = customOverlay.getDecColumnIndex();
+            if (raColumnIndex > lastColumnIndex) {
+                errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
+            }
+            if (decColumnIndex > lastColumnIndex) {
+                errors.append("Dec position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
+            }
+            if (errors.length() > 0) {
+                showErrorDialog(baseFrame, errors.toString());
+                return null;
+            }
+            while (scanner.hasNextLine()) {
+                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
+                catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
+                catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
+                double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
+                if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
+                        && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.setCatalogName(customOverlay.getName());
+                    catalogEntry.loadCatalogElements();
+                    catalogEntries.add(catalogEntry);
+                }
+            }
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            customOverlay.setCatalogEntries(catalogEntries);
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+        return null;
     }
 
     private void drawSectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
@@ -3193,7 +3226,7 @@ public class ImageViewerTab {
                 toDraw.draw(graphics);
             }
             if (latentOverlay.isSelected() && (ab_flags.contains("P") || cc_flags.contains("P"))) {
-                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
+                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker(), 2);
                 toDraw.draw(graphics);
             }
             if (spikeOverlay.isSelected() && (ab_flags.contains("D") || cc_flags.contains("D"))) {
@@ -3213,54 +3246,44 @@ public class ImageViewerTab {
             double pmRa = catalogEntry.getPmra();
             double pmDec = catalogEntry.getPmdec();
 
-            double tpm = calculateTotalProperMotion(pmRa, pmDec);
-            double pmLimit = toDouble(properMotionField.getText());
-
-            if (tpm > pmLimit) {
-                double ra = 0;
-                double dec = 0;
-                int numberOfYears = 0;
-                if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                    ra = catalogEntry.getRa();
-                    dec = catalogEntry.getDec();
-                    numberOfYears = 5;
-                }
-                if (catalogEntry instanceof CatWiseCatalogEntry) {
-                    ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
-                    dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
-                    numberOfYears = 4;
-                }
-
-                ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
-                dec = dec - numberOfYears * pmDec / DEG_MAS;
-
-                NumberPair pixelCoords = getPixelCoordinates(ra, dec);
-                double x = pixelCoords.getX();
-                double y = pixelCoords.getY();
-
-                numberOfYears = (epochCount / 2) + 3; // 3 -> 2011, 2012 & 2013
-                double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
-                double newDec = dec + numberOfYears * pmDec / DEG_MAS;
-
-                pixelCoords = getPixelCoordinates(newRa, newDec);
-                double newX = pixelCoords.getX();
-                double newY = pixelCoords.getY();
-
-                Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
-                arrow.draw(graphics);
+            double ra = 0;
+            double dec = 0;
+            int numberOfYears = 0;
+            if (catalogEntry instanceof GaiaCatalogEntry) {
+                ra = catalogEntry.getRa();
+                dec = catalogEntry.getDec();
+                numberOfYears = 5;
             }
+            if (catalogEntry instanceof CatWiseCatalogEntry) {
+                ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
+                dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
+                numberOfYears = 4;
+            }
+
+            ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
+            dec = dec - numberOfYears * pmDec / DEG_MAS;
+
+            NumberPair pixelCoords = getPixelCoordinates(ra, dec);
+            double x = pixelCoords.getX();
+            double y = pixelCoords.getY();
+
+            numberOfYears = (selectedEpochs) + 3; // 3 -> 2011, 2012 & 2013
+            double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
+            double newDec = dec + numberOfYears * pmDec / DEG_MAS;
+
+            pixelCoords = getPixelCoordinates(newRa, newDec);
+            double newX = pixelCoords.getX();
+            double newY = pixelCoords.getY();
+
+            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color, 2);
+            arrow.draw(graphics);
         });
     }
 
     private void showPMInfo(List<CatalogEntry> catalogEntries, int x, int y, Color color) {
         catalogEntries.forEach(catalogEntry -> {
-            double pmRa = catalogEntry.getPmra();
-            double pmDec = catalogEntry.getPmdec();
-            double tpm = calculateTotalProperMotion(pmRa, pmDec);
-            double pmLimit = toDouble(properMotionField.getText());
             double radius = getOverlaySize() / 2;
-            if (tpm > pmLimit
-                    && catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
+            if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
                 displayCatalogPanel(catalogEntry, color);
             }
@@ -3282,7 +3305,7 @@ public class ImageViewerTab {
         int maxRows = simpleLayout ? 30 : 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (computed values are shown in green)", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
@@ -3319,8 +3342,8 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
-                GaiaDR2CatalogEntry entry = (GaiaDR2CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof GaiaCatalogEntry) {
+                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                     messagePanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
@@ -3366,27 +3389,17 @@ public class ImageViewerTab {
 
     private JScrollPane createMainSequenceSpectralTypePanel(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<SpectralTypeLookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
-            results.entrySet().forEach(entry -> {
-                SpectralTypeLookupResult key = entry.getKey();
-                Set<ColorValue> values = entry.getValue();
-                StringBuilder matchedColors = new StringBuilder();
-                Iterator<ColorValue> colorIterator = values.iterator();
-                while (colorIterator.hasNext()) {
-                    ColorValue colorValue = colorIterator.next();
-                    matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                    if (colorIterator.hasNext()) {
-                        matchedColors.append(", ");
-                    }
-                }
-                String spectralType = key.getSpt() + "," + key.getTeff() + "," + roundTo3Dec(key.getRsun()) + "," + roundTo3Dec(key.getMsun())
-                        + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            results.forEach(entry -> {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
+                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,sol rad,sol mass,matched colors,nearest color,gap to nearest color";
+            String titles = "spt,teff,radius (Rsun),mass (Msun),matched colors,nearest color,gap to nearest color";
             String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
@@ -3398,8 +3411,14 @@ public class ImageViewerTab {
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            spectralTypeTable.setCellSelectionEnabled(false);
-            resizeColumnWidth(spectralTypeTable);
+            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);
+            columnModel.getColumn(1).setPreferredWidth(50);
+            columnModel.getColumn(2).setPreferredWidth(55);
+            columnModel.getColumn(3).setPreferredWidth(50);
+            columnModel.getColumn(4).setPreferredWidth(100);
+            columnModel.getColumn(5).setPreferredWidth(100);
+            columnModel.getColumn(6).setPreferredWidth(100);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
@@ -3416,22 +3435,12 @@ public class ImageViewerTab {
 
     private JScrollPane createBrownDwarfsSpectralTypePanel(CatalogEntry catalogEntry) {
         try {
-            Map<SpectralTypeLookupResult, Set<ColorValue>> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<SpectralTypeLookupResult> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
-            results.entrySet().forEach(entry -> {
-                SpectralTypeLookupResult key = entry.getKey();
-                Set<ColorValue> values = entry.getValue();
-                StringBuilder matchedColors = new StringBuilder();
-                Iterator<ColorValue> colorIterator = values.iterator();
-                while (colorIterator.hasNext()) {
-                    ColorValue colorValue = colorIterator.next();
-                    matchedColors.append(colorValue.getColor().val).append("=").append(roundTo3DecNZ(colorValue.getValue()));
-                    if (colorIterator.hasNext()) {
-                        matchedColors.append(", ");
-                    }
-                }
-                String spectralType = key.getSpt() + "," + matchedColors + "," + roundTo3Dec(key.getNearest()) + "," + roundTo3DecLZ(key.getGap());
+            results.forEach(entry -> {
+                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
                 spectralTypes.add(spectralType.split(",", 4));
             });
 
@@ -3447,8 +3456,11 @@ public class ImageViewerTab {
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            spectralTypeTable.setCellSelectionEnabled(false);
-            resizeColumnWidth(spectralTypeTable);
+            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);
+            columnModel.getColumn(1).setPreferredWidth(100);
+            columnModel.getColumn(2).setPreferredWidth(100);
+            columnModel.getColumn(3).setPreferredWidth(100);
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
@@ -3463,76 +3475,16 @@ public class ImageViewerTab {
         }
     }
 
-    /*
-    private void displaySmallBodyPanel(double targetRa, double targetDec, double minObsEpoch, double maxObsEpoch) {
-        JPanel detailPanel = new JPanel(new GridLayout(10, 2));
-        detailPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-        StringPair sexagesimalCoords = convertToSexagesimalCoords(targetRa, targetDec);
-        String objectRa = sexagesimalCoords.getS1().replace(" ", ":").split("\\.")[0];
-        String objectDec = sexagesimalCoords.getS2().split("\\.")[0];
-
-        detailPanel.add(new JLabel("Min observation time (*): ", JLabel.RIGHT));
-        detailPanel.add(new JTextField(convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch))).format(DATE_TIME_FORMATTER) + " (" + minObsEpoch + ")"));
-
-        detailPanel.add(new JLabel("Max observation time (*): ", JLabel.RIGHT));
-        detailPanel.add(new JTextField(convertMJDToDateTime(new BigDecimal(Double.toString(maxObsEpoch))).format(DATE_TIME_FORMATTER) + " (" + maxObsEpoch + ")"));
-
-        detailPanel.add(new JLabel("Some observatories in the North: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField("T05, T08, F51, F52, 675, 703, Wise"));
-
-        detailPanel.add(new JLabel("Some observatories in the South: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField("413, Antofagasta, Arica, Johannesburg, Pretoria"));
-
-        detailPanel.add(new JLabel("Center of the search region in RA: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField(objectRa + " (" + roundTo7DecNZ(targetRa) + ")"));
-
-        detailPanel.add(new JLabel("Center of the search region in dec: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField(objectDec + " (" + roundTo7DecNZ(targetDec) + ")"));
-
-        detailPanel.add(new JLabel("Width of search region in RA: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField("w0:05"));
-
-        detailPanel.add(new JLabel("Width of search region in dec: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField("w0 05"));
-
-        detailPanel.add(new JLabel("Visual magnitude limit: ", JLabel.RIGHT));
-        detailPanel.add(new JTextField("25"));
-
-        detailPanel.add(new JLabel("Link: ", JLabel.RIGHT));
-        detailPanel.add(createHyperlink("JPL SB Identification", "https://ssd.jpl.nasa.gov/sbfind.cgi"));
-
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.add(detailPanel);
-
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        infoPanel.setBorder(BorderFactory.createEtchedBorder());
-        container.add(infoPanel);
-
-        infoPanel.add(new JLabel("(*) These are the observation times of the first and last single exposures that went into the coadd the"));
-        infoPanel.add(new JLabel("small body is located in. You have to find the single exposure between these 2 dates in which the object"));
-        infoPanel.add(new JLabel("shows up. Use the"));
-        infoPanel.add(createHyperlink("WISE image service", "https://irsa.ipac.caltech.edu/applications/wise"));
-        infoPanel.add(new JLabel("to do so."));
-        infoPanel.add(new JLabel("Enter the observation time of that single exposure into JPL's SB Identification tool."));
-
-        JFrame smallBodyFrame = new JFrame();
-        smallBodyFrame.setIconImage(getToolBoxImage());
-        smallBodyFrame.setTitle("Data to enter into JPL's Small Body Identification tool");
-        smallBodyFrame.add(container);
-        smallBodyFrame.setSize(600, 400);
-        smallBodyFrame.setAlwaysOnTop(true);
-        smallBodyFrame.setResizable(false);
-        smallBodyFrame.setVisible(true);
-    }*/
-    //
     private double getFovDiagonal() {
         return size * SIZE_FACTOR * sqrt(2);
     }
 
     private double getOverlaySize() {
         return 5 + zoom / 100;
+    }
+
+    public JCheckBox getSmoothImage() {
+        return smoothImage;
     }
 
     public JComboBox getWiseBands() {
@@ -3559,8 +3511,20 @@ public class ImageViewerTab {
         return zoomSlider;
     }
 
+    public JSlider getEpochSlider() {
+        return epochSlider;
+    }
+
+    public JLabel getEpochLabel() {
+        return epochLabel;
+    }
+
     public Timer getTimer() {
         return timer;
+    }
+
+    public FlipbookComponent[] getFlipbook() {
+        return flipbook;
     }
 
     public ImageViewerTab getImageViewer() {
@@ -3577,6 +3541,11 @@ public class ImageViewerTab {
 
     public void setQuadrantCount(int quadrantCount) {
         this.quadrantCount = quadrantCount;
+    }
+
+    public void setNumberOfEpochs(int numberOfEpochs) {
+        this.numberOfEpochs = numberOfEpochs;
+        this.selectedEpochs = numberOfEpochs / 2;
     }
 
     public void setWiseBand(WiseBand wiseBand) {
@@ -3597,6 +3566,14 @@ public class ImageViewerTab {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public void setPanstarrsImages(boolean panstarrsImages) {
+        this.panstarrsImages = panstarrsImages;
+    }
+
+    public void setSdssImages(boolean sdssImages) {
+        this.sdssImages = sdssImages;
     }
 
 }

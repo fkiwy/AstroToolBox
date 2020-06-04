@@ -120,14 +120,43 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
+        double toleranceValue = 0.2;
         double avgColorValue = (minColorValue + maxColorValue) / 2;
-        if (colorValue >= minColorValue && colorValue < avgColorValue) {
-            return new SpectralTypeLookupResult(minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minColorValue, abs(colorValue - minColorValue));
-        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue) {
-            return new SpectralTypeLookupResult(maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxColorValue, abs(colorValue - maxColorValue));
+        if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + toleranceValue) {
+            return new SpectralTypeLookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
+        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - toleranceValue) {
+            return new SpectralTypeLookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
         } else {
             return null;
         }
+    }
+
+    /**
+     * Look up temperature
+     *
+     * @param colorKey
+     * @param colorValue
+     * @param teff
+     * @param logG
+     * @param msun
+     * @param minEntry
+     * @param maxEntry
+     * @return the temperature
+     */
+    public static SpectralTypeLookupResult evaluateTemperature(Color colorKey, double colorValue, double teff, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
+        double teffError = 1000;
+        if (teff != 0 && (teff < minEntry.getTeff() - teffError || teff > maxEntry.getTeff() + teffError)) {
+            return null;
+        }
+        double logGError = 0.5;
+        if (logG != 0 && (logG < minEntry.getLogG() - logGError || logG > maxEntry.getLogG() + logGError)) {
+            return null;
+        }
+        double msunError = 0.2;
+        if (msun != 0 && (msun < minEntry.getMsun() - msunError || msun > maxEntry.getMsun() + msunError)) {
+            return null;
+        }
+        return evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
     }
 
     /**

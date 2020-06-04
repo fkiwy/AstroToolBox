@@ -20,6 +20,8 @@ public class CatalogElement {
 
     private boolean faulty;
 
+    private String toolTip;
+
     public CatalogElement() {
     }
 
@@ -28,6 +30,14 @@ public class CatalogElement {
         this.value = value;
         this.alignment = alignment;
         this.comparator = comparator;
+    }
+
+    public CatalogElement(String name, String value, Alignment alignment, Comparator<String> comparator, String toolTip) {
+        this.name = name;
+        this.value = value;
+        this.alignment = alignment;
+        this.comparator = comparator;
+        this.toolTip = toolTip;
     }
 
     public CatalogElement(String name, String value, Alignment alignment, Comparator<String> comparator, boolean onFocus) {
@@ -59,12 +69,12 @@ public class CatalogElement {
 
     @Override
     public String toString() {
-        return "CatalogElement{" + "name=" + name + ", value=" + value + ", alignment=" + alignment + ", comparator=" + comparator + ", onFocus=" + onFocus + ", computed=" + computed + ", faulty=" + faulty + '}';
+        return "CatalogElement{" + "name=" + name + ", value=" + value + ", alignment=" + alignment + ", comparator=" + comparator + ", onFocus=" + onFocus + ", computed=" + computed + ", faulty=" + faulty + ", toolTip=" + toolTip + '}';
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
+        int hash = 7;
         hash = 89 * hash + Objects.hashCode(this.name);
         hash = 89 * hash + Objects.hashCode(this.value);
         hash = 89 * hash + Objects.hashCode(this.alignment);
@@ -72,6 +82,7 @@ public class CatalogElement {
         hash = 89 * hash + (this.onFocus ? 1 : 0);
         hash = 89 * hash + (this.computed ? 1 : 0);
         hash = 89 * hash + (this.faulty ? 1 : 0);
+        hash = 89 * hash + Objects.hashCode(this.toolTip);
         return hash;
     }
 
@@ -102,13 +113,13 @@ public class CatalogElement {
         if (!Objects.equals(this.value, other.value)) {
             return false;
         }
+        if (!Objects.equals(this.toolTip, other.toolTip)) {
+            return false;
+        }
         if (this.alignment != other.alignment) {
             return false;
         }
-        if (!Objects.equals(this.comparator, other.comparator)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.comparator, other.comparator);
     }
 
     public String getName() {
@@ -137,6 +148,10 @@ public class CatalogElement {
 
     public boolean isFaulty() {
         return faulty;
+    }
+
+    public String getToolTip() {
+        return toolTip;
     }
 
 }

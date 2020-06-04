@@ -1,5 +1,6 @@
 package astro.tool.box.service;
 
+import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
@@ -25,7 +26,7 @@ public class AllWiseCatalogTest {
         assertEquals(200, connection.getResponseCode());
         assertEquals("OK", connection.getResponseMessage());
 
-        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection)));
+        BufferedReader reader = new BufferedReader(new StringReader(readResponse(connection, AllWiseCatalogEntry.CATALOG_NAME)));
         List<String[]> results = reader.lines().map(line -> {
             System.out.println(line);
             return line.split(SPLIT_CHAR);

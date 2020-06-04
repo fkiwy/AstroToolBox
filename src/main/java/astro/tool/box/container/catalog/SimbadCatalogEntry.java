@@ -19,6 +19,8 @@ import java.util.Objects;
 
 public class SimbadCatalogEntry implements CatalogEntry {
 
+    public static final String CATALOG_NAME = "SIMBAD";
+
     // Unique source identifier
     private String sourceId;
 
@@ -260,7 +262,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogName() {
-        return "SIMBAD";
+        return CATALOG_NAME;
     }
 
     @Override
@@ -304,6 +306,11 @@ public class SimbadCatalogEntry implements CatalogEntry {
         colors.put(Color.i_z, get_i_z());
         colors.put(Color.M_G, getAbsoluteGmag());
         return colors;
+    }
+
+    @Override
+    public String getMagnitudes() {
+        return String.format("U=%s; B=%s; V=%s; R=%s; I=%s; G=%s; J=%s; H=%s; K=%s; u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(Umag), roundTo3DecNZ(Bmag), roundTo3DecNZ(Vmag), roundTo3DecNZ(Rmag), roundTo3DecNZ(Imag), roundTo3DecNZ(Gmag), roundTo3DecNZ(Jmag), roundTo3DecNZ(Hmag), roundTo3DecNZ(Kmag), roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
     }
 
     @Override

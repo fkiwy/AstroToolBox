@@ -4,10 +4,12 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
+import astro.tool.box.exception.ADQLException;
 import astro.tool.box.util.CSVParser;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -57,12 +59,14 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
     private static final String IRSA_TABLES = "IRSA tables";
+    private static final String QUERY_SERVICE = "ADQL query";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -118,7 +122,7 @@ public class AdqlQueryTab {
                     String query = textEditor.getText();
                     if (query.isEmpty() || query.contains("Find all comovers")) {
                         CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                        if (selectedEntry != null && selectedEntry instanceof GaiaDR2CatalogEntry) {
+                        if (selectedEntry != null && selectedEntry instanceof GaiaCatalogEntry) {
                             String comoverQuery = createComoverQuery();
                             comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
                             comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
@@ -132,7 +136,7 @@ public class AdqlQueryTab {
 
             JScrollPane scrollEditor = new JScrollPane(textEditor);
             scrollEditor.setPreferredSize(new Dimension(scrollEditor.getWidth(), 250));
-            scrollEditor.setBorder(createEtchedBorder("ADQL query"));
+            scrollEditor.setBorder(createEtchedBorder(QUERY_SERVICE));
             centerPanel.add(scrollEditor);
 
             JFileChooser fileChooser = new JFileChooser();
@@ -216,22 +220,18 @@ public class AdqlQueryTab {
                     showErrorDialog(baseFrame, "No query to run!");
                     return;
                 }
-                runButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 jobStatus = JobStatus.QUEUED.toString();
                 statusField.setText(jobStatus);
                 statusField.setBackground(getStatusColor(jobStatus).val);
                 queryResults = null;
                 jobId = null;
-                String encodedQuery = omitQueryComments(query).replaceAll(LINE_SEP_TEXT_AREA, " ")
-                        .replaceAll(" +", "%20")
-                        .replaceAll("\\+", "%2B")
-                        .replaceAll(";", "");
+                String encodedQuery = encodeQuery(query);
+                String response;
+                // Validate query
                 try {
-                    String response;
-                    // Validate query
-                    try {
-                        response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)));
+                    response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
+                    if (!response.isEmpty()) {
                         isSyntaxChecked = true;
                         JSONObject obj = new JSONObject(response);
                         String validation = obj.getString("validation");
@@ -242,19 +242,23 @@ public class AdqlQueryTab {
                             initStatus();
                             return;
                         }
-                    } catch (Exception ex) {
                     }
-
-                    // Execute query
-                    startClock();
-                    response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)));
-                    String[] parts = response.split("<uws:jobId>");
-                    parts = parts[1].split("</uws:jobId>");
-                    jobId = parts[0];
-                } catch (IOException ex) {
+                } catch (IOException | JSONException ex) {
+                }
+                // Execute query
+                startClock();
+                try {
+                    runButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)), QUERY_SERVICE);
+                    if (!response.isEmpty()) {
+                        String[] parts = response.split("<uws:jobId>");
+                        parts = parts[1].split("</uws:jobId>");
+                        jobId = parts[0];
+                    }
+                } catch (IOException | ADQLException ex) {
                     stopClock();
                     initStatus();
-                    showExceptionDialog(baseFrame, ex);
+                    showQueryErrorMessage(getQueryErrorMessage());
                 } finally {
                     runButton.setCursor(Cursor.getDefaultCursor());
                 }
@@ -275,7 +279,7 @@ public class AdqlQueryTab {
                     return;
                 }
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)));
+                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.ERROR.toString())) {
@@ -312,7 +316,7 @@ public class AdqlQueryTab {
                 fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)));
+                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
 
@@ -321,7 +325,7 @@ public class AdqlQueryTab {
                     } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
-                        queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)));
+                        queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)), QUERY_SERVICE);
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
@@ -365,7 +369,7 @@ public class AdqlQueryTab {
                 String query = "SELECT * FROM TAP_SCHEMA.TABLES ORDER BY TABLE_INDEX";
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
-                    String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)));
+                    String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
                     catalogPanel = new JPanel(new GridLayout(1, 2));
                     centerPanel.add(catalogPanel);
 
@@ -480,7 +484,7 @@ public class AdqlQueryTab {
                     String query = "SELECT * FROM TAP_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "' ORDER BY COLUMN_INDEX";
                     String encodedQuery = query.replaceAll(" +", "%20");
                     try {
-                        String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)));
+                        String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
 
                         JPanel catalogColumnPanel = new JPanel();
                         catalogPanel.add(catalogColumnPanel);
@@ -549,21 +553,6 @@ public class AdqlQueryTab {
         addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.1 AND [PMRA] + ABS([PMRA]) * 0.1");
         addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.1 AND [PMDE] + ABS([PMDE]) * 0.1)");
         return query.toString();
-    }
-
-    private String omitQueryComments(String query) {
-        String[] lines = query.split(LINE_SEP_TEXT_AREA);
-        List<String> results = new ArrayList<>();
-        for (String line : lines) {
-            if (!line.startsWith("--")) {
-                results.add(line);
-            }
-        }
-        return String.join(LINE_SEP_TEXT_AREA, results);
-    }
-
-    private void addRow(StringBuilder query, String row) {
-        query.append(row).append(LINE_SEP_TEXT_AREA);
     }
 
     private String createSynchQueryUrl(String query) {
@@ -670,13 +659,12 @@ public class AdqlQueryTab {
     private String getQueryErrorMessage() {
         StringBuilder message = new StringBuilder();
         if (isSyntaxChecked) {
-            addRow(message, "There seems to be some kind of error not related to ADQL syntax.");
-            addRow(message, "Check the table and column names, they might be misspelled.");
-            addRow(message, "Use the 'Browse IRSA tables' button to do so.");
-            addRow(message, "If the error persists, please send a bug report including your query to " + HELP_EMAIL);
+            addRow(message, "There seems to be an error not related to ADQL syntax.");
+            addRow(message, "Check the table column names, they might be misspelled.");
         } else {
-            addRow(message, "Syntax check service not available. Error unknown!");
-            addRow(message, "Review the ADQL syntax and the table and column names.");
+            addRow(message, "The ADQL syntax checker is currently not available.");
+            addRow(message, "Therefore, the exact cause of the error can't be identified.");
+            addRow(message, "Review the ADQL syntax and check the table column names.");
         }
         return message.toString();
     }
