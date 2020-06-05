@@ -1680,7 +1680,6 @@ public class ImageViewerTab {
                     allEpochsW2Loaded = true;
                 }
             }
-
             reloadImages = false;
 
             Fits fits;
