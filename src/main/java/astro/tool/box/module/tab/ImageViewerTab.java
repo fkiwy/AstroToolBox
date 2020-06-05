@@ -483,7 +483,7 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel rawScaleLabel = new JLabel(String.format("Contrast preprocess: %d", rawContrast));
+            JLabel rawScaleLabel = new JLabel(String.format("Raw image contrast: %d", rawContrast));
             whitePanel.add(rawScaleLabel);
 
             rawScaleSlider = new JSlider(1, 10, RAW_CONTRAST);
@@ -491,7 +491,7 @@ public class ImageViewerTab {
             rawScaleSlider.setBackground(Color.WHITE);
             rawScaleSlider.addChangeListener((ChangeEvent e) -> {
                 rawContrast = rawScaleSlider.getValue();
-                rawScaleLabel.setText(String.format("Contrast preprocess: %d", rawContrast));
+                rawScaleLabel.setText(String.format("Raw image contrast: %d", rawContrast));
 
             });
 
