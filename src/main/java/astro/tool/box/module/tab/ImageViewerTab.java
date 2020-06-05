@@ -1625,7 +1625,6 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                //images.clear();
                 imagePanel.removeAll();
                 rightPanel.removeAll();
                 downloadLog = new JTextArea();
@@ -1668,13 +1667,13 @@ public class ImageViewerTab {
                 }
             }
             loadImages = false;
-            if (WiseBand.W1.equals(wiseBand)) {
+            if (WiseBand.W1.equals(wiseBand) || WiseBand.W1W2.equals(wiseBand)) {
                 bandW1Loaded = true;
                 if (!Epoch.isFirstLast(epoch)) {
                     allEpochsW1Loaded = true;
                 }
             }
-            if (WiseBand.W2.equals(wiseBand)) {
+            if (WiseBand.W2.equals(wiseBand) || WiseBand.W1W2.equals(wiseBand)) {
                 bandW2Loaded = true;
                 if (!Epoch.isFirstLast(epoch)) {
                     allEpochsW2Loaded = true;
