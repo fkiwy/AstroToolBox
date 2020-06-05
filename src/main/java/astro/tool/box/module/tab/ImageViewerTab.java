@@ -133,6 +133,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultCaret;
 import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
@@ -299,10 +300,14 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
-    private boolean bandChanded;
+    private boolean loadImages;
+    private boolean bandW1Loaded;
+    private boolean bandW2Loaded;
+    private boolean allEpochsW1Loaded;
+    private boolean allEpochsW2Loaded;
+    private boolean moreImagesAvailable;
+    private boolean oneMoreImageAvailable;
     private boolean reloadImages;
-    private boolean firstLastLoaded;
-    private boolean allEpochsLoaded;
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
@@ -389,8 +394,26 @@ public class ImageViewerTab {
             controlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
+                WiseBand previousBand = wiseBand;
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                bandChanded = true;
+                if (WiseBand.W1.equals(previousBand) && !WiseBand.W1.equals(wiseBand)) {
+                    if (bandW2Loaded) {
+                        if (!Epoch.isFirstLast(epoch) && !allEpochsW2Loaded) {
+                            loadImages = true;
+                        }
+                    } else {
+                        loadImages = true;
+                    }
+                }
+                if (WiseBand.W2.equals(previousBand) && !WiseBand.W2.equals(wiseBand)) {
+                    if (bandW1Loaded) {
+                        if (!Epoch.isFirstLast(epoch) && !allEpochsW1Loaded) {
+                            loadImages = true;
+                        }
+                    } else {
+                        loadImages = true;
+                    }
+                }
                 createFlipbook();
             });
 
@@ -406,6 +429,9 @@ public class ImageViewerTab {
                 if (Epoch.isFirstLast(previousEpoch) && !Epoch.isFirstLast(epoch)) {
                     epochCountW1 = 0;
                     epochCountW2 = 0;
+                    if (!allEpochsW1Loaded || !allEpochsW2Loaded) {
+                        loadImages = true;
+                    }
                 }
                 createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
@@ -457,20 +483,16 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel rawScaleLabel = new JLabel(String.format("Contrast subtracted mode: %d", rawContrast));
+            JLabel rawScaleLabel = new JLabel(String.format("Contrast preprocess: %d", rawContrast));
             whitePanel.add(rawScaleLabel);
 
             rawScaleSlider = new JSlider(1, 10, RAW_CONTRAST);
             controlPanel.add(rawScaleSlider);
             rawScaleSlider.setBackground(Color.WHITE);
             rawScaleSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 rawContrast = rawScaleSlider.getValue();
-                rawScaleLabel.setText(String.format("Contrast subtracted mode: %d", rawContrast));
-                createFlipbook();
+                rawScaleLabel.setText(String.format("Contrast preprocess: %d", rawContrast));
+
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -1500,8 +1522,13 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
-                firstLastLoaded = false;
-                allEpochsLoaded = false;
+                loadImages = true;
+                bandW1Loaded = false;
+                bandW2Loaded = false;
+                allEpochsW1Loaded = false;
+                allEpochsW2Loaded = false;
+                moreImagesAvailable = false;
+                oneMoreImageAvailable = false;
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
                 images = new HashMap<>();
@@ -1559,15 +1586,6 @@ public class ImageViewerTab {
                 if (!saveContrast.isSelected()) {
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 }
-            }
-            previousSize = size;
-            previousRa = targetRa;
-            previousDec = targetDec;
-            imageNumber = 0;
-
-            if ((Epoch.isFirstLast(epoch) && !firstLastLoaded) || (!Epoch.isFirstLast(epoch) && !allEpochsLoaded) || bandChanded || reloadImages) {
-                boolean moreImagesAvailable = false;
-                boolean oneMoreImageAvailable = false;
                 try {
                     getImageData(1, numberOfEpochs + 3);
                     moreImagesAvailable = true;
@@ -1578,6 +1596,13 @@ public class ImageViewerTab {
                     } catch (FileNotFoundException ex2) {
                     }
                 }
+            }
+            previousSize = size;
+            previousRa = targetRa;
+            previousDec = targetDec;
+            imageNumber = 0;
+
+            if (loadImages || reloadImages) {
                 int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
                 List<Integer> requestedEpochs = new ArrayList<>();
                 if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
@@ -1600,7 +1625,7 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                images.clear();
+                //images.clear();
                 imagePanel.removeAll();
                 rightPanel.removeAll();
                 downloadLog = new JTextArea();
@@ -1642,13 +1667,20 @@ public class ImageViewerTab {
                     epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
                 }
             }
-            if (Epoch.isFirstLast(epoch)) {
-                firstLastLoaded = true;
-            } else {
-                firstLastLoaded = true;
-                allEpochsLoaded = true;
+            loadImages = false;
+            if (WiseBand.W1.equals(wiseBand)) {
+                bandW1Loaded = true;
+                if (!Epoch.isFirstLast(epoch)) {
+                    allEpochsW1Loaded = true;
+                }
             }
-            bandChanded = false;
+            if (WiseBand.W2.equals(wiseBand)) {
+                bandW2Loaded = true;
+                if (!Epoch.isFirstLast(epoch)) {
+                    allEpochsW2Loaded = true;
+                }
+            }
+
             reloadImages = false;
 
             Fits fits;
@@ -2153,7 +2185,19 @@ public class ImageViewerTab {
                     break;
                 }
             }
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageHDU hdu;
+            try {
+                hdu = (ImageHDU) fits.getHDU(0);
+            } catch (FitsException ex) {
+                if (requestedEpochs.size() == 4) {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > unable to read, looking for surrogates");
+                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                    return;
+                } else {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > unable to read");
+                    continue;
+                }
+            }
             Header header = hdu.getHeader();
             double naxis1 = header.getDoubleValue("NAXIS1");
             double naxis2 = header.getDoubleValue("NAXIS2");
@@ -2190,7 +2234,6 @@ public class ImageViewerTab {
             }
             images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
-            baseFrame.setVisible(true);
         }
         if (images.isEmpty()) {
             return;
@@ -2499,7 +2542,7 @@ public class ImageViewerTab {
             for (int i = 0; i < axisY; i++) {
                 for (int j = 0; j < axisX; j++) {
                     try {
-                        subtractedValues[i][j] = values1[i][j] * rawContrast - values2[i][j] * rawContrast;
+                        subtractedValues[i][j] = values1[i][j] - values2[i][j];
                     } catch (ArrayIndexOutOfBoundsException ex) {
                     }
                 }
@@ -2601,6 +2644,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value) {
+        value *= rawContrast;
         value = normalize(value, minValue, maxValue);
         value = stretch(value);
         value = contrast(value);
