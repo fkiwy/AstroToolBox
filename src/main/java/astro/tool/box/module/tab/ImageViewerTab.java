@@ -2186,6 +2186,7 @@ public class ImageViewerTab {
             ImageHDU hdu;
             try {
                 hdu = (ImageHDU) fits.getHDU(0);
+                fits.close();
             } catch (FitsException ex) {
                 if (requestedEpochs.size() == 4) {
                     writeLogEntry("band " + band + " | image " + requestedEpoch + " > unable to read, looking for surrogates");
