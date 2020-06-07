@@ -2704,7 +2704,7 @@ public class ImageViewerTab {
     }
 
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
-        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 300);
+        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
 
         // Preset minimum value
         if (applyLimits.isSelected()) {
