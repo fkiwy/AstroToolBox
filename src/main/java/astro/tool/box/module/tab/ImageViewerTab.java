@@ -2735,7 +2735,7 @@ public class ImageViewerTab {
             if (Epoch.isSubtracted(epoch)) {
                 presetMaxVal = avgVal * (isLowValues ? 100 : 5);
             } else {
-                presetMaxVal = avgVal * 100;
+                presetMaxVal = avgVal * (size < 100 ? size : 100);
             }
         }
         presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
