@@ -598,6 +598,7 @@ public class ImageViewerTab {
             applyLimits = new JCheckBox("Apply limits", true);
             gridPanel.add(applyLimits);
             applyLimits.addActionListener((ActionEvent evt) -> {
+                setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
             smoothImage = new JCheckBox("Smoothing");
@@ -1933,10 +1934,6 @@ public class ImageViewerTab {
             int minVal = (minValW1 + minValW2) / divisor;
             int maxVal = (maxValW1 + maxValW2) / divisor;
             int avgVal = (avgValW1 + avgValW2) / divisor;
-
-            //System.out.println("minVal=" + minVal);
-            //System.out.println("maxVal=" + maxVal);
-            //System.out.println("avgVal=" + avgVal);
             setMinMaxValues(minVal, maxVal, avgVal);
 
             timer.restart();
@@ -2704,55 +2701,54 @@ public class ImageViewerTab {
     }
 
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
-        boolean isLowValues = avgVal < (Epoch.isSubtracted(epoch) ? 100 : 500);
+        System.out.println("minVal=" + minVal + " maxVal=" + maxVal + " avgVal=" + avgVal);
 
-        // Preset minimum value
+        // Apply minimum value
         if (applyLimits.isSelected()) {
-            int minLimit = isLowValues ? -2500 : -50000;
-            if (Epoch.isSubtracted(epoch) || minVal < minLimit) {
+            int minLimit = minVal < -5000 ? -avgVal / 10 : minVal;
+            if (minVal < minLimit) {
                 minVal = minLimit;
             }
         }
-        int presetMinVal;
-        if (Epoch.isSubtracted(epoch)) {
-            presetMinVal = isLowValues ? -avgVal * 5 : -avgVal / 2;
-        } else {
-            presetMinVal = minVal < -5000 ? -avgVal : minVal;
-        }
-        presetMinVal = presetMinVal < minVal ? minVal : presetMinVal;
 
-        // Preset maximum value
+        // Apply maximum value
         if (applyLimits.isSelected()) {
-            int maxLimit = isLowValues ? 2500 : 50000;
-            if (maxVal > maxLimit) {
+            boolean isSubtracted = Epoch.isSubtracted(epoch);
+            int maxLimit = maxVal;
+            if (avgVal < 10) {
+                maxLimit = 500;
+            } else if (avgVal >= 10 && avgVal < 200) {
+                maxLimit = 1000;
+            } else if (avgVal >= 200 && avgVal < 500) {
+                maxLimit = 1500;
+            } else if (avgVal >= 500 && avgVal < 1500) {
+                maxLimit = 2500;
+            } else if (avgVal >= 1500 && avgVal < 15000) {
+                maxLimit = 25000;
+            } else if (avgVal >= 15000 && avgVal < 150000) {
+                maxLimit = 50000;
+            }
+            if (maxVal < 1500) {
+                maxVal = 500;
+            } else if (maxVal > maxLimit) {
                 maxVal = maxLimit;
+                maxVal = isSubtracted ? maxVal : maxVal * 2;
             }
         }
-        int presetMaxVal;
-        if (maxVal < 500) {
-            presetMaxVal = maxVal = 500;
-        } else {
-            if (Epoch.isSubtracted(epoch)) {
-                presetMaxVal = avgVal * (isLowValues ? 100 : 5);
-            } else {
-                presetMaxVal = avgVal * (size < 100 ? size : 100);
-            }
-        }
-        presetMaxVal = presetMaxVal > maxVal ? maxVal : presetMaxVal;
 
         // Set minimum slider values
         minValueSlider.setMinimum(minVal);
         minValueSlider.setMaximum(maxVal);
-        minValueSlider.setValue(presetMinVal);
+        minValueSlider.setValue(minVal);
 
         // Set maximum slider values
         maxValueSlider.setMinimum(minVal);
         maxValueSlider.setMaximum(maxVal);
-        maxValueSlider.setValue(presetMaxVal);
+        maxValueSlider.setValue(maxVal);
 
         // Set minimum & maximum values
-        minValue = presetMinVal;
-        maxValue = presetMaxVal;
+        minValue = minVal;
+        maxValue = maxVal;
     }
 
     private boolean openNewCatalogSearch(double targetRa, double targetDec) {
