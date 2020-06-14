@@ -636,10 +636,10 @@ public class ImageViewerTab {
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
+                applyLimits.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
                 rawScaleSlider.setValue(rawContrast = RAW_CONTRAST);
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
-                applyLimits.setSelected(true);
                 createFlipbook();
             });
 
@@ -1590,6 +1590,9 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
+                applyLimits.setSelected(true);
+                stretchSlider.setValue(stretch = STRETCH);
+                rawScaleSlider.setValue(rawContrast = RAW_CONTRAST);
                 if (!saveContrast.isSelected()) {
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 }
