@@ -404,6 +404,9 @@ public class ImageViewerTab {
                     } else {
                         loadImages = true;
                     }
+                    if (loadImages && allEpochsW1Loaded) {
+                        imagesW1.clear();
+                    }
                 }
                 if (WiseBand.W2.equals(previousBand) && !WiseBand.W2.equals(wiseBand)) {
                     if (bandW1Loaded) {
@@ -412,6 +415,9 @@ public class ImageViewerTab {
                         }
                     } else {
                         loadImages = true;
+                    }
+                    if (loadImages && allEpochsW2Loaded) {
+                        imagesW2.clear();
                     }
                 }
                 createFlipbook();
@@ -2725,7 +2731,7 @@ public class ImageViewerTab {
         // Apply maximum value
         if (applyLimits.isSelected()) {
             int maxLimit;
-            if (maxVal < 1500) {
+            if (maxVal < 500) {
                 maxVal = 500;
             } else {
                 if (avgVal > 15000) {
