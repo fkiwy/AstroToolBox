@@ -614,6 +614,12 @@ public class ImageViewerTab {
             controlPanel.add(gridPanel);
             saveContrast = new JCheckBox("Keep contrast");
             gridPanel.add(saveContrast);
+            saveContrast.addActionListener((ActionEvent evt) -> {
+                if (saveContrast.isSelected() && !Epoch.isSubtracted(epoch)) {
+                    lowContrastSaved = lowContrast;
+                    highContrastSaved = highContrast;
+                }
+            });
             invertColors = new JCheckBox("Invert colors");
             gridPanel.add(invertColors);
 
@@ -1908,12 +1914,13 @@ public class ImageViewerTab {
                     break;
             }
 
+            FlipbookComponent component = flipbook[0];
             int divisor = 0;
 
             int minValW1 = 0;
             int maxValW1 = 0;
             int avgValW1 = 0;
-            fits = getImage(WiseBand.W1.val, 0);
+            fits = getImage(WiseBand.W1.val, component.getEpoch());
             if (fits != null) {
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) hdu.getData();
@@ -1928,7 +1935,7 @@ public class ImageViewerTab {
             int minValW2 = 0;
             int maxValW2 = 0;
             int avgValW2 = 0;
-            fits = getImage(WiseBand.W2.val, 0);
+            fits = getImage(WiseBand.W2.val, component.getEpoch());
             if (fits != null) {
                 ImageHDU hdu = (ImageHDU) fits.getHDU(0);
                 ImageData imageData = (ImageData) hdu.getData();
