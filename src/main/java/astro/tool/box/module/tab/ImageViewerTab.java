@@ -2721,29 +2721,17 @@ public class ImageViewerTab {
 
         // Apply minimum value
         if (applyLimits.isSelected()) {
-            int minLimit;
-            if (minVal < -30000) {
-                minLimit = -avgVal / 2;
-            } else if (minVal < -20000) {
-                minLimit = -avgVal / 3;
-            } else if (minVal < -10000) {
-                minLimit = -avgVal / 4;
-            } else if (minVal < -5000) {
-                minLimit = -avgVal / 5;
-            } else {
-                minLimit = minVal;
-            }
-            if (minVal < minLimit) {
-                minVal = minLimit;
+            if (minVal < -5000) {
+                minVal = -100;
             }
         }
 
         // Apply maximum value
         if (applyLimits.isSelected()) {
-            int maxLimit;
             if (maxVal < 500) {
                 maxVal = 500;
             } else {
+                int maxLimit;
                 if (avgVal > 15000) {
                     maxLimit = 50000;
                 } else if (avgVal > 1500) {
