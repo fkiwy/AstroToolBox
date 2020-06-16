@@ -2721,7 +2721,13 @@ public class ImageViewerTab {
 
         // Apply minimum value
         if (applyLimits.isSelected()) {
-            if (minVal < -5000) {
+            if (minVal < -1000) {
+                minVal = -avgVal;
+            }
+            if (minVal < -1000) {
+                minVal = -1000;
+            }
+            if (minVal > -100) {
                 minVal = -100;
             }
         }
@@ -2732,21 +2738,39 @@ public class ImageViewerTab {
                 maxVal = 500;
             } else {
                 int maxLimit;
-                if (avgVal > 15000) {
-                    maxLimit = 50000;
-                } else if (avgVal > 1500) {
-                    maxLimit = 25000;
-                } else if (avgVal > 500) {
-                    maxLimit = 2500;
-                } else if (avgVal > 200) {
-                    maxLimit = 1500;
-                } else if (avgVal > 10) {
-                    maxLimit = 1000;
+                if (Epoch.isSubtracted(epoch)) {
+                    if (avgVal > 15000) {
+                        maxLimit = 50000;
+                    } else if (avgVal > 1500) {
+                        maxLimit = 25000;
+                    } else if (avgVal > 500) {
+                        maxLimit = 10000;
+                    } else if (avgVal > 300) {
+                        maxLimit = 5000;
+                    } else if (avgVal > 200) {
+                        maxLimit = 3000;
+                    } else if (avgVal > 10) {
+                        maxLimit = 2000;
+                    } else {
+                        maxLimit = 1000;
+                    }
                 } else {
-                    maxLimit = 500;
+                    if (avgVal > 15000) {
+                        maxLimit = 100000;
+                    } else if (avgVal > 1500) {
+                        maxLimit = 50000;
+                    } else if (avgVal > 500) {
+                        maxLimit = 5000;
+                    } else if (avgVal > 200) {
+                        maxLimit = 3000;
+                    } else if (avgVal > 10) {
+                        maxLimit = 2000;
+                    } else {
+                        maxLimit = 1000;
+                    }
                 }
                 if (maxVal > maxLimit) {
-                    maxVal = Epoch.isSubtracted(epoch) ? maxLimit : maxLimit * 2;
+                    maxVal = maxLimit;
                 }
             }
         }
