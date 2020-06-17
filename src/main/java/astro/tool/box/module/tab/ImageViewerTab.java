@@ -439,14 +439,15 @@ public class ImageViewerTab {
                         loadImages = true;
                     }
                 }
-                createFlipbook();
                 if (Epoch.isSubtracted(epoch)) {
+                    applyLimits.setSelected(true);
                     smoothImage.setSelected(true);
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     smoothImage.setSelected(false);
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
+                createFlipbook();
             });
 
             JPanel whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -482,6 +483,11 @@ public class ImageViewerTab {
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
+                }
+                if (lowContrast == 0) {
+                    applyLimits.setSelected(false);
+                    setContrast(10, HIGH_CONTRAST);
+                    createFlipbook();
                 }
             });
 
