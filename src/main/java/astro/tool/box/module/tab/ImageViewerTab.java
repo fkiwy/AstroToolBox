@@ -2717,61 +2717,36 @@ public class ImageViewerTab {
     }
 
     private void setMinMaxValues(int minVal, int maxVal, int avgVal) {
-        System.out.println("minVal=" + minVal + " maxVal=" + maxVal + " avgVal=" + avgVal);
+        //System.out.println("minVal=" + minVal + " maxVal=" + maxVal + " avgVal=" + avgVal);
 
-        // Apply minimum value
-        if (applyLimits.isSelected()) {
-            if (minVal < -1000) {
-                minVal = -avgVal;
-            }
-            if (minVal < -1000) {
-                minVal = -1000;
-            }
-            if (minVal > -100) {
-                minVal = -100;
-            }
-        }
-
-        // Apply maximum value
         if (applyLimits.isSelected()) {
             if (maxVal < 500) {
                 maxVal = 500;
             } else {
                 int maxLimit;
-                if (Epoch.isSubtracted(epoch)) {
-                    if (avgVal > 15000) {
-                        maxLimit = 50000;
-                    } else if (avgVal > 1500) {
-                        maxLimit = 25000;
-                    } else if (avgVal > 500) {
-                        maxLimit = 10000;
-                    } else if (avgVal > 300) {
-                        maxLimit = 5000;
-                    } else if (avgVal > 200) {
-                        maxLimit = 3000;
-                    } else if (avgVal > 10) {
-                        maxLimit = 2000;
-                    } else {
-                        maxLimit = 1000;
-                    }
+                if (avgVal > 15000) {
+                    maxLimit = 50000;
+                } else if (avgVal > 1500) {
+                    maxLimit = 25000;
+                } else if (avgVal > 500) {
+                    maxLimit = 10000;
+                } else if (avgVal > 300) {
+                    maxLimit = 5000;
+                } else if (avgVal > 200) {
+                    maxLimit = 3000;
+                } else if (avgVal > 10) {
+                    maxLimit = 2000;
                 } else {
-                    if (avgVal > 15000) {
-                        maxLimit = 100000;
-                    } else if (avgVal > 1500) {
-                        maxLimit = 50000;
-                    } else if (avgVal > 500) {
-                        maxLimit = 5000;
-                    } else if (avgVal > 200) {
-                        maxLimit = 3000;
-                    } else if (avgVal > 10) {
-                        maxLimit = 2000;
-                    } else {
-                        maxLimit = 1000;
-                    }
+                    maxLimit = 1000;
                 }
                 if (maxVal > maxLimit) {
                     maxVal = maxLimit;
                 }
+            }
+            if (Epoch.isSubtracted(epoch)) {
+                minVal = -maxVal / 10;
+            } else if (minVal < -5000) {
+                minVal = -maxVal / 20;
             }
         }
 
