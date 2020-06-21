@@ -96,7 +96,7 @@ public class WhiteDwarfTab {
 
             JPanel lookupResult = new JPanel();
             lookupResult.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Effective temperatures", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Effective temperature evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             lookupResult.setLayout(new BoxLayout(lookupResult, BoxLayout.Y_AXIS));
             lookupResult.setPreferredSize(new Dimension(600, 750));
