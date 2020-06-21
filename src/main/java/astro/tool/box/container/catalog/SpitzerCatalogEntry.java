@@ -279,7 +279,10 @@ public class SpitzerCatalogEntry implements CatalogEntry {
 
     @Override
     public Map<Band, Double> getBands() {
-        return new LinkedHashMap<>();
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, W1mag);
+        bands.put(Band.W2, W2mag);
+        return bands;
     }
 
     @Override

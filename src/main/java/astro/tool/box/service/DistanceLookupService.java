@@ -38,6 +38,9 @@ public class DistanceLookupService {
                 continue;
             }
             double absoluteMagnitude = absoluteMagnitudes.get(entry.getKey());
+            if (absoluteMagnitude == 0) {
+                continue;
+            }
             double distance = calculateDistanceFromMagnitudes(apparentMagnitude, absoluteMagnitude);
             results.add(new DistanceLookupResult(entry.getKey(), entry.getValue(), spt, distance));
         }

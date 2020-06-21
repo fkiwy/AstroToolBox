@@ -100,13 +100,13 @@ public class BrownDwarfTab {
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                                lookupResult.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                                entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
                             }
                         }
                         if (selectedEntry instanceof GaiaCatalogEntry) {
                             GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
                             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                                lookupResult.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                                entryPanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
                             }
                         }
                     }

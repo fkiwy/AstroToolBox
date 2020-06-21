@@ -120,7 +120,7 @@ public class WhiteDwarfTab {
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                                lookupResult.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                                entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
                             }
                         }
                     }
