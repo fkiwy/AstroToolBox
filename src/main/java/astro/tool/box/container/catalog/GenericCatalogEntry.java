@@ -2,6 +2,7 @@ package astro.tool.box.container.catalog;
 
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -100,6 +101,11 @@ public class GenericCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnTitles() {
         return new String[0];
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        return new LinkedHashMap<>();
     }
 
     @Override

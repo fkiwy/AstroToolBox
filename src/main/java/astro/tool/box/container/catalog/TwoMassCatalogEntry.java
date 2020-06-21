@@ -9,6 +9,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -314,6 +315,15 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,ra,dec,observation date,ph. qual.,read flag,blend flag,cc flags,ext. flag,minor planet flag,J (mag),J err,H (mag),H err,K (mag),K err,J-H,H-K,J-K";
         return titles.split(",", 20);
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.J, Jmag);
+        bands.put(Band.H, Hmag);
+        bands.put(Band.K, Kmag);
+        return bands;
     }
 
     @Override

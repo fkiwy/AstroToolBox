@@ -1,6 +1,7 @@
 package astro.tool.box.container.catalog;
 
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,8 @@ public interface CatalogEntry {
     String[] getColumnValues();
 
     String[] getColumnTitles();
+
+    Map<Band, Double> getBands();
 
     Map<Color, Double> getColors();
 

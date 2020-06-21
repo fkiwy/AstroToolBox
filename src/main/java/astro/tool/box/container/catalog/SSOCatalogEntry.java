@@ -9,6 +9,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.math.BigDecimal;
@@ -263,6 +264,11 @@ public class SSOCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
         return titles.split(",", 15);
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        return new LinkedHashMap<>();
     }
 
     @Override

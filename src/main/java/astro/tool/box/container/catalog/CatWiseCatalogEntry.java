@@ -10,6 +10,7 @@ import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -280,6 +281,14 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
         return titles.split(",", 20);
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, W1mag);
+        bands.put(Band.W2, W2mag);
+        return bands;
     }
 
     @Override

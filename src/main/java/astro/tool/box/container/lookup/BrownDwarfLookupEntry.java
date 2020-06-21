@@ -1,5 +1,6 @@
 package astro.tool.box.container.lookup;
 
+import astro.tool.box.enumeration.Band;
 import static astro.tool.box.function.NumericFunctions.*;
 import astro.tool.box.enumeration.Color;
 import java.util.HashMap;
@@ -10,11 +11,26 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
     // Spectral type
     private final String spt;
 
+    // Bands
+    private final Map<Band, Double> bands;
+
     // Colors
     private final Map<Color, Double> colors;
 
     public BrownDwarfLookupEntry(String[] values) {
         spt = values[0];
+        bands = new HashMap<>();
+        bands.put(Band.g, toDouble(values[1]));
+        bands.put(Band.r, toDouble(values[2]));
+        bands.put(Band.i, toDouble(values[3]));
+        bands.put(Band.z, toDouble(values[4]));
+        bands.put(Band.y, toDouble(values[5]));
+        bands.put(Band.J, toDouble(values[6]));
+        bands.put(Band.H, toDouble(values[7]));
+        bands.put(Band.K, toDouble(values[8]));
+        bands.put(Band.W1, toDouble(values[9]));
+        bands.put(Band.W2, toDouble(values[10]));
+        bands.put(Band.G, toDouble(values[11]));
         colors = new HashMap<>();
         colors.put(Color.M_G, toDouble(values[11]));
         colors.put(Color.g_r, toDouble(values[12]));
@@ -31,7 +47,7 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
 
     @Override
     public String toString() {
-        return "BrownDwarfLookupEntry{" + "spt=" + spt + ", colors=" + colors + '}';
+        return "BrownDwarfLookupEntry{" + "spt=" + spt + ", bands=" + bands + ", colors=" + colors + '}';
     }
 
     @Override
@@ -62,6 +78,10 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
     @Override
     public String getAge() {
         return "";
+    }
+
+    public Map<Band, Double> getBands() {
+        return bands;
     }
 
     @Override

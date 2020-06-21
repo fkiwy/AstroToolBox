@@ -3,7 +3,7 @@ package astro.tool.box.container.lookup;
 import astro.tool.box.enumeration.Color;
 import java.util.Objects;
 
-public class SpectralTypeLookupResult {
+public class LookupResult {
 
     // Color key
     private final Color colorKey;
@@ -35,7 +35,7 @@ public class SpectralTypeLookupResult {
     // Gap to nearest color
     private final double gap;
 
-    public SpectralTypeLookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun, double logG, String age, double nearest, double gap) {
+    public LookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun, double logG, String age, double nearest, double gap) {
         this.colorKey = colorKey;
         this.colorValue = colorValue;
         this.spt = spt;
@@ -92,7 +92,7 @@ public class SpectralTypeLookupResult {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final SpectralTypeLookupResult other = (SpectralTypeLookupResult) obj;
+        final LookupResult other = (LookupResult) obj;
         if (Double.doubleToLongBits(this.colorValue) != Double.doubleToLongBits(other.colorValue)) {
             return false;
         }

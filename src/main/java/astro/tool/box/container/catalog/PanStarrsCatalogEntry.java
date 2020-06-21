@@ -11,6 +11,7 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -257,6 +258,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
         return titles.split(",", 24);
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.r, rMeanPSFMag);
+        bands.put(Band.i, iMeanPSFMag);
+        bands.put(Band.z, zMeanPSFMag);
+        bands.put(Band.y, yMeanPSFMag);
+        return bands;
     }
 
     @Override

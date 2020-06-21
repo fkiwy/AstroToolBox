@@ -31,7 +31,7 @@ import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.container.lookup.SpectralTypeLookupResult;
+import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.ObjectType;
@@ -3475,7 +3475,7 @@ public class ImageViewerTab {
 
     private JScrollPane createMainSequenceSpectralTypePanel(CatalogEntry catalogEntry) {
         try {
-            List<SpectralTypeLookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
@@ -3521,7 +3521,7 @@ public class ImageViewerTab {
 
     private JScrollPane createBrownDwarfsSpectralTypePanel(CatalogEntry catalogEntry) {
         try {
-            List<SpectralTypeLookupResult> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {

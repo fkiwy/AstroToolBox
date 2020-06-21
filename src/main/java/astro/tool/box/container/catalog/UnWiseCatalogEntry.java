@@ -8,6 +8,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -166,10 +167,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
             return false;
         }
         final UnWiseCatalogEntry other = (UnWiseCatalogEntry) obj;
-        if (!Objects.equals(this.unwise_objid, other.unwise_objid)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.unwise_objid, other.unwise_objid);
     }
 
     @Override
@@ -202,6 +200,14 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W2 (mag),qual. fact. W1,qual. fact. W2,coadd flags W1,coadd flags W2,info flags W1,info flags W2,W1-W2";
         return titles.split(",", 13);
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, mag_w1_vg);
+        bands.put(Band.W2, mag_w2_vg);
+        return bands;
     }
 
     @Override

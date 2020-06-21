@@ -10,22 +10,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class SpectralTypeLookupService {
+public class EffectiveTemperatureLookupService {
 
     private final List<SpectralTypeLookup> entries;
 
-    public SpectralTypeLookupService(List<SpectralTypeLookup> entries) {
+    public EffectiveTemperatureLookupService(List<SpectralTypeLookup> entries) {
         this.entries = entries;
     }
 
-    public List<LookupResult> lookup(Map<Color, Double> colors) {
+    public List<LookupResult> lookup(Map<Color, Double> colors, double teff, double logG, double msun) {
         List<LookupResult> results = new ArrayList<>();
         SpectralTypeLookup minEntry = entries.get(0);
         for (SpectralTypeLookup maxEntry : entries) {
             for (Entry<Color, Double> color : colors.entrySet()) {
                 Color colorKey = color.getKey();
                 Double colorValue = color.getValue();
-                LookupResult result = evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
+                LookupResult result = evaluateTemperature(colorKey, colorValue, teff, logG, msun, minEntry, maxEntry);
                 if (result != null) {
                     results.add(result);
                 }
