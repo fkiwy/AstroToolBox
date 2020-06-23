@@ -219,6 +219,8 @@ public class ImageViewerTab {
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
     private JCheckBox createDataSheet;
+    private JCheckBox skipBadImages;
+    private JCheckBox skipSingleNodes;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JCheckBox transposeProperMotion;
@@ -357,9 +359,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1975;
+            int controlPanelHeight = 2025;
 
-            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(83, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -847,6 +849,30 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
+
+            skipBadImages = new JCheckBox("Skip bad quality images", true);
+            controlPanel.add(skipBadImages);
+            skipBadImages.addActionListener((ActionEvent evt) -> {
+                if (!skipBadImages.isSelected()) {
+                    showWarnDialog(baseFrame, "Unchecking this may decrease image quality and lead to poorer motion detection!");
+                }
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            skipSingleNodes = new JCheckBox("Skip single nodes", true);
+            controlPanel.add(skipSingleNodes);
+            skipSingleNodes.addActionListener((ActionEvent evt) -> {
+                if (!skipSingleNodes.isSelected()) {
+                    showWarnDialog(baseFrame, "Unchecking this may affect image ordering and lead to poorer motion detection, especially in subtracted modes!");
+                }
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
             controlPanel.add(hideMagnifier);
@@ -2239,15 +2265,17 @@ public class ImageViewerTab {
                 }
             }
             String imageDate = obsDate.format(DATE_FORMATTER);
-            double maxAllowed = naxis1 * naxis2 / 20;
-            if (zeroValues > maxAllowed) {
-                if (requestedEpochs.size() == 4) {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
-                    downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                    return;
-                } else {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
-                    continue;
+            if (skipBadImages.isSelected()) {
+                double maxAllowed = naxis1 * naxis2 / 20;
+                if (zeroValues > maxAllowed) {
+                    if (requestedEpochs.size() == 4) {
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
+                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                        return;
+                    } else {
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
+                        continue;
+                    }
                 }
             }
             images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
@@ -2301,7 +2329,7 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (node1 == 0 || node2 == 0) {
+                if (skipSingleNodes.isSelected() && (node1 == 0 || node2 == 0)) {
                     if (requestedEpochs.size() == 4) {
                         images.clear();
                         int requestedEpoch = container.getEpoch();
@@ -2327,7 +2355,7 @@ public class ImageViewerTab {
             prevNode = node;
             writeLogEntry("year " + year + " | node " + node);
         }
-        if (node1 == 0 || node2 == 0) {
+        if (skipSingleNodes.isSelected() && (node1 == 0 || node2 == 0)) {
             if (requestedEpochs.size() == 4) {
                 images.clear();
                 int requestedEpoch = containerSaved.getEpoch();
