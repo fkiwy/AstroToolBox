@@ -7,6 +7,7 @@ public enum Epoch {
     DESCENDING,
     ASCENDING_DESCENDING,
     ASCENDING_DESCENDING_SUBTRACTED,
+    ASCENDING_DESCENDING_ENHANCED_SUBTRACTED,
     ASCENDING_DESCENDING_PARALLAX,
     YEAR,
     FIRST_REMAINING,
@@ -17,6 +18,7 @@ public enum Epoch {
 
     public static boolean isSubtracted(Epoch epoch) {
         return epoch.equals(ASCENDING_DESCENDING_SUBTRACTED)
+                || epoch.equals(ASCENDING_DESCENDING_ENHANCED_SUBTRACTED)
                 || epoch.equals(FIRST_REMAINING_SUBTRACTED)
                 || epoch.equals(FIRST_LAST_SUBTRACTED);
     }
