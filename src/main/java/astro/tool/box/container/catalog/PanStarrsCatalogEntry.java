@@ -273,6 +273,10 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        gMeanPSFMag = gMeanPSFMag - extinctionsByBand.get(SDSS_G);
+        rMeanPSFMag = rMeanPSFMag - extinctionsByBand.get(SDSS_R);
+        iMeanPSFMag = iMeanPSFMag - extinctionsByBand.get(SDSS_I);
+        zMeanPSFMag = zMeanPSFMag - extinctionsByBand.get(SDSS_Z);
     }
 
     @Override

@@ -3,6 +3,7 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
@@ -239,6 +240,9 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
+        h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
+        ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
     }
 
     @Override
