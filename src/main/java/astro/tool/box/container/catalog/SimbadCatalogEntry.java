@@ -120,10 +120,16 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public SimbadCatalogEntry() {
     }
 
     public SimbadCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("main_id")];
         objectType = values[columns.get("otype_longname")];
         spectralType = values[columns.get("sp_type")];
@@ -150,6 +156,11 @@ public class SimbadCatalogEntry implements CatalogEntry {
         r_mag = toDouble(values[columns.get("r_")]);
         i_mag = toDouble(values[columns.get("i_")]);
         z_mag = toDouble(values[columns.get("z_")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new SimbadCatalogEntry(columns, values);
     }
 
     @Override

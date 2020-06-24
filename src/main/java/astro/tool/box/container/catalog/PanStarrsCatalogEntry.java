@@ -104,10 +104,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public PanStarrsCatalogEntry() {
     }
 
     public PanStarrsCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         for (int i = 0; i < values.length; i++) {
             if (values[i].equals("-999.0")) {
                 values[i] = "0";
@@ -133,6 +139,11 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         yMeanPSFMag = toDouble(values[columns.get("yMeanPSFMag")]);
         yMeanPSFMagErr = toDouble(values[columns.get("yMeanPSFMagErr")]);
         qualityFlags = getPanStarrsQualityFlags(qualityFlag);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new PanStarrsCatalogEntry(columns, values);
     }
 
     @Override

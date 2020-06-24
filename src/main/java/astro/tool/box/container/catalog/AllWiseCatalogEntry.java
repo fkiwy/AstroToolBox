@@ -123,10 +123,16 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public AllWiseCatalogEntry() {
     }
 
     public AllWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("designation")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -154,6 +160,11 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         H_err = toDouble(values[columns.get("h_msig_2mass")]);
         Kmag = toDouble(values[columns.get("k_m_2mass")]);
         K_err = toDouble(values[columns.get("k_msig_2mass")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new AllWiseCatalogEntry(columns, values);
     }
 
     @Override

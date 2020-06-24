@@ -110,6 +110,10 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     private static final Map<String, String> TYPE_TABLE = new HashMap<>();
 
     static {
@@ -125,6 +129,8 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     public SSOCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         objectID = values[columns.get("objid")].replaceAll("\\s+", " ");
         type = values[columns.get("t")];
         pra = toDouble(values[columns.get("ra")]);
@@ -149,6 +155,11 @@ public class SSOCatalogEntry implements CatalogEntry {
         //dec = pdec + ddec / DEG_ARCSEC;
         ra = pra;
         dec = pdec;
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new SSOCatalogEntry(columns, values);
     }
 
     @Override

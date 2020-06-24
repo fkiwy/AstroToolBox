@@ -114,10 +114,16 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public GaiaWDCatalogEntry() {
     }
 
     public GaiaWDCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = toLong(values[columns.get("Source")]);
         wdId = values[columns.get("WD")];
         ra = toDouble(values[columns.get("RA_ICRS")]);
@@ -141,6 +147,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         teffHe = toDouble(values[columns.get("TeffHe")]);
         loggHe = toDouble(values[columns.get("loggHe")]);
         massHe = toDouble(values[columns.get("MassHe")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new GaiaWDCatalogEntry(columns, values);
     }
 
     @Override

@@ -80,10 +80,16 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public UnWiseCatalogEntry() {
     }
 
     public UnWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
             if ("Infinity".equals(value) || "-Infinity".equals(value) || "NaN".equals(value)) {
@@ -102,6 +108,11 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         flags_unwise_w2 = toInteger(values[columns.get("flags_unwise_w2")]);
         flags_info_w1 = toInteger(values[columns.get("flags_info_w1")]);
         flags_info_w2 = toInteger(values[columns.get("flags_info_w2")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new UnWiseCatalogEntry(columns, values);
     }
 
     @Override

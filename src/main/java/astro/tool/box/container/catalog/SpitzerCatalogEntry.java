@@ -114,11 +114,16 @@ public class SpitzerCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public SpitzerCatalogEntry() {
     }
 
     public SpitzerCatalogEntry(Map<String, Integer> columns, String[] values) {
-        //RAJ2000,DEJ2000,[3_6],e_[3_6],[4_5],e_[4_5],S/G1,S/G2,[3_4],e_[3_4],[4_6],e_[4_6],[12],e_[12],[22],e_[22],Jmag,e_Jmag,Hmag,e_Hmag,Kmag,e_Kmag
+        this.columns = columns;
+        this.values = values;
         ra = toDouble(values[columns.get("RAJ2000")]);
         dec = toDouble(values[columns.get("DEJ2000")]);
         sourceId = roundTo6DecNZ(ra) + addPlusSign(roundDouble(dec, PATTERN_6DEC_NZ));
@@ -142,6 +147,11 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         H_err = toDouble(values[columns.get("e_Hmag")]);
         Kmag = toDouble(values[columns.get("Kmag")]);
         K_err = toDouble(values[columns.get("e_Kmag")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new SpitzerCatalogEntry(columns, values);
     }
 
     @Override

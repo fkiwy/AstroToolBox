@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface CatalogEntry {
 
+    CatalogEntry copy();
+
     CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 
     void loadCatalogElements();

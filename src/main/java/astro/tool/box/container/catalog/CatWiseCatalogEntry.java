@@ -106,10 +106,16 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public CatWiseCatalogEntry() {
     }
 
     public CatWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("source_name")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -130,6 +136,11 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         par_sigma = toDouble(values[columns.get("par_sigma")]) * ARCSEC_MAS;
         cc_flags = values[columns.get("cc_flags")];
         ab_flags = values[columns.get("ab_flags")];
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new CatWiseCatalogEntry(columns, values);
     }
 
     @Override

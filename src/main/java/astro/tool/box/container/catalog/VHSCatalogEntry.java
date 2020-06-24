@@ -89,6 +89,10 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     private static final Map<Integer, String> TYPE_TABLE = new HashMap<>();
 
     static {
@@ -103,6 +107,8 @@ public class VHSCatalogEntry implements CatalogEntry {
     }
 
     public VHSCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = toLong(values[columns.get("SrcID")]);
         ra = toDouble(values[columns.get("RAJ2000")]);
         dec = toDouble(values[columns.get("DEJ2000")]);
@@ -119,6 +125,11 @@ public class VHSCatalogEntry implements CatalogEntry {
         j_h_pnt = toDouble(values[columns.get("J-Hpnt")]);
         h_ks_pnt = toDouble(values[columns.get("H-Kspnt")]);
         j_ks_pnt = toDouble(values[columns.get("J-Kspnt")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new UnWiseCatalogEntry(columns, values);
     }
 
     @Override

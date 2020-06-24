@@ -116,10 +116,16 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public SDSSCatalogEntry() {
     }
 
     public SDSSCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         objID = toLong(values[columns.get("objid")]);
         run = toInteger(values[columns.get("run")]);
         rerun = toInteger(values[columns.get("rerun")]);
@@ -144,6 +150,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         r_err = toDouble(values[columns.get("Err_r")]);
         i_err = toDouble(values[columns.get("Err_i")]);
         z_err = toDouble(values[columns.get("Err_z")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new SDSSCatalogEntry(columns, values);
     }
 
     @Override

@@ -92,10 +92,16 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public TwoMassCatalogEntry() {
     }
 
     public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("designation")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -112,6 +118,11 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         cc_flg = values[columns.get("cc_flg")];
         gal_contam = toInteger(values[columns.get("gal_contam")]);
         mp_flg = toInteger(values[columns.get("mp_flg")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new TwoMassCatalogEntry(columns, values);
     }
 
     @Override

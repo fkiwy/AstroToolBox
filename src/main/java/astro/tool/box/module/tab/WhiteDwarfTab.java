@@ -89,8 +89,8 @@ public class WhiteDwarfTab {
 
     public void init() {
         try {
-            JPanel spectralTypeLookup = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            spectralTypeLookup.setBorder(BorderFactory.createTitledBorder(
+            JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            mainPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Effective temperature lookup for white dwarfs", TitledBorder.LEFT, TitledBorder.TOP
             ));
 
@@ -100,7 +100,7 @@ public class WhiteDwarfTab {
             ));
             lookupResult.setLayout(new BoxLayout(lookupResult, BoxLayout.Y_AXIS));
             lookupResult.setPreferredSize(new Dimension(600, 750));
-            spectralTypeLookup.add(lookupResult);
+            mainPanel.add(lookupResult);
 
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
@@ -128,7 +128,7 @@ public class WhiteDwarfTab {
                 }
             });
 
-            tabbedPane.addTab(TAB_NAME, spectralTypeLookup);
+            tabbedPane.addTab(TAB_NAME, mainPanel);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
@@ -180,16 +180,16 @@ public class WhiteDwarfTab {
         String titles = "teff,mass (Msun),logg,age,matched colors,nearest color,gap to nearest color";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
-        JTable temperatureTable = new JTable(resultRows.toArray(rows), columns) {
+        JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return true;
             }
         };
-        alignResultColumns(temperatureTable, resultRows);
-        temperatureTable.setAutoCreateRowSorter(true);
-        temperatureTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        TableColumnModel columnModel = temperatureTable.getColumnModel();
+        alignResultColumns(resultTable, resultRows);
+        resultTable.setAutoCreateRowSorter(true);
+        resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
         columnModel.getColumn(1).setPreferredWidth(50);
         columnModel.getColumn(2).setPreferredWidth(50);
@@ -198,13 +198,13 @@ public class WhiteDwarfTab {
         columnModel.getColumn(5).setPreferredWidth(100);
         columnModel.getColumn(6).setPreferredWidth(100);
 
-        JScrollPane temperaturePanel = resultRows.isEmpty()
+        JScrollPane scrollPanel = resultRows.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                : new JScrollPane(temperatureTable);
-        temperaturePanel.setBorder(BorderFactory.createTitledBorder(
+                : new JScrollPane(resultTable);
+        scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), html(panelTitle), TitledBorder.LEFT, TitledBorder.TOP
         ));
-        lookupResult.add(temperaturePanel);
+        lookupResult.add(scrollPanel);
     }
 
 }

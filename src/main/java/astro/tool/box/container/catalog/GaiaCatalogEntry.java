@@ -106,10 +106,16 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public GaiaCatalogEntry() {
     }
 
     public GaiaCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = toLong(values[columns.get("source_id")]);
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -130,6 +136,11 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         teff = toDouble(values[columns.get("teff_val")]);
         radsun = toDouble(values[columns.get("radius_val")]);
         lumsun = toDouble(values[columns.get("lum_val")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new GaiaCatalogEntry(columns, values);
     }
 
     @Override

@@ -48,6 +48,11 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public CatalogEntry copy() {
+        return null;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("GenericCatalogEntry{ra=").append(ra);
