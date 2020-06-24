@@ -3,6 +3,7 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
@@ -211,6 +212,12 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W2 (mag),qual. fact. W1,qual. fact. W2,coadd flags W1,coadd flags W2,info flags W1,info flags W2,W1-W2";
         return titles.split(",", 13);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        mag_w1_vg = mag_w1_vg - extinctionsByBand.get(WISE_1);
+        mag_w2_vg = mag_w2_vg - extinctionsByBand.get(WISE_2);
     }
 
     @Override

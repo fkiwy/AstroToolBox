@@ -3,8 +3,8 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
@@ -326,6 +326,13 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,ra,dec,observation date,ph. qual.,read flag,blend flag,cc flags,ext. flag,minor planet flag,J (mag),J err,H (mag),H err,K (mag),K err,J-H,H-K,J-K";
         return titles.split(",", 20);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
+        Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
+        Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
     }
 
     @Override

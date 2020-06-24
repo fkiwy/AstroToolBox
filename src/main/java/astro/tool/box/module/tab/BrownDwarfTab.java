@@ -14,15 +14,19 @@ import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.DustExtinctionService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -50,7 +54,9 @@ public class BrownDwarfTab {
 
     private final SpectralTypeLookupService spectralTypeLookupService;
     private final DistanceLookupService distanceLookupService;
+    private final DustExtinctionService dustExtinctionService;
 
+    private JCheckBox dustExtinction;
     private CatalogEntry selectedEntry;
 
     public BrownDwarfTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
@@ -64,6 +70,7 @@ public class BrownDwarfTab {
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
+            dustExtinctionService = new DustExtinctionService();
         }
     }
 
@@ -83,7 +90,7 @@ public class BrownDwarfTab {
             extinctionPanel.setPreferredSize(new Dimension(500, 30));
             containerPanel.add(extinctionPanel, BorderLayout.PAGE_START);
 
-            JCheckBox dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction");
+            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction");
             extinctionPanel.add(dustExtinction);
 
             JPanel spectralTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -102,43 +109,63 @@ public class BrownDwarfTab {
             distancePanel.setPreferredSize(new Dimension(500, 300));
             containerPanel.add(distancePanel, BorderLayout.PAGE_END);
 
+            dustExtinction.addActionListener((ActionEvent evt) -> {
+                performLookup(spectralTypePanel, distancePanel);
+            });
+
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
-                    spectralTypePanel.removeAll();
-                    distancePanel.removeAll();
-                    selectedEntry = catalogQueryTab.getSelectedEntry();
-                    if (selectedEntry == null) {
-                        spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
-                        return;
-                    } else {
-                        JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                        spectralTypePanel.add(entryPanel);
-                        String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
-                                + " RA = " + roundTo7DecNZ(selectedEntry.getRa()) + " dec = " + roundTo7DecNZ(selectedEntry.getDec());
-                        entryPanel.add(new JLabel(catalogEntry));
-                        if (selectedEntry instanceof AllWiseCatalogEntry) {
-                            AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
-                            if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                                entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
-                            }
-                        }
-                        if (selectedEntry instanceof GaiaCatalogEntry) {
-                            GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
-                            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                                entryPanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
-                            }
-                        }
-                    }
-                    List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
-                    displaySpectralTypes(results, spectralTypePanel, distancePanel);
+                    performLookup(spectralTypePanel, distancePanel);
                 }
             });
 
             tabbedPane.addTab(TAB_NAME, mainPanel);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void performLookup(JPanel spectralTypePanel, JPanel distancePanel) {
+        spectralTypePanel.removeAll();
+        distancePanel.removeAll();
+        selectedEntry = catalogQueryTab.getSelectedEntry();
+        if (selectedEntry == null) {
+            spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
+        } else {
+            JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            spectralTypePanel.add(entryPanel);
+            String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
+                    + " RA = " + roundTo7DecNZ(selectedEntry.getRa()) + " dec = " + roundTo7DecNZ(selectedEntry.getDec());
+            entryPanel.add(new JLabel(catalogEntry));
+            if (selectedEntry instanceof AllWiseCatalogEntry) {
+                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
+                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                    entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                }
+            }
+            if (selectedEntry instanceof GaiaCatalogEntry) {
+                GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    entryPanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                }
+            }
+            if (dustExtinction.isSelected()) {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    Map<String, Double> extinctionsByBand = dustExtinctionService.getExtinctionsByBand(selectedEntry.getRa(), selectedEntry.getDec(), 2.0);
+                    selectedEntry = selectedEntry.copy();
+                    selectedEntry.applyExtinctionCorrection(extinctionsByBand);
+
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                } finally {
+                    baseFrame.setCursor(Cursor.getDefaultCursor());
+                }
+            }
+            List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
+            displaySpectralTypes(results, spectralTypePanel, distancePanel);
         }
     }
 
@@ -182,7 +209,6 @@ public class BrownDwarfTab {
 
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(spt, selectedEntry.getBands());
                 displayDistances(distanceResults, distanceLookupResult);
-                baseFrame.setVisible(true);
             }
         });
 
@@ -200,6 +226,7 @@ public class BrownDwarfTab {
         remarks.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
         remarks.add(new JLabel("W1-W2, CH1-CH2, J-W2, J-K, g-r, r-i and absolute Gmag"));
+        baseFrame.setVisible(true);
     }
 
     private void displayDistances(List<DistanceLookupResult> results, JPanel lookupResult) {
@@ -240,6 +267,7 @@ public class BrownDwarfTab {
         remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
         remarks.add(new JLabel("if available: r, i, z, y, J, H, K, W1, W2 and G"));
         remarks.add(new JLabel("Absolute magnitudes are from M, L, T & Y dwarfs lookup table."));
+        baseFrame.setVisible(true);
     }
 
 }

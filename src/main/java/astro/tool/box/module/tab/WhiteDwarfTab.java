@@ -124,7 +124,7 @@ public class WhiteDwarfTab {
                             }
                         }
                     }
-                    lookupWhiteDwarfsByColor(lookupResult, selectedEntry.getColors());
+                    performLookup(lookupResult, selectedEntry.getColors());
                 }
             });
 
@@ -134,7 +134,7 @@ public class WhiteDwarfTab {
         }
     }
 
-    private void lookupWhiteDwarfsByColor(JPanel lookupResult, Map<Color, Double> colors) {
+    private void performLookup(JPanel lookupResult, Map<Color, Double> colors) {
         double teffH = 0, teffHe = 0, loggH = 0, loggHe = 0, massH = 0, massHe = 0;
         if (selectedEntry instanceof GaiaWDCatalogEntry) {
             GaiaWDCatalogEntry entry = (GaiaWDCatalogEntry) selectedEntry;

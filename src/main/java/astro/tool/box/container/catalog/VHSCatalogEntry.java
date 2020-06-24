@@ -238,6 +238,10 @@ public class VHSCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+    }
+
+    @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.J, j_ap3);

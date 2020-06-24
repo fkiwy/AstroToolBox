@@ -109,6 +109,10 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+    }
+
+    @Override
     public Map<Band, Double> getBands() {
         return new LinkedHashMap<>();
     }

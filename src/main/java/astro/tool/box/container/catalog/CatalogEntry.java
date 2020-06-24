@@ -10,6 +10,8 @@ public interface CatalogEntry {
 
     CatalogEntry copy();
 
+    void applyExtinctionCorrection(Map<String, Double> extinctionsByBand);
+
     CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 
     void loadCatalogElements();

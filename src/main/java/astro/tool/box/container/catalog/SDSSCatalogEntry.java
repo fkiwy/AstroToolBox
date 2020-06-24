@@ -278,6 +278,15 @@ public class SDSSCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        u_mag = u_mag - extinctionsByBand.get(SDSS_U);
+        g_mag = g_mag - extinctionsByBand.get(SDSS_G);
+        r_mag = r_mag - extinctionsByBand.get(SDSS_R);
+        i_mag = i_mag - extinctionsByBand.get(SDSS_I);
+        z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+    }
+
+    @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.r, r_mag);

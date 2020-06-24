@@ -1,9 +1,8 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.util.Constants.REGEXP_SPACES;
-import static astro.tool.box.util.ServiceProviderUtils.establishHttpConnection;
-import static astro.tool.box.util.ServiceProviderUtils.readResponse;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,17 +14,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 public class DustExtinctionService {
-
-    public static final String SDSS_U = "SDSS u";
-    public static final String SDSS_G = "SDSS g";
-    public static final String SDSS_R = "SDSS r";
-    public static final String SDSS_I = "SDSS i";
-    public static final String SDSS_Z = "SDSS z";
-    public static final String TWO_MASS_J = "2MASS J";
-    public static final String TWO_MASS_H = "2MASS H";
-    public static final String TWO_MASS_K = "2MASS Ks";
-    public static final String WISE_1 = "WISE-1";
-    public static final String WISE_2 = "WISE-2";
 
     private static final String SERVICE_PROVIDER = "IRSA Dust Extinction Tool";
     private static final String BASE_URL = "https://irsa.ipac.caltech.edu/cgi-bin/DUST/nph-dust";

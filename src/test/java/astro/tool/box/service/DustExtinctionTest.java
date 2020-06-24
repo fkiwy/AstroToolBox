@@ -1,6 +1,6 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.service.DustExtinctionService.*;
+import static astro.tool.box.util.Constants.*;
 import java.util.Map;
 import static org.junit.Assert.*;
 import org.junit.Test;

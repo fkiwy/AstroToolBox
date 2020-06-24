@@ -4,6 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
@@ -297,6 +298,18 @@ public class SimbadCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String titles = "dist (arcsec),source id,object type,spectral type,ra,dec,plx (mas),plx err,pmra (mas/yr),pmdec (mas/yr),rad vel (km/s),redshift,rv type,U (mag),B (mag),V (mag),R (mag),I (mag),G (mag),J (mag),H (mag),K (mag),u (mag),g (mag),r (mag),i (mag),z (mag),B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
         return titles.split(",", 38);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        u_mag = u_mag - extinctionsByBand.get(SDSS_U);
+        g_mag = g_mag - extinctionsByBand.get(SDSS_G);
+        r_mag = r_mag - extinctionsByBand.get(SDSS_R);
+        i_mag = i_mag - extinctionsByBand.get(SDSS_I);
+        z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+        Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
+        Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
+        Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
     }
 
     @Override
