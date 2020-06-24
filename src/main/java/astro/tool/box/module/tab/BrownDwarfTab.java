@@ -90,7 +90,7 @@ public class BrownDwarfTab {
             extinctionPanel.setPreferredSize(new Dimension(500, 30));
             containerPanel.add(extinctionPanel, BorderLayout.PAGE_START);
 
-            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction");
+            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction - Supported bands: u, g, r, i, z, J, H, K, W1 & W2");
             extinctionPanel.add(dustExtinction);
 
             JPanel spectralTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -130,6 +130,7 @@ public class BrownDwarfTab {
     private void performLookup(JPanel spectralTypePanel, JPanel distancePanel) {
         spectralTypePanel.removeAll();
         distancePanel.removeAll();
+        distancePanel.repaint();
         selectedEntry = catalogQueryTab.getSelectedEntry();
         if (selectedEntry == null) {
             spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
