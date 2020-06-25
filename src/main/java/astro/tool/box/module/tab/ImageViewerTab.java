@@ -1788,7 +1788,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
                         k++;
                     }
                     for (int i = 3; i < epochCount; i += 2) {
@@ -1809,7 +1809,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
                         k++;
                     }
                     break;
@@ -1834,7 +1834,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, takeAverage(fits, 2));
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
                         k++;
                     }
                     for (int i = 3; i < epochCount - 2; i += 2) {
@@ -1855,7 +1855,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, takeAverage(fits, 2));
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true);
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true);
                         k++;
                     }
                     break;
