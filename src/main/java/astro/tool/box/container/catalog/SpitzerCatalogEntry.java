@@ -305,6 +305,12 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         if (W2mag != 0) {
             W2mag = W2mag - extinctionsByBand.get(WISE_2);
         }
+        if (CH1mag != 0) {
+            CH1mag = CH1mag - extinctionsByBand.get(IRAC_1);
+        }
+        if (CH2mag != 0) {
+            CH2mag = CH2mag - extinctionsByBand.get(IRAC_2);
+        }
     }
 
     @Override

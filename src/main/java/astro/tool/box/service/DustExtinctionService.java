@@ -60,6 +60,10 @@ public class DustExtinctionService {
                     extinctionsByBand.put(WISE_1, toDouble(line.split(CHAR)[4]));
                 } else if (line.contains(WISE_2)) {
                     extinctionsByBand.put(WISE_2, toDouble(line.split(CHAR)[4]));
+                } else if (line.contains(IRAC_1)) {
+                    extinctionsByBand.put(IRAC_1, toDouble(line.split(CHAR)[4]));
+                } else if (line.contains(IRAC_2)) {
+                    extinctionsByBand.put(IRAC_2, toDouble(line.split(CHAR)[4]));
                 }
             }
         }

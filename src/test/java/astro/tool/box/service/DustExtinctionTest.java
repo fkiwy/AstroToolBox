@@ -21,6 +21,8 @@ public class DustExtinctionTest {
         assertEquals((Double) 0.691, extinctionsByBand.get(TWO_MASS_K));
         assertEquals((Double) 0.422, extinctionsByBand.get(WISE_1));
         assertEquals((Double) 0.326, extinctionsByBand.get(WISE_2));
+        assertEquals((Double) 0.397, extinctionsByBand.get(IRAC_1));
+        assertEquals((Double) 0.330, extinctionsByBand.get(IRAC_2));
     }
 
 }
