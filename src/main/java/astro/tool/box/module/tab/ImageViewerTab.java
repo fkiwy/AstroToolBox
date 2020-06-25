@@ -1813,7 +1813,7 @@ public class ImageViewerTab {
                         k++;
                     }
                     break;
-                case ASCENDING_DESCENDING_ENHANCED_SUBTRACTED:
+                case ASCENDING_DESCENDING_NOISE_REDUCED:
                     flipbook = new FlipbookComponent[epochCount - 4];
                     k = 0;
                     for (int i = 2; i < epochCount - 2; i += 2) {
