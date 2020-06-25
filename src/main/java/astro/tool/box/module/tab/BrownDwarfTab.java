@@ -175,7 +175,7 @@ public class BrownDwarfTab {
         }
     }
 
-    private void displaySpectralTypes(List<LookupResult> results, JPanel spectralTypeLookupResult, JPanel distanceLookupResult) {
+    private void displaySpectralTypes(List<LookupResult> results, JPanel spectralTypePanel, JPanel distancePanel) {
         List<String[]> resultRows = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
@@ -206,15 +206,15 @@ public class BrownDwarfTab {
             if (!e.getValueIsAdjusting()) {
                 String spt = (String) resultTable.getValueAt(resultTable.getSelectedRow(), 0);
 
-                distanceLookupResult.removeAll();
+                distancePanel.removeAll();
 
                 JPanel entryPanel = new JPanel(new GridLayout(2, 1));
-                distanceLookupResult.add(entryPanel);
+                distancePanel.add(entryPanel);
                 String catalogEntry = "for spectral type " + spt;
                 entryPanel.add(new JLabel(catalogEntry));
 
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(spt, selectedEntry.getBands());
-                displayDistances(distanceResults, distanceLookupResult);
+                displayDistances(distanceResults, distancePanel);
             }
         });
 
@@ -224,18 +224,18 @@ public class BrownDwarfTab {
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder()
         ));
-        spectralTypeLookupResult.add(scrollPanel);
+        spectralTypePanel.add(scrollPanel);
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(100, 200));
-        spectralTypeLookupResult.add(remarks);
+        spectralTypePanel.add(remarks);
         remarks.add(new JLabel("M, L, T & Y dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
         remarks.add(new JLabel("W1-W2, CH1-CH2, J-W2, J-K, g-r, r-i and absolute Gmag"));
         baseFrame.setVisible(true);
     }
 
-    private void displayDistances(List<DistanceLookupResult> results, JPanel lookupResult) {
+    private void displayDistances(List<DistanceLookupResult> results, JPanel distancePanel) {
         List<String[]> resultRows = new ArrayList<>();
         results.forEach(entry -> {
             String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
@@ -265,11 +265,11 @@ public class BrownDwarfTab {
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder()
         ));
-        lookupResult.add(scrollPanel);
+        distancePanel.add(scrollPanel);
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(100, 200));
-        lookupResult.add(remarks);
+        distancePanel.add(remarks);
         remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
         remarks.add(new JLabel("if available: r, i, z, y, J, H, K, W1, W2 and G"));
         remarks.add(new JLabel("Absolute magnitudes are from M, L, T & Y dwarfs lookup table."));
