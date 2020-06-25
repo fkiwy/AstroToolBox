@@ -290,14 +290,14 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo2Dec(teff) + "," + roundTo2Dec(radsun) + "," + roundTo3Dec(lumsun) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
-        return values.split(",", 26);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo2Dec(teff) + "," + roundTo2Dec(radsun) + "," + roundTo3Dec(lumsun) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
+        return columnValues.split(",", 26);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),radius (Rsun),luminosity (Lsun),dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
-        return titles.split(",", 26);
+        String columnTitles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),radius (Rsun),luminosity (Lsun),dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
+        return columnTitles.split(",", 26);
     }
 
     @Override

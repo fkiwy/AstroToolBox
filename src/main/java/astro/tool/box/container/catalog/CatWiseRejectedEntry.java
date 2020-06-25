@@ -240,20 +240,24 @@ public class CatWiseRejectedEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getW1_W2());
-        return values.split(",", 19);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getW1_W2());
+        return columnValues.split(",", 19);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,W1-W2";
-        return titles.split(",", 19);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,W1-W2";
+        return columnTitles.split(",", 19);
     }
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        W1mag = W1mag - extinctionsByBand.get(WISE_1);
-        W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        if (W1mag != 0) {
+            W1mag = W1mag - extinctionsByBand.get(WISE_1);
+        }
+        if (W2mag != 0) {
+            W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        }
     }
 
     @Override

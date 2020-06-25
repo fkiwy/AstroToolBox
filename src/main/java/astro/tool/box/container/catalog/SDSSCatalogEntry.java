@@ -267,23 +267,33 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(raErr) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(decErr) + "," + getSdssObjectType(type) + "," + getSdssPhotometryFlag(clean) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return values.split(",", 24);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(raErr) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(decErr) + "," + getSdssObjectType(type) + "," + getSdssPhotometryFlag(clean) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        return columnValues.split(",", 24);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,u-g,g-r,r-i,i-z";
-        return titles.split(",", 24);
+        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,u-g,g-r,r-i,i-z";
+        return columnTitles.split(",", 24);
     }
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        u_mag = u_mag - extinctionsByBand.get(SDSS_U);
-        g_mag = g_mag - extinctionsByBand.get(SDSS_G);
-        r_mag = r_mag - extinctionsByBand.get(SDSS_R);
-        i_mag = i_mag - extinctionsByBand.get(SDSS_I);
-        z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+        if (u_mag != 0) {
+            u_mag = u_mag - extinctionsByBand.get(SDSS_U);
+        }
+        if (g_mag != 0) {
+            g_mag = g_mag - extinctionsByBand.get(SDSS_G);
+        }
+        if (r_mag != 0) {
+            r_mag = r_mag - extinctionsByBand.get(SDSS_R);
+        }
+        if (i_mag != 0) {
+            i_mag = i_mag - extinctionsByBand.get(SDSS_I);
+        }
+        if (z_mag != 0) {
+            z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+        }
     }
 
     @Override

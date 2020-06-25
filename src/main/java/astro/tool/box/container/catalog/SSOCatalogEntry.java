@@ -267,14 +267,14 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3Dec(ppm) + "," + roundTo3Dec(theta) + "," + roundTo3Dec(rhelio) + "," + roundTo3Dec(amag) + "," + roundTo3Dec(vmag) + "," + roundTo3Dec(perdist) + "," + roundTo3Dec(ecc) + "," + roundTo3Dec(incl) + "," + roundTo3Dec(pertime) + "," + roundTo3Dec(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
-        return values.split(",", 15);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3Dec(ppm) + "," + roundTo3Dec(theta) + "," + roundTo3Dec(rhelio) + "," + roundTo3Dec(amag) + "," + roundTo3Dec(vmag) + "," + roundTo3Dec(perdist) + "," + roundTo3Dec(ecc) + "," + roundTo3Dec(incl) + "," + roundTo3Dec(pertime) + "," + roundTo3Dec(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
+        return columnValues.split(",", 15);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
-        return titles.split(",", 15);
+        String columnTitles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
+        return columnTitles.split(",", 15);
     }
 
     @Override

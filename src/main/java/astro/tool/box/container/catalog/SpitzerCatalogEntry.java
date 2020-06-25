@@ -278,25 +278,41 @@ public class SpitzerCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(CH1mag) + "," + roundTo3Dec(CH1_err) + "," + roundTo3Dec(CH2mag) + "," + roundTo3Dec(CH2_err) + "," + roundTo1Dec(extCH1) + "," + roundTo1Dec(extCH2) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getCH1_CH2()) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return values.split(",", 31);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(CH1mag) + "," + roundTo3Dec(CH1_err) + "," + roundTo3Dec(CH2mag) + "," + roundTo3Dec(CH2_err) + "," + roundTo1Dec(extCH1) + "," + roundTo1Dec(extCH2) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getCH1_CH2()) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
+        return columnValues.split(",", 31);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,CH1 (mag),CH1 err,CH2 (mag),CH2 err,Galaxy-Star (0-1) CH1,Galaxy-Star (0-1) CH2,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,J (mag),J err,H (mag),H err,K (mag),K err,CH1-CH2,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
-        return titles.split(",", 31);
+        String columnTitles = "dist (arcsec),source id,ra,dec,CH1 (mag),CH1 err,CH2 (mag),CH2 err,Galaxy-Star (0-1) CH1,Galaxy-Star (0-1) CH2,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,J (mag),J err,H (mag),H err,K (mag),K err,CH1-CH2,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
+        return columnTitles.split(",", 31);
     }
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        W1mag = W1mag - extinctionsByBand.get(WISE_1);
-        W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        if (Jmag != 0) {
+            Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
+        }
+        if (Hmag != 0) {
+            Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
+        }
+        if (Kmag != 0) {
+            Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
+        }
+        if (W1mag != 0) {
+            W1mag = W1mag - extinctionsByBand.get(WISE_1);
+        }
+        if (W2mag != 0) {
+            W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        }
     }
 
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.J, Jmag);
+        bands.put(Band.H, Hmag);
+        bands.put(Band.K, Kmag);
         bands.put(Band.W1, W1mag);
         bands.put(Band.W2, W2mag);
         return bands;

@@ -228,21 +228,27 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(y_j_pnt) + "," + roundTo3Dec(j_h_pnt) + "," + roundTo3Dec(h_ks_pnt) + "," + roundTo3Dec(j_ks_pnt) + "," + TYPE_TABLE.get(objectType);
-        return values.split(",", 17);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(y_j_pnt) + "," + roundTo3Dec(j_h_pnt) + "," + roundTo3Dec(h_ks_pnt) + "," + roundTo3Dec(j_ks_pnt) + "," + TYPE_TABLE.get(objectType);
+        return columnValues.split(",", 17);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,Y (mag),Y err,J (mag),J err,H (mag),H err,Ks (mag),Ks err,Y-J,J-H,H-Ks,J-Ks,object type";
-        return titles.split(",", 17);
+        String columnTitles = "dist (arcsec),source id,ra,dec,Y (mag),Y err,J (mag),J err,H (mag),H err,Ks (mag),Ks err,Y-J,J-H,H-Ks,J-Ks,object type";
+        return columnTitles.split(",", 17);
     }
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
-        h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
-        ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
+        if (j_ap3 != 0) {
+            j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
+        }
+        if (h_ap3 != 0) {
+            h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
+        }
+        if (ks_ap3 != 0) {
+            ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
+        }
     }
 
     @Override

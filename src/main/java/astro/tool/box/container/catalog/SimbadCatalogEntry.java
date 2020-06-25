@@ -290,26 +290,42 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + objectType + "," + spectralType + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo1Dec(radvel) + "," + roundTo6Dec(redshift) + "," + rvtype + "," + roundTo3Dec(Umag) + "," + roundTo3Dec(Bmag) + "," + roundTo3Dec(Vmag) + "," + roundTo3Dec(Rmag) + "," + roundTo3Dec(Imag) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(getB_V()) + "," + roundTo3Dec(getU_B()) + "," + roundTo3Dec(getV_R()) + "," + roundTo3Dec(getV_I()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return values.split(",", 38);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + objectType + "," + spectralType + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo1Dec(radvel) + "," + roundTo6Dec(redshift) + "," + rvtype + "," + roundTo3Dec(Umag) + "," + roundTo3Dec(Bmag) + "," + roundTo3Dec(Vmag) + "," + roundTo3Dec(Rmag) + "," + roundTo3Dec(Imag) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(getB_V()) + "," + roundTo3Dec(getU_B()) + "," + roundTo3Dec(getV_R()) + "," + roundTo3Dec(getV_I()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        return columnValues.split(",", 38);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,object type,spectral type,ra,dec,plx (mas),plx err,pmra (mas/yr),pmdec (mas/yr),rad vel (km/s),redshift,rv type,U (mag),B (mag),V (mag),R (mag),I (mag),G (mag),J (mag),H (mag),K (mag),u (mag),g (mag),r (mag),i (mag),z (mag),B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
-        return titles.split(",", 38);
+        String columnTitles = "dist (arcsec),source id,object type,spectral type,ra,dec,plx (mas),plx err,pmra (mas/yr),pmdec (mas/yr),rad vel (km/s),redshift,rv type,U (mag),B (mag),V (mag),R (mag),I (mag),G (mag),J (mag),H (mag),K (mag),u (mag),g (mag),r (mag),i (mag),z (mag),B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
+        return columnTitles.split(",", 38);
     }
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        u_mag = u_mag - extinctionsByBand.get(SDSS_U);
-        g_mag = g_mag - extinctionsByBand.get(SDSS_G);
-        r_mag = r_mag - extinctionsByBand.get(SDSS_R);
-        i_mag = i_mag - extinctionsByBand.get(SDSS_I);
-        z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
-        Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
-        Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
-        Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
+        if (u_mag != 0) {
+            u_mag = u_mag - extinctionsByBand.get(SDSS_U);
+        }
+        if (g_mag != 0) {
+            g_mag = g_mag - extinctionsByBand.get(SDSS_G);
+        }
+        if (r_mag != 0) {
+            r_mag = r_mag - extinctionsByBand.get(SDSS_R);
+        }
+        if (i_mag != 0) {
+            i_mag = i_mag - extinctionsByBand.get(SDSS_I);
+        }
+        if (z_mag != 0) {
+            z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+        }
+        if (Jmag != 0) {
+            Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
+        }
+        if (Hmag != 0) {
+            Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
+        }
+        if (Kmag != 0) {
+            Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
+        }
     }
 
     @Override
