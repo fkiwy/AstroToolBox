@@ -184,8 +184,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getActualDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("Absolute G (mag)", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(get_G_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(get_BP_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(getG_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(getBP_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -274,7 +274,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(get_G_RP()) + "," + roundTo3Dec(get_BP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
         return columnValues.split(",", 33);
     }
 
@@ -312,8 +312,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
-        colors.put(Color.G_RP, get_G_RP());
-        colors.put(Color.BP_RP, get_BP_RP());
+        colors.put(Color.G_RP, getG_RP());
+        colors.put(Color.BP_RP, getBP_RP());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
@@ -472,7 +472,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
-    public double get_G_RP() {
+    public double getG_RP() {
         if (Gmag == 0 || RPmag == 0) {
             return 0;
         } else {
@@ -480,7 +480,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         }
     }
 
-    public double get_BP_RP() {
+    public double getBP_RP() {
         if (BPmag == 0 || RPmag == 0) {
             return 0;
         } else {
