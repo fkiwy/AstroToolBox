@@ -3,6 +3,7 @@ package astro.tool.box.container.catalog;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ public interface CatalogEntry {
 
     CatalogEntry copy();
 
-    void applyExtinctionCorrection(Map<String, Double> extinctionsByBand);
+    void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException;
 
     CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 

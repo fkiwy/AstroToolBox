@@ -13,6 +13,7 @@ import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.DustExtinctionService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -20,6 +21,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -135,7 +137,7 @@ public class BrownDwarfTab {
         if (selectedEntry == null) {
             spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
         } else {
-            JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel entryPanel = new JPanel(new GridLayout(2, 1));
             spectralTypePanel.add(entryPanel);
             String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
                     + " RA = " + roundTo7DecNZ(selectedEntry.getRa()) + " dec = " + roundTo7DecNZ(selectedEntry.getDec());
@@ -157,8 +159,11 @@ public class BrownDwarfTab {
                 try {
                     Map<String, Double> extinctionsByBand = dustExtinctionService.getExtinctionsByBand(selectedEntry.getRa(), selectedEntry.getDec(), 2.0);
                     selectedEntry = selectedEntry.copy();
-                    selectedEntry.applyExtinctionCorrection(extinctionsByBand);
-
+                    try {
+                        selectedEntry.applyExtinctionCorrection(extinctionsByBand);
+                    } catch (NoExtinctionValuesException ex) {
+                        entryPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.DARK_BLUE));
+                    }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 } finally {
@@ -203,7 +208,7 @@ public class BrownDwarfTab {
 
                 distanceLookupResult.removeAll();
 
-                JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                JPanel entryPanel = new JPanel(new GridLayout(2, 1));
                 distanceLookupResult.add(entryPanel);
                 String catalogEntry = "for spectral type " + spt;
                 entryPanel.add(new JLabel(catalogEntry));

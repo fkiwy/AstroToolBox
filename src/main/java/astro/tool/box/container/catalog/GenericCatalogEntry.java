@@ -5,6 +5,7 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,7 +110,8 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
+        throw new NoExtinctionValuesException();
     }
 
     @Override

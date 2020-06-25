@@ -17,6 +17,7 @@ import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.service.EffectiveTemperatureLookupService;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -112,7 +113,7 @@ public class WhiteDwarfTab {
                         lookupResult.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
                         return;
                     } else {
-                        JPanel entryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        JPanel entryPanel = new JPanel(new GridLayout(2, 1));
                         lookupResult.add(entryPanel);
                         String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
                                 + " RA = " + roundTo7DecNZ(selectedEntry.getRa()) + " dec = " + roundTo7DecNZ(selectedEntry.getDec());
