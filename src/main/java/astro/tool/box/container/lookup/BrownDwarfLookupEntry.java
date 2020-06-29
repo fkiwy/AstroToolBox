@@ -6,7 +6,7 @@ import astro.tool.box.enumeration.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BrownDwarfLookupEntry implements SpectralTypeLookup {
+public class BrownDwarfLookupEntry implements MainSequenceLookup {
 
     // Spectral type
     private final String spt;

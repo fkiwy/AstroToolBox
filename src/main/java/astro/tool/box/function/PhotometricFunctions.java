@@ -4,6 +4,7 @@ import astro.tool.box.container.StringPair;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.container.lookup.MainSequenceLookup;
 import astro.tool.box.enumeration.Color;
 import static java.lang.Math.*;
 import java.util.ArrayList;
@@ -120,7 +121,13 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
-        double toleranceValue = 0.3;
+        double toleranceValue;
+        if (minEntry instanceof MainSequenceLookup) {
+            toleranceValue = 3.0;
+        } else {
+            toleranceValue = 0.3;
+        }
+        //System.out.println("toleranceValue=" + toleranceValue);
         double avgColorValue = (minColorValue + maxColorValue) / 2;
         if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + toleranceValue) {
             return new LookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));

@@ -5,7 +5,7 @@ import astro.tool.box.enumeration.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpectralTypeLookupEntry implements SpectralTypeLookup {
+public class SpectralTypeLookupEntry implements MainSequenceLookup {
 
     // Spectral type
     private final String spt;
