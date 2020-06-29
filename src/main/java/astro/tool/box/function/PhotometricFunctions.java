@@ -123,9 +123,9 @@ public class PhotometricFunctions {
         }
         double toleranceValue;
         if (minEntry instanceof MainSequenceLookup) {
-            toleranceValue = 3.0;
+            toleranceValue = 1.0;
         } else {
-            toleranceValue = 0.3;
+            toleranceValue = 0.2;
         }
         //System.out.println("toleranceValue=" + toleranceValue);
         double avgColorValue = (minColorValue + maxColorValue) / 2;

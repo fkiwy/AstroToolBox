@@ -36,6 +36,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
 public class WhiteDwarfTab {
@@ -181,7 +182,8 @@ public class WhiteDwarfTab {
         String titles = "teff,mass (Msun),logg,age,matched colors,nearest color,gap to nearest color";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
-        JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
+        DefaultTableModel defaultTableModel = new DefaultTableModel(resultRows.toArray(rows), columns);
+        JTable resultTable = new JTable(defaultTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return true;
@@ -190,6 +192,8 @@ public class WhiteDwarfTab {
         alignResultColumns(resultTable, resultRows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        resultTable.setRowSorter(createResultTableSorter(defaultTableModel, resultRows));
+        resultTable.getRowSorter().toggleSortOrder(0);
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
         columnModel.getColumn(1).setPreferredWidth(50);
