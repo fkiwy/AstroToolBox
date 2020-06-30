@@ -137,6 +137,7 @@ public class BrownDwarfTab {
         if (selectedEntry == null) {
             spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
         } else {
+            distancePanel.add(createLabel("No spectral type selected in the table above!", JColor.DARK_RED));
             JPanel entryPanel = new JPanel(new GridLayout(2, 1));
             spectralTypePanel.add(entryPanel);
             String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
