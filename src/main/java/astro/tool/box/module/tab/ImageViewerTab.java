@@ -29,6 +29,7 @@ import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
@@ -54,6 +55,7 @@ import astro.tool.box.module.shape.Square;
 import astro.tool.box.module.shape.Triangle;
 import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
@@ -70,6 +72,8 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -167,6 +171,7 @@ public class ImageViewerTab {
     private final CatalogQueryFacade catalogQueryFacade;
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
+    private final DistanceLookupService distanceLookupService;
     private List<CatalogEntry> simbadEntries;
     private List<CatalogEntry> gaiaEntries;
     private List<CatalogEntry> gaiaTpmEntries;
@@ -334,6 +339,7 @@ public class ImageViewerTab {
                 return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
+            distanceLookupService = new DistanceLookupService(entries);
         }
     }
 
@@ -359,7 +365,7 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2025;
+            int controlPanelHeight = 2000;
 
             JPanel controlPanel = new JPanel(new GridLayout(83, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
@@ -3498,7 +3504,8 @@ public class ImageViewerTab {
         container.add(detailPanel);
 
         if (!simpleLayout) {
-            container.add(createMainSequenceSpectralTypePanel(catalogEntry));
+            List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
@@ -3515,7 +3522,8 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            container.add(createBrownDwarfsSpectralTypePanel(catalogEntry));
+            List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(collectPanel);
@@ -3537,6 +3545,33 @@ public class ImageViewerTab {
                 collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
             });
 
+            JButton copyButton = new JButton("Copy");
+            collectPanel.add(copyButton);
+            copyButton.addActionListener((ActionEvent evt) -> {
+                StringBuilder toCopytoClipboard = new StringBuilder();
+                toCopytoClipboard.append(catalogEntry.getEntryData());
+                toCopytoClipboard.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
+                toCopytoClipboard.append(LINE_SEP).append("* Main sequence table:");
+                mainSequenceResults.forEach(entry -> {
+                    toCopytoClipboard.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+                });
+                toCopytoClipboard.append(LINE_SEP).append("* M-L-T-Y dwarfs only:");
+                brownDwarfsResults.forEach(entry -> {
+                    toCopytoClipboard.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+                    List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
+                    toCopytoClipboard.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
+                    distanceResults.forEach(result -> {
+                        toCopytoClipboard.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
+                    });
+                });
+                StringSelection stringSelection = new StringSelection(toCopytoClipboard.toString());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(stringSelection, null);
+
+                message.setText("Copied to clipboard!");
+                messageTimer.restart();
+            });
+
             collectPanel.add(message);
         }
 
@@ -3552,92 +3587,80 @@ public class ImageViewerTab {
         windowShift += 10;
     }
 
-    private JScrollPane createMainSequenceSpectralTypePanel(CatalogEntry catalogEntry) {
-        try {
-            List<LookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+    private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results) {
+        List<String[]> spectralTypes = new ArrayList<>();
+        results.forEach(entry -> {
+            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+            String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
+                    + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
+            spectralTypes.add(spectralType.split(",", 7));
+        });
 
-            List<String[]> spectralTypes = new ArrayList<>();
-            results.forEach(entry -> {
-                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
-                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-                spectralTypes.add(spectralType.split(",", 7));
-            });
+        String titles = "spt,teff,radius (Rsun),mass (Msun),matched colors,nearest color,gap to nearest color";
+        String[] columns = titles.split(",", 7);
+        Object[][] rows = new Object[][]{};
+        JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return true;
+            }
+        };
+        alignResultColumns(spectralTypeTable, spectralTypes);
+        spectralTypeTable.setAutoCreateRowSorter(true);
+        spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(50);
+        columnModel.getColumn(2).setPreferredWidth(55);
+        columnModel.getColumn(3).setPreferredWidth(50);
+        columnModel.getColumn(4).setPreferredWidth(100);
+        columnModel.getColumn(5).setPreferredWidth(100);
+        columnModel.getColumn(6).setPreferredWidth(100);
 
-            String titles = "spt,teff,radius (Rsun),mass (Msun),matched colors,nearest color,gap to nearest color";
-            String[] columns = titles.split(",", 7);
-            Object[][] rows = new Object[][]{};
-            JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return true;
-                }
-            };
-            alignResultColumns(spectralTypeTable, spectralTypes);
-            spectralTypeTable.setAutoCreateRowSorter(true);
-            spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
-            columnModel.getColumn(0).setPreferredWidth(50);
-            columnModel.getColumn(1).setPreferredWidth(50);
-            columnModel.getColumn(2).setPreferredWidth(55);
-            columnModel.getColumn(3).setPreferredWidth(50);
-            columnModel.getColumn(4).setPreferredWidth(100);
-            columnModel.getColumn(5).setPreferredWidth(100);
-            columnModel.getColumn(6).setPreferredWidth(100);
+        JScrollPane spectralTypePanel = spectralTypes.isEmpty()
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                : new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Main sequence spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+        ));
 
-            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                    : new JScrollPane(spectralTypeTable);
-            spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Main sequence spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
-            ));
-
-            return spectralTypePanel;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return spectralTypePanel;
     }
 
-    private JScrollPane createBrownDwarfsSpectralTypePanel(CatalogEntry catalogEntry) {
-        try {
-            List<LookupResult> results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+    private JScrollPane createBrownDwarfsSpectralTypePanel(List<LookupResult> results) {
+        List<String[]> spectralTypes = new ArrayList<>();
+        results.forEach(entry -> {
+            String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+            String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
+            spectralTypes.add(spectralType.split(",", 4));
+        });
 
-            List<String[]> spectralTypes = new ArrayList<>();
-            results.forEach(entry -> {
-                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-                String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-                spectralTypes.add(spectralType.split(",", 4));
-            });
+        String titles = "spt,matched colors,nearest color,gap to nearest color";
+        String[] columns = titles.split(",", 4);
+        Object[][] rows = new Object[][]{};
+        JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return true;
+            }
+        };
+        alignResultColumns(spectralTypeTable, spectralTypes);
+        spectralTypeTable.setAutoCreateRowSorter(true);
+        spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = spectralTypeTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(100);
+        columnModel.getColumn(3).setPreferredWidth(100);
 
-            String titles = "spt,matched colors,nearest color,gap to nearest color";
-            String[] columns = titles.split(",", 4);
-            Object[][] rows = new Object[][]{};
-            JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return true;
-                }
-            };
-            alignResultColumns(spectralTypeTable, spectralTypes);
-            spectralTypeTable.setAutoCreateRowSorter(true);
-            spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            TableColumnModel columnModel = spectralTypeTable.getColumnModel();
-            columnModel.getColumn(0).setPreferredWidth(50);
-            columnModel.getColumn(1).setPreferredWidth(100);
-            columnModel.getColumn(2).setPreferredWidth(100);
-            columnModel.getColumn(3).setPreferredWidth(100);
+        JScrollPane spectralTypePanel = spectralTypes.isEmpty()
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                : new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "M-L-T-Y dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+        ));
 
-            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
-                    : new JScrollPane(spectralTypeTable);
-            spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "M-L-T-Y dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
-            ));
-
-            return spectralTypePanel;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return spectralTypePanel;
     }
 
     private double getFovDiagonal() {
