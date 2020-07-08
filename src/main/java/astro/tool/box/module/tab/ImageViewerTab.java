@@ -2836,7 +2836,7 @@ public class ImageViewerTab {
             }
             if (Epoch.isSubtracted(epoch)) {
                 minVal = -maxVal / 10;
-            } else if (minVal < -5000) {
+            } else if (minVal < -3000) {
                 minVal = -maxVal / 20;
             }
         }
