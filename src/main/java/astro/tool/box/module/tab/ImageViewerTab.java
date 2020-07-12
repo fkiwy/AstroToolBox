@@ -226,6 +226,7 @@ public class ImageViewerTab {
     private JCheckBox createDataSheet;
     private JCheckBox skipBadImages;
     private JCheckBox skipSingleNodes;
+    private JCheckBox markDifferences;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JCheckBox transposeProperMotion;
@@ -365,9 +366,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2000;
+            int controlPanelHeight = 2025;
 
-            JPanel controlPanel = new JPanel(new GridLayout(83, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(84, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -469,10 +470,18 @@ public class ImageViewerTab {
             controlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                int savedValue = highContrast;
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
+                }
+                if (markDifferences.isSelected() && flipbook != null && savedValue != highContrast) {
+                    detectDifferences();
                 }
             });
 
@@ -487,6 +496,11 @@ public class ImageViewerTab {
             controlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                int savedValue = lowContrast;
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
                 if (!Epoch.isSubtracted(epoch)) {
@@ -496,6 +510,9 @@ public class ImageViewerTab {
                     applyLimits.setSelected(false);
                     setContrast(10, HIGH_CONTRAST);
                     createFlipbook();
+                }
+                if (markDifferences.isSelected() && flipbook != null && savedValue != lowContrast) {
+                    detectDifferences();
                 }
             });
 
@@ -510,9 +527,16 @@ public class ImageViewerTab {
             controlPanel.add(rawScaleSlider);
             rawScaleSlider.setBackground(Color.WHITE);
             rawScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                int savedValue = rawContrast;
                 rawContrast = rawScaleSlider.getValue();
                 rawScaleLabel.setText(String.format("Raw image contrast: %d", rawContrast));
-
+                if (markDifferences.isSelected() && flipbook != null && savedValue != rawContrast) {
+                    detectDifferences();
+                }
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -883,6 +907,14 @@ public class ImageViewerTab {
                 imagesW2.clear();
                 reloadImages = true;
                 createFlipbook();
+            });
+
+            markDifferences = new JCheckBox("Mark differences");
+            controlPanel.add(markDifferences);
+            markDifferences.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
             });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
@@ -2041,6 +2073,10 @@ public class ImageViewerTab {
             int avgVal = (avgValW1 + avgValW2) / divisor;
             setMinMaxValues(minVal, maxVal, avgVal);
 
+            if (markDifferences.isSelected()) {
+                detectDifferences();
+            }
+
             timer.restart();
             timerStopped = false;
         } catch (Exception ex) {
@@ -2098,7 +2134,14 @@ public class ImageViewerTab {
         } else {
             image = createImage(component.getBand(), component.getEpoch());
         }
-        image = flip(zoom(image, zoom));
+        image = zoom(image, zoom);
+        if (markDifferences.isSelected()) {
+            for (NumberPair diffPixel : component.getDiffPixels()) {
+                Circle circle = new Circle(getScaledValue(diffPixel.getX()), getScaledValue(diffPixel.getY()), getScaledValue(1), Color.RED);
+                circle.draw(image.getGraphics());
+            }
+        }
+        image = flip(image);
         addOverlaysAndPMVectors(image);
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
@@ -2529,6 +2572,67 @@ public class ImageViewerTab {
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
         return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
+    }
+
+    private void detectDifferences() {
+        // 92.1944649 18.1008679
+        for (int i = 0; i < flipbook.length; i++) {
+            FlipbookComponent component1 = flipbook[i];
+            FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
+            int band = component1.getBand();
+            int epoch1 = component1.getEpoch();
+            int epoch2 = component2.getEpoch();
+            List<NumberPair> diffPixels = new ArrayList<>();
+            if (band == 1 || band == 12) {
+                detectDifferencesPerBand(1, epoch1, epoch2, diffPixels);
+            }
+            if (band == 2 || band == 12) {
+                detectDifferencesPerBand(2, epoch1, epoch2, diffPixels);
+            }
+            component2.setDiffPixels(diffPixels);
+        }
+    }
+
+    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberPair> diffPixels) {
+        try {
+            Fits fits = getImage(band, epoch1);
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values1 = (float[][]) imageData.getData();
+
+            fits = getImage(band, epoch2);
+            hdu = (ImageHDU) fits.getHDU(0);
+            imageData = (ImageData) hdu.getData();
+            float[][] values2 = (float[][]) imageData.getData();
+
+            List<NumberPair> pixels = new ArrayList<>();
+            for (int i = 0; i < axisY; ++i) {
+                for (int j = 0; j < axisX; ++j) {
+                    for (int k = max(0, i - 1); k <= min(i + 1, axisY - 1); k++) {
+                        for (int u = max(0, j - 1); u <= min(j + 1, axisX - 1); u++) {
+                            try {
+                                float value1 = processPixel(values1[k][u]);
+                                float value2 = processPixel(values2[k][u]);
+                                float max = max(value1, value2);
+                                float min = min(value1, value2);
+                                //if (max - min > min && value1 == max) {
+                                if (max - min > min) {
+                                    pixels.add(new NumberPair(j, i));
+
+                                }
+                            } catch (ArrayIndexOutOfBoundsException ex) {
+                            }
+                        }
+                    }
+                    if (pixels.size() > 1) {
+                        diffPixels.addAll(pixels);
+                    }
+                    pixels.clear();
+                }
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private BufferedImage createImage(int band, int epoch) {
