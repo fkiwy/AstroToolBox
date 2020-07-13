@@ -692,73 +692,6 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            JPanel differencesPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differencesPanel);
-            differencesPanel.setBackground(Color.WHITE);
-
-            markDifferences = new JCheckBox("Mark differences");
-            differencesPanel.add(markDifferences);
-            markDifferences.setBackground(Color.WHITE);
-            markDifferences.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            blinkMarkers = new JCheckBox("Blink");
-            differencesPanel.add(blinkMarkers);
-            blinkMarkers.setBackground(Color.WHITE);
-            blinkMarkers.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            differencesPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differencesPanel);
-            differencesPanel.setBackground(Color.WHITE);
-
-            showCirclesButton = new JRadioButton("Mark with circle", false);
-            differencesPanel.add(showCirclesButton);
-            showCirclesButton.setBackground(Color.WHITE);
-            showCirclesButton.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            JRadioButton showDotsButton = new JRadioButton("Mark with dots", true);
-            differencesPanel.add(showDotsButton);
-            showDotsButton.setBackground(Color.WHITE);
-            showDotsButton.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            ButtonGroup buttonGroup = new ButtonGroup();
-            buttonGroup.add(showCirclesButton);
-            buttonGroup.add(showDotsButton);
-
-            differencesPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differencesPanel);
-            differencesPanel.setBackground(Color.WHITE);
-
-            sensitivityLabel = new JLabel(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
-            differencesPanel.add(sensitivityLabel);
-
-            sensitivitySlider = new JSlider(1, maxSensitivity, SENSITIVITY);
-            differencesPanel.add(sensitivitySlider);
-            sensitivitySlider.setBackground(Color.WHITE);
-            sensitivitySlider.addChangeListener((ChangeEvent e) -> {
-                int savedValue = sensitivity;
-                sensitivity = sensitivitySlider.getValue();
-                sensitivityLabel.setText(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
-                if (markDifferences.isSelected() && flipbook != null && savedValue != sensitivity) {
-                    detectDifferences();
-                }
-            });
-
             controlPanel.add(new JLabel(underline("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
@@ -868,7 +801,7 @@ public class ImageViewerTab {
             JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
             controlPanel.add(recenterImagesButton);
 
-            buttonGroup = new ButtonGroup();
+            ButtonGroup buttonGroup = new ButtonGroup();
             buttonGroup.add(showCatalogsButton);
             buttonGroup.add(recenterImagesButton);
 
@@ -951,6 +884,73 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
+
+            JPanel differencesPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differencesPanel);
+            differencesPanel.setBackground(Color.WHITE);
+
+            markDifferences = new JCheckBox("Mark differences");
+            differencesPanel.add(markDifferences);
+            markDifferences.setBackground(Color.WHITE);
+            markDifferences.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            blinkMarkers = new JCheckBox("Blink");
+            differencesPanel.add(blinkMarkers);
+            blinkMarkers.setBackground(Color.WHITE);
+            blinkMarkers.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            differencesPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differencesPanel);
+            differencesPanel.setBackground(Color.WHITE);
+
+            showCirclesButton = new JRadioButton("Mark with circles", false);
+            differencesPanel.add(showCirclesButton);
+            showCirclesButton.setBackground(Color.WHITE);
+            showCirclesButton.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            JRadioButton showDotsButton = new JRadioButton("Mark with dots", true);
+            differencesPanel.add(showDotsButton);
+            showDotsButton.setBackground(Color.WHITE);
+            showDotsButton.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            buttonGroup = new ButtonGroup();
+            buttonGroup.add(showCirclesButton);
+            buttonGroup.add(showDotsButton);
+
+            differencesPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differencesPanel);
+            differencesPanel.setBackground(Color.WHITE);
+
+            sensitivityLabel = new JLabel(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
+            differencesPanel.add(sensitivityLabel);
+
+            sensitivitySlider = new JSlider(1, maxSensitivity, SENSITIVITY);
+            differencesPanel.add(sensitivitySlider);
+            sensitivitySlider.setBackground(Color.WHITE);
+            sensitivitySlider.addChangeListener((ChangeEvent e) -> {
+                int savedValue = sensitivity;
+                sensitivity = sensitivitySlider.getValue();
+                sensitivityLabel.setText(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
+                if (markDifferences.isSelected() && flipbook != null && savedValue != sensitivity) {
+                    detectDifferences();
+                }
+            });
 
             skipBadImages = new JCheckBox("Skip bad quality images", true);
             controlPanel.add(skipBadImages);
