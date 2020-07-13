@@ -103,6 +103,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -155,6 +156,8 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
+    public static final int MAX_SENSITIVITY = 10;
+    public static final int SENSITIVITY = 2;
     public static final int RAW_CONTRAST = 1;
     public static final int LOW_CONTRAST = 50;
     public static final int HIGH_CONTRAST = 0;
@@ -227,6 +230,7 @@ public class ImageViewerTab {
     private JCheckBox skipBadImages;
     private JCheckBox skipSingleNodes;
     private JCheckBox markDifferences;
+    private JCheckBox blinkMarkers;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JCheckBox transposeProperMotion;
@@ -241,6 +245,7 @@ public class ImageViewerTab {
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
+    private JSlider sensitivitySlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -250,6 +255,7 @@ public class ImageViewerTab {
     private JTextArea downloadLog;
     private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
+    private JRadioButton showCirclesButton;
     private JLabel epochLabel;
     private JLabel changeFovLabel;
     private JTable collectionTable;
@@ -283,6 +289,7 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
+    private int sensitivity = SENSITIVITY;
     private int rawContrast = RAW_CONTRAST;
     private int lowContrast = LOW_CONTRAST;
     private int highContrast = HIGH_CONTRAST;
@@ -366,9 +373,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2025;
+            int controlPanelHeight = 2075;
 
-            JPanel controlPanel = new JPanel(new GridLayout(84, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(86, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -692,6 +699,77 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            JPanel differencesPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differencesPanel);
+            differencesPanel.setBackground(Color.WHITE);
+
+            markDifferences = new JCheckBox("Mark differences");
+            differencesPanel.add(markDifferences);
+            markDifferences.setBackground(Color.WHITE);
+            markDifferences.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            blinkMarkers = new JCheckBox("Blink");
+            differencesPanel.add(blinkMarkers);
+            blinkMarkers.setBackground(Color.WHITE);
+            blinkMarkers.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            differencesPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differencesPanel);
+            differencesPanel.setBackground(Color.WHITE);
+
+            showCirclesButton = new JRadioButton("Mark with circle", false);
+            differencesPanel.add(showCirclesButton);
+            showCirclesButton.setBackground(Color.WHITE);
+            showCirclesButton.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            JRadioButton showDotsButton = new JRadioButton("Mark with dots", true);
+            differencesPanel.add(showDotsButton);
+            showDotsButton.setBackground(Color.WHITE);
+            showDotsButton.addActionListener((ActionEvent evt) -> {
+                if (markDifferences.isSelected() && flipbook != null) {
+                    detectDifferences();
+                }
+            });
+
+            ButtonGroup buttonGroup = new ButtonGroup();
+            buttonGroup.add(showCirclesButton);
+            buttonGroup.add(showDotsButton);
+
+            differencesPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(differencesPanel);
+            differencesPanel.setBackground(Color.WHITE);
+
+            JLabel sensitivityLabel = new JLabel(String.format("Sensitivity: %d/%d", MAX_SENSITIVITY + 1 - sensitivity, MAX_SENSITIVITY));
+            differencesPanel.add(sensitivityLabel);
+
+            sensitivitySlider = new JSlider(1, MAX_SENSITIVITY, SENSITIVITY);
+            differencesPanel.add(sensitivitySlider);
+            sensitivitySlider.setBackground(Color.WHITE);
+            sensitivitySlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                int savedValue = sensitivity;
+                sensitivity = sensitivitySlider.getValue();
+                sensitivityLabel.setText(String.format("Sensitivity: %d/%d", MAX_SENSITIVITY + 1 - sensitivity, MAX_SENSITIVITY));
+                if (markDifferences.isSelected() && flipbook != null && savedValue != sensitivity) {
+                    detectDifferences();
+                }
+            });
+
             controlPanel.add(new JLabel(underline("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
@@ -801,9 +879,9 @@ public class ImageViewerTab {
             JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
             controlPanel.add(recenterImagesButton);
 
-            ButtonGroup radioGroup = new ButtonGroup();
-            radioGroup.add(showCatalogsButton);
-            radioGroup.add(recenterImagesButton);
+            buttonGroup = new ButtonGroup();
+            buttonGroup.add(showCatalogsButton);
+            buttonGroup.add(recenterImagesButton);
 
             controlPanel.add(new JLabel(underline("Mouse wheel click:")));
 
@@ -866,8 +944,8 @@ public class ImageViewerTab {
             differentSizeButton = new JRadioButton("Show object in different FoV", true);
             controlPanel.add(differentSizeButton);
 
-            radioGroup = new ButtonGroup();
-            radioGroup.add(differentSizeButton);
+            buttonGroup = new ButtonGroup();
+            buttonGroup.add(differentSizeButton);
 
             JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(differentSizePanel);
@@ -907,14 +985,6 @@ public class ImageViewerTab {
                 imagesW2.clear();
                 reloadImages = true;
                 createFlipbook();
-            });
-
-            markDifferences = new JCheckBox("Mark differences");
-            controlPanel.add(markDifferences);
-            markDifferences.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
             });
 
             hideMagnifier = new JCheckBox("Hide magnifier panel");
@@ -2136,8 +2206,8 @@ public class ImageViewerTab {
         }
         image = zoom(image, zoom);
         if (markDifferences.isSelected()) {
-            for (NumberPair diffPixel : component.getDiffPixels()) {
-                Circle circle = new Circle(getScaledValue(diffPixel.getX()), getScaledValue(diffPixel.getY()), getScaledValue(1), Color.RED);
+            for (NumberTriplet diffPixel : component.getDiffPixels()) {
+                Circle circle = new Circle(getScaledValue(diffPixel.getX()), getScaledValue(diffPixel.getY()), getScaledValue(diffPixel.getZ()), Color.RED);
                 circle.draw(image.getGraphics());
             }
         }
@@ -2582,7 +2652,7 @@ public class ImageViewerTab {
             int band = component1.getBand();
             int epoch1 = component1.getEpoch();
             int epoch2 = component2.getEpoch();
-            List<NumberPair> diffPixels = new ArrayList<>();
+            List<NumberTriplet> diffPixels = new ArrayList<>();
             if (band == 1 || band == 12) {
                 detectDifferencesPerBand(1, epoch1, epoch2, diffPixels);
             }
@@ -2593,7 +2663,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberPair> diffPixels) {
+    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberTriplet> diffPixels) {
         try {
             Fits fits = getImage(band, epoch1);
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
@@ -2605,29 +2675,62 @@ public class ImageViewerTab {
             imageData = (ImageData) hdu.getData();
             float[][] values2 = (float[][]) imageData.getData();
 
-            List<NumberPair> pixels = new ArrayList<>();
-            for (int i = 0; i < axisY; ++i) {
-                for (int j = 0; j < axisX; ++j) {
-                    for (int k = max(0, i - 1); k <= min(i + 1, axisY - 1); k++) {
-                        for (int u = max(0, j - 1); u <= min(j + 1, axisX - 1); u++) {
+            List<Integer> xPixels = new ArrayList<>();
+            List<Integer> yPixels = new ArrayList<>();
+            List<NumberTriplet> pixels = new ArrayList<>();
+            for (int i = 0; i < axisY; i += 20) {
+                for (int j = 0; j < axisX; j += 20) {
+                    for (int k = max(0, i - 10); k <= min(i + 10, axisY); k++) {
+                        for (int u = max(0, j - 10); u <= min(j + 10, axisX); u++) {
                             try {
                                 float value1 = processPixel(values1[k][u]);
                                 float value2 = processPixel(values2[k][u]);
                                 float max = max(value1, value2);
                                 float min = min(value1, value2);
-                                //if (max - min > min && value1 == max) {
-                                if (max - min > min) {
-                                    pixels.add(new NumberPair(j, i));
-
+                                boolean isSelectable = false;
+                                if (blinkMarkers.isSelected()) {
+                                    if (max - min > min && value1 == max) {
+                                        isSelectable = true;
+                                    }
+                                } else {
+                                    if (max - min > min) {
+                                        isSelectable = true;
+                                    }
+                                }
+                                if (isSelectable) {
+                                    if (showCirclesButton.isSelected()) {
+                                        xPixels.add(u);
+                                        yPixels.add(k);
+                                    } else {
+                                        pixels.add(new NumberTriplet(u, k, 1));
+                                    }
                                 }
                             } catch (ArrayIndexOutOfBoundsException ex) {
                             }
                         }
                     }
-                    if (pixels.size() > 1) {
-                        diffPixels.addAll(pixels);
+                    if (showCirclesButton.isSelected()) {
+                        if (xPixels.size() > sensitivity) {
+                            IntSummaryStatistics xStats = xPixels.stream().mapToInt((x) -> x).summaryStatistics();
+                            IntSummaryStatistics yStats = yPixels.stream().mapToInt((y) -> y).summaryStatistics();
+
+                            double xCenter = xStats.getAverage();
+                            double yCenter = yStats.getAverage();
+
+                            int xDiff = xStats.getMax() - xStats.getMin();
+                            int yDiff = yStats.getMax() - yStats.getMin();
+                            int diameter = max(xDiff, yDiff);
+
+                            diffPixels.add(new NumberTriplet(xCenter, yCenter, diameter));
+                        }
+                        xPixels.clear();
+                        yPixels.clear();
+                    } else {
+                        if (pixels.size() > sensitivity) {
+                            diffPixels.addAll(pixels);
+                        }
+                        pixels.clear();
                     }
-                    pixels.clear();
                 }
             }
         } catch (Exception ex) {
