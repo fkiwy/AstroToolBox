@@ -156,8 +156,7 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
-    public static final int MAX_SENSITIVITY = 10;
-    public static final int SENSITIVITY = 2;
+    public static final int SENSITIVITY = 1;
     public static final int RAW_CONTRAST = 1;
     public static final int LOW_CONTRAST = 50;
     public static final int HIGH_CONTRAST = 0;
@@ -258,6 +257,7 @@ public class ImageViewerTab {
     private JRadioButton showCirclesButton;
     private JLabel epochLabel;
     private JLabel changeFovLabel;
+    private JLabel sensitivityLabel;
     private JTable collectionTable;
     private Timer timer;
 
@@ -289,7 +289,9 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
+    private int maxSensitivity = LOW_CONTRAST / 10 * 2;
     private int sensitivity = SENSITIVITY;
+
     private int rawContrast = RAW_CONTRAST;
     private int lowContrast = LOW_CONTRAST;
     private int highContrast = HIGH_CONTRAST;
@@ -477,13 +479,10 @@ public class ImageViewerTab {
             controlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 int savedValue = highContrast;
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
+                setMaxSensitivity();
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
                 }
@@ -503,13 +502,10 @@ public class ImageViewerTab {
             controlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 int savedValue = lowContrast;
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
+                setMaxSensitivity();
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
@@ -534,13 +530,10 @@ public class ImageViewerTab {
             controlPanel.add(rawScaleSlider);
             rawScaleSlider.setBackground(Color.WHITE);
             rawScaleSlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 int savedValue = rawContrast;
                 rawContrast = rawScaleSlider.getValue();
                 rawScaleLabel.setText(String.format("Raw image contrast: %d", rawContrast));
+                setMaxSensitivity();
                 if (markDifferences.isSelected() && flipbook != null && savedValue != rawContrast) {
                     detectDifferences();
                 }
@@ -751,20 +744,16 @@ public class ImageViewerTab {
             controlPanel.add(differencesPanel);
             differencesPanel.setBackground(Color.WHITE);
 
-            JLabel sensitivityLabel = new JLabel(String.format("Sensitivity: %d/%d", MAX_SENSITIVITY + 1 - sensitivity, MAX_SENSITIVITY));
+            sensitivityLabel = new JLabel(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
             differencesPanel.add(sensitivityLabel);
 
-            sensitivitySlider = new JSlider(1, MAX_SENSITIVITY, SENSITIVITY);
+            sensitivitySlider = new JSlider(1, maxSensitivity, SENSITIVITY);
             differencesPanel.add(sensitivitySlider);
             sensitivitySlider.setBackground(Color.WHITE);
             sensitivitySlider.addChangeListener((ChangeEvent e) -> {
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
                 int savedValue = sensitivity;
                 sensitivity = sensitivitySlider.getValue();
-                sensitivityLabel.setText(String.format("Sensitivity: %d/%d", MAX_SENSITIVITY + 1 - sensitivity, MAX_SENSITIVITY));
+                sensitivityLabel.setText(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
                 if (markDifferences.isSelected() && flipbook != null && savedValue != sensitivity) {
                     detectDifferences();
                 }
@@ -2678,10 +2667,10 @@ public class ImageViewerTab {
             List<Integer> xPixels = new ArrayList<>();
             List<Integer> yPixels = new ArrayList<>();
             List<NumberTriplet> pixels = new ArrayList<>();
-            for (int i = 0; i < axisY; i += 20) {
-                for (int j = 0; j < axisX; j += 20) {
-                    for (int k = max(0, i - 10); k <= min(i + 10, axisY); k++) {
-                        for (int u = max(0, j - 10); u <= min(j + 10, axisX); u++) {
+            for (int i = 0; i < axisY; i += 10) {
+                for (int j = 0; j < axisX; j += 10) {
+                    for (int k = max(0, i - 5); k <= min(i + 5, axisY); k++) {
+                        for (int u = max(0, j - 5); u <= min(j + 5, axisX); u++) {
                             try {
                                 float value1 = processPixel(values1[k][u]);
                                 float value2 = processPixel(values2[k][u]);
@@ -2717,9 +2706,10 @@ public class ImageViewerTab {
                             double xCenter = xStats.getAverage();
                             double yCenter = yStats.getAverage();
 
-                            int xDiff = xStats.getMax() - xStats.getMin();
-                            int yDiff = yStats.getMax() - yStats.getMin();
-                            int diameter = max(xDiff, yDiff);
+                            //int xDiff = xStats.getMax() - xStats.getMin();
+                            //int yDiff = yStats.getMax() - yStats.getMin();
+                            //int diameter = max(xDiff, yDiff);
+                            int diameter = 10;
 
                             diffPixels.add(new NumberTriplet(xCenter, yCenter, diameter));
                         }
@@ -2993,6 +2983,12 @@ public class ImageViewerTab {
         }
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
+    }
+
+    private void setMaxSensitivity() {
+        maxSensitivity = (lowContrast + highContrast) / 10 * 2;
+        sensitivityLabel.setText(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
+        sensitivitySlider.setMaximum(maxSensitivity);
     }
 
     private NumberTriplet getRefValues(float[][] values) {
