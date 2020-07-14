@@ -2647,14 +2647,14 @@ public class ImageViewerTab {
             if (band == 2 || band == 12) {
                 detectDifferencesPerBand(2, epoch1, epoch2, diffPixels);
             }
-            if (showCirclesButton.isSelected()) {
+            if (showCirclesButton.isSelected() && !diffPixels.isEmpty()) {
                 diffPixels.sort(Comparator.comparing(NumberTriplet::getX).thenComparing(NumberTriplet::getY));
                 List<NumberTriplet> resultPixels = new ArrayList<>();
                 NumberTriplet prevTriplet = new NumberTriplet(0, 0, 0);
+                int refVal = size < 50 ? size / 10 : 10;
                 for (NumberTriplet triplet : diffPixels) {
-                    double sum = triplet.getX() + triplet.getY();
-                    double prevSum = prevTriplet.getX() + prevTriplet.getY();
-                    if (sum < prevSum - 10 || sum > prevSum + 10) {
+                    if (triplet.getX() < prevTriplet.getX() - refVal || triplet.getX() > prevTriplet.getX() + refVal
+                            || triplet.getY() < prevTriplet.getY() - refVal || triplet.getY() > prevTriplet.getY() + refVal) {
                         resultPixels.add(triplet);
                         prevTriplet = triplet;
                     }
