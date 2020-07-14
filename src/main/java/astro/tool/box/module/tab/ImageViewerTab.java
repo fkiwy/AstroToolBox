@@ -156,7 +156,7 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
-    public static final int SENSITIVITY = 1;
+    public static final int SENSITIVITY = 2;
     public static final int RAW_CONTRAST = 1;
     public static final int LOW_CONTRAST = 50;
     public static final int HIGH_CONTRAST = 0;
@@ -911,7 +911,7 @@ public class ImageViewerTab {
             controlPanel.add(differencesPanel);
             differencesPanel.setBackground(Color.WHITE);
 
-            showCirclesButton = new JRadioButton("Mark with circles", false);
+            showCirclesButton = new JRadioButton("Mark with circles", true);
             differencesPanel.add(showCirclesButton);
             showCirclesButton.setBackground(Color.WHITE);
             showCirclesButton.addActionListener((ActionEvent evt) -> {
@@ -920,7 +920,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JRadioButton showDotsButton = new JRadioButton("Mark with dots", true);
+            JRadioButton showDotsButton = new JRadioButton("Mark with dots", false);
             differencesPanel.add(showDotsButton);
             showDotsButton.setBackground(Color.WHITE);
             showDotsButton.addActionListener((ActionEvent evt) -> {
@@ -2648,6 +2648,21 @@ public class ImageViewerTab {
             if (band == 2 || band == 12) {
                 detectDifferencesPerBand(2, epoch1, epoch2, diffPixels);
             }
+            if (showCirclesButton.isSelected()) {
+                diffPixels.sort(Comparator.comparing(NumberTriplet::getX).thenComparing(NumberTriplet::getY));
+                List<NumberTriplet> resultPixels = new ArrayList<>();
+                NumberTriplet prevTriplet = new NumberTriplet(0, 0, 0);
+                for (NumberTriplet triplet : diffPixels) {
+                    double sum = triplet.getX() + triplet.getY();
+                    double prevSum = prevTriplet.getX() + prevTriplet.getY();
+                    if (sum < prevSum - 10 || sum > prevSum + 10) {
+                        resultPixels.add(triplet);
+                        prevTriplet = triplet;
+                    }
+                }
+                diffPixels.clear();
+                diffPixels.addAll(resultPixels);
+            }
             component2.setDiffPixels(diffPixels);
         }
     }
@@ -2722,21 +2737,6 @@ public class ImageViewerTab {
                         pixels.clear();
                     }
                 }
-            }
-            if (showCirclesButton.isSelected()) {
-                diffPixels.sort(Comparator.comparing(NumberTriplet::getX).thenComparing(NumberTriplet::getY));
-                List<NumberTriplet> resultPixels = new ArrayList<>();
-                NumberTriplet prevTriplet = new NumberTriplet(0, 0, 0);
-                for (NumberTriplet triplet : diffPixels) {
-                    double sum = triplet.getX() + triplet.getY();
-                    double prevSum = prevTriplet.getX() + prevTriplet.getY();
-                    if (sum < prevSum - 10 || sum > prevSum + 10) {
-                        resultPixels.add(triplet);
-                        prevTriplet = triplet;
-                    }
-                }
-                diffPixels.clear();
-                diffPixels.addAll(resultPixels);
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
