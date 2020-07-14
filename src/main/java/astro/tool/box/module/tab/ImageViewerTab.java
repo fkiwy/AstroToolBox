@@ -2634,7 +2634,6 @@ public class ImageViewerTab {
     }
 
     private void detectDifferences() {
-        // 92.1944649 18.1008679
         for (int i = 0; i < flipbook.length; i++) {
             FlipbookComponent component1 = flipbook[i];
             FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
