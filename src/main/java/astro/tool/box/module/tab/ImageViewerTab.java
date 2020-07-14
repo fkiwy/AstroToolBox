@@ -2723,6 +2723,21 @@ public class ImageViewerTab {
                     }
                 }
             }
+            if (showCirclesButton.isSelected()) {
+                diffPixels.sort(Comparator.comparing(NumberTriplet::getX).thenComparing(NumberTriplet::getY));
+                List<NumberTriplet> resultPixels = new ArrayList<>();
+                NumberTriplet prevTriplet = new NumberTriplet(0, 0, 0);
+                for (NumberTriplet triplet : diffPixels) {
+                    double sum = triplet.getX() + triplet.getY();
+                    double prevSum = prevTriplet.getX() + prevTriplet.getY();
+                    if (sum < prevSum - 10 || sum > prevSum + 10) {
+                        resultPixels.add(triplet);
+                        prevTriplet = triplet;
+                    }
+                }
+                diffPixels.clear();
+                diffPixels.addAll(resultPixels);
+            }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
