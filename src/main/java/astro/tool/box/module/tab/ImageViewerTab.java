@@ -2651,7 +2651,7 @@ public class ImageViewerTab {
                 diffPixels.sort(Comparator.comparing(NumberTriplet::getX).thenComparing(NumberTriplet::getY));
                 List<NumberTriplet> resultPixels = new ArrayList<>();
                 NumberTriplet prevTriplet = new NumberTriplet(0, 0, 0);
-                int refVal = size < 50 ? size / 10 : 10;
+                int refVal = 10;
                 for (NumberTriplet triplet : diffPixels) {
                     if (triplet.getX() < prevTriplet.getX() - refVal || triplet.getX() > prevTriplet.getX() + refVal
                             || triplet.getY() < prevTriplet.getY() - refVal || triplet.getY() > prevTriplet.getY() + refVal) {
