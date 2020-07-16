@@ -194,7 +194,7 @@ public class ImageViewerTab {
     private JPanel zooniversePanel2;
     private JCheckBox applyLimits;
     private JCheckBox saveContrast;
-    private JCheckBox smoothImage;
+    private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
     private JCheckBox staticDisplay;
@@ -449,10 +449,10 @@ public class ImageViewerTab {
                 }
                 if (Epoch.isSubtracted(epoch)) {
                     applyLimits.setSelected(true);
-                    smoothImage.setSelected(true);
+                    blurImages.setSelected(true);
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
-                    smoothImage.setSelected(false);
+                    blurImages.setSelected(false);
                     setContrast(lowContrastSaved, highContrastSaved);
                 }
                 createFlipbook();
@@ -624,8 +624,8 @@ public class ImageViewerTab {
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
-            smoothImage = new JCheckBox("Smooth images");
-            gridPanel.add(smoothImage);
+            blurImages = new JCheckBox("Blur images");
+            gridPanel.add(blurImages);
 
             gridPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(gridPanel);
@@ -661,9 +661,9 @@ public class ImageViewerTab {
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 applyLimits.setSelected(true);
                 if (Epoch.isSubtracted(epoch)) {
-                    smoothImage.setSelected(true);
+                    blurImages.setSelected(true);
                 } else {
-                    smoothImage.setSelected(false);
+                    blurImages.setSelected(false);
                 }
                 stretchSlider.setValue(stretch = STRETCH);
                 rawScaleSlider.setValue(rawContrast = RAW_CONTRAST);
@@ -2541,8 +2541,8 @@ public class ImageViewerTab {
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
 
-            if (smoothImage.isSelected()) {
-                values = smooth(values);
+            if (blurImages.isSelected()) {
+                values = blur(values);
             }
 
             BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
@@ -2576,9 +2576,9 @@ public class ImageViewerTab {
             imageData = (ImageData) hdu.getData();
             float[][] valuesW2 = (float[][]) imageData.getData();
 
-            if (smoothImage.isSelected()) {
-                valuesW1 = smooth(valuesW1);
-                valuesW2 = smooth(valuesW2);
+            if (blurImages.isSelected()) {
+                valuesW1 = blur(valuesW1);
+                valuesW2 = blur(valuesW2);
             }
 
             BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
@@ -2701,8 +2701,8 @@ public class ImageViewerTab {
         }
     }
 
-    public float[][] smooth(float[][] values) {
-        float[][] smoothedValues = new float[axisY][axisX];
+    public float[][] blur(float[][] values) {
+        float[][] blurredValues = new float[axisY][axisX];
         for (int i = 0; i < axisY; ++i) {
             for (int j = 0; j < axisX; ++j) {
                 int sum = 0, c = 0;
@@ -2712,10 +2712,10 @@ public class ImageViewerTab {
                         c++;
                     }
                 }
-                smoothedValues[i][j] = sum / c;
+                blurredValues[i][j] = sum / c;
             }
         }
-        return smoothedValues;
+        return blurredValues;
     }
 
     private BufferedImage flip(BufferedImage image) {
@@ -3674,8 +3674,8 @@ public class ImageViewerTab {
         return 5 + zoom / 100;
     }
 
-    public JCheckBox getSmoothImage() {
-        return smoothImage;
+    public JCheckBox getBlurImages() {
+        return blurImages;
     }
 
     public JComboBox getWiseBands() {
