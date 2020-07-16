@@ -1,9 +1,5 @@
 package astro.tool.box.module;
 
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.NumberTriplet;
-import java.util.List;
-
 public class FlipbookComponent {
 
     private static final String ASC_NODE = "ASC";
@@ -19,8 +15,6 @@ public class FlipbookComponent {
     private boolean isMerged;
 
     private boolean firstEpoch;
-
-    private List<NumberTriplet> diffPixels;
 
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
@@ -125,14 +119,6 @@ public class FlipbookComponent {
 
     public boolean isFirstEpoch() {
         return firstEpoch;
-    }
-
-    public List<NumberTriplet> getDiffPixels() {
-        return diffPixels;
-    }
-
-    public void setDiffPixels(List<NumberTriplet> diffPixels) {
-        this.diffPixels = diffPixels;
     }
 
 }

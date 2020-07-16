@@ -3,6 +3,7 @@ package astro.tool.box.container;
 public class NumberPair {
 
     private final double x;
+
     private final double y;
 
     public NumberPair(double x, double y) {

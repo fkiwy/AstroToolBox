@@ -103,7 +103,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -156,7 +155,6 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
-    public static final int SENSITIVITY = 2;
     public static final int RAW_CONTRAST = 1;
     public static final int LOW_CONTRAST = 50;
     public static final int HIGH_CONTRAST = 0;
@@ -228,8 +226,6 @@ public class ImageViewerTab {
     private JCheckBox createDataSheet;
     private JCheckBox skipBadImages;
     private JCheckBox skipSingleNodes;
-    private JCheckBox markDifferences;
-    private JCheckBox blinkMarkers;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
     private JCheckBox transposeProperMotion;
@@ -244,7 +240,6 @@ public class ImageViewerTab {
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
-    private JSlider sensitivitySlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -254,10 +249,8 @@ public class ImageViewerTab {
     private JTextArea downloadLog;
     private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
-    private JRadioButton showCirclesButton;
     private JLabel epochLabel;
     private JLabel changeFovLabel;
-    private JLabel sensitivityLabel;
     private JTable collectionTable;
     private Timer timer;
 
@@ -288,9 +281,6 @@ public class ImageViewerTab {
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
-
-    private int maxSensitivity = LOW_CONTRAST / 10 * 2;
-    private int sensitivity = SENSITIVITY;
 
     private int rawContrast = RAW_CONTRAST;
     private int lowContrast = LOW_CONTRAST;
@@ -375,9 +365,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2075;
+            int controlPanelHeight = 2000;
 
-            JPanel controlPanel = new JPanel(new GridLayout(86, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(83, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -479,15 +469,10 @@ public class ImageViewerTab {
             controlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
-                int savedValue = highContrast;
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
-                setMaxSensitivity();
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
-                }
-                if (markDifferences.isSelected() && flipbook != null && savedValue != highContrast) {
-                    detectDifferences();
                 }
             });
 
@@ -502,10 +487,8 @@ public class ImageViewerTab {
             controlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
-                int savedValue = lowContrast;
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
-                setMaxSensitivity();
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
@@ -513,9 +496,6 @@ public class ImageViewerTab {
                     applyLimits.setSelected(false);
                     setContrast(10, HIGH_CONTRAST);
                     createFlipbook();
-                }
-                if (markDifferences.isSelected() && flipbook != null && savedValue != lowContrast) {
-                    detectDifferences();
                 }
             });
 
@@ -530,13 +510,9 @@ public class ImageViewerTab {
             controlPanel.add(rawScaleSlider);
             rawScaleSlider.setBackground(Color.WHITE);
             rawScaleSlider.addChangeListener((ChangeEvent e) -> {
-                int savedValue = rawContrast;
                 rawContrast = rawScaleSlider.getValue();
                 rawScaleLabel.setText(String.format("Raw image contrast: %d", rawContrast));
-                setMaxSensitivity();
-                if (markDifferences.isSelected() && flipbook != null && savedValue != rawContrast) {
-                    detectDifferences();
-                }
+
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -801,9 +777,9 @@ public class ImageViewerTab {
             JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
             controlPanel.add(recenterImagesButton);
 
-            ButtonGroup buttonGroup = new ButtonGroup();
-            buttonGroup.add(showCatalogsButton);
-            buttonGroup.add(recenterImagesButton);
+            ButtonGroup radioGroup = new ButtonGroup();
+            radioGroup.add(showCatalogsButton);
+            radioGroup.add(recenterImagesButton);
 
             controlPanel.add(new JLabel(underline("Mouse wheel click:")));
 
@@ -866,8 +842,8 @@ public class ImageViewerTab {
             differentSizeButton = new JRadioButton("Show object in different FoV", true);
             controlPanel.add(differentSizeButton);
 
-            buttonGroup = new ButtonGroup();
-            buttonGroup.add(differentSizeButton);
+            radioGroup = new ButtonGroup();
+            radioGroup.add(differentSizeButton);
 
             JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(differentSizePanel);
@@ -884,73 +860,6 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(underline("Advanced controls:")));
-
-            JPanel differencesPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differencesPanel);
-            differencesPanel.setBackground(Color.WHITE);
-
-            markDifferences = new JCheckBox("Mark differences");
-            differencesPanel.add(markDifferences);
-            markDifferences.setBackground(Color.WHITE);
-            markDifferences.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            blinkMarkers = new JCheckBox("Blink");
-            differencesPanel.add(blinkMarkers);
-            blinkMarkers.setBackground(Color.WHITE);
-            blinkMarkers.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            differencesPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differencesPanel);
-            differencesPanel.setBackground(Color.WHITE);
-
-            showCirclesButton = new JRadioButton("Mark with circles", true);
-            differencesPanel.add(showCirclesButton);
-            showCirclesButton.setBackground(Color.WHITE);
-            showCirclesButton.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            JRadioButton showDotsButton = new JRadioButton("Mark with dots", false);
-            differencesPanel.add(showDotsButton);
-            showDotsButton.setBackground(Color.WHITE);
-            showDotsButton.addActionListener((ActionEvent evt) -> {
-                if (markDifferences.isSelected() && flipbook != null) {
-                    detectDifferences();
-                }
-            });
-
-            buttonGroup = new ButtonGroup();
-            buttonGroup.add(showCirclesButton);
-            buttonGroup.add(showDotsButton);
-
-            differencesPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differencesPanel);
-            differencesPanel.setBackground(Color.WHITE);
-
-            sensitivityLabel = new JLabel(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
-            differencesPanel.add(sensitivityLabel);
-
-            sensitivitySlider = new JSlider(1, maxSensitivity, SENSITIVITY);
-            differencesPanel.add(sensitivitySlider);
-            sensitivitySlider.setBackground(Color.WHITE);
-            sensitivitySlider.addChangeListener((ChangeEvent e) -> {
-                int savedValue = sensitivity;
-                sensitivity = sensitivitySlider.getValue();
-                sensitivityLabel.setText(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
-                if (markDifferences.isSelected() && flipbook != null && savedValue != sensitivity) {
-                    detectDifferences();
-                }
-            });
 
             skipBadImages = new JCheckBox("Skip bad quality images", true);
             controlPanel.add(skipBadImages);
@@ -2132,10 +2041,6 @@ public class ImageViewerTab {
             int avgVal = (avgValW1 + avgValW2) / divisor;
             setMinMaxValues(minVal, maxVal, avgVal);
 
-            if (markDifferences.isSelected()) {
-                detectDifferences();
-            }
-
             timer.restart();
             timerStopped = false;
         } catch (Exception ex) {
@@ -2193,14 +2098,7 @@ public class ImageViewerTab {
         } else {
             image = createImage(component.getBand(), component.getEpoch());
         }
-        image = zoom(image, zoom);
-        if (markDifferences.isSelected()) {
-            for (NumberTriplet diffPixel : component.getDiffPixels()) {
-                Circle circle = new Circle(getScaledValue(diffPixel.getX()), getScaledValue(diffPixel.getY()), getScaledValue(diffPixel.getZ()), Color.RED);
-                circle.draw(image.getGraphics());
-            }
-        }
-        image = flip(image);
+        image = flip(zoom(image, zoom));
         addOverlaysAndPMVectors(image);
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
@@ -2633,115 +2531,6 @@ public class ImageViewerTab {
         return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
     }
 
-    private void detectDifferences() {
-        for (int i = 0; i < flipbook.length; i++) {
-            FlipbookComponent component1 = flipbook[i];
-            FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
-            int band = component1.getBand();
-            int epoch1 = component1.getEpoch();
-            int epoch2 = component2.getEpoch();
-            List<NumberTriplet> diffPixels = new ArrayList<>();
-            if (band == 1 || band == 12) {
-                detectDifferencesPerBand(1, epoch1, epoch2, diffPixels);
-            }
-            if (band == 2 || band == 12) {
-                detectDifferencesPerBand(2, epoch1, epoch2, diffPixels);
-            }
-            if (showCirclesButton.isSelected() && !diffPixels.isEmpty()) {
-                diffPixels.sort(Comparator.comparing(NumberTriplet::getX).thenComparing(NumberTriplet::getY));
-                List<NumberTriplet> resultPixels = new ArrayList<>();
-                NumberTriplet prevTriplet = new NumberTriplet(0, 0, 0);
-                int refVal = 10;
-                for (NumberTriplet triplet : diffPixels) {
-                    if (triplet.getX() < prevTriplet.getX() - refVal || triplet.getX() > prevTriplet.getX() + refVal
-                            || triplet.getY() < prevTriplet.getY() - refVal || triplet.getY() > prevTriplet.getY() + refVal) {
-                        resultPixels.add(triplet);
-                        prevTriplet = triplet;
-                    }
-                }
-                diffPixels.clear();
-                diffPixels.addAll(resultPixels);
-            }
-            component2.setDiffPixels(diffPixels);
-        }
-    }
-
-    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberTriplet> diffPixels) {
-        try {
-            Fits fits = getImage(band, epoch1);
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-
-            fits = getImage(band, epoch2);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-
-            List<Integer> xPixels = new ArrayList<>();
-            List<Integer> yPixels = new ArrayList<>();
-            List<NumberTriplet> pixels = new ArrayList<>();
-            for (int i = 0; i < axisY; i += 10) {
-                for (int j = 0; j < axisX; j += 10) {
-                    for (int k = max(0, i - 5); k <= min(i + 5, axisY); k++) {
-                        for (int u = max(0, j - 5); u <= min(j + 5, axisX); u++) {
-                            try {
-                                float value1 = processPixel(values1[k][u]);
-                                float value2 = processPixel(values2[k][u]);
-                                float max = max(value1, value2);
-                                float min = min(value1, value2);
-                                boolean isSelectable = false;
-                                if (blinkMarkers.isSelected()) {
-                                    if (max - min > min && value1 == max) {
-                                        isSelectable = true;
-                                    }
-                                } else {
-                                    if (max - min > min) {
-                                        isSelectable = true;
-                                    }
-                                }
-                                if (isSelectable) {
-                                    if (showCirclesButton.isSelected()) {
-                                        xPixels.add(u);
-                                        yPixels.add(k);
-                                    } else {
-                                        pixels.add(new NumberTriplet(u, k, 1));
-                                    }
-                                }
-                            } catch (ArrayIndexOutOfBoundsException ex) {
-                            }
-                        }
-                    }
-                    if (showCirclesButton.isSelected()) {
-                        if (xPixels.size() > sensitivity) {
-                            IntSummaryStatistics xStats = xPixels.stream().mapToInt((x) -> x).summaryStatistics();
-                            IntSummaryStatistics yStats = yPixels.stream().mapToInt((y) -> y).summaryStatistics();
-
-                            double xCenter = xStats.getAverage();
-                            double yCenter = yStats.getAverage();
-
-                            //int xDiff = xStats.getMax() - xStats.getMin();
-                            //int yDiff = yStats.getMax() - yStats.getMin();
-                            //int diameter = max(xDiff, yDiff);
-                            int diameter = 10;
-
-                            diffPixels.add(new NumberTriplet(xCenter, yCenter, diameter));
-                        }
-                        xPixels.clear();
-                        yPixels.clear();
-                    } else {
-                        if (pixels.size() > sensitivity) {
-                            diffPixels.addAll(pixels);
-                        }
-                        pixels.clear();
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     private BufferedImage createImage(int band, int epoch) {
         try {
             Fits fits = getImage(band, epoch);
@@ -2997,12 +2786,6 @@ public class ImageViewerTab {
         }
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
-    }
-
-    private void setMaxSensitivity() {
-        maxSensitivity = (lowContrast + highContrast) / 10 * 2;
-        sensitivityLabel.setText(String.format("Sensitivity: %d/%d", maxSensitivity + 1 - sensitivity, maxSensitivity));
-        sensitivitySlider.setMaximum(maxSensitivity);
     }
 
     private NumberTriplet getRefValues(float[][] values) {
