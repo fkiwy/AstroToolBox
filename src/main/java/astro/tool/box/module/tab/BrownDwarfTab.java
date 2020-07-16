@@ -92,7 +92,7 @@ public class BrownDwarfTab {
             extinctionPanel.setPreferredSize(new Dimension(500, 30));
             containerPanel.add(extinctionPanel, BorderLayout.PAGE_START);
 
-            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction - Supported bands: u, g, r, i, z, J, H, K, W1 & W2");
+            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction for bands u, g, r, i, z, J, H, K, W1 & W2");
             extinctionPanel.add(dustExtinction);
 
             JPanel spectralTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
