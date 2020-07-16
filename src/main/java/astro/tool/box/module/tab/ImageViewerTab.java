@@ -492,7 +492,7 @@ public class ImageViewerTab {
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
-                if (lowContrast == 0) {
+                if (lowContrast + highContrast == 0) {
                     applyLimits.setSelected(false);
                     setContrast(10, HIGH_CONTRAST);
                     createFlipbook();
