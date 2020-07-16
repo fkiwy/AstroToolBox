@@ -474,6 +474,9 @@ public class ImageViewerTab {
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
                 }
+                if (lowContrast + highContrast == 0) {
+                    setContrast(10, HIGH_CONTRAST);
+                }
             });
 
             JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -621,7 +624,7 @@ public class ImageViewerTab {
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
-            smoothImage = new JCheckBox("Smoothing");
+            smoothImage = new JCheckBox("Smooth images");
             gridPanel.add(smoothImage);
 
             gridPanel = new JPanel(new GridLayout(1, 2));
