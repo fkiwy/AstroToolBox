@@ -257,8 +257,8 @@ public class ImageViewerTab {
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
     private BufferedImage sdssImage;
-    private Map<String, ImageContainer> imagesW1;
-    private Map<String, ImageContainer> imagesW2;
+    private Map<String, ImageContainer> imagesW1 = new HashMap<>();;
+    private Map<String, ImageContainer> imagesW2 = new HashMap<>();;
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
     private List<NumberPair> crosshairs;
