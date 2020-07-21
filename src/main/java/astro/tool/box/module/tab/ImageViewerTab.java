@@ -192,9 +192,9 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
-    private JCheckBox guessContrast;
-    private JCheckBox averageContrast;
-    private JCheckBox saveContrast;
+    private JCheckBox autoContrast;
+    private JCheckBox separateContrast;
+    private JCheckBox retainContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderEpoch;
@@ -444,7 +444,7 @@ public class ImageViewerTab {
                     }
                 }
                 if (Epoch.isSubtracted(epoch)) {
-                    guessContrast.setSelected(true);
+                    autoContrast.setSelected(true);
                     blurImages.setSelected(true);
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
@@ -492,7 +492,7 @@ public class ImageViewerTab {
                     lowContrastSaved = lowContrast;
                 }
                 if (lowContrast + highContrast == 0) {
-                    guessContrast.setSelected(false);
+                    autoContrast.setSelected(false);
                     setContrast(10, HIGH_CONTRAST);
                     createFlipbook();
                 }
@@ -582,26 +582,20 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            guessContrast = new JCheckBox("Guess best contrast", true);
-            controlPanel.add(guessContrast);
-            guessContrast.addActionListener((ActionEvent evt) -> {
+            autoContrast = new JCheckBox("Auto-contrast", true);
+            controlPanel.add(autoContrast);
+            autoContrast.addActionListener((ActionEvent evt) -> {
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
 
-            saveContrast = new JCheckBox("Keep contrast settings");
-            controlPanel.add(saveContrast);
-            saveContrast.addActionListener((ActionEvent evt) -> {
-                if (saveContrast.isSelected() && !Epoch.isSubtracted(epoch)) {
+            retainContrast = new JCheckBox("Retain contrast");
+            controlPanel.add(retainContrast);
+            retainContrast.addActionListener((ActionEvent evt) -> {
+                if (retainContrast.isSelected() && !Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                     highContrastSaved = highContrast;
                 }
-            });
-
-            averageContrast = new JCheckBox("Apply average contrast");
-            controlPanel.add(averageContrast);
-            averageContrast.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
             });
 
             blurImages = new JCheckBox("Blur images");
@@ -610,10 +604,10 @@ public class ImageViewerTab {
             invertColors = new JCheckBox("Invert colors");
             controlPanel.add(invertColors);
 
-            borderEpoch = new JCheckBox("Border first epoch");
+            borderEpoch = new JCheckBox("Border 1st epoch");
             controlPanel.add(borderEpoch);
 
-            staticDisplay = new JCheckBox("Display images statically");
+            staticDisplay = new JCheckBox("Static display");
             controlPanel.add(staticDisplay);
             staticDisplay.addActionListener((ActionEvent evt) -> {
                 if (flipbook != null) {
@@ -628,7 +622,7 @@ public class ImageViewerTab {
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                guessContrast.setSelected(true);
+                autoContrast.setSelected(true);
                 if (Epoch.isSubtracted(epoch)) {
                     blurImages.setSelected(true);
                 } else {
@@ -854,6 +848,12 @@ public class ImageViewerTab {
                 imagesW1.clear();
                 imagesW2.clear();
                 reloadImages = true;
+                createFlipbook();
+            });
+
+            separateContrast = new JCheckBox("Separate contrast per image");
+            controlPanel.add(separateContrast);
+            separateContrast.addActionListener((ActionEvent evt) -> {
                 createFlipbook();
             });
 
@@ -1611,10 +1611,10 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                guessContrast.setSelected(true);
+                autoContrast.setSelected(true);
                 stretchSlider.setValue(stretch = STRETCH);
                 rawScaleSlider.setValue(rawContrast = RAW_CONTRAST);
-                if (!saveContrast.isSelected()) {
+                if (!retainContrast.isSelected()) {
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 }
                 try {
@@ -2017,10 +2017,11 @@ public class ImageViewerTab {
                     break;
             }
 
-            if (averageContrast.isSelected()) {
+            if (separateContrast.isSelected()) {
                 for (FlipbookComponent component : flipbook) {
                     setRefValues(component);
                 }
+                /* Average contrast
                 double totMinVal = 0;
                 double totMaxVal = 0;
                 for (FlipbookComponent component : flipbook) {
@@ -2034,7 +2035,7 @@ public class ImageViewerTab {
                 NumberPair refValues = new NumberPair(avgMinVal, avgMaxVal);
                 for (FlipbookComponent component : flipbook) {
                     component.setRefValues(refValues);
-                }
+                }*/
             } else {
                 FlipbookComponent firstComponent = flipbook[0];
                 setRefValues(firstComponent);
@@ -2088,7 +2089,7 @@ public class ImageViewerTab {
         int minVal = (minValW1 + minValW2) / divisor;
         int maxVal = (maxValW1 + maxValW2) / divisor;
         int avgVal = (avgValW1 + avgValW2) / divisor;
-        NumberPair refValues = setMinMaxValues(minVal, maxVal, avgVal);
+        NumberPair refValues = getMinMaxValues(minVal, maxVal, avgVal);
         component.setRefValues(refValues);
     }
 
@@ -2849,9 +2850,9 @@ public class ImageViewerTab {
         return new NumberTriplet(minVal, maxVal, avgVal);
     }
 
-    private NumberPair setMinMaxValues(int minVal, int maxVal, int avgVal) {
+    private NumberPair getMinMaxValues(int minVal, int maxVal, int avgVal) {
         //System.out.println("minVal=" + minVal + " maxVal=" + maxVal + " avgVal=" + avgVal);
-        if (guessContrast.isSelected()) {
+        if (autoContrast.isSelected()) {
             if (maxVal < 500) {
                 maxVal = 500;
             } else {
