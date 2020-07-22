@@ -444,10 +444,12 @@ public class ImageViewerTab {
                 }
                 if (Epoch.isSubtracted(epoch)) {
                     autoContrast.setSelected(true);
+                    optimizeContrast.setSelected(false);
                     blurImages.setSelected(true);
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                     setSubContrast(subContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
+                    optimizeContrast.setSelected(true);
                     blurImages.setSelected(false);
                     setContrast(lowContrastSaved, highContrastSaved);
                     setSubContrast(SUB_CONTRAST);
@@ -2886,7 +2888,7 @@ public class ImageViewerTab {
             if (Epoch.isSubtracted(epoch)) {
                 minVal = -maxVal / 10;
             } else if (minVal < -3000) {
-                minVal = -maxVal / 20;
+                minVal = -maxVal / 30;
             }
         }
         return new NumberPair(minVal, maxVal);
