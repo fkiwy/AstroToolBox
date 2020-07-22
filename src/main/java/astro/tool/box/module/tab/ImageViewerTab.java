@@ -192,7 +192,7 @@ public class ImageViewerTab {
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox autoContrast;
-    private JCheckBox separateContrast;
+    private JCheckBox optimizeContrast;
     private JCheckBox keepContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
@@ -852,9 +852,9 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            separateContrast = new JCheckBox("Separate contrast per image");
-            controlPanel.add(separateContrast);
-            separateContrast.addActionListener((ActionEvent evt) -> {
+            optimizeContrast = new JCheckBox("Optimize contrast", true);
+            controlPanel.add(optimizeContrast);
+            optimizeContrast.addActionListener((ActionEvent evt) -> {
                 createFlipbook();
             });
 
@@ -2017,25 +2017,26 @@ public class ImageViewerTab {
                     break;
             }
 
-            if (separateContrast.isSelected()) {
+            if (optimizeContrast.isSelected()) {
                 for (FlipbookComponent component : flipbook) {
                     setRefValues(component);
                 }
-                /* Average contrast
-                double totMinVal = 0;
-                double totMaxVal = 0;
+                List<Double> minValues = new ArrayList<>();
+                List<Double> maxValues = new ArrayList<>();
                 for (FlipbookComponent component : flipbook) {
                     NumberPair refVal = component.getRefValues();
-                    totMinVal += refVal.getX();
-                    totMaxVal += refVal.getY();
+                    minValues.add(refVal.getX());
+                    maxValues.add(refVal.getY());
                 }
                 int count = flipbook.length;
-                double avgMinVal = totMinVal / count;
-                double avgMaxVal = totMaxVal / count;
-                NumberPair refValues = new NumberPair(avgMinVal, avgMaxVal);
+                minValues.sort(Comparator.naturalOrder());
+                maxValues.sort(Comparator.naturalOrder());
+                double highestMinVal = minValues.get(count - 1);
+                double highestMaxVal = maxValues.get(count - 1);
+                NumberPair refValues = new NumberPair(highestMinVal, highestMaxVal);
                 for (FlipbookComponent component : flipbook) {
                     component.setRefValues(refValues);
-                }*/
+                }
             } else {
                 FlipbookComponent firstComponent = flipbook[0];
                 setRefValues(firstComponent);
