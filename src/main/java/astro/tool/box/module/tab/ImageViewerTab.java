@@ -155,10 +155,9 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
-    public static final int RAW_CONTRAST = 1;
+    public static final int CONTRAST = 1;
     public static final int LOW_CONTRAST = 50;
     public static final int HIGH_CONTRAST = 0;
-    public static final int STRETCH = 100;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
@@ -194,11 +193,11 @@ public class ImageViewerTab {
     private JPanel zooniversePanel2;
     private JCheckBox autoContrast;
     private JCheckBox separateContrast;
-    private JCheckBox retainContrast;
+    private JCheckBox keepContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
-    private JCheckBox borderEpoch;
-    private JCheckBox staticDisplay;
+    private JCheckBox borderFirst;
+    private JCheckBox staticView;
     private JCheckBox simbadOverlay;
     private JCheckBox gaiaOverlay;
     private JCheckBox allWiseOverlay;
@@ -232,10 +231,9 @@ public class ImageViewerTab {
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
-    private JSlider rawScaleSlider;
+    private JSlider contrastSlider;
     private JSlider highScaleSlider;
     private JSlider lowScaleSlider;
-    private JSlider stretchSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -276,12 +274,11 @@ public class ImageViewerTab {
     private int epochCountW2;
     private int numberOfEpochs;
     private int selectedEpochs;
-    private int stretch = STRETCH;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
 
-    private int rawContrast = RAW_CONTRAST;
+    private int contrast = CONTRAST;
     private int lowContrast = LOW_CONTRAST;
     private int highContrast = HIGH_CONTRAST;
     private int lowContrastSaved = lowContrast;
@@ -361,9 +358,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2000;
+            int controlPanelHeight = 1925;
 
-            JPanel controlPanel = new JPanel(new GridLayout(83, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(80, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -502,15 +499,15 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel rawScaleLabel = new JLabel(String.format("Raw image contrast: %d", rawContrast));
-            whitePanel.add(rawScaleLabel);
+            JLabel contrastLabel = new JLabel(String.format("Contrast subtracted mode: %d", contrast));
+            whitePanel.add(contrastLabel);
 
-            rawScaleSlider = new JSlider(1, 10, RAW_CONTRAST);
-            controlPanel.add(rawScaleSlider);
-            rawScaleSlider.setBackground(Color.WHITE);
-            rawScaleSlider.addChangeListener((ChangeEvent e) -> {
-                rawContrast = rawScaleSlider.getValue();
-                rawScaleLabel.setText(String.format("Raw image contrast: %d", rawContrast));
+            contrastSlider = new JSlider(1, 10, CONTRAST);
+            controlPanel.add(contrastSlider);
+            contrastSlider.setBackground(Color.WHITE);
+            contrastSlider.addChangeListener((ChangeEvent e) -> {
+                contrast = contrastSlider.getValue();
+                contrastLabel.setText(String.format("Contrast subtracted mode: %d", contrast));
 
             });
 
@@ -518,59 +515,44 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            JLabel stretchLabel = new JLabel(String.format("Stretch control: %s", roundTo2Dec(stretch / 100f)));
-            grayPanel.add(stretchLabel);
-
-            stretchSlider = new JSlider(0, 100, STRETCH);
-            controlPanel.add(stretchSlider);
-            stretchSlider.setBackground(Color.LIGHT_GRAY);
-            stretchSlider.addChangeListener((ChangeEvent e) -> {
-                stretch = stretchSlider.getValue();
-                stretchLabel.setText(String.format("Stretch control: %s", roundTo2Dec(stretch / 100f)));
-            });
-
-            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(whitePanel);
-            whitePanel.setBackground(Color.WHITE);
-
-            JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
-            whitePanel.add(speedLabel);
+            JLabel speedLabel = new JLabel(String.format("Playback speed: %d ms", speed));
+            grayPanel.add(speedLabel);
 
             speedSlider = new JSlider(0, 2000, SPEED);
             controlPanel.add(speedSlider);
-            speedSlider.setBackground(Color.WHITE);
+            speedSlider.setBackground(Color.LIGHT_GRAY);
             speedSlider.addChangeListener((ChangeEvent e) -> {
                 speed = speedSlider.getValue();
                 timer.setDelay(speed);
-                speedLabel.setText(String.format("Speed: %d ms", speed));
-            });
-
-            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(grayPanel);
-            grayPanel.setBackground(Color.LIGHT_GRAY);
-
-            JLabel zoomLabel = new JLabel(String.format("Zoom: %d", zoom));
-            grayPanel.add(zoomLabel);
-
-            zoomSlider = new JSlider(0, 2000, ZOOM);
-            controlPanel.add(zoomSlider);
-            zoomSlider.setBackground(Color.LIGHT_GRAY);
-            zoomSlider.addChangeListener((ChangeEvent e) -> {
-                zoom = zoomSlider.getValue();
-                zoom = zoom < 100 ? 100 : zoom;
-                zoomLabel.setText(String.format("Zoom: %d", zoom));
+                speedLabel.setText(String.format("Playback speed: %d ms", speed));
             });
 
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
+            JLabel zoomLabel = new JLabel(String.format("Image zoom: %d", zoom));
+            whitePanel.add(zoomLabel);
+
+            zoomSlider = new JSlider(0, 2000, ZOOM);
+            controlPanel.add(zoomSlider);
+            zoomSlider.setBackground(Color.WHITE);
+            zoomSlider.addChangeListener((ChangeEvent e) -> {
+                zoom = zoomSlider.getValue();
+                zoom = zoom < 100 ? 100 : zoom;
+                zoomLabel.setText(String.format("Image zoom: %d", zoom));
+            });
+
+            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanel.add(grayPanel);
+            grayPanel.setBackground(Color.LIGHT_GRAY);
+
             epochLabel = new JLabel(String.format(EPOCH_LABEL, selectedEpochs));
-            whitePanel.add(epochLabel);
+            grayPanel.add(epochLabel);
 
             epochSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
             controlPanel.add(epochSlider);
-            epochSlider.setBackground(Color.WHITE);
+            epochSlider.setBackground(Color.LIGHT_GRAY);
             epochSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -582,36 +564,45 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            JPanel setingsPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(setingsPanel);
+
             autoContrast = new JCheckBox("Auto-contrast", true);
-            controlPanel.add(autoContrast);
+            setingsPanel.add(autoContrast);
             autoContrast.addActionListener((ActionEvent evt) -> {
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
 
-            retainContrast = new JCheckBox("Retain contrast");
-            controlPanel.add(retainContrast);
-            retainContrast.addActionListener((ActionEvent evt) -> {
-                if (retainContrast.isSelected() && !Epoch.isSubtracted(epoch)) {
+            keepContrast = new JCheckBox("Keep contrast");
+            setingsPanel.add(keepContrast);
+            keepContrast.addActionListener((ActionEvent evt) -> {
+                if (keepContrast.isSelected() && !Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                     highContrastSaved = highContrast;
                 }
             });
 
+            setingsPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(setingsPanel);
+
             blurImages = new JCheckBox("Blur images");
-            controlPanel.add(blurImages);
+            setingsPanel.add(blurImages);
 
             invertColors = new JCheckBox("Invert colors");
-            controlPanel.add(invertColors);
+            setingsPanel.add(invertColors);
 
-            borderEpoch = new JCheckBox("Border 1st epoch");
-            controlPanel.add(borderEpoch);
+            setingsPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(setingsPanel);
 
-            staticDisplay = new JCheckBox("Static display");
-            controlPanel.add(staticDisplay);
-            staticDisplay.addActionListener((ActionEvent evt) -> {
+            borderFirst = new JCheckBox("Border first");
+            setingsPanel.add(borderFirst);
+
+            staticView = new JCheckBox("Static view");
+            setingsPanel.add(staticView);
+            staticView.addActionListener((ActionEvent evt) -> {
                 if (flipbook != null) {
-                    if (staticDisplay.isSelected()) {
+                    if (staticView.isSelected()) {
                         createStaticBook();
                     } else {
                         createFlipbook();
@@ -628,8 +619,7 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                stretchSlider.setValue(stretch = STRETCH);
-                rawScaleSlider.setValue(rawContrast = RAW_CONTRAST);
+                contrastSlider.setValue(contrast = CONTRAST);
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 createFlipbook();
             });
@@ -1082,7 +1072,7 @@ public class ImageViewerTab {
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
-                    staticDisplay.setSelected(false);
+                    staticView.setSelected(false);
                     if (imageNumber > flipbook.length - 1) {
                         imageNumber = 0;
                     }
@@ -1095,7 +1085,7 @@ public class ImageViewerTab {
 
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
-                    if (borderEpoch.isSelected() && component.isFirstEpoch()) {
+                    if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         imageLabel.setBorder(BorderFactory.createDashedBorder(null, 5, 5));
                     } else {
                         imageLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -1415,7 +1405,7 @@ public class ImageViewerTab {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && flipbook != null) {
-                    if (!staticDisplay.isSelected()) {
+                    if (!staticView.isSelected()) {
                         createFlipbook();
                         timer.restart();
                     }
@@ -1442,7 +1432,7 @@ public class ImageViewerTab {
 
                 @Override
                 public void windowActivated(WindowEvent e) {
-                    if (flipbook != null && !staticDisplay.isSelected() && !hasException && !timerStopped) {
+                    if (flipbook != null && !staticView.isSelected() && !hasException && !timerStopped) {
                         timer.restart();
                     }
                 }
@@ -1612,9 +1602,8 @@ public class ImageViewerTab {
                     }
                 }
                 autoContrast.setSelected(true);
-                stretchSlider.setValue(stretch = STRETCH);
-                rawScaleSlider.setValue(rawContrast = RAW_CONTRAST);
-                if (!retainContrast.isSelected()) {
+                contrastSlider.setValue(contrast = CONTRAST);
+                if (!keepContrast.isSelected()) {
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 }
                 try {
@@ -2790,7 +2779,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value, int minValue, int maxValue) {
-        value *= rawContrast;
+        value *= contrast;
         value = normalize(value, minValue, maxValue);
         value = stretch(value);
         value = contrast(value);
@@ -2810,8 +2799,7 @@ public class ImageViewerTab {
     }
 
     private float stretch(float value) {
-        float a = stretch / 100f;
-        return asinh(value / a) / asinh(1 / a);
+        return asinh(value / 1) / asinh(1 / 1);
     }
 
     private float contrast(float value) {
