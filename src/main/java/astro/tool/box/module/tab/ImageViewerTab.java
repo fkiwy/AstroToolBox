@@ -360,7 +360,7 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1900;
+            int controlPanelHeight = 1890;
 
             JPanel controlPanel = new JPanel(new GridLayout(78, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
