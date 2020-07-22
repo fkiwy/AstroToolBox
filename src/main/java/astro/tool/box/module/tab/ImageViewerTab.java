@@ -155,9 +155,9 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 260;
     public static final int PANEL_WIDTH = 220;
-    public static final int CONTRAST = 1;
-    public static final int LOW_CONTRAST = 50;
     public static final int HIGH_CONTRAST = 0;
+    public static final int LOW_CONTRAST = 50;
+    public static final int SUB_CONTRAST = 1;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
@@ -231,9 +231,9 @@ public class ImageViewerTab {
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
-    private JSlider contrastSlider;
     private JSlider highScaleSlider;
     private JSlider lowScaleSlider;
+    private JSlider subScaleSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -278,11 +278,13 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
-    private int contrast = CONTRAST;
-    private int lowContrast = LOW_CONTRAST;
     private int highContrast = HIGH_CONTRAST;
-    private int lowContrastSaved = lowContrast;
+    private int lowContrast = LOW_CONTRAST;
+    private int subContrast = SUB_CONTRAST;
+
     private int highContrastSaved = highContrast;
+    private int lowContrastSaved = lowContrast;
+    private int subContrastSaved = subContrast;
 
     private double targetRa;
     private double targetDec;
@@ -444,9 +446,11 @@ public class ImageViewerTab {
                     autoContrast.setSelected(true);
                     blurImages.setSelected(true);
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                    setSubContrast(subContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     blurImages.setSelected(false);
                     setContrast(lowContrastSaved, highContrastSaved);
+                    setSubContrast(SUB_CONTRAST);
                 }
                 createFlipbook();
             });
@@ -499,16 +503,18 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel contrastLabel = new JLabel(String.format("Contrast subtracted mode: %d", contrast));
-            whitePanel.add(contrastLabel);
+            JLabel subScaleLabel = new JLabel(String.format("Contrast subtracted mode: %d", subContrast));
+            whitePanel.add(subScaleLabel);
 
-            contrastSlider = new JSlider(1, 10, CONTRAST);
-            controlPanel.add(contrastSlider);
-            contrastSlider.setBackground(Color.WHITE);
-            contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = contrastSlider.getValue();
-                contrastLabel.setText(String.format("Contrast subtracted mode: %d", contrast));
-
+            subScaleSlider = new JSlider(1, 10, SUB_CONTRAST);
+            controlPanel.add(subScaleSlider);
+            subScaleSlider.setBackground(Color.WHITE);
+            subScaleSlider.addChangeListener((ChangeEvent e) -> {
+                subContrast = subScaleSlider.getValue();
+                subScaleLabel.setText(String.format("Contrast subtracted mode: %d", subContrast));
+                if (Epoch.isSubtracted(epoch)) {
+                    subContrastSaved = subContrast;
+                }
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -570,16 +576,21 @@ public class ImageViewerTab {
             autoContrast = new JCheckBox("Auto-contrast", true);
             setingsPanel.add(autoContrast);
             autoContrast.addActionListener((ActionEvent evt) -> {
-                setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                setContrast(lowContrastSaved, highContrastSaved);
+                setSubContrast(subContrastSaved);
                 createFlipbook();
             });
 
             keepContrast = new JCheckBox("Keep contrast");
             setingsPanel.add(keepContrast);
             keepContrast.addActionListener((ActionEvent evt) -> {
-                if (keepContrast.isSelected() && !Epoch.isSubtracted(epoch)) {
-                    lowContrastSaved = lowContrast;
-                    highContrastSaved = highContrast;
+                if (keepContrast.isSelected()) {
+                    if (Epoch.isSubtracted(epoch)) {
+                        subContrastSaved = subContrast;
+                    } else {
+                        highContrastSaved = highContrast;
+                        lowContrastSaved = lowContrast;
+                    }
                 }
             });
 
@@ -619,8 +630,8 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                contrastSlider.setValue(contrast = CONTRAST);
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                setSubContrast(SUB_CONTRAST);
                 createFlipbook();
             });
 
@@ -1602,9 +1613,9 @@ public class ImageViewerTab {
                     }
                 }
                 autoContrast.setSelected(true);
-                contrastSlider.setValue(contrast = CONTRAST);
                 if (!keepContrast.isSelected()) {
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
+                    setSubContrast(SUB_CONTRAST);
                 }
                 try {
                     getImageData(1, numberOfEpochs + 3);
@@ -2779,7 +2790,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value, int minValue, int maxValue) {
-        value *= contrast;
+        value *= subContrast;
         value = normalize(value, minValue, maxValue);
         value = stretch(value);
         value = contrast(value);
@@ -2817,6 +2828,13 @@ public class ImageViewerTab {
         }
         lowScaleSlider.setValue(lowContrast = low);
         highScaleSlider.setValue(highContrast = high);
+    }
+
+    private void setSubContrast(int val) {
+        if (Epoch.isSubtracted(epoch)) {
+            subContrastSaved = val;
+        }
+        subScaleSlider.setValue(subContrast = val);
     }
 
     private NumberTriplet getRefValues(float[][] values) {
