@@ -461,7 +461,7 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel highScaleLabel = new JLabel(String.format("Contrast high scale: %d", highContrast));
+            JLabel highScaleLabel = new JLabel(String.format("Contrast - high scale: %d", highContrast));
             whitePanel.add(highScaleLabel);
 
             highScaleSlider = new JSlider(0, 1000, HIGH_CONTRAST);
@@ -469,7 +469,7 @@ public class ImageViewerTab {
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 highContrast = highScaleSlider.getValue();
-                highScaleLabel.setText(String.format("Contrast high scale: %d", highContrast));
+                highScaleLabel.setText(String.format("Contrast - high scale: %d", highContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
                 }
@@ -482,7 +482,7 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            JLabel lowScaleLabel = new JLabel(String.format("Contrast low scale: %d", lowContrast));
+            JLabel lowScaleLabel = new JLabel(String.format("Contrast - low scale: %d", lowContrast));
             grayPanel.add(lowScaleLabel);
 
             lowScaleSlider = new JSlider(0, 100, LOW_CONTRAST);
@@ -490,7 +490,7 @@ public class ImageViewerTab {
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 lowContrast = lowScaleSlider.getValue();
-                lowScaleLabel.setText(String.format("Contrast low scale: %d", lowContrast));
+                lowScaleLabel.setText(String.format("Contrast - low scale: %d", lowContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
@@ -505,7 +505,7 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel subScaleLabel = new JLabel(String.format("Contrast for subtracted modes: %d", subContrast));
+            JLabel subScaleLabel = new JLabel(String.format("Contrast - subtracted mode: %d", subContrast));
             whitePanel.add(subScaleLabel);
 
             subScaleSlider = new JSlider(1, 10, SUB_CONTRAST);
@@ -513,7 +513,7 @@ public class ImageViewerTab {
             subScaleSlider.setBackground(Color.WHITE);
             subScaleSlider.addChangeListener((ChangeEvent e) -> {
                 subContrast = subScaleSlider.getValue();
-                subScaleLabel.setText(String.format("Contrast for subtracted modes: %d", subContrast));
+                subScaleLabel.setText(String.format("Contrast - subtracted mode: %d", subContrast));
                 if (Epoch.isSubtracted(epoch)) {
                     subContrastSaved = subContrast;
                 }
@@ -608,7 +608,7 @@ public class ImageViewerTab {
             setingsPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(setingsPanel);
 
-            borderFirst = new JCheckBox("Border first");
+            borderFirst = new JCheckBox("Border 1st ep.");
             setingsPanel.add(borderFirst);
 
             staticView = new JCheckBox("Static view");
