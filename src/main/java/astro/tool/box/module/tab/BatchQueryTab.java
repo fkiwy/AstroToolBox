@@ -68,7 +68,7 @@ public class BatchQueryTab {
 
     public static final String TAB_NAME = "Batch Query";
     private static final int MAX_SEARCH_RADIUS = 10;
-    private static final int MAX_INPUT_ROWS = 5000;
+    private static final int MAX_INPUT_ROWS = 50000;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;

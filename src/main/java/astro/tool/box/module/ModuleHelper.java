@@ -21,7 +21,7 @@ import astro.tool.box.container.catalog.SpitzerCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
-import astro.tool.box.container.lookup.SpectralTypeLookupResult;
+import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
@@ -88,7 +88,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v2.0";
+    public static final String PGM_VERSION = "v2.1.0";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
@@ -406,7 +406,7 @@ public class ModuleHelper {
     }
 
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
-        List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(colors);
+        List<LookupResult> results = spectralTypeLookupService.lookup(colors);
         List<String> spectralTypes = new ArrayList<>();
         results.forEach(entry -> {
             String spectralType = entry.getSpt();

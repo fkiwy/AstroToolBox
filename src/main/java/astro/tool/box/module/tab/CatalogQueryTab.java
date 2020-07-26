@@ -12,7 +12,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.container.lookup.SpectralTypeLookupResult;
+import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
@@ -501,7 +501,7 @@ public class CatalogQueryTab {
     //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            List<SpectralTypeLookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {

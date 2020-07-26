@@ -3,12 +3,13 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -91,10 +92,16 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public TwoMassCatalogEntry() {
     }
 
     public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("designation")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -111,6 +118,11 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         cc_flg = values[columns.get("cc_flg")];
         gal_contam = toInteger(values[columns.get("gal_contam")]);
         mp_flg = toInteger(values[columns.get("mp_flg")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new TwoMassCatalogEntry(columns, values);
     }
 
     @Override
@@ -306,14 +318,36 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + xdate + "," + ph_qual + "," + rd_flg + "," + bl_flg + "," + cc_flg + "," + gal_contam + "," + mp_flg + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return values.split(",", 20);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + xdate + "," + ph_qual + "," + rd_flg + "," + bl_flg + "," + cc_flg + "," + gal_contam + "," + mp_flg + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
+        return columnValues.split(",", 20);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,observation date,ph. qual.,read flag,blend flag,cc flags,ext. flag,minor planet flag,J (mag),J err,H (mag),H err,K (mag),K err,J-H,H-K,J-K";
-        return titles.split(",", 20);
+        String columnTitles = "dist (arcsec),source id,ra,dec,observation date,ph. qual.,read flag,blend flag,cc flags,ext. flag,minor planet flag,J (mag),J err,H (mag),H err,K (mag),K err,J-H,H-K,J-K";
+        return columnTitles.split(",", 20);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (Jmag != 0) {
+            Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
+        }
+        if (Hmag != 0) {
+            Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
+        }
+        if (Kmag != 0) {
+            Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.J, Jmag);
+        bands.put(Band.H, Hmag);
+        bands.put(Band.K, Kmag);
+        return bands;
     }
 
     @Override

@@ -3,12 +3,13 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -122,10 +123,16 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public AllWiseCatalogEntry() {
     }
 
     public AllWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("designation")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -153,6 +160,11 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         H_err = toDouble(values[columns.get("h_msig_2mass")]);
         Kmag = toDouble(values[columns.get("k_m_2mass")]);
         K_err = toDouble(values[columns.get("k_msig_2mass")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new AllWiseCatalogEntry(columns, values);
     }
 
     @Override
@@ -322,14 +334,44 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo0Dec(pmra) + "," + roundTo0Dec(pmra_err) + "," + roundTo0Dec(pmdec) + "," + roundTo0Dec(pmdec_err) + "," + cc_flags + "," + ext_flg + "," + var_flg + "," + ph_qual + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return values.split(",", 32);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo0Dec(pmra) + "," + roundTo0Dec(pmra_err) + "," + roundTo0Dec(pmdec) + "," + roundTo0Dec(pmdec_err) + "," + cc_flags + "," + ext_flg + "," + var_flg + "," + ph_qual + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
+        return columnValues.split(",", 32);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,cc flags,ext. flag,var. flag,ph. qual.,J (mag),J err,H (mag),H err,K (mag),K err,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
-        return titles.split(",", 32);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,cc flags,ext. flag,var. flag,ph. qual.,J (mag),J err,H (mag),H err,K (mag),K err,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
+        return columnTitles.split(",", 32);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (Jmag != 0) {
+            Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
+        }
+        if (Hmag != 0) {
+            Hmag = Hmag - extinctionsByBand.get(TWO_MASS_H);
+        }
+        if (Kmag != 0) {
+            Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
+        }
+        if (W1mag != 0) {
+            W1mag = W1mag - extinctionsByBand.get(WISE_1);
+        }
+        if (W2mag != 0) {
+            W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.J, Jmag);
+        bands.put(Band.H, Hmag);
+        bands.put(Band.K, Kmag);
+        bands.put(Band.W1, W1mag);
+        bands.put(Band.W2, W2mag);
+        return bands;
     }
 
     @Override

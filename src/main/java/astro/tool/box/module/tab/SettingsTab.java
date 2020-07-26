@@ -292,9 +292,9 @@ public class SettingsTab {
             epochSlider.addChangeListener(changeListener);
 
             if (Epoch.isSubtracted(epoch)) {
-                imageViewerTab.getSmoothImage().setSelected(true);
+                imageViewerTab.getBlurImages().setSelected(true);
             } else {
-                imageViewerTab.getSmoothImage().setSelected(false);
+                imageViewerTab.getBlurImages().setSelected(false);
             }
 
             imageViewerTab.setWiseBand(wiseBand);
@@ -484,9 +484,9 @@ public class SettingsTab {
                 epochSlider.addChangeListener(changeListener);
 
                 if (Epoch.isSubtracted(epoch)) {
-                    imageViewerTab.getSmoothImage().setSelected(true);
+                    imageViewerTab.getBlurImages().setSelected(true);
                 } else {
-                    imageViewerTab.getSmoothImage().setSelected(false);
+                    imageViewerTab.getBlurImages().setSelected(false);
                 }
 
                 imageViewerTab.setWiseBand(wiseBand);

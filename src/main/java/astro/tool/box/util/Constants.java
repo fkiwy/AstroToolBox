@@ -30,9 +30,9 @@ public class Constants {
 
     public static final String TWO_MASS_CATALOG_ID = "fp_psc";
 
-    public static final String CATWISE_CATALOG_ID = "cwcat";
+    public static final String CATWISE_CATALOG_ID = "cwcat2";
 
-    public static final String CATWISE_REJECTED_ID = "reject";
+    public static final String CATWISE_REJECTED_ID = "reject2";
 
     public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
 
@@ -49,5 +49,19 @@ public class Constants {
     public static final String SPLIT_CHAR_REPLACEMENT = ";";
 
     public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
+
+    // Dust extinction bandpass keys
+    public static final String SDSS_U = "SDSS u";
+    public static final String SDSS_G = "SDSS g";
+    public static final String SDSS_R = "SDSS r";
+    public static final String SDSS_I = "SDSS i";
+    public static final String SDSS_Z = "SDSS z";
+    public static final String TWO_MASS_H = "2MASS H";
+    public static final String TWO_MASS_K = "2MASS Ks";
+    public static final String TWO_MASS_J = "2MASS J";
+    public static final String WISE_1 = "WISE-1";
+    public static final String WISE_2 = "WISE-2";
+    public static final String IRAC_1 = "IRAC-1";
+    public static final String IRAC_2 = "IRAC-2";
 
 }

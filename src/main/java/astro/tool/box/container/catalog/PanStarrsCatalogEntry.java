@@ -4,13 +4,14 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -103,10 +104,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public PanStarrsCatalogEntry() {
     }
 
     public PanStarrsCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         for (int i = 0; i < values.length; i++) {
             if (values[i].equals("-999.0")) {
                 values[i] = "0";
@@ -132,6 +139,11 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         yMeanPSFMag = toDouble(values[columns.get("yMeanPSFMag")]);
         yMeanPSFMagErr = toDouble(values[columns.get("yMeanPSFMagErr")]);
         qualityFlags = getPanStarrsQualityFlags(qualityFlag);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new PanStarrsCatalogEntry(columns, values);
     }
 
     @Override
@@ -249,14 +261,40 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
-        return values.split(",", 24);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        return columnValues.split(",", 24);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
-        return titles.split(",", 24);
+        String columnTitles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
+        return columnTitles.split(",", 24);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (gMeanPSFMag != 0) {
+            gMeanPSFMag = gMeanPSFMag - extinctionsByBand.get(SDSS_G);
+        }
+        if (rMeanPSFMag != 0) {
+            rMeanPSFMag = rMeanPSFMag - extinctionsByBand.get(SDSS_R);
+        }
+        if (iMeanPSFMag != 0) {
+            iMeanPSFMag = iMeanPSFMag - extinctionsByBand.get(SDSS_I);
+        }
+        if (zMeanPSFMag != 0) {
+            zMeanPSFMag = zMeanPSFMag - extinctionsByBand.get(SDSS_Z);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.r, rMeanPSFMag);
+        bands.put(Band.i, iMeanPSFMag);
+        bands.put(Band.z, zMeanPSFMag);
+        bands.put(Band.y, yMeanPSFMag);
+        return bands;
     }
 
     @Override

@@ -3,13 +3,14 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.Objects;
 
 public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
-    public static final String CATALOG_NAME = "CatWISE";
+    public static final String CATALOG_NAME = "CatWISE2020";
 
     // Unique WISE source designation
     private String sourceId;
@@ -105,10 +106,16 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public CatWiseCatalogEntry() {
     }
 
     public CatWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = values[columns.get("source_name")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -129,6 +136,11 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         par_sigma = toDouble(values[columns.get("par_sigma")]) * ARCSEC_MAS;
         cc_flags = values[columns.get("cc_flags")];
         ab_flags = values[columns.get("ab_flags")];
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new CatWiseCatalogEntry(columns, values);
     }
 
     @Override
@@ -272,14 +284,32 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getW1_W2());
-        return values.split(",", 20);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getW1_W2());
+        return columnValues.split(",", 20);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
-        return titles.split(",", 20);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
+        return columnTitles.split(",", 20);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (W1mag != 0) {
+            W1mag = W1mag - extinctionsByBand.get(WISE_1);
+        }
+        if (W2mag != 0) {
+            W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, W1mag);
+        bands.put(Band.W2, W2mag);
+        return bands;
     }
 
     @Override

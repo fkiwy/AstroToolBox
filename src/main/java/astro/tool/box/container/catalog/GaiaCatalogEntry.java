@@ -4,15 +4,17 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -105,10 +107,16 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public GaiaCatalogEntry() {
     }
 
     public GaiaCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = toLong(values[columns.get("source_id")]);
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
@@ -132,6 +140,11 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
     }
 
     @Override
+    public CatalogEntry copy() {
+        return new GaiaCatalogEntry(columns, values);
+    }
+
+    @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
@@ -146,9 +159,9 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("BP (mag)", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("RP (mag)", roundTo3DecNZ(RPmag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(BP_RP), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("BP-G", roundTo3DecNZ(BP_G), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(G_RP), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(getBP_RP()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("BP-G", roundTo3DecNZ(getBP_G()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(getG_RP()), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("rad vel (km/s)", roundTo3DecNZ(radvel), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("rad vel err", roundTo3DecNZ(radvel_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("teff (K)", roundTo2DecNZ(teff), Alignment.RIGHT, getDoubleComparator(), true));
@@ -278,22 +291,34 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo2Dec(teff) + "," + roundTo2Dec(radsun) + "," + roundTo3Dec(lumsun) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
-        return values.split(",", 26);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(getBP_G()) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo2Dec(teff) + "," + roundTo2Dec(radsun) + "," + roundTo3Dec(lumsun) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
+        return columnValues.split(",", 26);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),radius (Rsun),luminosity (Lsun),dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
-        return titles.split(",", 26);
+        String columnTitles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),radius (Rsun),luminosity (Lsun),dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
+        return columnTitles.split(",", 26);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
+        throw new NoExtinctionValuesException();
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.G, Gmag);
+        return bands;
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.BP_RP, BP_RP);
-        colors.put(Color.G_RP, G_RP);
         colors.put(Color.M_G, getAbsoluteGmag());
+        colors.put(Color.BP_RP, getBP_RP());
+        colors.put(Color.G_RP, getG_RP());
         return colors;
     }
 
@@ -433,7 +458,27 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
     }
 
     public double getBP_RP() {
-        return BP_RP;
+        if (BPmag == 0 || RPmag == 0) {
+            return 0;
+        } else {
+            return BPmag - RPmag;
+        }
+    }
+
+    public double getBP_G() {
+        if (BPmag == 0 || Gmag == 0) {
+            return 0;
+        } else {
+            return BPmag - Gmag;
+        }
+    }
+
+    public double getG_RP() {
+        if (Gmag == 0 || RPmag == 0) {
+            return 0;
+        } else {
+            return Gmag - RPmag;
+        }
     }
 
 }

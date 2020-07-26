@@ -1,5 +1,7 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.NumberPair;
+
 public class FlipbookComponent {
 
     private static final String ASC_NODE = "ASC";
@@ -15,6 +17,8 @@ public class FlipbookComponent {
     private boolean isMerged;
 
     private boolean firstEpoch;
+
+    private NumberPair refValues;
 
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
@@ -81,6 +85,24 @@ public class FlipbookComponent {
                     titleEpoch = "1-" + epochCount;
                     titleNode = DESC_NODE;
                     break;
+                case 1100:
+                    firstEpoch = true;
+                    titleEpoch = "1";
+                    titleNode = ASC_NODE;
+                    break;
+                case 1200:
+                    titleEpoch = "" + epochCount;
+                    titleNode = ASC_NODE;
+                    break;
+                case 1300:
+                    firstEpoch = true;
+                    titleEpoch = "1";
+                    titleNode = DESC_NODE;
+                    break;
+                case 1400:
+                    titleEpoch = "" + epochCount;
+                    titleNode = DESC_NODE;
+                    break;
                 default:
                     if (epoch > 100 && epoch < 200) {
                         firstEpoch = epoch == 101;
@@ -119,6 +141,14 @@ public class FlipbookComponent {
 
     public boolean isFirstEpoch() {
         return firstEpoch;
+    }
+
+    public NumberPair getRefValues() {
+        return refValues;
+    }
+
+    public void setRefValues(NumberPair refValues) {
+        this.refValues = refValues;
     }
 
 }

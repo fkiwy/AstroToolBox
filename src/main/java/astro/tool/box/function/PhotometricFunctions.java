@@ -3,7 +3,8 @@ package astro.tool.box.function;
 import astro.tool.box.container.StringPair;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
-import astro.tool.box.container.lookup.SpectralTypeLookupResult;
+import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.container.lookup.MainSequenceLookup;
 import astro.tool.box.enumeration.Color;
 import static java.lang.Math.*;
 import java.util.ArrayList;
@@ -106,7 +107,7 @@ public class PhotometricFunctions {
      * @param maxEntry
      * @return the spectral type
      */
-    public static SpectralTypeLookupResult evaluateSpectralType(Color colorKey, double colorValue, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
+    public static LookupResult evaluateSpectralType(Color colorKey, double colorValue, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
         Double minColorValue = minEntry.getColors().get(colorKey);
         Double maxColorValue = maxEntry.getColors().get(colorKey);
         if (minColorValue == null || maxColorValue == null || minColorValue == 0 || maxColorValue == 0 || colorValue == 0) {
@@ -120,12 +121,18 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
-        double toleranceValue = 0.3;
+        double toleranceValue;
+        if (minEntry instanceof MainSequenceLookup) {
+            toleranceValue = 1.0;
+        } else {
+            toleranceValue = 0.2;
+        }
+        //System.out.println("toleranceValue=" + toleranceValue);
         double avgColorValue = (minColorValue + maxColorValue) / 2;
         if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + toleranceValue) {
-            return new SpectralTypeLookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
+            return new LookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
         } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - toleranceValue) {
-            return new SpectralTypeLookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
+            return new LookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
         } else {
             return null;
         }
@@ -143,7 +150,7 @@ public class PhotometricFunctions {
      * @param maxEntry
      * @return the temperature
      */
-    public static SpectralTypeLookupResult evaluateTemperature(Color colorKey, double colorValue, double teff, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
+    public static LookupResult evaluateTemperature(Color colorKey, double colorValue, double teff, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
         double teffError = 1000;
         if (teff != 0 && (teff < minEntry.getTeff() - teffError || teff > maxEntry.getTeff() + teffError)) {
             return null;
@@ -157,6 +164,18 @@ public class PhotometricFunctions {
             return null;
         }
         return evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
+    }
+
+    /**
+     * Calculate distance from apparent and absolute magnitudes using distance
+     * modulus
+     *
+     * @param apparent
+     * @param absolute
+     * @return the distance in parsecs
+     */
+    public static double calculateDistanceFromMagnitudes(double apparent, double absolute) {
+        return pow(10, (apparent - absolute + 5) / 5);
     }
 
     /**

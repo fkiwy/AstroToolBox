@@ -8,6 +8,12 @@ import org.junit.Test;
 public class PhotometricFunctionsTest {
 
     @Test
+    public void calculateDistanceFromMagnitudes() {
+        double distance = PhotometricFunctions.calculateDistanceFromMagnitudes(14.25, 10.75);
+        assertEquals(50.11872336272722, distance, 0);
+    }
+
+    @Test
     public void displayPanStarrsObjectInfo() {
         List<StringPair> objectInfo = PhotometricFunctions.getPanStarrsObjectInfoFlags(60);
         objectInfo.forEach((pair) -> {

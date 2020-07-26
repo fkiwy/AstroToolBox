@@ -3,11 +3,13 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -88,6 +90,10 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     private static final Map<Integer, String> TYPE_TABLE = new HashMap<>();
 
     static {
@@ -102,6 +108,8 @@ public class VHSCatalogEntry implements CatalogEntry {
     }
 
     public VHSCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = toLong(values[columns.get("SrcID")]);
         ra = toDouble(values[columns.get("RAJ2000")]);
         dec = toDouble(values[columns.get("DEJ2000")]);
@@ -121,6 +129,11 @@ public class VHSCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public CatalogEntry copy() {
+        return new UnWiseCatalogEntry(columns, values);
+    }
+
+    @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
@@ -134,10 +147,10 @@ public class VHSCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Ks (mag)", roundTo3DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("Ks err", roundTo3DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("H-Ks", roundTo3DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-Ks", roundTo3DecNZ(j_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(getY_J()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(getJ_H()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H-Ks", roundTo3DecNZ(getH_K()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-Ks", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("object type", TYPE_TABLE.get(objectType), Alignment.LEFT, getStringComparator(), true));
     }
 
@@ -215,22 +228,44 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(y_j_pnt) + "," + roundTo3Dec(j_h_pnt) + "," + roundTo3Dec(h_ks_pnt) + "," + roundTo3Dec(j_ks_pnt) + "," + TYPE_TABLE.get(objectType);
-        return values.split(",", 17);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(getY_J()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + TYPE_TABLE.get(objectType);
+        return columnValues.split(",", 17);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,Y (mag),Y err,J (mag),J err,H (mag),H err,Ks (mag),Ks err,Y-J,J-H,H-Ks,J-Ks,object type";
-        return titles.split(",", 17);
+        String columnTitles = "dist (arcsec),source id,ra,dec,Y (mag),Y err,J (mag),J err,H (mag),H err,Ks (mag),Ks err,Y-J,J-H,H-Ks,J-Ks,object type";
+        return columnTitles.split(",", 17);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (j_ap3 != 0) {
+            j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
+        }
+        if (h_ap3 != 0) {
+            h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
+        }
+        if (ks_ap3 != 0) {
+            ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.J, j_ap3);
+        bands.put(Band.H, h_ap3);
+        bands.put(Band.K, ks_ap3);
+        return bands;
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.J_H, j_h_pnt);
-        colors.put(Color.H_K, h_ks_pnt);
-        colors.put(Color.J_K, j_ks_pnt);
+        colors.put(Color.J_H, getJ_H());
+        colors.put(Color.H_K, getH_K());
+        colors.put(Color.J_K, getJ_K());
         return colors;
     }
 
@@ -347,6 +382,38 @@ public class VHSCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    public double getY_J() {
+        if (y_ap3 == 0 || j_ap3 == 0) {
+            return 0;
+        } else {
+            return y_ap3 - j_ap3;
+        }
+    }
+
+    public double getJ_H() {
+        if (j_ap3 == 0 || h_ap3 == 0) {
+            return 0;
+        } else {
+            return j_ap3 - h_ap3;
+        }
+    }
+
+    public double getH_K() {
+        if (h_ap3 == 0 || ks_ap3 == 0) {
+            return 0;
+        } else {
+            return h_ap3 - ks_ap3;
+        }
+    }
+
+    public double getJ_K() {
+        if (j_ap3 == 0 || ks_ap3 == 0) {
+            return 0;
+        } else {
+            return j_ap3 - ks_ap3;
+        }
     }
 
 }

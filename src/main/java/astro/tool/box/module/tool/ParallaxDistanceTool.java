@@ -14,12 +14,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-public class ActualDistanceTool {
+public class ParallaxDistanceTool {
 
     private final JFrame baseFrame;
     private final JPanel toolPanel;
 
-    public ActualDistanceTool(JFrame baseFrame, JPanel toolPanel) {
+    public ParallaxDistanceTool(JFrame baseFrame, JPanel toolPanel) {
         this.baseFrame = baseFrame;
         this.toolPanel = toolPanel;
     }

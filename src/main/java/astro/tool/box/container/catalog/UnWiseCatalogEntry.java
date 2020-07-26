@@ -3,11 +3,13 @@ package astro.tool.box.container.catalog;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -79,10 +81,16 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public UnWiseCatalogEntry() {
     }
 
     public UnWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
             if ("Infinity".equals(value) || "-Infinity".equals(value) || "NaN".equals(value)) {
@@ -104,6 +112,11 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public CatalogEntry copy() {
+        return new UnWiseCatalogEntry(columns, values);
+    }
+
+    @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", unwise_objid, Alignment.LEFT, getStringComparator()));
@@ -117,7 +130,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("coadd flags W2", String.valueOf(flags_unwise_w2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W1", String.valueOf(flags_info_w1), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W2", String.valueOf(flags_info_w2), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(w1_w2_vg), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true));
     }
 
     @Override
@@ -166,10 +179,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
             return false;
         }
         final UnWiseCatalogEntry other = (UnWiseCatalogEntry) obj;
-        if (!Objects.equals(this.unwise_objid, other.unwise_objid)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.unwise_objid, other.unwise_objid);
     }
 
     @Override
@@ -194,20 +204,38 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(w1_w2_vg);
-        return values.split(",", 13);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(getW1_W2());
+        return columnValues.split(",", 13);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,W1 (mag),W2 (mag),qual. fact. W1,qual. fact. W2,coadd flags W1,coadd flags W2,info flags W1,info flags W2,W1-W2";
-        return titles.split(",", 13);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W2 (mag),qual. fact. W1,qual. fact. W2,coadd flags W1,coadd flags W2,info flags W1,info flags W2,W1-W2";
+        return columnTitles.split(",", 13);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (mag_w1_vg != 0) {
+            mag_w1_vg = mag_w1_vg - extinctionsByBand.get(WISE_1);
+        }
+        if (mag_w2_vg != 0) {
+            mag_w2_vg = mag_w2_vg - extinctionsByBand.get(WISE_2);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, mag_w1_vg);
+        bands.put(Band.W2, mag_w2_vg);
+        return bands;
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.W1_W2, w1_w2_vg);
+        colors.put(Color.W1_W2, getW1_W2());
         return colors;
     }
 
@@ -324,6 +352,14 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    public double getW1_W2() {
+        if (mag_w1_vg == 0 || mag_w2_vg == 0) {
+            return 0;
+        } else {
+            return mag_w1_vg - mag_w2_vg;
+        }
     }
 
 }

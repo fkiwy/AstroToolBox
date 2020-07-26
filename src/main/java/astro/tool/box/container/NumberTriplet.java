@@ -3,7 +3,9 @@ package astro.tool.box.container;
 public class NumberTriplet {
 
     private final double x;
+
     private final double y;
+
     private final double z;
 
     public NumberTriplet(double x, double y, double z) {

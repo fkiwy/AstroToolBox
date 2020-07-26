@@ -2,8 +2,10 @@ package astro.tool.box.container.catalog;
 
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +46,11 @@ public class GenericCatalogEntry implements CatalogEntry {
     public GenericCatalogEntry(String[] titles, String[] values) {
         this.titles = titles;
         this.values = values;
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return null;
     }
 
     @Override
@@ -100,6 +107,16 @@ public class GenericCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnTitles() {
         return new String[0];
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
+        throw new NoExtinctionValuesException();
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        return new LinkedHashMap<>();
     }
 
     @Override

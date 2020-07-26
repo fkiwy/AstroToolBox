@@ -4,11 +4,13 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
@@ -113,10 +115,16 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
+    private Map<String, Integer> columns;
+
+    private String[] values;
+
     public GaiaWDCatalogEntry() {
     }
 
     public GaiaWDCatalogEntry(Map<String, Integer> columns, String[] values) {
+        this.columns = columns;
+        this.values = values;
         sourceId = toLong(values[columns.get("Source")]);
         wdId = values[columns.get("WD")];
         ra = toDouble(values[columns.get("RA_ICRS")]);
@@ -140,6 +148,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         teffHe = toDouble(values[columns.get("TeffHe")]);
         loggHe = toDouble(values[columns.get("loggHe")]);
         massHe = toDouble(values[columns.get("MassHe")]);
+    }
+
+    @Override
+    public CatalogEntry copy() {
+        return new GaiaWDCatalogEntry(columns, values);
     }
 
     @Override
@@ -171,8 +184,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getActualDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("Absolute G (mag)", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(get_G_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(get_BP_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(getG_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(getBP_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -261,22 +274,46 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String values = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(get_G_RP()) + "," + roundTo3Dec(get_BP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return values.split(",", 33);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getActualDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        return columnValues.split(",", 33);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String titles = "dist (arcsec),source id,ra,dec,WD id,plx (mas),pmra (mas/yr),pmdec (mas/yr),G (mag),BP (mag),RP (mag),u (mag),g (mag),r (mag),i (mag),z (mag),teff H (K),teff He (K),logg H,logg He,mass H (Msun),mass He (Msun),SDSS id,probability of being a WD,dist (1/plx),tpm (mas/yr),Absolute G (mag),G-RP,BP-RP,u-g,g-r,r-i,i-z";
-        return titles.split(",", 33);
+        String columnTitles = "dist (arcsec),source id,ra,dec,WD id,plx (mas),pmra (mas/yr),pmdec (mas/yr),G (mag),BP (mag),RP (mag),u (mag),g (mag),r (mag),i (mag),z (mag),teff H (K),teff He (K),logg H,logg He,mass H (Msun),mass He (Msun),SDSS id,probability of being a WD,dist (1/plx),tpm (mas/yr),Absolute G (mag),G-RP,BP-RP,u-g,g-r,r-i,i-z";
+        return columnTitles.split(",", 33);
+    }
+
+    @Override
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (u_mag != 0) {
+            u_mag = u_mag - extinctionsByBand.get(SDSS_U);
+        }
+        if (g_mag != 0) {
+            g_mag = g_mag - extinctionsByBand.get(SDSS_G);
+        }
+        if (r_mag != 0) {
+            r_mag = r_mag - extinctionsByBand.get(SDSS_R);
+        }
+        if (i_mag != 0) {
+            i_mag = i_mag - extinctionsByBand.get(SDSS_I);
+        }
+        if (z_mag != 0) {
+            z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+        }
+    }
+
+    @Override
+    public Map<Band, Double> getBands() {
+        return new LinkedHashMap<>();
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
-        colors.put(Color.G_RP, get_G_RP());
-        colors.put(Color.BP_RP, get_BP_RP());
+        colors.put(Color.G_RP, getG_RP());
+        colors.put(Color.BP_RP, getBP_RP());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
@@ -435,7 +472,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
-    public double get_G_RP() {
+    public double getG_RP() {
         if (Gmag == 0 || RPmag == 0) {
             return 0;
         } else {
@@ -443,7 +480,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         }
     }
 
-    public double get_BP_RP() {
+    public double getBP_RP() {
         if (BPmag == 0 || RPmag == 0) {
             return 0;
         } else {

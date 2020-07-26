@@ -1,11 +1,28 @@
 package astro.tool.box.container.catalog;
 
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
+import astro.tool.box.exception.NoExtinctionValuesException;
+import static astro.tool.box.util.Constants.LINE_SEP;
 import java.util.List;
 import java.util.Map;
 
 public interface CatalogEntry {
+
+    default String getEntryData() {
+        StringBuilder entryData = new StringBuilder(getCatalogName()).append(":");
+        List<CatalogElement> catalogElements = getCatalogElements();
+        for (int i = 1; i < catalogElements.size(); i++) {
+            CatalogElement catalogElement = catalogElements.get(i);
+            entryData.append(LINE_SEP).append(catalogElement.getName()).append(" = ").append(catalogElement.getValue());
+        }
+        return entryData.toString();
+    }
+
+    CatalogEntry copy();
+
+    void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException;
 
     CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 
@@ -20,6 +37,8 @@ public interface CatalogEntry {
     String[] getColumnValues();
 
     String[] getColumnTitles();
+
+    Map<Band, Double> getBands();
 
     Map<Color, Double> getColors();
 
