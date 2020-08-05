@@ -1099,9 +1099,9 @@ public class ImageViewerTab {
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
-                        imageLabel.setBorder(BorderFactory.createDashedBorder(null, 5, 5));
+                        imageLabel.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
                     } else {
-                        imageLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+                        imageLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
                     }
 
                     imagePanel.add(imageLabel);
