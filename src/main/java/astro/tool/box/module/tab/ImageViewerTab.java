@@ -223,6 +223,7 @@ public class ImageViewerTab {
     private JCheckBox sloanImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
+    private JCheckBox timeSeries;
     private JCheckBox createDataSheet;
     private JCheckBox skipBadImages;
     private JCheckBox skipSingleNodes;
@@ -360,9 +361,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1890;
+            int controlPanelHeight = 1925;
 
-            JPanel controlPanel = new JPanel(new GridLayout(78, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(79, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -784,16 +785,23 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            createDataSheet = new JCheckBox("Create object info sheet", false);
+            timeSeries = new JCheckBox("Time series", false);
+            controlPanel.add(timeSeries);
+            timeSeries.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            createDataSheet = new JCheckBox("Object info sheet", false);
             controlPanel.add(createDataSheet);
             createDataSheet.addActionListener((ActionEvent evt) -> {
-                setImageViewer(this);
                 if (createDataSheet.isSelected()) {
+                    setImageViewer(this);
                     dssImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
+                    timeSeries.setSelected(false);
                 }
             });
 
@@ -1236,9 +1244,34 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
+                                        int numberOfPanels = 0;
+                                        if (dssImages.isSelected()) {
+                                            numberOfPanels++;
+                                        }
+                                        if (twoMassImages.isSelected()) {
+                                            numberOfPanels++;
+                                        }
+                                        if (sloanImages.isSelected()) {
+                                            numberOfPanels++;
+                                        }
+                                        if (allwiseImages.isSelected()) {
+                                            numberOfPanels++;
+                                        }
+                                        if (ps1Images.isSelected()) {
+                                            numberOfPanels++;
+                                        }
+                                        if (timeSeries.isSelected()) {
+                                            numberOfPanels++;
+                                        }
                                         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                                         int screenHeight = screenSize.height;
-                                        int verticalSpacing = screenHeight / 6;
+                                        int verticalSpacing;
+                                        int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
+                                        if (totalPanelHeight > screenHeight) {
+                                            verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels - 1);
+                                        } else {
+                                            verticalSpacing = PANEL_HEIGHT;
+                                        }
                                         Counter counter = new Counter(verticalSpacing);
                                         if (dssImages.isSelected()) {
                                             displayDssImages(newRa, newDec, fieldOfView, counter);
@@ -1254,6 +1287,9 @@ public class ImageViewerTab {
                                         }
                                         if (ps1Images.isSelected()) {
                                             displayPs1Images(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (timeSeries.isSelected()) {
+                                            displayTimeSeriesStatic(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (createDataSheet.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> new InfoSheet(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
@@ -3202,6 +3238,55 @@ public class ImageViewerTab {
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(1320, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void displayTimeSeriesStatic(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            JPanel bandPanel = new JPanel(new GridLayout(1, 5));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "DSS2 - IR"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "2MASS - K"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "SDSS - z"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "WISE - W2"));
+            }
+            SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+            if (!imageInfos.isEmpty()) {
+                image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
+                bandPanel.add(buildImagePanel(image, "PS1 - z"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
