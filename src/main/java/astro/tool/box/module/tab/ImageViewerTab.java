@@ -219,8 +219,8 @@ public class ImageViewerTab {
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImages;
-    private JCheckBox sloanImages;
     private JCheckBox twoMassImages;
+    private JCheckBox sloanImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
     private JCheckBox createDataSheet;
@@ -760,15 +760,15 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
-            controlPanel.add(sloanImages);
-            sloanImages.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
-            });
-
             twoMassImages = new JCheckBox("2MASS J, H & K bands", false);
             controlPanel.add(twoMassImages);
             twoMassImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
+            controlPanel.add(sloanImages);
+            sloanImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
@@ -790,8 +790,8 @@ public class ImageViewerTab {
                 setImageViewer(this);
                 if (createDataSheet.isSelected()) {
                     dssImages.setSelected(false);
-                    sloanImages.setSelected(false);
                     twoMassImages.setSelected(false);
+                    sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
                 }
@@ -1243,11 +1243,11 @@ public class ImageViewerTab {
                                         if (dssImages.isSelected()) {
                                             displayDssImages(newRa, newDec, fieldOfView, counter);
                                         }
-                                        if (sloanImages.isSelected()) {
-                                            displaySdssImages(newRa, newDec, fieldOfView, counter);
-                                        }
                                         if (twoMassImages.isSelected()) {
                                             display2MassImages(newRa, newDec, fieldOfView, counter);
+                                        }
+                                        if (sloanImages.isSelected()) {
+                                            displaySdssImages(newRa, newDec, fieldOfView, counter);
                                         }
                                         if (allwiseImages.isSelected()) {
                                             displayAllwiseImages(newRa, newDec, fieldOfView, counter);
@@ -3035,6 +3035,50 @@ public class ImageViewerTab {
         }
     }
 
+    private void display2MassImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            JPanel bandPanel = new JPanel(new GridLayout(1, 4));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "J"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "H"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "K"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "K-H-J"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.getTotal());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void displaySdssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -3073,50 +3117,6 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("SDSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
-            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.getTotal());
-            imageFrame.setAlwaysOnTop(true);
-            imageFrame.setResizable(false);
-            imageFrame.setVisible(true);
-            counter.add();
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private void display2MassImages(double targetRa, double targetDec, int size, Counter counter) {
-        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 4));
-
-            BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
-            if (image != null) {
-                bandPanel.add(buildImagePanel(image, "J"));
-            }
-            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
-            if (image != null) {
-                bandPanel.add(buildImagePanel(image, "H"));
-            }
-            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
-            if (image != null) {
-                bandPanel.add(buildImagePanel(image, "K"));
-            }
-            image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
-            if (image != null) {
-                bandPanel.add(buildImagePanel(image, "K-H-J"));
-            }
-
-            int componentCount = bandPanel.getComponentCount();
-            if (componentCount == 0) {
-                return;
-            }
-
-            JFrame imageFrame = new JFrame();
-            imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
