@@ -1264,7 +1264,9 @@ public class ImageViewerTab {
                                         if (createDataSheet.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> new InfoSheet(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
                                         } else if (animatedTimeSeries.isSelected()) {
-                                            displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
+                                            if (imageCount == 0) {
+                                                displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
+                                            }
                                         } else {
                                             int numberOfPanels = 0;
                                             if (dssImages.isSelected()) {
@@ -3371,14 +3373,12 @@ public class ImageViewerTab {
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
 
-            imageCount = 0;
             Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
                 if (imageCount > componentCount - 1) {
                     imageCount = 0;
                 }
                 displayPanel.add(panelList.get(imageCount), 0);
                 imageFrame.setVisible(true);
-                System.out.println(imageCount);
                 imageCount++;
             });
 
@@ -3386,6 +3386,7 @@ public class ImageViewerTab {
                 @Override
                 public void windowClosing(WindowEvent evt) {
                     timeSeries.stop();
+                    imageCount = 0;
                 }
             });
 
