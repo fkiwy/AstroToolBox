@@ -790,6 +790,7 @@ public class ImageViewerTab {
             staticTimeSeries = new JCheckBox("Time series - static", false);
             controlPanel.add(staticTimeSeries);
             staticTimeSeries.addActionListener((ActionEvent evt) -> {
+                animatedTimeSeries.setSelected(false);
                 createDataSheet.setSelected(false);
             });
 
@@ -802,8 +803,14 @@ public class ImageViewerTab {
                     sloanImages.setSelected(true);
                     allwiseImages.setSelected(true);
                     ps1Images.setSelected(true);
+                    staticTimeSeries.setSelected(false);
+                } else {
+                    dssImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
                 }
-                staticTimeSeries.setSelected(false);
                 createDataSheet.setSelected(false);
             });
 
