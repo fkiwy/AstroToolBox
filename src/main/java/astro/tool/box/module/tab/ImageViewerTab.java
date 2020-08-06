@@ -223,7 +223,8 @@ public class ImageViewerTab {
     private JCheckBox sloanImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
-    private JCheckBox timeSeries;
+    private JCheckBox staticTimeSeries;
+    private JCheckBox animatedTimeSeries;
     private JCheckBox createDataSheet;
     private JCheckBox skipBadImages;
     private JCheckBox skipSingleNodes;
@@ -268,6 +269,7 @@ public class ImageViewerTab {
     private int fieldOfView = 30;
     private int crosshairSize = 5;
     private int imageNumber;
+    private int imageCount;
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
@@ -361,9 +363,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1925;
+            int controlPanelHeight = 1950;
 
-            JPanel controlPanel = new JPanel(new GridLayout(79, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(80, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -785,9 +787,23 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            timeSeries = new JCheckBox("Time series", false);
-            controlPanel.add(timeSeries);
-            timeSeries.addActionListener((ActionEvent evt) -> {
+            staticTimeSeries = new JCheckBox("Time series - static", false);
+            controlPanel.add(staticTimeSeries);
+            staticTimeSeries.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            animatedTimeSeries = new JCheckBox("Time series - animated", false);
+            controlPanel.add(animatedTimeSeries);
+            animatedTimeSeries.addActionListener((ActionEvent evt) -> {
+                if (animatedTimeSeries.isSelected()) {
+                    dssImages.setSelected(true);
+                    twoMassImages.setSelected(true);
+                    sloanImages.setSelected(true);
+                    allwiseImages.setSelected(true);
+                    ps1Images.setSelected(true);
+                }
+                staticTimeSeries.setSelected(false);
                 createDataSheet.setSelected(false);
             });
 
@@ -801,7 +817,8 @@ public class ImageViewerTab {
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
-                    timeSeries.setSelected(false);
+                    staticTimeSeries.setSelected(false);
+                    animatedTimeSeries.setSelected(false);
                 }
             });
 
@@ -1244,55 +1261,58 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
-                                        int numberOfPanels = 0;
-                                        if (dssImages.isSelected()) {
-                                            numberOfPanels++;
-                                        }
-                                        if (twoMassImages.isSelected()) {
-                                            numberOfPanels++;
-                                        }
-                                        if (sloanImages.isSelected()) {
-                                            numberOfPanels++;
-                                        }
-                                        if (allwiseImages.isSelected()) {
-                                            numberOfPanels++;
-                                        }
-                                        if (ps1Images.isSelected()) {
-                                            numberOfPanels++;
-                                        }
-                                        if (timeSeries.isSelected()) {
-                                            numberOfPanels++;
-                                        }
-                                        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                                        int screenHeight = screenSize.height;
-                                        int verticalSpacing;
-                                        int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
-                                        if (totalPanelHeight > screenHeight) {
-                                            verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels - 1);
-                                        } else {
-                                            verticalSpacing = PANEL_HEIGHT;
-                                        }
-                                        Counter counter = new Counter(verticalSpacing);
-                                        if (dssImages.isSelected()) {
-                                            displayDssImages(newRa, newDec, fieldOfView, counter);
-                                        }
-                                        if (twoMassImages.isSelected()) {
-                                            display2MassImages(newRa, newDec, fieldOfView, counter);
-                                        }
-                                        if (sloanImages.isSelected()) {
-                                            displaySdssImages(newRa, newDec, fieldOfView, counter);
-                                        }
-                                        if (allwiseImages.isSelected()) {
-                                            displayAllwiseImages(newRa, newDec, fieldOfView, counter);
-                                        }
-                                        if (ps1Images.isSelected()) {
-                                            displayPs1Images(newRa, newDec, fieldOfView, counter);
-                                        }
-                                        if (timeSeries.isSelected()) {
-                                            displayTimeSeriesStatic(newRa, newDec, fieldOfView, counter);
-                                        }
                                         if (createDataSheet.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> new InfoSheet(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
+                                        } else if (animatedTimeSeries.isSelected()) {
+                                            displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
+                                        } else {
+                                            int numberOfPanels = 0;
+                                            if (dssImages.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (twoMassImages.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (sloanImages.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (allwiseImages.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (ps1Images.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (staticTimeSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                            int screenHeight = screenSize.height;
+                                            int verticalSpacing;
+                                            int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
+                                            if (totalPanelHeight > screenHeight) {
+                                                verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels - 1);
+                                            } else {
+                                                verticalSpacing = PANEL_HEIGHT;
+                                            }
+                                            Counter counter = new Counter(verticalSpacing);
+                                            if (dssImages.isSelected()) {
+                                                displayDssImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (twoMassImages.isSelected()) {
+                                                display2MassImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (sloanImages.isSelected()) {
+                                                displaySdssImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (allwiseImages.isSelected()) {
+                                                displayAllwiseImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (ps1Images.isSelected()) {
+                                                displayPs1Images(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (staticTimeSeries.isSelected()) {
+                                                displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
+                                            }
                                         }
                                     }
                                     break;
@@ -3250,7 +3270,7 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayTimeSeriesStatic(double targetRa, double targetDec, int size, Counter counter) {
+    private void displayStaticTimeSeries(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 5));
@@ -3292,6 +3312,84 @@ public class ImageViewerTab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void displayAnimatedTimeSeries(double targetRa, double targetDec, int size) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            BufferedImage image;
+            List<JPanel> panelList = new ArrayList<>();
+
+            if (dssImages.isSelected()) {
+                image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
+                if (image != null) {
+                    panelList.add(buildImagePanel(image, "DSS2 - IR"));
+                }
+            }
+            if (twoMassImages.isSelected()) {
+                image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+                if (image != null) {
+                    panelList.add(buildImagePanel(image, "2MASS - K"));
+                }
+            }
+            if (sloanImages.isSelected()) {
+                image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
+                if (image != null) {
+                    panelList.add(buildImagePanel(image, "SDSS - z"));
+                }
+            }
+            if (allwiseImages.isSelected()) {
+                image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+                if (image != null) {
+                    panelList.add(buildImagePanel(image, "WISE - W2"));
+                }
+            }
+            if (ps1Images.isSelected()) {
+                SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+                if (!imageInfos.isEmpty()) {
+                    image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
+                    panelList.add(buildImagePanel(image, "PS1 - z"));
+                }
+            }
+
+            int componentCount = panelList.size();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            JPanel displayPanel = new JPanel();
+            imageFrame.getContentPane().add(displayPanel);
+            imageFrame.setSize(PANEL_HEIGHT, PANEL_HEIGHT);
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+
+            imageCount = 0;
+            Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
+                if (imageCount > componentCount - 1) {
+                    imageCount = 0;
+                }
+                displayPanel.add(panelList.get(imageCount), 0);
+                imageFrame.setVisible(true);
+                System.out.println(imageCount);
+                imageCount++;
+            });
+
+            imageFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent evt) {
+                    timeSeries.stop();
+                }
+            });
+
+            timeSeries.start();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
