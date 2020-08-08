@@ -1,14 +1,25 @@
 package astro.tool.box.service;
 
+import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.container.lookup.SpectralTypeLookup;
+import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
+import astro.tool.box.enumeration.Color;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Constants.*;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Test;
 
 public class Results {
@@ -102,40 +113,98 @@ public class Results {
 
     @Test
     public void test() throws Exception {
+        // 0 angDist
+        // 1 RA (BYW)
+        // 2 Dec (BYW)
+        // 3 Duplicate
+        // 4 Classification
+        // 5 ra
+        // 6 dec
+        // 7 parallax
+        // 8 parallax_error
+        // 9 pmra
+        //10 pmra_error
+        //11 pmdec
+        //12 pmdec_error
+        //13 phot_g_mean_mag
+        //14 phot_bp_mean_mag
+        //15 phot_rp_mean_mag
+        //16 bp_rp
+        //17 radial_velocity
+        //18 radial_velocity_error
+        //19 teff_val
+        //20 radius_val
+        //21 lum_val
+
+        SpectralTypeLookupService spectralTypeLookupService;
+        InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
+        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+            }).collect(Collectors.toList());
+            spectralTypeLookupService = new SpectralTypeLookupService(entries);
+        }
+
         StringBuilder results = new StringBuilder();
         Map<String, Integer> spectralTypeCount = new TreeMap<>();
-        try (Scanner scanner = new Scanner(new File("c:/temp/AstroToolBox_results.csv"))) {
+        try (Scanner scanner = new Scanner(new File("c:/temp/BYW GPS x Gaia DR2.csv"))) {
             String line = scanner.nextLine();
             results.append(line).append(",dist,tpm,vtan,spt").append(LINE_SEP);
             while (scanner.hasNextLine()) {
                 line = scanner.nextLine();
-                String[] values = line.split(SPLIT_CHAR, 13);
-                double ra = toDouble(values[3]);
-                double dec = toDouble(values[4]);
+                String[] values = line.split(SPLIT_CHAR, 22);
+                double ra = toDouble(values[5]);
+                double dec = toDouble(values[6]);
                 if (ra == 0 && dec == 0) {
                     continue;
                 }
-                double plx = toDouble(values[6]);
-                double pmra = toDouble(values[7]);
-                double pmdec = toDouble(values[8]);
-                String spt = values[12];
+                double plx = toDouble(values[7]);
+                double pmra = toDouble(values[9]);
+                double pmdec = toDouble(values[11]);
+                double Gmag = toDouble(values[13]);
+                double BPmag = toDouble(values[14]);
+                double RPmag = toDouble(values[15]);
+                double G_RP;
+                if (Gmag == 0 || RPmag == 0) {
+                    G_RP = 0;
+                } else {
+                    G_RP = Gmag - RPmag;
+                }
+                double BP_RP;
+                if (BPmag == 0 || RPmag == 0) {
+                    BP_RP = 0;
+                } else {
+                    BP_RP = BPmag - RPmag;
+                }
+                Map<Color, Double> colors = new LinkedHashMap<>();
+                colors.put(Color.G_RP, G_RP);
+                colors.put(Color.BP_RP, BP_RP);
+                List<LookupResult> list = spectralTypeLookupService.lookup(colors);
+                String spt = "";
+                for (LookupResult entry : list) {
+                    spt = entry.getSpt();
+                }
                 if (spt.isEmpty()) {
                     continue;
                 }
-                //System.out.println("plx=" + plx + " pmra=" + pmra + " pmdec=" + pmdec + " spt=" + spt);
                 double dist = calculateActualDistance(plx);
                 if (dist == 0 || dist > 1000) {
                     continue;
                 }
                 double tpm = calculateTotalProperMotion(pmra, pmdec);
+                if (tpm < 30) {
+                    continue;
+                }
                 double vtan = calculateTransverseVelocityFromParallax(pmra, pmdec, plx);
                 Double sptNum = SPECTRAL_TYPES.get(spt);
-                //sptNum = sptNum == null ? 99.9 : sptNum;
+                if (sptNum == null) {
+                    continue;
+                }
                 Integer count = spectralTypeCount.get(spt);
                 count = count == null ? 0 : count;
                 spectralTypeCount.put(spt, count + 1);
                 System.out.println("plx=" + plx + " dist=" + dist + " tpm=" + tpm + " vtan=" + vtan + " sptNum=" + sptNum);
-                results.append(line).append(",").append(dist).append(",").append(tpm).append(",").append(vtan).append(",").append(sptNum).append(LINE_SEP);
+                results.append(line).append(",").append(dist).append(",").append(tpm).append(",").append(vtan).append(",").append(roundTo1Dec(sptNum)).append(LINE_SEP);
 
             }
         }
@@ -145,7 +214,7 @@ public class Results {
             total += entry.getValue();
         }
         System.out.println("Total : " + total);
-        File resultFile = new File("c:/temp/plane_search_results.csv");
+        File resultFile = new File("c:/temp/BYW Plane Search results.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
