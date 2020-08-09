@@ -198,6 +198,7 @@ public class ImageViewerTab {
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
     private JCheckBox staticView;
+    private JCheckBox showCrosshairs;
     private JCheckBox simbadOverlay;
     private JCheckBox gaiaOverlay;
     private JCheckBox allWiseOverlay;
@@ -363,9 +364,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1950;
+            int controlPanelHeight = 1975;
 
-            JPanel controlPanel = new JPanel(new GridLayout(80, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -625,6 +626,9 @@ public class ImageViewerTab {
                     }
                 }
             });
+
+            showCrosshairs = new JCheckBox("Show crosshairs & coordinates");
+            controlPanel.add(showCrosshairs);
 
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
@@ -1027,7 +1031,7 @@ public class ImageViewerTab {
                 double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa + distance / cos(toRadians(targetDec));
                 newRa = newRa > 360 ? newRa - 360 : newRa;
-                coordsField.setText(roundTo7DecNZ(newRa) + " " + targetDec);
+                coordsField.setText((newRa == 0 ? newRa : roundTo7DecNZ(newRa)) + " " + targetDec);
                 createFlipbook();
             });
 
@@ -1037,7 +1041,7 @@ public class ImageViewerTab {
                 double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa - distance / cos(toRadians(targetDec));
                 newRa = newRa < 0 ? newRa + 360 : newRa;
-                coordsField.setText(roundTo7DecNZ(newRa) + " " + targetDec);
+                coordsField.setText((newRa == 0 ? newRa : roundTo7DecNZ(newRa)) + " " + targetDec);
                 createFlipbook();
             });
 
@@ -1048,8 +1052,13 @@ public class ImageViewerTab {
             navigationButtons.add(moveUpButton);
             moveUpButton.addActionListener((ActionEvent evt) -> {
                 double newDec = targetDec + size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
-                newDec = newDec > 90 ? 90 : newDec;
-                coordsField.setText(targetRa + " " + roundTo7DecNZ(newDec));
+                if (newDec > 90) {
+                    newDec = 90 - (newDec - 90);
+                    double newRa = targetRa + 180;
+                    targetRa = newRa > 360 ? newRa - 360 : newRa;
+                    showInfoDialog(baseFrame, "You've just crossed the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button from now on!");
+                }
+                coordsField.setText(targetRa + " " + (newDec == 0 ? newDec : roundTo7DecNZ(newDec)));
                 createFlipbook();
             });
 
@@ -1057,8 +1066,13 @@ public class ImageViewerTab {
             navigationButtons.add(moveDownButton);
             moveDownButton.addActionListener((ActionEvent evt) -> {
                 double newDec = targetDec - size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
-                newDec = newDec < -90 ? -90 : newDec;
-                coordsField.setText(targetRa + " " + roundTo7DecNZ(newDec));
+                if (newDec < -90) {
+                    newDec = -90 + (abs(newDec) - 90);
+                    double newRa = targetRa + 180;
+                    targetRa = newRa > 360 ? newRa - 360 : newRa;
+                    showInfoDialog(baseFrame, "You've just crossed the South Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move up' button from now on!");
+                }
+                coordsField.setText(targetRa + " " + (newDec == 0 ? newDec : roundTo7DecNZ(newDec)));
                 createFlipbook();
             });
 
@@ -1206,6 +1220,20 @@ public class ImageViewerTab {
                         imagePanel.add(sdssLabel);
                     }
 
+                    // Display crosshairs with coordinates
+                    if (showCrosshairs.isSelected()) {
+                        NumberPair pointerCoords;
+                        if (quadrantCount > 0 && quadrantCount < 4) {
+                            NumberPair pixelCoords = undoRotationOfPixelCoords(centerX, centerY);
+                            pointerCoords = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+                        } else {
+                            pointerCoords = getObjectCoordinates(centerX, centerY);
+                        }
+                        String coords = roundTo7DecNZ(pointerCoords.getX()) + " " + roundTo7DecNZ(pointerCoords.getY());
+                        CrossHair drawable = new CrossHair(centerX, centerY, zoom * crosshairSize / 100, Color.RED, coords);
+                        drawable.draw(wiseImage.getGraphics());
+                    }
+
                     baseFrame.setVisible(true);
                     imageNumber++;
 
@@ -1214,21 +1242,15 @@ public class ImageViewerTab {
                         public void mousePressed(MouseEvent evt) {
                             int mouseX = evt.getX();
                             int mouseY = evt.getY();
-                            // Undo rotation of pixel coordinates in case of image rotation
+                            NumberPair pointerCoords;
                             if (quadrantCount > 0 && quadrantCount < 4) {
-                                double anchorX = wiseImage.getWidth() / 2;
-                                double anchorY = wiseImage.getHeight() / 2;
-                                double angle = (4 - quadrantCount) * 90;
-                                double theta = toRadians(angle);
-                                Point2D ptSrc = new Point(mouseX, mouseY);
-                                Point2D ptDst = new Point();
-                                AffineTransform.getRotateInstance(theta, anchorX, anchorY).transform(ptSrc, ptDst);
-                                mouseX = (int) round(ptDst.getX());
-                                mouseY = (int) round(ptDst.getY());
+                                NumberPair pixelCoords = undoRotationOfPixelCoords(mouseX, mouseY);
+                                pointerCoords = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+                            } else {
+                                pointerCoords = getObjectCoordinates(mouseX, mouseY);
                             }
-                            NumberPair coords = getObjectCoordinates(mouseX, mouseY);
-                            double newRa = coords.getX();
-                            double newDec = coords.getY();
+                            double newRa = pointerCoords.getX();
+                            double newDec = pointerCoords.getY();
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
                                     if (differentSizeButton.isSelected()) {
@@ -1396,7 +1418,9 @@ public class ImageViewerTab {
                                         }
                                     }
                                     if (overlays == 0) {
-                                        if (showCatalogsButton.isSelected()) {
+                                        if (showCrosshairs.isSelected()) {
+                                            copyCoordsToClipboard(newRa, newDec);
+                                        } else if (showCatalogsButton.isSelected()) {
                                             CompletableFuture.supplyAsync(() -> openNewCatalogSearch(newRa, newDec));
                                         } else {
                                             coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
@@ -1521,6 +1545,19 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         }
+    }
+
+    private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
+        double anchorX = wiseImage.getWidth() / 2;
+        double anchorY = wiseImage.getHeight() / 2;
+        double angle = (4 - quadrantCount) * 90;
+        double theta = toRadians(angle);
+        Point2D ptSrc = new Point(mouseX, mouseY);
+        Point2D ptDst = new Point();
+        AffineTransform.getRotateInstance(theta, anchorX, anchorY).transform(ptSrc, ptDst);
+        mouseX = (int) round(ptDst.getX());
+        mouseY = (int) round(ptDst.getY());
+        return new NumberPair(mouseX, mouseY);
     }
 
     private NumberPair getObjectCoordinates(int x, int y) {
@@ -2214,7 +2251,7 @@ public class ImageViewerTab {
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
                 NumberPair crosshair = crosshairs.get(i);
-                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, zoom * crosshairSize / 100, Color.RED, i + 1);
+                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, zoom * crosshairSize / 100, Color.RED, String.valueOf(i + 1));
                 drawable.draw(image.getGraphics());
             }
         }

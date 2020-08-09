@@ -25,6 +25,7 @@ import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.Color;
 import java.awt.Component;
@@ -61,6 +62,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -229,6 +232,16 @@ public class ModuleHelper {
     }
 
     public static NumberPair getCoordinates(String coords) {
+        Pattern pattern = Pattern.compile(".*[a-zA-Z]+.*");
+        Matcher matcher = pattern.matcher(coords);
+        if (matcher.matches()) {
+            NameResolverService nameResolverService = new NameResolverService();
+            try {
+                coords = nameResolverService.getCoordinatesByName(coords);
+            } catch (Exception ex) {
+                showErrorDialog(null, ex.getMessage());
+            }
+        }
         String[] parts = splitCoordinates(coords);
         double ra = toDouble(parts[0].trim());
         double dec = toDouble(parts[1].trim());
