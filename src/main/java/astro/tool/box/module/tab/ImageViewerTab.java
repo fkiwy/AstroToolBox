@@ -630,7 +630,7 @@ public class ImageViewerTab {
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
             controlPanel.add(showCrosshairs);
 
-            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipbook");
+            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
             Font font = copyCoordsLabel.getFont();
             font = font.deriveFont(9f);
             copyCoordsLabel.setFont(font);
