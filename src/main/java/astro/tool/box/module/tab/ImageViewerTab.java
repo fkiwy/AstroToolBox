@@ -1156,7 +1156,7 @@ public class ImageViewerTab {
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
-                        imageLabel.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
+                        imageLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
                     } else {
                         imageLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
                     }
@@ -1198,6 +1198,28 @@ public class ImageViewerTab {
                         magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
+
+                    // ========================================================
+                    // Adjust positions of magnified Pan-STARRS and SDSS images
+                    upperLeftX = centerX - (width / 2);
+                    upperLeftY = centerY - (height / 2);
+
+                    upperLeftX -= getScaledValue(1);    // x position adjustment
+                    upperLeftY += getScaledValue(1);    // y position adjustment
+
+                    upperRightX = upperLeftX + width;
+                    lowerLeftY = upperLeftY + height;
+
+                    // Correct positions of magnified Pan-STARRS and SDSS images
+                    upperLeftX = upperLeftX < 0 ? 0 : upperLeftX;
+                    upperLeftY = upperLeftY < 0 ? 0 : upperLeftY;
+                    if (upperRightX > imageWidth) {
+                        upperLeftX = upperLeftX - (upperRightX - imageWidth);
+                    }
+                    if (lowerLeftY > imageHeight) {
+                        upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
+                    }
+                    // ========================================================
 
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
@@ -2611,8 +2633,8 @@ public class ImageViewerTab {
             for (int i = 1; i < imageGroup.size(); i++) {
                 fits = stackImages(fits, imageGroup.get(i).getImage());
             }
-            int imageCount = imageGroup.size();
-            addImage(band, epochCount, imageCount > 1 ? takeAverage(fits, imageCount) : fits);
+            int groupSize = imageGroup.size();
+            addImage(band, epochCount, groupSize > 1 ? takeAverage(fits, groupSize) : fits);
             writeLogEntry("band " + band + " | image " + epochCount + " | year " + year + " | month " + month);
             epochCount++;
         }
