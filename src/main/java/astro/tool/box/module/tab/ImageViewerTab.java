@@ -364,9 +364,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1975;
+            int controlPanelHeight = 1990;
 
-            JPanel controlPanel = new JPanel(new GridLayout(81, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(82, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -627,8 +627,14 @@ public class ImageViewerTab {
                 }
             });
 
-            showCrosshairs = new JCheckBox("Show crosshairs & coordinates");
+            showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
             controlPanel.add(showCrosshairs);
+
+            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipbook");
+            Font font = copyCoordsLabel.getFont();
+            font = font.deriveFont(9f);
+            copyCoordsLabel.setFont(font);
+            controlPanel.add(copyCoordsLabel);
 
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             controlPanel.add(resetDefaultsButton);
@@ -794,7 +800,14 @@ public class ImageViewerTab {
             staticTimeSeries = new JCheckBox("Time series - static", false);
             controlPanel.add(staticTimeSeries);
             staticTimeSeries.addActionListener((ActionEvent evt) -> {
-                animatedTimeSeries.setSelected(false);
+                if (animatedTimeSeries.isSelected()) {
+                    dssImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
+                    animatedTimeSeries.setSelected(false);
+                }
                 createDataSheet.setSelected(false);
             });
 
@@ -837,8 +850,6 @@ public class ImageViewerTab {
             controlPanel.add(changeFovLabel);
 
             JLabel fovLabel = new JLabel("(*) Spin wheel upon WISE images to change FoV");
-            Font font = fovLabel.getFont();
-            font = font.deriveFont(9f);
             fovLabel.setFont(font);
             controlPanel.add(fovLabel);
 
@@ -1158,8 +1169,11 @@ public class ImageViewerTab {
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
                     if (centerX == 0 && centerY == 0) {
-                        centerX = imageWidth / 2;
-                        centerY = imageHeight / 2;
+                        //centerX = imageWidth / 2;
+                        //centerY = imageHeight / 2;
+                        NumberPair pixelCoords = getPixelCoordinates(targetRa, targetDec);
+                        centerX = (int) pixelCoords.getX();
+                        centerY = (int) pixelCoords.getY();
                     }
                     int upperLeftX = centerX - (width / 2);
                     int upperLeftY = centerY - (height / 2);
@@ -1229,7 +1243,7 @@ public class ImageViewerTab {
                         } else {
                             pointerCoords = getObjectCoordinates(centerX, centerY);
                         }
-                        String coords = roundTo7DecNZ(pointerCoords.getX()) + " " + roundTo7DecNZ(pointerCoords.getY());
+                        String coords = roundTo3DecNZ(pointerCoords.getX()) + " " + roundTo3DecNZ(pointerCoords.getY());
                         CrossHair drawable = new CrossHair(centerX, centerY, zoom * crosshairSize / 100, Color.RED, coords);
                         drawable.draw(wiseImage.getGraphics());
                     }
@@ -1452,7 +1466,7 @@ public class ImageViewerTab {
 
                     imageLabel.addMouseWheelListener((MouseWheelEvent evt) -> {
                         int notches = evt.getWheelRotation();
-                        if (drawCrosshairs.isSelected()) {
+                        if (drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
                             if (notches < 0) {
                                 crosshairSize++;
                             } else if (crosshairSize > 0) {
