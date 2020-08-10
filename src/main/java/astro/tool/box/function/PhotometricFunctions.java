@@ -189,7 +189,7 @@ public class PhotometricFunctions {
         if (apparentMagnitude == 0 || parallax == 0) {
             return 0;
         } else {
-            double absoluteMagnitude = apparentMagnitude + 5 - 5 * log10(calculateActualDistance(parallax));
+            double absoluteMagnitude = apparentMagnitude + 5 - 5 * log10(calculateParallacticDistance(parallax));
             return Double.isInfinite(absoluteMagnitude) || Double.isNaN(absoluteMagnitude) ? 0 : absoluteMagnitude;
         }
     }

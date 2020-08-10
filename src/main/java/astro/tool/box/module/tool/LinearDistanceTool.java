@@ -14,33 +14,45 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-public class ParallaxDistanceTool {
+public class LinearDistanceTool {
 
     private final JFrame baseFrame;
     private final JPanel toolPanel;
 
-    public ParallaxDistanceTool(JFrame baseFrame, JPanel toolPanel) {
+    public LinearDistanceTool(JFrame baseFrame, JPanel toolPanel) {
         this.baseFrame = baseFrame;
         this.toolPanel = toolPanel;
     }
 
     public void init() {
         try {
-            JPanel mainPanel = new JPanel(new GridLayout(3, 2));
+            JPanel mainPanel = new JPanel(new GridLayout(6, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate distance based on parallax", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Calculate linear distance", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            mainPanel.setPreferredSize(new Dimension(375, 100));
+            mainPanel.setPreferredSize(new Dimension(375, 175));
 
             JPanel containerPanel = new JPanel();
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Parallax (mas): ", JLabel.RIGHT));
-            JTextField parallaxField = new JTextField();
-            mainPanel.add(parallaxField);
+            mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
+            JTextField fromCoordsField = new JTextField();
+            mainPanel.add(fromCoordsField);
 
-            mainPanel.add(new JLabel("Distance (pc): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
+            JTextField toCoordsField = new JTextField();
+            mainPanel.add(toCoordsField);
+
+            mainPanel.add(new JLabel("From parallax (mas): ", JLabel.RIGHT));
+            JTextField fromParallaxField = new JTextField();
+            mainPanel.add(fromParallaxField);
+
+            mainPanel.add(new JLabel("To parallax (mas): ", JLabel.RIGHT));
+            JTextField toParallaxField = new JTextField();
+            mainPanel.add(toParallaxField);
+
+            mainPanel.add(new JLabel("Linear distance (pc): ", JLabel.RIGHT));
             JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);
@@ -49,10 +61,12 @@ public class ParallaxDistanceTool {
             JButton calculateButton = new JButton("Calculate");
             calculateButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double distance = calculateParallacticDistance(
-                            toDouble(parallaxField.getText())
+                    double linearDistance = calculateLinearDistance(getCoordinates(fromCoordsField.getText()),
+                            getCoordinates(toCoordsField.getText()),
+                            toDouble(fromParallaxField.getText()),
+                            toDouble(toParallaxField.getText())
                     );
-                    resultField.setText(roundTo3DecNZ(distance));
+                    resultField.setText(roundTo6DecNZ(linearDistance));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }

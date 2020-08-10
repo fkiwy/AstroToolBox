@@ -20,6 +20,7 @@ import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class Results {
@@ -111,7 +112,7 @@ public class Results {
         SPECTRAL_TYPES.put("L9V", 59.0);
     }
 
-    @Test
+    @Test@Ignore
     public void test() throws Exception {
         // 0 angDist
         // 1 RA (BYW)
@@ -187,7 +188,7 @@ public class Results {
                 if (spt.isEmpty()) {
                     continue;
                 }
-                double dist = calculateActualDistance(plx);
+                double dist = calculateParallacticDistance(plx);
                 if (dist == 0 || dist > 1000) {
                     continue;
                 }

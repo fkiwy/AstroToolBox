@@ -20,18 +20,82 @@ import java.util.concurrent.TimeUnit;
 public class AstrometricFunctions {
 
     /**
-     * Calculate angular distance between 2 pairs of coordinates
+     * Calculate angular distance between 2 stars
      *
      * @param fromCoords (deg)
      * @param toCoords (deg)
      * @param conversionFactor
-     * @return the angular distance between 2 pairs of coordinates (deg)
+     * @return the angular distance between 2 stars (deg)
      */
     public static double calculateAngularDistance(NumberPair fromCoords, NumberPair toCoords, Double conversionFactor) {
         NumberPair diffCoords = calculateDifferenceBetweenCoords(fromCoords, toCoords);
         double diffRA = diffCoords.getX();
         double diffDE = diffCoords.getY();
         return sqrt(diffRA * diffRA + diffDE * diffDE) * conversionFactor;
+    }
+
+    /**
+     * Calculate difference between coordinates
+     *
+     * @param fromCoords (deg)
+     * @param toCoords (deg)
+     * @return the difference between coordinates (deg, deg)
+     */
+    public static NumberPair calculateDifferenceBetweenCoords(NumberPair fromCoords, NumberPair toCoords) {
+        double fromRA = fromCoords.getX();
+        double fromDE = fromCoords.getY();
+        double toRA = toCoords.getX();
+        double toDE = toCoords.getY();
+        double diffRA = (fromRA - toRA) * cos(toRadians((fromDE + toDE) / 2));
+        double diffDE = (fromDE - toDE);
+        return new NumberPair(-diffRA, -diffDE);
+    }
+
+    /**
+     * Calculate linear distance between 2 stars
+     *
+     * @param fromCoords (deg)
+     * @param toCoords (deg)
+     * @param fromParallax (mas)
+     * @param toParallax (mas)
+     * @return the real distance between stars (pc)
+     */
+    public static double calculateLinearDistance(NumberPair fromCoords, NumberPair toCoords, double fromParallax, double toParallax) {
+        double fromRA = toRadians(fromCoords.getX());
+        double fromDE = toRadians(fromCoords.getY());
+        double fromDist = calculateParallacticDistance(fromParallax);
+
+        double toRA = toRadians(toCoords.getX());
+        double toDE = toRadians(toCoords.getY());
+        double toDist = calculateParallacticDistance(toParallax);
+
+        double x1 = fromDist * cos(fromRA) * cos(fromDE);
+        double y1 = fromDist * sin(fromRA) * cos(fromDE);
+        double z1 = fromDist * sin(fromDE);
+
+        double x2 = toDist * cos(toRA) * cos(toDE);
+        double y2 = toDist * sin(toRA) * cos(toDE);
+        double z2 = toDist * sin(toDE);
+
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dz = z2 - z1;
+
+        return sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    /**
+     * Calculate distance between Sun and star
+     *
+     * @param parallax (mas)
+     * @return the distance between Sun and star (pc)
+     */
+    public static double calculateParallacticDistance(double parallax) {
+        if (parallax < 0.1) {
+            return 0;
+        } else {
+            return 1 / (parallax / 1000);
+        }
     }
 
     /**
@@ -66,23 +130,6 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Calculate difference between 2 pairs of coordinates
-     *
-     * @param fromCoords (deg)
-     * @param toCoords (deg)
-     * @return the difference between 2 pairs of coordinates (deg, deg)
-     */
-    public static NumberPair calculateDifferenceBetweenCoords(NumberPair fromCoords, NumberPair toCoords) {
-        double fromRA = fromCoords.getX();
-        double fromDE = fromCoords.getY();
-        double toRA = toCoords.getX();
-        double toDE = toCoords.getY();
-        double diffRA = (fromRA - toRA) * cos(toRadians((fromDE + toDE) / 2));
-        double diffDE = (fromDE - toDE);
-        return new NumberPair(-diffRA, -diffDE);
-    }
-
-    /**
      * Calculate transverse velocity from parallax
      *
      * @param pmRA (mas/yr)
@@ -91,7 +138,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromParallax(double pmRA, double pmDE, double parallax) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / 1000) * calculateActualDistance(parallax);
+        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / 1000) * calculateParallacticDistance(parallax);
     }
 
     /**
@@ -118,20 +165,6 @@ public class AstrometricFunctions {
             return 0;
         } else {
             return sqrt(transverseVelocity * transverseVelocity + radialVelocity * radialVelocity);
-        }
-    }
-
-    /**
-     * Calculate actual distance between Sun and star
-     *
-     * @param parallax (mas)
-     * @return the actual distance between Sun and star (pc)
-     */
-    public static double calculateActualDistance(double parallax) {
-        if (parallax < 0.1) {
-            return 0;
-        } else {
-            return 1 / (parallax / 1000);
         }
     }
 
