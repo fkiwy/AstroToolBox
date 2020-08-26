@@ -232,6 +232,7 @@ public class ModuleHelper {
     }
 
     public static NumberPair getCoordinates(String coords) {
+        coords = coords.replace('−', '-');
         Pattern pattern = Pattern.compile(".*[a-zA-Z]+.*");
         Matcher matcher = pattern.matcher(coords);
         if (matcher.matches()) {
