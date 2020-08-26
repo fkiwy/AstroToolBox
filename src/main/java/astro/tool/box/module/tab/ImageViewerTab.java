@@ -52,6 +52,7 @@ import astro.tool.box.module.shape.CrossHair;
 import astro.tool.box.module.shape.Diamond;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.module.shape.Square;
+import astro.tool.box.module.shape.Text;
 import astro.tool.box.module.shape.Triangle;
 import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
@@ -211,6 +212,8 @@ public class ImageViewerTab {
     private JCheckBox vhsOverlay;
     private JCheckBox gaiaWDOverlay;
     private JCheckBox spitzerOverlay;
+    private JCheckBox showBrownDwarfsOnly;
+    private JCheckBox displaySpectralTypes;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -320,6 +323,30 @@ public class ImageViewerTab {
     private boolean panstarrsImages;
     private boolean sdssImages;
 
+    public static final List<String> BROWN_DWARFS = new ArrayList<>();
+
+    static {
+        for (int i = 5; i < 10; i++) {
+            add("M", i);
+        }
+        for (int i = 0; i < 10; i++) {
+            add("L", i);
+        }
+        for (int i = 0; i < 10; i++) {
+            add("T", i);
+        }
+        for (int i = 0; i < 10; i++) {
+            add("Y", i);
+        }
+    }
+
+    static void add(String spt, int i) {
+        BROWN_DWARFS.add(spt + i);
+        BROWN_DWARFS.add(spt + i + ".5");
+        BROWN_DWARFS.add(spt + i + "V");
+        BROWN_DWARFS.add(spt + i + ".5V");
+    }
+
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
@@ -364,9 +391,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 1990;
+            int controlPanelHeight = 2130;
 
-            JPanel controlPanel = new JPanel(new GridLayout(82, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(88, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -709,6 +736,28 @@ public class ImageViewerTab {
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
             controlPanel.add(ssoOverlay);
+
+            controlPanel.add(new JLabel(underline("Experimental features (*):")));
+            controlPanel.add(new JLabel("(work only with catalog overlays)"));
+
+            displaySpectralTypes = new JCheckBox("Display estimated spectral types");
+            controlPanel.add(displaySpectralTypes);
+            displaySpectralTypes.addActionListener((ActionEvent evt) -> {
+                initCatalogEntries();
+            });
+
+            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
+            controlPanel.add(showBrownDwarfsOnly);
+            showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
+                initCatalogEntries();
+            });
+
+            JLabel warning = new JLabel("(*) Warning: Use these features with caution!");
+            warning.setFont(font);
+            controlPanel.add(warning);
+            warning = new JLabel("Spt estimates are based on single colors only.");
+            warning.setFont(font);
+            controlPanel.add(warning);
 
             controlPanel.add(new JLabel(underline("PM vectors:")));
 
@@ -1710,26 +1759,7 @@ public class ImageViewerTab {
                 epochCountW1 = 0;
                 epochCountW2 = 0;
                 imageCutOff = false;
-                simbadEntries = null;
-                gaiaEntries = null;
-                gaiaTpmEntries = null;
-                allWiseEntries = null;
-                catWiseEntries = null;
-                catWiseTpmEntries = null;
-                catWiseRejectedEntries = null;
-                unWiseEntries = null;
-                panStarrsEntries = null;
-                sdssEntries = null;
-                twoMassEntries = null;
-                vhsEntries = null;
-                gaiaWDEntries = null;
-                spitzerEntries = null;
-                ssoEntries = null;
-                if (useCustomOverlays.isSelected()) {
-                    customOverlays.values().forEach((customOverlay) -> {
-                        customOverlay.setCatalogEntries(null);
-                    });
-                }
+                initCatalogEntries();
                 ps1Image = null;
                 if (panstarrsImages) {
                     CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
@@ -2234,6 +2264,29 @@ public class ImageViewerTab {
         component.setRefValues(refValues);
     }
 
+    private void initCatalogEntries() {
+        simbadEntries = null;
+        gaiaEntries = null;
+        gaiaTpmEntries = null;
+        allWiseEntries = null;
+        catWiseEntries = null;
+        catWiseTpmEntries = null;
+        catWiseRejectedEntries = null;
+        unWiseEntries = null;
+        panStarrsEntries = null;
+        sdssEntries = null;
+        twoMassEntries = null;
+        vhsEntries = null;
+        gaiaWDEntries = null;
+        spitzerEntries = null;
+        ssoEntries = null;
+        if (useCustomOverlays.isSelected()) {
+            customOverlays.values().forEach((customOverlay) -> {
+                customOverlay.setCatalogEntries(null);
+            });
+        }
+    }
+
     private void createStaticBook() {
         timer.stop();
         JPanel grid = new JPanel(new GridLayout(4, 4));
@@ -2647,6 +2700,11 @@ public class ImageViewerTab {
     }
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
+        if (requestedEpoch == selectedEpochs) {
+            skipBadImages.setSelected(false);
+            skipSingleNodes.setSelected(false);
+            return requestedEpochs;
+        }
         List<Integer> alternativeEpochs = new ArrayList<>();
         if (requestedEpoch < selectedEpochs) {
             alternativeEpochs.add(requestedEpochs.get(0) + 1);
@@ -3497,13 +3555,24 @@ public class ImageViewerTab {
             catalogQuery.setRa(targetRa);
             catalogQuery.setDec(targetDec);
             catalogQuery.setSearchRadius(getFovDiagonal() / 2);
+            List<CatalogEntry> resultEntries = new ArrayList<>();
             List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
             catalogEntries.forEach(catalogEntry -> {
                 catalogEntry.setTargetRa(targetRa);
                 catalogEntry.setTargetDec(targetDec);
                 catalogEntry.loadCatalogElements();
+                if (showBrownDwarfsOnly.isSelected() || displaySpectralTypes.isSelected()) {
+                    setSpectralType(catalogEntry);
+                }
+                if (showBrownDwarfsOnly.isSelected()) {
+                    if (isBrownDwarf(catalogEntry)) {
+                        resultEntries.add(catalogEntry);
+                    }
+                } else {
+                    resultEntries.add(catalogEntry);
+                }
             });
-            return catalogEntries;
+            return resultEntries;
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -3580,6 +3649,22 @@ public class ImageViewerTab {
         return null;
     }
 
+    private void setSpectralType(CatalogEntry catalogEntry) {
+        List<LookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+        if (results.isEmpty()) {
+            results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+        }
+        for (LookupResult result : results) {
+            catalogEntry.setSpt(result.getSpt());
+            break;
+        }
+    }
+
+    private boolean isBrownDwarf(CatalogEntry catalogEntry) {
+        System.out.println("spt=" + catalogEntry.getSpt());
+        return BROWN_DWARFS.contains(catalogEntry.getSpt());
+    }
+
     private void drawSectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
@@ -3638,28 +3723,32 @@ public class ImageViewerTab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
-            switch (shape) {
-                case CIRCLE:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case CROSS:
-                    toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case XCROSS:
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case SQUARE:
-                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case TRIANGLE:
-                    toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case DIAMOND:
-                    toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                default:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
+            if (displaySpectralTypes.isSelected()) {
+                toDraw = new Text(position.getX(), position.getY(), getOverlaySize(), color, catalogEntry.getSpt());
+            } else {
+                switch (shape) {
+                    case CIRCLE:
+                        toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case CROSS:
+                        toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case XCROSS:
+                        toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case SQUARE:
+                        toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case TRIANGLE:
+                        toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    case DIAMOND:
+                        toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                    default:
+                        toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                        break;
+                }
             }
             toDraw.draw(graphics);
         });

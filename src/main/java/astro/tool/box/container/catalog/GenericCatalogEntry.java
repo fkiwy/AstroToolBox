@@ -213,6 +213,15 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getSpt() {
+        return null;
+    }
+
+    @Override
+    public void setSpt(String spt) {
+    }
+
+    @Override
     public List<CatalogElement> getCatalogElements() {
         return catalogElements;
     }

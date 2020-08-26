@@ -99,6 +99,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // Catalog number
     private int catalogNumber;
 
+    // Most likely spectral type
+    private String spt;
+
     // Information indicating details of the photometry
     private List<StringPair> qualityFlags;
 
@@ -395,6 +398,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public void setPixelDec(double pixelDec) {
         this.pixelDec = pixelDec;
+    }
+
+    @Override
+    public String getSpt() {
+        return spt;
+    }
+
+    @Override
+    public void setSpt(String spt) {
+        this.spt = spt;
     }
 
     @Override

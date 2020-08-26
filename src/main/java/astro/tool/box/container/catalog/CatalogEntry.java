@@ -78,6 +78,10 @@ public interface CatalogEntry {
 
     void setPixelDec(double pixelDec);
 
+    String getSpt();
+
+    void setSpt(String spt);
+    
     List<CatalogElement> getCatalogElements();
 
     double getPlx();

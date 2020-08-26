@@ -384,6 +384,15 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getSpt() {
+        return null;
+    }
+
+    @Override
+    public void setSpt(String spt) {
+    }
+
+    @Override
     public List<CatalogElement> getCatalogElements() {
         return catalogElements;
     }
