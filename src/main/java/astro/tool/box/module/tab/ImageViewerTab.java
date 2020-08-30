@@ -753,9 +753,11 @@ public class ImageViewerTab {
             });
 
             JLabel warning = new JLabel("(*) Warning: Use these features with caution!");
+            warning.setForeground(Color.RED);
             warning.setFont(font);
             controlPanel.add(warning);
             warning = new JLabel("Spt estimates are based on single colors only.");
+            warning.setForeground(Color.RED);
             warning.setFont(font);
             controlPanel.add(warning);
 
@@ -1784,8 +1786,7 @@ public class ImageViewerTab {
                 }
                 autoContrast.setSelected(true);
                 if (!keepContrast.isSelected()) {
-                    setContrast(LOW_CONTRAST, HIGH_CONTRAST);
-                    setSubContrast(SUB_CONTRAST);
+                    initContrast();
                 }
                 try {
                     getImageData(1, numberOfEpochs + 3);
@@ -3034,6 +3035,15 @@ public class ImageViewerTab {
             subContrastSaved = val;
         }
         subScaleSlider.setValue(subContrast = val);
+    }
+
+    private void initContrast() {
+        subContrastSaved = SUB_CONTRAST;
+        lowContrastSaved = LOW_CONTRAST;
+        highContrastSaved = HIGH_CONTRAST;
+        subScaleSlider.setValue(subContrast = subContrastSaved);
+        lowScaleSlider.setValue(lowContrast = lowContrastSaved);
+        highScaleSlider.setValue(highContrast = highContrastSaved);
     }
 
     private NumberTriplet getRefValues(float[][] values) {
