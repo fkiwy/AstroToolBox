@@ -3400,7 +3400,7 @@ public class ImageViewerTab {
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.getContentPane().add(bandPanel);
-            imageFrame.setSize(1320, PANEL_HEIGHT);
+            imageFrame.setSize(6 * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
@@ -3510,7 +3510,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             JPanel displayPanel = new JPanel();
             imageFrame.getContentPane().add(displayPanel);
-            imageFrame.setSize(PANEL_HEIGHT, PANEL_HEIGHT);
+            imageFrame.setSize(PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
 
