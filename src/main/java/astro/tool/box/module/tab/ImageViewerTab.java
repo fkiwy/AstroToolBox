@@ -391,9 +391,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2130;
+            int controlPanelHeight = 2085;
 
-            JPanel controlPanel = new JPanel(new GridLayout(88, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(86, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -738,7 +738,7 @@ public class ImageViewerTab {
             controlPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("Experimental features (*):")));
-            controlPanel.add(new JLabel("(work only with catalog overlays)"));
+            controlPanel.add(new JLabel("First select a catalog overlay!"));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
             controlPanel.add(displaySpectralTypes);
@@ -752,11 +752,7 @@ public class ImageViewerTab {
                 initCatalogEntries();
             });
 
-            JLabel warning = new JLabel("(*) Warning: Use these features with caution!");
-            warning.setForeground(Color.RED);
-            warning.setFont(font);
-            controlPanel.add(warning);
-            warning = new JLabel("Spt estimates are based on single colors only.");
+            JLabel warning = new JLabel(html("(*) Warning: Use these features with caution!" + LINE_BREAK + "Spt estimates are based on single colors only."));
             warning.setForeground(Color.RED);
             warning.setFont(font);
             controlPanel.add(warning);
@@ -900,7 +896,7 @@ public class ImageViewerTab {
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             controlPanel.add(changeFovLabel);
 
-            JLabel fovLabel = new JLabel("(*) Spin wheel upon WISE images to change FoV");
+            JLabel fovLabel = new JLabel("(*) Spin wheel on WISE images to change FoV");
             fovLabel.setFont(font);
             controlPanel.add(fovLabel);
 
@@ -977,11 +973,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel crosshairLabel = new JLabel("(*) Wheel click on desired position / Spin wheel to");
-            crosshairLabel.setFont(font);
-            controlPanel.add(crosshairLabel);
-
-            crosshairLabel = new JLabel("change the size / Wheel click cross center to delete");
+            JLabel crosshairLabel = new JLabel(html("(*) Wheel click on object / Spin wheel to change" + LINE_BREAK + "the size / Wheel click on cross center to delete"));
             crosshairLabel.setFont(font);
             controlPanel.add(crosshairLabel);
 
