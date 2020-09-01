@@ -3657,6 +3657,10 @@ public class ImageViewerTab {
         if (results.isEmpty()) {
             results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
         }
+        if (results.isEmpty()) {
+            catalogEntry.setSpt("N/A");
+            return;
+        }
         for (LookupResult result : results) {
             catalogEntry.setSpt(result.getSpt());
             break;
@@ -3664,7 +3668,6 @@ public class ImageViewerTab {
     }
 
     private boolean isBrownDwarf(CatalogEntry catalogEntry) {
-        System.out.println("spt=" + catalogEntry.getSpt());
         return BROWN_DWARFS.contains(catalogEntry.getSpt());
     }
 
