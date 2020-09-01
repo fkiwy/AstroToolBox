@@ -264,6 +264,7 @@ public class ImageViewerTab {
     private Map<String, ImageContainer> imagesW2 = new HashMap<>();
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
+    private List<Integer> requestedEpochs;
     private List<NumberPair> crosshairs;
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
@@ -1798,7 +1799,7 @@ public class ImageViewerTab {
 
             if (loadImages || reloadImages) {
                 int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
-                List<Integer> requestedEpochs = new ArrayList<>();
+                requestedEpochs = new ArrayList<>();
                 if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                     if (reloadImages) {
                         imagesW1.clear();
@@ -2696,7 +2697,7 @@ public class ImageViewerTab {
         if (requestedEpoch == selectedEpochs) {
             skipBadImages.setSelected(false);
             skipSingleNodes.setSelected(false);
-            return requestedEpochs;
+            return this.requestedEpochs;
         }
         List<Integer> alternativeEpochs = new ArrayList<>();
         if (requestedEpoch < selectedEpochs) {
