@@ -502,6 +502,10 @@ public class ImageViewerTab {
             controlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 highContrast = highScaleSlider.getValue();
                 highScaleLabel.setText(String.format("Contrast - high scale: %d", highContrast));
                 if (!Epoch.isSubtracted(epoch)) {
@@ -524,6 +528,10 @@ public class ImageViewerTab {
             controlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 lowContrast = lowScaleSlider.getValue();
                 lowScaleLabel.setText(String.format("Contrast - low scale: %d", lowContrast));
                 if (!Epoch.isSubtracted(epoch)) {
@@ -549,6 +557,10 @@ public class ImageViewerTab {
             controlPanel.add(subScaleSlider);
             subScaleSlider.setBackground(Color.WHITE);
             subScaleSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 subContrast = subScaleSlider.getValue();
                 subScaleLabel.setText(String.format("Contrast - subtracted mode: %d", subContrast));
                 if (Epoch.isSubtracted(epoch)) {
@@ -568,6 +580,10 @@ public class ImageViewerTab {
             controlPanel.add(speedSlider);
             speedSlider.setBackground(Color.LIGHT_GRAY);
             speedSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 speed = speedSlider.getValue();
                 timer.setDelay(speed);
                 speedLabel.setText(String.format("Playback speed: %d ms", speed));
@@ -585,6 +601,10 @@ public class ImageViewerTab {
             controlPanel.add(zoomSlider);
             zoomSlider.setBackground(Color.WHITE);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 zoom = zoomSlider.getValue();
                 zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Image zoom: %d", zoom));
