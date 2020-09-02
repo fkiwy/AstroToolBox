@@ -155,8 +155,8 @@ public class ImageViewerTab {
     public static final double SIZE_FACTOR = 2.75;
     public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
-    public static final int PANEL_HEIGHT = 260;
-    public static final int PANEL_WIDTH = 220;
+    public static final int PANEL_HEIGHT = 270;
+    public static final int PANEL_WIDTH = 230;
     public static final int HIGH_CONTRAST = 0;
     public static final int LOW_CONTRAST = 50;
     public static final int SUB_CONTRAST = 1;
@@ -3479,7 +3479,7 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("DSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
@@ -3523,7 +3523,7 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
@@ -3575,7 +3575,7 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("SDSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
@@ -3623,7 +3623,7 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
@@ -3658,7 +3658,7 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.add(bandPanel);
             imageFrame.setSize(6 * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
@@ -3707,7 +3707,7 @@ public class ImageViewerTab {
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            imageFrame.getContentPane().add(bandPanel);
+            imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.getTotal());
             imageFrame.setAlwaysOnTop(true);
@@ -3768,8 +3768,8 @@ public class ImageViewerTab {
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             JPanel displayPanel = new JPanel();
-            imageFrame.getContentPane().add(displayPanel);
-            imageFrame.setSize(PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.add(displayPanel);
+            imageFrame.setSize(PANEL_WIDTH + 10, PANEL_HEIGHT);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
 
@@ -3968,7 +3968,7 @@ public class ImageViewerTab {
                 JFrame imageFrame = new JFrame();
                 imageFrame.setIconImage(getToolBoxImage());
                 imageFrame.setTitle("SDSS spectrum for object: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
-                imageFrame.getContentPane().add(new JLabel(new ImageIcon(spectrum)));
+                imageFrame.add(new JLabel(new ImageIcon(spectrum)));
                 imageFrame.setSize(1200, 900);
                 imageFrame.setAlwaysOnTop(true);
                 imageFrame.setResizable(true);
