@@ -3837,6 +3837,7 @@ public class ImageViewerTab {
     private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
+        image = zoom(image, 200);
         drawCenterCircle(image);
         panel.add(new JLabel(new ImageIcon(image)));
         return panel;
