@@ -3726,34 +3726,29 @@ public class ImageViewerTab {
         try {
             BufferedImage image;
             List<JPanel> panelList = new ArrayList<>();
-            List<BufferedImage> imageList = new ArrayList<>();
 
             if (dssImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "DSS2 - IR"));
-                    imageList.add(image);
                 }
             }
             if (twoMassImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "2MASS - K"));
-                    imageList.add(image);
                 }
             }
             if (sloanImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "SDSS - z"));
-                    imageList.add(image);
                 }
             }
             if (allwiseImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "WISE - W2"));
-                    imageList.add(image);
                 }
             }
             if (ps1Images.isSelected()) {
@@ -3761,7 +3756,6 @@ public class ImageViewerTab {
                 if (!imageInfos.isEmpty()) {
                     image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
                     panelList.add(buildImagePanel(image, "PS1 - z"));
-                    imageList.add(image);
                 }
             }
 
@@ -3770,50 +3764,20 @@ public class ImageViewerTab {
                 return;
             }
 
-            JPanel container = new JPanel();
-
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-
-            imageFrame.setSize(PANEL_WIDTH, PANEL_HEIGHT + 50);
+            JPanel displayPanel = new JPanel();
+            imageFrame.getContentPane().add(displayPanel);
+            imageFrame.setSize(PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
-
-            JButton saveAsGifButton = new JButton("Save as GIF");
-            saveAsGifButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
-                    int returnVal = fileChooser.showSaveDialog(container);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".gif");
-                        BufferedImage[] imageSet = new BufferedImage[imageList.size()];
-                        int i = 0;
-                        for (BufferedImage imageBuffer : imageList) {
-                            drawCenterCircle(imageBuffer);
-                            imageSet[i++] = imageBuffer;
-                        }
-                        if (imageSet.length > 0) {
-                            GifSequencer sequencer = new GifSequencer();
-                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
-                        }
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
 
             Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
                 if (imageCount > componentCount - 1) {
                     imageCount = 0;
                 }
-                JPanel displayPanel = new JPanel();
-                container.add(displayPanel, 0);
-                container.add(saveAsGifButton, 1);
-                displayPanel.add(panelList.get(imageCount));
-                imageFrame.getContentPane().add(container);
+                displayPanel.add(panelList.get(imageCount), 0);
                 imageFrame.setVisible(true);
                 imageCount++;
             });
@@ -3838,17 +3802,13 @@ public class ImageViewerTab {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
         image = zoom(image, 200);
-        drawCenterCircle(image);
-        panel.add(new JLabel(new ImageIcon(image)));
-        return panel;
-    }
-
-    private void drawCenterCircle(BufferedImage image) {
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
         Circle circle = new Circle(x, y, 10, Color.MAGENTA);
         circle.draw(g);
+        panel.add(new JLabel(new ImageIcon(image)));
+        return panel;
     }
 
     private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {
