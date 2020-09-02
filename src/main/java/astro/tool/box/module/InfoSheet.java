@@ -114,8 +114,8 @@ public class InfoSheet {
             sizeField.removeActionListener(actionListener);
             sizeField.setText(String.valueOf(size));
             sizeField.addActionListener(actionListener);
-            imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
             imageViewerTab.getZoomSlider().setValue(250);
+            imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
 
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 

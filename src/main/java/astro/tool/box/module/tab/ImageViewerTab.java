@@ -135,6 +135,7 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultCaret;
 import nom.tam.fits.Fits;
@@ -310,6 +311,7 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
+    private boolean isLive;
     private boolean loadImages;
     private boolean bandW1Loaded;
     private boolean bandW2Loaded;
@@ -392,9 +394,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2085;
+            int controlPanelHeight = 2060;
 
-            JPanel controlPanel = new JPanel(new GridLayout(86, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(85, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -508,6 +510,7 @@ public class ImageViewerTab {
                 if (lowContrast + highContrast == 0) {
                     setContrast(10, HIGH_CONTRAST);
                 }
+                processImages();
             });
 
             JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -530,6 +533,8 @@ public class ImageViewerTab {
                     autoContrast.setSelected(false);
                     setContrast(10, HIGH_CONTRAST);
                     createFlipbook();
+                } else {
+                    processImages();
                 }
             });
 
@@ -549,6 +554,7 @@ public class ImageViewerTab {
                 if (Epoch.isSubtracted(epoch)) {
                     subContrastSaved = subContrast;
                 }
+                processImages();
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -565,6 +571,7 @@ public class ImageViewerTab {
                 speed = speedSlider.getValue();
                 timer.setDelay(speed);
                 speedLabel.setText(String.format("Playback speed: %d ms", speed));
+                processImages();
             });
 
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -581,6 +588,7 @@ public class ImageViewerTab {
                 zoom = zoomSlider.getValue();
                 zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Image zoom: %d", zoom));
+                processImages();
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -604,11 +612,11 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            JPanel setingsPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(setingsPanel);
+            JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(settingsPanel);
 
             autoContrast = new JCheckBox("Auto-contrast", true);
-            setingsPanel.add(autoContrast);
+            settingsPanel.add(autoContrast);
             autoContrast.addActionListener((ActionEvent evt) -> {
                 setContrast(lowContrastSaved, highContrastSaved);
                 setSubContrast(subContrastSaved);
@@ -616,7 +624,7 @@ public class ImageViewerTab {
             });
 
             keepContrast = new JCheckBox("Keep contrast");
-            setingsPanel.add(keepContrast);
+            settingsPanel.add(keepContrast);
             keepContrast.addActionListener((ActionEvent evt) -> {
                 if (keepContrast.isSelected()) {
                     if (Epoch.isSubtracted(epoch)) {
@@ -628,23 +636,29 @@ public class ImageViewerTab {
                 }
             });
 
-            setingsPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(setingsPanel);
+            settingsPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(settingsPanel);
 
             blurImages = new JCheckBox("Blur images");
-            setingsPanel.add(blurImages);
+            settingsPanel.add(blurImages);
+            blurImages.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
 
             invertColors = new JCheckBox("Invert colors");
-            setingsPanel.add(invertColors);
+            settingsPanel.add(invertColors);
+            invertColors.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
 
-            setingsPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(setingsPanel);
+            settingsPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(settingsPanel);
 
             borderFirst = new JCheckBox("Border 1st ep.");
-            setingsPanel.add(borderFirst);
+            settingsPanel.add(borderFirst);
 
             staticView = new JCheckBox("Static view");
-            setingsPanel.add(staticView);
+            settingsPanel.add(staticView);
             staticView.addActionListener((ActionEvent evt) -> {
                 if (flipbook != null) {
                     if (staticView.isSelected()) {
@@ -657,6 +671,14 @@ public class ImageViewerTab {
 
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
             controlPanel.add(showCrosshairs);
+            showCrosshairs.addActionListener((ActionEvent evt) -> {
+                if (showCrosshairs.isSelected()) {
+                    isLive = true;
+                } else {
+                    isLive = false;
+                    processImages();
+                }
+            });
 
             JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
             Font font = copyCoordsLabel.getFont();
@@ -684,73 +706,119 @@ public class ImageViewerTab {
             controlPanel.add(overlayPanel);
             simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME);
             simbadOverlay.setForeground(Color.RED);
+            simbadOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(simbadOverlay);
             gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             gaiaOverlay.setForeground(Color.CYAN.darker());
+            gaiaOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(gaiaOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
             allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME);
             allWiseOverlay.setForeground(Color.GREEN.darker());
+            allWiseOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(allWiseOverlay);
             catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseOverlay.setForeground(Color.MAGENTA);
+            catWiseOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(catWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
             unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME);
             unWiseOverlay.setForeground(JColor.MINT.val);
+            unWiseOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(unWiseOverlay);
             panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME);
             panStarrsOverlay.setForeground(JColor.BROWN.val);
+            panStarrsOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(panStarrsOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
             sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
             sdssOverlay.setForeground(JColor.STEEL.val);
+            sdssOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(sdssOverlay);
             spectrumOverlay = new JCheckBox("SDSS spectra");
             spectrumOverlay.setForeground(JColor.OLIVE.val);
+            spectrumOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(spectrumOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
             gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_SHORT_NAME);
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
+            gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(gaiaWDOverlay);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
+            vhsOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(vhsOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
             twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
             twoMassOverlay.setForeground(JColor.ORANGE.val);
+            twoMassOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(twoMassOverlay);
             spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_SHORT_NAME + "&nbsp;</span>"));
             spitzerOverlay.setForeground(JColor.YELLOW.val);
+            spitzerOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             overlayPanel.add(spitzerOverlay);
 
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
+            ssoOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             controlPanel.add(ssoOverlay);
 
             controlPanel.add(new JLabel(underline("Experimental features (*):")));
-            controlPanel.add(new JLabel("First select a catalog overlay!"));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
             controlPanel.add(displaySpectralTypes);
             displaySpectralTypes.addActionListener((ActionEvent evt) -> {
+                if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
+                    gaiaOverlay.setSelected(true);
+                }
                 initCatalogEntries();
+                processImages();
             });
 
             showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
             controlPanel.add(showBrownDwarfsOnly);
             showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
+                if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
+                    gaiaOverlay.setSelected(true);
+                }
                 initCatalogEntries();
+                processImages();
             });
 
             JLabel warning = new JLabel(html("(*) Warning: Use these features with caution!" + LINE_BREAK + "Spt estimates are based on single colors only."));
@@ -764,9 +832,15 @@ public class ImageViewerTab {
             controlPanel.add(properMotionPanel);
             gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             gaiaProperMotion.setForeground(Color.CYAN.darker());
+            gaiaProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             properMotionPanel.add(gaiaProperMotion);
             catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseProperMotion.setForeground(Color.MAGENTA);
+            catWiseProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             properMotionPanel.add(catWiseProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
@@ -777,6 +851,7 @@ public class ImageViewerTab {
             properMotionField.addActionListener((ActionEvent evt) -> {
                 gaiaTpmEntries = null;
                 catWiseTpmEntries = null;
+                processImages();
             });
 
             controlPanel.add(new JLabel(underline("Sources affected by WISE artifacts:")));
@@ -785,18 +860,30 @@ public class ImageViewerTab {
             controlPanel.add(artifactPanel);
             ghostOverlay = new JCheckBox("Ghosts");
             ghostOverlay.setForeground(Color.MAGENTA.darker());
+            ghostOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             artifactPanel.add(ghostOverlay);
             haloOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Halos&nbsp;</span>"));
             haloOverlay.setForeground(Color.YELLOW);
+            haloOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             artifactPanel.add(haloOverlay);
 
             artifactPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(artifactPanel);
             latentOverlay = new JCheckBox("Latents");
             latentOverlay.setForeground(Color.GREEN.darker());
+            latentOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             artifactPanel.add(latentOverlay);
             spikeOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spikes&nbsp;</span>"));
             spikeOverlay.setForeground(Color.ORANGE);
+            spikeOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
             artifactPanel.add(spikeOverlay);
 
             controlPanel.add(new JLabel(underline("Mouse left click w/o overlays:")));
@@ -968,7 +1055,11 @@ public class ImageViewerTab {
             drawCrosshairs = new JCheckBox("Draw crosshairs (*)");
             controlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (!drawCrosshairs.isSelected()) {
+                if (drawCrosshairs.isSelected()) {
+                    isLive = true;
+                } else {
+                    isLive = false;
+                    processImages();
                     crosshairs.clear();
                     crosshairCoords.setText("");
                 }
@@ -1036,6 +1127,7 @@ public class ImageViewerTab {
                     quadrantCount = 0;
                 }
                 rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+                processImages();
             });
 
             JPanel saveControls = new JPanel(new GridLayout(1, 2));
@@ -1068,7 +1160,15 @@ public class ImageViewerTab {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File file = fileChooser.getSelectedFile();
                         file = new File(file.getPath() + ".gif");
-                        createAnimatedGif(file);
+                        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
+                        int i = 0;
+                        for (FlipbookComponent component : flipbook) {
+                            imageSet[i++] = processImage(component);
+                        }
+                        if (imageSet.length > 0) {
+                            GifSequencer sequencer = new GifSequencer();
+                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
+                        }
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -1167,6 +1267,9 @@ public class ImageViewerTab {
                         customOverlays.values().forEach(customOverlay -> {
                             JCheckBox overlayCheckBox = new JCheckBox(customOverlay.getName());
                             overlayCheckBox.setForeground(customOverlay.getColor());
+                            overlayCheckBox.addActionListener((ActionEvent e) -> {
+                                processImages();
+                            });
                             customOverlay.setCheckBox(overlayCheckBox);
                             controlPanel.add(overlayCheckBox);
                         });
@@ -1177,6 +1280,8 @@ public class ImageViewerTab {
                             if (checkBox != null) {
                                 controlPanel.remove(checkBox);
                             }
+                            customOverlay.setCatalogEntries(null);
+                            processImages();
                         });
                     }
                     controlPanel.updateUI();
@@ -1193,9 +1298,13 @@ public class ImageViewerTab {
                     imagePanel.removeAll();
 
                     FlipbookComponent component = flipbook[imageNumber];
-                    component.setEpochCount(selectedEpochs);
+                    if (isLive) {
+                        component.setEpochCount(selectedEpochs);
+                        wiseImage = processImage(component);
+                    } else {
+                        wiseImage = component.getImage();
+                    }
                     imagePanel.setBorder(createEtchedBorder(component.getTitle()));
-                    wiseImage = processImage(component);
 
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
@@ -1325,6 +1434,8 @@ public class ImageViewerTab {
                             NumberPair pointerCoords;
                             if (quadrantCount > 0 && quadrantCount < 4) {
                                 NumberPair pixelCoords = undoRotationOfPixelCoords(mouseX, mouseY);
+                                mouseX = (int) pixelCoords.getX();
+                                mouseY = (int) pixelCoords.getY();
                                 pointerCoords = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
                             } else {
                                 pointerCoords = getObjectCoordinates(mouseX, mouseY);
@@ -1625,6 +1736,50 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         }
+    }
+
+    private boolean isCatalogOverlaySelected() {
+        int overlays = 0;
+        if (simbadOverlay.isSelected()) {
+            overlays++;
+        }
+        if (gaiaOverlay.isSelected()) {
+            overlays++;
+        }
+        if (gaiaProperMotion.isSelected()) {
+            overlays++;
+        }
+        if (allWiseOverlay.isSelected()) {
+            overlays++;
+        }
+        if (catWiseOverlay.isSelected()) {
+            overlays++;
+        }
+        if (catWiseProperMotion.isSelected()) {
+            overlays++;
+        }
+        if (unWiseOverlay.isSelected()) {
+            overlays++;
+        }
+        if (panStarrsOverlay.isSelected()) {
+            overlays++;
+        }
+        if (sdssOverlay.isSelected()) {
+            overlays++;
+        }
+        if (twoMassOverlay.isSelected()) {
+            overlays++;
+        }
+        if (vhsOverlay.isSelected()) {
+            overlays++;
+        }
+        if (gaiaWDOverlay.isSelected()) {
+            overlays++;
+        }
+        if (spitzerOverlay.isSelected()) {
+            overlays++;
+        }
+        return overlays > 0;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2209,6 +2364,7 @@ public class ImageViewerTab {
                 }
             }
 
+            processImages();
             timer.restart();
             timerStopped = false;
         } catch (Exception ex) {
@@ -2256,6 +2412,18 @@ public class ImageViewerTab {
         int avgVal = (avgValW1 + avgValW2) / divisor;
         NumberPair refValues = getMinMaxValues(minVal, maxVal, avgVal);
         component.setRefValues(refValues);
+    }
+
+    private void processImages() {
+        if (flipbook == null || isLive) {
+            return;
+        }
+        timer.stop();
+        for (FlipbookComponent component : flipbook) {
+            component.setEpochCount(selectedEpochs);
+            component.setImage(processImage(component));
+        }
+        timer.restart();
     }
 
     private void initCatalogEntries() {
@@ -2307,19 +2475,6 @@ public class ImageViewerTab {
         baseFrame.setVisible(true);
     }
 
-    private void createAnimatedGif(File file) throws IOException {
-        timer.stop();
-        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
-        int i = 0;
-        for (FlipbookComponent component : flipbook) {
-            imageSet[i++] = processImage(component);
-        }
-        if (imageSet.length > 0) {
-            GifSequencer sequencer = new GifSequencer();
-            sequencer.generateFromBI(imageSet, file, speed / 10, true);
-        }
-    }
-
     public BufferedImage processImage(FlipbookComponent component) {
         BufferedImage image;
         int minValue = (int) component.getRefValues().getX();
@@ -2345,7 +2500,11 @@ public class ImageViewerTab {
         if (simbadOverlay.isSelected()) {
             if (simbadEntries == null) {
                 simbadEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> simbadEntries = fetchCatalogEntries(new SimbadCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    simbadEntries = fetchCatalogEntries(new SimbadCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
             }
@@ -2353,7 +2512,11 @@ public class ImageViewerTab {
         if (gaiaOverlay.isSelected()) {
             if (gaiaEntries == null) {
                 gaiaEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, gaiaEntries, Color.CYAN.darker(), Shape.CIRCLE);
             }
@@ -2361,7 +2524,11 @@ public class ImageViewerTab {
         if (allWiseOverlay.isSelected()) {
             if (allWiseEntries == null) {
                 allWiseEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> allWiseEntries = fetchCatalogEntries(new AllWiseCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    allWiseEntries = fetchCatalogEntries(new AllWiseCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, allWiseEntries, Color.GREEN.darker(), Shape.CIRCLE);
             }
@@ -2369,7 +2536,11 @@ public class ImageViewerTab {
         if (catWiseOverlay.isSelected()) {
             if (catWiseEntries == null) {
                 catWiseEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, catWiseEntries, Color.MAGENTA, Shape.CIRCLE);
             }
@@ -2377,7 +2548,11 @@ public class ImageViewerTab {
         if (unWiseOverlay.isSelected()) {
             if (unWiseEntries == null) {
                 unWiseEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> unWiseEntries = fetchCatalogEntries(new UnWiseCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    unWiseEntries = fetchCatalogEntries(new UnWiseCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, unWiseEntries, JColor.MINT.val, Shape.CIRCLE);
             }
@@ -2385,7 +2560,11 @@ public class ImageViewerTab {
         if (panStarrsOverlay.isSelected()) {
             if (panStarrsEntries == null) {
                 panStarrsEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> panStarrsEntries = fetchCatalogEntries(new PanStarrsCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    panStarrsEntries = fetchCatalogEntries(new PanStarrsCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, panStarrsEntries, JColor.BROWN.val, Shape.CIRCLE);
             }
@@ -2393,7 +2572,11 @@ public class ImageViewerTab {
         if (sdssOverlay.isSelected()) {
             if (sdssEntries == null) {
                 sdssEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, sdssEntries, JColor.STEEL.val, Shape.CIRCLE);
             }
@@ -2401,7 +2584,11 @@ public class ImageViewerTab {
         if (spectrumOverlay.isSelected()) {
             if (sdssEntries == null) {
                 sdssEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawSectrumOverlay(image, sdssEntries);
             }
@@ -2409,7 +2596,11 @@ public class ImageViewerTab {
         if (twoMassOverlay.isSelected()) {
             if (twoMassEntries == null) {
                 twoMassEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> twoMassEntries = fetchCatalogEntries(new TwoMassCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    twoMassEntries = fetchCatalogEntries(new TwoMassCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
             }
@@ -2417,7 +2608,11 @@ public class ImageViewerTab {
         if (vhsOverlay.isSelected()) {
             if (vhsEntries == null) {
                 vhsEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> vhsEntries = fetchCatalogEntries(new VHSCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    vhsEntries = fetchCatalogEntries(new VHSCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, vhsEntries, JColor.PINK.val, Shape.CIRCLE);
             }
@@ -2425,7 +2620,11 @@ public class ImageViewerTab {
         if (gaiaWDOverlay.isSelected()) {
             if (gaiaWDEntries == null) {
                 gaiaWDEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
             }
@@ -2433,7 +2632,11 @@ public class ImageViewerTab {
         if (spitzerOverlay.isSelected()) {
             if (spitzerEntries == null) {
                 spitzerEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> spitzerEntries = fetchCatalogEntries(new SpitzerCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    spitzerEntries = fetchCatalogEntries(new SpitzerCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, spitzerEntries, JColor.YELLOW.val, Shape.CIRCLE);
             }
@@ -2441,7 +2644,11 @@ public class ImageViewerTab {
         if (ssoOverlay.isSelected()) {
             if (ssoEntries == null) {
                 ssoEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> ssoEntries = fetchCatalogEntries(new SSOCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    ssoEntries = fetchCatalogEntries(new SSOCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
             }
@@ -2449,13 +2656,21 @@ public class ImageViewerTab {
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
             if (catWiseEntries == null) {
                 catWiseEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawArtifactOverlay(image, catWiseEntries);
             }
             if (catWiseRejectedEntries == null) {
                 catWiseRejectedEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> catWiseRejectedEntries = fetchCatalogEntries(new CatWiseRejectedEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseRejectedEntries = fetchCatalogEntries(new CatWiseRejectedEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawArtifactOverlay(image, catWiseRejectedEntries);
             }
@@ -2465,7 +2680,11 @@ public class ImageViewerTab {
                 if (customOverlay.getCheckBox().isSelected()) {
                     if (customOverlay.getCatalogEntries() == null) {
                         customOverlay.setCatalogEntries(Collections.emptyList());
-                        CompletableFuture.supplyAsync(() -> fetchGenericCatalogEntries(customOverlay));
+                        CompletableFuture.supplyAsync(() -> {
+                            fetchGenericCatalogEntries(customOverlay);
+                            processImages();
+                            return null;
+                        });
                     } else {
                         drawOverlay(image, customOverlay.getCatalogEntries(), customOverlay.getColor(), customOverlay.getShape());
                     }
@@ -2475,7 +2694,11 @@ public class ImageViewerTab {
         if (gaiaProperMotion.isSelected()) {
             if (gaiaTpmEntries == null) {
                 gaiaTpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker());
             }
@@ -2483,7 +2706,11 @@ public class ImageViewerTab {
         if (catWiseProperMotion.isSelected()) {
             if (catWiseTpmEntries == null) {
                 catWiseTpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry()));
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry());
+                    processImages();
+                    return null;
+                });
             } else {
                 drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
             }
@@ -3034,9 +3261,21 @@ public class ImageViewerTab {
         subContrastSaved = SUB_CONTRAST;
         lowContrastSaved = LOW_CONTRAST;
         highContrastSaved = HIGH_CONTRAST;
+
+        ChangeListener listener = subScaleSlider.getChangeListeners()[0];
+        subScaleSlider.removeChangeListener(listener);
         subScaleSlider.setValue(subContrast = subContrastSaved);
+        subScaleSlider.addChangeListener(listener);
+
+        listener = lowScaleSlider.getChangeListeners()[0];
+        lowScaleSlider.removeChangeListener(listener);
         lowScaleSlider.setValue(lowContrast = lowContrastSaved);
+        lowScaleSlider.addChangeListener(listener);
+
+        listener = highScaleSlider.getChangeListeners()[0];
+        highScaleSlider.removeChangeListener(listener);
         highScaleSlider.setValue(highContrast = highContrastSaved);
+        highScaleSlider.addChangeListener(listener);
     }
 
     private NumberTriplet getRefValues(float[][] values) {
@@ -3467,29 +3706,34 @@ public class ImageViewerTab {
         try {
             BufferedImage image;
             List<JPanel> panelList = new ArrayList<>();
+            List<BufferedImage> imageList = new ArrayList<>();
 
             if (dssImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "DSS2 - IR"));
+                    imageList.add(image);
                 }
             }
             if (twoMassImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "2MASS - K"));
+                    imageList.add(image);
                 }
             }
             if (sloanImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "SDSS - z"));
+                    imageList.add(image);
                 }
             }
             if (allwiseImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
                 if (image != null) {
                     panelList.add(buildImagePanel(image, "WISE - W2"));
+                    imageList.add(image);
                 }
             }
             if (ps1Images.isSelected()) {
@@ -3497,6 +3741,7 @@ public class ImageViewerTab {
                 if (!imageInfos.isEmpty()) {
                     image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
                     panelList.add(buildImagePanel(image, "PS1 - z"));
+                    imageList.add(image);
                 }
             }
 
@@ -3505,20 +3750,50 @@ public class ImageViewerTab {
                 return;
             }
 
+            JPanel container = new JPanel();
+
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
-            JPanel displayPanel = new JPanel();
-            imageFrame.getContentPane().add(displayPanel);
-            imageFrame.setSize(PANEL_WIDTH, PANEL_HEIGHT);
+
+            imageFrame.setSize(PANEL_WIDTH, PANEL_HEIGHT + 50);
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
+
+            JButton saveAsGifButton = new JButton("Save as GIF");
+            saveAsGifButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+                    int returnVal = fileChooser.showSaveDialog(container);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".gif");
+                        BufferedImage[] imageSet = new BufferedImage[imageList.size()];
+                        int i = 0;
+                        for (BufferedImage imageBuffer : imageList) {
+                            drawCenterCircle(imageBuffer);
+                            imageSet[i++] = imageBuffer;
+                        }
+                        if (imageSet.length > 0) {
+                            GifSequencer sequencer = new GifSequencer();
+                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
+                        }
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
 
             Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
                 if (imageCount > componentCount - 1) {
                     imageCount = 0;
                 }
-                displayPanel.add(panelList.get(imageCount), 0);
+                JPanel displayPanel = new JPanel();
+                container.add(displayPanel, 0);
+                container.add(saveAsGifButton, 1);
+                displayPanel.add(panelList.get(imageCount));
+                imageFrame.getContentPane().add(container);
                 imageFrame.setVisible(true);
                 imageCount++;
             });
@@ -3542,14 +3817,17 @@ public class ImageViewerTab {
     private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        image = zoom(image, 200);
+        drawCenterCircle(image);
+        panel.add(new JLabel(new ImageIcon(image)));
+        return panel;
+    }
+
+    private void drawCenterCircle(BufferedImage image) {
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
         Circle circle = new Circle(x, y, 10, Color.MAGENTA);
         circle.draw(g);
-        panel.add(new JLabel(new ImageIcon(image)));
-        return panel;
     }
 
     private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {

@@ -1,6 +1,7 @@
 package astro.tool.box.module;
 
 import astro.tool.box.container.NumberPair;
+import java.awt.image.BufferedImage;
 
 public class FlipbookComponent {
 
@@ -19,6 +20,8 @@ public class FlipbookComponent {
     private boolean firstEpoch;
 
     private NumberPair refValues;
+
+    private BufferedImage image;
 
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
@@ -149,6 +152,14 @@ public class FlipbookComponent {
 
     public void setRefValues(NumberPair refValues) {
         this.refValues = refValues;
+    }
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
     }
 
 }
