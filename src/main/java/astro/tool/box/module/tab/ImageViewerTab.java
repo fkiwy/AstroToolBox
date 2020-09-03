@@ -262,6 +262,8 @@ public class ImageViewerTab {
     private BufferedImage wiseImage;
     private BufferedImage ps1Image;
     private BufferedImage sdssImage;
+    private BufferedImage processedPs1Image;
+    private BufferedImage processedSdssImage;
     private Map<String, ImageContainer> imagesW1 = new HashMap<>();
     private Map<String, ImageContainer> imagesW2 = new HashMap<>();
     private Map<String, Fits> images;
@@ -1398,8 +1400,6 @@ public class ImageViewerTab {
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (ps1Image != null) {
-                        BufferedImage processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
-
                         // Create and display magnified Pan-STARRS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
                             BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
@@ -1415,8 +1415,6 @@ public class ImageViewerTab {
 
                     // Display SDSS images
                     if (sdssImage != null) {
-                        BufferedImage processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
-
                         // Create and display magnified SDSS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
                             BufferedImage magnifiedSdssImage = processedSdssImage.getSubimage(upperLeftX, upperLeftY, width, height);
@@ -1918,10 +1916,12 @@ public class ImageViewerTab {
                 imageCutOff = false;
                 initCatalogEntries();
                 ps1Image = null;
+                processedPs1Image = null;
                 if (panstarrsImages) {
                     CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
                 }
                 sdssImage = null;
+                processedSdssImage = null;
                 if (sdssImages) {
                     CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
                 }
@@ -2428,6 +2428,12 @@ public class ImageViewerTab {
             return;
         }
         timer.stop();
+        if (ps1Image != null) {
+            processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
+        }
+        if (sdssImage != null) {
+            processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
+        }
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
             component.setImage(processImage(component));
