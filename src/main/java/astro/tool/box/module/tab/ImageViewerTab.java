@@ -692,7 +692,7 @@ public class ImageViewerTab {
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
             controlPanel.add(showCrosshairs);
             showCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (showCrosshairs.isSelected()) {
+                if (showCrosshairs.isSelected() || drawCrosshairs.isSelected()) {
                     isLive = true;
                 } else {
                     isLive = false;
@@ -1075,7 +1075,7 @@ public class ImageViewerTab {
             drawCrosshairs = new JCheckBox("Draw crosshairs (*)");
             controlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (drawCrosshairs.isSelected()) {
+                if (drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
                     isLive = true;
                 } else {
                     isLive = false;
@@ -1427,20 +1427,6 @@ public class ImageViewerTab {
                         JLabel sdssLabel = new JLabel(new ImageIcon(processedSdssImage));
                         sdssLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
                         imagePanel.add(sdssLabel);
-                    }
-
-                    // Display crosshairs with coordinates
-                    if (showCrosshairs.isSelected()) {
-                        NumberPair pointerCoords;
-                        if (quadrantCount > 0 && quadrantCount < 4) {
-                            NumberPair pixelCoords = undoRotationOfPixelCoords(centerX, centerY);
-                            pointerCoords = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
-                        } else {
-                            pointerCoords = getObjectCoordinates(centerX, centerY);
-                        }
-                        String coords = roundTo3DecNZ(pointerCoords.getX()) + " " + roundTo3DecNZ(pointerCoords.getY());
-                        CrossHair drawable = new CrossHair(centerX, centerY, zoom * crosshairSize / 100, Color.RED, coords);
-                        drawable.draw(wiseImage.getGraphics());
                     }
 
                     baseFrame.setVisible(true);
@@ -2506,14 +2492,30 @@ public class ImageViewerTab {
         }
         image = flip(zoom(image, zoom));
         addOverlaysAndPMVectors(image);
+        // Draw crosshairs
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
                 NumberPair crosshair = crosshairs.get(i);
-                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, zoom * crosshairSize / 100, Color.RED, String.valueOf(i + 1));
+                String crosshairLabel = String.valueOf(i + 1);
+                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, zoom * crosshairSize / 100, Color.RED, crosshairLabel);
                 drawable.draw(image.getGraphics());
             }
         }
-        return rotate(image, quadrantCount);
+        image = rotate(image, quadrantCount);
+        // Display crosshairs with coordinates
+        if (showCrosshairs.isSelected()) {
+            NumberPair coordinates;
+            if (quadrantCount > 0 && quadrantCount < 4) {
+                NumberPair pixelCoords = undoRotationOfPixelCoords(centerX, centerY);
+                coordinates = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+            } else {
+                coordinates = getObjectCoordinates(centerX, centerY);
+            }
+            String crosshairLabel = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
+            CrossHair drawable = new CrossHair(centerX, centerY, zoom * crosshairSize / 100, Color.RED, crosshairLabel);
+            drawable.draw(image.getGraphics());
+        }
+        return image;
     }
 
     private void addOverlaysAndPMVectors(BufferedImage image) {
