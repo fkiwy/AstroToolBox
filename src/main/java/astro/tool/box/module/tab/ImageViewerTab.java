@@ -1944,11 +1944,13 @@ public class ImageViewerTab {
                     initContrast();
                 }
                 try {
-                    getImageData(1, numberOfEpochs + 3);
+                    InputStream stream = getImageData(1, numberOfEpochs + 3);
+                    stream.close();
                     moreImagesAvailable = true;
                 } catch (FileNotFoundException ex) {
                     try {
-                        getImageData(1, numberOfEpochs);
+                        InputStream stream = getImageData(1, numberOfEpochs);
+                        stream.close();
                         oneMoreImageAvailable = true;
                     } catch (FileNotFoundException ex2) {
                     }
@@ -3425,8 +3427,11 @@ public class ImageViewerTab {
             }
             imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            return ImageIO.read(stream);
+            BufferedImage image;
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+                image = ImageIO.read(stream);
+            }
+            return image;
         } catch (Exception ex) {
             return null;
         }
@@ -3437,8 +3442,11 @@ public class ImageViewerTab {
             int resolution = 1000;
             String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * SIZE_FACTOR / resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            return ImageIO.read(stream);
+            BufferedImage image;
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+                image = ImageIO.read(stream);
+            }
+            return image;
         } catch (Exception ex) {
             return null;
         }
@@ -4000,8 +4008,10 @@ public class ImageViewerTab {
             SDSSCatalogEntry SDSSCatalogEntry = (SDSSCatalogEntry) catalogEntry;
             String spectrumUrl = SDSS_BASE_URL + "/en/get/specById.ashx?ID=" + SDSSCatalogEntry.getSpecObjID();
             HttpURLConnection connection = establishHttpConnection(spectrumUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            BufferedImage spectrum = ImageIO.read(stream);
+            BufferedImage spectrum;
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+                spectrum = ImageIO.read(stream);
+            }
             if (spectrum != null) {
                 JFrame imageFrame = new JFrame();
                 imageFrame.setIconImage(getToolBoxImage());
