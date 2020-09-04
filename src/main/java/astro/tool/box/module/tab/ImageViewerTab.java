@@ -4401,7 +4401,7 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize() {
-        return max(5, min(20, zoom / (size / 2)));
+        return 10;
     }
 
     public JCheckBox getBlurImages() {
