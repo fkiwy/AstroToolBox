@@ -1,8 +1,8 @@
 package astro.tool.box.module.shape;
 
-import java.awt.BasicStroke;
 import static java.lang.Math.*;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,7 +15,6 @@ public class Arrow implements Drawable {
     private final double y2;
     private final double size;
     private final Color color;
-    private final float lineWidth;
 
     public Arrow(double x1, double y1, double x2, double y2, double size, Color color) {
         this.x1 = x1;
@@ -24,17 +23,6 @@ public class Arrow implements Drawable {
         this.y2 = y2;
         this.size = size;
         this.color = color;
-        this.lineWidth = 1;
-    }
-
-    public Arrow(double x1, double y1, double x2, double y2, double size, Color color, float lineWidth) {
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
-        this.size = size;
-        this.color = color;
-        this.lineWidth = lineWidth;
     }
 
     @Override
@@ -55,7 +43,7 @@ public class Arrow implements Drawable {
         //double xPlus = (size / 2) * cos(vectorAngle);
         //double yPlus = (size / 2) * sin(vectorAngle);
         g2d.setColor(color);
-        g2d.setStroke(new BasicStroke(lineWidth));
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH));
         g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xLeft), (int) round(y2 + yLeft));
         g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xRight), (int) round(y2 + yRight));
         g2d.drawLine((int) round(x1), (int) round(y1), (int) round(x2 /*+ xPlus*/), (int) round(y2 /*+ yPlus*/));

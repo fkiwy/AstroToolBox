@@ -2,8 +2,10 @@ package astro.tool.box.module.shape;
 
 import static java.lang.Math.*;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public class Diamond implements Drawable {
 
@@ -28,11 +30,13 @@ public class Diamond implements Drawable {
 
     @Override
     public void draw(Graphics graphics) {
-        graphics.setColor(color);
-        graphics.drawLine(x1, y, x, y1);
-        graphics.drawLine(x, y1, x2, y);
-        graphics.drawLine(x2, y, x, y2);
-        graphics.drawLine(x, y2, x1, y);
+        Graphics2D g2d = (Graphics2D) graphics;
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH));
+        g2d.drawLine(x1, y, x, y1);
+        g2d.drawLine(x, y1, x2, y);
+        g2d.drawLine(x2, y, x, y2);
+        g2d.drawLine(x, y2, x1, y);
     }
 
 }

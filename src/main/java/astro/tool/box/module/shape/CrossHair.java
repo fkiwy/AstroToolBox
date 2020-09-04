@@ -2,8 +2,11 @@ package astro.tool.box.module.shape;
 
 import static java.lang.Math.*;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public class CrossHair implements Drawable {
 
@@ -23,10 +26,13 @@ public class CrossHair implements Drawable {
 
     @Override
     public void draw(Graphics graphics) {
-        graphics.setColor(color);
-        graphics.drawLine(x - size, y, x + size, y);
-        graphics.drawLine(x, y - size, x, y + size);
-        graphics.drawString(label, x, y - size);
+        Graphics2D g2d = (Graphics2D) graphics;
+        g2d.setColor(color);
+        g2d.setFont(new Font("default", Font.BOLD, size / 2));
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH));
+        g2d.drawLine(x - size, y, x + size, y);
+        g2d.drawLine(x, y - size, x, y + size);
+        g2d.drawString(label, x - (label.length() / 4) * (size / 2), y - size);
     }
 
 }

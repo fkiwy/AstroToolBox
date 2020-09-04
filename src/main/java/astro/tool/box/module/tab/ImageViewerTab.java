@@ -397,9 +397,9 @@ public class ImageViewerTab {
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2060;
+            int controlPanelHeight = 2085;
 
-            JPanel controlPanel = new JPanel(new GridLayout(85, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(86, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -877,7 +877,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            controlPanel.add(new JLabel(underline("Sources affected by WISE artifacts:")));
+            controlPanel.add(new JLabel(underline("WISE artifacts (*):")));
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(artifactPanel);
@@ -908,6 +908,10 @@ public class ImageViewerTab {
                 processImages();
             });
             artifactPanel.add(spikeOverlay);
+
+            JLabel artifactLabel = new JLabel(html("(*) Small shapes represent affected sources." + LINE_BREAK + "Large shapes represent the actual artifacts."));
+            artifactLabel.setFont(font);
+            controlPanel.add(artifactLabel);
 
             controlPanel.add(new JLabel(underline("Mouse left click w/o overlays:")));
 
@@ -1399,7 +1403,7 @@ public class ImageViewerTab {
 
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
-                    if (ps1Image != null) {
+                    if (processedPs1Image != null) {
                         // Create and display magnified Pan-STARRS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
                             BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
@@ -1414,7 +1418,7 @@ public class ImageViewerTab {
                     }
 
                     // Display SDSS images
-                    if (sdssImage != null) {
+                    if (processedSdssImage != null) {
                         // Create and display magnified SDSS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
                             BufferedImage magnifiedSdssImage = processedSdssImage.getSubimage(upperLeftX, upperLeftY, width, height);
@@ -4096,23 +4100,42 @@ public class ImageViewerTab {
             } else if (cc_flags.length() > 0) {
                 cc_flags = cc_flags.substring(0, 1);
             }
-            ab_flags = ab_flags.toUpperCase();
-            cc_flags = cc_flags.toUpperCase();
-            if (ghostOverlay.isSelected() && (ab_flags.contains("O") || cc_flags.contains("O"))) {
-                Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA.darker());
-                toDraw.draw(graphics);
+            String flags = ab_flags + cc_flags;
+            if (ghostOverlay.isSelected()) {
+                if (flags.contains("o")) {
+                    Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize() / 2, Color.MAGENTA.darker());
+                    toDraw.draw(graphics);
+                } else if (flags.contains("O")) {
+                    Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA.darker());
+                    toDraw.draw(graphics);
+                }
             }
-            if (haloOverlay.isSelected() && (ab_flags.contains("H") || cc_flags.contains("H"))) {
-                Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
-                toDraw.draw(graphics);
+            if (haloOverlay.isSelected()) {
+                if (flags.contains("h")) {
+                    Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize() / 2, Color.YELLOW);
+                    toDraw.draw(graphics);
+                } else if (flags.contains("H")) {
+                    Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
+                    toDraw.draw(graphics);
+                }
             }
-            if (latentOverlay.isSelected() && (ab_flags.contains("P") || cc_flags.contains("P"))) {
-                Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker(), 2);
-                toDraw.draw(graphics);
+            if (latentOverlay.isSelected()) {
+                if (flags.contains("p")) {
+                    Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize() / 2, Color.GREEN.darker());
+                    toDraw.draw(graphics);
+                } else if (flags.contains("P")) {
+                    Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
+                    toDraw.draw(graphics);
+                }
             }
-            if (spikeOverlay.isSelected() && (ab_flags.contains("D") || cc_flags.contains("D"))) {
-                Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
-                toDraw.draw(graphics);
+            if (spikeOverlay.isSelected()) {
+                if (flags.contains("d")) {
+                    Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize() / 2, Color.ORANGE);
+                    toDraw.draw(graphics);
+                } else if (flags.contains("D")) {
+                    Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+                    toDraw.draw(graphics);
+                }
             }
         });
     }
@@ -4156,7 +4179,7 @@ public class ImageViewerTab {
             double newX = pixelCoords.getX();
             double newY = pixelCoords.getY();
 
-            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color, 2);
+            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
             arrow.draw(graphics);
         });
     }
@@ -4378,7 +4401,7 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize() {
-        return 5 + zoom / 100;
+        return 5 + zoom / (size / 2);
     }
 
     public JCheckBox getBlurImages() {

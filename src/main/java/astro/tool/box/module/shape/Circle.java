@@ -2,8 +2,10 @@ package astro.tool.box.module.shape;
 
 import static java.lang.Math.*;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public class Circle implements Drawable {
 
@@ -21,8 +23,10 @@ public class Circle implements Drawable {
 
     @Override
     public void draw(Graphics graphics) {
-        graphics.setColor(color);
-        graphics.drawOval(x, y, size, size);
+        Graphics2D g2d = (Graphics2D) graphics;
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH));
+        g2d.drawOval(x, y, size, size);
     }
 
 }
