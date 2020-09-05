@@ -2428,16 +2428,16 @@ public class ImageViewerTab {
     }
 
     private void processImages() {
-        if (flipbook == null || isLive) {
-            return;
-        }
-        timer.stop();
         if (ps1Image != null) {
             processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
         }
         if (sdssImage != null) {
             processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
         }
+        if (flipbook == null || isLive) {
+            return;
+        }
+        timer.stop();
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
             component.setImage(processImage(component));
