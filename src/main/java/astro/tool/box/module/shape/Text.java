@@ -17,7 +17,7 @@ public class Text implements Drawable {
     public Text(double x, double y, double size, Color color, String label) {
         this.x = (int) round(x - size / 2);
         this.y = (int) round(y + size / 2);
-        this.size = (int) round(size * 2);
+        this.size = (int) size;
         this.color = color;
         this.label = label;
     }
@@ -28,7 +28,7 @@ public class Text implements Drawable {
             return;
         }
         graphics.setColor(color);
-        graphics.setFont(new Font("default", Font.BOLD, size > 15 ? 15 : size));
+        graphics.setFont(new Font("default", Font.BOLD, size + 2));
         graphics.drawString(label, x, y);
     }
 
