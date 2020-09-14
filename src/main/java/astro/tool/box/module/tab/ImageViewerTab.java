@@ -2949,7 +2949,6 @@ public class ImageViewerTab {
 
     private void writeLogEntry(String log) {
         downloadLog.append(log + LINE_SEP_TEXT_AREA);
-        baseFrame.setVisible(true);
         //System.out.println(log);
     }
 
