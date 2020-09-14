@@ -4,6 +4,7 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
@@ -86,9 +87,12 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -149,6 +153,7 @@ import nom.tam.fits.ImageHDU;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
+    public static final String FITS_DIR = USER_HOME + "/.fits";
     public static final String EPOCH_LABEL = "Number of epochs: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
@@ -314,7 +319,6 @@ public class ImageViewerTab {
     private double previousRa;
     private double previousDec;
 
-    private boolean isLive;
     private boolean loadImages;
     private boolean bandW1Loaded;
     private boolean bandW2Loaded;
@@ -694,14 +698,6 @@ public class ImageViewerTab {
 
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
             controlPanel.add(showCrosshairs);
-            showCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (showCrosshairs.isSelected() || drawCrosshairs.isSelected()) {
-                    isLive = true;
-                } else {
-                    isLive = false;
-                    processImages();
-                }
-            });
 
             JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
             Font font = copyCoordsLabel.getFont();
@@ -1082,11 +1078,7 @@ public class ImageViewerTab {
             drawCrosshairs = new JCheckBox("Draw crosshairs (*)");
             controlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
-                    isLive = true;
-                } else {
-                    isLive = false;
-                    processImages();
+                if (!drawCrosshairs.isSelected()) {
                     crosshairs.clear();
                     crosshairCoords.setText("");
                 }
@@ -1190,7 +1182,7 @@ public class ImageViewerTab {
                         BufferedImage[] imageSet = new BufferedImage[flipbook.length];
                         int i = 0;
                         for (FlipbookComponent component : flipbook) {
-                            imageSet[i++] = processImage(component);
+                            imageSet[i++] = addCrosshairs(processImage(component));
                         }
                         if (imageSet.length > 0) {
                             GifSequencer sequencer = new GifSequencer();
@@ -1322,17 +1314,9 @@ public class ImageViewerTab {
                     if (imageNumber > flipbook.length - 1) {
                         imageNumber = 0;
                     }
-                    imagePanel.removeAll();
 
                     FlipbookComponent component = flipbook[imageNumber];
-                    if (isLive) {
-                        component.setEpochCount(selectedEpochs);
-                        wiseImage = processImage(component);
-                    } else {
-                        wiseImage = component.getImage();
-                    }
-                    imagePanel.setBorder(createEtchedBorder(component.getTitle()));
-
+                    wiseImage = addCrosshairs(component.getImage());
                     ImageIcon icon = new ImageIcon(wiseImage);
                     JLabel imageLabel = new JLabel(icon);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
@@ -1341,6 +1325,8 @@ public class ImageViewerTab {
                         imageLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
                     }
 
+                    imagePanel.removeAll();
+                    imagePanel.setBorder(createEtchedBorder(component.getTitle()));
                     imagePanel.add(imageLabel);
 
                     // Initialize positions of magnified WISE image
@@ -2434,7 +2420,7 @@ public class ImageViewerTab {
         if (sdssImage != null) {
             processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
         }
-        if (flipbook == null || isLive) {
+        if (flipbook == null) {
             return;
         }
         timer.stop();
@@ -2473,7 +2459,7 @@ public class ImageViewerTab {
         JPanel grid = new JPanel(new GridLayout(4, 4));
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
-            BufferedImage image = processImage(component);
+            BufferedImage image = addCrosshairs(processImage(component));
             JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
             scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
             grid.add(scrollPanel);
@@ -2505,17 +2491,29 @@ public class ImageViewerTab {
         }
         image = flip(zoom(image, zoom));
         addOverlaysAndPMVectors(image);
+        return image;
+    }
+
+    private BufferedImage addCrosshairs(BufferedImage image) {
+        // Make a copy of the image if one of the crosshair features is selected
+        if (showCrosshairs.isSelected() || drawCrosshairs.isSelected()) {
+            image = copy(image);
+        }
+
         // Draw crosshairs
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
                 NumberPair crosshair = crosshairs.get(i);
-                String crosshairLabel = String.valueOf(i + 1);
-                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, zoom * crosshairSize / 100, Color.RED, crosshairLabel);
+                String label = String.valueOf(i + 1);
+                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, crosshairSize * zoom / 100, Color.RED, label);
                 drawable.draw(image.getGraphics());
             }
         }
+
+        // Rotate image by the specified number of quadrants
         image = rotate(image, quadrantCount);
-        // Display crosshairs with coordinates
+
+        // Show crosshairs with coordinates
         if (showCrosshairs.isSelected()) {
             NumberPair coordinates;
             if (quadrantCount > 0 && quadrantCount < 4) {
@@ -2524,8 +2522,8 @@ public class ImageViewerTab {
             } else {
                 coordinates = getObjectCoordinates(centerX, centerY);
             }
-            String crosshairLabel = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
-            CrossHair drawable = new CrossHair(centerX, centerY, zoom * crosshairSize / 100, Color.RED, crosshairLabel);
+            String label = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
+            CrossHair drawable = new CrossHair(centerX, centerY, crosshairSize * zoom / 100, Color.RED, label);
             drawable.draw(image.getGraphics());
         }
         return image;
@@ -3021,6 +3019,17 @@ public class ImageViewerTab {
         } else {
             imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
         }
+        if (Boolean.parseBoolean(getUserSetting("dev", "false"))) {
+            // WISE0855 133.787 -7.245150
+            /*
+            new File(FITS_DIR).mkdir();
+            ReadableByteChannel readableByteChannel = Channels.newChannel(establishHttpConnection(imageUrl).getInputStream());
+            try (FileOutputStream fileOutputStream = new FileOutputStream(FITS_DIR + "/image_w" + band + "_" + epoch + ".fits")) {
+                fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            }*/
+            File file = new File(FITS_DIR + "/image_w" + band + "_" + epoch + ".fits");
+            return new FileInputStream(file);
+        }
         HttpURLConnection connection = establishHttpConnection(imageUrl);
         return connection.getInputStream();
     }
@@ -3213,6 +3222,13 @@ public class ImageViewerTab {
         return blurredValues;
     }
 
+    private BufferedImage copy(BufferedImage bufferImage) {
+        ColorModel colorModel = bufferImage.getColorModel();
+        WritableRaster raster = bufferImage.copyData(null);
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+    }
+
     private BufferedImage flip(BufferedImage image) {
         AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
         tx.translate(0, -image.getHeight(null));
@@ -3221,6 +3237,9 @@ public class ImageViewerTab {
     }
 
     private BufferedImage rotate(BufferedImage image, int numberOfQuadrants) {
+        if (numberOfQuadrants == 0) {
+            return image;
+        }
         AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(image, null);
