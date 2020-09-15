@@ -2624,8 +2624,8 @@ public class ImageViewerTab {
 
         // Draw a circle around the object to check if proper motions are consistent
         if (checkMotionButton.isSelected()) {
-            NumberPair objectCoords = component.getObjectCoords();
-            NumberPair position = getPixelCoordinates(objectCoords.getX(), objectCoords.getY());
+            NumberPair epochCoordinates = component.getEpochCoordinates();
+            NumberPair position = getPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
             Circle circle = new Circle(position.getX(), position.getY(), (shapeSize / 2) * zoom / 100, Color.RED);
             circle.draw(image.getGraphics());
         }

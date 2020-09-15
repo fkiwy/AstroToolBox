@@ -21,7 +21,7 @@ public class FlipbookComponent {
 
     private NumberPair refValues;
 
-    private NumberPair objectCoords;
+    private NumberPair epochCoordinates;
 
     private BufferedImage image;
 
@@ -36,17 +36,17 @@ public class FlipbookComponent {
         this.isMerged = isMerged;
     }
 
-    public FlipbookComponent(int band, int epoch, NumberPair objectCoords) {
+    public FlipbookComponent(int band, int epoch, NumberPair epochCoordinates) {
         this.band = band;
         this.epoch = epoch;
-        this.objectCoords = objectCoords;
+        this.epochCoordinates = epochCoordinates;
     }
 
-    public FlipbookComponent(int band, int epoch, boolean isMerged, NumberPair objectCoords) {
+    public FlipbookComponent(int band, int epoch, boolean isMerged, NumberPair epochCoordinates) {
         this.band = band;
         this.epoch = epoch;
         this.isMerged = isMerged;
-        this.objectCoords = objectCoords;
+        this.epochCoordinates = epochCoordinates;
     }
 
     @Override
@@ -169,12 +169,12 @@ public class FlipbookComponent {
         this.refValues = refValues;
     }
 
-    public NumberPair getObjectCoords() {
-        return objectCoords;
+    public NumberPair getEpochCoordinates() {
+        return epochCoordinates;
     }
 
-    public void setObjectCoords(NumberPair objectCoords) {
-        this.objectCoords = objectCoords;
+    public void setEpochCoordinates(NumberPair epochCoordinates) {
+        this.epochCoordinates = epochCoordinates;
     }
 
     public BufferedImage getImage() {
