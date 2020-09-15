@@ -1113,7 +1113,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JCheckBox useAboveCoords = new JCheckBox("Or, use above coordinates");
+            JCheckBox useAboveCoords = new JCheckBox("Use above coordinates instead");
             controlPanel.add(useAboveCoords);
             useAboveCoords.addActionListener((ActionEvent evt) -> {
                 if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
@@ -1131,10 +1131,18 @@ public class ImageViewerTab {
                 }
             });
 
-            JCheckBox useGaiaPM = new JCheckBox("Or, use Gaia proper motions");
-            JCheckBox useCatwisePM = new JCheckBox("Or, use CatWISE proper motions");
+            controlPanel.add(new JLabel("Or use proper motions from:"));
 
-            controlPanel.add(useGaiaPM);
+            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(checkerPanel);
+
+            JCheckBox useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useGaiaPM);
+
+            JCheckBox useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useCatwisePM);
+
+            checkerPanel.add(useGaiaPM);
             useGaiaPM.addActionListener((ActionEvent evt) -> {
                 if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useCatwisePM.setSelected(false);
@@ -1153,7 +1161,7 @@ public class ImageViewerTab {
                 }
             });
 
-            controlPanel.add(useCatwisePM);
+            checkerPanel.add(useCatwisePM);
             useCatwisePM.addActionListener((ActionEvent evt) -> {
                 if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useGaiaPM.setSelected(false);
@@ -1172,15 +1180,14 @@ public class ImageViewerTab {
                 }
             });
 
-            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
+            checkerPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(checkerPanel);
 
             checkerPanel.add(new JLabel("Turn checker tool:"));
 
-            
             JPanel checkerButtons = new JPanel(new GridLayout(1, 2));
             checkerPanel.add(checkerButtons);
-            
+
             checkMotionButton = new JRadioButton("On", false);
             checkerButtons.add(checkMotionButton);
             checkMotionButton.addActionListener((ActionEvent evt) -> {
