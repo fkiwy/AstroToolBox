@@ -2037,7 +2037,7 @@ public class ImageViewerTab {
                     initContrast();
                 }
                 try {
-                    InputStream stream = getImageData(1, numberOfEpochs + 3);
+                    InputStream stream = getImageData(1, numberOfEpochs + 5);
                     stream.close();
                     moreImagesAvailable = true;
                 } catch (FileNotFoundException ex) {
