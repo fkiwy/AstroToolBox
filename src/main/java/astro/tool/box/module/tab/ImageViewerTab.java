@@ -336,6 +336,7 @@ public class ImageViewerTab {
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
+    private boolean asyncDownloads;
     private boolean panstarrsImages;
     private boolean sdssImages;
 
@@ -1939,7 +1940,11 @@ public class ImageViewerTab {
     }
 
     private void createFlipbook() {
-        CompletableFuture.supplyAsync(() -> assembleFlipbook());
+        if (asyncDownloads) {
+            CompletableFuture.supplyAsync(() -> assembleFlipbook());
+        } else {
+            assembleFlipbook();
+        }
     }
 
     private boolean assembleFlipbook() {
@@ -2086,13 +2091,15 @@ public class ImageViewerTab {
                 }
                 imagePanel.removeAll();
                 rightPanel.removeAll();
-                downloadLog = new JTextArea();
-                downloadLog.setFont(new JLabel().getFont());
-                downloadLog.setEditable(false);
-                DefaultCaret caret = (DefaultCaret) downloadLog.getCaret();
-                caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-                imagePanel.add(downloadLog);
-                baseFrame.setVisible(true);
+                if (asyncDownloads) {
+                    downloadLog = new JTextArea();
+                    downloadLog.setFont(new JLabel().getFont());
+                    downloadLog.setEditable(false);
+                    DefaultCaret caret = (DefaultCaret) downloadLog.getCaret();
+                    caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+                    imagePanel.add(downloadLog);
+                    baseFrame.setVisible(true);
+                }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
                 switch (wiseBand) {
                     case W1:
@@ -2111,7 +2118,9 @@ public class ImageViewerTab {
                         break;
                 }
                 writeLogEntry("Ready.");
-                downloadLog.setCaretPosition(0);
+                if (asyncDownloads) {
+                    downloadLog.setCaretPosition(0);
+                }
                 if (images.isEmpty()) {
                     showInfoDialog(baseFrame, "No decent images found for the specified coordinates and FoV.");
                     hasException = true;
@@ -3085,7 +3094,9 @@ public class ImageViewerTab {
     }
 
     private void writeLogEntry(String log) {
-        downloadLog.append(log + LINE_SEP_TEXT_AREA);
+        if (asyncDownloads) {
+            downloadLog.append(log + LINE_SEP_TEXT_AREA);
+        }
         //System.out.println(log);
     }
 
@@ -3156,7 +3167,7 @@ public class ImageViewerTab {
             imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
         }
         if (Boolean.parseBoolean(getUserSetting("dev", "false"))) {
-            // WISE0855 133.787 -7.245150
+            // WISE0855 133.787 -7.24515
             /*
             new File(FITS_DIR).mkdir();
             ReadableByteChannel readableByteChannel = Channels.newChannel(establishHttpConnection(imageUrl).getInputStream());
@@ -4655,6 +4666,10 @@ public class ImageViewerTab {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public void setAsyncDownloads(boolean asyncDownloads) {
+        this.asyncDownloads = asyncDownloads;
     }
 
     public void setPanstarrsImages(boolean panstarrsImages) {
