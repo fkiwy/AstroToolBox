@@ -2,8 +2,10 @@ package astro.tool.box.module.shape;
 
 import static java.lang.Math.*;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public class Triangle implements Drawable {
 
@@ -21,10 +23,12 @@ public class Triangle implements Drawable {
 
     @Override
     public void draw(Graphics graphics) {
-        graphics.setColor(color);
-        graphics.drawLine(x, y - 1, x + size / 2, y - size);
-        graphics.drawLine(x + size / 2, y - size, x + size, y);
-        graphics.drawLine(x, y, x + size, y);
+        Graphics2D g2d = (Graphics2D) graphics;
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(STROKE_WIDTH));
+        g2d.drawLine(x, y - 1, x + size / 2, y - size);
+        g2d.drawLine(x + size / 2, y - size, x + size, y);
+        g2d.drawLine(x, y, x + size, y);
     }
 
 }

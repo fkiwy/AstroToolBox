@@ -99,6 +99,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // Catalog number
     private int catalogNumber;
 
+    // Most likely spectral type
+    private String spt;
+
     // Information indicating details of the photometry
     private List<StringPair> qualityFlags;
 
@@ -171,7 +174,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_z_y()), Alignment.RIGHT, getDoubleComparator(), false, true));
     }
 
     public String createToolTip_qualityFlag() {
@@ -395,6 +398,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public void setPixelDec(double pixelDec) {
         this.pixelDec = pixelDec;
+    }
+
+    @Override
+    public String getSpt() {
+        return spt;
+    }
+
+    @Override
+    public void setSpt(String spt) {
+        this.spt = spt;
     }
 
     @Override

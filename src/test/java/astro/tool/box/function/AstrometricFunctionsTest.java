@@ -45,6 +45,13 @@ public class AstrometricFunctionsTest {
     }
 
     @Test
+    public void calculateLinearDistance() {
+        // Linear distance between Sirius and Vega
+        double linearDistance = AstrometricFunctions.calculateLinearDistance(new NumberPair(101.2871553, -16.7161159), new NumberPair(279.2347348, 38.783689), 379.21, 130.23);
+        assertEquals(Double.valueOf(10.170011231287697), Double.valueOf(linearDistance));
+    }
+
+    @Test
     public void convertToDecimalCoords() {
         NumberPair decimalCoords;
 

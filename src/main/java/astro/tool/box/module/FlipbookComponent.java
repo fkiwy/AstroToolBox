@@ -1,6 +1,7 @@
 package astro.tool.box.module;
 
 import astro.tool.box.container.NumberPair;
+import java.awt.image.BufferedImage;
 
 public class FlipbookComponent {
 
@@ -20,6 +21,10 @@ public class FlipbookComponent {
 
     private NumberPair refValues;
 
+    private NumberPair epochCoordinates;
+
+    private BufferedImage image;
+
     public FlipbookComponent(int band, int epoch) {
         this.band = band;
         this.epoch = epoch;
@@ -29,6 +34,19 @@ public class FlipbookComponent {
         this.band = band;
         this.epoch = epoch;
         this.isMerged = isMerged;
+    }
+
+    public FlipbookComponent(int band, int epoch, NumberPair epochCoordinates) {
+        this.band = band;
+        this.epoch = epoch;
+        this.epochCoordinates = epochCoordinates;
+    }
+
+    public FlipbookComponent(int band, int epoch, boolean isMerged, NumberPair epochCoordinates) {
+        this.band = band;
+        this.epoch = epoch;
+        this.isMerged = isMerged;
+        this.epochCoordinates = epochCoordinates;
     }
 
     @Override
@@ -149,6 +167,22 @@ public class FlipbookComponent {
 
     public void setRefValues(NumberPair refValues) {
         this.refValues = refValues;
+    }
+
+    public NumberPair getEpochCoordinates() {
+        return epochCoordinates;
+    }
+
+    public void setEpochCoordinates(NumberPair epochCoordinates) {
+        this.epochCoordinates = epochCoordinates;
+    }
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
     }
 
 }

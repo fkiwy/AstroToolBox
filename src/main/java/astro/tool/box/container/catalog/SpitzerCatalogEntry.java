@@ -113,6 +113,9 @@ public class SpitzerCatalogEntry implements CatalogEntry {
     // Catalog number
     private int catalogNumber;
 
+    // Most likely spectral type
+    private String spt;
+
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     private Map<String, Integer> columns;
@@ -427,6 +430,16 @@ public class SpitzerCatalogEntry implements CatalogEntry {
     @Override
     public void setPixelDec(double pixelDec) {
         this.pixelDec = pixelDec;
+    }
+
+    @Override
+    public String getSpt() {
+        return spt;
+    }
+
+    @Override
+    public void setSpt(String spt) {
+        this.spt = spt;
     }
 
     @Override

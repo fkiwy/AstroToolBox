@@ -3,13 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>astro.tool.box</groupId>
     <artifactId>AstroToolBox</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.1</version>
     <packaging>jar</packaging>
     <name>AstroToolBox</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <skipTests>false</skipTests>
     </properties>
     <build>
         <plugins>

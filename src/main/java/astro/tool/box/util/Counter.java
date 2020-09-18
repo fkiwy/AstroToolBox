@@ -4,10 +4,10 @@ public class Counter {
 
     private int total;
 
-    private int value;
+    private final int value;
 
     public Counter() {
-        this.total = 0;
+        this.value = 1;
     }
 
     public Counter(int value) {
