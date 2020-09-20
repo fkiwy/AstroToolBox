@@ -164,6 +164,7 @@ public class ImageViewerTab {
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
+    public static final int ROW_HEIGHT = 25;
     public static final int HIGH_CONTRAST = 0;
     public static final int LOW_CONTRAST = 50;
     public static final int SUB_CONTRAST = 1;
@@ -407,10 +408,11 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
+            int rows = 93;
             int controlPanelWidth = 250;
-            int controlPanelHeight = 2250;
+            int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
-            JPanel controlPanel = new JPanel(new GridLayout(93, 1));
+            JPanel controlPanel = new JPanel(new GridLayout(rows, 1));
             controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -825,7 +827,7 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
-            controlPanel.add(new JLabel(underline("Experimental features (*):")));
+            controlPanel.add(new JLabel(html("<u>Experimental features:</u> <span style='color:red'>(*)</span>")));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
             controlPanel.add(displaySpectralTypes);
@@ -847,7 +849,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel warning = new JLabel(html("(*) Warning: Use these features with caution!" + LINE_BREAK + "Spt estimates are based on single colors only."));
+            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
             warning.setForeground(Color.RED);
             warning.setFont(font);
             controlPanel.add(warning);
@@ -1101,8 +1103,14 @@ public class ImageViewerTab {
             controlPanel.add(new JScrollPane(crosshairCoords));
             crosshairCoords.setFont(font);
             crosshairCoords.setEditable(false);
+            crosshairCoords.setBackground(new JLabel().getBackground());
 
-            controlPanel.add(new JLabel(underline("Motion checker tool:")));
+            Color checkerColor = Color.WHITE;
+
+            JLabel checkerLabel = new JLabel(underline("Motion checker tool:"));
+            controlPanel.add(checkerLabel);
+            checkerLabel.setOpaque(true);
+            checkerLabel.setBackground(checkerColor);
 
             checkObjectCoordsField = new JTextField();
             controlPanel.add(checkObjectCoordsField);
@@ -1116,6 +1124,7 @@ public class ImageViewerTab {
 
             JCheckBox useAboveCoords = new JCheckBox("Use above coordinates instead");
             controlPanel.add(useAboveCoords);
+            useAboveCoords.setBackground(checkerColor);
             useAboveCoords.addActionListener((ActionEvent evt) -> {
                 if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
                     checkObjectCoordsField.setText(coordsField.getText());
@@ -1132,16 +1141,21 @@ public class ImageViewerTab {
                 }
             });
 
-            controlPanel.add(new JLabel("Or use proper motions from:"));
+            JLabel pmLabel = new JLabel("Or use proper motions from:");
+            controlPanel.add(pmLabel);
+            pmLabel.setOpaque(true);
+            pmLabel.setBackground(checkerColor);
 
             JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(checkerPanel);
 
             JCheckBox useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useGaiaPM);
+            useGaiaPM.setBackground(checkerColor);
 
             JCheckBox useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useCatwisePM);
+            useCatwisePM.setBackground(checkerColor);
 
             checkerPanel.add(useGaiaPM);
             useGaiaPM.addActionListener((ActionEvent evt) -> {
@@ -1184,13 +1198,17 @@ public class ImageViewerTab {
             checkerPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(checkerPanel);
 
-            checkerPanel.add(new JLabel("Turn checker tool:"));
+            JLabel turnLabel = new JLabel("Turn checker tool:");
+            checkerPanel.add(turnLabel);
+            turnLabel.setOpaque(true);
+            turnLabel.setBackground(checkerColor);
 
             JPanel checkerButtons = new JPanel(new GridLayout(1, 2));
             checkerPanel.add(checkerButtons);
 
             checkMotionButton = new JRadioButton("On", false);
             checkerButtons.add(checkMotionButton);
+            checkMotionButton.setBackground(checkerColor);
             checkMotionButton.addActionListener((ActionEvent evt) -> {
                 if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
                     createFlipbook();
@@ -1199,6 +1217,7 @@ public class ImageViewerTab {
 
             JRadioButton stopCheckButton = new JRadioButton("Off", true);
             checkerButtons.add(stopCheckButton);
+            stopCheckButton.setBackground(checkerColor);
 
             ButtonGroup groupThree = new ButtonGroup();
             groupThree.add(checkMotionButton);
@@ -1392,8 +1411,11 @@ public class ImageViewerTab {
                     useCustomOverlays.setSelected(false);
                 } else {
                     GridLayout layout = (GridLayout) controlPanel.getLayout();
+                    int numberOfRows = customOverlays.size();
+                    int rowsHeight = numberOfRows * 25;
                     if (useCustomOverlays.isSelected()) {
-                        layout.setRows(layout.getRows() + customOverlays.size());
+                        layout.setRows(layout.getRows() + numberOfRows);
+                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() + rowsHeight));
                         customOverlays.values().forEach(customOverlay -> {
                             JCheckBox overlayCheckBox = new JCheckBox(customOverlay.getName());
                             overlayCheckBox.setForeground(customOverlay.getColor());
@@ -1404,7 +1426,8 @@ public class ImageViewerTab {
                             controlPanel.add(overlayCheckBox);
                         });
                     } else {
-                        layout.setRows(layout.getRows() - customOverlays.size());
+                        layout.setRows(layout.getRows() - numberOfRows);
+                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() - rowsHeight));
                         customOverlays.values().forEach((customOverlay) -> {
                             JCheckBox checkBox = customOverlay.getCheckBox();
                             if (checkBox != null) {
