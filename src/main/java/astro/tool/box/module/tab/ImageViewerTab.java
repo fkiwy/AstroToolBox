@@ -1105,124 +1105,6 @@ public class ImageViewerTab {
             crosshairCoords.setEditable(false);
             crosshairCoords.setBackground(new JLabel().getBackground());
 
-            Color checkerColor = Color.WHITE;
-
-            JLabel checkerLabel = new JLabel(underline("Motion checker tool:"));
-            controlPanel.add(checkerLabel);
-            checkerLabel.setOpaque(true);
-            checkerLabel.setBackground(checkerColor);
-
-            checkObjectCoordsField = new JTextField();
-            controlPanel.add(checkObjectCoordsField);
-            TextPrompt checkObjectCoordsPrompt = new TextPrompt("RA & Dec of object to check");
-            checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
-            checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
-                if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
-            });
-
-            JCheckBox useAboveCoords = new JCheckBox("Use above coordinates instead");
-            controlPanel.add(useAboveCoords);
-            useAboveCoords.setBackground(checkerColor);
-            useAboveCoords.addActionListener((ActionEvent evt) -> {
-                if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
-                    checkObjectCoordsField.setText(coordsField.getText());
-                }
-            });
-
-            checkObjectMotionField = new JTextField();
-            controlPanel.add(checkObjectMotionField);
-            TextPrompt checkObjectMotionPrompt = new TextPrompt("pmRA & pmDec of object to check");
-            checkObjectMotionPrompt.applyTo(checkObjectMotionField);
-            checkObjectMotionField.addActionListener((ActionEvent evt) -> {
-                if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
-            });
-
-            JLabel pmLabel = new JLabel("Or use proper motions from:");
-            controlPanel.add(pmLabel);
-            pmLabel.setOpaque(true);
-            pmLabel.setBackground(checkerColor);
-
-            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(checkerPanel);
-
-            JCheckBox useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useGaiaPM);
-            useGaiaPM.setBackground(checkerColor);
-
-            JCheckBox useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useCatwisePM);
-            useCatwisePM.setBackground(checkerColor);
-
-            checkerPanel.add(useGaiaPM);
-            useGaiaPM.addActionListener((ActionEvent evt) -> {
-                if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useCatwisePM.setSelected(false);
-                    NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
-                    CatalogEntry catalogEntry = new GaiaCatalogEntry();
-                    catalogEntry.setRa(objectCoords.getX());
-                    catalogEntry.setDec(objectCoords.getY());
-                    catalogEntry.setSearchRadius(5);
-                    catalogEntry = retrieveCatalogEntry(catalogEntry);
-                    if (catalogEntry == null) {
-                        showInfoDialog(baseFrame, NO_OBJECT_FOUND);
-                    } else {
-                        checkObjectMotionField.setText(roundTo3DecNZ(catalogEntry.getPmra()) + " " + roundTo3DecNZ(catalogEntry.getPmdec()));
-                        createFlipbook();
-                    }
-                }
-            });
-
-            checkerPanel.add(useCatwisePM);
-            useCatwisePM.addActionListener((ActionEvent evt) -> {
-                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaPM.setSelected(false);
-                    NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
-                    CatalogEntry catalogEntry = new CatWiseCatalogEntry();
-                    catalogEntry.setRa(objectCoords.getX());
-                    catalogEntry.setDec(objectCoords.getY());
-                    catalogEntry.setSearchRadius(5);
-                    catalogEntry = retrieveCatalogEntry(catalogEntry);
-                    if (catalogEntry == null) {
-                        showInfoDialog(baseFrame, NO_OBJECT_FOUND);
-                    } else {
-                        checkObjectMotionField.setText(roundTo3DecNZ(catalogEntry.getPmra()) + " " + roundTo3DecNZ(catalogEntry.getPmdec()));
-                        createFlipbook();
-                    }
-                }
-            });
-
-            checkerPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(checkerPanel);
-
-            JLabel turnLabel = new JLabel("Turn checker tool:");
-            checkerPanel.add(turnLabel);
-            turnLabel.setOpaque(true);
-            turnLabel.setBackground(checkerColor);
-
-            JPanel checkerButtons = new JPanel(new GridLayout(1, 2));
-            checkerPanel.add(checkerButtons);
-
-            checkMotionButton = new JRadioButton("On", false);
-            checkerButtons.add(checkMotionButton);
-            checkMotionButton.setBackground(checkerColor);
-            checkMotionButton.addActionListener((ActionEvent evt) -> {
-                if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
-            });
-
-            JRadioButton stopCheckButton = new JRadioButton("Off", true);
-            checkerButtons.add(stopCheckButton);
-            stopCheckButton.setBackground(checkerColor);
-
-            ButtonGroup groupThree = new ButtonGroup();
-            groupThree.add(checkMotionButton);
-            groupThree.add(stopCheckButton);
-
             controlPanel.add(new JLabel(underline("Image player controls:")));
 
             JPanel playerControls = new JPanel(new GridLayout(1, 2));
@@ -1377,6 +1259,114 @@ public class ImageViewerTab {
                 coordsField.setText(targetRa + " " + (newDec == 0 ? newDec : roundTo7DecNZ(newDec)));
                 createFlipbook();
             });
+
+            JLabel checkerLabel = new JLabel(underline("Motion checker tool:"));
+            controlPanel.add(checkerLabel);
+            checkerLabel.setOpaque(true);
+
+            checkObjectCoordsField = new JTextField();
+            controlPanel.add(checkObjectCoordsField);
+            TextPrompt checkObjectCoordsPrompt = new TextPrompt("RA & Dec of object to check");
+            checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
+            checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
+                if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
+                    createFlipbook();
+                }
+            });
+
+            JCheckBox useAboveCoords = new JCheckBox("Use above coordinates instead");
+            controlPanel.add(useAboveCoords);
+            useAboveCoords.addActionListener((ActionEvent evt) -> {
+                if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
+                    checkObjectCoordsField.setText(coordsField.getText());
+                }
+            });
+
+            checkObjectMotionField = new JTextField();
+            controlPanel.add(checkObjectMotionField);
+            TextPrompt checkObjectMotionPrompt = new TextPrompt("pmRA & pmDec of object to check");
+            checkObjectMotionPrompt.applyTo(checkObjectMotionField);
+            checkObjectMotionField.addActionListener((ActionEvent evt) -> {
+                if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
+                    createFlipbook();
+                }
+            });
+
+            JLabel pmLabel = new JLabel("Or use proper motions from:");
+            controlPanel.add(pmLabel);
+            pmLabel.setOpaque(true);
+
+            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(checkerPanel);
+
+            JCheckBox useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useGaiaPM);
+
+            JCheckBox useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useCatwisePM);
+
+            checkerPanel.add(useGaiaPM);
+            useGaiaPM.addActionListener((ActionEvent evt) -> {
+                if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useCatwisePM.setSelected(false);
+                    NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
+                    CatalogEntry catalogEntry = new GaiaCatalogEntry();
+                    catalogEntry.setRa(objectCoords.getX());
+                    catalogEntry.setDec(objectCoords.getY());
+                    catalogEntry.setSearchRadius(5);
+                    catalogEntry = retrieveCatalogEntry(catalogEntry);
+                    if (catalogEntry == null) {
+                        showInfoDialog(baseFrame, NO_OBJECT_FOUND);
+                    } else {
+                        checkObjectMotionField.setText(roundTo3DecNZ(catalogEntry.getPmra()) + " " + roundTo3DecNZ(catalogEntry.getPmdec()));
+                        createFlipbook();
+                    }
+                }
+            });
+
+            checkerPanel.add(useCatwisePM);
+            useCatwisePM.addActionListener((ActionEvent evt) -> {
+                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useGaiaPM.setSelected(false);
+                    NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
+                    CatalogEntry catalogEntry = new CatWiseCatalogEntry();
+                    catalogEntry.setRa(objectCoords.getX());
+                    catalogEntry.setDec(objectCoords.getY());
+                    catalogEntry.setSearchRadius(5);
+                    catalogEntry = retrieveCatalogEntry(catalogEntry);
+                    if (catalogEntry == null) {
+                        showInfoDialog(baseFrame, NO_OBJECT_FOUND);
+                    } else {
+                        checkObjectMotionField.setText(roundTo3DecNZ(catalogEntry.getPmra()) + " " + roundTo3DecNZ(catalogEntry.getPmdec()));
+                        createFlipbook();
+                    }
+                }
+            });
+
+            checkerPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(checkerPanel);
+
+            JLabel turnLabel = new JLabel("Turn checker tool:");
+            checkerPanel.add(turnLabel);
+            turnLabel.setOpaque(true);
+
+            JPanel checkerButtons = new JPanel(new GridLayout(1, 2));
+            checkerPanel.add(checkerButtons);
+
+            checkMotionButton = new JRadioButton("On", false);
+            checkerButtons.add(checkMotionButton);
+            checkMotionButton.addActionListener((ActionEvent evt) -> {
+                if (checkMotionButton.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
+                    createFlipbook();
+                }
+            });
+
+            JRadioButton stopCheckButton = new JRadioButton("Off", true);
+            checkerButtons.add(stopCheckButton);
+
+            ButtonGroup groupThree = new ButtonGroup();
+            groupThree.add(checkMotionButton);
+            groupThree.add(stopCheckButton);
 
             transposeProperMotion = new JCheckBox(underline("Transpose proper motion:"));
             controlPanel.add(transposeProperMotion);
