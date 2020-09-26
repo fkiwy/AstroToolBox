@@ -836,7 +836,7 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
-            controlPanel.add(new JLabel(highlight("Experimental features: (*)")));
+            controlPanel.add(new JLabel(highlight("Experimental features (*):")));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
             controlPanel.add(displaySpectralTypes);
