@@ -37,11 +37,8 @@ public class Application {
         try {
             loadUserSettings();
             LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, LookAndFeel.OS.name()));
-            if (lookAndFeel.equals(LookAndFeel.Java)) {
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            } else {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
+            setLookAndFeel(lookAndFeel);
+            CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
             ToolTipManager.sharedInstance().setDismissDelay(60000);
         } catch (Exception e) {
         }

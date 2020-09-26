@@ -50,6 +50,7 @@ public class SettingsTab {
     private static final String PROP_FILE_NAME = "/AstroToolBox.properties";
     private static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     private static final Properties USER_SETTINGS = new Properties();
+    public static String CURRENT_LOOK_AND_FEEL;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -436,6 +437,10 @@ public class SettingsTab {
 
                 // Global settings
                 setLookAndFeel(lookAndFeel);
+                if (!UIManager.getLookAndFeel().getName().equals(CURRENT_LOOK_AND_FEEL)) {
+                    CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
+                    SwingUtilities.updateComponentTreeUI(baseFrame);
+                }
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
@@ -562,14 +567,13 @@ public class SettingsTab {
         }
     }
 
-    private void setLookAndFeel(LookAndFeel lookAndFeel) {
+    public static void setLookAndFeel(LookAndFeel lookAndFeel) {
         try {
             if (lookAndFeel.equals(LookAndFeel.Java)) {
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             } else {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
-            SwingUtilities.updateComponentTreeUI(baseFrame);
         } catch (Exception e) {
         }
     }

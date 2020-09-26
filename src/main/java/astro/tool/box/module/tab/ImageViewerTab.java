@@ -156,6 +156,9 @@ public class ImageViewerTab {
     public static final String TAB_NAME = "Image Viewer";
     public static final String FITS_DIR = USER_HOME + "/.fits";
     public static final String EPOCH_LABEL = "Number of epochs: %d";
+    public static final String HIGH_SCALE_LABEL = "Contrast - high scale: %d";
+    public static final String LOW_SCALE_LABEL = "Contrast - low scale: %d";
+    public static final String SUB_SCALE_LABEL = "Contrast - subtracted mode: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
@@ -201,6 +204,9 @@ public class ImageViewerTab {
 
     private JPanel imagePanel;
     private JPanel rightPanel;
+    private JLabel highScaleLabel;
+    private JLabel lowScaleLabel;
+    private JLabel subScaleLabel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox autoContrast;
@@ -511,7 +517,7 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel highScaleLabel = new JLabel(String.format("Contrast - high scale: %d", highContrast));
+            highScaleLabel = new JLabel(String.format(HIGH_SCALE_LABEL, highContrast));
             whitePanel.add(highScaleLabel);
 
             highScaleSlider = new JSlider(0, 1000, HIGH_CONTRAST);
@@ -523,7 +529,7 @@ public class ImageViewerTab {
                     return;
                 }
                 highContrast = highScaleSlider.getValue();
-                highScaleLabel.setText(String.format("Contrast - high scale: %d", highContrast));
+                highScaleLabel.setText(String.format(HIGH_SCALE_LABEL, highContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
                 }
@@ -537,7 +543,7 @@ public class ImageViewerTab {
             controlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
-            JLabel lowScaleLabel = new JLabel(String.format("Contrast - low scale: %d", lowContrast));
+            lowScaleLabel = new JLabel(String.format(LOW_SCALE_LABEL, lowContrast));
             grayPanel.add(lowScaleLabel);
 
             lowScaleSlider = new JSlider(0, 100, LOW_CONTRAST);
@@ -549,7 +555,7 @@ public class ImageViewerTab {
                     return;
                 }
                 lowContrast = lowScaleSlider.getValue();
-                lowScaleLabel.setText(String.format("Contrast - low scale: %d", lowContrast));
+                lowScaleLabel.setText(String.format(LOW_SCALE_LABEL, lowContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
@@ -566,7 +572,7 @@ public class ImageViewerTab {
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
-            JLabel subScaleLabel = new JLabel(String.format("Contrast - subtracted mode: %d", subContrast));
+            subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
             whitePanel.add(subScaleLabel);
 
             subScaleSlider = new JSlider(1, 10, SUB_CONTRAST);
@@ -578,7 +584,7 @@ public class ImageViewerTab {
                     return;
                 }
                 subContrast = subScaleSlider.getValue();
-                subScaleLabel.setText(String.format("Contrast - subtracted mode: %d", subContrast));
+                subScaleLabel.setText(String.format(SUB_SCALE_LABEL, subContrast));
                 if (Epoch.isSubtracted(epoch)) {
                     subContrastSaved = subContrast;
                 }
@@ -1274,7 +1280,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JCheckBox useAboveCoords = new JCheckBox("Use above coordinates instead");
+            JCheckBox useAboveCoords = new JCheckBox("Or use above coordinates");
             controlPanel.add(useAboveCoords);
             useAboveCoords.addActionListener((ActionEvent evt) -> {
                 if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
@@ -3490,6 +3496,10 @@ public class ImageViewerTab {
         highScaleSlider.removeChangeListener(listener);
         highScaleSlider.setValue(highContrast = highContrastSaved);
         highScaleSlider.addChangeListener(listener);
+
+        subScaleLabel.setText(String.format(SUB_SCALE_LABEL, subContrast));
+        lowScaleLabel.setText(String.format(LOW_SCALE_LABEL, lowContrast));
+        highScaleLabel.setText(String.format(HIGH_SCALE_LABEL, highContrast));
     }
 
     private NumberTriplet getRefValues(float[][] values) {
