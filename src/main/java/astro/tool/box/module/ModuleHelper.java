@@ -201,7 +201,7 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String underline(String text) {
+    public static String highlight(String text) {
         return html("<span style='background:#BEBEBE;color:#880000'>&nbsp;" + text + "&nbsp;</span>");
     }
 
