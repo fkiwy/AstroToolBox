@@ -737,7 +737,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            controlPanel.add(new JLabel(highlight("Overlays:")));
+            controlPanel.add(new JLabel(header("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
@@ -836,7 +836,7 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
-            controlPanel.add(new JLabel(highlight("Experimental features (*):")));
+            controlPanel.add(new JLabel(header("Experimental features (*):")));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
             controlPanel.add(displaySpectralTypes);
@@ -863,7 +863,7 @@ public class ImageViewerTab {
             warning.setFont(font);
             controlPanel.add(warning);
 
-            controlPanel.add(new JLabel(highlight("PM vectors:")));
+            controlPanel.add(new JLabel(header("PM vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
@@ -891,7 +891,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            controlPanel.add(new JLabel(highlight("WISE artifacts (*):")));
+            controlPanel.add(new JLabel(header("WISE artifacts (*):")));
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(artifactPanel);
@@ -927,7 +927,7 @@ public class ImageViewerTab {
             artifactLabel.setFont(font);
             controlPanel.add(artifactLabel);
 
-            controlPanel.add(new JLabel(highlight("Mouse left click w/o overlays:")));
+            controlPanel.add(new JLabel(header("Mouse left click w/o overlays:")));
 
             showCatalogsButton = new JRadioButton("Show catalog entries for object", true);
             controlPanel.add(showCatalogsButton);
@@ -939,7 +939,7 @@ public class ImageViewerTab {
             groupOne.add(showCatalogsButton);
             groupOne.add(recenterImagesButton);
 
-            controlPanel.add(new JLabel(highlight("Mouse wheel click:")));
+            controlPanel.add(new JLabel(header("Mouse wheel click:")));
 
             controlPanel.add(new JLabel("Select images to display:"));
 
@@ -1029,7 +1029,7 @@ public class ImageViewerTab {
             fovLabel.setFont(font);
             controlPanel.add(fovLabel);
 
-            controlPanel.add(new JLabel(highlight("Mouse right click:")));
+            controlPanel.add(new JLabel(header("Mouse right click:")));
 
             differentSizeButton = new JRadioButton("Show object in different FoV", true);
             controlPanel.add(differentSizeButton);
@@ -1043,7 +1043,7 @@ public class ImageViewerTab {
             differentSizeField = new JTextField(String.valueOf(100));
             differentSizePanel.add(differentSizeField);
 
-            controlPanel.add(new JLabel(highlight("Nearest Zooniverse subjects:")));
+            controlPanel.add(new JLabel(header("Nearest Zooniverse subjects:")));
 
             zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             controlPanel.add(zooniversePanel1);
@@ -1051,7 +1051,7 @@ public class ImageViewerTab {
             zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             controlPanel.add(zooniversePanel2);
 
-            controlPanel.add(new JLabel(highlight("Advanced controls:")));
+            controlPanel.add(new JLabel(header("Advanced controls:")));
 
             skipBadImages = new JCheckBox("Skip bad quality images", true);
             controlPanel.add(skipBadImages);
@@ -1114,7 +1114,7 @@ public class ImageViewerTab {
             crosshairCoords.setEditable(false);
             crosshairCoords.setBackground(new JLabel().getBackground());
 
-            controlPanel.add(new JLabel(highlight("Image player controls:")));
+            controlPanel.add(new JLabel(header("Image player controls:")));
 
             JPanel playerControls = new JPanel(new GridLayout(1, 2));
             controlPanel.add(playerControls);
@@ -1213,7 +1213,7 @@ public class ImageViewerTab {
                 }
             });
 
-            controlPanel.add(new JLabel(highlight("Navigation buttons:")));
+            controlPanel.add(new JLabel(header("Navigation buttons:")));
 
             JPanel navigationButtons = new JPanel(new GridLayout(1, 2));
             controlPanel.add(navigationButtons);
@@ -1269,7 +1269,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            checkProperMotion = new JCheckBox(highlight("Check proper motion:"));
+            checkProperMotion = new JCheckBox(header("Check proper motion:"));
             controlPanel.add(checkProperMotion);
             checkProperMotion.addActionListener((ActionEvent evt) -> {
                 if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
@@ -1338,7 +1338,7 @@ public class ImageViewerTab {
                 }
             });
 
-            transposeProperMotion = new JCheckBox(highlight("Transpose proper motion:"));
+            transposeProperMotion = new JCheckBox(header("Transpose proper motion:"));
             controlPanel.add(transposeProperMotion);
             transposeProperMotion.addActionListener((ActionEvent evt) -> {
                 if (!transposeMotionField.getText().isEmpty()) {
@@ -1362,7 +1362,7 @@ public class ImageViewerTab {
                 }
             });
 
-            useCustomOverlays = new JCheckBox(highlight("Custom overlays:"));
+            useCustomOverlays = new JCheckBox(header("Custom overlays:"));
             controlPanel.add(useCustomOverlays);
             customOverlays = customOverlaysTab.getCustomOverlays();
             useCustomOverlays.addActionListener((ActionEvent evt) -> {

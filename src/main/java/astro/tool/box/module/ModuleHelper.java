@@ -201,8 +201,8 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String highlight(String text) {
-        return html("<span style='background:#BEBEBE;color:#880000'>&nbsp;" + text + "&nbsp;</span>");
+    public static String header(String text) {
+        return html("<span style='background:#BEBEBE;color:#880000'>&nbsp;<u>" + text + "</u>&nbsp;</span>");
     }
 
     public static String html(String text) {
