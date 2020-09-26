@@ -417,7 +417,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 93;
+            int rows = 92;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -836,7 +836,7 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
-            controlPanel.add(new JLabel(html("<u>Experimental features:</u> <span style='color:red'>(*)</span>")));
+            controlPanel.add(new JLabel(underline("Experimental features: (*)")));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
             controlPanel.add(displaySpectralTypes);
@@ -1308,7 +1308,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel pmLabel = new JLabel("Or use proper motions from:");
+            JLabel pmLabel = new JLabel("  Or use proper motions from:");
             controlPanel.add(pmLabel);
 
             JPanel checkerPanel = new JPanel(new GridLayout(1, 2));

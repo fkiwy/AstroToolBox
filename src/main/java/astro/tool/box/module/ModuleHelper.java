@@ -202,7 +202,7 @@ public class ModuleHelper {
     }
 
     public static String underline(String text) {
-        return html("<u>" + text + "</u>");
+        return html("<span style='background:#BEBEBE;color:#880000'>&nbsp;" + text + "&nbsp;</span>");
     }
 
     public static String html(String text) {
