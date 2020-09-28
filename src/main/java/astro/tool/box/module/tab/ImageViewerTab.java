@@ -1458,29 +1458,31 @@ public class ImageViewerTab {
                         magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
-                    /*
+
                     // ========================================================
-                    // Adjust positions of magnified Pan-STARRS and SDSS images
-                    upperLeftX = centerX - (width / 2);
-                    upperLeftY = centerY - (height / 2);
+                    if (size < 100) {
+                        // Adjust positions of magnified Pan-STARRS and SDSS images
+                        upperLeftX = centerX - (width / 2);
+                        upperLeftY = centerY - (height / 2);
 
-                    upperLeftX -= getScaledValue(1);    // x position adjustment
-                    upperLeftY += getScaledValue(1);    // y position adjustment
+                        upperLeftX -= getScaledValue(1);    // x position adjustment
+                        upperLeftY += getScaledValue(1);    // y position adjustment
 
-                    upperRightX = upperLeftX + width;
-                    lowerLeftY = upperLeftY + height;
+                        upperRightX = upperLeftX + width;
+                        lowerLeftY = upperLeftY + height;
 
-                    // Correct positions of magnified Pan-STARRS and SDSS images
-                    upperLeftX = upperLeftX < 0 ? 0 : upperLeftX;
-                    upperLeftY = upperLeftY < 0 ? 0 : upperLeftY;
-                    if (upperRightX > imageWidth) {
-                        upperLeftX = upperLeftX - (upperRightX - imageWidth);
-                    }
-                    if (lowerLeftY > imageHeight) {
-                        upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
+                        // Correct positions of magnified Pan-STARRS and SDSS images
+                        upperLeftX = upperLeftX < 0 ? 0 : upperLeftX;
+                        upperLeftY = upperLeftY < 0 ? 0 : upperLeftY;
+                        if (upperRightX > imageWidth) {
+                            upperLeftX = upperLeftX - (upperRightX - imageWidth);
+                        }
+                        if (lowerLeftY > imageHeight) {
+                            upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
+                        }
                     }
                     // ========================================================
-                     */
+
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
