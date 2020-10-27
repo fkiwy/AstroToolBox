@@ -1913,10 +1913,10 @@ public class ImageViewerTab {
         double diffX = (correctedRa - ra) * cos(toRadians((targetDec + dec) / 2));
         double diffY = targetDec - dec;
         double conversionFactor = getConversionFactor();
-        diffX /= -conversionFactor;
-        diffY /= -conversionFactor;
-        double posX = getScaledValue(pixelX) - diffX;
-        double posY = getScaledValue(pixelY) - diffY;
+        diffX /= conversionFactor;
+        diffY /= conversionFactor;
+        double posX = getScaledValue(pixelX) + diffX;
+        double posY = getScaledValue(pixelY) + diffY;
         return new NumberPair(posX, posY);
     }
 
