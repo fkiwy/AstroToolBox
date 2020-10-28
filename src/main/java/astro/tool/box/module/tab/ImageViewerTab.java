@@ -1249,7 +1249,7 @@ public class ImageViewerTab {
                     newDec = 90 - (newDec - 90);
                     double newRa = targetRa + 180;
                     targetRa = newRa > 360 ? newRa - 360 : newRa;
-                    showInfoDialog(baseFrame, "You've just crossed the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button from now on!");
+                    showInfoDialog(baseFrame, "You're about to cross the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button next!");
                 }
                 coordsField.setText(targetRa + " " + (newDec == 0 ? newDec : roundTo7DecNZ(newDec)));
                 createFlipbook();
@@ -1263,7 +1263,7 @@ public class ImageViewerTab {
                     newDec = -90 + (abs(newDec) - 90);
                     double newRa = targetRa + 180;
                     targetRa = newRa > 360 ? newRa - 360 : newRa;
-                    showInfoDialog(baseFrame, "You've just crossed the South Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move up' button from now on!");
+                    showInfoDialog(baseFrame, "You're about to cross the South Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move up' button next!");
                 }
                 coordsField.setText(targetRa + " " + (newDec == 0 ? newDec : roundTo7DecNZ(newDec)));
                 createFlipbook();
