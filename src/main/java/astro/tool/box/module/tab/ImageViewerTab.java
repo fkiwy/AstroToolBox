@@ -1224,6 +1224,7 @@ public class ImageViewerTab {
                 double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa + distance / cos(toRadians(targetDec));
                 newRa = newRa > 360 ? newRa - 360 : newRa;
+                newRa = newRa > 360 ? 0 : newRa;
                 coordsField.setText((newRa == 0 ? newRa : roundTo7DecNZ(newRa)) + " " + targetDec);
                 createFlipbook();
             });
@@ -1234,6 +1235,7 @@ public class ImageViewerTab {
                 double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa - distance / cos(toRadians(targetDec));
                 newRa = newRa < 0 ? newRa + 360 : newRa;
+                newRa = newRa < 0 ? 0 : newRa;
                 coordsField.setText((newRa == 0 ? newRa : roundTo7DecNZ(newRa)) + " " + targetDec);
                 createFlipbook();
             });
