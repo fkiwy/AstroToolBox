@@ -1054,11 +1054,16 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(header("Advanced controls:")));
 
+            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanel.add(whitePanel);
+            whitePanel.setBackground(Color.WHITE);
+
             JLabel overlayLabel = new JLabel(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
-            controlPanel.add(overlayLabel);
+            whitePanel.add(overlayLabel);
 
             JSlider overlaySlider = new JSlider(-50, 50, 0);
             controlPanel.add(overlaySlider);
+            overlaySlider.setBackground(Color.WHITE);
             overlaySlider.addChangeListener((ChangeEvent e) -> {
                 rotationAngle = overlaySlider.getValue();
                 rotationAngle /= 10;
