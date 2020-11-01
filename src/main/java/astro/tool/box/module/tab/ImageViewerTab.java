@@ -204,9 +204,11 @@ public class ImageViewerTab {
 
     private JPanel imagePanel;
     private JPanel rightPanel;
+    private JLabel changeFovLabel;
     private JLabel highScaleLabel;
     private JLabel lowScaleLabel;
     private JLabel subScaleLabel;
+    private JLabel epochLabel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox autoContrast;
@@ -275,8 +277,6 @@ public class ImageViewerTab {
     private JTextArea downloadLog;
     private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
-    private JLabel epochLabel;
-    private JLabel changeFovLabel;
     private JTable collectionTable;
     private Timer timer;
 
@@ -296,6 +296,7 @@ public class ImageViewerTab {
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
+    private double rotationAngle;
     private int fieldOfView = 30;
     private int shapeSize = 5;
     private int imageNumber;
@@ -417,7 +418,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 92;
+            int rows = 94;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -1052,6 +1053,18 @@ public class ImageViewerTab {
             controlPanel.add(zooniversePanel2);
 
             controlPanel.add(new JLabel(header("Advanced controls:")));
+
+            JLabel overlayLabel = new JLabel(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
+            controlPanel.add(overlayLabel);
+
+            JSlider overlaySlider = new JSlider(-50, 50, 0);
+            controlPanel.add(overlaySlider);
+            overlaySlider.addChangeListener((ChangeEvent e) -> {
+                rotationAngle = overlaySlider.getValue();
+                rotationAngle /= 10;
+                overlayLabel.setText(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
+                processImages();
+            });
 
             skipBadImages = new JCheckBox("Skip bad quality images", true);
             controlPanel.add(skipBadImages);
@@ -1919,7 +1932,32 @@ public class ImageViewerTab {
         diffY /= conversionFactor;
         double posX = getScaledValue(pixelX) + diffX;
         double posY = getScaledValue(pixelY) + diffY;
-        return new NumberPair(posX, posY);
+
+        NumberPair pixelCoords = new NumberPair(posX, posY);
+        if (rotationAngle != 0) {
+            pixelCoords = rotatePoint(wiseImage.getWidth() / 2, wiseImage.getHeight() / 2, rotationAngle, pixelCoords);
+        }
+        return pixelCoords;
+    }
+
+    private NumberPair rotatePoint(double cx, double cy, double angle, NumberPair p) {
+        double s = sin(toRadians(angle));
+        double c = cos(toRadians(angle));
+        double x = p.getX();
+        double y = p.getY();
+
+        // translate point back to origin:
+        x -= cx;
+        y -= cy;
+
+        // rotate point
+        double px = x * c - y * s;
+        double py = x * s + y * c;
+
+        // translate point back:
+        x = px + cx;
+        y = py + cy;
+        return new NumberPair(x, y);
     }
 
     private double getConversionFactor() {
