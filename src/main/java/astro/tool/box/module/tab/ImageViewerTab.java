@@ -1482,15 +1482,14 @@ public class ImageViewerTab {
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
 
-                    // ========================================================
-                    /*
+                    // =========================================================
                     if (size < 100) {
                         // Adjust positions of magnified Pan-STARRS and SDSS images
-                        upperLeftX = xCenter - (width / 2);
-                        upperLeftY = yCenter - (height / 2);
+                        upperLeftX = xPointer - (width / 2);
+                        upperLeftY = yPointer - (height / 2);
 
-                        upperLeftX -= getScaledValue(1);    // x position adjustment
-                        upperLeftY += getScaledValue(1);    // y position adjustment
+                        upperLeftX -= getZoomedValue(1); // x position adjustment
+                        upperLeftY += getZoomedValue(1); // y position adjustment
 
                         upperRightX = upperLeftX + width;
                         lowerLeftY = upperLeftY + height;
@@ -1504,8 +1503,9 @@ public class ImageViewerTab {
                         if (lowerLeftY > imageHeight) {
                             upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
                         }
-                    }*/
-                    // ========================================================
+                    }
+                    // =========================================================
+
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
