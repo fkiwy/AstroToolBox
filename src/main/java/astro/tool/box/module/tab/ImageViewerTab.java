@@ -162,7 +162,7 @@ public class ImageViewerTab {
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final double SIZE_FACTOR = 2.75;
+    public static final double PIXEL_SIZE = 2.75;
     public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
@@ -323,14 +323,17 @@ public class ImageViewerTab {
     private double targetRa;
     private double targetDec;
 
-    private double pixelX;
-    private double pixelY;
+    private double crval1;
+    private double crval2;
 
-    private int centerX;
-    private int centerY;
+    private double crpix1;
+    private double crpix2;
 
-    private int axisX;
-    private int axisY;
+    private int naxis1;
+    private int naxis2;
+
+    private int xPointer;
+    private int yPointer;
 
     private int previousSize;
     private double previousRa;
@@ -1239,7 +1242,7 @@ public class ImageViewerTab {
             JButton moveLeftButton = new JButton("Move left");
             navigationButtons.add(moveLeftButton);
             moveLeftButton.addActionListener((ActionEvent evt) -> {
-                double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
+                double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa + distance / cos(toRadians(targetDec));
                 newRa = newRa > 360 ? newRa - 360 : newRa;
                 newRa = newRa > 360 ? 0 : newRa;
@@ -1250,7 +1253,7 @@ public class ImageViewerTab {
             JButton moveRightButton = new JButton("Move right");
             navigationButtons.add(moveRightButton);
             moveRightButton.addActionListener((ActionEvent evt) -> {
-                double distance = size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
+                double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
                 double newRa = targetRa - distance / cos(toRadians(targetDec));
                 newRa = newRa < 0 ? newRa + 360 : newRa;
                 newRa = newRa < 0 ? 0 : newRa;
@@ -1264,7 +1267,7 @@ public class ImageViewerTab {
             JButton moveUpButton = new JButton("Move up");
             navigationButtons.add(moveUpButton);
             moveUpButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec + size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
+                double newDec = targetDec + size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
                 if (newDec > 90) {
                     newDec = 90 - (newDec - 90);
                     double newRa = targetRa + 180;
@@ -1278,7 +1281,7 @@ public class ImageViewerTab {
             JButton moveDownButton = new JButton("Move down");
             navigationButtons.add(moveDownButton);
             moveDownButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec - size * SIZE_FACTOR * OVERLAP_FACTOR / DEG_ARCSEC;
+                double newDec = targetDec - size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
                 if (newDec < -90) {
                     newDec = -90 + (abs(newDec) - 90);
                     double newRa = targetRa + 180;
@@ -1448,15 +1451,13 @@ public class ImageViewerTab {
                     int height = 50;
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
-                    if (centerX == 0 && centerY == 0) {
-                        //centerX = imageWidth / 2;
-                        //centerY = imageHeight / 2;
+                    if (xPointer == 0 && yPointer == 0) {
                         NumberPair pixelCoords = getPixelCoordinates(targetRa, targetDec);
-                        centerX = (int) pixelCoords.getX();
-                        centerY = (int) pixelCoords.getY();
+                        xPointer = (int) pixelCoords.getX();
+                        yPointer = (int) pixelCoords.getY();
                     }
-                    int upperLeftX = centerX - (width / 2);
-                    int upperLeftY = centerY - (height / 2);
+                    int upperLeftX = xPointer - (width / 2);
+                    int upperLeftY = yPointer - (height / 2);
                     int upperRightX = upperLeftX + width;
                     int lowerLeftY = upperLeftY + height;
 
@@ -1480,10 +1481,11 @@ public class ImageViewerTab {
                     }
 
                     // ========================================================
+                    /*
                     if (size < 100) {
                         // Adjust positions of magnified Pan-STARRS and SDSS images
-                        upperLeftX = centerX - (width / 2);
-                        upperLeftY = centerY - (height / 2);
+                        upperLeftX = xCenter - (width / 2);
+                        upperLeftY = yCenter - (height / 2);
 
                         upperLeftX -= getScaledValue(1);    // x position adjustment
                         upperLeftY += getScaledValue(1);    // y position adjustment
@@ -1500,9 +1502,8 @@ public class ImageViewerTab {
                         if (lowerLeftY > imageHeight) {
                             upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
                         }
-                    }
+                    }*/
                     // ========================================================
-
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
@@ -1547,9 +1548,9 @@ public class ImageViewerTab {
                                 NumberPair pixelCoords = undoRotationOfPixelCoords(mouseX, mouseY);
                                 mouseX = (int) pixelCoords.getX();
                                 mouseY = (int) pixelCoords.getY();
-                                pointerCoords = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+                                pointerCoords = getWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
                             } else {
-                                pointerCoords = getObjectCoordinates(mouseX, mouseY);
+                                pointerCoords = getWorldCoordinates(mouseX, mouseY);
                             }
                             double newRa = pointerCoords.getX();
                             double newDec = pointerCoords.getY();
@@ -1580,7 +1581,7 @@ public class ImageViewerTab {
                                         StringBuilder sb = new StringBuilder();
                                         for (int i = 0; i < crosshairs.size(); i++) {
                                             NumberPair crosshair = crosshairs.get(i);
-                                            NumberPair c = getObjectCoordinates(
+                                            NumberPair c = getWorldCoordinates(
                                                     (int) round(crosshair.getX() * zoom),
                                                     (int) round(crosshair.getY() * zoom)
                                             );
@@ -1739,8 +1740,8 @@ public class ImageViewerTab {
 
                         @Override
                         public void mouseEntered(MouseEvent evt) {
-                            centerX = evt.getX();
-                            centerY = evt.getY();
+                            xPointer = evt.getX();
+                            yPointer = evt.getY();
                         }
 
                         @Override
@@ -1906,52 +1907,66 @@ public class ImageViewerTab {
         return new NumberPair(mouseX, mouseY);
     }
 
-    private NumberPair getObjectCoordinates(int x, int y) {
-        double diffX = getScaledValue(pixelX) - x;
-        double diffY = getScaledValue(pixelY) - y;
-        double conversionFactor = getConversionFactor();
-        diffX *= conversionFactor;
-        diffY *= conversionFactor;
-        double posY = targetDec + diffY;
-        double posX = targetRa + diffX / cos(toRadians((targetDec + posY) / 2));
+    private NumberPair getWorldCoordinates(double x, double y) {
+        x += 0.5;
+        y -= 0.5;
+        y = getZoomedValue(naxis2) - y;
+        x = getUnzoomedValue(x) - crpix1;
+        y = getUnzoomedValue(y) - crpix2;
+        double scale = DEG_ARCSEC / PIXEL_SIZE;
+        x = toRadians(x) / -scale;
+        y = toRadians(y) / scale;
+        double ra0 = toRadians(crval1);
+        double dec0 = toRadians(crval2);
+        double p = sqrt(x * x + y * y);
+        double c = atan(p);
+        double ra = ra0 + atan(x * sin(c) / (p * cos(dec0) * cos(c) - y * sin(dec0) * sin(c)));
+        double dec = asin(cos(c) * sin(dec0) + (y * sin(c) * cos(dec0)) / p);
+        ra = toDegrees(ra);
+        dec = toDegrees(dec);
+
         // Correct RA if < 0 or > 360
-        posX = posX < 0 ? posX + 360 : posX;
-        posX = posX > 360 ? posX - 360 : posX;
-        return new NumberPair(posX, posY);
+        ra = ra < 0 ? ra + 360 : ra;
+        ra = ra > 360 ? ra - 360 : ra;
+
+        return new NumberPair(ra, dec);
     }
 
     private NumberPair getPixelCoordinates(double ra, double dec) {
-        // Correct RA if difference between targetRa and ra > 300
-        double correctedRa = targetRa;
-        if (abs(targetRa - ra) > 300) {
-            if (targetRa > ra) {
-                ra = 360 + ra;
-            } else {
-                correctedRa = 360 + targetRa;
-            }
-        }
-        double diffX = (correctedRa - ra) * cos(toRadians((targetDec + dec) / 2));
-        double diffY = targetDec - dec;
-        double conversionFactor = getConversionFactor();
-        diffX /= conversionFactor;
-        diffY /= conversionFactor;
-        double posX = getScaledValue(pixelX) + diffX;
-        double posY = getScaledValue(pixelY) + diffY;
-
-        NumberPair pixelCoords = new NumberPair(posX, posY);
-        if (rotationAngle != 0) {
-            pixelCoords = rotatePoint(wiseImage.getWidth() / 2, wiseImage.getHeight() / 2, rotationAngle, pixelCoords);
-        }
-        return pixelCoords;
+        ra = toRadians(ra);
+        dec = toRadians(dec);
+        double ra0 = toRadians(crval1);
+        double dec0 = toRadians(crval2);
+        double cosc = sin(dec0) * sin(dec) + cos(dec0) * cos(dec) * cos(ra - ra0);
+        double x = (cos(dec) * sin(ra - ra0)) / cosc;
+        double y = (cos(dec0) * sin(dec) - sin(dec0) * cos(dec) * cos(ra - ra0)) / cosc;
+        double scale = DEG_ARCSEC / PIXEL_SIZE;
+        x = toDegrees(x) * -scale;
+        y = toDegrees(y) * scale;
+        x = getZoomedValue(x + crpix1);
+        y = getZoomedValue(y + crpix2);
+        y = getZoomedValue(naxis2) - y;
+        x -= 0.5;
+        y += 0.5;
+        return new NumberPair(x, y);
     }
 
+    private double getUnzoomedValue(double value) {
+        return value * size / zoom;
+    }
+
+    private double getZoomedValue(double value) {
+        return value * zoom / size;
+    }
+
+    /*
     private NumberPair rotatePoint(double cx, double cy, double angle, NumberPair p) {
         double s = sin(toRadians(angle));
         double c = cos(toRadians(angle));
         double x = p.getX();
         double y = p.getY();
 
-        // translate point back to origin:
+        // translate point back to origin
         x -= cx;
         y -= cy;
 
@@ -1959,16 +1974,11 @@ public class ImageViewerTab {
         double px = x * c - y * s;
         double py = x * s + y * c;
 
-        // translate point back:
+        // translate point back
         x = px + cx;
         y = py + cy;
         return new NumberPair(x, y);
-    }
-
-    private double getConversionFactor() {
-        return SIZE_FACTOR * size / zoom / DEG_ARCSEC;
-    }
-
+    }*/
     private void createFlipbook() {
         if (asyncDownloads) {
             CompletableFuture.supplyAsync(() -> assembleFlipbook());
@@ -2014,7 +2024,7 @@ public class ImageViewerTab {
                 errorMessages.add("Invalid coordinates!");
             }
             try {
-                size = (int) round(toInteger(sizeField.getText()) / SIZE_FACTOR);
+                size = (int) round(toInteger(sizeField.getText()) / PIXEL_SIZE);
                 if (size > 1091) {
                     errorMessages.add("Field of view must not be larger than 3000 arcsec.");
                 }
@@ -2043,8 +2053,8 @@ public class ImageViewerTab {
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
                 hasException = false;
-                centerX = centerY = 0;
-                axisX = axisY = size;
+                naxis1 = naxis2 = size;
+                xPointer = yPointer = 0;
                 windowShift = 0;
                 epochCountW1 = 0;
                 epochCountW2 = 0;
@@ -2704,13 +2714,13 @@ public class ImageViewerTab {
         if (showCrosshairs.isSelected()) {
             NumberPair coordinates;
             if (quadrantCount > 0 && quadrantCount < 4) {
-                NumberPair pixelCoords = undoRotationOfPixelCoords(centerX, centerY);
-                coordinates = getObjectCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+                NumberPair pixelCoords = undoRotationOfPixelCoords(xPointer, yPointer);
+                coordinates = getWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
             } else {
-                coordinates = getObjectCoordinates(centerX, centerY);
+                coordinates = getWorldCoordinates(xPointer, yPointer);
             }
             String label = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
-            CrossHair drawable = new CrossHair(centerX, centerY, shapeSize * zoom / 100, Color.RED, label);
+            CrossHair drawable = new CrossHair(xPointer, yPointer, shapeSize * zoom / 100, Color.RED, label);
             drawable.draw(image.getGraphics());
         }
         return image;
@@ -2937,10 +2947,6 @@ public class ImageViewerTab {
         }
     }
 
-    private double getScaledValue(double value) {
-        return zoom * value / size;
-    }
-
     private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
         writeLogEntry("Downloading ...");
         for (int i = 0; i < requestedEpochs.size(); i++) {
@@ -3113,17 +3119,15 @@ public class ImageViewerTab {
             Fits fits = container.getImage();
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
-            double crpix1 = header.getDoubleValue("CRPIX1");
-            double crpix2 = header.getDoubleValue("CRPIX2");
-            double naxis1 = header.getDoubleValue("NAXIS1");
-            double naxis2 = header.getDoubleValue("NAXIS2");
-            if (naxis1 != naxis2) {
+            if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
                 imageCutOff = true;
             }
-            pixelX = crpix1;
-            pixelY = size - crpix2;
-            axisX = size;
-            axisY = size;
+            crval1 = header.getDoubleValue("CRVAL1");
+            crval2 = header.getDoubleValue("CRVAL2");
+            crpix1 = header.getDoubleValue("CRPIX1");
+            crpix2 = header.getDoubleValue("CRPIX2");
+            naxis1 = size;
+            naxis2 = size;
             for (int i = 1; i < imageGroup.size(); i++) {
                 fits = stackImages(fits, imageGroup.get(i).getImage());
             }
@@ -3172,9 +3176,9 @@ public class ImageViewerTab {
             imageData = (ImageData) imageHDU.getData();
             float[][] values2 = (float[][]) imageData.getData();
 
-            float[][] addedValues = new float[axisY][axisX];
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
+            float[][] addedValues = new float[naxis2][naxis1];
+            for (int i = 0; i < naxis2; i++) {
+                for (int j = 0; j < naxis1; j++) {
                     try {
                         addedValues[i][j] = values1[i][j] + values2[i][j];
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -3237,10 +3241,10 @@ public class ImageViewerTab {
                 values = blur(values);
             }
 
-            BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(naxis1, naxis2, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
+            for (int i = 0; i < naxis2; i++) {
+                for (int j = 0; j < naxis1; j++) {
                     try {
                         float value = processPixel(values[i][j], minValue, maxValue);
                         graphics.setColor(new Color(value, value, value));
@@ -3273,10 +3277,10 @@ public class ImageViewerTab {
                 valuesW2 = blur(valuesW2);
             }
 
-            BufferedImage image = new BufferedImage(axisX, axisY, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(naxis1, naxis2, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
+            for (int i = 0; i < naxis2; i++) {
+                for (int j = 0; j < naxis1; j++) {
                     try {
                         float red = processPixel(valuesW1[i][j], minValue, maxValue);
                         float blue = processPixel(valuesW2[i][j], minValue, maxValue);
@@ -3306,9 +3310,9 @@ public class ImageViewerTab {
             imageData = (ImageData) imageHDU.getData();
             float[][] values2 = (float[][]) imageData.getData();
 
-            float[][] addedValues = new float[axisY][axisX];
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
+            float[][] addedValues = new float[naxis2][naxis1];
+            for (int i = 0; i < naxis2; i++) {
+                for (int j = 0; j < naxis1; j++) {
                     try {
                         addedValues[i][j] = values1[i][j] + values2[i][j];
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -3336,9 +3340,9 @@ public class ImageViewerTab {
             imageData = (ImageData) hdu.getData();
             float[][] values2 = (float[][]) imageData.getData();
 
-            float[][] subtractedValues = new float[axisY][axisX];
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
+            float[][] subtractedValues = new float[naxis2][naxis1];
+            for (int i = 0; i < naxis2; i++) {
+                for (int j = 0; j < naxis1; j++) {
                     try {
                         subtractedValues[i][j] = values1[i][j] - values2[i][j];
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -3360,9 +3364,9 @@ public class ImageViewerTab {
             ImageData imageData = (ImageData) imageHDU.getData();
             float[][] values = (float[][]) imageData.getData();
 
-            float[][] averagedValues = new float[axisY][axisX];
-            for (int i = 0; i < axisY; i++) {
-                for (int j = 0; j < axisX; j++) {
+            float[][] averagedValues = new float[naxis2][naxis1];
+            for (int i = 0; i < naxis2; i++) {
+                for (int j = 0; j < naxis1; j++) {
                     try {
                         averagedValues[i][j] = values[i][j] / numberOfImages;
                     } catch (ArrayIndexOutOfBoundsException ex) {
@@ -3394,12 +3398,12 @@ public class ImageViewerTab {
     }
 
     public float[][] blur(float[][] values) {
-        float[][] blurredValues = new float[axisY][axisX];
-        for (int i = 0; i < axisY; ++i) {
-            for (int j = 0; j < axisX; ++j) {
+        float[][] blurredValues = new float[naxis2][naxis1];
+        for (int i = 0; i < naxis2; ++i) {
+            for (int j = 0; j < naxis1; ++j) {
                 int sum = 0, c = 0;
-                for (int k = max(0, i - 1); k <= min(i + 1, axisY - 1); k++) {
-                    for (int u = max(0, j - 1); u <= min(j + 1, axisX - 1); u++) {
+                for (int k = max(0, i - 1); k <= min(i + 1, naxis2 - 1); k++) {
+                    for (int u = max(0, j - 1); u <= min(j + 1, naxis1 - 1); u++) {
                         sum += values[k][u];
                         c++;
                     }
@@ -3435,7 +3439,7 @@ public class ImageViewerTab {
 
     private BufferedImage zoom(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
-        Image scaled = image.getScaledInstance((axisX > axisY ? 1 : -1) * zoom, (axisX > axisY ? -1 : 1) * zoom, Image.SCALE_DEFAULT);
+        Image scaled = image.getScaledInstance((naxis1 > naxis2 ? 1 : -1) * zoom, (naxis1 > naxis2 ? -1 : 1) * zoom, Image.SCALE_DEFAULT);
         image = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
         graphics.drawImage(scaled, 0, 0, null);
@@ -3646,7 +3650,7 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * SIZE_FACTOR * 4), 1024);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * PIXEL_SIZE * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
@@ -3661,7 +3665,7 @@ public class ImageViewerTab {
     private BufferedImage fetchSdssImage(double targetRa, double targetDec, double size) {
         try {
             int resolution = 1000;
-            String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * SIZE_FACTOR / resolution);
+            String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * PIXEL_SIZE / resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
@@ -4635,7 +4639,7 @@ public class ImageViewerTab {
     }
 
     private double getFovDiagonal() {
-        return size * SIZE_FACTOR * sqrt(2);
+        return size * PIXEL_SIZE * sqrt(2);
     }
 
     private double getOverlaySize() {
