@@ -346,6 +346,7 @@ public class ImageViewerTab {
     private boolean allEpochsW2Loaded;
     private boolean moreImagesAvailable;
     private boolean oneMoreImageAvailable;
+    private boolean flipbookComplete;
     private boolean reloadImages;
     private boolean imageCutOff;
     private boolean timerStopped;
@@ -421,7 +422,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 94;
+            int rows = 92;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -1057,6 +1058,7 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(header("Advanced controls:")));
 
+            /*==================================================================
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             controlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
@@ -1073,7 +1075,7 @@ public class ImageViewerTab {
                 overlayLabel.setText(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
                 processImages();
             });
-
+            ==================================================================*/
             skipBadImages = new JCheckBox("Skip bad quality images", true);
             controlPanel.add(skipBadImages);
             skipBadImages.addActionListener((ActionEvent evt) -> {
@@ -1920,15 +1922,13 @@ public class ImageViewerTab {
         double dec0 = toRadians(crval2);
         double p = sqrt(x * x + y * y);
         double c = atan(p);
-        double ra = ra0 + atan(x * sin(c) / (p * cos(dec0) * cos(c) - y * sin(dec0) * sin(c)));
+        double ra = ra0 + atan2(x * sin(c), p * cos(dec0) * cos(c) - y * sin(dec0) * sin(c));
         double dec = asin(cos(c) * sin(dec0) + (y * sin(c) * cos(dec0)) / p);
         ra = toDegrees(ra);
         dec = toDegrees(dec);
-
         // Correct RA if < 0 or > 360
         ra = ra < 0 ? ra + 360 : ra;
         ra = ra > 360 ? ra - 360 : ra;
-
         return new NumberPair(ra, dec);
     }
 
@@ -1959,7 +1959,7 @@ public class ImageViewerTab {
         return value * zoom / size;
     }
 
-    /*
+    /*==========================================================================
     private NumberPair rotatePoint(double cx, double cy, double angle, NumberPair p) {
         double s = sin(toRadians(angle));
         double c = cos(toRadians(angle));
@@ -1978,7 +1978,8 @@ public class ImageViewerTab {
         x = px + cx;
         y = py + cy;
         return new NumberPair(x, y);
-    }*/
+    }
+    ==========================================================================*/
     private void createFlipbook() {
         if (asyncDownloads) {
             CompletableFuture.supplyAsync(() -> assembleFlipbook());
@@ -2047,6 +2048,7 @@ public class ImageViewerTab {
                 allEpochsW2Loaded = false;
                 moreImagesAvailable = false;
                 oneMoreImageAvailable = false;
+                flipbookComplete = false;
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
                 images = new HashMap<>();
@@ -2533,6 +2535,7 @@ public class ImageViewerTab {
                 }
             }
 
+            flipbookComplete = true;
             processImages();
             timer.restart();
             timerStopped = false;
@@ -2609,7 +2612,7 @@ public class ImageViewerTab {
         if (sdssImage != null) {
             processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
         }
-        if (flipbook == null) {
+        if (flipbook == null || !flipbookComplete) {
             return;
         }
         timer.stop();
