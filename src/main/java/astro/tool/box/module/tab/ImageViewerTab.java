@@ -296,7 +296,7 @@ public class ImageViewerTab {
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
-    private double rotationAngle;
+    //private double rotationAngle;
     private int fieldOfView = 30;
     private int shapeSize = 5;
     private int imageNumber;
@@ -332,8 +332,8 @@ public class ImageViewerTab {
     private int naxis1;
     private int naxis2;
 
-    private int xPointer;
-    private int yPointer;
+    private int pointerX;
+    private int pointerY;
 
     private int previousSize;
     private double previousRa;
@@ -1453,13 +1453,13 @@ public class ImageViewerTab {
                     int height = 50;
                     int imageWidth = wiseImage.getWidth();
                     int imageHeight = wiseImage.getHeight();
-                    if (xPointer == 0 && yPointer == 0) {
-                        NumberPair pixelCoords = getPixelCoordinates(targetRa, targetDec);
-                        xPointer = (int) pixelCoords.getX();
-                        yPointer = (int) pixelCoords.getY();
+                    if (pointerX == 0 && pointerY == 0) {
+                        NumberPair pixelCoords = toPixelCoordinates(targetRa, targetDec);
+                        pointerX = (int) pixelCoords.getX();
+                        pointerY = (int) pixelCoords.getY();
                     }
-                    int upperLeftX = xPointer - (width / 2);
-                    int upperLeftY = yPointer - (height / 2);
+                    int upperLeftX = pointerX - (width / 2);
+                    int upperLeftY = pointerY - (height / 2);
                     int upperRightX = upperLeftX + width;
                     int lowerLeftY = upperLeftY + height;
 
@@ -1482,11 +1482,11 @@ public class ImageViewerTab {
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
 
-                    // =========================================================
+                    /*==========================================================
                     if (size < 100) {
                         // Adjust positions of magnified Pan-STARRS and SDSS images
-                        upperLeftX = xPointer - (width / 2);
-                        upperLeftY = yPointer - (height / 2);
+                        upperLeftX = pointerX - (width / 2);
+                        upperLeftY = pointerY - (height / 2);
 
                         upperLeftX -= getZoomedValue(1); // x position adjustment
                         upperLeftY += getZoomedValue(1); // y position adjustment
@@ -1504,8 +1504,7 @@ public class ImageViewerTab {
                             upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
                         }
                     }
-                    // =========================================================
-
+                    ==========================================================*/
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
@@ -1550,9 +1549,9 @@ public class ImageViewerTab {
                                 NumberPair pixelCoords = undoRotationOfPixelCoords(mouseX, mouseY);
                                 mouseX = (int) pixelCoords.getX();
                                 mouseY = (int) pixelCoords.getY();
-                                pointerCoords = getWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+                                pointerCoords = toWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
                             } else {
-                                pointerCoords = getWorldCoordinates(mouseX, mouseY);
+                                pointerCoords = toWorldCoordinates(mouseX, mouseY);
                             }
                             double newRa = pointerCoords.getX();
                             double newDec = pointerCoords.getY();
@@ -1583,7 +1582,7 @@ public class ImageViewerTab {
                                         StringBuilder sb = new StringBuilder();
                                         for (int i = 0; i < crosshairs.size(); i++) {
                                             NumberPair crosshair = crosshairs.get(i);
-                                            NumberPair c = getWorldCoordinates(
+                                            NumberPair c = toWorldCoordinates(
                                                     (int) round(crosshair.getX() * zoom),
                                                     (int) round(crosshair.getY() * zoom)
                                             );
@@ -1742,8 +1741,8 @@ public class ImageViewerTab {
 
                         @Override
                         public void mouseEntered(MouseEvent evt) {
-                            xPointer = evt.getX();
-                            yPointer = evt.getY();
+                            pointerX = evt.getX();
+                            pointerY = evt.getY();
                         }
 
                         @Override
@@ -1909,12 +1908,12 @@ public class ImageViewerTab {
         return new NumberPair(mouseX, mouseY);
     }
 
-    private NumberPair getWorldCoordinates(double x, double y) {
-        x += 0.5;
-        y -= 0.5;
-        y = getZoomedValue(naxis2) - y;
-        x = getUnzoomedValue(x) - crpix1;
-        y = getUnzoomedValue(y) - crpix2;
+    private NumberPair toWorldCoordinates(double x, double y) {
+        x = getUnzoomedValue(x + 0.5);
+        y = getUnzoomedValue(y - 0.5);
+        y = naxis2 - y;
+        x -= crpix1;
+        y -= crpix2;
         double scale = DEG_ARCSEC / PIXEL_SIZE;
         x = toRadians(x) / -scale;
         y = toRadians(y) / scale;
@@ -1927,12 +1926,15 @@ public class ImageViewerTab {
         ra = toDegrees(ra);
         dec = toDegrees(dec);
         // Correct RA if < 0 or > 360
-        ra = ra < 0 ? ra + 360 : ra;
-        ra = ra > 360 ? ra - 360 : ra;
+        if (ra < 0) {
+            ra += 360;
+        } else if (ra > 360) {
+            ra -= 360;
+        }
         return new NumberPair(ra, dec);
     }
 
-    private NumberPair getPixelCoordinates(double ra, double dec) {
+    private NumberPair toPixelCoordinates(double ra, double dec) {
         ra = toRadians(ra);
         dec = toRadians(dec);
         double ra0 = toRadians(crval1);
@@ -1943,11 +1945,11 @@ public class ImageViewerTab {
         double scale = DEG_ARCSEC / PIXEL_SIZE;
         x = toDegrees(x) * -scale;
         y = toDegrees(y) * scale;
-        x = getZoomedValue(x + crpix1);
-        y = getZoomedValue(y + crpix2);
-        y = getZoomedValue(naxis2) - y;
-        x -= 0.5;
-        y += 0.5;
+        x += crpix1;
+        y += crpix2;
+        y = naxis2 - y;
+        x = getZoomedValue(x) - 0.5;
+        y = getZoomedValue(y) + 0.5;
         return new NumberPair(x, y);
     }
 
@@ -2056,7 +2058,7 @@ public class ImageViewerTab {
                 crosshairCoords.setText("");
                 hasException = false;
                 naxis1 = naxis2 = size;
-                xPointer = yPointer = 0;
+                pointerX = pointerY = 0;
                 windowShift = 0;
                 epochCountW1 = 0;
                 epochCountW2 = 0;
@@ -2695,7 +2697,7 @@ public class ImageViewerTab {
         // Draw a circle around the object to check if proper motions are consistent
         if (checkProperMotion.isSelected()) {
             NumberPair epochCoordinates = component.getEpochCoordinates();
-            NumberPair position = getPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
+            NumberPair position = toPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
             Circle circle = new Circle(position.getX(), position.getY(), (shapeSize / 2) * zoom / 100, Color.RED);
             circle.draw(image.getGraphics());
         }
@@ -2717,13 +2719,13 @@ public class ImageViewerTab {
         if (showCrosshairs.isSelected()) {
             NumberPair coordinates;
             if (quadrantCount > 0 && quadrantCount < 4) {
-                NumberPair pixelCoords = undoRotationOfPixelCoords(xPointer, yPointer);
-                coordinates = getWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+                NumberPair pixelCoords = undoRotationOfPixelCoords(pointerX, pointerY);
+                coordinates = toWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
             } else {
-                coordinates = getWorldCoordinates(xPointer, yPointer);
+                coordinates = toWorldCoordinates(pointerX, pointerY);
             }
             String label = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
-            CrossHair drawable = new CrossHair(xPointer, yPointer, shapeSize * zoom / 100, Color.RED, label);
+            CrossHair drawable = new CrossHair(pointerX, pointerY, shapeSize * zoom / 100, Color.RED, label);
             drawable.draw(image.getGraphics());
         }
         return image;
@@ -4207,7 +4209,7 @@ public class ImageViewerTab {
     private void drawSectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
-            NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
+            NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             SDSSCatalogEntry sdssCatalogEntry = (SDSSCatalogEntry) catalogEntry;
@@ -4260,7 +4262,7 @@ public class ImageViewerTab {
     private void drawOverlay(BufferedImage image, List<CatalogEntry> catalogEntries, Color color, Shape shape) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
-            NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
+            NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
@@ -4298,7 +4300,7 @@ public class ImageViewerTab {
     private void drawArtifactOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
-            NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
+            NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             String ab_flags = "";
@@ -4361,7 +4363,7 @@ public class ImageViewerTab {
     private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
-            NumberPair position = getPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
+            NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
 
@@ -4385,7 +4387,7 @@ public class ImageViewerTab {
             ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
             dec = dec - numberOfYears * pmDec / DEG_MAS;
 
-            NumberPair pixelCoords = getPixelCoordinates(ra, dec);
+            NumberPair pixelCoords = toPixelCoordinates(ra, dec);
             double x = pixelCoords.getX();
             double y = pixelCoords.getY();
 
@@ -4393,7 +4395,7 @@ public class ImageViewerTab {
             double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
             double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
-            pixelCoords = getPixelCoordinates(newRa, newDec);
+            pixelCoords = toPixelCoordinates(newRa, newDec);
             double newX = pixelCoords.getX();
             double newY = pixelCoords.getY();
 
