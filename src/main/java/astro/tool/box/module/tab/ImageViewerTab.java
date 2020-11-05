@@ -1925,11 +1925,9 @@ public class ImageViewerTab {
         double dec = asin(cos(c) * sin(dec0) + (y * sin(c) * cos(dec0)) / p);
         ra = toDegrees(ra);
         dec = toDegrees(dec);
-        // Correct RA if < 0 or > 360
+        // Correct ra if < 0
         if (ra < 0) {
             ra += 360;
-        } else if (ra > 360) {
-            ra -= 360;
         }
         return new NumberPair(ra, dec);
     }
