@@ -8,6 +8,7 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.module.TextPrompt;
 import astro.tool.box.util.FileTypeFilter;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -73,8 +74,18 @@ public class CustomOverlaysTab {
                 overlays.add(overlay);
             });
 
+            JPanel container = new JPanel(new BorderLayout());
+            tabbedPane.addTab(TAB_NAME, container);
+
+            JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            container.add(topRow, BorderLayout.PAGE_START);
+            JLabel topRowLabel = new JLabel("You can either use a local CSV file (dark gray button) or a VizieR catalog (yellow fields) to produce an overlay:");
+            topRowLabel.setForeground(JColor.DARK_RED.val);
+            topRow.add(topRowLabel);
+
             int overlayCount = 50;
             JPanel table = new JPanel(new GridLayout(overlayCount, 1));
+            container.add(new JScrollPane(table), BorderLayout.CENTER);
 
             for (int i = 0; i < overlayCount; i++) {
                 JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -140,6 +151,9 @@ public class CustomOverlaysTab {
 
                 JButton importFileButton = new JButton("Select file");
                 row.add(importFileButton);
+                importFileButton.setBorderPainted(false);
+                importFileButton.setBackground(JColor.GRAY.val);
+                importFileButton.setForeground(JColor.WHITE.val);
                 importFileButton.addActionListener((ActionEvent evt) -> {
                     int returnVal = fileChooser.showOpenDialog(null);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -153,18 +167,21 @@ public class CustomOverlaysTab {
 
                 JTextField tableName = new JTextField(15);
                 row.add(tableName);
+                tableName.setBackground(JColor.LIGHT_YELLOW.val);
                 TextPrompt tableNamePrompt = new TextPrompt("Catalog table name");
                 tableNamePrompt.applyTo(tableName);
                 tableName.setText(overlayName == null ? "" : customOverlay.getTableName());
 
                 JTextField raColName = new JTextField(15);
                 row.add(raColName);
+                raColName.setBackground(JColor.LIGHT_YELLOW.val);
                 TextPrompt raColNamePrompt = new TextPrompt("RA column name");
                 raColNamePrompt.applyTo(raColName);
                 raColName.setText(overlayName == null ? "" : customOverlay.getRaColName());
 
                 JTextField decColName = new JTextField(15);
                 row.add(decColName);
+                decColName.setBackground(JColor.LIGHT_YELLOW.val);
                 TextPrompt decColNamePrompt = new TextPrompt("Dec column name");
                 decColNamePrompt.applyTo(decColName);
                 decColName.setText(overlayName == null ? "" : customOverlay.getDecColName());
@@ -273,8 +290,6 @@ public class CustomOverlaysTab {
 
                 row.add(message);
             }
-
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(table));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
