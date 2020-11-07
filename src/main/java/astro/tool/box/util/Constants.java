@@ -30,9 +30,9 @@ public class Constants {
 
     public static final String TWO_MASS_CATALOG_ID = "fp_psc";
 
-    public static final String CATWISE_CATALOG_ID = "cwcat2";
+    public static final String CATWISE_CATALOG_ID = "catwise_2020";
 
-    public static final String CATWISE_REJECTED_ID = "reject2";
+    public static final String CATWISE_REJECTED_ID = "catwise_2020_reject";
 
     public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
 
