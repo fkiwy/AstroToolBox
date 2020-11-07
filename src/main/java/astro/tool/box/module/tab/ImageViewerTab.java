@@ -4159,8 +4159,8 @@ public class ImageViewerTab {
                 return null;
             }
         }
+        Scanner scanner = null;
         try {
-            Scanner scanner;
             if (results == null) {
                 scanner = new Scanner(customOverlay.getFile());
             } else {
@@ -4204,10 +4204,12 @@ public class ImageViewerTab {
                     catalogEntries.add(catalogEntry);
                 }
             }
-            scanner.close();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
             customOverlay.setCatalogEntries(catalogEntries);
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }

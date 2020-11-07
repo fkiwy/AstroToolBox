@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -234,8 +235,7 @@ public class CustomOverlaysTab {
                     customOverlay.setTableName(tableName.getText().trim());
                     customOverlay.setRaColName(raColName.getText().trim());
                     customOverlay.setDecColName(decColName.getText().trim());
-                    imageViewerTab.getUseCustomOverlays().setSelected(false);
-                    imageViewerTab.getUseCustomOverlays().getActionListeners()[0].actionPerformed(null);
+                    fireCustomOverlaysListener();
                     CUSTOM_OVERLAYS.put(name, customOverlay);
                     overlayNameField.setEditable(false);
                     saveOverlayDefinitions();
@@ -251,8 +251,7 @@ public class CustomOverlaysTab {
                     if (name == null || !showConfirmDialog(baseFrame, "Do you really want to delete overlay " + name + "?")) {
                         return;
                     }
-                    imageViewerTab.getUseCustomOverlays().setSelected(false);
-                    imageViewerTab.getUseCustomOverlays().getActionListeners()[0].actionPerformed(null);
+                    fireCustomOverlaysListener();
                     CUSTOM_OVERLAYS.remove(name);
                     saveOverlayDefinitions();
                     overlayNameField.setText("");
@@ -292,6 +291,12 @@ public class CustomOverlaysTab {
         } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
         }
+    }
+
+    private void fireCustomOverlaysListener() {
+        JCheckBox useCustomOverlays = imageViewerTab.getUseCustomOverlays();
+        useCustomOverlays.setSelected(false);
+        useCustomOverlays.getActionListeners()[0].actionPerformed(null);
     }
 
 }
