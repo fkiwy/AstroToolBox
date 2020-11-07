@@ -24,7 +24,7 @@ public class Constants {
 
     public static final String IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP";
 
-    public static final String WISE_VIEW_URL = "http://byw.tools/cutout";
+    public static final String CUTOUT_SERVICE_URL = "http://byw.tools:8080/cutout";
 
     public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
 

@@ -64,6 +64,7 @@ public class SettingsTab {
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
+    public static final String CUTOUT_SERVICE = "cutoutService";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
@@ -71,6 +72,7 @@ public class SettingsTab {
     private int proxyPort;
     private boolean useProxy;
     private boolean useSimbadMirror;
+    private String cutoutService;
     private String objectCollectionPath;
 
     // Catalog search settings
@@ -126,7 +128,6 @@ public class SettingsTab {
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
         this.batchQueryTab = batchQueryTab;
-        //loadUserSettings();
     }
 
     public void init() {
@@ -137,7 +138,7 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(8, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(9, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -156,9 +157,13 @@ public class SettingsTab {
             } else {
                 useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
             }
+            cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
+            if (cutoutService == null) {
+                cutoutService = CUTOUT_SERVICE_URL;
+                USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutService);
+            }
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            //setLookAndFeel(lookAndFeel);
             globalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
@@ -191,6 +196,10 @@ public class SettingsTab {
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
+
+            globalSettings.add(new JLabel("Cutout service URL: ", JLabel.RIGHT));
+            JTextField cutoutServiceField = new JTextField(cutoutService);
+            globalSettings.add(cutoutServiceField);
 
             globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
@@ -396,6 +405,7 @@ public class SettingsTab {
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    cutoutService = cutoutServiceField.getText();
                     objectCollectionPath = collectionPathField.getText();
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
@@ -447,6 +457,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+                USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings

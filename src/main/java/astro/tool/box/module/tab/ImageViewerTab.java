@@ -3227,7 +3227,7 @@ public class ImageViewerTab {
     }
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
-        return WISE_VIEW_URL + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
+        return getUserSetting(CUTOUT_SERVICE) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
     }
 
     private BufferedImage createImage(int band, int epoch, int minValue, int maxValue) {
