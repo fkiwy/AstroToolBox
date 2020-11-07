@@ -210,7 +210,7 @@ public class CustomOverlaysTab {
                         errors.append("Dec position must not be empty.").append(LINE_SEP);
                     }
                     if (customOverlay.getFile() == null && tableName.getText().isEmpty()) {
-                        errors.append("Either an overlay file or a catalog ID must be specified.").append(LINE_SEP);
+                        errors.append("Either a CSV file or a VizieR catalog must be specified.").append(LINE_SEP);
                     }
                     if (!tableName.getText().isEmpty()) {
                         if (raColName.getText().isEmpty()) {
