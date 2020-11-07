@@ -6,6 +6,7 @@ import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
+import astro.tool.box.module.TextPrompt;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -40,13 +41,14 @@ public class CustomOverlaysTab {
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
+    private final ImageViewerTab imageViewerTab;
 
-    private final Map<String, CustomOverlay> customOverlays;
+    public static final Map<String, CustomOverlay> CUSTOM_OVERLAYS = new LinkedHashMap<>();
 
-    public CustomOverlaysTab(JFrame baseFrame, JTabbedPane tabbedPane) {
+    public CustomOverlaysTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
-        customOverlays = new LinkedHashMap<>();
+        this.imageViewerTab = imageViewerTab;
     }
 
     public void init() {
@@ -55,7 +57,7 @@ public class CustomOverlaysTab {
                 while (scanner.hasNextLine()) {
                     CustomOverlay customOverlay = new CustomOverlay();
                     customOverlay.deserialize(scanner.nextLine());
-                    customOverlays.put(customOverlay.getName(), customOverlay);
+                    CUSTOM_OVERLAYS.put(customOverlay.getName(), customOverlay);
                 }
             } catch (Exception ex) {
                 if (ex instanceof FileNotFoundException) {
@@ -66,11 +68,11 @@ public class CustomOverlaysTab {
             }
 
             List<CustomOverlay> overlays = new ArrayList<>();
-            customOverlays.values().forEach(overlay -> {
+            CUSTOM_OVERLAYS.values().forEach(overlay -> {
                 overlays.add(overlay);
             });
 
-            int overlayCount = 20;
+            int overlayCount = 50;
             JPanel table = new JPanel(new GridLayout(overlayCount, 1));
 
             for (int i = 0; i < overlayCount; i++) {
@@ -148,6 +150,24 @@ public class CustomOverlaysTab {
 
                 row.add(overlayFileName);
 
+                JTextField tableName = new JTextField(15);
+                row.add(tableName);
+                TextPrompt tableNamePrompt = new TextPrompt("Catalog table name");
+                tableNamePrompt.applyTo(tableName);
+                tableName.setText(overlayName == null ? "" : customOverlay.getTableName());
+
+                JTextField raColName = new JTextField(15);
+                row.add(raColName);
+                TextPrompt raColNamePrompt = new TextPrompt("RA column name");
+                raColNamePrompt.applyTo(raColName);
+                raColName.setText(overlayName == null ? "" : customOverlay.getRaColName());
+
+                JTextField decColName = new JTextField(15);
+                row.add(decColName);
+                TextPrompt decColNamePrompt = new TextPrompt("Dec column name");
+                decColNamePrompt.applyTo(decColName);
+                decColName.setText(overlayName == null ? "" : customOverlay.getDecColName());
+
                 JLabel message = createLabel("", JColor.DARKER_GREEN);
                 Timer timer = new Timer(3000, (ActionEvent e) -> {
                     message.setText("");
@@ -160,19 +180,27 @@ public class CustomOverlaysTab {
                     int decColumnIndex = 0;
                     StringBuilder errors = new StringBuilder();
                     if (overlayNameField.getText().isEmpty()) {
-                        errors.append("Overlay name must be specified.").append(LINE_SEP);
+                        errors.append("Overlay name must not be empty.").append(LINE_SEP);
                     }
                     if (customOverlay.getColor() == null) {
-                        errors.append("Overlay color must be specified.").append(LINE_SEP);
+                        errors.append("Overlay color must not be empty.").append(LINE_SEP);
                     }
                     if (raColumnPosition.getText().isEmpty()) {
-                        errors.append("RA position must be specified.").append(LINE_SEP);
+                        errors.append("RA position must not be empty.").append(LINE_SEP);
                     }
                     if (raColumnPosition.getText().isEmpty() || decColumnPosition.getText().isEmpty()) {
-                        errors.append("Dec position must be specified.").append(LINE_SEP);
+                        errors.append("Dec position must not be empty.").append(LINE_SEP);
                     }
-                    if (customOverlay.getFile() == null) {
-                        errors.append("Overlay file must be specified.").append(LINE_SEP);
+                    if (customOverlay.getFile() == null && tableName.getText().isEmpty()) {
+                        errors.append("Either an overlay file or a catalog ID must be specified.").append(LINE_SEP);
+                    }
+                    if (!tableName.getText().isEmpty()) {
+                        if (raColName.getText().isEmpty()) {
+                            errors.append("RA column name must not be empty.").append(LINE_SEP);
+                        }
+                        if (decColName.getText().isEmpty()) {
+                            errors.append("Dec column name must not be empty.").append(LINE_SEP);
+                        }
                     }
                     if (errors.length() > 0) {
                         showErrorDialog(baseFrame, errors.toString());
@@ -203,7 +231,12 @@ public class CustomOverlaysTab {
                     customOverlay.setShape((Shape) overlayShapes.getSelectedItem());
                     customOverlay.setRaColumnIndex(raColumnIndex);
                     customOverlay.setDecColumnIndex(decColumnIndex);
-                    customOverlays.put(name, customOverlay);
+                    customOverlay.setTableName(tableName.getText().trim());
+                    customOverlay.setRaColName(raColName.getText().trim());
+                    customOverlay.setDecColName(decColName.getText().trim());
+                    imageViewerTab.getUseCustomOverlays().setSelected(false);
+                    imageViewerTab.getUseCustomOverlays().getActionListeners()[0].actionPerformed(null);
+                    CUSTOM_OVERLAYS.put(name, customOverlay);
                     overlayNameField.setEditable(false);
                     saveOverlayDefinitions();
 
@@ -218,7 +251,9 @@ public class CustomOverlaysTab {
                     if (name == null || !showConfirmDialog(baseFrame, "Do you really want to delete overlay " + name + "?")) {
                         return;
                     }
-                    customOverlays.remove(name);
+                    imageViewerTab.getUseCustomOverlays().setSelected(false);
+                    imageViewerTab.getUseCustomOverlays().getActionListeners()[0].actionPerformed(null);
+                    CUSTOM_OVERLAYS.remove(name);
                     saveOverlayDefinitions();
                     overlayNameField.setText("");
                     overlayNameField.setEditable(true);
@@ -227,6 +262,9 @@ public class CustomOverlaysTab {
                     raColumnPosition.setText("");
                     decColumnPosition.setText("");
                     overlayFileName.setText("");
+                    tableName.setText("");
+                    raColName.setText("");
+                    decColName.setText("");
                     customOverlay.init();
                     table.updateUI();
 
@@ -245,7 +283,7 @@ public class CustomOverlaysTab {
 
     private void saveOverlayDefinitions() {
         StringBuilder data = new StringBuilder();
-        customOverlays.values().forEach(customOverlay -> {
+        CUSTOM_OVERLAYS.values().forEach(customOverlay -> {
             data.append(customOverlay.serialize()).append(LINE_SEP);
         });
         try (FileWriter writer = new FileWriter(OVERLAYS_PATH)) {
@@ -254,10 +292,6 @@ public class CustomOverlaysTab {
         } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
         }
-    }
-
-    public Map<String, CustomOverlay> getCustomOverlays() {
-        return customOverlays;
     }
 
 }

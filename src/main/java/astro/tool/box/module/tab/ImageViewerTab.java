@@ -39,7 +39,6 @@ import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
-import astro.tool.box.enumeration.Unit;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
@@ -180,7 +179,6 @@ public class ImageViewerTab {
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
-    private final CustomOverlaysTab customOverlaysTab;
 
     private final CatalogQueryFacade catalogQueryFacade;
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
@@ -379,10 +377,9 @@ public class ImageViewerTab {
         BROWN_DWARFS.add(spt + i + ".5V");
     }
 
-    public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane, CustomOverlaysTab customOverlaysTab) {
+    public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
-        this.customOverlaysTab = customOverlaysTab;
         catalogQueryFacade = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
@@ -1389,7 +1386,7 @@ public class ImageViewerTab {
 
             useCustomOverlays = new JCheckBox(header("Custom overlays:"));
             controlPanel.add(useCustomOverlays);
-            customOverlays = customOverlaysTab.getCustomOverlays();
+            customOverlays = CustomOverlaysTab.CUSTOM_OVERLAYS;
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
                     showInfoDialog(baseFrame, "No custom overlays have been added yet.");
@@ -4144,7 +4141,31 @@ public class ImageViewerTab {
     private Object fetchGenericCatalogEntries(CustomOverlay customOverlay) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         List<CatalogEntry> catalogEntries = new ArrayList<>();
-        try (Scanner scanner = new Scanner(customOverlay.getFile())) {
+        String results = null;
+        boolean isCatalogSearch = false;
+        if (!customOverlay.getTableName().isBlank()) {
+            isCatalogSearch = true;
+            String vizieRUrl = createGenericVizieRUrl(targetRa, targetDec, getFovDiagonal() / 2 / DEG_ARCSEC,
+                    customOverlay.getTableName(), customOverlay.getRaColName(), customOverlay.getDecColName());
+            try {
+                results = readResponse(establishHttpConnection(vizieRUrl), "VizieR");
+                if (results.isEmpty()) {
+                    baseFrame.setCursor(Cursor.getDefaultCursor());
+                    return null;
+                }
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+                baseFrame.setCursor(Cursor.getDefaultCursor());
+                return null;
+            }
+        }
+        try {
+            Scanner scanner;
+            if (results == null) {
+                scanner = new Scanner(customOverlay.getFile());
+            } else {
+                scanner = new Scanner(results);
+            }
             String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
             StringBuilder errors = new StringBuilder();
             int numberOfColumns = columnNames.length;
@@ -4166,9 +4187,16 @@ public class ImageViewerTab {
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
-                double radius = convertToUnit(getFovDiagonal() / 2, Unit.ARCSEC, Unit.DEGREE);
-                if (catalogEntry.getRa() > targetRa - radius && catalogEntry.getRa() < targetRa + radius
-                        && catalogEntry.getDec() > targetDec - radius && catalogEntry.getDec() < targetDec + radius) {
+                double radius = getFovDiagonal() / 2 / DEG_ARCSEC;
+                double catalogRa = catalogEntry.getRa();
+                double catalogDec = catalogEntry.getDec();
+                double rightBoundary = targetRa - radius / cos(toRadians(targetDec));
+                double leftBoundary = targetRa + radius / cos(toRadians(targetDec));
+                double bottomBoundary = targetDec - radius;
+                double topBoundary = targetDec + radius;
+                if (isCatalogSearch
+                        || (catalogRa > rightBoundary && catalogRa < leftBoundary
+                        && catalogDec > bottomBoundary && catalogDec < topBoundary)) {
                     catalogEntry.setTargetRa(targetRa);
                     catalogEntry.setTargetDec(targetDec);
                     catalogEntry.setCatalogName(customOverlay.getName());
@@ -4176,6 +4204,7 @@ public class ImageViewerTab {
                     catalogEntries.add(catalogEntry);
                 }
             }
+            scanner.close();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -4651,6 +4680,10 @@ public class ImageViewerTab {
 
     public JCheckBox getBlurImages() {
         return blurImages;
+    }
+
+    public JCheckBox getUseCustomOverlays() {
+        return useCustomOverlays;
     }
 
     public JComboBox getWiseBands() {
