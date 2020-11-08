@@ -310,8 +310,10 @@ public class CustomOverlaysTab {
 
     private void fireCustomOverlaysListener() {
         JCheckBox useCustomOverlays = imageViewerTab.getUseCustomOverlays();
-        useCustomOverlays.setSelected(false);
-        useCustomOverlays.getActionListeners()[0].actionPerformed(null);
+        if (useCustomOverlays.isSelected()) {
+            useCustomOverlays.setSelected(false);
+            useCustomOverlays.getActionListeners()[0].actionPerformed(null);
+        }
     }
 
 }
