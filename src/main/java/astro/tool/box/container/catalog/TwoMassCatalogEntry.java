@@ -105,22 +105,22 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("designation")];
-        ra = toDouble(values[columns.get("ra")]);
-        dec = toDouble(values[columns.get("dec")]);
-        Jmag = toDouble(values[columns.get("j_m")]);
-        J_err = toDouble(values[columns.get("j_cmsig")]);
-        Hmag = toDouble(values[columns.get("h_m")]);
-        H_err = toDouble(values[columns.get("h_cmsig")]);
-        Kmag = toDouble(values[columns.get("k_m")]);
-        K_err = toDouble(values[columns.get("k_cmsig")]);
-        xdate = values[columns.get("xdate")];
-        ph_qual = values[columns.get("ph_qual")];
-        rd_flg = values[columns.get("rd_flg")];
-        bl_flg = values[columns.get("bl_flg")];
-        cc_flg = values[columns.get("cc_flg")];
-        gal_contam = toInteger(values[columns.get("gal_contam")]);
-        mp_flg = toInteger(values[columns.get("mp_flg")]);
+        sourceId = values[columns.get("2MASS")];
+        ra = toDouble(values[columns.get("RAJ2000")]);
+        dec = toDouble(values[columns.get("DEJ2000")]);
+        Jmag = toDouble(values[columns.get("Jmag")]);
+        J_err = toDouble(values[columns.get("e_Jmag")]);
+        Hmag = toDouble(values[columns.get("Hmag")]);
+        H_err = toDouble(values[columns.get("e_Hmag")]);
+        Kmag = toDouble(values[columns.get("Kmag")]);
+        K_err = toDouble(values[columns.get("e_Kmag")]);
+        xdate = values[columns.get("Date")];
+        ph_qual = values[columns.get("Qflg")];
+        rd_flg = values[columns.get("Rflg")];
+        bl_flg = values[columns.get("Bflg")];
+        cc_flg = values[columns.get("Cflg")];
+        gal_contam = toInteger(values[columns.get("Xflg")]);
+        mp_flg = toInteger(values[columns.get("Aflg")]);
     }
 
     @Override
@@ -316,7 +316,8 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(TWO_MASS_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, TWO_MASS_CATALOG_ID_VIZIER, "RAJ2000", "DEJ2000");
+        //return createIrsaUrl(TWO_MASS_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
     }
 
     @Override

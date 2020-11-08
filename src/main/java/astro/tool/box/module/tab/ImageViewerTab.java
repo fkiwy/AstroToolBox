@@ -4145,7 +4145,7 @@ public class ImageViewerTab {
         boolean isCatalogSearch = false;
         if (!customOverlay.getTableName().isBlank()) {
             isCatalogSearch = true;
-            String vizieRUrl = createGenericVizieRUrl(targetRa, targetDec, getFovDiagonal() / 2 / DEG_ARCSEC,
+            String vizieRUrl = createVizieRUrl(targetRa, targetDec, getFovDiagonal() / 2 / DEG_ARCSEC,
                     customOverlay.getTableName(), customOverlay.getRaColName(), customOverlay.getDecColName());
             try {
                 results = readResponse(establishHttpConnection(vizieRUrl), "VizieR");

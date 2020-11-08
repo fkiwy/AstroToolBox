@@ -136,33 +136,33 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     public AllWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("designation")];
-        ra = toDouble(values[columns.get("ra")]);
-        dec = toDouble(values[columns.get("dec")]);
-        W1mag = toDouble(values[columns.get("w1mpro")]);
-        W1_err = toDouble(values[columns.get("w1sigmpro")]);
-        W2mag = toDouble(values[columns.get("w2mpro")]);
-        W2_err = toDouble(values[columns.get("w2sigmpro")]);
-        W3mag = toDouble(values[columns.get("w3mpro")]);
-        W3_err = toDouble(values[columns.get("w3sigmpro")]);
-        W4mag = toDouble(values[columns.get("w4mpro")]);
-        W4_err = toDouble(values[columns.get("w4sigmpro")]);
-        ra_pm = toDouble(values[columns.get("ra_pm")]);
-        dec_pm = toDouble(values[columns.get("dec_pm")]);
-        pmra = toDouble(values[columns.get("pmra")]);
-        pmra_err = toDouble(values[columns.get("sigpmra")]);
-        pmdec = toDouble(values[columns.get("pmdec")]);
-        pmdec_err = toDouble(values[columns.get("sigpmdec")]);
-        cc_flags = values[columns.get("cc_flags")];
-        ext_flg = toInteger(values[columns.get("ext_flg")]);
-        var_flg = values[columns.get("var_flg")];
-        ph_qual = values[columns.get("ph_qual")];
-        Jmag = toDouble(values[columns.get("j_m_2mass")]);
-        J_err = toDouble(values[columns.get("j_msig_2mass")]);
-        Hmag = toDouble(values[columns.get("h_m_2mass")]);
-        H_err = toDouble(values[columns.get("h_msig_2mass")]);
-        Kmag = toDouble(values[columns.get("k_m_2mass")]);
-        K_err = toDouble(values[columns.get("k_msig_2mass")]);
+        sourceId = values[columns.get("AllWISE")];
+        ra = toDouble(values[columns.get("RAJ2000")]);
+        dec = toDouble(values[columns.get("DEJ2000")]);
+        W1mag = toDouble(values[columns.get("W1mag")]);
+        W1_err = toDouble(values[columns.get("e_W1mag")]);
+        W2mag = toDouble(values[columns.get("W2mag")]);
+        W2_err = toDouble(values[columns.get("e_W2mag")]);
+        W3mag = toDouble(values[columns.get("W3mag")]);
+        W3_err = toDouble(values[columns.get("e_W3mag")]);
+        W4mag = toDouble(values[columns.get("W4mag")]);
+        W4_err = toDouble(values[columns.get("e_W4mag")]);
+        ra_pm = toDouble(values[columns.get("RA_pm")]);
+        dec_pm = toDouble(values[columns.get("DE_pm")]);
+        pmra = toDouble(values[columns.get("pmRA")]);
+        pmra_err = toDouble(values[columns.get("e_pmRA")]);
+        pmdec = toDouble(values[columns.get("pmDE")]);
+        pmdec_err = toDouble(values[columns.get("e_pmDE")]);
+        cc_flags = values[columns.get("ccf")];
+        ext_flg = toInteger(values[columns.get("ex")]);
+        var_flg = values[columns.get("var")];
+        ph_qual = values[columns.get("qph")];
+        Jmag = toDouble(values[columns.get("Jmag")]);
+        J_err = toDouble(values[columns.get("e_Jmag")]);
+        Hmag = toDouble(values[columns.get("Hmag")]);
+        H_err = toDouble(values[columns.get("e_Hmag")]);
+        Kmag = toDouble(values[columns.get("Kmag")]);
+        K_err = toDouble(values[columns.get("e_Kmag")]);
     }
 
     @Override
@@ -332,7 +332,8 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(ALLWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, ALLWISE_CATALOG_ID_VIZIER, "RAJ2000", "DEJ2000");
+        //return createIrsaUrl(ALLWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
     }
 
     @Override
