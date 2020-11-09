@@ -1856,18 +1856,18 @@ public class ImageViewerTab {
         if (gaiaOverlay.isSelected()) {
             overlays++;
         }
-        if (gaiaProperMotion.isSelected()) {
-            overlays++;
-        }
+        //if (gaiaProperMotion.isSelected()) {
+        //    overlays++;
+        //}
         if (allWiseOverlay.isSelected()) {
             overlays++;
         }
         if (catWiseOverlay.isSelected()) {
             overlays++;
         }
-        if (catWiseProperMotion.isSelected()) {
-            overlays++;
-        }
+        //if (catWiseProperMotion.isSelected()) {
+        //    overlays++;
+        //}
         if (unWiseOverlay.isSelected()) {
             overlays++;
         }
