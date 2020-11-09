@@ -1856,18 +1856,18 @@ public class ImageViewerTab {
         if (gaiaOverlay.isSelected()) {
             overlays++;
         }
-        //if (gaiaProperMotion.isSelected()) {
-        //    overlays++;
-        //}
+        if (gaiaProperMotion.isSelected()) {
+            overlays++;
+        }
         if (allWiseOverlay.isSelected()) {
             overlays++;
         }
         if (catWiseOverlay.isSelected()) {
             overlays++;
         }
-        //if (catWiseProperMotion.isSelected()) {
-        //    overlays++;
-        //}
+        if (catWiseProperMotion.isSelected()) {
+            overlays++;
+        }
         if (unWiseOverlay.isSelected()) {
             overlays++;
         }
@@ -2693,7 +2693,7 @@ public class ImageViewerTab {
         if (checkProperMotion.isSelected()) {
             NumberPair epochCoordinates = component.getEpochCoordinates();
             NumberPair position = toPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
-            Circle circle = new Circle(position.getX(), position.getY(), (shapeSize / 2) * zoom / 100, Color.RED);
+            Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 200, Color.RED);
             circle.draw(image.getGraphics());
         }
 
@@ -4122,13 +4122,24 @@ public class ImageViewerTab {
             catalogQuery.setDec(targetDec);
             catalogQuery.setSearchRadius(getFovDiagonal() / 2);
             catalogQuery.setTpm(toDouble(properMotionField.getText()));
+            List<CatalogEntry> resultEntries = new ArrayList<>();
             List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoordsAndTpm(catalogQuery);
             catalogEntries.forEach(catalogEntry -> {
                 catalogEntry.setTargetRa(targetRa);
                 catalogEntry.setTargetDec(targetDec);
                 catalogEntry.loadCatalogElements();
+                if (showBrownDwarfsOnly.isSelected() || displaySpectralTypes.isSelected()) {
+                    setSpectralType(catalogEntry);
+                }
+                if (showBrownDwarfsOnly.isSelected()) {
+                    if (isBrownDwarf(catalogEntry)) {
+                        resultEntries.add(catalogEntry);
+                    }
+                } else {
+                    resultEntries.add(catalogEntry);
+                }
             });
-            return catalogEntries;
+            return resultEntries;
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
@@ -4428,8 +4439,13 @@ public class ImageViewerTab {
             double newX = pixelCoords.getX();
             double newY = pixelCoords.getY();
 
-            Arrow arrow = new Arrow(x, y, newX, newY, getOverlaySize(), color);
-            arrow.draw(graphics);
+            Drawable toDraw;
+            if (displaySpectralTypes.isSelected()) {
+                toDraw = new Text(position.getX(), position.getY(), getOverlaySize(), color, catalogEntry.getSpt());
+            } else {
+                toDraw = new Arrow(x, y, newX, newY, getOverlaySize(), color);
+            }
+            toDraw.draw(graphics);
         });
     }
 
