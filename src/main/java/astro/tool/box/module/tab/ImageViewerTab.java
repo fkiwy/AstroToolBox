@@ -162,6 +162,8 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SIZE = 2.75;
+    public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 5;
+    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.5;
     public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
@@ -291,6 +293,7 @@ public class ImageViewerTab {
     private List<NumberPair> crosshairs;
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
+    private CatalogEntry pmCatalogEntry;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
@@ -1347,6 +1350,8 @@ public class ImageViewerTab {
                 if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useCatwisePM.setSelected(false);
                     applyProperMotion(new GaiaCatalogEntry());
+                }
+                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
                     createFlipbook();
                 }
             });
@@ -1356,6 +1361,8 @@ public class ImageViewerTab {
                 if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useGaiaPM.setSelected(false);
                     applyProperMotion(new CatWiseCatalogEntry());
+                }
+                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
                     createFlipbook();
                 }
             });
@@ -2059,6 +2066,7 @@ public class ImageViewerTab {
                 epochCountW2 = 0;
                 imageCutOff = false;
                 initCatalogEntries();
+                pmCatalogEntry = null;
                 ps1Image = null;
                 processedPs1Image = null;
                 if (panstarrsImages) {
@@ -2555,6 +2563,21 @@ public class ImageViewerTab {
         NumberPair objectMotion = getCoordinates(checkObjectMotionField.getText());
         double objectPmRa = objectMotion.getX();
         double objectPmDec = objectMotion.getY();
+
+        double numberOfYears = 0;
+        if (useGaiaPM.isSelected() && pmCatalogEntry != null) {
+            objectRa = pmCatalogEntry.getRa();
+            objectDec = pmCatalogEntry.getDec();
+            numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
+        }
+        if (useCatwisePM.isSelected() && pmCatalogEntry != null) {
+            objectRa = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
+            objectDec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
+            numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
+        }
+        objectRa = objectRa - (numberOfYears * objectPmRa / DEG_MAS) / cos(toRadians(objectDec));
+        objectDec = objectDec - numberOfYears * objectPmDec / DEG_MAS;
+
         double pmraOfOneEpoch = (objectPmRa / 2) / DEG_MAS;
         double pmdecOfOneEpoch = (objectPmDec / 2) / DEG_MAS;
         double pmraOfEpochs = totalEpochs * pmraOfOneEpoch;
@@ -4412,16 +4435,16 @@ public class ImageViewerTab {
 
             double ra = 0;
             double dec = 0;
-            int numberOfYears = 0;
+            double numberOfYears = 0;
             if (catalogEntry instanceof GaiaCatalogEntry) {
                 ra = catalogEntry.getRa();
                 dec = catalogEntry.getDec();
-                numberOfYears = 5;
+                numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
             }
             if (catalogEntry instanceof CatWiseCatalogEntry) {
                 ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
                 dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
-                numberOfYears = 4;
+                numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
             }
 
             ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
@@ -4666,12 +4689,12 @@ public class ImageViewerTab {
         catalogEntry.setRa(objectCoords.getX());
         catalogEntry.setDec(objectCoords.getY());
         catalogEntry.setSearchRadius(5);
-        catalogEntry = retrieveCatalogEntry(catalogEntry);
-        if (catalogEntry == null) {
+        pmCatalogEntry = retrieveCatalogEntry(catalogEntry);
+        if (pmCatalogEntry == null) {
             showInfoDialog(baseFrame, NO_OBJECT_FOUND);
             checkObjectMotionField.setText(null);
         } else {
-            checkObjectMotionField.setText(roundTo3DecNZ(catalogEntry.getPmra()) + " " + roundTo3DecNZ(catalogEntry.getPmdec()));
+            checkObjectMotionField.setText(roundTo3DecNZ(pmCatalogEntry.getPmra()) + " " + roundTo3DecNZ(pmCatalogEntry.getPmdec()));
         }
     }
 

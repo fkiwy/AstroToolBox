@@ -20,7 +20,7 @@ import java.util.Objects;
 
 public class CatWiseRejectedEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "CatWISE2020 Reject Table";
+    public static final String CATALOG_NAME = "CatWISE Reject Table";
 
     // Unique WISE source designation
     private String sourceId;
