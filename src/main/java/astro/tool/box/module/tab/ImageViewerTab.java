@@ -337,6 +337,8 @@ public class ImageViewerTab {
     private int pointerX;
     private int pointerY;
 
+    private int componentIndex;
+
     private int previousSize;
     private double previousRa;
     private double previousDec;
@@ -853,9 +855,9 @@ public class ImageViewerTab {
                 } else {
                     GridLayout layout = (GridLayout) controlPanel.getLayout();
                     int numberOfRows = customOverlays.size();
-                    int rowsHeight = numberOfRows * 25;
+                    int rowsHeight = numberOfRows * ROW_HEIGHT;
                     if (useCustomOverlays.isSelected()) {
-                        int i = controlPanel.getComponentZOrder(useCustomOverlays);
+                        componentIndex = controlPanel.getComponentZOrder(useCustomOverlays) + 1;
                         layout.setRows(layout.getRows() + numberOfRows);
                         controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() + rowsHeight));
                         customOverlays.values().forEach(customOverlay -> {
@@ -866,7 +868,7 @@ public class ImageViewerTab {
                                 processImages();
                             });
                             customOverlay.setCheckBox(overlayCheckBox);
-                            controlPanel.add(overlayCheckBox, i + 1);
+                            controlPanel.add(overlayCheckBox, componentIndex++);
                         });
                     } else {
                         layout.setRows(layout.getRows() - numberOfRows);
