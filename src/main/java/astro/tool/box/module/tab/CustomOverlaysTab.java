@@ -135,6 +135,8 @@ public class CustomOverlaysTab {
 
         JTextField fileNameField = new JTextField(25);
         fileNameField.setBackground(JColor.LIGHT_GREEN.val);
+        TextPrompt fileNamePrompt = new TextPrompt("Select CSV file using \"Select file\" button");
+        fileNamePrompt.applyTo(fileNameField);
         File file = customOverlay.getFile();
         fileNameField.setText(file == null ? "" : file.getName());
         fileNameField.setEditable(false);
