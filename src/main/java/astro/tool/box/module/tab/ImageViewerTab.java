@@ -106,6 +106,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -4177,7 +4178,7 @@ public class ImageViewerTab {
         List<CatalogEntry> catalogEntries = new ArrayList<>();
         String results = null;
         boolean isCatalogSearch = false;
-        if (!customOverlay.getTableName().isBlank()) {
+        if (!customOverlay.getTableName().isEmpty()) {
             isCatalogSearch = true;
             String vizieRUrl = createVizieRUrl(targetRa, targetDec, getFovDiagonal() / 2 / DEG_ARCSEC,
                     customOverlay.getTableName(), customOverlay.getRaColName(), customOverlay.getDecColName());
@@ -4205,7 +4206,13 @@ public class ImageViewerTab {
             int numberOfColumns = columnNames.length;
             int lastColumnIndex = numberOfColumns - 1;
             int raColumnIndex = customOverlay.getRaColumnIndex();
+            if (raColumnIndex == 0 && !customOverlay.getRaColName().isEmpty()) {
+                raColumnIndex = Arrays.asList(columnNames).indexOf(customOverlay.getRaColName());
+            }
             int decColumnIndex = customOverlay.getDecColumnIndex();
+            if (decColumnIndex == 0 && !customOverlay.getDecColName().isEmpty()) {
+                decColumnIndex = Arrays.asList(columnNames).indexOf(customOverlay.getDecColName());
+            }
             if (raColumnIndex > lastColumnIndex) {
                 errors.append("RA position must not be greater than ").append(lastColumnIndex).append(".").append(LINE_SEP);
             }

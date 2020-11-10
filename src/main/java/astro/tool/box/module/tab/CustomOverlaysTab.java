@@ -79,7 +79,7 @@ public class CustomOverlaysTab {
 
             JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(topRow, BorderLayout.PAGE_START);
-            JLabel topRowLabel = new JLabel("You can either use a local CSV file (dark gray button) or a VizieR catalog (yellow fields) to produce an overlay:");
+            JLabel topRowLabel = new JLabel("You can either use a local CSV file (green fields) or a VizieR catalog (yellow fields) to produce an overlay:");
             topRowLabel.setForeground(JColor.DARK_RED.val);
             topRow.add(topRowLabel);
 
@@ -98,93 +98,88 @@ public class CustomOverlaysTab {
                     customOverlay = new CustomOverlay();
                 }
 
-                row.add(new JLabel("Overlay name:"));
+                String overlayName = customOverlay.getName();
+                String tableName = customOverlay.getTableName();
 
                 JTextField overlayNameField = new JTextField(20);
                 row.add(overlayNameField);
-                String overlayName = customOverlay.getName();
+                TextPrompt overlayNamePrompt = new TextPrompt("Overlay name");
+                overlayNamePrompt.applyTo(overlayNameField);
                 overlayNameField.setText(overlayName);
                 overlayNameField.setEditable((overlayName == null));
 
-                JTextField colorField = new JTextField(1);
-                Color color = customOverlay.getColor();
-                colorField.setBackground(color);
-                colorField.setEditable(false);
-
                 JButton chooseColorButton = new JButton("Choose color");
                 row.add(chooseColorButton);
+                Color overlayColor = customOverlay.getColor();
+                chooseColorButton.setBackground(overlayColor);
                 chooseColorButton.addActionListener((ActionEvent evt) -> {
-                    Color chosenColor = JColorChooser.showDialog(null, "Choose an overlay color", color);
-                    chosenColor = chosenColor == null ? color : chosenColor;
+                    Color chosenColor = JColorChooser.showDialog(null, "Choose an overlay color", overlayColor);
+                    chosenColor = chosenColor == null ? overlayColor : chosenColor;
                     customOverlay.setColor(chosenColor);
-                    colorField.setBackground(chosenColor);
+                    chooseColorButton.setBackground(chosenColor);
                 });
-
-                row.add(colorField);
-
-                row.add(new JLabel("Shape:"));
 
                 JComboBox<Shape> overlayShapes = new JComboBox<>(Shape.values());
                 row.add(overlayShapes);
                 Shape shape = customOverlay.getShape();
                 overlayShapes.setSelectedItem(shape == null ? Shape.CIRCLE : shape);
 
-                row.add(new JLabel("RA position:"));
+                JTextField raPositionField = new JTextField(8);
+                row.add(raPositionField);
+                raPositionField.setBackground(JColor.LIGHT_GREEN.val);
+                TextPrompt raPositionPrompt = new TextPrompt("RA column #");
+                raPositionPrompt.applyTo(raPositionField);
+                raPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
 
-                JTextField raColumnPosition = new JTextField(2);
-                row.add(raColumnPosition);
-                raColumnPosition.setText(overlayName == null ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
+                JTextField decPositionField = new JTextField(8);
+                row.add(decPositionField);
+                decPositionField.setBackground(JColor.LIGHT_GREEN.val);
+                TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
+                decPositionPrompt.applyTo(decPositionField);
+                decPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
-                row.add(new JLabel("dec position:"));
-
-                JTextField decColumnPosition = new JTextField(2);
-                row.add(decColumnPosition);
-                decColumnPosition.setText(overlayName == null ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
-
-                JTextField overlayFileName = new JTextField(30);
+                JTextField fileNameField = new JTextField(30);
+                fileNameField.setBackground(JColor.LIGHT_GREEN.val);
                 File file = customOverlay.getFile();
-                overlayFileName.setText(file == null ? "" : file.getName());
-                overlayFileName.setEditable(false);
+                fileNameField.setText(file == null ? "" : file.getName());
+                fileNameField.setEditable(false);
 
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileFilter(new FileTypeFilter(".csv", ".csv files"));
 
                 JButton importFileButton = new JButton("Select file");
                 row.add(importFileButton);
-                importFileButton.setBorderPainted(false);
-                importFileButton.setBackground(JColor.GRAY.val);
-                importFileButton.setForeground(JColor.WHITE.val);
                 importFileButton.addActionListener((ActionEvent evt) -> {
                     int returnVal = fileChooser.showOpenDialog(null);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File selectedFile = fileChooser.getSelectedFile();
                         customOverlay.setFile(selectedFile);
-                        overlayFileName.setText(selectedFile.getName());
+                        fileNameField.setText(selectedFile.getName());
                     }
                 });
 
-                row.add(overlayFileName);
+                row.add(fileNameField);
 
-                JTextField tableName = new JTextField(15);
-                row.add(tableName);
-                tableName.setBackground(JColor.LIGHT_YELLOW.val);
+                JTextField tableNameField = new JTextField(15);
+                row.add(tableNameField);
+                tableNameField.setBackground(JColor.LIGHT_YELLOW.val);
                 TextPrompt tableNamePrompt = new TextPrompt("Catalog table name");
-                tableNamePrompt.applyTo(tableName);
-                tableName.setText(overlayName == null ? "" : customOverlay.getTableName());
+                tableNamePrompt.applyTo(tableNameField);
+                tableNameField.setText(overlayName == null ? "" : customOverlay.getTableName());
 
-                JTextField raColName = new JTextField(15);
-                row.add(raColName);
-                raColName.setBackground(JColor.LIGHT_YELLOW.val);
+                JTextField raColNameField = new JTextField(15);
+                row.add(raColNameField);
+                raColNameField.setBackground(JColor.LIGHT_YELLOW.val);
                 TextPrompt raColNamePrompt = new TextPrompt("RA column name");
-                raColNamePrompt.applyTo(raColName);
-                raColName.setText(overlayName == null ? "" : customOverlay.getRaColName());
+                raColNamePrompt.applyTo(raColNameField);
+                raColNameField.setText(overlayName == null ? "" : customOverlay.getRaColName());
 
-                JTextField decColName = new JTextField(15);
-                row.add(decColName);
-                decColName.setBackground(JColor.LIGHT_YELLOW.val);
+                JTextField decColNameField = new JTextField(15);
+                row.add(decColNameField);
+                decColNameField.setBackground(JColor.LIGHT_YELLOW.val);
                 TextPrompt decColNamePrompt = new TextPrompt("Dec column name");
-                decColNamePrompt.applyTo(decColName);
-                decColName.setText(overlayName == null ? "" : customOverlay.getDecColName());
+                decColNamePrompt.applyTo(decColNameField);
+                decColNameField.setText(overlayName == null ? "" : customOverlay.getDecColName());
 
                 JLabel message = createLabel("", JColor.DARKER_GREEN);
                 Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -203,42 +198,44 @@ public class CustomOverlaysTab {
                     if (customOverlay.getColor() == null) {
                         errors.append("Overlay color must not be empty.").append(LINE_SEP);
                     }
-                    if (raColumnPosition.getText().isEmpty()) {
-                        errors.append("RA position must not be empty.").append(LINE_SEP);
+                    if (customOverlay.getFile() == null && tableNameField.getText().isEmpty()) {
+                        errors.append("CSV file or VizieR catalog must be specified.").append(LINE_SEP);
                     }
-                    if (raColumnPosition.getText().isEmpty() || decColumnPosition.getText().isEmpty()) {
-                        errors.append("Dec position must not be empty.").append(LINE_SEP);
+                    if (customOverlay.getFile() != null && !tableNameField.getText().isEmpty()) {
+                        errors.append("Only either a CSV file or a VizieR catalog may be specified.").append(LINE_SEP);
                     }
-                    if (customOverlay.getFile() == null && tableName.getText().isEmpty()) {
-                        errors.append("Either a CSV file or a VizieR catalog must be specified.").append(LINE_SEP);
-                    }
-                    if (!tableName.getText().isEmpty()) {
-                        if (raColName.getText().isEmpty()) {
+                    if (tableNameField.getText().isEmpty()) {
+                        if (raPositionField.getText().isEmpty()) {
+                            errors.append("RA position must not be empty.").append(LINE_SEP);
+                        } else {
+                            try {
+                                raColumnIndex = toInteger(raPositionField.getText()) - 1;
+                                if (raColumnIndex < 0) {
+                                    errors.append("RA position must be greater than 0.").append(LINE_SEP);
+                                }
+                            } catch (Exception ex) {
+                                errors.append("Invalid RA position!").append(LINE_SEP);
+                            }
+                        }
+                        if (decPositionField.getText().isEmpty()) {
+                            errors.append("Dec position must not be empty.").append(LINE_SEP);
+                        } else {
+                            try {
+                                decColumnIndex = toInteger(decPositionField.getText()) - 1;
+                                if (decColumnIndex < 0) {
+                                    errors.append("Dec position must be greater than 0.").append(LINE_SEP);
+                                }
+                            } catch (Exception ex) {
+                                errors.append("Invalid dec position!").append(LINE_SEP);
+                            }
+                        }
+                    } else {
+                        if (raColNameField.getText().isEmpty()) {
                             errors.append("RA column name must not be empty.").append(LINE_SEP);
                         }
-                        if (decColName.getText().isEmpty()) {
+                        if (decColNameField.getText().isEmpty()) {
                             errors.append("Dec column name must not be empty.").append(LINE_SEP);
                         }
-                    }
-                    if (errors.length() > 0) {
-                        showErrorDialog(baseFrame, errors.toString());
-                        return;
-                    }
-                    try {
-                        raColumnIndex = toInteger(raColumnPosition.getText()) - 1;
-                        if (raColumnIndex < 0) {
-                            errors.append("RA position must be greater than 0.").append(LINE_SEP);
-                        }
-                    } catch (Exception ex) {
-                        errors.append("Invalid RA position!").append(LINE_SEP);
-                    }
-                    try {
-                        decColumnIndex = toInteger(decColumnPosition.getText()) - 1;
-                        if (decColumnIndex < 0) {
-                            errors.append("Dec position must be greater than 0.").append(LINE_SEP);
-                        }
-                    } catch (Exception ex) {
-                        errors.append("Invalid dec position!").append(LINE_SEP);
                     }
                     if (errors.length() > 0) {
                         showErrorDialog(baseFrame, errors.toString());
@@ -249,9 +246,9 @@ public class CustomOverlaysTab {
                     customOverlay.setShape((Shape) overlayShapes.getSelectedItem());
                     customOverlay.setRaColumnIndex(raColumnIndex);
                     customOverlay.setDecColumnIndex(decColumnIndex);
-                    customOverlay.setTableName(tableName.getText().trim());
-                    customOverlay.setRaColName(raColName.getText().trim());
-                    customOverlay.setDecColName(decColName.getText().trim());
+                    customOverlay.setTableName(tableNameField.getText().trim());
+                    customOverlay.setRaColName(raColNameField.getText().trim());
+                    customOverlay.setDecColName(decColNameField.getText().trim());
                     fireCustomOverlaysListener();
                     CUSTOM_OVERLAYS.put(name, customOverlay);
                     overlayNameField.setEditable(false);
@@ -261,9 +258,9 @@ public class CustomOverlaysTab {
                     timer.restart();
                 });
 
-                JButton removeOverlayButton = new JButton("Delete");
-                row.add(removeOverlayButton);
-                removeOverlayButton.addActionListener((ActionEvent evt) -> {
+                JButton deleteOverlayButton = new JButton("Delete");
+                row.add(deleteOverlayButton);
+                deleteOverlayButton.addActionListener((ActionEvent evt) -> {
                     String name = customOverlay.getName();
                     if (name == null || !showConfirmDialog(baseFrame, "Do you really want to delete overlay " + name + "?")) {
                         return;
@@ -273,14 +270,14 @@ public class CustomOverlaysTab {
                     saveOverlayDefinitions();
                     overlayNameField.setText("");
                     overlayNameField.setEditable(true);
-                    colorField.setBackground(null);
+                    chooseColorButton.setBackground(null);
                     overlayShapes.setSelectedItem(Shape.CIRCLE);
-                    raColumnPosition.setText("");
-                    decColumnPosition.setText("");
-                    overlayFileName.setText("");
-                    tableName.setText("");
-                    raColName.setText("");
-                    decColName.setText("");
+                    raPositionField.setText("");
+                    decPositionField.setText("");
+                    fileNameField.setText("");
+                    tableNameField.setText("");
+                    raColNameField.setText("");
+                    decColNameField.setText("");
                     customOverlay.init();
                     table.updateUI();
 
