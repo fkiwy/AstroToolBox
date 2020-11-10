@@ -18,7 +18,7 @@ public class XCross implements Drawable {
         size = 3 * size / 4;
         this.x = (int) round(x - size / 2);
         this.y = (int) round(y - size / 2);
-        this.size = (int) round(size);
+        this.size = (int) size;
         this.color = color;
     }
 
