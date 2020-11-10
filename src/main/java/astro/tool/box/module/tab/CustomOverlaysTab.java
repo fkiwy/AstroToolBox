@@ -79,8 +79,7 @@ public class CustomOverlaysTab {
 
             JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(topRow, BorderLayout.PAGE_START);
-            JLabel topRowLabel = new JLabel("You can either use a local CSV file (green fields) or a VizieR catalog (yellow fields) to produce an overlay:");
-            topRowLabel.setForeground(JColor.DARK_RED.val);
+            JLabel topRowLabel = new JLabel(html("You can either use a local CSV file <span style='background:#CCFFCC'>(green fields)</span> or a VizieR catalog <span style='background:#FFFFCC'>(yellow fields)</span> to produce an overlay:"));
             topRow.add(topRowLabel);
 
             int overlayCount = 50;
@@ -124,21 +123,7 @@ public class CustomOverlaysTab {
                 Shape shape = customOverlay.getShape();
                 overlayShapes.setSelectedItem(shape == null ? Shape.CIRCLE : shape);
 
-                JTextField raPositionField = new JTextField(8);
-                row.add(raPositionField);
-                raPositionField.setBackground(JColor.LIGHT_GREEN.val);
-                TextPrompt raPositionPrompt = new TextPrompt("RA column #");
-                raPositionPrompt.applyTo(raPositionField);
-                raPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
-
-                JTextField decPositionField = new JTextField(8);
-                row.add(decPositionField);
-                decPositionField.setBackground(JColor.LIGHT_GREEN.val);
-                TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
-                decPositionPrompt.applyTo(decPositionField);
-                decPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
-
-                JTextField fileNameField = new JTextField(30);
+                JTextField fileNameField = new JTextField(25);
                 fileNameField.setBackground(JColor.LIGHT_GREEN.val);
                 File file = customOverlay.getFile();
                 fileNameField.setText(file == null ? "" : file.getName());
@@ -159,6 +144,20 @@ public class CustomOverlaysTab {
                 });
 
                 row.add(fileNameField);
+
+                JTextField raPositionField = new JTextField(10);
+                row.add(raPositionField);
+                raPositionField.setBackground(JColor.LIGHT_GREEN.val);
+                TextPrompt raPositionPrompt = new TextPrompt("RA column #");
+                raPositionPrompt.applyTo(raPositionField);
+                raPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
+
+                JTextField decPositionField = new JTextField(10);
+                row.add(decPositionField);
+                decPositionField.setBackground(JColor.LIGHT_GREEN.val);
+                TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
+                decPositionPrompt.applyTo(decPositionField);
+                decPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
                 JTextField tableNameField = new JTextField(15);
                 row.add(tableNameField);
@@ -196,7 +195,7 @@ public class CustomOverlaysTab {
                         errors.append("Overlay name must not be empty.").append(LINE_SEP);
                     }
                     if (customOverlay.getColor() == null) {
-                        errors.append("Overlay color must not be empty.").append(LINE_SEP);
+                        errors.append("Overlay color must be specified.").append(LINE_SEP);
                     }
                     if (customOverlay.getFile() == null && tableNameField.getText().isEmpty()) {
                         errors.append("CSV file or VizieR catalog must be specified.").append(LINE_SEP);
