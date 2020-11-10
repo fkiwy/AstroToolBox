@@ -842,32 +842,48 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
-            controlPanel.add(new JLabel(header("Experimental features (*):")));
-
-            displaySpectralTypes = new JCheckBox("Display estimated spectral types");
-            controlPanel.add(displaySpectralTypes);
-            displaySpectralTypes.addActionListener((ActionEvent evt) -> {
-                if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
-                    gaiaOverlay.setSelected(true);
+            useCustomOverlays = new JCheckBox("Custom overlays:");
+            controlPanel.add(useCustomOverlays);
+            useCustomOverlays.setBackground(Color.WHITE);
+            useCustomOverlays.addActionListener((ActionEvent evt) -> {
+                customOverlays = CustomOverlaysTab.CUSTOM_OVERLAYS;
+                if (customOverlays.isEmpty()) {
+                    showInfoDialog(baseFrame, "No custom overlays have been added yet.");
+                    useCustomOverlays.setSelected(false);
+                } else {
+                    GridLayout layout = (GridLayout) controlPanel.getLayout();
+                    int numberOfRows = customOverlays.size();
+                    int rowsHeight = numberOfRows * 25;
+                    if (useCustomOverlays.isSelected()) {
+                        int i = controlPanel.getComponentZOrder(useCustomOverlays);
+                        layout.setRows(layout.getRows() + numberOfRows);
+                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() + rowsHeight));
+                        customOverlays.values().forEach(customOverlay -> {
+                            JCheckBox overlayCheckBox = new JCheckBox(customOverlay.getName());
+                            overlayCheckBox.setForeground(customOverlay.getColor());
+                            overlayCheckBox.setBackground(Color.WHITE);
+                            overlayCheckBox.addActionListener((ActionEvent e) -> {
+                                processImages();
+                            });
+                            customOverlay.setCheckBox(overlayCheckBox);
+                            controlPanel.add(overlayCheckBox, i + 1);
+                        });
+                    } else {
+                        layout.setRows(layout.getRows() - numberOfRows);
+                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() - rowsHeight));
+                        customOverlays.values().forEach((customOverlay) -> {
+                            JCheckBox checkBox = customOverlay.getCheckBox();
+                            if (checkBox != null) {
+                                controlPanel.remove(checkBox);
+                            }
+                            customOverlay.setCatalogEntries(null);
+                            processImages();
+                        });
+                    }
+                    controlPanel.updateUI();
+                    baseFrame.setVisible(true);
                 }
-                initCatalogEntries();
-                processImages();
             });
-
-            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
-            controlPanel.add(showBrownDwarfsOnly);
-            showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
-                if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
-                    gaiaOverlay.setSelected(true);
-                }
-                initCatalogEntries();
-                processImages();
-            });
-
-            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
-            warning.setForeground(Color.RED);
-            warning.setFont(font);
-            controlPanel.add(warning);
 
             controlPanel.add(new JLabel(header("PM vectors:")));
 
@@ -1392,45 +1408,32 @@ public class ImageViewerTab {
                 }
             });
 
-            useCustomOverlays = new JCheckBox(header("Custom overlays:"));
-            controlPanel.add(useCustomOverlays);
-            customOverlays = CustomOverlaysTab.CUSTOM_OVERLAYS;
-            useCustomOverlays.addActionListener((ActionEvent evt) -> {
-                if (customOverlays.isEmpty()) {
-                    showInfoDialog(baseFrame, "No custom overlays have been added yet.");
-                    useCustomOverlays.setSelected(false);
-                } else {
-                    GridLayout layout = (GridLayout) controlPanel.getLayout();
-                    int numberOfRows = customOverlays.size();
-                    int rowsHeight = numberOfRows * 25;
-                    if (useCustomOverlays.isSelected()) {
-                        layout.setRows(layout.getRows() + numberOfRows);
-                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() + rowsHeight));
-                        customOverlays.values().forEach(customOverlay -> {
-                            JCheckBox overlayCheckBox = new JCheckBox(customOverlay.getName());
-                            overlayCheckBox.setForeground(customOverlay.getColor());
-                            overlayCheckBox.addActionListener((ActionEvent e) -> {
-                                processImages();
-                            });
-                            customOverlay.setCheckBox(overlayCheckBox);
-                            controlPanel.add(overlayCheckBox);
-                        });
-                    } else {
-                        layout.setRows(layout.getRows() - numberOfRows);
-                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() - rowsHeight));
-                        customOverlays.values().forEach((customOverlay) -> {
-                            JCheckBox checkBox = customOverlay.getCheckBox();
-                            if (checkBox != null) {
-                                controlPanel.remove(checkBox);
-                            }
-                            customOverlay.setCatalogEntries(null);
-                            processImages();
-                        });
-                    }
-                    controlPanel.updateUI();
-                    baseFrame.setVisible(true);
+            controlPanel.add(new JLabel(header("Experimental features (*):")));
+
+            displaySpectralTypes = new JCheckBox("Display estimated spectral types");
+            controlPanel.add(displaySpectralTypes);
+            displaySpectralTypes.addActionListener((ActionEvent evt) -> {
+                if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
+                    gaiaOverlay.setSelected(true);
                 }
+                initCatalogEntries();
+                processImages();
             });
+
+            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
+            controlPanel.add(showBrownDwarfsOnly);
+            showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
+                if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
+                    gaiaOverlay.setSelected(true);
+                }
+                initCatalogEntries();
+                processImages();
+            });
+
+            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
+            warning.setForeground(Color.RED);
+            warning.setFont(font);
+            controlPanel.add(warning);
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
