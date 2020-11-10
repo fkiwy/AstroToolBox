@@ -861,22 +861,23 @@ public class ImageViewerTab {
                         layout.setRows(layout.getRows() + numberOfRows);
                         controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() + rowsHeight));
                         customOverlays.values().forEach(customOverlay -> {
-                            JCheckBox overlayCheckBox = new JCheckBox(customOverlay.getName());
-                            overlayCheckBox.setForeground(customOverlay.getColor());
-                            overlayCheckBox.setBackground(Color.WHITE);
-                            overlayCheckBox.addActionListener((ActionEvent e) -> {
+                            JCheckBox checkBox = new JCheckBox(customOverlay.getName());
+                            checkBox.setForeground(customOverlay.getColor());
+                            checkBox.setBackground(Color.WHITE);
+                            checkBox.addActionListener((ActionEvent e) -> {
                                 processImages();
                             });
-                            customOverlay.setCheckBox(overlayCheckBox);
-                            controlPanel.add(overlayCheckBox, componentIndex++);
+                            customOverlay.setCheckBox(checkBox);
+                            controlPanel.add(checkBox, componentIndex++);
                         });
                     } else {
+                        componentIndex = controlPanel.getComponentZOrder(useCustomOverlays) + numberOfRows;
                         layout.setRows(layout.getRows() - numberOfRows);
                         controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() - rowsHeight));
                         customOverlays.values().forEach((customOverlay) -> {
                             JCheckBox checkBox = customOverlay.getCheckBox();
                             if (checkBox != null) {
-                                controlPanel.remove(checkBox);
+                                controlPanel.remove(componentIndex--);
                             }
                             customOverlay.setCatalogEntries(null);
                             processImages();
@@ -2936,7 +2937,7 @@ public class ImageViewerTab {
         }
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
-                if (customOverlay.getCheckBox().isSelected()) {
+                if (customOverlay.getCheckBox() != null && customOverlay.getCheckBox().isSelected()) {
                     if (customOverlay.getCatalogEntries() == null) {
                         customOverlay.setCatalogEntries(Collections.emptyList());
                         CompletableFuture.supplyAsync(() -> {
