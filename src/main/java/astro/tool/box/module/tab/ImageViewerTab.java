@@ -163,7 +163,7 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SIZE = 2.75;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 5;
-    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.5;
+    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 3.5;
     public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
@@ -4454,7 +4454,7 @@ public class ImageViewerTab {
             double x = pixelCoords.getX();
             double y = pixelCoords.getY();
 
-            numberOfYears = (selectedEpochs) + 3; // 3 -> 2011, 2012 & 2013
+            numberOfYears = (selectedEpochs) + 2; // 2 -> 2011-2013
             double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
             double newDec = dec + numberOfYears * pmDec / DEG_MAS;
 
