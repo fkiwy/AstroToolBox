@@ -219,9 +219,9 @@ public class SettingsTab {
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
             searchRadius = Integer.parseInt(USER_SETTINGS.getProperty(SEARCH_RADIUS, "10"));
             panstarrsFOV = Integer.parseInt(USER_SETTINGS.getProperty(PANSTARRS_FOV, "30"));
-            aladinLiteFOV = Integer.parseInt(USER_SETTINGS.getProperty(ALADIN_LITE_FOV, "240"));
-            wiseViewFOV = Integer.parseInt(USER_SETTINGS.getProperty(WISE_VIEW_FOV, "120"));
-            finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "240"));
+            aladinLiteFOV = Integer.parseInt(USER_SETTINGS.getProperty(ALADIN_LITE_FOV, "300"));
+            wiseViewFOV = Integer.parseInt(USER_SETTINGS.getProperty(WISE_VIEW_FOV, "100"));
+            finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "100"));
 
             catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
             if (catalogQueryTab.getPanstarrsField() != null) {
