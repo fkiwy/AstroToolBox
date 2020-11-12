@@ -844,7 +844,6 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
-            customOverlays = CustomOverlaysTab.CUSTOM_OVERLAYS;
             useCustomOverlays = new JCheckBox("Custom overlays:");
             controlPanel.add(useCustomOverlays);
             useCustomOverlays.setBackground(Color.WHITE);
@@ -4785,6 +4784,10 @@ public class ImageViewerTab {
 
     public void setImageViewer(ImageViewerTab imageViewer) {
         this.imageViewer = imageViewer;
+    }
+
+    public void setCustomOverlays(Map<String, CustomOverlay> customOverlays) {
+        this.customOverlays = customOverlays;
     }
 
     public void setCollectionTable(JTable collectionTable) {

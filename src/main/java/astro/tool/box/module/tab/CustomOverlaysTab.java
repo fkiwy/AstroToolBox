@@ -41,7 +41,7 @@ public class CustomOverlaysTab {
     private static final String OVERLAYS_FILE_NAME = "/AstroToolBoxOverlays.txt";
     private static final String OVERLAYS_PATH = USER_HOME + OVERLAYS_FILE_NAME;
 
-    public static final Map<String, CustomOverlay> CUSTOM_OVERLAYS = new LinkedHashMap<>();
+    private final Map<String, CustomOverlay> customOverlays = new LinkedHashMap<>();
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -59,7 +59,7 @@ public class CustomOverlaysTab {
                 while (scanner.hasNextLine()) {
                     CustomOverlay customOverlay = new CustomOverlay();
                     customOverlay.deserialize(scanner.nextLine());
-                    CUSTOM_OVERLAYS.put(customOverlay.getName(), customOverlay);
+                    customOverlays.put(customOverlay.getName(), customOverlay);
                 }
             } catch (Exception ex) {
                 if (ex instanceof FileNotFoundException) {
@@ -68,9 +68,9 @@ public class CustomOverlaysTab {
                     return;
                 }
             }
-
+            imageViewerTab.setCustomOverlays(customOverlays);
             List<CustomOverlay> overlays = new ArrayList<>();
-            CUSTOM_OVERLAYS.values().forEach(overlay -> {
+            customOverlays.values().forEach(overlay -> {
                 overlays.add(overlay);
             });
 
@@ -261,7 +261,7 @@ public class CustomOverlaysTab {
             customOverlay.setRaColName(raColNameField.getText().trim());
             customOverlay.setDecColName(decColNameField.getText().trim());
             fireCustomOverlaysListener();
-            CUSTOM_OVERLAYS.put(name, customOverlay);
+            customOverlays.put(name, customOverlay);
             overlayNameField.setEditable(false);
             saveOverlayDefinitions();
 
@@ -277,7 +277,7 @@ public class CustomOverlaysTab {
                 return;
             }
             fireCustomOverlaysListener();
-            CUSTOM_OVERLAYS.remove(name);
+            customOverlays.remove(name);
             saveOverlayDefinitions();
             overlayNameField.setText("");
             overlayNameField.setEditable(true);
@@ -301,7 +301,7 @@ public class CustomOverlaysTab {
 
     private void saveOverlayDefinitions() {
         StringBuilder data = new StringBuilder();
-        CUSTOM_OVERLAYS.values().forEach(customOverlay -> {
+        customOverlays.values().forEach(customOverlay -> {
             data.append(customOverlay.serialize()).append(LINE_SEP);
         });
         try (FileWriter writer = new FileWriter(OVERLAYS_PATH)) {
