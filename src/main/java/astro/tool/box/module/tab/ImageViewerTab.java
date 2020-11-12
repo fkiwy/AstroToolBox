@@ -844,11 +844,11 @@ public class ImageViewerTab {
             });
             controlPanel.add(ssoOverlay);
 
+            customOverlays = CustomOverlaysTab.CUSTOM_OVERLAYS;
             useCustomOverlays = new JCheckBox("Custom overlays:");
             controlPanel.add(useCustomOverlays);
             useCustomOverlays.setBackground(Color.WHITE);
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
-                customOverlays = CustomOverlaysTab.CUSTOM_OVERLAYS;
                 if (customOverlays.isEmpty()) {
                     showInfoDialog(baseFrame, "No custom overlays have been added yet.");
                     useCustomOverlays.setSelected(false);
@@ -875,14 +875,10 @@ public class ImageViewerTab {
                         layout.setRows(layout.getRows() - numberOfRows);
                         controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() - rowsHeight));
                         customOverlays.values().forEach((customOverlay) -> {
-                            JCheckBox checkBox = customOverlay.getCheckBox();
-                            if (checkBox != null) {
-                                checkBox.setSelected(false);
-                            }
                             controlPanel.remove(componentIndex--);
                             customOverlay.setCatalogEntries(null);
-                            processImages();
                         });
+                        processImages();
                     }
                     controlPanel.updateUI();
                     baseFrame.setVisible(true);
