@@ -6,7 +6,6 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
@@ -233,15 +232,15 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogUrl() {
-        return createGaiaDR3Url(ra, dec, searchRadius / DEG_ARCSEC);
+        return ESAC_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     @Override
     public String getProperMotionQueryUrl() {
-        return ESAC_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=" + createProperMotionQuery();
+        return ESAC_TAP_URL + encodeQuery(createProperMotionQuery());
     }
 
-    private String createProperMotionQuery() {
+    private String createCatalogQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, "SELECT source_id,");
         addRow(query, "       ra,");
@@ -262,8 +261,14 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       dr2_radial_velocity_error");
         addRow(query, "FROM   " + GAIA_DR3_CATALOG_ID);
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-        addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
-        return encodeQuery(query.toString());
+        return query.toString();
+    }
+
+    private String createProperMotionQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, createCatalogQuery());
+        addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
+        return query.toString();
     }
 
     @Override

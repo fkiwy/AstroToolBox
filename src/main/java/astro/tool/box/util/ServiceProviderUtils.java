@@ -44,10 +44,6 @@ public class ServiceProviderUtils {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20WD,%20Source,%20RA_ICRS,%20DE_ICRS,%20Plx,%20pmRA,%20pmDE,%20%22Gmag%22,%20BPmag,%20RPmag,%20SDSS,%20umag,%20%22gmag%22,%20rmag,%20imag,%20zmag,%20Pwd,%20TeffH,%20loggH,%20MassH,%20TeffHe,%20loggHe,%20MassHe%20FROM%20%22J/MNRAS/482/4570/gaia2wd%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RA_ICRS,%20DE_ICRS),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
-    public static String createGaiaDR3Url(double degRA, double degDE, double degRadius) {
-        return ESAC_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20source_id,%20ra,%20dec,%20parallax,%20parallax_error,%20pmra,%20pmra_error,%20pmdec,%20pmdec_error,%20phot_g_mean_mag,%20phot_bp_mean_mag,%20phot_rp_mean_mag,%20bp_rp,%20bp_g,%20g_rp,%20dr2_radial_velocity,%20dr2_radial_velocity_error%20FROM%20" + GAIA_DR3_CATALOG_ID + "%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
-    }
-
     public static String createSpitzerUrl(double degRA, double degDE, double degRadius) {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20RAJ2000,%20DEJ2000,%20%22[3.6]%22,%20%22e_[3.6]%22,%20%22[4.5]%22,%20%22e_[4.5]%22,%20%22S/G1%22,%20%22S/G2%22,%20%22[3.4]%22,%20%22e_[3.4]%22,%20%22[4.6]%22,%20%22e_[4.6]%22,%20%22[12]%22,%20%22e_[12]%22,%20%22[22]%22,%20%22e_[22]%22,%20Jmag,%20e_Jmag,%20Hmag,%20e_Hmag,%20Kmag,%20e_Kmag%20FROM%20%22J/AJ/144/148/table3%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RAJ2000,%20DEJ2000),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }

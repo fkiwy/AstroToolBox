@@ -91,10 +91,10 @@ public class AstrometricFunctions {
      * @return the distance between Sun and star (pc)
      */
     public static double calculateParallacticDistance(double parallax) {
-        if (parallax < 0.1) {
+        if (parallax < 1) {
             return 0;
         } else {
-            return 1 / (parallax / 1000);
+            return 1 / (parallax / ARCSEC_MAS);
         }
     }
 
@@ -138,7 +138,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromParallax(double pmRA, double pmDE, double parallax) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / 1000) * calculateParallacticDistance(parallax);
+        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * calculateParallacticDistance(parallax);
     }
 
     /**
@@ -150,7 +150,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromDistance(double pmRA, double pmDE, double distance) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / 1000) * distance;
+        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * distance;
     }
 
     /**
