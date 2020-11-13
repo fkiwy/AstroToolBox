@@ -107,7 +107,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -166,9 +165,6 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SIZE = 2.75;
-    public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 5;
-    public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5;
-    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 3.5;
     public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
@@ -183,6 +179,15 @@ public class ImageViewerTab {
     public static final int SIZE = 500;
     public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
     public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
+
+    //Reference epochs:
+    //allwise: 2010.559
+    //catwise: 2014.118 -> catwise - allwise = 3.559
+    //gaiadr2: 2015.5   -> gaiadr2 - allwise = 4.941
+    //gaiadr3: 2016.0   -> gaiadr3 - allwise = 5.441
+    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 3.559;
+    public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
+    public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5.441;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
