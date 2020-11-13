@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public class SSOCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Solar System Objects";
+    public static final String CATALOG_NAME = "Solar Sys. Obj.";
 
     // Solar System object identifier
     private String objectID;

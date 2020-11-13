@@ -19,6 +19,7 @@ import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
@@ -104,7 +105,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -164,6 +167,7 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SIZE = 2.75;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 5;
+    public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5;
     public static final double CATWISE_ALLWISE_EPOCH_DIFF = 3.5;
     public static final int NUMBER_OF_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
@@ -189,7 +193,9 @@ public class ImageViewerTab {
     private final DistanceLookupService distanceLookupService;
     private List<CatalogEntry> simbadEntries;
     private List<CatalogEntry> gaiaEntries;
+    private List<CatalogEntry> gaiaDR3Entries;
     private List<CatalogEntry> gaiaTpmEntries;
+    private List<CatalogEntry> gaiaDR3TpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseTpmEntries;
@@ -221,6 +227,7 @@ public class ImageViewerTab {
     private JCheckBox showCrosshairs;
     private JCheckBox simbadOverlay;
     private JCheckBox gaiaOverlay;
+    private JCheckBox gaiaDR3Overlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
     private JCheckBox unWiseOverlay;
@@ -239,6 +246,7 @@ public class ImageViewerTab {
     private JCheckBox latentOverlay;
     private JCheckBox spikeOverlay;
     private JCheckBox gaiaProperMotion;
+    private JCheckBox gaiaDR3ProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImages;
@@ -425,7 +433,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 92;
+            int rows = 93;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -837,12 +845,25 @@ public class ImageViewerTab {
             });
             overlayPanel.add(spitzerOverlay);
 
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            controlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
+            gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            gaiaDR3Overlay.setForeground(Color.CYAN.darker());
+            gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            if (LocalDate.now().isAfter(GAIA_DR3_RELEASE_DATE)) {
+                gaiaDR3Overlay.setEnabled(true);
+            } else {
+                gaiaDR3Overlay.setEnabled(false);
+            }
+            overlayPanel.add(gaiaDR3Overlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             controlPanel.add(useCustomOverlays);
@@ -903,11 +924,26 @@ public class ImageViewerTab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
+            gaiaDR3ProperMotion = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
+            gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            if (LocalDate.now().isAfter(GAIA_DR3_RELEASE_DATE)) {
+                gaiaDR3ProperMotion.setEnabled(true);
+            } else {
+                gaiaDR3ProperMotion.setEnabled(false);
+            }
+            properMotionPanel.add(gaiaDR3ProperMotion);
+
+            properMotionPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(properMotionPanel);
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
             properMotionField.addActionListener((ActionEvent evt) -> {
                 gaiaTpmEntries = null;
+                gaiaDR3TpmEntries = null;
                 catWiseTpmEntries = null;
                 processImages();
             });
@@ -1668,8 +1704,16 @@ public class ImageViewerTab {
                                         showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
+                                    if (gaiaDR3Overlay.isSelected() && gaiaDR3Entries != null) {
+                                        showCatalogInfo(gaiaDR3Entries, mouseX, mouseY, Color.CYAN.darker());
+                                        overlays++;
+                                    }
                                     if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
                                         showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
+                                        overlays++;
+                                    }
+                                    if (gaiaDR3ProperMotion.isSelected() && gaiaDR3TpmEntries != null) {
+                                        showPMInfo(gaiaDR3TpmEntries, mouseX, mouseY, Color.CYAN.darker());
                                         overlays++;
                                     }
                                     if (allWiseOverlay.isSelected() && allWiseEntries != null) {
@@ -1866,7 +1910,13 @@ public class ImageViewerTab {
         if (gaiaOverlay.isSelected()) {
             overlays++;
         }
+        if (gaiaDR3Overlay.isSelected()) {
+            overlays++;
+        }
         if (gaiaProperMotion.isSelected()) {
+            overlays++;
+        }
+        if (gaiaDR3ProperMotion.isSelected()) {
             overlays++;
         }
         if (allWiseOverlay.isSelected()) {
@@ -2649,7 +2699,9 @@ public class ImageViewerTab {
     private void initCatalogEntries() {
         simbadEntries = null;
         gaiaEntries = null;
+        gaiaDR3Entries = null;
         gaiaTpmEntries = null;
+        gaiaDR3TpmEntries = null;
         allWiseEntries = null;
         catWiseEntries = null;
         catWiseTpmEntries = null;
@@ -2775,6 +2827,18 @@ public class ImageViewerTab {
                 });
             } else {
                 drawOverlay(image, gaiaEntries, Color.CYAN.darker(), Shape.CIRCLE);
+            }
+        }
+        if (gaiaDR3Overlay.isSelected()) {
+            if (gaiaDR3Entries == null) {
+                gaiaDR3Entries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaDR3Entries = fetchCatalogEntries(new GaiaDR3CatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, gaiaDR3Entries, Color.CYAN.darker(), Shape.DIAMOND);
             }
         }
         if (allWiseOverlay.isSelected()) {
@@ -2958,6 +3022,18 @@ public class ImageViewerTab {
                 });
             } else {
                 drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker());
+            }
+        }
+        if (gaiaDR3ProperMotion.isSelected()) {
+            if (gaiaDR3TpmEntries == null) {
+                gaiaDR3TpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaDR3TpmEntries = fetchTpmCatalogEntries(new GaiaDR3CatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker());
             }
         }
         if (catWiseProperMotion.isSelected()) {
@@ -4450,6 +4526,11 @@ public class ImageViewerTab {
                 ra = catalogEntry.getRa();
                 dec = catalogEntry.getDec();
                 numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
+            }
+            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                ra = catalogEntry.getRa();
+                dec = catalogEntry.getDec();
+                numberOfYears = GAIADR3_ALLWISE_EPOCH_DIFF;
             }
             if (catalogEntry instanceof CatWiseCatalogEntry) {
                 ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();

@@ -41,7 +41,11 @@ public class ServiceProviderUtils {
     }
 
     public static String createGaiaWDUrl(double degRA, double degDE, double degRadius) {
-        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20WD,%20%20Source,%20%20RA_ICRS,%20%20DE_ICRS,%20%20Plx,%20%20pmRA,%20pmDE,%20%20%22Gmag%22,%20%20BPmag,%20%20RPmag,%20%20SDSS,%20%20umag,%20%20%22gmag%22,%20%20rmag,%20%20imag,%20%20zmag,%20%20Pwd,%20%20TeffH,%20%20loggH,%20%20MassH,%20%20TeffHe,%20%20loggHe,%20MassHe%20FROM%20%22J/MNRAS/482/4570/gaia2wd%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RA_ICRS,%20DE_ICRS),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20WD,%20Source,%20RA_ICRS,%20DE_ICRS,%20Plx,%20pmRA,%20pmDE,%20%22Gmag%22,%20BPmag,%20RPmag,%20SDSS,%20umag,%20%22gmag%22,%20rmag,%20imag,%20zmag,%20Pwd,%20TeffH,%20loggH,%20MassH,%20TeffHe,%20loggHe,%20MassHe%20FROM%20%22J/MNRAS/482/4570/gaia2wd%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RA_ICRS,%20DE_ICRS),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+    }
+
+    public static String createGaiaDR3Url(double degRA, double degDE, double degRadius) {
+        return ESAC_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20source_id,%20ra,%20dec,%20parallax,%20parallax_error,%20pmra,%20pmra_error,%20pmdec,%20pmdec_error,%20phot_g_mean_mag,%20phot_bp_mean_mag,%20phot_rp_mean_mag,%20bp_rp,%20bp_g,%20g_rp,%20dr2_radial_velocity,%20dr2_radial_velocity_error%20FROM%20" + GAIA_DR3_CATALOG_ID + "%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
     public static String createSpitzerUrl(double degRA, double degDE, double degRadius) {
