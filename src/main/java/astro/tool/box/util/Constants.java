@@ -16,7 +16,7 @@ public class Constants {
 
     public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap/sync";
 
-    public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr1/mean.csv";
+    public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr2/mean.csv";
 
     public static final String SDSS_BASE_URL = "http://skyserver.sdss.org/dr16";
 
