@@ -4813,7 +4813,7 @@ public class ImageViewerTab {
 
     private double getOverlaySize() {
         double overlaySize = getZoomedValue(3);
-        return overlaySize < 8 ? 8 : (overlaySize > 16 ? 16 : overlaySize);
+        return overlaySize < 8 ? 8 : (overlaySize > 14 ? 14 : overlaySize);
     }
 
     public JCheckBox getBlurImages() {
