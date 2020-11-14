@@ -29,7 +29,6 @@ public class XCross implements Drawable {
         g2d.setStroke(new BasicStroke(STROKE_WIDTH));
         g2d.drawLine(x, y, x + size, y + size);
         g2d.drawLine(x + size, y, x, y + size);
-        g2d.setStroke(new BasicStroke(1));
     }
 
 }
