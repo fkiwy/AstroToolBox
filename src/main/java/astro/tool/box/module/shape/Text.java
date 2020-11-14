@@ -28,7 +28,7 @@ public class Text implements Drawable {
             return;
         }
         graphics.setColor(color);
-        graphics.setFont(new Font("default", Font.BOLD, size + 2));
+        graphics.setFont(new Font("default", Font.BOLD, FONT_SIZE));
         graphics.drawString(label, x, y);
     }
 

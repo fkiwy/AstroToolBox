@@ -1530,7 +1530,7 @@ public class ImageViewerTab {
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
 
-                    /*==========================================================
+                    /*==========================================================*/
                     if (size < 100) {
                         // Adjust positions of magnified Pan-STARRS and SDSS images
                         upperLeftX = pointerX - (width / 2);
@@ -1552,7 +1552,8 @@ public class ImageViewerTab {
                             upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
                         }
                     }
-                    ==========================================================*/
+                    /*==========================================================*/
+
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
@@ -4820,8 +4821,7 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize() {
-        double overlaySize = getZoomedValue(3);
-        return overlaySize < 8 ? 8 : (overlaySize > 14 ? 14 : overlaySize);
+        return 8;
     }
 
     public JCheckBox getBlurImages() {
