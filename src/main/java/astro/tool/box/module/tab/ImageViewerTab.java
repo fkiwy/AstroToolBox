@@ -4590,22 +4590,30 @@ public class ImageViewerTab {
 
     private void displayCatalogPanel(CatalogEntry catalogEntry, Color color) {
         boolean simpleLayout = catalogEntry instanceof GenericCatalogEntry || catalogEntry instanceof SSOCatalogEntry;
-        int maxRows = simpleLayout ? 30 : 19;
-        JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
-        ));
-
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
-        catalogElements.forEach(element -> {
-            addLabelToPanel(element, detailPanel);
-            addFieldToPanel(element, detailPanel);
-        });
 
         int elements = catalogElements.size();
         int rows = elements / 2;
         int remainder = elements % 2;
         rows += remainder;
+
+        int maxRows;
+        if (simpleLayout) {
+            maxRows = rows > 30 ? rows : 30;
+        } else {
+            maxRows = 19;
+        }
+
+        JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
+        detailPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
+        ));
+
+        catalogElements.forEach(element -> {
+            addLabelToPanel(element, detailPanel);
+            addFieldToPanel(element, detailPanel);
+        });
+
         if (remainder == 1) {
             addEmptyCatalogElement(detailPanel);
         }
@@ -4695,7 +4703,7 @@ public class ImageViewerTab {
         JFrame catalogFrame = new JFrame();
         catalogFrame.setIconImage(getToolBoxImage());
         catalogFrame.setTitle("Object details");
-        catalogFrame.add(container);
+        catalogFrame.add(simpleLayout ? new JScrollPane(container) : container);
         catalogFrame.setSize(650, 550);
         catalogFrame.setLocation(windowShift, windowShift);
         catalogFrame.setAlwaysOnTop(true);

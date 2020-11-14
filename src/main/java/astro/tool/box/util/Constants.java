@@ -29,11 +29,9 @@ public class Constants {
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
     //public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
-
     public static final String ALLWISE_CATALOG_ID_VIZIER = "II/328/allwise";
 
     //public static final String TWO_MASS_CATALOG_ID = "fp_psc";
-
     public static final String TWO_MASS_CATALOG_ID_VIZIER = "II/246/out";
 
     public static final String CATWISE_CATALOG_ID = "catwise_prelim";
@@ -41,7 +39,6 @@ public class Constants {
     public static final String CATWISE_REJECTED_ID = "catwise_prelim_reject";
 
     //public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
-
     public static final String GAIA_CATALOG_ID_VIZIER = "I/345/gaia2";
 
     public static final String GAIA_DR3_CATALOG_ID = "gaiaedr3.gaia_source";
