@@ -10,15 +10,15 @@ public class PhotometricFunctionsTest {
     @Test
     public void calculateDistanceFromMagnitudes() {
         double distance = PhotometricFunctions.calculateDistanceFromMagnitudes(14.25, 10.75);
-        assertEquals(50.11872336272722, distance, 0);
+        assertEquals(Double.valueOf(50.11872336272722), Double.valueOf(distance));
     }
 
     @Test
     public void displayPanStarrsObjectInfo() {
         List<StringPair> objectInfo = PhotometricFunctions.getPanStarrsObjectInfoFlags(60);
-        objectInfo.forEach((pair) -> {
-            System.out.println(pair.getS1() + " = " + pair.getS2());
-        });
+        //objectInfo.forEach((pair) -> {
+        //    System.out.println(pair.getS1() + " = " + pair.getS2());
+        //});
         assertEquals(objectInfo.get(0).getS1(), "4");
         assertEquals(objectInfo.get(1).getS1(), "8");
         assertEquals(objectInfo.get(2).getS1(), "16");
