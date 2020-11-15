@@ -50,6 +50,7 @@ public class SettingsTab {
     private static final String PROP_FILE_NAME = "/AstroToolBox.properties";
     private static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     private static final Properties USER_SETTINGS = new Properties();
+    public static String CURRENT_LOOK_AND_FEEL;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -63,6 +64,7 @@ public class SettingsTab {
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
+    public static final String CUTOUT_SERVICE = "cutoutService";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
@@ -70,6 +72,7 @@ public class SettingsTab {
     private int proxyPort;
     private boolean useProxy;
     private boolean useSimbadMirror;
+    private String cutoutService;
     private String objectCollectionPath;
 
     // Catalog search settings
@@ -125,7 +128,6 @@ public class SettingsTab {
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
         this.batchQueryTab = batchQueryTab;
-        //loadUserSettings();
     }
 
     public void init() {
@@ -136,7 +138,7 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(8, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(9, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -155,9 +157,13 @@ public class SettingsTab {
             } else {
                 useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
             }
+            cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
+            if (cutoutService == null) {
+                cutoutService = CUTOUT_SERVICE_URL;
+                USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutService);
+            }
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            //setLookAndFeel(lookAndFeel);
             globalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
@@ -191,6 +197,10 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
+            globalSettings.add(new JLabel("Cutout service URL: ", JLabel.RIGHT));
+            JTextField cutoutServiceField = new JTextField(cutoutService);
+            globalSettings.add(cutoutServiceField);
+
             globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
             globalSettings.add(collectionPathField);
@@ -209,9 +219,9 @@ public class SettingsTab {
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
             searchRadius = Integer.parseInt(USER_SETTINGS.getProperty(SEARCH_RADIUS, "10"));
             panstarrsFOV = Integer.parseInt(USER_SETTINGS.getProperty(PANSTARRS_FOV, "30"));
-            aladinLiteFOV = Integer.parseInt(USER_SETTINGS.getProperty(ALADIN_LITE_FOV, "240"));
-            wiseViewFOV = Integer.parseInt(USER_SETTINGS.getProperty(WISE_VIEW_FOV, "120"));
-            finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "240"));
+            aladinLiteFOV = Integer.parseInt(USER_SETTINGS.getProperty(ALADIN_LITE_FOV, "300"));
+            wiseViewFOV = Integer.parseInt(USER_SETTINGS.getProperty(WISE_VIEW_FOV, "100"));
+            finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "100"));
 
             catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
             if (catalogQueryTab.getPanstarrsField() != null) {
@@ -395,6 +405,7 @@ public class SettingsTab {
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    cutoutService = cutoutServiceField.getText();
                     objectCollectionPath = collectionPathField.getText();
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
@@ -436,12 +447,17 @@ public class SettingsTab {
 
                 // Global settings
                 setLookAndFeel(lookAndFeel);
+                if (!UIManager.getLookAndFeel().getName().equals(CURRENT_LOOK_AND_FEEL)) {
+                    CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
+                    SwingUtilities.updateComponentTreeUI(baseFrame);
+                }
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+                USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings
@@ -562,14 +578,13 @@ public class SettingsTab {
         }
     }
 
-    private void setLookAndFeel(LookAndFeel lookAndFeel) {
+    public static void setLookAndFeel(LookAndFeel lookAndFeel) {
         try {
             if (lookAndFeel.equals(LookAndFeel.Java)) {
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             } else {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
-            SwingUtilities.updateComponentTreeUI(baseFrame);
         } catch (Exception e) {
         }
     }

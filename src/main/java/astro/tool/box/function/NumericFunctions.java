@@ -73,13 +73,6 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_3DEC);
     }
 
-    public static String roundTo3DecLZ(double number) {
-        if (roundDouble(number, PATTERN_3DEC) == 0) {
-            return "0";
-        }
-        return formatDouble(number, PATTERN_3DEC);
-    }
-
     public static String roundTo4Dec(double number) {
         if (number == 0) {
             return "";
@@ -150,13 +143,6 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_3DEC_NZ);
     }
 
-    public static String roundTo3DecNZLZ(double number) {
-        if (roundDouble(number, PATTERN_3DEC) == 0) {
-            return "0";
-        }
-        return formatDouble(number, PATTERN_3DEC_NZ);
-    }
-
     public static String roundTo4DecNZ(double number) {
         if (number == 0) {
             return "";
@@ -197,6 +183,34 @@ public class NumericFunctions {
             return "";
         }
         return formatDouble(number, PATTERN_9DEC_NZ);
+    }
+
+    public static String roundTo1DecLZ(double number) {
+        if (roundDouble(number, PATTERN_1DEC) == 0) {
+            return "0";
+        }
+        return formatDouble(number, PATTERN_1DEC);
+    }
+
+    public static String roundTo3DecLZ(double number) {
+        if (roundDouble(number, PATTERN_3DEC) == 0) {
+            return "0";
+        }
+        return formatDouble(number, PATTERN_3DEC);
+    }
+
+    public static String roundTo1DecNZLZ(double number) {
+        if (roundDouble(number, PATTERN_1DEC) == 0) {
+            return "0";
+        }
+        return formatDouble(number, PATTERN_1DEC_NZ);
+    }
+
+    public static String roundTo3DecNZLZ(double number) {
+        if (roundDouble(number, PATTERN_3DEC) == 0) {
+            return "0";
+        }
+        return formatDouble(number, PATTERN_3DEC_NZ);
     }
 
     public static String formatDouble(Double number, String pattern) {

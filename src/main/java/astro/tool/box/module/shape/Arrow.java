@@ -21,7 +21,7 @@ public class Arrow implements Drawable {
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
-        this.size = size;
+        this.size = size + 2;
         this.color = color;
     }
 
@@ -47,7 +47,6 @@ public class Arrow implements Drawable {
         g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xLeft), (int) round(y2 + yLeft));
         g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xRight), (int) round(y2 + yRight));
         g2d.drawLine((int) round(x1), (int) round(y1), (int) round(x2 /*+ xPlus*/), (int) round(y2 /*+ yPlus*/));
-        g2d.setStroke(new BasicStroke(1));
     }
 
 }

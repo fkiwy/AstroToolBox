@@ -127,11 +127,11 @@ public class FlipbookComponent {
                         titleEpoch = String.valueOf(epoch - 100);
                         titleNode = ASC_NODE + "+" + DESC_NODE;
                     } else if (epoch >= 800 && epoch < 900) {
-                        firstEpoch = epoch == 802;
+                        firstEpoch = epoch == 803;
                         titleEpoch = String.valueOf((epoch - 800) / 2);
                         titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
                     } else if (epoch >= 900 && epoch < 1000) {
-                        firstEpoch = epoch == 903;
+                        firstEpoch = epoch == 902;
                         titleEpoch = String.valueOf((epoch - 900) / 2);
                         titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
                     }

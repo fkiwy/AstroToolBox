@@ -17,7 +17,7 @@ public class Square implements Drawable {
     public Square(double x, double y, double size, Color color) {
         this.x = (int) round(x - size / 2);
         this.y = (int) round(y - size / 2);
-        this.size = (int) round(size);
+        this.size = (int) size;
         this.color = color;
     }
 

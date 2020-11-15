@@ -112,7 +112,8 @@ public class Results {
         SPECTRAL_TYPES.put("L9V", 59.0);
     }
 
-    @Test@Ignore
+    @Test
+    @Ignore
     public void test() throws Exception {
         // 0 angDist
         // 1 RA (BYW)

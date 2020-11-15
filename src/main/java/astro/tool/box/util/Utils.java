@@ -1,6 +1,9 @@
 package astro.tool.box.util;
 
+import static astro.tool.box.module.ModuleHelper.writeErrorLog;
 import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +14,16 @@ public class Utils {
     }
 
     public static String encodeQuery(String query) {
-        return omitQueryComments(query).replaceAll(LINE_SEP_TEXT_AREA, " ")
-                .replaceAll(" +", "%20")
-                .replaceAll("\\+", "%2B")
+        query = omitQueryComments(query)
+                .replaceAll(LINE_SEP_TEXT_AREA, " ")
+                .replaceAll(" +", " ")
                 .replaceAll(";", "");
+        try {
+            return URLEncoder.encode(query, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            writeErrorLog(ex);
+            return query;
+        }
     }
 
     private static String omitQueryComments(String query) {

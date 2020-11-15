@@ -10,13 +10,15 @@ public class Constants {
 
     public static final String NOAO_TAP_URL = "https://datalab.noao.edu/tap/sync";
 
-    public static final String VIZIER_TAP_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap/sync/";
+    public static final String ESAC_TAP_URL = "https://gea.esac.esa.int/tap-server/tap/sync?request=doQuery&lang=adql&format=csv&query=";
+
+    public static final String VIZIER_TAP_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap/sync";
 
     public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap/sync";
 
     public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap/sync";
 
-    public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr1/mean.csv";
+    public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr2/mean.csv";
 
     public static final String SDSS_BASE_URL = "http://skyserver.sdss.org/dr16";
 
@@ -24,17 +26,22 @@ public class Constants {
 
     public static final String IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP";
 
-    public static final String WISE_VIEW_URL = "http://byw.tools/cutout";
+    public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
-    public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
+    //public static final String ALLWISE_CATALOG_ID = "allwise_p3as_psd";
+    public static final String ALLWISE_CATALOG_ID_VIZIER = "II/328/allwise";
 
-    public static final String TWO_MASS_CATALOG_ID = "fp_psc";
+    //public static final String TWO_MASS_CATALOG_ID = "fp_psc";
+    public static final String TWO_MASS_CATALOG_ID_VIZIER = "II/246/out";
 
-    public static final String CATWISE_CATALOG_ID = "cwcat2";
+    public static final String CATWISE_CATALOG_ID = "catwise_prelim";
 
-    public static final String CATWISE_REJECTED_ID = "reject2";
+    public static final String CATWISE_REJECTED_ID = "catwise_prelim_reject";
 
-    public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
+    //public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
+    public static final String GAIA_CATALOG_ID_VIZIER = "I/345/gaia2";
+
+    public static final String GAIA_DR3_CATALOG_ID = "gaiaedr3.gaia_source";
 
     public static final String SSO_CATALOG_ID = "neowiser_p1ba_mch";
 

@@ -13,6 +13,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
@@ -52,7 +53,9 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -91,7 +94,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v2.2.1";
+    public static final String PGM_VERSION = "v2.2.2";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
@@ -99,6 +102,8 @@ public class ModuleHelper {
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
+
+    public static final LocalDate GAIA_DR3_RELEASE_DATE = LocalDate.of(2020, Month.DECEMBER, 3);
 
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
@@ -113,6 +118,10 @@ public class ModuleHelper {
         catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
         GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
         catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
+        if (LocalDate.now().isAfter(GAIA_DR3_RELEASE_DATE)) {
+            GaiaDR3CatalogEntry gaiaDR3CatalogEntry = new GaiaDR3CatalogEntry();
+            catalogInstances.put(gaiaDR3CatalogEntry.getCatalogName(), gaiaDR3CatalogEntry);
+        }
         AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
         catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
         CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
@@ -201,8 +210,8 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String underline(String text) {
-        return html("<u>" + text + "</u>");
+    public static String header(String text) {
+        return html("<span style='background:#BEBEBE;color:#880000'>&nbsp;<u>" + text + "</u>&nbsp;</span>");
     }
 
     public static String html(String text) {

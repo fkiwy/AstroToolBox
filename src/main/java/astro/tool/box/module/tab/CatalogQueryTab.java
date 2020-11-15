@@ -428,22 +428,22 @@ public class CatalogQueryTab {
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel("Single catalogs:"));
+        linkPanel.add(new JLabel("VizieR catalogs:"));
+        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("AllWISE", getSpecificCatalogsUrl("II/328/allwise", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
+        linkPanel.add(createHyperlink("CatWISE2020", getSpecificCatalogsUrl("II/365/catwise", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("unWISE", getSpecificCatalogsUrl("II/363/unwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("Gaia DR2", getSpecificCatalogsUrl("I/345/gaia2", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("Gaia Distances", getSpecificCatalogsUrl("I/347/gaia2dis", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("VHS DR4", getSpecificCatalogsUrl("II/359/vhs_dr4", degRA, degDE, degRadius)));
+        linkPanel.add(new JLabel());
+        linkPanel.add(new JLabel());
+        linkPanel.add(new JLabel());
+        linkPanel.add(new JLabel());
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);

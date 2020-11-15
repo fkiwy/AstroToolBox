@@ -37,11 +37,8 @@ public class Application {
         try {
             loadUserSettings();
             LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, LookAndFeel.OS.name()));
-            if (lookAndFeel.equals(LookAndFeel.Java)) {
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            } else {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
+            setLookAndFeel(lookAndFeel);
+            CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
             ToolTipManager.sharedInstance().setDismissDelay(60000);
         } catch (Exception e) {
         }
@@ -66,9 +63,7 @@ public class Application {
         WhiteDwarfTab whiteDwarfTab = new WhiteDwarfTab(baseFrame, tabbedPane, catalogQueryTab);
         whiteDwarfTab.init();
 
-        CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane);
-
-        imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane, customOverlaysTab);
+        imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
@@ -83,6 +78,7 @@ public class Application {
         ObjectCollectionTab objectCollectionTab = new ObjectCollectionTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         objectCollectionTab.init();
 
+        CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane, imageViewerTab);
         customOverlaysTab.init();
 
         ToolTab toolTab = new ToolTab(baseFrame, tabbedPane);

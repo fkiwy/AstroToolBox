@@ -30,7 +30,7 @@ public class Urls {
     }
 
     public static String getLegacySkyViewerUrl(double degRA, double degDE) {
-        return "http://legacysurvey.org/viewer?ra=" + degRA + "&dec=" + degDE + "&zoom=13&layer=unwise-neo4";
+        return "http://legacysurvey.org/viewer?ra=" + degRA + "&dec=" + degDE + "&mark=" + degRA + "," + degDE + "&zoom=13&layer=unwise-neo6";
     }
 
     public static String getDataDiscoveryUrl() {

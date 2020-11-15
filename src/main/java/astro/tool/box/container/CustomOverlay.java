@@ -21,6 +21,12 @@ public class CustomOverlay {
 
     private File file;
 
+    private String tableName;
+
+    private String raColName;
+
+    private String decColName;
+
     private JCheckBox checkBox;
 
     private List<CatalogEntry> catalogEntries;
@@ -32,6 +38,9 @@ public class CustomOverlay {
         raColumnIndex = 0;
         decColumnIndex = 0;
         file = null;
+        tableName = null;
+        raColName = null;
+        decColName = null;
         checkBox = null;
         catalogEntries = null;
     }
@@ -43,18 +52,26 @@ public class CustomOverlay {
         data.append(shape.name()).append(";");
         data.append(raColumnIndex).append(";");
         data.append(decColumnIndex).append(";");
-        data.append(file.getPath());
+        data.append(file == null ? "" : file.getPath()).append(";");
+        data.append(tableName).append(";");
+        data.append(raColName).append(";");
+        data.append(decColName);
         return data.toString();
     }
 
     public void deserialize(String data) {
-        String[] values = data.split(";");
+        String[] values = data.split(";", 9);
         name = values[0];
         color = new Color(Integer.valueOf(values[1]));
         shape = Shape.valueOf(values[2]);
         raColumnIndex = Integer.valueOf(values[3]);
         decColumnIndex = Integer.valueOf(values[4]);
-        file = new File(values[5]);
+        if (!values[5].isEmpty()) {
+            file = new File(values[5]);
+        }
+        tableName = values[6];
+        raColName = values[7];
+        decColName = values[8];
     }
 
     public String getName() {
@@ -103,6 +120,30 @@ public class CustomOverlay {
 
     public void setFile(File file) {
         this.file = file;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getRaColName() {
+        return raColName;
+    }
+
+    public void setRaColName(String raColName) {
+        this.raColName = raColName;
+    }
+
+    public String getDecColName() {
+        return decColName;
+    }
+
+    public void setDecColName(String decColName) {
+        this.decColName = decColName;
     }
 
     public JCheckBox getCheckBox() {
