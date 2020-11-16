@@ -3094,19 +3094,19 @@ public class ImageViewerTab {
                 }
             }
             Header header = hdu.getHeader();
-            double naxis1 = header.getDoubleValue("NAXIS1");
-            double naxis2 = header.getDoubleValue("NAXIS2");
+            double xAxis = header.getDoubleValue("NAXIS1");
+            double yAxis = header.getDoubleValue("NAXIS2");
             double minObsEpoch = header.getDoubleValue("MJDMIN");
             LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             // Skip images with too many zero values
-            if (naxis2 > 0) {
-                naxis1 = values[0].length;
+            if (yAxis > 0) {
+                xAxis = values[0].length;
             }
             int zeroValues = 0;
-            for (int j = 0; j < naxis2; j++) {
-                for (int k = 0; k < naxis1; k++) {
+            for (int j = 0; j < yAxis; j++) {
+                for (int k = 0; k < xAxis; k++) {
                     try {
                         if (values[j][k] == 0) {
                             zeroValues++;
@@ -3117,7 +3117,7 @@ public class ImageViewerTab {
             }
             String imageDate = obsDate.format(DATE_FORMATTER);
             if (skipBadImages.isSelected()) {
-                double maxAllowed = naxis1 * naxis2 / 20;
+                double maxAllowed = xAxis * yAxis / 20;
                 if (zeroValues > maxAllowed) {
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
