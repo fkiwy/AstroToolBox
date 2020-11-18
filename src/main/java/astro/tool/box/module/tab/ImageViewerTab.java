@@ -16,7 +16,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
-import astro.tool.box.container.catalog.CatWiseRejectedEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
@@ -205,7 +204,6 @@ public class ImageViewerTab {
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseTpmEntries;
-    private List<CatalogEntry> catWiseRejectedEntries;
     private List<CatalogEntry> unWiseEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
@@ -2712,7 +2710,6 @@ public class ImageViewerTab {
         allWiseEntries = null;
         catWiseEntries = null;
         catWiseTpmEntries = null;
-        catWiseRejectedEntries = null;
         unWiseEntries = null;
         panStarrsEntries = null;
         sdssEntries = null;
@@ -2981,25 +2978,15 @@ public class ImageViewerTab {
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
-            if (catWiseEntries == null) {
-                catWiseEntries = Collections.emptyList();
+            if (allWiseEntries == null) {
+                allWiseEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry());
+                    allWiseEntries = fetchCatalogEntries(new AllWiseCatalogEntry());
                     processImages();
                     return null;
                 });
             } else {
-                drawArtifactOverlay(image, catWiseEntries);
-            }
-            if (catWiseRejectedEntries == null) {
-                catWiseRejectedEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    catWiseRejectedEntries = fetchCatalogEntries(new CatWiseRejectedEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawArtifactOverlay(image, catWiseRejectedEntries);
+                drawArtifactOverlay(image, allWiseEntries);
             }
         }
         if (useCustomOverlays.isSelected()) {
@@ -4459,29 +4446,25 @@ public class ImageViewerTab {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
-            String ab_flags = "";
-            String cc_flags = "";
-            if (catalogEntry instanceof CatWiseCatalogEntry) {
-                CatWiseCatalogEntry catWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
-                ab_flags = catWiseCatalog.getAb_flags();
-                cc_flags = catWiseCatalog.getCc_flags();
+            AllWiseCatalogEntry allWiseCatalog = (AllWiseCatalogEntry) catalogEntry;
+            String flags = allWiseCatalog.getCc_flags();
+            switch (wiseBand) {
+                case W1:
+                    flags = flags.substring(0, 1);
+                    break;
+                case W2:
+                    flags = flags.substring(1, 2);
+                    break;
+                default:
+                    flags = flags.substring(0, 2);
+                    break;
             }
-            if (catalogEntry instanceof CatWiseRejectedEntry) {
-                CatWiseRejectedEntry catWiseRejected = (CatWiseRejectedEntry) catalogEntry;
-                ab_flags = catWiseRejected.getAb_flags();
-                cc_flags = catWiseRejected.getCc_flags();
-            }
-            if (cc_flags.length() > 1) {
-                cc_flags = cc_flags.substring(0, 2);
-            } else if (cc_flags.length() > 0) {
-                cc_flags = cc_flags.substring(0, 1);
-            }
-            String flags = ab_flags + cc_flags;
             if (ghostOverlay.isSelected()) {
                 if (flags.contains("o")) {
                     Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize() / 2, Color.MAGENTA.darker());
                     toDraw.draw(graphics);
-                } else if (flags.contains("O")) {
+                }
+                if (flags.contains("O")) {
                     Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), Color.MAGENTA.darker());
                     toDraw.draw(graphics);
                 }
@@ -4490,7 +4473,8 @@ public class ImageViewerTab {
                 if (flags.contains("h")) {
                     Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize() / 2, Color.YELLOW);
                     toDraw.draw(graphics);
-                } else if (flags.contains("H")) {
+                }
+                if (flags.contains("H")) {
                     Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
                     toDraw.draw(graphics);
                 }
@@ -4499,7 +4483,8 @@ public class ImageViewerTab {
                 if (flags.contains("p")) {
                     Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize() / 2, Color.GREEN.darker());
                     toDraw.draw(graphics);
-                } else if (flags.contains("P")) {
+                }
+                if (flags.contains("P")) {
                     Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), Color.GREEN.darker());
                     toDraw.draw(graphics);
                 }
@@ -4508,7 +4493,8 @@ public class ImageViewerTab {
                 if (flags.contains("d")) {
                     Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize() / 2, Color.ORANGE);
                     toDraw.draw(graphics);
-                } else if (flags.contains("D")) {
+                }
+                if (flags.contains("D")) {
                     Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
                     toDraw.draw(graphics);
                 }

@@ -525,6 +525,10 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         return dec_pm;
     }
 
+    public String getCc_flags() {
+        return cc_flags;
+    }
+
     public double getJ_H() {
         if (Jmag == 0 || Hmag == 0) {
             return 0;

@@ -36,8 +36,6 @@ public class Constants {
 
     public static final String CATWISE_CATALOG_ID = "catwise_prelim";
 
-    public static final String CATWISE_REJECTED_ID = "catwise_prelim_reject";
-
     //public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
     public static final String GAIA_CATALOG_ID_VIZIER = "I/345/gaia2";
 
