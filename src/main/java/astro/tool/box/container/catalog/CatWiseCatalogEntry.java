@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
-    public static final String CATALOG_NAME = "CatWISE";
+    public static final String CATALOG_NAME = "CatWISE2020";
 
     // Unique WISE source designation
     private String sourceId;
@@ -463,20 +463,20 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         return dec_pm;
     }
 
-    public double getW1_W2() {
-        if (W1mag == 0 || W2mag == 0) {
-            return 0;
-        } else {
-            return W1mag - W2mag;
-        }
-    }
-
     public String getCc_flags() {
         return cc_flags;
     }
 
     public String getAb_flags() {
         return ab_flags;
+    }
+
+    public double getW1_W2() {
+        if (W1mag == 0 || W2mag == 0) {
+            return 0;
+        } else {
+            return W1mag - W2mag;
+        }
     }
 
 }

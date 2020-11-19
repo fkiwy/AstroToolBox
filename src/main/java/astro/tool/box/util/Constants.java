@@ -34,7 +34,7 @@ public class Constants {
     //public static final String TWO_MASS_CATALOG_ID = "fp_psc";
     public static final String TWO_MASS_CATALOG_ID_VIZIER = "II/246/out";
 
-    public static final String CATWISE_CATALOG_ID = "catwise_prelim";
+    public static final String CATWISE_CATALOG_ID = "catwise_2020";
 
     //public static final String GAIA_CATALOG_ID = "gaia_dr2_source";
     public static final String GAIA_CATALOG_ID_VIZIER = "I/345/gaia2";

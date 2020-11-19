@@ -2978,15 +2978,15 @@ public class ImageViewerTab {
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
-            if (allWiseEntries == null) {
-                allWiseEntries = Collections.emptyList();
+            if (catWiseEntries == null) {
+                catWiseEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    allWiseEntries = fetchCatalogEntries(new AllWiseCatalogEntry());
+                    catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry());
                     processImages();
                     return null;
                 });
             } else {
-                drawArtifactOverlay(image, allWiseEntries);
+                drawArtifactOverlay(image, catWiseEntries);
             }
         }
         if (useCustomOverlays.isSelected()) {
@@ -4446,19 +4446,27 @@ public class ImageViewerTab {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
-            AllWiseCatalogEntry allWiseCatalog = (AllWiseCatalogEntry) catalogEntry;
-            String flags = allWiseCatalog.getCc_flags();
+            CatWiseCatalogEntry allWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
+            String ab_flags = allWiseCatalog.getAb_flags();
+            String cc_flags = allWiseCatalog.getCc_flags();
+            if (cc_flags.isEmpty()) {
+                cc_flags = "0000";
+            }
             switch (wiseBand) {
                 case W1:
-                    flags = flags.substring(0, 1);
+                    ab_flags = ab_flags.substring(0, 1);
+                    cc_flags = cc_flags.substring(0, 1);
                     break;
                 case W2:
-                    flags = flags.substring(1, 2);
+                    ab_flags = ab_flags.substring(1, 2);
+                    cc_flags = cc_flags.substring(1, 2);
                     break;
                 default:
-                    flags = flags.substring(0, 2);
+                    ab_flags = ab_flags.substring(0, 2);
+                    cc_flags = cc_flags.substring(0, 2);
                     break;
             }
+            String flags = ab_flags + cc_flags;
             if (ghostOverlay.isSelected()) {
                 if (flags.contains("o")) {
                     Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize() / 2, Color.MAGENTA.darker());
