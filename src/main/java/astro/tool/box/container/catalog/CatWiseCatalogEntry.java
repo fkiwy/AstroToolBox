@@ -44,6 +44,12 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
     // Instrumental profile-fit photometry flux uncertainty in mag units, band 2
     private double W2_err;
 
+    // Instrumental profile-fit photometry S/N ratio, band 1
+    private double W1_snr;
+
+    // Instrumental profile-fit photometry S/N ratio, band 2
+    private double W2_snr;
+
     // Apparent motion in RA
     private double pmra;
 
@@ -126,6 +132,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         W1_err = toDouble(values[columns.get("w1sigmpro")]);
         W2mag = toDouble(values[columns.get("w2mpro")]);
         W2_err = toDouble(values[columns.get("w2sigmpro")]);
+        W1_snr = toDouble(values[columns.get("w1snr")]);
+        W2_snr = toDouble(values[columns.get("w2snr")]);
         meanObsMJD = toDouble(values[columns.get("meanobsmjd")]);
         ra_pm = toDouble(values[columns.get("ra_pm")]);
         dec_pm = toDouble(values[columns.get("dec_pm")]);
@@ -156,6 +164,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W1 snr", roundTo1DecNZ(W1_snr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W2 snr", roundTo1DecNZ(W2_snr), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo2DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmra err", roundTo2DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo2DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
@@ -180,6 +190,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         sb.append(", W1_err=").append(W1_err);
         sb.append(", W2mag=").append(W2mag);
         sb.append(", W2_err=").append(W2_err);
+        sb.append(", W1_snr=").append(W1_snr);
+        sb.append(", W2_snr=").append(W2_snr);
         sb.append(", pmra=").append(pmra);
         sb.append(", pmra_err=").append(pmra_err);
         sb.append(", pmdec=").append(pmdec);
@@ -207,8 +219,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 53 * hash + Objects.hashCode(this.sourceId);
+        int hash = 7;
+        hash = 73 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -261,6 +273,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       w1sigmpro,");
         addRow(query, "       w2mpro,");
         addRow(query, "       w2sigmpro,");
+        addRow(query, "       w1snr,");
+        addRow(query, "       w2snr,");
         addRow(query, "       meanobsmjd,");
         addRow(query, "       ra_pm,");
         addRow(query, "       dec_pm,");
@@ -287,14 +301,14 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getW1_W2());
-        return columnValues.split(",", 20);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo1Dec(W1_snr) + "," + roundTo1Dec(W2_snr) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getW1_W2());
+        return columnValues.split(",", 22);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
-        return columnTitles.split(",", 20);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W1 snr,W2 snr,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
+        return columnTitles.split(",", 22);
     }
 
     @Override

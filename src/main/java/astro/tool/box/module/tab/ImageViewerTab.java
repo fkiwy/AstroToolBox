@@ -185,7 +185,7 @@ public class ImageViewerTab {
     //catwise: 2015.405 -> catwise - allwise = 4.846 (CatWISE2020)
     //gaiadr2: 2015.5   -> gaiadr2 - allwise = 4.941
     //gaiadr3: 2016.0   -> gaiadr3 - allwise = 5.441
-    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 3.559;
+    public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.846;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
     public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5.441;
 

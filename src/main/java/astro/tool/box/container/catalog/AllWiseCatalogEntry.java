@@ -55,6 +55,18 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     // Instrumental profile-fit photometry flux uncertainty in mag units, band 4
     private double W4_err;
 
+    // Instrumental profile-fit photometry S/N ratio, band 1
+    private double W1_snr;
+
+    // Instrumental profile-fit photometry S/N ratio, band 2
+    private double W2_snr;
+
+    // Instrumental profile-fit photometry S/N ratio, band 3
+    private double W3_snr;
+
+    // Instrumental profile-fit photometry S/N ratio, band 4
+    private double W4_snr;
+
     // Apparent motion in RA
     private double pmra;
 
@@ -147,6 +159,10 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         W3_err = toDouble(values[columns.get("e_W3mag")]);
         W4mag = toDouble(values[columns.get("W4mag")]);
         W4_err = toDouble(values[columns.get("e_W4mag")]);
+        W1_snr = toDouble(values[columns.get("snr1")]);
+        W2_snr = toDouble(values[columns.get("snr2")]);
+        W3_snr = toDouble(values[columns.get("snr3")]);
+        W4_snr = toDouble(values[columns.get("snr4")]);
         ra_pm = toDouble(values[columns.get("RA_pm")]);
         dec_pm = toDouble(values[columns.get("DE_pm")]);
         pmra = toDouble(values[columns.get("pmRA")]);
@@ -184,6 +200,10 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("W3 err", roundTo3DecNZ(W3_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W4 (mag)", roundTo3DecNZ(W4mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W4 err", roundTo3DecNZ(W4_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W1 snr", roundTo1DecNZ(W1_snr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W2 snr", roundTo1DecNZ(W2_snr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W3 snr", roundTo1DecNZ(W3_snr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W4 snr", roundTo1DecNZ(W4_snr), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo0DecNZ(pmra), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra err", roundTo0DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo0DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
@@ -266,6 +286,10 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         sb.append(", W3_err=").append(W3_err);
         sb.append(", W4mag=").append(W4mag);
         sb.append(", W4_err=").append(W4_err);
+        sb.append(", W1_snr=").append(W1_snr);
+        sb.append(", W2_snr=").append(W2_snr);
+        sb.append(", W3_snr=").append(W3_snr);
+        sb.append(", W4_snr=").append(W4_snr);
         sb.append(", pmra=").append(pmra);
         sb.append(", pmra_err=").append(pmra_err);
         sb.append(", pmdec=").append(pmdec);
@@ -296,7 +320,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 17 * hash + Objects.hashCode(this.sourceId);
+        hash = 37 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -338,14 +362,14 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo0Dec(pmra) + "," + roundTo0Dec(pmra_err) + "," + roundTo0Dec(pmdec) + "," + roundTo0Dec(pmdec_err) + "," + cc_flags + "," + ext_flg + "," + var_flg + "," + ph_qual + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return columnValues.split(",", 32);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo1Dec(W1_snr) + "," + roundTo1Dec(W2_snr) + "," + roundTo1Dec(W3_snr) + "," + roundTo1Dec(W4_snr) + "," + roundTo0Dec(pmra) + "," + roundTo0Dec(pmra_err) + "," + roundTo0Dec(pmdec) + "," + roundTo0Dec(pmdec_err) + "," + cc_flags + "," + ext_flg + "," + var_flg + "," + ph_qual + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
+        return columnValues.split(",", 36);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,cc flags,ext. flag,var. flag,ph. qual.,J (mag),J err,H (mag),H err,K (mag),K err,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
-        return columnTitles.split(",", 32);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,W1 snr,W2 snr,W3 snr,W4 snr,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,cc flags,ext. flag,var. flag,ph. qual.,J (mag),J err,H (mag),H err,K (mag),K err,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
+        return columnTitles.split(",", 36);
     }
 
     @Override
