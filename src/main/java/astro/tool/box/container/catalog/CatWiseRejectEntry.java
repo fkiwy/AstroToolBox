@@ -8,7 +8,7 @@ public class CatWiseRejectEntry extends CatWiseCatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(CATWISE_REJECT_CATALOG_ID, getRa(), getDec(), getSearchRadius() / DEG_ARCSEC);
+        return createIrsaUrl(CATWISE_REJECT_TABLE_ID, getRa(), getDec(), getSearchRadius() / DEG_ARCSEC);
     }
 
 }
