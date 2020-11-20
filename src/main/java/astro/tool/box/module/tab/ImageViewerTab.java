@@ -16,6 +16,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatWiseRejectEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
@@ -203,6 +204,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> gaiaDR3TpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
+    private List<CatalogEntry> catWiseRejectEntries;
     private List<CatalogEntry> catWiseTpmEntries;
     private List<CatalogEntry> unWiseEntries;
     private List<CatalogEntry> panStarrsEntries;
@@ -2709,6 +2711,7 @@ public class ImageViewerTab {
         gaiaDR3TpmEntries = null;
         allWiseEntries = null;
         catWiseEntries = null;
+        catWiseRejectEntries = null;
         catWiseTpmEntries = null;
         unWiseEntries = null;
         panStarrsEntries = null;
@@ -2987,6 +2990,16 @@ public class ImageViewerTab {
                 });
             } else {
                 drawArtifactOverlay(image, catWiseEntries);
+            }
+            if (catWiseRejectEntries == null) {
+                catWiseRejectEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseRejectEntries = fetchCatalogEntries(new CatWiseRejectEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawArtifactOverlay(image, catWiseRejectEntries);
             }
         }
         if (useCustomOverlays.isSelected()) {
