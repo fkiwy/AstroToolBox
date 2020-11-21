@@ -364,7 +364,7 @@ public class SettingsTab {
 
             JPanel gridPanel = new JPanel(new GridLayout(2, 1));
             containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1210, 120));
+            gridPanel.setPreferredSize(new Dimension(1210, 160));
 
             // Catalogs
             catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));

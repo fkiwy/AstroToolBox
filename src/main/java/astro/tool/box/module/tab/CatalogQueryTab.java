@@ -54,6 +54,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -457,7 +458,10 @@ public class CatalogQueryTab {
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
+                new LineBorder(selectedEntry.getCatalogColor(), 5),
+                selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)",
+                TitledBorder.LEFT,
+                TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();

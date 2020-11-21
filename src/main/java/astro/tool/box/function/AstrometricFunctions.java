@@ -25,13 +25,15 @@ public class AstrometricFunctions {
      * @param fromCoords (deg)
      * @param toCoords (deg)
      * @param conversionFactor
-     * @return the angular distance between 2 stars (deg)
+     * @return the angular distance between 2 stars
      */
     public static double calculateAngularDistance(NumberPair fromCoords, NumberPair toCoords, Double conversionFactor) {
-        NumberPair diffCoords = calculateDifferenceBetweenCoords(fromCoords, toCoords);
-        double diffRA = diffCoords.getX();
-        double diffDE = diffCoords.getY();
-        return sqrt(diffRA * diffRA + diffDE * diffDE) * conversionFactor;
+        double ra = toRadians(toCoords.getX());
+        double dec = toRadians(toCoords.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double cosc = sin(dec0) * sin(dec) + cos(dec0) * cos(dec) * cos(ra - ra0);
+        return toDegrees(acos(cosc)) * conversionFactor;
     }
 
     /**
@@ -42,13 +44,14 @@ public class AstrometricFunctions {
      * @return the difference between coordinates (deg, deg)
      */
     public static NumberPair calculateDifferenceBetweenCoords(NumberPair fromCoords, NumberPair toCoords) {
-        double fromRA = fromCoords.getX();
-        double fromDE = fromCoords.getY();
-        double toRA = toCoords.getX();
-        double toDE = toCoords.getY();
-        double diffRA = (fromRA - toRA) * cos(toRadians((fromDE + toDE) / 2));
-        double diffDE = (fromDE - toDE);
-        return new NumberPair(-diffRA, -diffDE);
+        double ra = toRadians(toCoords.getX());
+        double dec = toRadians(toCoords.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double cosc = sin(dec0) * sin(dec) + cos(dec0) * cos(dec) * cos(ra - ra0);
+        double x = (cos(dec) * sin(ra - ra0)) / cosc;
+        double y = (cos(dec0) * sin(dec) - sin(dec0) * cos(dec) * cos(ra - ra0)) / cosc;
+        return new NumberPair(toDegrees(x), toDegrees(y));
     }
 
     /**

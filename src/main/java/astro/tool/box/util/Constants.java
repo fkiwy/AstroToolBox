@@ -8,7 +8,7 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public static final String NOAO_TAP_URL = "https://datalab.noao.edu/tap/sync";
+    public static final String NOAO_TAP_URL = "https://datalab.noao.edu/tap/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
     public static final String ESAC_TAP_URL = "https://gea.esac.esa.int/tap-server/tap/sync?request=doQuery&lang=adql&format=csv&query=";
 

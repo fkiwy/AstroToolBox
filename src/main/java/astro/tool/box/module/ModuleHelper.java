@@ -15,6 +15,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
@@ -140,6 +141,8 @@ public class ModuleHelper {
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
         SpitzerCatalogEntry spitzerCatalogEntry = new SpitzerCatalogEntry();
         catalogInstances.put(spitzerCatalogEntry.getCatalogName(), spitzerCatalogEntry);
+        NoirlabCatalogEntry noirlabCatalogEntry = new NoirlabCatalogEntry();
+        catalogInstances.put(noirlabCatalogEntry.getCatalogName(), noirlabCatalogEntry);
 
         return catalogInstances;
     }

@@ -823,7 +823,7 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_SHORT_NAME);
+            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_NAME);
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
             gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -844,7 +844,7 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(twoMassOverlay);
-            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_SHORT_NAME + "&nbsp;</span>"));
+            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
             spitzerOverlay.setForeground(JColor.YELLOW.val);
             spitzerOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();

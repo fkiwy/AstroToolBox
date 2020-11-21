@@ -52,11 +52,6 @@ public class ServiceProviderUtils {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20*%20FROM%20%22" + tableName + "%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20" + raColName + ",%20" + decColName + "),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
-    public static String createUnWiseUrl(double degRA, double degDE, double degRadius) {
-        //return NOAO_TAP_URL + "?request=doQuery&lang=ADQL&format=csv&query=SELECT%20unwise_objid,%20ra,%20dec,%20mag_w1_vg,%20mag_w2_vg,%20w1_w2_vg,%20qf_w1,%20qf_w2,%20flags_unwise_w1,%20flags_unwise_w2,%20flags_info_w1,%20flags_info_w2%20FROM%20unwise_dr1.object%20WHERE%20ra%20BETWEEN%20" + (degRA - degRadius / cos(toRadians(degDE))) + "%20AND%20" + (degRA + degRadius / cos(toRadians(degDE))) + "%20AND%20dec%20BETWEEN%20" + (degDE - degRadius) + "%20AND%20" + (degDE + degRadius) + ";";
-        return NOAO_TAP_URL + "?request=doQuery&lang=ADQL&format=csv&query=SELECT%20unwise_objid,%20ra,%20dec,%20mag_w1_vg,%20mag_w2_vg,%20w1_w2_vg,%20qf_w1,%20qf_w2,%20flags_unwise_w1,%20flags_unwise_w2,%20flags_info_w1,%20flags_info_w2%20FROM%20unwise_dr1.object%20WHERE%20%27t%27%3Dq3c_radial_query(ra,%20dec,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + ");";
-    }
-
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
         boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
         String simbadBaseUrl = useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
