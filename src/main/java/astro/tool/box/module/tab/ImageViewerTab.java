@@ -861,12 +861,6 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
-            noirlabOverlay.setForeground(JColor.NAVY.val);
-            noirlabOverlay.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            overlayPanel.add(noirlabOverlay);
             gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
             gaiaDR3Overlay.setForeground(Color.CYAN.darker());
             gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
@@ -878,6 +872,12 @@ public class ImageViewerTab {
                 gaiaDR3Overlay.setEnabled(false);
             }
             overlayPanel.add(gaiaDR3Overlay);
+            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            noirlabOverlay.setForeground(JColor.NAVY.val);
+            noirlabOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(noirlabOverlay);
 
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
