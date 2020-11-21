@@ -191,7 +191,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
-        catalogElements.add(new CatalogElement("Galaxy-Star (0-1)", String.valueOf(type), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("Galaxy-Star (0-1)", roundTo2DecNZ(type), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("mean mjd", convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
@@ -203,10 +203,10 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("i err", roundTo3DecNZ(i_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("z (mag)", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("z err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("VR (mag)", roundTo3DecNZ(vr_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("VR err", roundTo3DecNZ(vr_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Y (mag)", roundTo3DecNZ(y_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Y err", roundTo3DecNZ(y_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("VR (mag)", roundTo3DecNZ(vr_mag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("VR err", roundTo3DecNZ(vr_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -340,6 +340,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
+        addRow(query, "AND   pmra <> 'NaN' AND pmdec <> 'NaN'");
         addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
         return query.toString();
     }
@@ -351,13 +352,13 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + String.valueOf(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo2DecNZ(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
         return columnValues.split(",", 32);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,VR (mag),VR err,Y (mag),Y err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
+        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
         return columnTitles.split(",", 32);
     }
 

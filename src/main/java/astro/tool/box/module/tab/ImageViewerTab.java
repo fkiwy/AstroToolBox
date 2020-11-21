@@ -22,6 +22,7 @@ import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
+import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
@@ -189,6 +190,7 @@ public class ImageViewerTab {
     public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.846;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
     public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5.441;
+    public static final double NOIRLAB_ALLWISE_EPOCH_DIFF = GAIADR2_ALLWISE_EPOCH_DIFF;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -199,13 +201,13 @@ public class ImageViewerTab {
     private final DistanceLookupService distanceLookupService;
     private List<CatalogEntry> simbadEntries;
     private List<CatalogEntry> gaiaEntries;
-    private List<CatalogEntry> gaiaDR3Entries;
     private List<CatalogEntry> gaiaTpmEntries;
+    private List<CatalogEntry> gaiaDR3Entries;
     private List<CatalogEntry> gaiaDR3TpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
-    private List<CatalogEntry> catWiseRejectEntries;
     private List<CatalogEntry> catWiseTpmEntries;
+    private List<CatalogEntry> catWiseRejectEntries;
     private List<CatalogEntry> unWiseEntries;
     private List<CatalogEntry> panStarrsEntries;
     private List<CatalogEntry> sdssEntries;
@@ -213,6 +215,8 @@ public class ImageViewerTab {
     private List<CatalogEntry> vhsEntries;
     private List<CatalogEntry> gaiaWDEntries;
     private List<CatalogEntry> spitzerEntries;
+    private List<CatalogEntry> noirlabEntries;
+    private List<CatalogEntry> noirlabTpmEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -244,6 +248,7 @@ public class ImageViewerTab {
     private JCheckBox vhsOverlay;
     private JCheckBox gaiaWDOverlay;
     private JCheckBox spitzerOverlay;
+    private JCheckBox noirlabOverlay;
     private JCheckBox showBrownDwarfsOnly;
     private JCheckBox displaySpectralTypes;
     private JCheckBox ssoOverlay;
@@ -254,6 +259,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaProperMotion;
     private JCheckBox gaiaDR3ProperMotion;
     private JCheckBox catWiseProperMotion;
+    private JCheckBox noirlabProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImages;
     private JCheckBox twoMassImages;
@@ -439,7 +445,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 93;
+            int rows = 94;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -853,12 +859,12 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
-            ssoOverlay.setForeground(Color.BLUE);
-            ssoOverlay.addActionListener((ActionEvent evt) -> {
+            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            noirlabOverlay.setForeground(JColor.NAVY.val);
+            noirlabOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlayPanel.add(ssoOverlay);
+            overlayPanel.add(noirlabOverlay);
             gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
             gaiaDR3Overlay.setForeground(Color.CYAN.darker());
             gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
@@ -870,6 +876,13 @@ public class ImageViewerTab {
                 gaiaDR3Overlay.setEnabled(false);
             }
             overlayPanel.add(gaiaDR3Overlay);
+
+            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
+            ssoOverlay.setForeground(Color.BLUE);
+            ssoOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            controlPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             controlPanel.add(useCustomOverlays);
@@ -941,6 +954,12 @@ public class ImageViewerTab {
                 gaiaDR3ProperMotion.setEnabled(false);
             }
             properMotionPanel.add(gaiaDR3ProperMotion);
+            noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            noirlabProperMotion.setForeground(JColor.NAVY.val);
+            noirlabProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            properMotionPanel.add(noirlabProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(properMotionPanel);
@@ -951,6 +970,7 @@ public class ImageViewerTab {
                 gaiaTpmEntries = null;
                 gaiaDR3TpmEntries = null;
                 catWiseTpmEntries = null;
+                noirlabTpmEntries = null;
                 processImages();
             });
 
@@ -1767,6 +1787,14 @@ public class ImageViewerTab {
                                         showCatalogInfo(spitzerEntries, mouseX, mouseY, JColor.YELLOW.val);
                                         overlays++;
                                     }
+                                    if (noirlabOverlay.isSelected() && noirlabEntries != null) {
+                                        showCatalogInfo(noirlabEntries, mouseX, mouseY, JColor.NAVY.val);
+                                        overlays++;
+                                    }
+                                    if (noirlabProperMotion.isSelected() && noirlabTpmEntries != null) {
+                                        showPMInfo(noirlabTpmEntries, mouseX, mouseY, JColor.NAVY.val);
+                                        overlays++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         overlays++;
@@ -1954,6 +1982,12 @@ public class ImageViewerTab {
             overlays++;
         }
         if (spitzerOverlay.isSelected()) {
+            overlays++;
+        }
+        if (noirlabOverlay.isSelected()) {
+            overlays++;
+        }
+        if (noirlabProperMotion.isSelected()) {
             overlays++;
         }
         return overlays > 0;
@@ -2720,6 +2754,8 @@ public class ImageViewerTab {
         vhsEntries = null;
         gaiaWDEntries = null;
         spitzerEntries = null;
+        noirlabEntries = null;
+        noirlabTpmEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -2968,6 +3004,18 @@ public class ImageViewerTab {
                 drawOverlay(image, spitzerEntries, JColor.YELLOW.val, Shape.CIRCLE);
             }
         }
+        if (noirlabOverlay.isSelected()) {
+            if (noirlabEntries == null) {
+                noirlabEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    noirlabEntries = fetchCatalogEntries(new NoirlabCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, noirlabEntries, JColor.NAVY.val, Shape.CIRCLE);
+            }
+        }
         if (ssoOverlay.isSelected()) {
             if (ssoEntries == null) {
                 ssoEntries = Collections.emptyList();
@@ -3053,6 +3101,18 @@ public class ImageViewerTab {
                 });
             } else {
                 drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
+            }
+        }
+        if (noirlabProperMotion.isSelected()) {
+            if (noirlabTpmEntries == null) {
+                noirlabTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val);
             }
         }
     }
@@ -4530,26 +4590,26 @@ public class ImageViewerTab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
 
+            double ra = catalogEntry.getRa();
+            double dec = catalogEntry.getDec();
+
             double pmRa = catalogEntry.getPmra();
             double pmDec = catalogEntry.getPmdec();
 
-            double ra = 0;
-            double dec = 0;
             double numberOfYears = 0;
             if (catalogEntry instanceof GaiaCatalogEntry) {
-                ra = catalogEntry.getRa();
-                dec = catalogEntry.getDec();
                 numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
             }
             if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                ra = catalogEntry.getRa();
-                dec = catalogEntry.getDec();
                 numberOfYears = GAIADR3_ALLWISE_EPOCH_DIFF;
             }
             if (catalogEntry instanceof CatWiseCatalogEntry) {
                 ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
                 dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
+            }
+            if (catalogEntry instanceof NoirlabCatalogEntry) {
+                numberOfYears = NOIRLAB_ALLWISE_EPOCH_DIFF;
             }
 
             ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
