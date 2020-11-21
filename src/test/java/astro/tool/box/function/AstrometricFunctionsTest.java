@@ -20,7 +20,7 @@ public class AstrometricFunctionsTest {
                 new NumberPair(194.3350473, 71.8972063),
                 ConversionFactors.DEG_MAS
         );
-        assertEquals(Double.valueOf(2826.5755661016333), Double.valueOf(angularDistance));
+        assertEquals(Double.valueOf(2826.575566769283), Double.valueOf(angularDistance));
     }
 
     @Test
@@ -34,8 +34,8 @@ public class AstrometricFunctionsTest {
                 56700,
                 ConversionFactors.DEG_MAS
         );
-        assertEquals(Double.valueOf(-764.7309441403478), Double.valueOf(properMotions.getX()));
-        assertEquals(Double.valueOf(212.1604615256536), Double.valueOf(properMotions.getY()));
+        assertEquals(Double.valueOf(-764.7266590340704), Double.valueOf(properMotions.getX()));
+        assertEquals(Double.valueOf(212.17590650534777), Double.valueOf(properMotions.getY()));
     }
 
     @Test
