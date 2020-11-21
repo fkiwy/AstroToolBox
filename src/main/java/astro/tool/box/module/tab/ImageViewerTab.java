@@ -187,6 +187,7 @@ public class ImageViewerTab {
     //catwise: 2015.405 -> catwise - allwise = 4.846 (CatWISE2020)
     //gaiadr2: 2015.5   -> gaiadr2 - allwise = 4.941
     //gaiadr3: 2016.0   -> gaiadr3 - allwise = 5.441
+    public static final double ALLWISE_REFERENCE_EPOCH = 2010.559;
     public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.846;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
     public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5.441;
@@ -278,6 +279,7 @@ public class ImageViewerTab {
     private JCheckBox useAboveCoords;
     private JCheckBox useGaiaPM;
     private JCheckBox useCatwisePM;
+    private JCheckBox useNoirlabPM;
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
@@ -445,7 +447,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 94;
+            int rows = 95;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -1375,9 +1377,7 @@ public class ImageViewerTab {
             checkProperMotion = new JCheckBox(header("Check proper motion:"));
             controlPanel.add(checkProperMotion);
             checkProperMotion.addActionListener((ActionEvent evt) -> {
-                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
+                displayMotionChecker();
             });
 
             checkObjectCoordsField = new JTextField();
@@ -1386,9 +1386,7 @@ public class ImageViewerTab {
             checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
             checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
                 useAboveCoords.setSelected(false);
-                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
+                displayMotionChecker();
             });
 
             useAboveCoords = new JCheckBox("Or use above coordinates");
@@ -1406,9 +1404,8 @@ public class ImageViewerTab {
             checkObjectMotionField.addActionListener((ActionEvent evt) -> {
                 useGaiaPM.setSelected(false);
                 useCatwisePM.setSelected(false);
-                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
+                useNoirlabPM.setSelected(false);
+                displayMotionChecker();
             });
 
             JLabel pmLabel = new JLabel("  Or use proper motions from:");
@@ -1423,26 +1420,37 @@ public class ImageViewerTab {
             useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useCatwisePM);
 
-            checkerPanel.add(useGaiaPM);
+            checkerPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(checkerPanel);
+
+            useNoirlabPM = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useNoirlabPM);
+
             useGaiaPM.addActionListener((ActionEvent evt) -> {
                 if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useCatwisePM.setSelected(false);
+                    useNoirlabPM.setSelected(false);
                     applyProperMotion(new GaiaCatalogEntry());
                 }
-                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
-                }
+                displayMotionChecker();
             });
 
-            checkerPanel.add(useCatwisePM);
             useCatwisePM.addActionListener((ActionEvent evt) -> {
                 if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useGaiaPM.setSelected(false);
+                    useNoirlabPM.setSelected(false);
                     applyProperMotion(new CatWiseCatalogEntry());
                 }
-                if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-                    createFlipbook();
+                displayMotionChecker();
+            });
+
+            useNoirlabPM.addActionListener((ActionEvent evt) -> {
+                if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useGaiaPM.setSelected(false);
+                    useCatwisePM.setSelected(false);
+                    applyProperMotion(new NoirlabCatalogEntry());
                 }
+                displayMotionChecker();
             });
 
             transposeProperMotion = new JCheckBox(header("Transpose proper motion:"));
@@ -2659,15 +2667,22 @@ public class ImageViewerTab {
         double objectPmDec = objectMotion.getY();
 
         double numberOfYears = 0;
-        if (useGaiaPM.isSelected() && pmCatalogEntry != null) {
-            objectRa = pmCatalogEntry.getRa();
-            objectDec = pmCatalogEntry.getDec();
-            numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
-        }
-        if (useCatwisePM.isSelected() && pmCatalogEntry != null) {
-            objectRa = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
-            objectDec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
-            numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
+        if (pmCatalogEntry != null) {
+            if (useGaiaPM.isSelected()) {
+                objectRa = pmCatalogEntry.getRa();
+                objectDec = pmCatalogEntry.getDec();
+                numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
+            }
+            if (useCatwisePM.isSelected()) {
+                objectRa = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
+                objectDec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
+                numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
+            }
+            if (useNoirlabPM.isSelected()) {
+                objectRa = pmCatalogEntry.getRa();
+                objectDec = pmCatalogEntry.getDec();
+                numberOfYears = ((NoirlabCatalogEntry) pmCatalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
+            }
         }
         objectRa = objectRa - (numberOfYears * objectPmRa / DEG_MAS) / cos(toRadians(objectDec));
         objectDec = objectDec - numberOfYears * objectPmDec / DEG_MAS;
@@ -4609,7 +4624,7 @@ public class ImageViewerTab {
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
             }
             if (catalogEntry instanceof NoirlabCatalogEntry) {
-                numberOfYears = NOIRLAB_ALLWISE_EPOCH_DIFF;
+                numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
             ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
@@ -4855,6 +4870,12 @@ public class ImageViewerTab {
         ));
 
         return spectralTypePanel;
+    }
+
+    private void displayMotionChecker() {
+        if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
+            createFlipbook();
+        }
     }
 
     private void applyProperMotion(CatalogEntry catalogEntry) {
