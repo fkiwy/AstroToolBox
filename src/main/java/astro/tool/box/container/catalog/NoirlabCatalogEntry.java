@@ -342,6 +342,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, createCatalogQuery());
         addRow(query, "AND   pmra <> 'NaN' AND pmdec <> 'NaN'");
         addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
+        addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) < 10000");
         return query.toString();
     }
 
