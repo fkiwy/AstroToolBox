@@ -2659,41 +2659,43 @@ public class ImageViewerTab {
         if (!checkProperMotion.isSelected() || checkObjectCoordsField.getText().isEmpty() || checkObjectMotionField.getText().isEmpty()) {
             return new NumberPair(0, 0);
         }
+
         NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
-        double objectRa = objectCoords.getX();
-        double objectDec = objectCoords.getY();
+        double ra = objectCoords.getX();
+        double dec = objectCoords.getY();
+
         NumberPair objectMotion = getCoordinates(checkObjectMotionField.getText());
-        double objectPmRa = objectMotion.getX();
-        double objectPmDec = objectMotion.getY();
+        double pmRa = objectMotion.getX();
+        double pmDec = objectMotion.getY();
 
         double numberOfYears = 0;
         if (pmCatalogEntry != null) {
             if (useGaiaPM.isSelected()) {
-                objectRa = pmCatalogEntry.getRa();
-                objectDec = pmCatalogEntry.getDec();
+                ra = pmCatalogEntry.getRa();
+                dec = pmCatalogEntry.getDec();
                 numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
             }
             if (useCatwisePM.isSelected()) {
-                objectRa = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
-                objectDec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
+                ra = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
+                dec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
             }
             if (useNoirlabPM.isSelected()) {
-                objectRa = pmCatalogEntry.getRa();
-                objectDec = pmCatalogEntry.getDec();
+                ra = pmCatalogEntry.getRa();
+                dec = pmCatalogEntry.getDec();
                 numberOfYears = ((NoirlabCatalogEntry) pmCatalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
         }
-        objectRa = objectRa - (numberOfYears * objectPmRa / DEG_MAS) / cos(toRadians(objectDec));
-        objectDec = objectDec - numberOfYears * objectPmDec / DEG_MAS;
 
-        double pmraOfOneEpoch = (objectPmRa / 2) / DEG_MAS;
-        double pmdecOfOneEpoch = (objectPmDec / 2) / DEG_MAS;
-        double pmraOfEpochs = totalEpochs * pmraOfOneEpoch;
-        double pmdecOfEpochs = totalEpochs * pmdecOfOneEpoch;
-        double ra = objectRa + pmraOfEpochs / cos(toRadians(objectDec));
-        double dec = objectDec + pmdecOfEpochs;
-        return new NumberPair(ra, dec);
+        NumberPair fromCoords = calculateProperMotionAddedCoords(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+        double fromRa = fromCoords.getX();
+        double fromDec = fromCoords.getY();
+
+        NumberPair toCoords = calculateProperMotionAddedCoords(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
+        double toRa = toCoords.getX();
+        double toDec = toCoords.getY();
+
+        return new NumberPair(toRa, toDec);
     }
 
     private void setRefValues(FlipbookComponent component) throws Exception {
@@ -3383,15 +3385,20 @@ public class ImageViewerTab {
         String imageUrl;
         if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
             NumberPair properMotion = getCoordinates(transposeMotionField.getText());
-            double pmra = properMotion.getX();
-            double pmdec = properMotion.getY();
-            int totalEpochs = epoch > 1 ? epoch + numberOfEpochs / 2 : epoch;
-            double pmraOfOneEpoch = (pmra / 2) / DEG_MAS;
-            double pmdecOfOneEpoch = (pmdec / 2) / DEG_MAS;
-            double pmraOfEpochs = totalEpochs * pmraOfOneEpoch;
-            double pmdecOfEpochs = totalEpochs * pmdecOfOneEpoch;
-            double ra = targetRa + pmraOfEpochs / cos(toRadians(targetDec));
-            double dec = targetDec + pmdecOfEpochs;
+            double pmRa = properMotion.getX();
+            double pmDec = properMotion.getY();
+
+            int totalEpochs;
+            if (epoch > 1) {
+                totalEpochs = epoch + numberOfEpochs / 2;
+            } else {
+                totalEpochs = epoch;
+            }
+
+            NumberPair coords = calculateProperMotionAddedCoords(new NumberPair(targetRa, targetDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
+            double ra = coords.getX();
+            double dec = coords.getY();
+
             imageUrl = createImageUrl(ra, dec, size, band, epoch);
         } else {
             imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
@@ -4534,9 +4541,9 @@ public class ImageViewerTab {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
-            CatWiseCatalogEntry allWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
-            String ab_flags = allWiseCatalog.getAb_flags();
-            String cc_flags = allWiseCatalog.getCc_flags();
+            CatWiseCatalogEntry catWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
+            String ab_flags = catWiseCatalog.getAb_flags();
+            String cc_flags = catWiseCatalog.getCc_flags();
             if (cc_flags.isEmpty()) {
                 cc_flags = "0000";
             }
@@ -4627,26 +4634,29 @@ public class ImageViewerTab {
                 numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
-            ra = ra - (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
-            dec = dec - numberOfYears * pmDec / DEG_MAS;
+            NumberPair fromCoords = calculateProperMotionAddedCoords(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+            double fromRa = fromCoords.getX();
+            double fromDec = fromCoords.getY();
 
-            NumberPair pixelCoords = toPixelCoordinates(ra, dec);
-            double x = pixelCoords.getX();
-            double y = pixelCoords.getY();
+            NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
+            double fromX = fromPoint.getX();
+            double fromY = fromPoint.getY();
 
-            numberOfYears = (selectedEpochs) + 2; // 2 -> 2011-2013
-            double newRa = ra + (numberOfYears * pmRa / DEG_MAS) / cos(toRadians(dec));
-            double newDec = dec + numberOfYears * pmDec / DEG_MAS;
+            numberOfYears = selectedEpochs + 2; // +2 years -> hibernation period
 
-            pixelCoords = toPixelCoordinates(newRa, newDec);
-            double newX = pixelCoords.getX();
-            double newY = pixelCoords.getY();
+            NumberPair toCoords = calculateProperMotionAddedCoords(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
+            double toRa = toCoords.getX();
+            double toDec = toCoords.getY();
+
+            NumberPair toPoint = toPixelCoordinates(toRa, toDec);
+            double toX = toPoint.getX();
+            double toY = toPoint.getY();
 
             Drawable toDraw;
             if (displaySpectralTypes.isSelected()) {
                 toDraw = new Text(position.getX(), position.getY(), getOverlaySize(), color, catalogEntry.getSpt());
             } else {
-                toDraw = new Arrow(x, y, newX, newY, getOverlaySize(), color);
+                toDraw = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
             }
             toDraw.draw(graphics);
         });

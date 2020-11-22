@@ -55,6 +55,28 @@ public class AstrometricFunctions {
     }
 
     /**
+     * Calculate coordinates taking into account proper motion
+     *
+     * @param fromCoords (deg)
+     * @param properMotion (deg)
+     * @return the coordinates with added proper motions (deg, deg)
+     */
+    public static NumberPair calculateProperMotionAddedCoords(NumberPair fromCoords, NumberPair properMotion) {
+        if (properMotion.getX() == 0 && properMotion.getY() == 0) {
+            return fromCoords;
+        }
+        double x = toRadians(properMotion.getX());
+        double y = toRadians(properMotion.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double p = sqrt(x * x + y * y);
+        double c = atan(p);
+        double ra = ra0 + atan2(x * sin(c), p * cos(dec0) * cos(c) - y * sin(dec0) * sin(c));
+        double dec = asin(cos(c) * sin(dec0) + (y * sin(c) * cos(dec0)) / p);
+        return new NumberPair(toDegrees(ra), toDegrees(dec));
+    }
+
+    /**
      * Calculate linear distance between 2 stars
      *
      * @param fromCoords (deg)
@@ -222,9 +244,9 @@ public class AstrometricFunctions {
     /**
      * Convert sexagesimal to decimal coordinates
      *
-     * @param hmsRA
-     * @param dmsDE
-     * @return the decimal coordinates
+     * @param hmsRA (hms)
+     * @param dmsDE (dms)
+     * @return the decimal coordinates (deg, deg)
      */
     public static NumberPair convertToDecimalCoords(String hmsRA, String dmsDE) {
         String[] parts;
@@ -256,9 +278,9 @@ public class AstrometricFunctions {
     /**
      * Convert decimal to sexagesimal coordinates
      *
-     * @param degRA
-     * @param degDE
-     * @return the sexagesimal coordinates
+     * @param degRA (deg)
+     * @param degDE (deg)
+     * @return the sexagesimal coordinates (hms, dms)
      */
     public static StringPair convertToSexagesimalCoords(double degRA, double degDE) {
         int hRA = (int) floor(degRA / 15);
