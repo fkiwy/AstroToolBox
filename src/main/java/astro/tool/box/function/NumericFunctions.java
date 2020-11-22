@@ -199,6 +199,13 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_3DEC);
     }
 
+    public static String roundTo7DecLZ(double number) {
+        if (roundDouble(number, PATTERN_7DEC) == 0) {
+            return "0";
+        }
+        return formatDouble(number, PATTERN_7DEC);
+    }
+
     public static String roundTo1DecNZLZ(double number) {
         if (roundDouble(number, PATTERN_1DEC) == 0) {
             return "0";
@@ -211,6 +218,13 @@ public class NumericFunctions {
             return "0";
         }
         return formatDouble(number, PATTERN_3DEC_NZ);
+    }
+
+    public static String roundTo7DecNZLZ(double number) {
+        if (roundDouble(number, PATTERN_7DEC) == 0) {
+            return "0";
+        }
+        return formatDouble(number, PATTERN_7DEC_NZ);
     }
 
     public static String formatDouble(Double number, String pattern) {
