@@ -95,7 +95,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v2.2.3";
+    public static final String PGM_VERSION = "v2.3.0";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
