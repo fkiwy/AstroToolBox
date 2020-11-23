@@ -1567,8 +1567,8 @@ public class ImageViewerTab {
                         upperLeftX = pointerX - (width / 2);
                         upperLeftY = pointerY - (height / 2);
 
-                        upperLeftX -= getZoomedValue(1); // x position adjustment
-                        upperLeftY += getZoomedValue(1); // y position adjustment
+                        upperLeftX -= getZoomedValue(0.5); // x position adjustment
+                        upperLeftY += getZoomedValue(0.5); // y position adjustment
 
                         upperRightX = upperLeftX + width;
                         lowerLeftY = upperLeftY + height;
