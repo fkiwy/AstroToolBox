@@ -55,20 +55,20 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Calculate coordinates taking into account proper motion
+     * Calculate new position resulting from proper motion
      *
-     * @param fromCoords (deg)
+     * @param coords (deg)
      * @param properMotion (deg)
-     * @return the coordinates with added proper motions (deg, deg)
+     * @return the new position resulting from proper motion (deg, deg)
      */
-    public static NumberPair calculateProperMotionAddedCoords(NumberPair fromCoords, NumberPair properMotion) {
+    public static NumberPair calculatePositionFromProperMotion(NumberPair coords, NumberPair properMotion) {
         if (properMotion.getX() == 0 && properMotion.getY() == 0) {
-            return fromCoords;
+            return coords;
         }
         double x = toRadians(properMotion.getX());
         double y = toRadians(properMotion.getY());
-        double ra0 = toRadians(fromCoords.getX());
-        double dec0 = toRadians(fromCoords.getY());
+        double ra0 = toRadians(coords.getX());
+        double dec0 = toRadians(coords.getY());
         double p = sqrt(x * x + y * y);
         double c = atan(p);
         double ra = ra0 + atan2(x * sin(c), p * cos(dec0) * cos(c) - y * sin(dec0) * sin(c));
@@ -83,7 +83,7 @@ public class AstrometricFunctions {
      * @param toCoords (deg)
      * @param fromParallax (mas)
      * @param toParallax (mas)
-     * @return the real distance between stars (pc)
+     * @return the linear distance between stars (pc)
      */
     public static double calculateLinearDistance(NumberPair fromCoords, NumberPair toCoords, double fromParallax, double toParallax) {
         double fromRA = toRadians(fromCoords.getX());

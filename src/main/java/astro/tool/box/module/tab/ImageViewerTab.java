@@ -1325,7 +1325,7 @@ public class ImageViewerTab {
             navigationButtons.add(moveLeftButton);
             moveLeftButton.addActionListener((ActionEvent evt) -> {
                 double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                NumberPair coords = calculateProperMotionAddedCoords(new NumberPair(targetRa, targetDec), new NumberPair(distance, 0));
+                NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(distance, 0));
                 double newRa = coords.getX();
                 newRa = newRa > 360 ? newRa - 360 : newRa;
                 newRa = newRa > 360 ? 0 : newRa;
@@ -1337,7 +1337,7 @@ public class ImageViewerTab {
             navigationButtons.add(moveRightButton);
             moveRightButton.addActionListener((ActionEvent evt) -> {
                 double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                NumberPair coords = calculateProperMotionAddedCoords(new NumberPair(targetRa, targetDec), new NumberPair(-distance, 0));
+                NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(-distance, 0));
                 double newRa = coords.getX();
                 newRa = newRa < 0 ? newRa + 360 : newRa;
                 newRa = newRa < 0 ? 0 : newRa;
@@ -2689,11 +2689,11 @@ public class ImageViewerTab {
             }
         }
 
-        NumberPair fromCoords = calculateProperMotionAddedCoords(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+        NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
         double fromRa = fromCoords.getX();
         double fromDec = fromCoords.getY();
 
-        NumberPair toCoords = calculateProperMotionAddedCoords(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
+        NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
         double toRa = toCoords.getX();
         double toDec = toCoords.getY();
 
@@ -3397,7 +3397,7 @@ public class ImageViewerTab {
                 totalEpochs = epoch;
             }
 
-            NumberPair coords = calculateProperMotionAddedCoords(new NumberPair(targetRa, targetDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
+            NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
             double ra = coords.getX();
             double dec = coords.getY();
 
@@ -4398,13 +4398,22 @@ public class ImageViewerTab {
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
-                double radius = getFovDiagonal() / 2 / DEG_ARCSEC;
-                double catalogRa = catalogEntry.getRa();
-                double catalogDec = catalogEntry.getDec();
-                double rightBoundary = targetRa - radius / cos(toRadians(targetDec));
-                double leftBoundary = targetRa + radius / cos(toRadians(targetDec));
+
+                NumberPair coords;
+                double radius = size * PIXEL_SIZE / 2 / DEG_ARCSEC;
+
+                coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(-radius, 0));
+                double rightBoundary = coords.getX();
+
+                coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(radius, 0));
+                double leftBoundary = coords.getX();
+
                 double bottomBoundary = targetDec - radius;
                 double topBoundary = targetDec + radius;
+
+                double catalogRa = catalogEntry.getRa();
+                double catalogDec = catalogEntry.getDec();
+
                 if (isCatalogSearch
                         || (catalogRa > rightBoundary && catalogRa < leftBoundary
                         && catalogDec > bottomBoundary && catalogDec < topBoundary)) {
@@ -4636,7 +4645,7 @@ public class ImageViewerTab {
                 numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
-            NumberPair fromCoords = calculateProperMotionAddedCoords(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+            NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
             double fromRa = fromCoords.getX();
             double fromDec = fromCoords.getY();
 
@@ -4646,7 +4655,7 @@ public class ImageViewerTab {
 
             numberOfYears = selectedEpochs + 2; // +2 years -> hibernation period
 
-            NumberPair toCoords = calculateProperMotionAddedCoords(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
+            NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
             double toRa = toCoords.getX();
             double toDec = toCoords.getY();
 
