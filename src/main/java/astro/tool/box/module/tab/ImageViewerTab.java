@@ -1561,30 +1561,6 @@ public class ImageViewerTab {
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
 
-                    /*==========================================================*/
-                    if (size < 100) {
-                        // Adjust positions of magnified Pan-STARRS and SDSS images
-                        upperLeftX = pointerX - (width / 2);
-                        upperLeftY = pointerY - (height / 2);
-
-                        upperLeftX -= getZoomedValue(0.5); // x position adjustment
-                        upperLeftY += getZoomedValue(0.5); // y position adjustment
-
-                        upperRightX = upperLeftX + width;
-                        lowerLeftY = upperLeftY + height;
-
-                        // Correct positions of magnified Pan-STARRS and SDSS images
-                        upperLeftX = upperLeftX < 0 ? 0 : upperLeftX;
-                        upperLeftY = upperLeftY < 0 ? 0 : upperLeftY;
-                        if (upperRightX > imageWidth) {
-                            upperLeftX = upperLeftX - (upperRightX - imageWidth);
-                        }
-                        if (lowerLeftY > imageHeight) {
-                            upperLeftY = upperLeftY - (lowerLeftY - imageHeight);
-                        }
-                    }
-                    /*==========================================================*/
-
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
@@ -2017,8 +1993,10 @@ public class ImageViewerTab {
     }
 
     private NumberPair toWorldCoordinates(double x, double y) {
-        x = getUnzoomedValue(x + 0.5);
-        y = getUnzoomedValue(y - 0.5);
+        x = getUnzoomedValue(x);
+        y = getUnzoomedValue(y);
+        x += 0.5;
+        y -= 0.5;
         y = naxis2 - y;
         x -= crpix1;
         y -= crpix2;
@@ -2054,8 +2032,10 @@ public class ImageViewerTab {
         x += crpix1;
         y += crpix2;
         y = naxis2 - y;
-        x = getZoomedValue(x) - 0.5;
-        y = getZoomedValue(y) + 0.5;
+        x -= 0.5;
+        y += 0.5;
+        x = getZoomedValue(x);
+        y = getZoomedValue(y);
         return new NumberPair(x, y);
     }
 
