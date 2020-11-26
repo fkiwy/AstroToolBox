@@ -115,6 +115,8 @@ public class Application {
                     String latestVersion = "";
                     LocalDate referenceDate = LocalDate.now().minusMonths(1);
                     LocalDate releaseDate = referenceDate;
+                    String fileId = "";
+                    String notesId = "";
                     while (scanner.hasNextLine()) {
                         String[] values = CSVParser.parseLine(scanner.next());
                         Version version = new Version(
@@ -122,16 +124,20 @@ public class Application {
                                 Boolean.valueOf(values[1]),
                                 Integer.valueOf(values[2]),
                                 Integer.valueOf(values[3]),
-                                Integer.valueOf(values[4])
+                                Integer.valueOf(values[4]),
+                                values[5],
+                                values[6]
                         );
                         if (version.isLatest()) {
                             latestVersion = version.getNumber();
                             releaseDate = version.getDate();
+                            fileId = version.getFileId();
+                            notesId = version.getNotesId();
                         }
                     }
                     if (!currentVersion.equals(latestVersion)) {
                         long remainingDays = DAYS.between(referenceDate, releaseDate);
-                        showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays);
+                        showVersionPanel(baseFrame, fileId, notesId, currentVersion, latestVersion, remainingDays);
                         if (referenceDate.isAfter(releaseDate)) {
                             System.exit(0);
                         }
@@ -139,26 +145,21 @@ public class Application {
                 }
             } catch (IOException ex) {
                 showExceptionDialog(baseFrame, ex);
-                System.exit(0);
             } finally {
                 configLoaded = true;
             }
         }
     }
 
-    private void showVersionPanel(JFrame baseFrame, String currentVersion, String latestVersion, long remainingDays) {
-        JPanel panel = new JPanel(new GridLayout(7, 1));
+    private void showVersionPanel(JFrame baseFrame, String fileId, String notesId, String currentVersion, String latestVersion, long remainingDays) {
+        JPanel panel = new JPanel(new GridLayout(8, 1));
         panel.add(new JLabel("There's a new " + PGM_NAME + " version available!"));
-        panel.add(createHyperlink("Go to download site", DOWNLOAD_FOLDER));
-        panel.add(new JLabel("Please, always use the latest version of this tool."));
-        panel.add(new JLabel("Old versions can contain bugs and may no longer work properly."));
-        panel.add(new JLabel("Current version: " + currentVersion));
+        panel.add(createHyperlink("> Download new version", DOWNLOAD_URL + fileId));
+        panel.add(createHyperlink("> Check release notes", DOWNLOAD_URL + notesId));
+        panel.add(new JLabel("Please always use the latest version of this tool!"));
+        panel.add(new JLabel("Previous versions may contain bugs and/or may no longer work properly."));
         panel.add(new JLabel("Latest version: " + latestVersion));
-        if (remainingDays < 1) {
-            panel.add(new JLabel("This version of " + PGM_NAME + " has expired!"));
-        } else {
-            panel.add(new JLabel("The current version will expire in " + remainingDays + " days."));
-        }
+        panel.add(new JLabel("Current version: " + currentVersion + (remainingDays < 1 ? " has expired!" : " will expire in " + remainingDays + " days.")));
         JOptionPane.showMessageDialog(baseFrame, panel, "Version info", JOptionPane.INFORMATION_MESSAGE);
     }
 
