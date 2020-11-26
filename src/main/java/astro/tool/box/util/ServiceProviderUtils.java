@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class ServiceProviderUtils {
 
-    private static final String SERVICE_NOT_AVAILABLE = "The %s service is currently not available.";
+    private static final String SERVICE_NOT_AVAILABLE = "%s is currently unavailable!";
 
     public static String createIrsaUrl(String catalogId, double degRA, double degDE, double degRadius) {
         return IRSA_BASE_URL + "?table=" + catalogId + "&RA=" + degRA + "&DEC=" + degDE + "&SR=" + degRadius + "&format=csv";
@@ -79,7 +79,7 @@ public class ServiceProviderUtils {
                 throw new ADQLException();
             }
             writeErrorLog(ex);
-            showInfoDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
+            showWarnDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
             return "";
         }
     }

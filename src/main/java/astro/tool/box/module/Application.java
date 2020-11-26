@@ -1,5 +1,6 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.Version;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.enumeration.LookAndFeel;
@@ -15,8 +16,18 @@ import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
+import astro.tool.box.util.CSVParser;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.io.IOException;
+import java.time.LocalDate;
+import static java.time.temporal.ChronoUnit.DAYS;
+import java.util.Scanner;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -32,6 +43,8 @@ public class Application {
     private CatalogQueryTab catalogQueryTab;
 
     private ImageViewerTab imageViewerTab;
+
+    private static boolean configLoaded;
 
     public Application() {
         try {
@@ -92,6 +105,60 @@ public class Application {
 
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);
+
+        if (!configLoaded) {
+            try {
+                String response = readResponse(establishHttpConnection(CONFIG_FILE_URL), PGM_NAME + " config file");
+                if (!response.isEmpty()) {
+                    Scanner scanner = new Scanner(response);
+                    String currentVersion = PGM_VERSION;
+                    String latestVersion = "";
+                    LocalDate referenceDate = LocalDate.now().minusMonths(1);
+                    LocalDate releaseDate = referenceDate;
+                    while (scanner.hasNextLine()) {
+                        String[] values = CSVParser.parseLine(scanner.next());
+                        Version version = new Version(
+                                values[0],
+                                Boolean.valueOf(values[1]),
+                                Integer.valueOf(values[2]),
+                                Integer.valueOf(values[3]),
+                                Integer.valueOf(values[4])
+                        );
+                        if (version.isLatest()) {
+                            latestVersion = version.getNumber();
+                            releaseDate = version.getDate();
+                        }
+                    }
+                    if (!currentVersion.equals(latestVersion)) {
+                        long remainingDays = DAYS.between(referenceDate, releaseDate);
+                        showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays);
+                        if (referenceDate.isAfter(releaseDate)) {
+                            System.exit(0);
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                showExceptionDialog(baseFrame, ex);
+            } finally {
+                configLoaded = true;
+            }
+        }
+    }
+
+    private void showVersionPanel(JFrame baseFrame, String currentVersion, String latestVersion, long remainingDays) {
+        JPanel panel = new JPanel(new GridLayout(7, 1));
+        panel.add(new JLabel("There's a new " + PGM_NAME + " version available!"));
+        panel.add(createHyperlink("Go to download site", DOWNLOAD_FOLDER));
+        panel.add(new JLabel("Please, always use the latest version of this tool."));
+        panel.add(new JLabel("Old versions can contain bugs and may no longer work properly."));
+        panel.add(new JLabel("Current version: " + currentVersion));
+        panel.add(new JLabel("Latest version: " + latestVersion));
+        if (remainingDays < 1) {
+            panel.add(new JLabel("This version of " + PGM_NAME + " has expired!"));
+        } else {
+            panel.add(new JLabel("The current version will expire in " + remainingDays + " days."));
+        }
+        JOptionPane.showMessageDialog(baseFrame, panel, "Version info", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void setDefaultCloseOperation(int defaultCloseOperation) {
