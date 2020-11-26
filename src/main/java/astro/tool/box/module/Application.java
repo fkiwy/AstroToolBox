@@ -139,6 +139,7 @@ public class Application {
                 }
             } catch (IOException ex) {
                 showExceptionDialog(baseFrame, ex);
+                System.exit(0);
             } finally {
                 configLoaded = true;
             }
