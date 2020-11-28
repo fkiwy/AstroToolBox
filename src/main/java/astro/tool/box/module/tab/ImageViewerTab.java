@@ -750,7 +750,7 @@ public class ImageViewerTab {
                 }
             });
 
-            unwiseCutouts = new JCheckBox("Use unwise.me cutouts (ASC=DESC!)");
+            unwiseCutouts = new JCheckBox("Use unwise.me cutouts (ASC=DESC!)", true);
             controlPanel.add(unwiseCutouts);
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 imagesW1.clear();
@@ -3877,11 +3877,12 @@ public class ImageViewerTab {
 
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
+        imageViewerTab.getUnwiseCutouts().setSelected(unwiseCutouts.isSelected());
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
+        imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.getZoomSlider().setValue(ZOOM);
         imageViewerTab.setZoom(ZOOM);
-        imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.setImageViewer(this);
 
         baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -5037,6 +5038,10 @@ public class ImageViewerTab {
 
     public JLabel getEpochLabel() {
         return epochLabel;
+    }
+
+    public JCheckBox getUnwiseCutouts() {
+        return unwiseCutouts;
     }
 
     public Timer getTimer() {
