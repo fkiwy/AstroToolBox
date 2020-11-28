@@ -93,8 +93,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -153,6 +153,11 @@ import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
 import nom.tam.fits.ImageHDU;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 public class ImageViewerTab {
 
@@ -229,6 +234,7 @@ public class ImageViewerTab {
     private JLabel epochLabel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
+    private JCheckBox unwiseCutouts;
     private JCheckBox autoContrast;
     private JCheckBox keepContrast;
     private JCheckBox blurImages;
@@ -447,7 +453,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 95;
+            int rows = 96;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -742,6 +748,15 @@ public class ImageViewerTab {
                         createFlipbook();
                     }
                 }
+            });
+
+            unwiseCutouts = new JCheckBox("Use unwise.me cutouts (ASC=DESC!)");
+            controlPanel.add(unwiseCutouts);
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
             });
 
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
@@ -2190,16 +2205,18 @@ public class ImageViewerTab {
                         applyProperMotion(new CatWiseCatalogEntry());
                     }
                 }
-                try {
-                    InputStream stream = getImageData(1, numberOfEpochs + 5);
-                    stream.close();
-                    moreImagesAvailable = true;
-                } catch (FileNotFoundException ex) {
+                if (!unwiseCutouts.isSelected()) {
                     try {
-                        InputStream stream = getImageData(1, numberOfEpochs);
+                        InputStream stream = getImageData(1, numberOfEpochs + 5);
                         stream.close();
-                        oneMoreImageAvailable = true;
-                    } catch (FileNotFoundException ex2) {
+                        moreImagesAvailable = true;
+                    } catch (FileNotFoundException ex) {
+                        try {
+                            InputStream stream = getImageData(1, numberOfEpochs);
+                            stream.close();
+                            oneMoreImageAvailable = true;
+                        } catch (FileNotFoundException ex2) {
+                        }
                     }
                 }
             }
@@ -2210,6 +2227,9 @@ public class ImageViewerTab {
 
             if (loadImages || reloadImages) {
                 int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
+                if (unwiseCutouts.isSelected()) {
+                    epochCount = totalEpochs;
+                }
                 requestedEpochs = new ArrayList<>();
                 if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
                     if (reloadImages) {
@@ -2245,17 +2265,33 @@ public class ImageViewerTab {
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
                 switch (wiseBand) {
                     case W1:
-                        downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        if (unwiseCutouts.isSelected()) {
+                            downloadUnwiseEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        } else {
+                            downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        }
                         epochCountW1 = epochCount;
                         break;
                     case W2:
-                        downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        if (unwiseCutouts.isSelected()) {
+                            downloadUnwiseEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        } else {
+                            downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        }
                         epochCountW2 = epochCount;
                         break;
                     case W1W2:
-                        downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        if (unwiseCutouts.isSelected()) {
+                            downloadUnwiseEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        } else {
+                            downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        }
                         epochCountW1 = epochCount;
-                        downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        if (unwiseCutouts.isSelected()) {
+                            downloadUnwiseEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        } else {
+                            downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        }
                         epochCountW2 = epochCount;
                         break;
                 }
@@ -3116,6 +3152,44 @@ public class ImageViewerTab {
         }
     }
 
+    private void downloadUnwiseEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
+        writeLogEntry("Downloading ...");
+        for (int i = 0; i < requestedEpochs.size(); i++) {
+            int requestedEpoch = requestedEpochs.get(i);
+            String imageKey = band + "_" + requestedEpoch;
+            ImageContainer container = images.get(imageKey);
+            if (container != null) {
+                writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+                continue;
+            }
+            try {
+                Fits fits = new Fits(getImageData(band, requestedEpoch));
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                Header header = hdu.getHeader();
+                if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
+                    imageCutOff = true;
+                }
+                crval1 = header.getDoubleValue("CRVAL1");
+                crval2 = header.getDoubleValue("CRVAL2");
+                crpix1 = header.getDoubleValue("CRPIX1");
+                crpix2 = header.getDoubleValue("CRPIX2");
+                naxis1 = size;
+                naxis2 = size;
+                addImage(band, requestedEpoch, fits);
+                writeLogEntry("band " + band + " | image " + requestedEpoch);
+                images.put(imageKey, new ImageContainer(requestedEpoch, LocalDateTime.MIN, fits));
+            } catch (FileNotFoundException ex) {
+                if (requestedEpochs.size() == 4) {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
+                    downloadUnwiseEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                    return;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
     private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
         writeLogEntry("Downloading ...");
         for (int i = 0; i < requestedEpochs.size(); i++) {
@@ -3364,40 +3438,56 @@ public class ImageViewerTab {
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        String imageUrl;
+        double ra;
+        double dec;
         if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
             NumberPair properMotion = getCoordinates(transposeMotionField.getText());
             double pmRa = properMotion.getX();
             double pmDec = properMotion.getY();
-
             int totalEpochs;
             if (epoch > 1) {
                 totalEpochs = epoch + numberOfEpochs / 2;
             } else {
                 totalEpochs = epoch;
             }
-
             NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
-            double ra = coords.getX();
-            double dec = coords.getY();
-
-            imageUrl = createImageUrl(ra, dec, size, band, epoch);
+            ra = coords.getX();
+            dec = coords.getY();
         } else {
-            imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
+            ra = targetRa;
+            dec = targetDec;
         }
-        if (Boolean.parseBoolean(getUserSetting("dev", "false"))) {
-            // WISE0855 133.787 -7.24515
-            /*
-            new File(FITS_DIR).mkdir();
-            ReadableByteChannel readableByteChannel = Channels.newChannel(establishHttpConnection(imageUrl).getInputStream());
-            try (FileOutputStream fileOutputStream = new FileOutputStream(FITS_DIR + "/image_w" + band + "_" + epoch + ".fits")) {
-                fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            }*/
-            File file = new File(FITS_DIR + "/image_w" + band + "_" + epoch + ".fits");
-            return new FileInputStream(file);
+        if (unwiseCutouts.isSelected()) {
+            epoch /= 2;
+            String unwiseEpoch;
+            if (epoch == 0) {
+                unwiseEpoch = "allwise";
+            } else {
+                unwiseEpoch = "neo" + epoch;
+            }
+            String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, ra, dec, size, band);
+            try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
+                    InputStream bi = new BufferedInputStream(fi);
+                    InputStream gzi = new GzipCompressorInputStream(bi);
+                    ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
+
+                ArchiveEntry entry;
+                Map<Long, byte[]> entries = new HashMap();
+                while ((entry = ti.getNextEntry()) != null) {
+                    byte[] buf = new byte[(int) entry.getSize()];
+                    IOUtils.readFully(ti, buf);
+                    entries.put(entry.getSize(), buf);
+                }
+                List<Long> sizes = entries.keySet().stream().collect(Collectors.toList());
+                sizes.sort(Comparator.reverseOrder());
+                long largest = sizes.get(0);
+                return new ByteArrayInputStream(entries.get(largest));
+            }
+        } else {
+            String imageUrl = createImageUrl(ra, dec, size, band, epoch);
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            return connection.getInputStream();
         }
-        HttpURLConnection connection = establishHttpConnection(imageUrl);
-        return connection.getInputStream();
     }
 
     private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
