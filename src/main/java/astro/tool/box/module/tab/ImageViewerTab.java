@@ -3164,17 +3164,7 @@ public class ImageViewerTab {
             }
             try {
                 Fits fits = new Fits(getImageData(band, requestedEpoch));
-                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-                Header header = hdu.getHeader();
-                if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
-                    imageCutOff = true;
-                }
-                crval1 = header.getDoubleValue("CRVAL1");
-                crval2 = header.getDoubleValue("CRVAL2");
-                crpix1 = header.getDoubleValue("CRPIX1");
-                crpix2 = header.getDoubleValue("CRPIX2");
-                naxis1 = size;
-                naxis2 = size;
+                extractHeaderInfo(fits);
                 addImage(band, requestedEpoch, fits);
                 writeLogEntry("band " + band + " | image " + requestedEpoch);
                 images.put(imageKey, new ImageContainer(requestedEpoch, LocalDateTime.MIN, fits));
@@ -3360,17 +3350,7 @@ public class ImageViewerTab {
             int year = time.getYear();
             int month = time.getMonthValue();
             Fits fits = container.getImage();
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            Header header = hdu.getHeader();
-            if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
-                imageCutOff = true;
-            }
-            crval1 = header.getDoubleValue("CRVAL1");
-            crval2 = header.getDoubleValue("CRVAL2");
-            crpix1 = header.getDoubleValue("CRPIX1");
-            crpix2 = header.getDoubleValue("CRPIX2");
-            naxis1 = size;
-            naxis2 = size;
+            extractHeaderInfo(fits);
             for (int i = 1; i < imageGroup.size(); i++) {
                 fits = stackImages(fits, imageGroup.get(i).getImage());
             }
@@ -3379,6 +3359,20 @@ public class ImageViewerTab {
             writeLogEntry("band " + band + " | image " + epochCount + " | year " + year + " | month " + month);
             epochCount++;
         }
+    }
+
+    private void extractHeaderInfo(Fits fits) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        Header header = hdu.getHeader();
+        if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
+            imageCutOff = true;
+        }
+        crval1 = header.getDoubleValue("CRVAL1");
+        crval2 = header.getDoubleValue("CRVAL2");
+        crpix1 = header.getDoubleValue("CRPIX1");
+        crpix2 = header.getDoubleValue("CRPIX2");
+        naxis1 = size;
+        naxis2 = size;
     }
 
     private void writeLogEntry(String log) {
