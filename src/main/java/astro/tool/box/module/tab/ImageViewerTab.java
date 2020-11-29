@@ -3167,7 +3167,7 @@ public class ImageViewerTab {
                 extractHeaderInfo(fits);
                 addImage(band, requestedEpoch, fits);
                 writeLogEntry("band " + band + " | image " + requestedEpoch);
-                images.put(imageKey, new ImageContainer(requestedEpoch, LocalDateTime.MIN, fits));
+                images.put(imageKey, new ImageContainer(requestedEpoch, null, fits));
             } catch (FileNotFoundException ex) {
                 if (requestedEpochs.size() == 4) {
                     writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
