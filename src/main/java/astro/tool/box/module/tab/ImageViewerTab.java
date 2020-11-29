@@ -693,6 +693,15 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            unwiseCutouts = new JCheckBox("Use unwise.me cutouts (ASC=DESC!)");
+            controlPanel.add(unwiseCutouts);
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(settingsPanel);
 
@@ -748,15 +757,6 @@ public class ImageViewerTab {
                         createFlipbook();
                     }
                 }
-            });
-
-            unwiseCutouts = new JCheckBox("Use unwise.me cutouts (ASC=DESC!)", true);
-            controlPanel.add(unwiseCutouts);
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
             });
 
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
