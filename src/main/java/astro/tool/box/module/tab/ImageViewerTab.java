@@ -541,7 +541,7 @@ public class ImageViewerTab {
                     autoContrast.setSelected(true);
                     optimizeContrast.setSelected(false);
                     blurImages.setSelected(true);
-                    subScaleSlider.setBorder(BorderFactory.createDashedBorder(Color.BLACK, 2, 1));
+                    subScaleSlider.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                     setSubContrast(subContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
