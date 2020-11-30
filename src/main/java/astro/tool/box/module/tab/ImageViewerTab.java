@@ -541,11 +541,13 @@ public class ImageViewerTab {
                     autoContrast.setSelected(true);
                     optimizeContrast.setSelected(false);
                     blurImages.setSelected(true);
+                    subScaleSlider.setBorder(BorderFactory.createDashedBorder(Color.BLACK, 2, 1));
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                     setSubContrast(subContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     optimizeContrast.setSelected(true);
                     blurImages.setSelected(false);
+                    subScaleSlider.setBorder(BorderFactory.createEmptyBorder());
                     setContrast(lowContrastSaved, highContrastSaved);
                     setSubContrast(SUB_CONTRAST);
                 }
@@ -693,7 +695,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            unwiseCutouts = new JCheckBox("Use unwise.me cutouts (ASC=DESC!)");
+            unwiseCutouts = new JCheckBox("Use unWISE coadds");
             controlPanel.add(unwiseCutouts);
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 imagesW1.clear();
