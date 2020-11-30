@@ -178,7 +178,7 @@ public class ImageViewerTab {
     public static final int ROW_HEIGHT = 25;
     public static final int HIGH_CONTRAST = 0;
     public static final int LOW_CONTRAST = 50;
-    public static final int SUB_CONTRAST = 1;
+    public static final int SUB_CONTRAST = 10;
     public static final int EPOCH_GAP = 5;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
@@ -614,7 +614,7 @@ public class ImageViewerTab {
             subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
             whitePanel.add(subScaleLabel);
 
-            subScaleSlider = new JSlider(1, 10, SUB_CONTRAST);
+            subScaleSlider = new JSlider(1, 19, SUB_CONTRAST);
             controlPanel.add(subScaleSlider);
             subScaleSlider.setBackground(Color.WHITE);
             subScaleSlider.addChangeListener((ChangeEvent e) -> {
@@ -3684,7 +3684,13 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value, int minValue, int maxValue) {
-        value *= subContrast;
+        float contrast = subContrast;
+        if (contrast > 9) {
+            contrast -= 9;
+        } else {
+            contrast = contrast / 10;
+        }
+        value *= contrast;
         value = normalize(value, minValue, maxValue);
         value = stretch(value);
         value = contrast(value);
