@@ -60,6 +60,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     // Mean Modified Julian Date
     private double mean_mjd;
 
+    // Number of detections in all bands
+    private int ndet;
+
+    // Range of Modified Julian Date
+    private double delta_mjd;
+
     // Magnitude in u band
     private double u_mag;
 
@@ -149,6 +155,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         pmdec_err = toDouble(getFixedPM(values[columns.get("pmdecerr")]));
         type = toDouble(values[columns.get("class_star")]);
         mean_mjd = toDouble(values[columns.get("mjd")]);
+        ndet = toInteger(values[columns.get("ndet")]);
+        delta_mjd = toDouble(values[columns.get("deltamjd")]);
         u_mag = getFixedMag(toDouble(values[columns.get("umag")]));
         g_mag = getFixedMag(toDouble(values[columns.get("gmag")]));
         r_mag = getFixedMag(toDouble(values[columns.get("rmag")]));
@@ -196,6 +204,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("Galaxy-Star (0-1)", roundTo2DecNZ(type), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("mean mjd", convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("detections", String.valueOf(ndet), Alignment.RIGHT, getIntegerComparator()));
+        catalogElements.add(new CatalogElement("delta mjd", roundTo3DecNZ(delta_mjd), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
@@ -232,6 +242,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         sb.append(", pmdec=").append(pmdec);
         sb.append(", pmdec_err=").append(pmdec_err);
         sb.append(", mean_mjd=").append(mean_mjd);
+        sb.append(", ndet=").append(ndet);
+        sb.append(", delta_mjd=").append(delta_mjd);
         sb.append(", u_mag=").append(u_mag);
         sb.append(", g_mag=").append(g_mag);
         sb.append(", r_mag=").append(r_mag);
@@ -264,7 +276,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 53 * hash + Objects.hashCode(this.sourceId);
+        hash = 47 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -321,6 +333,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       pmdecerr,");
         addRow(query, "       class_star,");
         addRow(query, "       mjd,");
+        addRow(query, "       ndet,");
+        addRow(query, "       deltamjd,");
         addRow(query, "       umag,");
         addRow(query, "       gmag,");
         addRow(query, "       rmag,");
@@ -344,8 +358,9 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
         addRow(query, "AND   pmra <> 'NaN' AND pmdec <> 'NaN'");
+        addRow(query, "AND   deltamjd >= 180"); // -> at least 6 month time baseline
+        //addRow(query, "AND   POWER(pmra / pmraerr, 2) + POWER(pmdec / pmdecerr, 2) > 27"); // -> chi2_motion significance of motion metric
         addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
-        addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) < 10000");
         return query.toString();
     }
 
@@ -356,14 +371,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo2DecNZ(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
-        return columnValues.split(",", 32);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo2DecNZ(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + ndet + "," + roundTo3Dec(delta_mjd) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
+        return columnValues.split(",", 34);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
-        return columnTitles.split(",", 32);
+        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,detections,delta mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
+        return columnTitles.split(",", 34);
     }
 
     @Override
