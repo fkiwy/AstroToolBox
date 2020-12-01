@@ -454,7 +454,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 96;
+            int rows = 97;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -698,7 +698,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            unwiseCutouts = new JCheckBox("Use unWISE coadds (ASC=DESC!)");
+            unwiseCutouts = new JCheckBox("Use unwise coadds: asc=desc! (*)");
             controlPanel.add(unwiseCutouts);
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 imagesW1.clear();
@@ -706,6 +706,12 @@ public class ImageViewerTab {
                 reloadImages = true;
                 createFlipbook();
             });
+
+            JLabel unwiseCutoutsLabel = new JLabel("(*) Subsequent epochs include preceding ones");
+            Font font = unwiseCutoutsLabel.getFont();
+            font = font.deriveFont(9f);
+            unwiseCutoutsLabel.setFont(font);
+            controlPanel.add(unwiseCutoutsLabel);
 
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(settingsPanel);
@@ -768,8 +774,6 @@ public class ImageViewerTab {
             controlPanel.add(showCrosshairs);
 
             JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
-            Font font = copyCoordsLabel.getFont();
-            font = font.deriveFont(9f);
             copyCoordsLabel.setFont(font);
             controlPanel.add(copyCoordsLabel);
 
