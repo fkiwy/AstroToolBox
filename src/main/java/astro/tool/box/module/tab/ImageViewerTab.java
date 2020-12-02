@@ -232,7 +232,6 @@ public class ImageViewerTab {
     private JLabel lowScaleLabel;
     private JLabel subScaleLabel;
     private JLabel epochLabel;
-    private JPanel subScalePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox unwiseCutouts;
@@ -542,14 +541,12 @@ public class ImageViewerTab {
                     autoContrast.setSelected(true);
                     optimizeContrast.setSelected(false);
                     blurImages.setSelected(true);
-                    subScalePanel.setBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, Color.RED.darker()));
-                    subScaleSlider.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.RED.darker()));
+                    subScaleSlider.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                     setSubContrast(subContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     optimizeContrast.setSelected(true);
                     blurImages.setSelected(false);
-                    subScalePanel.setBorder(BorderFactory.createEmptyBorder());
                     subScaleSlider.setBorder(BorderFactory.createEmptyBorder());
                     setContrast(lowContrastSaved, highContrastSaved);
                     setSubContrast(SUB_CONTRAST);
@@ -612,12 +609,12 @@ public class ImageViewerTab {
                 }
             });
 
-            subScalePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(subScalePanel);
-            subScalePanel.setBackground(Color.WHITE);
+            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanel.add(whitePanel);
+            whitePanel.setBackground(Color.WHITE);
 
             subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
-            subScalePanel.add(subScaleLabel);
+            whitePanel.add(subScaleLabel);
 
             subScaleSlider = new JSlider(1, 19, SUB_CONTRAST);
             controlPanel.add(subScaleSlider);
