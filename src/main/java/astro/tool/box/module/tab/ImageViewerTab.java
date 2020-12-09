@@ -4845,6 +4845,14 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
+            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                    messagePanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    container.add(messagePanel);
+                }
+            }
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
             container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
 
@@ -4868,26 +4876,43 @@ public class ImageViewerTab {
                 collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
             });
 
-            JButton copyButton = new JButton("Copy");
-            collectPanel.add(copyButton);
-            copyButton.addActionListener((ActionEvent evt) -> {
-                StringBuilder toCopytoClipboard = new StringBuilder();
-                toCopytoClipboard.append(catalogEntry.getEntryData());
-                toCopytoClipboard.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
-                toCopytoClipboard.append(LINE_SEP).append("* Main sequence table:");
+            JButton copyCoordsButton = new JButton("Copy coords");
+            collectPanel.add(copyCoordsButton);
+            copyCoordsButton.addActionListener((ActionEvent evt) -> {
+                StringBuilder toCopy = new StringBuilder();
+                toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
+                toCopy.append(" ");
+                toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
+
+                StringSelection stringSelection = new StringSelection(toCopy.toString());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(stringSelection, null);
+
+                message.setText("Copied to clipboard!");
+                messageTimer.restart();
+            });
+
+            JButton copyAllButton = new JButton("Copy all");
+            collectPanel.add(copyAllButton);
+            copyAllButton.addActionListener((ActionEvent evt) -> {
+                StringBuilder toCopy = new StringBuilder();
+                toCopy.append(catalogEntry.getEntryData());
+                toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
+                toCopy.append(LINE_SEP).append("* Main sequence table:");
                 mainSequenceResults.forEach(entry -> {
-                    toCopytoClipboard.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+                    toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                 });
-                toCopytoClipboard.append(LINE_SEP).append("* M-L-T-Y dwarfs only:");
+                toCopy.append(LINE_SEP).append("* M-L-T-Y dwarfs only:");
                 brownDwarfsResults.forEach(entry -> {
-                    toCopytoClipboard.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+                    toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                     List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
-                    toCopytoClipboard.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
+                    toCopy.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
                     distanceResults.forEach(result -> {
-                        toCopytoClipboard.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
+                        toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
                     });
                 });
-                StringSelection stringSelection = new StringSelection(toCopytoClipboard.toString());
+
+                StringSelection stringSelection = new StringSelection(toCopy.toString());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(stringSelection, null);
 

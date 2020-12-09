@@ -10,6 +10,7 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
@@ -560,6 +561,13 @@ public class CatalogQueryTab {
             }
             if (catalogEntry instanceof GaiaCatalogEntry) {
                 GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    warning = true;
+                }
+            }
+            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
                     warning = true;

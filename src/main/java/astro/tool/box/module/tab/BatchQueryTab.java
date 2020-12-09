@@ -9,6 +9,7 @@ import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -415,6 +416,12 @@ public class BatchQueryTab {
                     }
                     if (catalogEntry instanceof GaiaCatalogEntry) {
                         GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
+                        if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                            spectralTypes.add(WD_WARNING);
+                        }
+                    }
+                    if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                        GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                         if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                             spectralTypes.add(WD_WARNING);
                         }

@@ -467,6 +467,12 @@ public class ModuleHelper {
                 spectralTypes.add(WD_WARNING);
             }
         }
+        if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+            GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                spectralTypes.add(WD_WARNING);
+            }
+        }
         CollectedObject collectedObject = new CollectedObject.Builder()
                 .setDiscoveryDate(LocalDateTime.now())
                 .setObjectType(objectType)
