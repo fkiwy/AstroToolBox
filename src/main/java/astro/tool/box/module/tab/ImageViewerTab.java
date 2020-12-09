@@ -183,6 +183,7 @@ public class ImageViewerTab {
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
     public static final int DIFFERENT_SIZE = 100;
+    public static final int PROPER_MOTION = 100;
     public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
     public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
 
@@ -305,7 +306,6 @@ public class ImageViewerTab {
     private JTextField transposeMotionField;
     private JTextArea crosshairCoords;
     private JTextArea downloadLog;
-    private JRadioButton differentSizeButton;
     private JRadioButton showCatalogsButton;
     private JTable collectionTable;
     private Timer timer;
@@ -473,7 +473,7 @@ public class ImageViewerTab {
             mainScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Main", mainScrollPanel);
 
-            mainControlPanel.add(new JLabel("Coordinates:"));
+            mainControlPanel.add(new JLabel("Target coordinates:"));
 
             coordsField = new JTextField();
             mainControlPanel.add(coordsField);
@@ -704,15 +704,6 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            unwiseCutouts = new JCheckBox("Use unWISE coadds (ASC=DESC!)");
-            mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
-
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
 
@@ -770,15 +761,6 @@ public class ImageViewerTab {
                 }
             });
 
-            showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
-            mainControlPanel.add(showCrosshairs);
-
-            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
-            Font font = copyCoordsLabel.getFont();
-            font = font.deriveFont(9f);
-            copyCoordsLabel.setFont(font);
-            mainControlPanel.add(copyCoordsLabel);
-
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
@@ -792,6 +774,24 @@ public class ImageViewerTab {
                 setSubContrast(SUB_CONTRAST);
                 createFlipbook();
             });
+
+            unwiseCutouts = new JCheckBox("Use unWISE coadds (ASC=DESC!)");
+            mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
+            mainControlPanel.add(showCrosshairs);
+
+            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
+            Font font = copyCoordsLabel.getFont();
+            font = font.deriveFont(9f);
+            copyCoordsLabel.setFont(font);
+            mainControlPanel.add(copyCoordsLabel);
 
             mainControlPanel.add(new JLabel(header("Nearest BYWP9 subjects:")));
 
@@ -1002,7 +1002,7 @@ public class ImageViewerTab {
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
-            properMotionField = new JTextField(String.valueOf(100));
+            properMotionField = new JTextField(String.valueOf(PROPER_MOTION));
             properMotionPanel.add(properMotionField);
             properMotionField.addActionListener((ActionEvent evt) -> {
                 gaiaTpmEntries = null;
@@ -1191,11 +1191,7 @@ public class ImageViewerTab {
 
             mouseControlPanel.add(new JLabel(header("Mouse right click:")));
 
-            differentSizeButton = new JRadioButton("Show object in different FoV", true);
-            mouseControlPanel.add(differentSizeButton);
-
-            ButtonGroup groupTwo = new ButtonGroup();
-            groupTwo.add(differentSizeButton);
+            mouseControlPanel.add(new JLabel("Show object in a different field of view"));
 
             JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
             mouseControlPanel.add(differentSizePanel);
@@ -1673,9 +1669,7 @@ public class ImageViewerTab {
                             double newDec = pointerCoords.getY();
                             switch (evt.getButton()) {
                                 case MouseEvent.BUTTON3:
-                                    if (differentSizeButton.isSelected()) {
-                                        CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
-                                    }
+                                    CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
                                     break;
                                 case MouseEvent.BUTTON2:
                                     if (drawCrosshairs.isSelected()) {
@@ -5054,6 +5048,10 @@ public class ImageViewerTab {
 
     public JTextField getDifferentSizeField() {
         return differentSizeField;
+    }
+
+    public JTextField getProperMotionField() {
+        return properMotionField;
     }
 
     public JSlider getEpochSlider() {

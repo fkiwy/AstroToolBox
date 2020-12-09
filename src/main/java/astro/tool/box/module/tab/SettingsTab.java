@@ -98,6 +98,7 @@ public class SettingsTab {
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
     private static final String DIFFERENT_SIZE = "differentSize";
+    private static final String PROPER_MOTION = "properMotion";
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
@@ -109,6 +110,7 @@ public class SettingsTab {
     private int speed;
     private int zoom;
     private int differentSize;
+    private int properMotion;
     private boolean asyncDownloads;
     private boolean panstarrsImages;
     private boolean sdssImages;
@@ -279,6 +281,7 @@ public class SettingsTab {
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
             differentSize = Integer.parseInt(USER_SETTINGS.getProperty(DIFFERENT_SIZE, String.valueOf(ImageViewerTab.DIFFERENT_SIZE)));
+            properMotion = Integer.parseInt(USER_SETTINGS.getProperty(PROPER_MOTION, String.valueOf(ImageViewerTab.PROPER_MOTION)));
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
@@ -299,6 +302,7 @@ public class SettingsTab {
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
             imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
+            imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
 
             imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
             epochSlider = imageViewerTab.getEpochSlider();
@@ -350,9 +354,13 @@ public class SettingsTab {
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
 
-            imageViewerSettings.add(new JLabel("Alternative FoV (arcsec): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Different field of view (arcsec): ", JLabel.RIGHT));
             JTextField differentSizeField = new JTextField(String.valueOf(differentSize));
             imageViewerSettings.add(differentSizeField);
+
+            imageViewerSettings.add(new JLabel("Total proper motion (mas/yr): ", JLabel.RIGHT));
+            JTextField properMotionField = new JTextField(String.valueOf(properMotion));
+            imageViewerSettings.add(properMotionField);
 
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
@@ -446,6 +454,7 @@ public class SettingsTab {
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
                     differentSize = Integer.parseInt(differentSizeField.getText());
+                    properMotion = Integer.parseInt(properMotionField.getText());
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
@@ -510,6 +519,7 @@ public class SettingsTab {
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
                 imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
+                imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
 
                 imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
                 epochSlider = imageViewerTab.getEpochSlider();
