@@ -459,7 +459,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 52;
+            int rows = 50;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -792,10 +792,30 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel(header("Overlays:")));
+            mainControlPanel.add(new JLabel(header("Nearest BYWP9 subjects:")));
+
+            zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            mainControlPanel.add(zooniversePanel1);
+
+            zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            mainControlPanel.add(zooniversePanel2);
+
+            //======================
+            // Tab: Catalog overlays
+            //======================
+            JPanel overlaysControlPanel = new JPanel(new GridLayout(rows, 1));
+            overlaysControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            overlaysControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+
+            JScrollPane overlaysScrollPanel = new JScrollPane(overlaysControlPanel);
+            overlaysScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
+            overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add("Layers", overlaysScrollPanel);
+
+            overlaysControlPanel.add(new JLabel(header("Catalog overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME);
             simbadOverlay.setForeground(Color.RED);
             simbadOverlay.addActionListener((ActionEvent evt) -> {
@@ -810,7 +830,7 @@ public class ImageViewerTab {
             overlayPanel.add(allWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseOverlay.setForeground(Color.MAGENTA);
             catWiseOverlay.addActionListener((ActionEvent evt) -> {
@@ -825,7 +845,7 @@ public class ImageViewerTab {
             overlayPanel.add(unWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             gaiaOverlay.setForeground(Color.CYAN.darker());
             gaiaOverlay.addActionListener((ActionEvent evt) -> {
@@ -840,7 +860,7 @@ public class ImageViewerTab {
             overlayPanel.add(gaiaDR3Overlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             noirlabOverlay.setForeground(JColor.NAVY.val);
             noirlabOverlay.addActionListener((ActionEvent evt) -> {
@@ -855,7 +875,7 @@ public class ImageViewerTab {
             overlayPanel.add(panStarrsOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
@@ -870,7 +890,7 @@ public class ImageViewerTab {
             overlayPanel.add(spectrumOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
@@ -885,7 +905,7 @@ public class ImageViewerTab {
             overlayPanel.add(gaiaWDOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(overlayPanel);
+            overlaysControlPanel.add(overlayPanel);
             twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
             twoMassOverlay.setForeground(JColor.ORANGE.val);
             twoMassOverlay.addActionListener((ActionEvent evt) -> {
@@ -904,23 +924,23 @@ public class ImageViewerTab {
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            mainControlPanel.add(ssoOverlay);
+            overlaysControlPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
-            mainControlPanel.add(useCustomOverlays);
+            overlaysControlPanel.add(useCustomOverlays);
             useCustomOverlays.setBackground(Color.WHITE);
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
                     showInfoDialog(baseFrame, "No custom overlays have been added yet.");
                     useCustomOverlays.setSelected(false);
                 } else {
-                    GridLayout layout = (GridLayout) mainControlPanel.getLayout();
+                    GridLayout layout = (GridLayout) overlaysControlPanel.getLayout();
                     int numberOfRows = customOverlays.size();
                     int rowsHeight = numberOfRows * ROW_HEIGHT;
                     if (useCustomOverlays.isSelected()) {
-                        componentIndex = mainControlPanel.getComponentZOrder(useCustomOverlays) + 1;
+                        componentIndex = overlaysControlPanel.getComponentZOrder(useCustomOverlays) + 1;
                         layout.setRows(layout.getRows() + numberOfRows);
-                        mainControlPanel.setPreferredSize(new Dimension(mainControlPanel.getWidth(), mainControlPanel.getHeight() + rowsHeight));
+                        overlaysControlPanel.setPreferredSize(new Dimension(overlaysControlPanel.getWidth(), overlaysControlPanel.getHeight() + rowsHeight));
                         customOverlays.values().forEach(customOverlay -> {
                             JCheckBox checkBox = new JCheckBox(customOverlay.getName());
                             checkBox.setForeground(customOverlay.getColor());
@@ -929,27 +949,27 @@ public class ImageViewerTab {
                                 processImages();
                             });
                             customOverlay.setCheckBox(checkBox);
-                            mainControlPanel.add(checkBox, componentIndex++);
+                            overlaysControlPanel.add(checkBox, componentIndex++);
                         });
                     } else {
-                        componentIndex = mainControlPanel.getComponentZOrder(useCustomOverlays) + numberOfRows;
+                        componentIndex = overlaysControlPanel.getComponentZOrder(useCustomOverlays) + numberOfRows;
                         layout.setRows(layout.getRows() - numberOfRows);
-                        mainControlPanel.setPreferredSize(new Dimension(mainControlPanel.getWidth(), mainControlPanel.getHeight() - rowsHeight));
+                        overlaysControlPanel.setPreferredSize(new Dimension(overlaysControlPanel.getWidth(), overlaysControlPanel.getHeight() - rowsHeight));
                         customOverlays.values().forEach((customOverlay) -> {
-                            mainControlPanel.remove(componentIndex--);
+                            overlaysControlPanel.remove(componentIndex--);
                             customOverlay.setCatalogEntries(null);
                         });
                         processImages();
                     }
-                    mainControlPanel.updateUI();
+                    overlaysControlPanel.updateUI();
                     baseFrame.setVisible(true);
                 }
             });
 
-            mainControlPanel.add(new JLabel(header("PM vectors:")));
+            overlaysControlPanel.add(new JLabel(header("Proper motion vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(properMotionPanel);
+            overlaysControlPanel.add(properMotionPanel);
             gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             gaiaProperMotion.setForeground(Color.CYAN.darker());
             gaiaProperMotion.addActionListener((ActionEvent evt) -> {
@@ -964,7 +984,7 @@ public class ImageViewerTab {
             properMotionPanel.add(gaiaDR3ProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(properMotionPanel);
+            overlaysControlPanel.add(properMotionPanel);
             noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             noirlabProperMotion.setForeground(JColor.NAVY.val);
             noirlabProperMotion.addActionListener((ActionEvent evt) -> {
@@ -979,7 +999,7 @@ public class ImageViewerTab {
             properMotionPanel.add(catWiseProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(properMotionPanel);
+            overlaysControlPanel.add(properMotionPanel);
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
@@ -991,10 +1011,10 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            mainControlPanel.add(new JLabel(header("WISE artifacts (*):")));
+            overlaysControlPanel.add(new JLabel(header("WISE artifacts (*):")));
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(artifactPanel);
+            overlaysControlPanel.add(artifactPanel);
             ghostOverlay = new JCheckBox("Ghosts");
             ghostOverlay.setForeground(Color.MAGENTA.darker());
             ghostOverlay.addActionListener((ActionEvent evt) -> {
@@ -1009,7 +1029,7 @@ public class ImageViewerTab {
             artifactPanel.add(haloOverlay);
 
             artifactPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(artifactPanel);
+            overlaysControlPanel.add(artifactPanel);
             latentOverlay = new JCheckBox("Latents");
             latentOverlay.setForeground(Color.GREEN.darker());
             latentOverlay.addActionListener((ActionEvent evt) -> {
@@ -1025,12 +1045,12 @@ public class ImageViewerTab {
 
             JLabel artifactLabel = new JLabel(html("(*) Small shapes represent affected sources." + LINE_BREAK + "Large shapes represent the actual artifacts."));
             artifactLabel.setFont(font);
-            mainControlPanel.add(artifactLabel);
+            overlaysControlPanel.add(artifactLabel);
 
-            mainControlPanel.add(new JLabel(header("Experimental features (*):")));
+            overlaysControlPanel.add(new JLabel(header("Experimental features (*):")));
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types");
-            mainControlPanel.add(displaySpectralTypes);
+            overlaysControlPanel.add(displaySpectralTypes);
             displaySpectralTypes.addActionListener((ActionEvent evt) -> {
                 if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
                     gaiaOverlay.setSelected(true);
@@ -1040,7 +1060,7 @@ public class ImageViewerTab {
             });
 
             showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
-            mainControlPanel.add(showBrownDwarfsOnly);
+            overlaysControlPanel.add(showBrownDwarfsOnly);
             showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
                 if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
                     gaiaOverlay.setSelected(true);
@@ -1052,234 +1072,16 @@ public class ImageViewerTab {
             JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
             warning.setForeground(Color.RED);
             warning.setFont(font);
-            mainControlPanel.add(warning);
-
-            mainControlPanel.add(new JLabel(header("Nearest Zooniverse subjects:")));
-
-            zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(zooniversePanel1);
-
-            zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(zooniversePanel2);
-
-            //=======================
-            // Tab: Advanced controls
-            //=======================
-            rows = 18;
-            controlPanelWidth = 250;
-            controlPanelHeight = 10 + ROW_HEIGHT * rows;
-
-            JPanel advancedControlPanel = new JPanel(new GridLayout(rows, 1));
-            advancedControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            advancedControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
-
-            JPanel controlPanelContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanelContainer.add(advancedControlPanel);
-
-            JScrollPane advancedScrollPanel = new JScrollPane(controlPanelContainer);
-            advancedScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
-            advancedScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-            controlTabs.add("Advanced", advancedScrollPanel);
-
-            /*==================================================================
-            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanelAdvanced.add(whitePanel);
-            whitePanel.setBackground(Color.WHITE);
-
-            JLabel overlayLabel = new JLabel(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
-            whitePanel.add(overlayLabel);
-
-            JSlider overlaySlider = new JSlider(-50, 50, 0);
-            controlPanelAdvanced.add(overlaySlider);
-            overlaySlider.setBackground(Color.WHITE);
-            overlaySlider.addChangeListener((ChangeEvent e) -> {
-                rotationAngle = overlaySlider.getValue();
-                rotationAngle /= 10;
-                overlayLabel.setText(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
-                processImages();
-            });
-            ==================================================================*/
-            drawCrosshairs = new JCheckBox(header("Draw crosshairs (*)"));
-            advancedControlPanel.add(drawCrosshairs);
-            drawCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (!drawCrosshairs.isSelected()) {
-                    crosshairs.clear();
-                    crosshairCoords.setText("");
-                }
-            });
-
-            JLabel crosshairLabel = new JLabel(html("(*) Wheel click on object / Spin wheel to change" + LINE_BREAK + "the size / Wheel click on cross center to delete"));
-            crosshairLabel.setFont(font);
-            advancedControlPanel.add(crosshairLabel);
-
-            advancedControlPanel.add(new JLabel("Crosshairs coordinates:"));
-
-            crosshairCoords = new JTextArea();
-            advancedControlPanel.add(new JScrollPane(crosshairCoords));
-            crosshairCoords.setFont(font);
-            crosshairCoords.setEditable(false);
-            crosshairCoords.setBackground(new JLabel().getBackground());
-
-            checkProperMotion = new JCheckBox(header("Check proper motion:"));
-            advancedControlPanel.add(checkProperMotion);
-            checkProperMotion.addActionListener((ActionEvent evt) -> {
-                displayMotionChecker();
-            });
-
-            checkObjectCoordsField = new JTextField();
-            advancedControlPanel.add(checkObjectCoordsField);
-            TextPrompt checkObjectCoordsPrompt = new TextPrompt("RA & Dec of object to check");
-            checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
-            checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
-                useAboveCoords.setSelected(false);
-                displayMotionChecker();
-            });
-
-            useAboveCoords = new JCheckBox("Or use above coordinates");
-            advancedControlPanel.add(useAboveCoords);
-            useAboveCoords.addActionListener((ActionEvent evt) -> {
-                if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
-                    checkObjectCoordsField.setText(coordsField.getText());
-                }
-            });
-
-            checkObjectMotionField = new JTextField();
-            advancedControlPanel.add(checkObjectMotionField);
-            TextPrompt checkObjectMotionPrompt = new TextPrompt("pmRA & pmDec of object to check");
-            checkObjectMotionPrompt.applyTo(checkObjectMotionField);
-            checkObjectMotionField.addActionListener((ActionEvent evt) -> {
-                useGaiaPM.setSelected(false);
-                useCatwisePM.setSelected(false);
-                useNoirlabPM.setSelected(false);
-                displayMotionChecker();
-            });
-
-            JLabel pmLabel = new JLabel("  Or use proper motions from:");
-            advancedControlPanel.add(pmLabel);
-
-            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
-            advancedControlPanel.add(checkerPanel);
-
-            useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useGaiaPM);
-
-            useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useCatwisePM);
-
-            checkerPanel = new JPanel(new GridLayout(1, 2));
-            advancedControlPanel.add(checkerPanel);
-
-            useNoirlabPM = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useNoirlabPM);
-
-            useGaiaPM.addActionListener((ActionEvent evt) -> {
-                if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useCatwisePM.setSelected(false);
-                    useNoirlabPM.setSelected(false);
-                    applyProperMotion(new GaiaCatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            useCatwisePM.addActionListener((ActionEvent evt) -> {
-                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaPM.setSelected(false);
-                    useNoirlabPM.setSelected(false);
-                    applyProperMotion(new CatWiseCatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            useNoirlabPM.addActionListener((ActionEvent evt) -> {
-                if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaPM.setSelected(false);
-                    useCatwisePM.setSelected(false);
-                    applyProperMotion(new NoirlabCatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            transposeProperMotion = new JCheckBox(header("Transpose proper motion:"));
-            advancedControlPanel.add(transposeProperMotion);
-            transposeProperMotion.addActionListener((ActionEvent evt) -> {
-                if (!transposeMotionField.getText().isEmpty()) {
-                    imagesW1.clear();
-                    imagesW2.clear();
-                    reloadImages = true;
-                    createFlipbook();
-                }
-            });
-
-            transposeMotionField = new JTextField();
-            advancedControlPanel.add(transposeMotionField);
-            TextPrompt transposeMotionPrompt = new TextPrompt("pmRA & pmDec to transpose");
-            transposeMotionPrompt.applyTo(transposeMotionField);
-            transposeMotionField.addActionListener((ActionEvent evt) -> {
-                if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-                    imagesW1.clear();
-                    imagesW2.clear();
-                    reloadImages = true;
-                    createFlipbook();
-                }
-            });
-
-            advancedControlPanel.add(new JLabel(header("Miscellanea:")));
-
-            skipBadImages = new JCheckBox("Skip bad quality images", true);
-            advancedControlPanel.add(skipBadImages);
-            skipBadImages.addActionListener((ActionEvent evt) -> {
-                if (!skipBadImages.isSelected()) {
-                    showWarnDialog(baseFrame, "Unchecking this may decrease image quality and lead to poorer motion detection!");
-                }
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
-
-            skipSingleNodes = new JCheckBox("Skip single nodes", true);
-            advancedControlPanel.add(skipSingleNodes);
-            skipSingleNodes.addActionListener((ActionEvent evt) -> {
-                if (!skipSingleNodes.isSelected()) {
-                    showWarnDialog(baseFrame, "Unchecking this may affect image ordering and lead to poorer motion detection, especially in subtracted modes!");
-                }
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
-
-            optimizeContrast = new JCheckBox("Optimize contrast", true);
-            advancedControlPanel.add(optimizeContrast);
-            optimizeContrast.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
-            });
-
-            hideMagnifier = new JCheckBox("Hide magnifier panel");
-            advancedControlPanel.add(hideMagnifier);
-            hideMagnifier.addActionListener((ActionEvent evt) -> {
-                if (hideMagnifier.isSelected()) {
-                    rightPanel.setVisible(false);
-                } else {
-                    rightPanel.setVisible(true);
-                }
-            });
+            overlaysControlPanel.add(warning);
 
             //====================
             // Tab: Mouse settings
             //====================
-            rows = 18;
-            controlPanelWidth = 250;
-            controlPanelHeight = 10 + ROW_HEIGHT * rows;
-
             JPanel mouseControlPanel = new JPanel(new GridLayout(rows, 1));
             mouseControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             mouseControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
-            controlPanelContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanelContainer.add(mouseControlPanel);
-
-            JScrollPane mouseScrollPanel = new JScrollPane(controlPanelContainer);
+            JScrollPane mouseScrollPanel = new JScrollPane(mouseControlPanel);
             mouseScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
             mouseScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Mouse", mouseScrollPanel);
@@ -1403,18 +1205,11 @@ public class ImageViewerTab {
             //=====================
             // Tab: Player controls
             //=====================
-            rows = 11;
-            controlPanelWidth = 250;
-            controlPanelHeight = 10 + ROW_HEIGHT * rows;
-
             JPanel playerControlPanel = new JPanel(new GridLayout(rows, 1));
             playerControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
             playerControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
-            controlPanelContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanelContainer.add(playerControlPanel);
-
-            JScrollPane playerScrollPanel = new JScrollPane(controlPanelContainer);
+            JScrollPane playerScrollPanel = new JScrollPane(playerControlPanel);
             playerScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
             playerScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Player", playerScrollPanel);
@@ -1573,6 +1368,201 @@ public class ImageViewerTab {
                 }
                 coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
                 createFlipbook();
+            });
+
+            //=======================
+            // Tab: Advanced controls
+            //=======================
+            JPanel advancedControlPanel = new JPanel(new GridLayout(rows, 1));
+            advancedControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            advancedControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+
+            JScrollPane advancedScrollPanel = new JScrollPane(advancedControlPanel);
+            advancedScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
+            advancedScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add("More", advancedScrollPanel);
+
+            /*==================================================================
+            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanelAdvanced.add(whitePanel);
+            whitePanel.setBackground(Color.WHITE);
+
+            JLabel overlayLabel = new JLabel(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
+            whitePanel.add(overlayLabel);
+
+            JSlider overlaySlider = new JSlider(-50, 50, 0);
+            controlPanelAdvanced.add(overlaySlider);
+            overlaySlider.setBackground(Color.WHITE);
+            overlaySlider.addChangeListener((ChangeEvent e) -> {
+                rotationAngle = overlaySlider.getValue();
+                rotationAngle /= 10;
+                overlayLabel.setText(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
+                processImages();
+            });
+            ==================================================================*/
+            drawCrosshairs = new JCheckBox(header("Draw crosshairs (*)"));
+            advancedControlPanel.add(drawCrosshairs);
+            drawCrosshairs.addActionListener((ActionEvent evt) -> {
+                if (!drawCrosshairs.isSelected()) {
+                    crosshairs.clear();
+                    crosshairCoords.setText("");
+                }
+            });
+
+            JLabel crosshairLabel = new JLabel(html("(*) Wheel click on object / Spin wheel to change" + LINE_BREAK + "the size / Wheel click on cross center to delete"));
+            crosshairLabel.setFont(font);
+            advancedControlPanel.add(crosshairLabel);
+
+            advancedControlPanel.add(new JLabel("Crosshairs coordinates:"));
+
+            crosshairCoords = new JTextArea();
+            advancedControlPanel.add(new JScrollPane(crosshairCoords));
+            crosshairCoords.setFont(font);
+            crosshairCoords.setBackground(new JLabel().getBackground());
+
+            checkProperMotion = new JCheckBox(header("Check proper motion:"));
+            advancedControlPanel.add(checkProperMotion);
+            checkProperMotion.addActionListener((ActionEvent evt) -> {
+                displayMotionChecker();
+            });
+
+            checkObjectCoordsField = new JTextField();
+            advancedControlPanel.add(checkObjectCoordsField);
+            TextPrompt checkObjectCoordsPrompt = new TextPrompt("RA & Dec of object to check");
+            checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
+            checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
+                useAboveCoords.setSelected(false);
+                displayMotionChecker();
+            });
+
+            useAboveCoords = new JCheckBox("Or use above coordinates");
+            advancedControlPanel.add(useAboveCoords);
+            useAboveCoords.addActionListener((ActionEvent evt) -> {
+                if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
+                    checkObjectCoordsField.setText(coordsField.getText());
+                }
+            });
+
+            checkObjectMotionField = new JTextField();
+            advancedControlPanel.add(checkObjectMotionField);
+            TextPrompt checkObjectMotionPrompt = new TextPrompt("pmRA & pmDec of object to check");
+            checkObjectMotionPrompt.applyTo(checkObjectMotionField);
+            checkObjectMotionField.addActionListener((ActionEvent evt) -> {
+                useGaiaPM.setSelected(false);
+                useCatwisePM.setSelected(false);
+                useNoirlabPM.setSelected(false);
+                displayMotionChecker();
+            });
+
+            JLabel pmLabel = new JLabel("  Or use proper motions from:");
+            advancedControlPanel.add(pmLabel);
+
+            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
+            advancedControlPanel.add(checkerPanel);
+
+            useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useGaiaPM);
+
+            useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useCatwisePM);
+
+            checkerPanel = new JPanel(new GridLayout(1, 2));
+            advancedControlPanel.add(checkerPanel);
+
+            useNoirlabPM = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useNoirlabPM);
+
+            useGaiaPM.addActionListener((ActionEvent evt) -> {
+                if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useCatwisePM.setSelected(false);
+                    useNoirlabPM.setSelected(false);
+                    applyProperMotion(new GaiaCatalogEntry());
+                }
+                displayMotionChecker();
+            });
+
+            useCatwisePM.addActionListener((ActionEvent evt) -> {
+                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useGaiaPM.setSelected(false);
+                    useNoirlabPM.setSelected(false);
+                    applyProperMotion(new CatWiseCatalogEntry());
+                }
+                displayMotionChecker();
+            });
+
+            useNoirlabPM.addActionListener((ActionEvent evt) -> {
+                if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useGaiaPM.setSelected(false);
+                    useCatwisePM.setSelected(false);
+                    applyProperMotion(new NoirlabCatalogEntry());
+                }
+                displayMotionChecker();
+            });
+
+            transposeProperMotion = new JCheckBox(header("Transpose proper motion:"));
+            advancedControlPanel.add(transposeProperMotion);
+            transposeProperMotion.addActionListener((ActionEvent evt) -> {
+                if (!transposeMotionField.getText().isEmpty()) {
+                    imagesW1.clear();
+                    imagesW2.clear();
+                    reloadImages = true;
+                    createFlipbook();
+                }
+            });
+
+            transposeMotionField = new JTextField();
+            advancedControlPanel.add(transposeMotionField);
+            TextPrompt transposeMotionPrompt = new TextPrompt("pmRA & pmDec to transpose");
+            transposeMotionPrompt.applyTo(transposeMotionField);
+            transposeMotionField.addActionListener((ActionEvent evt) -> {
+                if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
+                    imagesW1.clear();
+                    imagesW2.clear();
+                    reloadImages = true;
+                    createFlipbook();
+                }
+            });
+
+            advancedControlPanel.add(new JLabel(header("Miscellanea:")));
+
+            skipBadImages = new JCheckBox("Skip bad quality images", true);
+            advancedControlPanel.add(skipBadImages);
+            skipBadImages.addActionListener((ActionEvent evt) -> {
+                if (!skipBadImages.isSelected()) {
+                    showWarnDialog(baseFrame, "Unchecking this may decrease image quality and lead to poorer motion detection!");
+                }
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            skipSingleNodes = new JCheckBox("Skip single nodes", true);
+            advancedControlPanel.add(skipSingleNodes);
+            skipSingleNodes.addActionListener((ActionEvent evt) -> {
+                if (!skipSingleNodes.isSelected()) {
+                    showWarnDialog(baseFrame, "Unchecking this may affect image ordering and lead to poorer motion detection, especially in subtracted modes!");
+                }
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            optimizeContrast = new JCheckBox("Optimize contrast", true);
+            advancedControlPanel.add(optimizeContrast);
+            optimizeContrast.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
+            });
+
+            hideMagnifier = new JCheckBox("Hide magnifier panel");
+            advancedControlPanel.add(hideMagnifier);
+            hideMagnifier.addActionListener((ActionEvent evt) -> {
+                if (hideMagnifier.isSelected()) {
+                    rightPanel.setVisible(false);
+                } else {
+                    rightPanel.setVisible(true);
+                }
             });
 
             timer = new Timer(speed, (ActionEvent e) -> {
