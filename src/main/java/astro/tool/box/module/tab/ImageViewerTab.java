@@ -106,7 +106,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -454,7 +453,7 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 96;
+            int rows = 97;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -797,36 +796,51 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(simbadOverlay);
-            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
-            gaiaOverlay.setForeground(Color.CYAN.darker());
-            gaiaOverlay.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            overlayPanel.add(gaiaOverlay);
-
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
             allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME);
             allWiseOverlay.setForeground(Color.GREEN.darker());
             allWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(allWiseOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
             catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseOverlay.setForeground(Color.MAGENTA);
             catWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(catWiseOverlay);
-
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
             unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME);
             unWiseOverlay.setForeground(JColor.MINT.val);
             unWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(unWiseOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaOverlay.setForeground(Color.CYAN.darker());
+            gaiaOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(gaiaOverlay);
+            gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            gaiaDR3Overlay.setForeground(Color.CYAN.darker());
+            gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(gaiaDR3Overlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(overlayPanel);
+            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            noirlabOverlay.setForeground(JColor.NAVY.val);
+            noirlabOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(noirlabOverlay);
             panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME);
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             panStarrsOverlay.addActionListener((ActionEvent evt) -> {
@@ -851,18 +865,18 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
-            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_NAME);
-            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
-            gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            overlayPanel.add(gaiaWDOverlay);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
+            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_NAME);
+            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
+            gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(gaiaWDOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             controlPanel.add(overlayPanel);
@@ -878,26 +892,6 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(spitzerOverlay);
-
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
-            gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
-            gaiaDR3Overlay.setForeground(Color.CYAN.darker());
-            gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            if (LocalDate.now().isAfter(GAIA_DR3_RELEASE_DATE)) {
-                gaiaDR3Overlay.setEnabled(true);
-            } else {
-                gaiaDR3Overlay.setEnabled(false);
-            }
-            overlayPanel.add(gaiaDR3Overlay);
-            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
-            noirlabOverlay.setForeground(JColor.NAVY.val);
-            noirlabOverlay.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            overlayPanel.add(noirlabOverlay);
 
             ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
             ssoOverlay.setForeground(Color.BLUE);
@@ -956,26 +950,21 @@ public class ImageViewerTab {
                 processImages();
             });
             properMotionPanel.add(gaiaProperMotion);
+            gaiaDR3ProperMotion = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
+            gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            properMotionPanel.add(gaiaDR3ProperMotion);
+
+            properMotionPanel = new JPanel(new GridLayout(1, 2));
+            controlPanel.add(properMotionPanel);
             catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseProperMotion.setForeground(Color.MAGENTA);
             catWiseProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(catWiseProperMotion);
-
-            properMotionPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(properMotionPanel);
-            gaiaDR3ProperMotion = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
-            gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
-            gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            if (LocalDate.now().isAfter(GAIA_DR3_RELEASE_DATE)) {
-                gaiaDR3ProperMotion.setEnabled(true);
-            } else {
-                gaiaDR3ProperMotion.setEnabled(false);
-            }
-            properMotionPanel.add(gaiaDR3ProperMotion);
             noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             noirlabProperMotion.setForeground(JColor.NAVY.val);
             noirlabProperMotion.addActionListener((ActionEvent evt) -> {
@@ -1338,6 +1327,20 @@ public class ImageViewerTab {
 
             controlPanel.add(new JLabel(header("Navigation buttons:")));
 
+            JButton moveUpButton = new JButton("Move up");
+            controlPanel.add(moveUpButton);
+            moveUpButton.addActionListener((ActionEvent evt) -> {
+                double newDec = targetDec + size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
+                if (newDec > 90) {
+                    newDec = 90 - (newDec - 90);
+                    double newRa = targetRa + 180;
+                    targetRa = newRa > 360 ? newRa - 360 : newRa;
+                    showInfoDialog(baseFrame, "You're about to cross the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button next!");
+                }
+                coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
+                createFlipbook();
+            });
+
             JPanel navigationButtons = new JPanel(new GridLayout(1, 2));
             controlPanel.add(navigationButtons);
 
@@ -1365,25 +1368,8 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            navigationButtons = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(navigationButtons);
-
-            JButton moveUpButton = new JButton("Move up");
-            navigationButtons.add(moveUpButton);
-            moveUpButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec + size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                if (newDec > 90) {
-                    newDec = 90 - (newDec - 90);
-                    double newRa = targetRa + 180;
-                    targetRa = newRa > 360 ? newRa - 360 : newRa;
-                    showInfoDialog(baseFrame, "You're about to cross the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button next!");
-                }
-                coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
-                createFlipbook();
-            });
-
             JButton moveDownButton = new JButton("Move down");
-            navigationButtons.add(moveDownButton);
+            controlPanel.add(moveDownButton);
             moveDownButton.addActionListener((ActionEvent evt) -> {
                 double newDec = targetDec - size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
                 if (newDec < -90) {
