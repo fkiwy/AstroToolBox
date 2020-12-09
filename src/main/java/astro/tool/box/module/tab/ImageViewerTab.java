@@ -243,6 +243,7 @@ public class ImageViewerTab {
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
     private JCheckBox staticView;
+    private JCheckBox markTarget;
     private JCheckBox showCrosshairs;
     private JCheckBox simbadOverlay;
     private JCheckBox gaiaOverlay;
@@ -783,6 +784,9 @@ public class ImageViewerTab {
                 reloadImages = true;
                 createFlipbook();
             });
+
+            markTarget = new JCheckBox("Mark target coordinates");
+            mainControlPanel.add(markTarget);
 
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
             mainControlPanel.add(showCrosshairs);
@@ -1882,7 +1886,7 @@ public class ImageViewerTab {
 
                     imageLabel.addMouseWheelListener((MouseWheelEvent evt) -> {
                         int notches = evt.getWheelRotation();
-                        if (checkProperMotion.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
+                        if (checkProperMotion.isSelected() || markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
                             if (notches < 0) {
                                 shapeSize++;
                             } else if (shapeSize > 0) {
@@ -2864,7 +2868,7 @@ public class ImageViewerTab {
 
     private BufferedImage addCrosshairs(BufferedImage image, FlipbookComponent component) {
         // Copy the picture to draw shapes in real time
-        if (checkProperMotion.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
+        if (checkProperMotion.isSelected() || markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
             image = copy(image);
         }
 
@@ -2873,6 +2877,15 @@ public class ImageViewerTab {
             NumberPair epochCoordinates = component.getEpochCoordinates();
             NumberPair position = toPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
             Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 200, Color.RED);
+            circle.draw(image.getGraphics());
+        }
+
+        // Mark target coordinates
+        if (markTarget.isSelected()) {
+            NumberPair position = toPixelCoordinates(targetRa, targetDec);
+            Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 100, Color.RED);
+            circle.draw(image.getGraphics());
+            circle = new Circle(position.getX(), position.getY(), 1, Color.RED);
             circle.draw(image.getGraphics());
         }
 
