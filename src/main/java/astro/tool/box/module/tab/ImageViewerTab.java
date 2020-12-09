@@ -77,8 +77,6 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -4883,11 +4881,7 @@ public class ImageViewerTab {
                 toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
                 toCopy.append(" ");
                 toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
-
-                StringSelection stringSelection = new StringSelection(toCopy.toString());
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, null);
-
+                copyToClipboard(toCopy.toString());
                 message.setText("Copied to clipboard!");
                 messageTimer.restart();
             });
@@ -4911,11 +4905,7 @@ public class ImageViewerTab {
                         toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
                     });
                 });
-
-                StringSelection stringSelection = new StringSelection(toCopy.toString());
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, null);
-
+                copyToClipboard(toCopy.toString());
                 message.setText("Copied to clipboard!");
                 messageTimer.restart();
             });

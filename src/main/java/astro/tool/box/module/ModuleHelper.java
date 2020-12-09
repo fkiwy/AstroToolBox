@@ -281,7 +281,11 @@ public class ModuleHelper {
 
     public static void copyCoordsToClipboard(double degRA, double degDE) {
         String coordsToCopy = roundTo7DecNZ(degRA) + " " + roundTo7DecNZ(degDE);
-        StringSelection stringSelection = new StringSelection(coordsToCopy);
+        copyToClipboard(coordsToCopy);
+    }
+
+    public static void copyToClipboard(String toCopy) {
+        StringSelection stringSelection = new StringSelection(toCopy);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
     }
