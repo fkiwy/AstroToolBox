@@ -965,18 +965,18 @@ public class ImageViewerTab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(properMotionPanel);
-            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
-            catWiseProperMotion.setForeground(Color.MAGENTA);
-            catWiseProperMotion.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            properMotionPanel.add(catWiseProperMotion);
             noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             noirlabProperMotion.setForeground(JColor.NAVY.val);
             noirlabProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(noirlabProperMotion);
+            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            catWiseProperMotion.setForeground(Color.MAGENTA);
+            catWiseProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            properMotionPanel.add(catWiseProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(properMotionPanel);
@@ -1223,7 +1223,7 @@ public class ImageViewerTab {
                 }
             });
 
-            advancedControlPanel.add(new JLabel(header("Advanced settings:")));
+            advancedControlPanel.add(new JLabel(header("Miscellanea:")));
 
             skipBadImages = new JCheckBox("Skip bad quality images", true);
             advancedControlPanel.add(skipBadImages);
@@ -1419,7 +1419,7 @@ public class ImageViewerTab {
             playerScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Player", playerScrollPanel);
 
-            playerControlPanel.add(new JLabel(header("Image player controls:")));
+            playerControlPanel.add(new JLabel(header("Player controls:")));
 
             JPanel playerControls = new JPanel(new GridLayout(1, 2));
             playerControlPanel.add(playerControls);
