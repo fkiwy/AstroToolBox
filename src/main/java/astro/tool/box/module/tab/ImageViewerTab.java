@@ -182,6 +182,7 @@ public class ImageViewerTab {
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
     public static final int SIZE = 500;
+    public static final int DIFFERENT_SIZE = 100;
     public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
     public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
 
@@ -1069,7 +1070,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
+            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors and may therefore be wrong."));
             warning.setForeground(Color.RED);
             warning.setFont(font);
             overlaysControlPanel.add(warning);
@@ -1199,7 +1200,7 @@ public class ImageViewerTab {
             JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
             mouseControlPanel.add(differentSizePanel);
             differentSizePanel.add(new JLabel("Enter FoV (arcsec)"));
-            differentSizeField = new JTextField(String.valueOf(100));
+            differentSizeField = new JTextField(String.valueOf(DIFFERENT_SIZE));
             differentSizePanel.add(differentSizeField);
 
             //=====================
@@ -1380,7 +1381,7 @@ public class ImageViewerTab {
             JScrollPane advancedScrollPanel = new JScrollPane(advancedControlPanel);
             advancedScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
             advancedScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-            controlTabs.add("More", advancedScrollPanel);
+            controlTabs.add("Tools", advancedScrollPanel);
 
             /*==================================================================
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -1435,7 +1436,7 @@ public class ImageViewerTab {
                 displayMotionChecker();
             });
 
-            useAboveCoords = new JCheckBox("Or use above coordinates");
+            useAboveCoords = new JCheckBox("Or use target coordinates");
             advancedControlPanel.add(useAboveCoords);
             useAboveCoords.addActionListener((ActionEvent evt) -> {
                 if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
@@ -5049,6 +5050,10 @@ public class ImageViewerTab {
 
     public JSlider getZoomSlider() {
         return zoomSlider;
+    }
+
+    public JTextField getDifferentSizeField() {
+        return differentSizeField;
     }
 
     public JSlider getEpochSlider() {

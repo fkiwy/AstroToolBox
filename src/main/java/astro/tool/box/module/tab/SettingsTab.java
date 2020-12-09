@@ -97,6 +97,7 @@ public class SettingsTab {
     private static final String SIZE = "imageSize";
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
+    private static final String DIFFERENT_SIZE = "differentSize";
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
@@ -107,6 +108,7 @@ public class SettingsTab {
     private int size;
     private int speed;
     private int zoom;
+    private int differentSize;
     private boolean asyncDownloads;
     private boolean panstarrsImages;
     private boolean sdssImages;
@@ -138,11 +140,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(9, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(10, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 225));
+            globalSettings.setPreferredSize(new Dimension(450, 275));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
@@ -209,11 +211,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(8, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(10, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 225));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 275));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -263,11 +265,11 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(8, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(10, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 225));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 275));
             containerPanel.add(imageViewerSettings);
 
             numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
@@ -276,6 +278,7 @@ public class SettingsTab {
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
+            differentSize = Integer.parseInt(USER_SETTINGS.getProperty(DIFFERENT_SIZE, String.valueOf(ImageViewerTab.DIFFERENT_SIZE)));
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
@@ -295,6 +298,7 @@ public class SettingsTab {
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
+            imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
 
             imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
             epochSlider = imageViewerTab.getEpochSlider();
@@ -345,6 +349,10 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel("Zoom: ", JLabel.RIGHT));
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
+
+            imageViewerSettings.add(new JLabel("Alternative FoV (arcsec): ", JLabel.RIGHT));
+            JTextField differentSizeField = new JTextField(String.valueOf(differentSize));
+            imageViewerSettings.add(differentSizeField);
 
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
@@ -437,6 +445,7 @@ public class SettingsTab {
                     size = Integer.parseInt(sizeField.getText());
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
+                    differentSize = Integer.parseInt(differentSizeField.getText());
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
@@ -500,6 +509,7 @@ public class SettingsTab {
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
+                imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
 
                 imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
                 epochSlider = imageViewerTab.getEpochSlider();
