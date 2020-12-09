@@ -441,6 +441,9 @@ public class ImageViewerTab {
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
             leftPanel.setBorder(new EmptyBorder(0, 5, 5, 20));
 
+            JTabbedPane controlTabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+            leftPanel.add(controlTabs);
+
             imagePanel = new JPanel();
             imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
 
@@ -453,43 +456,46 @@ public class ImageViewerTab {
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
             rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
 
-            int rows = 97;
+            //===================
+            // Tab: Main controls
+            //===================
+            int rows = 52;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
-            JPanel controlPanel = new JPanel(new GridLayout(rows, 1));
-            controlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            controlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
+            mainControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            mainControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
 
-            JScrollPane controlScrollPanel = new JScrollPane(controlPanel);
-            controlScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, controlPanelHeight));
-            controlScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-            leftPanel.add(controlScrollPanel);
+            JScrollPane mainScrollPanel = new JScrollPane(mainControlPanel);
+            mainScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, controlPanelHeight));
+            mainScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add("Main", mainScrollPanel);
 
-            controlPanel.add(new JLabel("Coordinates:"));
+            mainControlPanel.add(new JLabel("Coordinates:"));
 
             coordsField = new JTextField();
-            controlPanel.add(coordsField);
+            mainControlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
                 coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
                 coordsField.setCursor(Cursor.getDefaultCursor());
             });
 
-            controlPanel.add(new JLabel("Field of view (arcsec):"));
+            mainControlPanel.add(new JLabel("Field of view (arcsec):"));
 
             sizeField = new JTextField(String.valueOf(size));
-            controlPanel.add(sizeField);
+            mainControlPanel.add(sizeField);
             sizeField.addActionListener((ActionEvent evt) -> {
                 sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
                 sizeField.setCursor(Cursor.getDefaultCursor());
             });
 
-            controlPanel.add(new JLabel("Bands:"));
+            mainControlPanel.add(new JLabel("Bands:"));
 
             wiseBands = new JComboBox<>(WiseBand.values());
-            controlPanel.add(wiseBands);
+            mainControlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
                 WiseBand previousBand = wiseBand;
@@ -521,10 +527,10 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            controlPanel.add(new JLabel("Epochs:"));
+            mainControlPanel.add(new JLabel("Epochs:"));
 
             epochs = new JComboBox<>(Epoch.values());
-            controlPanel.add(epochs);
+            mainControlPanel.add(epochs);
             epochs.setMaximumRowCount(Epoch.values().length);
             epochs.setSelectedItem(epoch);
             epochs.addActionListener((ActionEvent evt) -> {
@@ -557,14 +563,14 @@ public class ImageViewerTab {
             });
 
             JPanel whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(whitePanel);
+            mainControlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
             highScaleLabel = new JLabel(String.format(HIGH_SCALE_LABEL, highContrast));
             whitePanel.add(highScaleLabel);
 
             highScaleSlider = new JSlider(0, 1000, HIGH_CONTRAST);
-            controlPanel.add(highScaleSlider);
+            mainControlPanel.add(highScaleSlider);
             highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
@@ -583,14 +589,14 @@ public class ImageViewerTab {
             });
 
             JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(grayPanel);
+            mainControlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
             lowScaleLabel = new JLabel(String.format(LOW_SCALE_LABEL, lowContrast));
             grayPanel.add(lowScaleLabel);
 
             lowScaleSlider = new JSlider(0, 100, LOW_CONTRAST);
-            controlPanel.add(lowScaleSlider);
+            mainControlPanel.add(lowScaleSlider);
             lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
@@ -612,14 +618,14 @@ public class ImageViewerTab {
             });
 
             subScalePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(subScalePanel);
+            mainControlPanel.add(subScalePanel);
             subScalePanel.setBackground(Color.WHITE);
 
             subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
             subScalePanel.add(subScaleLabel);
 
             subScaleSlider = new JSlider(1, 19, SUB_CONTRAST);
-            controlPanel.add(subScaleSlider);
+            mainControlPanel.add(subScaleSlider);
             subScaleSlider.setBackground(Color.WHITE);
             subScaleSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
@@ -635,14 +641,14 @@ public class ImageViewerTab {
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(grayPanel);
+            mainControlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
             JLabel speedLabel = new JLabel(String.format("Playback speed: %d ms", speed));
             grayPanel.add(speedLabel);
 
             speedSlider = new JSlider(0, 2000, SPEED);
-            controlPanel.add(speedSlider);
+            mainControlPanel.add(speedSlider);
             speedSlider.setBackground(Color.LIGHT_GRAY);
             speedSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
@@ -656,14 +662,14 @@ public class ImageViewerTab {
             });
 
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(whitePanel);
+            mainControlPanel.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
             JLabel zoomLabel = new JLabel(String.format("Image zoom: %d", zoom));
             whitePanel.add(zoomLabel);
 
             zoomSlider = new JSlider(0, 2000, ZOOM);
-            controlPanel.add(zoomSlider);
+            mainControlPanel.add(zoomSlider);
             zoomSlider.setBackground(Color.WHITE);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
@@ -677,14 +683,14 @@ public class ImageViewerTab {
             });
 
             grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(grayPanel);
+            mainControlPanel.add(grayPanel);
             grayPanel.setBackground(Color.LIGHT_GRAY);
 
             epochLabel = new JLabel(String.format(EPOCH_LABEL, selectedEpochs));
             grayPanel.add(epochLabel);
 
             epochSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
-            controlPanel.add(epochSlider);
+            mainControlPanel.add(epochSlider);
             epochSlider.setBackground(Color.LIGHT_GRAY);
             epochSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
@@ -698,7 +704,7 @@ public class ImageViewerTab {
             });
 
             unwiseCutouts = new JCheckBox("Use unWISE coadds (ASC=DESC!)");
-            controlPanel.add(unwiseCutouts);
+            mainControlPanel.add(unwiseCutouts);
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 imagesW1.clear();
                 imagesW2.clear();
@@ -707,7 +713,7 @@ public class ImageViewerTab {
             });
 
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(settingsPanel);
+            mainControlPanel.add(settingsPanel);
 
             autoContrast = new JCheckBox("Auto-contrast", true);
             settingsPanel.add(autoContrast);
@@ -731,7 +737,7 @@ public class ImageViewerTab {
             });
 
             settingsPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(settingsPanel);
+            mainControlPanel.add(settingsPanel);
 
             blurImages = new JCheckBox("Blur images");
             settingsPanel.add(blurImages);
@@ -746,7 +752,7 @@ public class ImageViewerTab {
             });
 
             settingsPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(settingsPanel);
+            mainControlPanel.add(settingsPanel);
 
             borderFirst = new JCheckBox("Border 1st ep.");
             settingsPanel.add(borderFirst);
@@ -764,16 +770,16 @@ public class ImageViewerTab {
             });
 
             showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
-            controlPanel.add(showCrosshairs);
+            mainControlPanel.add(showCrosshairs);
 
             JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
             Font font = copyCoordsLabel.getFont();
             font = font.deriveFont(9f);
             copyCoordsLabel.setFont(font);
-            controlPanel.add(copyCoordsLabel);
+            mainControlPanel.add(copyCoordsLabel);
 
             JButton resetDefaultsButton = new JButton("Image processing defaults");
-            controlPanel.add(resetDefaultsButton);
+            mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 autoContrast.setSelected(true);
                 if (Epoch.isSubtracted(epoch)) {
@@ -786,10 +792,10 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            controlPanel.add(new JLabel(header("Overlays:")));
+            mainControlPanel.add(new JLabel(header("Overlays:")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME);
             simbadOverlay.setForeground(Color.RED);
             simbadOverlay.addActionListener((ActionEvent evt) -> {
@@ -804,7 +810,7 @@ public class ImageViewerTab {
             overlayPanel.add(allWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseOverlay.setForeground(Color.MAGENTA);
             catWiseOverlay.addActionListener((ActionEvent evt) -> {
@@ -819,7 +825,7 @@ public class ImageViewerTab {
             overlayPanel.add(unWiseOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             gaiaOverlay.setForeground(Color.CYAN.darker());
             gaiaOverlay.addActionListener((ActionEvent evt) -> {
@@ -834,7 +840,7 @@ public class ImageViewerTab {
             overlayPanel.add(gaiaDR3Overlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             noirlabOverlay.setForeground(JColor.NAVY.val);
             noirlabOverlay.addActionListener((ActionEvent evt) -> {
@@ -849,7 +855,7 @@ public class ImageViewerTab {
             overlayPanel.add(panStarrsOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
@@ -864,7 +870,7 @@ public class ImageViewerTab {
             overlayPanel.add(spectrumOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
@@ -879,7 +885,7 @@ public class ImageViewerTab {
             overlayPanel.add(gaiaWDOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(overlayPanel);
+            mainControlPanel.add(overlayPanel);
             twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
             twoMassOverlay.setForeground(JColor.ORANGE.val);
             twoMassOverlay.addActionListener((ActionEvent evt) -> {
@@ -898,23 +904,23 @@ public class ImageViewerTab {
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            controlPanel.add(ssoOverlay);
+            mainControlPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
-            controlPanel.add(useCustomOverlays);
+            mainControlPanel.add(useCustomOverlays);
             useCustomOverlays.setBackground(Color.WHITE);
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
                     showInfoDialog(baseFrame, "No custom overlays have been added yet.");
                     useCustomOverlays.setSelected(false);
                 } else {
-                    GridLayout layout = (GridLayout) controlPanel.getLayout();
+                    GridLayout layout = (GridLayout) mainControlPanel.getLayout();
                     int numberOfRows = customOverlays.size();
                     int rowsHeight = numberOfRows * ROW_HEIGHT;
                     if (useCustomOverlays.isSelected()) {
-                        componentIndex = controlPanel.getComponentZOrder(useCustomOverlays) + 1;
+                        componentIndex = mainControlPanel.getComponentZOrder(useCustomOverlays) + 1;
                         layout.setRows(layout.getRows() + numberOfRows);
-                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() + rowsHeight));
+                        mainControlPanel.setPreferredSize(new Dimension(mainControlPanel.getWidth(), mainControlPanel.getHeight() + rowsHeight));
                         customOverlays.values().forEach(customOverlay -> {
                             JCheckBox checkBox = new JCheckBox(customOverlay.getName());
                             checkBox.setForeground(customOverlay.getColor());
@@ -923,27 +929,27 @@ public class ImageViewerTab {
                                 processImages();
                             });
                             customOverlay.setCheckBox(checkBox);
-                            controlPanel.add(checkBox, componentIndex++);
+                            mainControlPanel.add(checkBox, componentIndex++);
                         });
                     } else {
-                        componentIndex = controlPanel.getComponentZOrder(useCustomOverlays) + numberOfRows;
+                        componentIndex = mainControlPanel.getComponentZOrder(useCustomOverlays) + numberOfRows;
                         layout.setRows(layout.getRows() - numberOfRows);
-                        controlPanel.setPreferredSize(new Dimension(controlPanel.getWidth(), controlPanel.getHeight() - rowsHeight));
+                        mainControlPanel.setPreferredSize(new Dimension(mainControlPanel.getWidth(), mainControlPanel.getHeight() - rowsHeight));
                         customOverlays.values().forEach((customOverlay) -> {
-                            controlPanel.remove(componentIndex--);
+                            mainControlPanel.remove(componentIndex--);
                             customOverlay.setCatalogEntries(null);
                         });
                         processImages();
                     }
-                    controlPanel.updateUI();
+                    mainControlPanel.updateUI();
                     baseFrame.setVisible(true);
                 }
             });
 
-            controlPanel.add(new JLabel(header("PM vectors:")));
+            mainControlPanel.add(new JLabel(header("PM vectors:")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(properMotionPanel);
+            mainControlPanel.add(properMotionPanel);
             gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             gaiaProperMotion.setForeground(Color.CYAN.darker());
             gaiaProperMotion.addActionListener((ActionEvent evt) -> {
@@ -958,7 +964,7 @@ public class ImageViewerTab {
             properMotionPanel.add(gaiaDR3ProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(properMotionPanel);
+            mainControlPanel.add(properMotionPanel);
             catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
             catWiseProperMotion.setForeground(Color.MAGENTA);
             catWiseProperMotion.addActionListener((ActionEvent evt) -> {
@@ -973,7 +979,7 @@ public class ImageViewerTab {
             properMotionPanel.add(noirlabProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(properMotionPanel);
+            mainControlPanel.add(properMotionPanel);
             properMotionPanel.add(new JLabel("Total PM (mas/yr) >"));
             properMotionField = new JTextField(String.valueOf(100));
             properMotionPanel.add(properMotionField);
@@ -985,10 +991,10 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            controlPanel.add(new JLabel(header("WISE artifacts (*):")));
+            mainControlPanel.add(new JLabel(header("WISE artifacts (*):")));
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(artifactPanel);
+            mainControlPanel.add(artifactPanel);
             ghostOverlay = new JCheckBox("Ghosts");
             ghostOverlay.setForeground(Color.MAGENTA.darker());
             ghostOverlay.addActionListener((ActionEvent evt) -> {
@@ -1003,7 +1009,7 @@ public class ImageViewerTab {
             artifactPanel.add(haloOverlay);
 
             artifactPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(artifactPanel);
+            mainControlPanel.add(artifactPanel);
             latentOverlay = new JCheckBox("Latents");
             latentOverlay.setForeground(Color.GREEN.darker());
             latentOverlay.addActionListener((ActionEvent evt) -> {
@@ -1019,144 +1025,72 @@ public class ImageViewerTab {
 
             JLabel artifactLabel = new JLabel(html("(*) Small shapes represent affected sources." + LINE_BREAK + "Large shapes represent the actual artifacts."));
             artifactLabel.setFont(font);
-            controlPanel.add(artifactLabel);
+            mainControlPanel.add(artifactLabel);
 
-            controlPanel.add(new JLabel(header("Mouse left click w/o overlays:")));
+            mainControlPanel.add(new JLabel(header("Experimental features (*):")));
 
-            showCatalogsButton = new JRadioButton("Show catalog entries for object", true);
-            controlPanel.add(showCatalogsButton);
-
-            JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
-            controlPanel.add(recenterImagesButton);
-
-            ButtonGroup groupOne = new ButtonGroup();
-            groupOne.add(showCatalogsButton);
-            groupOne.add(recenterImagesButton);
-
-            controlPanel.add(new JLabel(header("Mouse wheel click:")));
-
-            controlPanel.add(new JLabel("Select images to display:"));
-
-            dssImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
-            controlPanel.add(dssImages);
-            dssImages.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
-            });
-
-            twoMassImages = new JCheckBox("2MASS J, H & K bands", false);
-            controlPanel.add(twoMassImages);
-            twoMassImages.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
-            });
-
-            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
-            controlPanel.add(sloanImages);
-            sloanImages.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
-            });
-
-            allwiseImages = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
-            controlPanel.add(allwiseImages);
-            allwiseImages.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
-            });
-
-            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
-            controlPanel.add(ps1Images);
-            ps1Images.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
-            });
-
-            staticTimeSeries = new JCheckBox("Time series - static", false);
-            controlPanel.add(staticTimeSeries);
-            staticTimeSeries.addActionListener((ActionEvent evt) -> {
-                if (animatedTimeSeries.isSelected()) {
-                    dssImages.setSelected(false);
-                    twoMassImages.setSelected(false);
-                    sloanImages.setSelected(false);
-                    allwiseImages.setSelected(false);
-                    ps1Images.setSelected(false);
-                    animatedTimeSeries.setSelected(false);
+            displaySpectralTypes = new JCheckBox("Display estimated spectral types");
+            mainControlPanel.add(displaySpectralTypes);
+            displaySpectralTypes.addActionListener((ActionEvent evt) -> {
+                if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
+                    gaiaOverlay.setSelected(true);
                 }
-                createDataSheet.setSelected(false);
+                initCatalogEntries();
+                processImages();
             });
 
-            animatedTimeSeries = new JCheckBox("Time series - animated", false);
-            controlPanel.add(animatedTimeSeries);
-            animatedTimeSeries.addActionListener((ActionEvent evt) -> {
-                if (animatedTimeSeries.isSelected()) {
-                    dssImages.setSelected(true);
-                    twoMassImages.setSelected(true);
-                    sloanImages.setSelected(true);
-                    allwiseImages.setSelected(true);
-                    ps1Images.setSelected(true);
-                    staticTimeSeries.setSelected(false);
-                } else {
-                    dssImages.setSelected(false);
-                    twoMassImages.setSelected(false);
-                    sloanImages.setSelected(false);
-                    allwiseImages.setSelected(false);
-                    ps1Images.setSelected(false);
+            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
+            mainControlPanel.add(showBrownDwarfsOnly);
+            showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
+                if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
+                    gaiaOverlay.setSelected(true);
                 }
-                createDataSheet.setSelected(false);
+                initCatalogEntries();
+                processImages();
             });
 
-            createDataSheet = new JCheckBox("Object info sheet", false);
-            controlPanel.add(createDataSheet);
-            createDataSheet.addActionListener((ActionEvent evt) -> {
-                if (createDataSheet.isSelected()) {
-                    setImageViewer(this);
-                    dssImages.setSelected(false);
-                    twoMassImages.setSelected(false);
-                    sloanImages.setSelected(false);
-                    allwiseImages.setSelected(false);
-                    ps1Images.setSelected(false);
-                    staticTimeSeries.setSelected(false);
-                    animatedTimeSeries.setSelected(false);
-                }
-            });
+            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
+            warning.setForeground(Color.RED);
+            warning.setFont(font);
+            mainControlPanel.add(warning);
 
-            changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
-            controlPanel.add(changeFovLabel);
-
-            JLabel fovLabel = new JLabel("(*) Spin wheel on WISE images to change FoV");
-            fovLabel.setFont(font);
-            controlPanel.add(fovLabel);
-
-            controlPanel.add(new JLabel(header("Mouse right click:")));
-
-            differentSizeButton = new JRadioButton("Show object in different FoV", true);
-            controlPanel.add(differentSizeButton);
-
-            ButtonGroup groupTwo = new ButtonGroup();
-            groupTwo.add(differentSizeButton);
-
-            JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(differentSizePanel);
-            differentSizePanel.add(new JLabel("Enter FoV (arcsec)"));
-            differentSizeField = new JTextField(String.valueOf(100));
-            differentSizePanel.add(differentSizeField);
-
-            controlPanel.add(new JLabel(header("Nearest Zooniverse subjects:")));
+            mainControlPanel.add(new JLabel(header("Nearest Zooniverse subjects:")));
 
             zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(zooniversePanel1);
+            mainControlPanel.add(zooniversePanel1);
 
             zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(zooniversePanel2);
+            mainControlPanel.add(zooniversePanel2);
 
-            controlPanel.add(new JLabel(header("Advanced controls:")));
+            //=======================
+            // Tab: Advanced controls
+            //=======================
+            rows = 18;
+            controlPanelWidth = 250;
+            controlPanelHeight = 10 + ROW_HEIGHT * rows;
+
+            JPanel advancedControlPanel = new JPanel(new GridLayout(rows, 1));
+            advancedControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            advancedControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+
+            JPanel controlPanelContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanelContainer.add(advancedControlPanel);
+
+            JScrollPane advancedScrollPanel = new JScrollPane(controlPanelContainer);
+            advancedScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
+            advancedScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add("Advanced", advancedScrollPanel);
 
             /*==================================================================
             whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanel.add(whitePanel);
+            controlPanelAdvanced.add(whitePanel);
             whitePanel.setBackground(Color.WHITE);
 
             JLabel overlayLabel = new JLabel(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
             whitePanel.add(overlayLabel);
 
             JSlider overlaySlider = new JSlider(-50, 50, 0);
-            controlPanel.add(overlaySlider);
+            controlPanelAdvanced.add(overlaySlider);
             overlaySlider.setBackground(Color.WHITE);
             overlaySlider.addChangeListener((ChangeEvent e) -> {
                 rotationAngle = overlaySlider.getValue();
@@ -1165,48 +1099,8 @@ public class ImageViewerTab {
                 processImages();
             });
             ==================================================================*/
-            skipBadImages = new JCheckBox("Skip bad quality images", true);
-            controlPanel.add(skipBadImages);
-            skipBadImages.addActionListener((ActionEvent evt) -> {
-                if (!skipBadImages.isSelected()) {
-                    showWarnDialog(baseFrame, "Unchecking this may decrease image quality and lead to poorer motion detection!");
-                }
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
-
-            skipSingleNodes = new JCheckBox("Skip single nodes", true);
-            controlPanel.add(skipSingleNodes);
-            skipSingleNodes.addActionListener((ActionEvent evt) -> {
-                if (!skipSingleNodes.isSelected()) {
-                    showWarnDialog(baseFrame, "Unchecking this may affect image ordering and lead to poorer motion detection, especially in subtracted modes!");
-                }
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
-
-            optimizeContrast = new JCheckBox("Optimize contrast", true);
-            controlPanel.add(optimizeContrast);
-            optimizeContrast.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
-            });
-
-            hideMagnifier = new JCheckBox("Hide magnifier panel");
-            controlPanel.add(hideMagnifier);
-            hideMagnifier.addActionListener((ActionEvent evt) -> {
-                if (hideMagnifier.isSelected()) {
-                    rightPanel.setVisible(false);
-                } else {
-                    rightPanel.setVisible(true);
-                }
-            });
-
-            drawCrosshairs = new JCheckBox("Draw crosshairs (*)");
-            controlPanel.add(drawCrosshairs);
+            drawCrosshairs = new JCheckBox(header("Draw crosshairs (*)"));
+            advancedControlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
                 if (!drawCrosshairs.isSelected()) {
                     crosshairs.clear();
@@ -1216,180 +1110,24 @@ public class ImageViewerTab {
 
             JLabel crosshairLabel = new JLabel(html("(*) Wheel click on object / Spin wheel to change" + LINE_BREAK + "the size / Wheel click on cross center to delete"));
             crosshairLabel.setFont(font);
-            controlPanel.add(crosshairLabel);
+            advancedControlPanel.add(crosshairLabel);
 
-            controlPanel.add(new JLabel("Crosshairs coordinates:"));
+            advancedControlPanel.add(new JLabel("Crosshairs coordinates:"));
 
             crosshairCoords = new JTextArea();
-            controlPanel.add(new JScrollPane(crosshairCoords));
+            advancedControlPanel.add(new JScrollPane(crosshairCoords));
             crosshairCoords.setFont(font);
             crosshairCoords.setEditable(false);
             crosshairCoords.setBackground(new JLabel().getBackground());
 
-            controlPanel.add(new JLabel(header("Image player controls:")));
-
-            JPanel playerControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(playerControls);
-
-            JButton playButton = new JButton("Play");
-            playerControls.add(playButton);
-            playButton.addActionListener((ActionEvent evt) -> {
-                timer.setRepeats(true);
-                timer.start();
-                timerStopped = false;
-            });
-
-            JButton stopButton = new JButton("Stop");
-            playerControls.add(stopButton);
-            stopButton.addActionListener((ActionEvent evt) -> {
-                timer.stop();
-                timerStopped = true;
-            });
-
-            playerControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(playerControls);
-
-            JButton backwardButton = new JButton("Backward");
-            playerControls.add(backwardButton);
-            backwardButton.addActionListener((ActionEvent evt) -> {
-                timer.stop();
-                imageNumber -= 2;
-                if (imageNumber < 0) {
-                    imageNumber = flipbook.length - 1;
-                }
-                timer.setRepeats(false);
-                timer.start();
-            });
-
-            JButton forwardButton = new JButton("Forward");
-            playerControls.add(forwardButton);
-            forwardButton.addActionListener((ActionEvent evt) -> {
-                timer.stop();
-                timer.setRepeats(false);
-                timer.start();
-            });
-
-            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
-            controlPanel.add(rotateButton);
-            rotateButton.addActionListener((ActionEvent evt) -> {
-                quadrantCount++;
-                if (quadrantCount > 3) {
-                    quadrantCount = 0;
-                }
-                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
-                processImages();
-            });
-
-            JPanel saveControls = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(saveControls);
-
-            JButton saveAsPngButton = new JButton("Save as PNG");
-            saveControls.add(saveAsPngButton);
-            saveAsPngButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
-                    int returnVal = fileChooser.showSaveDialog(controlPanel);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".png");
-                        ImageIO.write(wiseImage, "png", file);
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            JButton saveAsGifButton = new JButton("Save as GIF");
-            saveControls.add(saveAsGifButton);
-            saveAsGifButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
-                    int returnVal = fileChooser.showSaveDialog(controlPanel);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".gif");
-                        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
-                        int i = 0;
-                        for (FlipbookComponent component : flipbook) {
-                            imageSet[i++] = addCrosshairs(processImage(component), component);
-                        }
-                        if (imageSet.length > 0) {
-                            GifSequencer sequencer = new GifSequencer();
-                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
-                        }
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            controlPanel.add(new JLabel(header("Navigation buttons:")));
-
-            JButton moveUpButton = new JButton("Move up");
-            controlPanel.add(moveUpButton);
-            moveUpButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec + size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                if (newDec > 90) {
-                    newDec = 90 - (newDec - 90);
-                    double newRa = targetRa + 180;
-                    targetRa = newRa > 360 ? newRa - 360 : newRa;
-                    showInfoDialog(baseFrame, "You're about to cross the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button next!");
-                }
-                coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
-                createFlipbook();
-            });
-
-            JPanel navigationButtons = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(navigationButtons);
-
-            JButton moveLeftButton = new JButton("Move left");
-            navigationButtons.add(moveLeftButton);
-            moveLeftButton.addActionListener((ActionEvent evt) -> {
-                double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(distance, 0));
-                double newRa = coords.getX();
-                newRa = newRa > 360 ? newRa - 360 : newRa;
-                newRa = newRa > 360 ? 0 : newRa;
-                coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
-                createFlipbook();
-            });
-
-            JButton moveRightButton = new JButton("Move right");
-            navigationButtons.add(moveRightButton);
-            moveRightButton.addActionListener((ActionEvent evt) -> {
-                double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(-distance, 0));
-                double newRa = coords.getX();
-                newRa = newRa < 0 ? newRa + 360 : newRa;
-                newRa = newRa < 0 ? 0 : newRa;
-                coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
-                createFlipbook();
-            });
-
-            JButton moveDownButton = new JButton("Move down");
-            controlPanel.add(moveDownButton);
-            moveDownButton.addActionListener((ActionEvent evt) -> {
-                double newDec = targetDec - size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
-                if (newDec < -90) {
-                    newDec = -90 + (abs(newDec) - 90);
-                    double newRa = targetRa + 180;
-                    targetRa = newRa > 360 ? newRa - 360 : newRa;
-                    showInfoDialog(baseFrame, "You're about to cross the South Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move up' button next!");
-                }
-                coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
-                createFlipbook();
-            });
-
             checkProperMotion = new JCheckBox(header("Check proper motion:"));
-            controlPanel.add(checkProperMotion);
+            advancedControlPanel.add(checkProperMotion);
             checkProperMotion.addActionListener((ActionEvent evt) -> {
                 displayMotionChecker();
             });
 
             checkObjectCoordsField = new JTextField();
-            controlPanel.add(checkObjectCoordsField);
+            advancedControlPanel.add(checkObjectCoordsField);
             TextPrompt checkObjectCoordsPrompt = new TextPrompt("RA & Dec of object to check");
             checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
             checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
@@ -1398,7 +1136,7 @@ public class ImageViewerTab {
             });
 
             useAboveCoords = new JCheckBox("Or use above coordinates");
-            controlPanel.add(useAboveCoords);
+            advancedControlPanel.add(useAboveCoords);
             useAboveCoords.addActionListener((ActionEvent evt) -> {
                 if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
                     checkObjectCoordsField.setText(coordsField.getText());
@@ -1406,7 +1144,7 @@ public class ImageViewerTab {
             });
 
             checkObjectMotionField = new JTextField();
-            controlPanel.add(checkObjectMotionField);
+            advancedControlPanel.add(checkObjectMotionField);
             TextPrompt checkObjectMotionPrompt = new TextPrompt("pmRA & pmDec of object to check");
             checkObjectMotionPrompt.applyTo(checkObjectMotionField);
             checkObjectMotionField.addActionListener((ActionEvent evt) -> {
@@ -1417,10 +1155,10 @@ public class ImageViewerTab {
             });
 
             JLabel pmLabel = new JLabel("  Or use proper motions from:");
-            controlPanel.add(pmLabel);
+            advancedControlPanel.add(pmLabel);
 
             JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(checkerPanel);
+            advancedControlPanel.add(checkerPanel);
 
             useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useGaiaPM);
@@ -1429,7 +1167,7 @@ public class ImageViewerTab {
             checkerPanel.add(useCatwisePM);
 
             checkerPanel = new JPanel(new GridLayout(1, 2));
-            controlPanel.add(checkerPanel);
+            advancedControlPanel.add(checkerPanel);
 
             useNoirlabPM = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useNoirlabPM);
@@ -1462,7 +1200,7 @@ public class ImageViewerTab {
             });
 
             transposeProperMotion = new JCheckBox(header("Transpose proper motion:"));
-            controlPanel.add(transposeProperMotion);
+            advancedControlPanel.add(transposeProperMotion);
             transposeProperMotion.addActionListener((ActionEvent evt) -> {
                 if (!transposeMotionField.getText().isEmpty()) {
                     imagesW1.clear();
@@ -1473,7 +1211,7 @@ public class ImageViewerTab {
             });
 
             transposeMotionField = new JTextField();
-            controlPanel.add(transposeMotionField);
+            advancedControlPanel.add(transposeMotionField);
             TextPrompt transposeMotionPrompt = new TextPrompt("pmRA & pmDec to transpose");
             transposeMotionPrompt.applyTo(transposeMotionField);
             transposeMotionField.addActionListener((ActionEvent evt) -> {
@@ -1485,32 +1223,357 @@ public class ImageViewerTab {
                 }
             });
 
-            controlPanel.add(new JLabel(header("Experimental features (*):")));
+            advancedControlPanel.add(new JLabel(header("Advanced settings:")));
 
-            displaySpectralTypes = new JCheckBox("Display estimated spectral types");
-            controlPanel.add(displaySpectralTypes);
-            displaySpectralTypes.addActionListener((ActionEvent evt) -> {
-                if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
-                    gaiaOverlay.setSelected(true);
+            skipBadImages = new JCheckBox("Skip bad quality images", true);
+            advancedControlPanel.add(skipBadImages);
+            skipBadImages.addActionListener((ActionEvent evt) -> {
+                if (!skipBadImages.isSelected()) {
+                    showWarnDialog(baseFrame, "Unchecking this may decrease image quality and lead to poorer motion detection!");
                 }
-                initCatalogEntries();
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            skipSingleNodes = new JCheckBox("Skip single nodes", true);
+            advancedControlPanel.add(skipSingleNodes);
+            skipSingleNodes.addActionListener((ActionEvent evt) -> {
+                if (!skipSingleNodes.isSelected()) {
+                    showWarnDialog(baseFrame, "Unchecking this may affect image ordering and lead to poorer motion detection, especially in subtracted modes!");
+                }
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            optimizeContrast = new JCheckBox("Optimize contrast", true);
+            advancedControlPanel.add(optimizeContrast);
+            optimizeContrast.addActionListener((ActionEvent evt) -> {
+                createFlipbook();
+            });
+
+            hideMagnifier = new JCheckBox("Hide magnifier panel");
+            advancedControlPanel.add(hideMagnifier);
+            hideMagnifier.addActionListener((ActionEvent evt) -> {
+                if (hideMagnifier.isSelected()) {
+                    rightPanel.setVisible(false);
+                } else {
+                    rightPanel.setVisible(true);
+                }
+            });
+
+            //====================
+            // Tab: Mouse settings
+            //====================
+            rows = 18;
+            controlPanelWidth = 250;
+            controlPanelHeight = 10 + ROW_HEIGHT * rows;
+
+            JPanel mouseControlPanel = new JPanel(new GridLayout(rows, 1));
+            mouseControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            mouseControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+
+            controlPanelContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanelContainer.add(mouseControlPanel);
+
+            JScrollPane mouseScrollPanel = new JScrollPane(controlPanelContainer);
+            mouseScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
+            mouseScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add("Mouse", mouseScrollPanel);
+
+            mouseControlPanel.add(new JLabel(header("Mouse left click w/o overlays:")));
+
+            showCatalogsButton = new JRadioButton("Show catalog entries for object", true);
+            mouseControlPanel.add(showCatalogsButton);
+
+            JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
+            mouseControlPanel.add(recenterImagesButton);
+
+            ButtonGroup groupOne = new ButtonGroup();
+            groupOne.add(showCatalogsButton);
+            groupOne.add(recenterImagesButton);
+
+            mouseControlPanel.add(new JLabel(header("Mouse wheel click:")));
+
+            mouseControlPanel.add(new JLabel("Select images to display:"));
+
+            dssImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
+            mouseControlPanel.add(dssImages);
+            dssImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            twoMassImages = new JCheckBox("2MASS J, H & K bands", false);
+            mouseControlPanel.add(twoMassImages);
+            twoMassImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
+            mouseControlPanel.add(sloanImages);
+            sloanImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            allwiseImages = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
+            mouseControlPanel.add(allwiseImages);
+            allwiseImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
+            mouseControlPanel.add(ps1Images);
+            ps1Images.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            staticTimeSeries = new JCheckBox("Time series - static", false);
+            mouseControlPanel.add(staticTimeSeries);
+            staticTimeSeries.addActionListener((ActionEvent evt) -> {
+                if (animatedTimeSeries.isSelected()) {
+                    dssImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
+                    animatedTimeSeries.setSelected(false);
+                }
+                createDataSheet.setSelected(false);
+            });
+
+            animatedTimeSeries = new JCheckBox("Time series - animated", false);
+            mouseControlPanel.add(animatedTimeSeries);
+            animatedTimeSeries.addActionListener((ActionEvent evt) -> {
+                if (animatedTimeSeries.isSelected()) {
+                    dssImages.setSelected(true);
+                    twoMassImages.setSelected(true);
+                    sloanImages.setSelected(true);
+                    allwiseImages.setSelected(true);
+                    ps1Images.setSelected(true);
+                    staticTimeSeries.setSelected(false);
+                } else {
+                    dssImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
+                }
+                createDataSheet.setSelected(false);
+            });
+
+            createDataSheet = new JCheckBox("Object info sheet", false);
+            mouseControlPanel.add(createDataSheet);
+            createDataSheet.addActionListener((ActionEvent evt) -> {
+                if (createDataSheet.isSelected()) {
+                    setImageViewer(this);
+                    dssImages.setSelected(false);
+                    twoMassImages.setSelected(false);
+                    sloanImages.setSelected(false);
+                    allwiseImages.setSelected(false);
+                    ps1Images.setSelected(false);
+                    staticTimeSeries.setSelected(false);
+                    animatedTimeSeries.setSelected(false);
+                }
+            });
+
+            changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            mouseControlPanel.add(changeFovLabel);
+
+            JLabel fovLabel = new JLabel("(*) Spin wheel on WISE images to change FoV");
+            fovLabel.setFont(font);
+            mouseControlPanel.add(fovLabel);
+
+            mouseControlPanel.add(new JLabel(header("Mouse right click:")));
+
+            differentSizeButton = new JRadioButton("Show object in different FoV", true);
+            mouseControlPanel.add(differentSizeButton);
+
+            ButtonGroup groupTwo = new ButtonGroup();
+            groupTwo.add(differentSizeButton);
+
+            JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
+            mouseControlPanel.add(differentSizePanel);
+            differentSizePanel.add(new JLabel("Enter FoV (arcsec)"));
+            differentSizeField = new JTextField(String.valueOf(100));
+            differentSizePanel.add(differentSizeField);
+
+            //=====================
+            // Tab: Player controls
+            //=====================
+            rows = 11;
+            controlPanelWidth = 250;
+            controlPanelHeight = 10 + ROW_HEIGHT * rows;
+
+            JPanel playerControlPanel = new JPanel(new GridLayout(rows, 1));
+            playerControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            playerControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+
+            controlPanelContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            controlPanelContainer.add(playerControlPanel);
+
+            JScrollPane playerScrollPanel = new JScrollPane(controlPanelContainer);
+            playerScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
+            playerScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add("Player", playerScrollPanel);
+
+            playerControlPanel.add(new JLabel(header("Image player controls:")));
+
+            JPanel playerControls = new JPanel(new GridLayout(1, 2));
+            playerControlPanel.add(playerControls);
+
+            JButton playButton = new JButton("Play");
+            playerControls.add(playButton);
+            playButton.addActionListener((ActionEvent evt) -> {
+                timer.setRepeats(true);
+                timer.start();
+                timerStopped = false;
+            });
+
+            JButton stopButton = new JButton("Stop");
+            playerControls.add(stopButton);
+            stopButton.addActionListener((ActionEvent evt) -> {
+                timer.stop();
+                timerStopped = true;
+            });
+
+            playerControls = new JPanel(new GridLayout(1, 2));
+            playerControlPanel.add(playerControls);
+
+            JButton backwardButton = new JButton("Backward");
+            playerControls.add(backwardButton);
+            backwardButton.addActionListener((ActionEvent evt) -> {
+                timer.stop();
+                imageNumber -= 2;
+                if (imageNumber < 0) {
+                    imageNumber = flipbook.length - 1;
+                }
+                timer.setRepeats(false);
+                timer.start();
+            });
+
+            JButton forwardButton = new JButton("Forward");
+            playerControls.add(forwardButton);
+            forwardButton.addActionListener((ActionEvent evt) -> {
+                timer.stop();
+                timer.setRepeats(false);
+                timer.start();
+            });
+
+            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            playerControlPanel.add(rotateButton);
+            rotateButton.addActionListener((ActionEvent evt) -> {
+                quadrantCount++;
+                if (quadrantCount > 3) {
+                    quadrantCount = 0;
+                }
+                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
                 processImages();
             });
 
-            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
-            controlPanel.add(showBrownDwarfsOnly);
-            showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
-                if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
-                    gaiaOverlay.setSelected(true);
+            JPanel saveControls = new JPanel(new GridLayout(1, 2));
+            playerControlPanel.add(saveControls);
+
+            JButton saveAsPngButton = new JButton("Save as PNG");
+            saveControls.add(saveAsPngButton);
+            saveAsPngButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
+                    int returnVal = fileChooser.showSaveDialog(playerControlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".png");
+                        ImageIO.write(wiseImage, "png", file);
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
                 }
-                initCatalogEntries();
-                processImages();
             });
 
-            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors only and may be wrong."));
-            warning.setForeground(Color.RED);
-            warning.setFont(font);
-            controlPanel.add(warning);
+            JButton saveAsGifButton = new JButton("Save as GIF");
+            saveControls.add(saveAsGifButton);
+            saveAsGifButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+                    int returnVal = fileChooser.showSaveDialog(playerControlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".gif");
+                        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
+                        int i = 0;
+                        for (FlipbookComponent component : flipbook) {
+                            imageSet[i++] = addCrosshairs(processImage(component), component);
+                        }
+                        if (imageSet.length > 0) {
+                            GifSequencer sequencer = new GifSequencer();
+                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
+                        }
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            playerControlPanel.add(new JLabel(header("Navigation buttons:")));
+
+            JButton moveUpButton = new JButton("Move up");
+            playerControlPanel.add(moveUpButton);
+            moveUpButton.addActionListener((ActionEvent evt) -> {
+                double newDec = targetDec + size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
+                if (newDec > 90) {
+                    newDec = 90 - (newDec - 90);
+                    double newRa = targetRa + 180;
+                    targetRa = newRa > 360 ? newRa - 360 : newRa;
+                    showInfoDialog(baseFrame, "You're about to cross the North Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move down' button next!");
+                }
+                coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
+                createFlipbook();
+            });
+
+            JPanel navigationButtons = new JPanel(new GridLayout(1, 2));
+            playerControlPanel.add(navigationButtons);
+
+            JButton moveLeftButton = new JButton("Move left");
+            navigationButtons.add(moveLeftButton);
+            moveLeftButton.addActionListener((ActionEvent evt) -> {
+                double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
+                NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(distance, 0));
+                double newRa = coords.getX();
+                newRa = newRa > 360 ? newRa - 360 : newRa;
+                newRa = newRa > 360 ? 0 : newRa;
+                coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
+                createFlipbook();
+            });
+
+            JButton moveRightButton = new JButton("Move right");
+            navigationButtons.add(moveRightButton);
+            moveRightButton.addActionListener((ActionEvent evt) -> {
+                double distance = size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
+                NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(-distance, 0));
+                double newRa = coords.getX();
+                newRa = newRa < 0 ? newRa + 360 : newRa;
+                newRa = newRa < 0 ? 0 : newRa;
+                coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
+                createFlipbook();
+            });
+
+            JButton moveDownButton = new JButton("Move down");
+            playerControlPanel.add(moveDownButton);
+            moveDownButton.addActionListener((ActionEvent evt) -> {
+                double newDec = targetDec - size * PIXEL_SIZE * OVERLAP_FACTOR / DEG_ARCSEC;
+                if (newDec < -90) {
+                    newDec = -90 + (abs(newDec) - 90);
+                    double newRa = targetRa + 180;
+                    targetRa = newRa > 360 ? newRa - 360 : newRa;
+                    showInfoDialog(baseFrame, "You're about to cross the South Celestial Pole." + LINE_SEP + "If you want to move on in the current direction, use the 'Move up' button next!");
+                }
+                coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
+                createFlipbook();
+            });
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
