@@ -60,6 +60,7 @@ public class ObjectCollectionTab {
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
         objectCollectionSorter = new TableRowSorter<>();
+        objectCollectionSorter.setSortsOnUpdates(true);
     }
 
     public void init() {
@@ -303,6 +304,10 @@ public class ObjectCollectionTab {
                 return true;
             }
         };
+
+        // Save sort keys
+        List sortKeys = objectCollectionSorter.getSortKeys();
+
         alignResultColumns(resultTable, rows);
         addComparatorsToTableSorter(objectCollectionSorter, defaultTableModel, rows);
         resultTable.setAutoCreateRowSorter(true);
@@ -325,6 +330,9 @@ public class ObjectCollectionTab {
             }
         });
         resizeColumnWidth(resultTable);
+
+        // Reset sort keys
+        objectCollectionSorter.setSortKeys(sortKeys);
 
         imageViewerTab.setCollectionTable(resultTable);
         catalogQueryTab.setCollectionTable(resultTable);
