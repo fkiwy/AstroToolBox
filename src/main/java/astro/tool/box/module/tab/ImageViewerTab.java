@@ -4882,7 +4882,7 @@ public class ImageViewerTab {
                 toCopy.append(" ");
                 toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
                 copyToClipboard(toCopy.toString());
-                message.setText("Copied to clipboard!");
+                message.setText("Copied!");
                 messageTimer.restart();
             });
 
@@ -4906,7 +4906,7 @@ public class ImageViewerTab {
                     });
                 });
                 copyToClipboard(toCopy.toString());
-                message.setText("Copied to clipboard!");
+                message.setText("Copied!");
                 messageTimer.restart();
             });
 
