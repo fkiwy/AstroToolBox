@@ -7,6 +7,7 @@ import astro.tool.box.enumeration.JColor;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -51,6 +52,8 @@ public class ObjectCollectionTab {
     private JTable resultTable;
     private JTextField searchField;
     private JCheckBox copyCoords;
+
+    private int selectedRow;
 
     private File file;
 
@@ -315,8 +318,12 @@ public class ObjectCollectionTab {
         resultTable.setRowSorter(objectCollectionSorter);
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            int rowIndex = resultTable.getSelectedRow();
+            if (rowIndex < 0) {
+                return;
+            }
+            selectedRow = rowIndex;
             if (copyCoords.isSelected()) {
-                int selectedRow = resultTable.getSelectedRow();
                 if (!e.getValueIsAdjusting() && selectedRow > -1 && selectedRow < resultTable.getRowCount()) {
                     String ra = (String) resultTable.getValueAt(selectedRow, 4);
                     String dec = (String) resultTable.getValueAt(selectedRow, 5);
@@ -334,6 +341,11 @@ public class ObjectCollectionTab {
         // Reset sort keys
         objectCollectionSorter.setSortKeys(sortKeys);
 
+        // Select previously selected row
+        if (selectedRow >= 0) {
+            resultTable.setRowSelectionInterval(selectedRow, selectedRow);
+        }
+
         imageViewerTab.setCollectionTable(resultTable);
         catalogQueryTab.setCollectionTable(resultTable);
 
@@ -342,6 +354,10 @@ public class ObjectCollectionTab {
                 BorderFactory.createEtchedBorder(), file.getName(), TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(resultScrollPanel);
+
+        // Scroll selected row into visible area
+        Rectangle rectangle = resultTable.getCellRect(selectedRow, 0, true);
+        resultTable.scrollRectToVisible(rectangle);
     }
 
     private void removeAndRecreateCenterPanel(JPanel mainPanel) {
