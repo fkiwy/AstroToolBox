@@ -523,7 +523,7 @@ public class ModuleHelper {
             tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
         }
 
-        message.setText("Object has been added to collection!");
+        message.setText("Added!");
         messageTimer.restart();
     }
 
