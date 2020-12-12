@@ -371,7 +371,7 @@ public class BatchQueryTab {
             }
             while (scanner.hasNextLine()) {
                 if (toCancel) {
-                    echoField.setText("Query has been cancelled.");
+                    echoField.setText("Query cancelled.");
                     echoField.setBackground(JColor.LIGHT_YELLOW.val);
                     future.complete(AsynchResult.CANCELLED);
                     isProcessing = false;

@@ -103,7 +103,7 @@ public class ObjectCollectionTab {
                 removeAndRecreateCenterPanel(mainPanel);
                 readFileContents(addColumnsField.getText());
                 addColumnsField.setText("");
-                topPanelMessage.setText("File has been reloaded!");
+                topPanelMessage.setText("File reloaded!");
                 timer.restart();
                 baseFrame.setVisible(true);
             });
@@ -117,7 +117,7 @@ public class ObjectCollectionTab {
                 }
                 boolean hasFileBeenSaved = saveFile();
                 if (hasFileBeenSaved) {
-                    topPanelMessage.setText("File has been saved!");
+                    topPanelMessage.setText("File saved!");
                     timer.restart();
                 }
             });
@@ -134,7 +134,7 @@ public class ObjectCollectionTab {
                 searchField.setText("");
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
                 tableModel.addRow((Object[]) null);
-                bottomPanelMessage.setText("Row has been added!");
+                bottomPanelMessage.setText("Row added!");
                 timer.restart();
             });
 
@@ -159,7 +159,7 @@ public class ObjectCollectionTab {
                 tableModel.removeRow(rowToDelete);
                 boolean hasFileBeenSaved = saveFile();
                 if (hasFileBeenSaved) {
-                    bottomPanelMessage.setText("Row has been deleted!");
+                    bottomPanelMessage.setText("Row deleted!");
                     timer.restart();
                 }
             });

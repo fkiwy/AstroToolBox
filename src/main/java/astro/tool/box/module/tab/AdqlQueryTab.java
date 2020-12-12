@@ -159,7 +159,7 @@ public class AdqlQueryTab {
                 }
             });
 
-            String saveMessage = "File has been saved!";
+            String saveMessage = "File saved!";
             JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
