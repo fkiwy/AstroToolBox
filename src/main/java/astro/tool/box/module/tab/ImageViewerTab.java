@@ -934,7 +934,7 @@ public class ImageViewerTab {
             useCustomOverlays.setBackground(Color.WHITE);
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
-                    showInfoDialog(baseFrame, "No custom overlays have been added yet.");
+                    showInfoDialog(baseFrame, "No custom overlays added yet.");
                     useCustomOverlays.setSelected(false);
                 } else {
                     GridLayout layout = (GridLayout) overlaysControlPanel.getLayout();
