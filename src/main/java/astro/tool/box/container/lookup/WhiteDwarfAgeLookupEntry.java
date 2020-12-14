@@ -37,7 +37,7 @@ public class WhiteDwarfAgeLookupEntry implements WhiteDwarfLookup {
         //colors.put(Color.u_g, toDouble(values[26]) - toDouble(values[27]));
         colors.put(Color.g_r, toDouble(values[27]) - toDouble(values[28]));
         colors.put(Color.r_i, toDouble(values[28]) - toDouble(values[29]));
-        //colors.put(Color.i_z, toDouble(values[29]) - toDouble(values[30]));
+        colors.put(Color.i_z, toDouble(values[29]) - toDouble(values[30]));
         colors.put(Color.V_J, toDouble(values[7]) - toDouble(values[10]));
         colors.put(Color.r_J, toDouble(values[28]) - toDouble(values[10]));
         colors.put(Color.G_RP, toDouble(values[36]) - toDouble(values[38]));
