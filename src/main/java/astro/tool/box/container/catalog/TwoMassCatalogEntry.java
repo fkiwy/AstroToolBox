@@ -105,7 +105,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("2MASS")];
+        sourceId = values[columns.get("2MASS")].trim();
         ra = toDouble(values[columns.get("RAJ2000")]);
         dec = toDouble(values[columns.get("DEJ2000")]);
         Jmag = toDouble(values[columns.get("Jmag")]);
