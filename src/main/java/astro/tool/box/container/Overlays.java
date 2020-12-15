@@ -133,7 +133,9 @@ public class Overlays {
         if (potbd) {
             overlays.append(ID.POTBD).append(",");
         }
-        overlays.setLength(overlays.lastIndexOf(","));
+        if (overlays.length() > 0) {
+            overlays.setLength(overlays.lastIndexOf(","));
+        }
         return overlays.toString();
     }
 
