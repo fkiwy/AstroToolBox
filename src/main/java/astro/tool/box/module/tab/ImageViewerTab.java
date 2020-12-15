@@ -14,6 +14,7 @@ import astro.tool.box.container.Couple;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.container.Overlays;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectEntry;
@@ -94,9 +95,11 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import static java.lang.Math.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -182,6 +185,7 @@ public class ImageViewerTab {
     public static final int SIZE = 500;
     public static final int DIFFERENT_SIZE = 100;
     public static final int PROPER_MOTION = 100;
+    public static final String OVERLAYS_KEY = "overlays";
     public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
     public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
 
@@ -323,6 +327,7 @@ public class ImageViewerTab {
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
     private CatalogEntry pmCatalogEntry;
+    private Overlays overlays;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
@@ -430,6 +435,8 @@ public class ImageViewerTab {
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
         }
+        overlays = new Overlays();
+        overlays.deserialize(getUserSetting(OVERLAYS_KEY, overlays.serialize()));
     }
 
     public void init() {
@@ -819,13 +826,13 @@ public class ImageViewerTab {
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME);
+            simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME, overlays.isSimbad());
             simbadOverlay.setForeground(Color.RED);
             simbadOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(simbadOverlay);
-            allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME);
+            allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME, overlays.isAllwise());
             allWiseOverlay.setForeground(Color.GREEN.darker());
             allWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -834,13 +841,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME, overlays.isCatwise());
             catWiseOverlay.setForeground(Color.MAGENTA);
             catWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(catWiseOverlay);
-            unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME);
+            unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME, overlays.isUnwise());
             unWiseOverlay.setForeground(JColor.MINT.val);
             unWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -849,13 +856,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME, overlays.isGaiadr2());
             gaiaOverlay.setForeground(Color.CYAN.darker());
             gaiaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(gaiaOverlay);
-            gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME, overlays.isGaiadr3());
             gaiaDR3Overlay.setForeground(Color.CYAN.darker());
             gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -864,13 +871,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME, overlays.isNoirlab());
             noirlabOverlay.setForeground(JColor.NAVY.val);
             noirlabOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(noirlabOverlay);
-            panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME);
+            panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME, overlays.isPanstar());
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             panStarrsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -879,13 +886,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME);
+            sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME, overlays.isSdss());
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(sdssOverlay);
-            spectrumOverlay = new JCheckBox("SDSS spectra");
+            spectrumOverlay = new JCheckBox("SDSS spectra", overlays.isSpectra());
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             spectrumOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -894,13 +901,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME);
+            vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME, overlays.isVhs());
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
-            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_NAME);
+            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_NAME, overlays.isGaiawd());
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
             gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -909,20 +916,20 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
+            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"), overlays.isTwomass());
             twoMassOverlay.setForeground(JColor.ORANGE.val);
             twoMassOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(twoMassOverlay);
-            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_NAME + "&nbsp;</span>"));
+            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_NAME + "&nbsp;</span>"), overlays.isSpitzer());
             spitzerOverlay.setForeground(JColor.YELLOW.val);
             spitzerOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(spitzerOverlay);
 
-            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME);
+            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME, overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -973,13 +980,13 @@ public class ImageViewerTab {
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
-            gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
+            gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME, overlays.isPmgaiadr2());
             gaiaProperMotion.setForeground(Color.CYAN.darker());
             gaiaProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(gaiaProperMotion);
-            gaiaDR3ProperMotion = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            gaiaDR3ProperMotion = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME, overlays.isPmgaiadr3());
             gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
             gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -988,13 +995,13 @@ public class ImageViewerTab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
-            noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
+            noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME, overlays.isPmnoirlab());
             noirlabProperMotion.setForeground(JColor.NAVY.val);
             noirlabProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(noirlabProperMotion);
-            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME, overlays.isPmcatwise());
             catWiseProperMotion.setForeground(Color.MAGENTA);
             catWiseProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -1018,13 +1025,13 @@ public class ImageViewerTab {
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(artifactPanel);
-            ghostOverlay = new JCheckBox("Ghosts");
+            ghostOverlay = new JCheckBox("Ghosts", overlays.isGhosts());
             ghostOverlay.setForeground(Color.MAGENTA.darker());
             ghostOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             artifactPanel.add(ghostOverlay);
-            haloOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Halos&nbsp;</span>"));
+            haloOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Halos&nbsp;</span>"), overlays.isHalos());
             haloOverlay.setForeground(Color.YELLOW);
             haloOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -1033,13 +1040,13 @@ public class ImageViewerTab {
 
             artifactPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(artifactPanel);
-            latentOverlay = new JCheckBox("Latents");
+            latentOverlay = new JCheckBox("Latents", overlays.isLatents());
             latentOverlay.setForeground(Color.GREEN.darker());
             latentOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             artifactPanel.add(latentOverlay);
-            spikeOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spikes&nbsp;</span>"));
+            spikeOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spikes&nbsp;</span>"), overlays.isSpikes());
             spikeOverlay.setForeground(Color.ORANGE);
             spikeOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -1052,7 +1059,7 @@ public class ImageViewerTab {
 
             overlaysControlPanel.add(new JLabel(header("Experimental features (*):")));
 
-            displaySpectralTypes = new JCheckBox("Display estimated spectral types");
+            displaySpectralTypes = new JCheckBox("Display estimated spectral types", overlays.isEstspt());
             overlaysControlPanel.add(displaySpectralTypes);
             displaySpectralTypes.addActionListener((ActionEvent evt) -> {
                 if (displaySpectralTypes.isSelected() && !isCatalogOverlaySelected()) {
@@ -1062,7 +1069,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only");
+            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only", overlays.isPotbd());
             overlaysControlPanel.add(showBrownDwarfsOnly);
             showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
                 if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
@@ -1076,6 +1083,49 @@ public class ImageViewerTab {
             warning.setForeground(Color.RED);
             warning.setFont(font);
             overlaysControlPanel.add(warning);
+
+            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            overlaysControlPanel.add(message);
+            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
+                message.setText("");
+            });
+
+            JButton saveButton = new JButton("Save selected overlays");
+            overlaysControlPanel.add(saveButton);
+            saveButton.addActionListener((ActionEvent evt) -> {
+                overlays.setSimbad(simbadOverlay.isSelected());
+                overlays.setAllwise(allWiseOverlay.isSelected());
+                overlays.setCatwise(catWiseOverlay.isSelected());
+                overlays.setUnwise(unWiseOverlay.isSelected());
+                overlays.setGaiadr2(gaiaOverlay.isSelected());
+                overlays.setGaiadr3(gaiaDR3Overlay.isSelected());
+                overlays.setNoirlab(noirlabOverlay.isSelected());
+                overlays.setPanstar(panStarrsOverlay.isSelected());
+                overlays.setSdss(sdssOverlay.isSelected());
+                overlays.setSpectra(spectrumOverlay.isSelected());
+                overlays.setVhs(vhsOverlay.isSelected());
+                overlays.setGaiawd(gaiaWDOverlay.isSelected());
+                overlays.setTwomass(twoMassOverlay.isSelected());
+                overlays.setSpitzer(spitzerOverlay.isSelected());
+                overlays.setSso(ssoOverlay.isSelected());
+                overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
+                overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
+                overlays.setPmnoirlab(noirlabProperMotion.isSelected());
+                overlays.setPmcatwise(catWiseProperMotion.isSelected());
+                overlays.setGhosts(ghostOverlay.isSelected());
+                overlays.setLatents(haloOverlay.isSelected());
+                overlays.setHalos(latentOverlay.isSelected());
+                overlays.setSpikes(spikeOverlay.isSelected());
+                overlays.setEstspt(displaySpectralTypes.isSelected());
+                overlays.setPotbd(showBrownDwarfsOnly.isSelected());
+                try (OutputStream output = new FileOutputStream(PROP_PATH)) {
+                    USER_SETTINGS.setProperty(OVERLAYS_KEY, overlays.serialize());
+                    USER_SETTINGS.store(output, COMMENTS);
+                    message.setText("Overlays saved!");
+                    messageTimer.restart();
+                } catch (IOException ex) {
+                }
+            });
 
             //====================
             // Tab: Mouse settings
@@ -1764,92 +1814,92 @@ public class ImageViewerTab {
                                     }
                                     break;
                                 default:
-                                    int overlays = 0;
+                                    int count = 0;
                                     if (simbadOverlay.isSelected() && simbadEntries != null) {
                                         showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
-                                        overlays++;
-                                    }
-                                    if (gaiaOverlay.isSelected() && gaiaEntries != null) {
-                                        showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
-                                        overlays++;
-                                    }
-                                    if (gaiaDR3Overlay.isSelected() && gaiaDR3Entries != null) {
-                                        showCatalogInfo(gaiaDR3Entries, mouseX, mouseY, Color.CYAN.darker());
-                                        overlays++;
-                                    }
-                                    if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
-                                        showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
-                                        overlays++;
-                                    }
-                                    if (gaiaDR3ProperMotion.isSelected() && gaiaDR3TpmEntries != null) {
-                                        showPMInfo(gaiaDR3TpmEntries, mouseX, mouseY, Color.CYAN.darker());
-                                        overlays++;
+                                        count++;
                                     }
                                     if (allWiseOverlay.isSelected() && allWiseEntries != null) {
                                         showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
-                                        overlays++;
+                                        count++;
                                     }
                                     if (catWiseOverlay.isSelected() && catWiseEntries != null) {
                                         showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
-                                        overlays++;
-                                    }
-                                    if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
-                                        showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
-                                        overlays++;
+                                        count++;
                                     }
                                     if (unWiseOverlay.isSelected() && unWiseEntries != null) {
                                         showCatalogInfo(unWiseEntries, mouseX, mouseY, JColor.MINT.val);
-                                        overlays++;
+                                        count++;
                                     }
-                                    if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
-                                        showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
-                                        overlays++;
+                                    if (gaiaOverlay.isSelected() && gaiaEntries != null) {
+                                        showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
+                                        count++;
                                     }
-                                    if (sdssOverlay.isSelected() && sdssEntries != null) {
-                                        showCatalogInfo(sdssEntries, mouseX, mouseY, JColor.STEEL.val);
-                                        overlays++;
-                                    }
-                                    if (spectrumOverlay.isSelected() && sdssEntries != null) {
-                                        showSpectrumInfo(sdssEntries, mouseX, mouseY);
-                                        overlays++;
-                                    }
-                                    if (twoMassOverlay.isSelected() && twoMassEntries != null) {
-                                        showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
-                                        overlays++;
-                                    }
-                                    if (vhsOverlay.isSelected() && vhsEntries != null) {
-                                        showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
-                                        overlays++;
-                                    }
-                                    if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
-                                        showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
-                                        overlays++;
-                                    }
-                                    if (spitzerOverlay.isSelected() && spitzerEntries != null) {
-                                        showCatalogInfo(spitzerEntries, mouseX, mouseY, JColor.YELLOW.val);
-                                        overlays++;
+                                    if (gaiaDR3Overlay.isSelected() && gaiaDR3Entries != null) {
+                                        showCatalogInfo(gaiaDR3Entries, mouseX, mouseY, Color.CYAN.darker());
+                                        count++;
                                     }
                                     if (noirlabOverlay.isSelected() && noirlabEntries != null) {
                                         showCatalogInfo(noirlabEntries, mouseX, mouseY, JColor.NAVY.val);
-                                        overlays++;
+                                        count++;
                                     }
-                                    if (noirlabProperMotion.isSelected() && noirlabTpmEntries != null) {
-                                        showPMInfo(noirlabTpmEntries, mouseX, mouseY, JColor.NAVY.val);
-                                        overlays++;
+                                    if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
+                                        showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
+                                        count++;
+                                    }
+                                    if (sdssOverlay.isSelected() && sdssEntries != null) {
+                                        showCatalogInfo(sdssEntries, mouseX, mouseY, JColor.STEEL.val);
+                                        count++;
+                                    }
+                                    if (spectrumOverlay.isSelected() && sdssEntries != null) {
+                                        showSpectrumInfo(sdssEntries, mouseX, mouseY);
+                                        count++;
+                                    }
+                                    if (vhsOverlay.isSelected() && vhsEntries != null) {
+                                        showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
+                                        count++;
+                                    }
+                                    if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
+                                        showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
+                                        count++;
+                                    }
+                                    if (twoMassOverlay.isSelected() && twoMassEntries != null) {
+                                        showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
+                                        count++;
+                                    }
+                                    if (spitzerOverlay.isSelected() && spitzerEntries != null) {
+                                        showCatalogInfo(spitzerEntries, mouseX, mouseY, JColor.YELLOW.val);
+                                        count++;
                                     }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
-                                        overlays++;
+                                        count++;
                                     }
                                     if (useCustomOverlays.isSelected()) {
                                         for (CustomOverlay customOverlay : customOverlays.values()) {
                                             if (customOverlay.getCheckBox().isSelected()) {
                                                 showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY, customOverlay.getColor());
-                                                overlays++;
+                                                count++;
                                             }
                                         }
                                     }
-                                    if (overlays == 0) {
+                                    if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
+                                        showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
+                                        count++;
+                                    }
+                                    if (gaiaDR3ProperMotion.isSelected() && gaiaDR3TpmEntries != null) {
+                                        showPMInfo(gaiaDR3TpmEntries, mouseX, mouseY, Color.CYAN.darker());
+                                        count++;
+                                    }
+                                    if (noirlabProperMotion.isSelected() && noirlabTpmEntries != null) {
+                                        showPMInfo(noirlabTpmEntries, mouseX, mouseY, JColor.NAVY.val);
+                                        count++;
+                                    }
+                                    if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
+                                        showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
+                                        count++;
+                                    }
+                                    if (count == 0) {
                                         if (showCrosshairs.isSelected()) {
                                             copyCoordsToClipboard(newRa, newDec);
                                         } else if (showCatalogsButton.isSelected()) {
@@ -1860,6 +1910,7 @@ public class ImageViewerTab {
                                         }
                                     }
                                     break;
+
                             }
                         }
 
@@ -1980,59 +2031,59 @@ public class ImageViewerTab {
     }
 
     private boolean isCatalogOverlaySelected() {
-        int overlays = 0;
+        int count = 0;
         if (simbadOverlay.isSelected()) {
-            overlays++;
-        }
-        if (gaiaOverlay.isSelected()) {
-            overlays++;
-        }
-        if (gaiaDR3Overlay.isSelected()) {
-            overlays++;
-        }
-        if (gaiaProperMotion.isSelected()) {
-            overlays++;
-        }
-        if (gaiaDR3ProperMotion.isSelected()) {
-            overlays++;
+            count++;
         }
         if (allWiseOverlay.isSelected()) {
-            overlays++;
+            count++;
         }
         if (catWiseOverlay.isSelected()) {
-            overlays++;
-        }
-        if (catWiseProperMotion.isSelected()) {
-            overlays++;
+            count++;
         }
         if (unWiseOverlay.isSelected()) {
-            overlays++;
+            count++;
         }
-        if (panStarrsOverlay.isSelected()) {
-            overlays++;
+        if (gaiaOverlay.isSelected()) {
+            count++;
         }
-        if (sdssOverlay.isSelected()) {
-            overlays++;
-        }
-        if (twoMassOverlay.isSelected()) {
-            overlays++;
-        }
-        if (vhsOverlay.isSelected()) {
-            overlays++;
-        }
-        if (gaiaWDOverlay.isSelected()) {
-            overlays++;
-        }
-        if (spitzerOverlay.isSelected()) {
-            overlays++;
+        if (gaiaDR3Overlay.isSelected()) {
+            count++;
         }
         if (noirlabOverlay.isSelected()) {
-            overlays++;
+            count++;
+        }
+        if (panStarrsOverlay.isSelected()) {
+            count++;
+        }
+        if (sdssOverlay.isSelected()) {
+            count++;
+        }
+        if (vhsOverlay.isSelected()) {
+            count++;
+        }
+        if (gaiaWDOverlay.isSelected()) {
+            count++;
+        }
+        if (twoMassOverlay.isSelected()) {
+            count++;
+        }
+        if (spitzerOverlay.isSelected()) {
+            count++;
+        }
+        if (gaiaProperMotion.isSelected()) {
+            count++;
+        }
+        if (gaiaDR3ProperMotion.isSelected()) {
+            count++;
         }
         if (noirlabProperMotion.isSelected()) {
-            overlays++;
+            count++;
         }
-        return overlays > 0;
+        if (catWiseProperMotion.isSelected()) {
+            count++;
+        }
+        return count > 0;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2929,30 +2980,6 @@ public class ImageViewerTab {
                 drawOverlay(image, simbadEntries, Color.RED, Shape.CIRCLE);
             }
         }
-        if (gaiaOverlay.isSelected()) {
-            if (gaiaEntries == null) {
-                gaiaEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawOverlay(image, gaiaEntries, Color.CYAN.darker(), Shape.CIRCLE);
-            }
-        }
-        if (gaiaDR3Overlay.isSelected()) {
-            if (gaiaDR3Entries == null) {
-                gaiaDR3Entries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    gaiaDR3Entries = fetchCatalogEntries(new GaiaDR3CatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawOverlay(image, gaiaDR3Entries, Color.CYAN.darker(), Shape.DIAMOND);
-            }
-        }
         if (allWiseOverlay.isSelected()) {
             if (allWiseEntries == null) {
                 allWiseEntries = Collections.emptyList();
@@ -2987,6 +3014,42 @@ public class ImageViewerTab {
                 });
             } else {
                 drawOverlay(image, unWiseEntries, JColor.MINT.val, Shape.CIRCLE);
+            }
+        }
+        if (gaiaOverlay.isSelected()) {
+            if (gaiaEntries == null) {
+                gaiaEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, gaiaEntries, Color.CYAN.darker(), Shape.CIRCLE);
+            }
+        }
+        if (gaiaDR3Overlay.isSelected()) {
+            if (gaiaDR3Entries == null) {
+                gaiaDR3Entries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaDR3Entries = fetchCatalogEntries(new GaiaDR3CatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, gaiaDR3Entries, Color.CYAN.darker(), Shape.DIAMOND);
+            }
+        }
+        if (noirlabOverlay.isSelected()) {
+            if (noirlabEntries == null) {
+                noirlabEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    noirlabEntries = fetchCatalogEntries(new NoirlabCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, noirlabEntries, JColor.NAVY.val, Shape.CIRCLE);
             }
         }
         if (panStarrsOverlay.isSelected()) {
@@ -3025,18 +3088,6 @@ public class ImageViewerTab {
                 drawSectrumOverlay(image, sdssEntries);
             }
         }
-        if (twoMassOverlay.isSelected()) {
-            if (twoMassEntries == null) {
-                twoMassEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    twoMassEntries = fetchCatalogEntries(new TwoMassCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
-            }
-        }
         if (vhsOverlay.isSelected()) {
             if (vhsEntries == null) {
                 vhsEntries = Collections.emptyList();
@@ -3061,6 +3112,18 @@ public class ImageViewerTab {
                 drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
             }
         }
+        if (twoMassOverlay.isSelected()) {
+            if (twoMassEntries == null) {
+                twoMassEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    twoMassEntries = fetchCatalogEntries(new TwoMassCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
+            }
+        }
         if (spitzerOverlay.isSelected()) {
             if (spitzerEntries == null) {
                 spitzerEntries = Collections.emptyList();
@@ -3073,18 +3136,6 @@ public class ImageViewerTab {
                 drawOverlay(image, spitzerEntries, JColor.YELLOW.val, Shape.CIRCLE);
             }
         }
-        if (noirlabOverlay.isSelected()) {
-            if (noirlabEntries == null) {
-                noirlabEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    noirlabEntries = fetchCatalogEntries(new NoirlabCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawOverlay(image, noirlabEntries, JColor.NAVY.val, Shape.CIRCLE);
-            }
-        }
         if (ssoOverlay.isSelected()) {
             if (ssoEntries == null) {
                 ssoEntries = Collections.emptyList();
@@ -3095,28 +3146,6 @@ public class ImageViewerTab {
                 });
             } else {
                 drawOverlay(image, ssoEntries, Color.BLUE, Shape.CIRCLE);
-            }
-        }
-        if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
-            if (catWiseEntries == null) {
-                catWiseEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawArtifactOverlay(image, catWiseEntries);
-            }
-            if (catWiseRejectEntries == null) {
-                catWiseRejectEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    catWiseRejectEntries = fetchCatalogEntries(new CatWiseRejectEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawArtifactOverlay(image, catWiseRejectEntries);
             }
         }
         if (useCustomOverlays.isSelected()) {
@@ -3160,6 +3189,18 @@ public class ImageViewerTab {
                 drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker());
             }
         }
+        if (noirlabProperMotion.isSelected()) {
+            if (noirlabTpmEntries == null) {
+                noirlabTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val);
+            }
+        }
         if (catWiseProperMotion.isSelected()) {
             if (catWiseTpmEntries == null) {
                 catWiseTpmEntries = Collections.emptyList();
@@ -3172,16 +3213,26 @@ public class ImageViewerTab {
                 drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
             }
         }
-        if (noirlabProperMotion.isSelected()) {
-            if (noirlabTpmEntries == null) {
-                noirlabTpmEntries = Collections.emptyList();
+        if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
+            if (catWiseEntries == null) {
+                catWiseEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
+                    catWiseEntries = fetchCatalogEntries(new CatWiseCatalogEntry());
                     processImages();
                     return null;
                 });
             } else {
-                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val);
+                drawArtifactOverlay(image, catWiseEntries);
+            }
+            if (catWiseRejectEntries == null) {
+                catWiseRejectEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseRejectEntries = fetchCatalogEntries(new CatWiseRejectEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawArtifactOverlay(image, catWiseRejectEntries);
             }
         }
     }

@@ -47,9 +47,10 @@ import javax.swing.event.ChangeListener;
 public class SettingsTab {
 
     public static final String TAB_NAME = "Settings";
-    private static final String PROP_FILE_NAME = "/AstroToolBox.properties";
-    private static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
-    private static final Properties USER_SETTINGS = new Properties();
+    public static final String COMMENTS = "User settings";
+    public static final String PROP_FILE_NAME = "/AstroToolBox.properties";
+    public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
+    public static final Properties USER_SETTINGS = new Properties();
     public static String CURRENT_LOOK_AND_FEEL;
 
     private final JFrame baseFrame;
@@ -573,7 +574,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
-                    USER_SETTINGS.store(output, "User settings");
+                    USER_SETTINGS.store(output, COMMENTS);
                     message.setText("Settings applied!");
                     timer.restart();
                 } catch (IOException ex) {
