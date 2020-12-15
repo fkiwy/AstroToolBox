@@ -1084,8 +1084,9 @@ public class ImageViewerTab {
             warning.setFont(font);
             overlaysControlPanel.add(warning);
 
+            overlaysControlPanel.add(new JLabel());
+
             JLabel message = createLabel("", JColor.DARKER_GREEN);
-            overlaysControlPanel.add(message);
             Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -1126,6 +1127,8 @@ public class ImageViewerTab {
                 } catch (IOException ex) {
                 }
             });
+
+            overlaysControlPanel.add(message);
 
             //====================
             // Tab: Mouse settings
