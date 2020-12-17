@@ -1086,12 +1086,12 @@ public class ImageViewerTab {
 
             overlaysControlPanel.add(new JLabel());
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            JLabel saveOverlaysMessage = createLabel("", JColor.DARKER_GREEN);
             Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
-                message.setText("");
+                saveOverlaysMessage.setText("");
             });
 
-            JButton saveButton = new JButton("Save selected overlays");
+            JButton saveButton = new JButton("Save selected overlays (*)");
             overlaysControlPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 overlays.setSimbad(simbadOverlay.isSelected());
@@ -1122,13 +1122,17 @@ public class ImageViewerTab {
                 try (OutputStream output = new FileOutputStream(PROP_PATH)) {
                     USER_SETTINGS.setProperty(OVERLAYS_KEY, overlays.serialize());
                     USER_SETTINGS.store(output, COMMENTS);
-                    message.setText("Overlays saved!");
+                    saveOverlaysMessage.setText("Overlays saved!");
                     messageTimer.restart();
                 } catch (IOException ex) {
                 }
             });
 
-            overlaysControlPanel.add(message);
+            JLabel saveOverlaysLabel = new JLabel("(*) Custom overlays not included!");
+            saveOverlaysLabel.setFont(font);
+            overlaysControlPanel.add(saveOverlaysLabel);
+
+            overlaysControlPanel.add(saveOverlaysMessage);
 
             //====================
             // Tab: Mouse settings
