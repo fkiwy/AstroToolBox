@@ -784,9 +784,8 @@ public class ImageViewerTab {
             unwiseCutouts = new JCheckBox("Use unWISE coadds (ASC=DESC!)");
             mainControlPanel.add(unwiseCutouts);
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
+                previousRa = 0;
+                previousDec = 0;
                 createFlipbook();
             });
 
