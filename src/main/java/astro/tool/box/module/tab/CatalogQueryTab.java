@@ -516,7 +516,7 @@ public class CatalogQueryTab {
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,radius (Rsun),mass (Msun),matched colors,nearest color,gap to nearest color";
+            String titles = "spt,teff,radius (Rsun),mass (Msun),matched color,nearest color,difference";
             String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
