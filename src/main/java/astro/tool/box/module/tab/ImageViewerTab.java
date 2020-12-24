@@ -136,6 +136,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -430,7 +431,7 @@ public class ImageViewerTab {
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
@@ -444,9 +445,8 @@ public class ImageViewerTab {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
             JPanel leftPanel = new JPanel();
-            mainPanel.add(leftPanel, BorderLayout.WEST);
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-            leftPanel.setBorder(new EmptyBorder(0, 5, 5, 20));
+            leftPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JTabbedPane controlTabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
             leftPanel.add(controlTabs);
@@ -455,13 +455,15 @@ public class ImageViewerTab {
             imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
 
             JScrollPane imageScrollPanel = new JScrollPane(imagePanel);
-            mainPanel.add(imageScrollPanel, BorderLayout.CENTER);
             imageScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, imageScrollPanel);
+            mainPanel.add(splitPane, BorderLayout.CENTER);
 
             rightPanel = new JPanel();
             mainPanel.add(rightPanel, BorderLayout.EAST);
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-            rightPanel.setBorder(new EmptyBorder(20, 0, 5, 5));
+            rightPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             //===================
             // Tab: Main controls
@@ -472,12 +474,12 @@ public class ImageViewerTab {
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
             mainControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            mainControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            mainControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JScrollPane mainScrollPanel = new JScrollPane(mainControlPanel);
             mainScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, controlPanelHeight));
             mainScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-            controlTabs.add("Main", mainScrollPanel);
+            controlTabs.add("Controls", mainScrollPanel);
 
             mainControlPanel.add(new JLabel("Target coordinates:"));
 
@@ -817,12 +819,12 @@ public class ImageViewerTab {
             //======================
             JPanel overlaysControlPanel = new JPanel(new GridLayout(rows, 1));
             overlaysControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            overlaysControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            overlaysControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JScrollPane overlaysScrollPanel = new JScrollPane(overlaysControlPanel);
             overlaysScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
             overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-            controlTabs.add("Layers", overlaysScrollPanel);
+            controlTabs.add("Overlays", overlaysScrollPanel);
 
             overlaysControlPanel.add(new JLabel(header("Catalog overlays:")));
 
@@ -1130,7 +1132,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel saveOverlaysLabel = new JLabel("(*) Custom overlays not included!");
+            JLabel saveOverlaysLabel = new JLabel("(*) Custom overlays NOT included!");
             saveOverlaysLabel.setFont(font);
             overlaysControlPanel.add(saveOverlaysLabel);
 
@@ -1141,7 +1143,7 @@ public class ImageViewerTab {
             //====================
             JPanel mouseControlPanel = new JPanel(new GridLayout(rows, 1));
             mouseControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            mouseControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            mouseControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JScrollPane mouseScrollPanel = new JScrollPane(mouseControlPanel);
             mouseScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
@@ -1256,7 +1258,7 @@ public class ImageViewerTab {
 
             JPanel differentSizePanel = new JPanel(new GridLayout(1, 2));
             mouseControlPanel.add(differentSizePanel);
-            differentSizePanel.add(new JLabel("Enter FoV (arcsec)"));
+            differentSizePanel.add(new JLabel("Enter FoV (arcsec):"));
             differentSizeField = new JTextField(String.valueOf(DIFFERENT_SIZE));
             differentSizePanel.add(differentSizeField);
 
@@ -1265,7 +1267,7 @@ public class ImageViewerTab {
             //=====================
             JPanel playerControlPanel = new JPanel(new GridLayout(rows, 1));
             playerControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            playerControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            playerControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JScrollPane playerScrollPanel = new JScrollPane(playerControlPanel);
             playerScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
@@ -1433,7 +1435,7 @@ public class ImageViewerTab {
             //=======================
             JPanel advancedControlPanel = new JPanel(new GridLayout(rows, 1));
             advancedControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            advancedControlPanel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            advancedControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
             JScrollPane advancedScrollPanel = new JScrollPane(advancedControlPanel);
             advancedScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
@@ -4956,7 +4958,7 @@ public class ImageViewerTab {
                 mainSequenceResults.forEach(entry -> {
                     toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                 });
-                toCopy.append(LINE_SEP).append("* M-L-T-Y dwarfs only:");
+                toCopy.append(LINE_SEP).append("* Brown dwarfs only:");
                 brownDwarfsResults.forEach(entry -> {
                     toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                     List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
@@ -5055,7 +5057,7 @@ public class ImageViewerTab {
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
                 : new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "M-L-T-Y dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), "Brown dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;

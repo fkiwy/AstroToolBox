@@ -403,6 +403,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.g, g_mag);
         bands.put(Band.r, r_mag);
         bands.put(Band.i, i_mag);
         bands.put(Band.z, z_mag);
@@ -417,7 +418,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
-        colors.put(Color.z_y, get_z_y());
+        colors.put(Color.i_y, get_i_y());
+        //colors.put(Color.z_y, get_z_y()); -> inconsistent with other colors
         return colors;
     }
 
@@ -585,6 +587,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
             return 0;
         } else {
             return i_mag - z_mag;
+        }
+    }
+
+    public double get_i_y() {
+        if (i_mag == 0 || y_mag == 0) {
+            return 0;
+        } else {
+            return i_mag - y_mag;
         }
     }
 

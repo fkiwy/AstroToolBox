@@ -293,6 +293,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.g, gMeanPSFMag);
         bands.put(Band.r, rMeanPSFMag);
         bands.put(Band.i, iMeanPSFMag);
         bands.put(Band.z, zMeanPSFMag);
@@ -306,6 +307,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
+        colors.put(Color.i_y, get_i_y());
         colors.put(Color.z_y, get_z_y());
         return colors;
     }
@@ -456,6 +458,14 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return iMeanPSFMag - zMeanPSFMag;
+        }
+    }
+
+    public double get_i_y() {
+        if (iMeanPSFMag == 0 || yMeanPSFMag == 0) {
+            return 0;
+        } else {
+            return iMeanPSFMag - yMeanPSFMag;
         }
     }
 

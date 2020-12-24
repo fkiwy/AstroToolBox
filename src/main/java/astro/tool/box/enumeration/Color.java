@@ -19,13 +19,16 @@ public enum Color {
     W1_W2("W1-W2"),
     W1_W3("W1-W3"),
     W1_W4("W1-W4"),
+    W2_W3("W2-W3"),
     CH1_CH2("CH1-CH2"),
     u_g("u-g"),
     g_r("g-r"),
     r_i("r-i"),
     r_J("r-J"),
     i_z("i-z"),
-    z_y("z-y");
+    z_y("z-y"),
+    i_y("i-y"),
+    y_J("y-J");
 
     public String val;
 

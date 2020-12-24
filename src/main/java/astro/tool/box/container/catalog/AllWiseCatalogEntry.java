@@ -399,6 +399,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         bands.put(Band.K, Kmag);
         bands.put(Band.W1, W1mag);
         bands.put(Band.W2, W2mag);
+        bands.put(Band.W3, W3mag);
         return bands;
     }
 
@@ -411,6 +412,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
         colors.put(Color.W1_W4, getW1_W4());
+        colors.put(Color.W2_W3, getW2_W3());
         colors.put(Color.J_W2, getJ_W2());
         colors.put(Color.K_W1, getK_W1());
         return colors;
