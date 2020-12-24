@@ -25,8 +25,7 @@ public enum Color {
     r_i("r-i"),
     r_J("r-J"),
     i_z("i-z"),
-    z_y("z-y"),
-    z_Y("z-Y");
+    z_y("z-y");
 
     public String val;
 

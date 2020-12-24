@@ -383,7 +383,21 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
-        throw new NoExtinctionValuesException();
+        if (u_mag != 0) {
+            u_mag = u_mag - extinctionsByBand.get(SDSS_U);
+        }
+        if (g_mag != 0) {
+            g_mag = g_mag - extinctionsByBand.get(SDSS_G);
+        }
+        if (r_mag != 0) {
+            r_mag = r_mag - extinctionsByBand.get(SDSS_R);
+        }
+        if (i_mag != 0) {
+            i_mag = i_mag - extinctionsByBand.get(SDSS_I);
+        }
+        if (z_mag != 0) {
+            z_mag = z_mag - extinctionsByBand.get(SDSS_Z);
+        }
     }
 
     @Override
@@ -392,6 +406,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         bands.put(Band.r, r_mag);
         bands.put(Band.i, i_mag);
         bands.put(Band.z, z_mag);
+        bands.put(Band.y, y_mag);
         return bands;
     }
 
@@ -402,7 +417,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
-        colors.put(Color.z_Y, get_z_y());
+        colors.put(Color.z_y, get_z_y());
         return colors;
     }
 

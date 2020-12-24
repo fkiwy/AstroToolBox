@@ -767,6 +767,29 @@ public class ImageViewerTab {
                 }
             });
 
+            settingsPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(settingsPanel);
+
+            markTarget = new JCheckBox("Mark target");
+            settingsPanel.add(markTarget);
+
+            unwiseCutouts = new JCheckBox("Use unWISE");
+            settingsPanel.add(unwiseCutouts);
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
+                previousRa = 0;
+                previousDec = 0;
+                createFlipbook();
+            });
+
+            showCrosshairs = new JCheckBox("Display crosshairs pointer (*)");
+            mainControlPanel.add(showCrosshairs);
+
+            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
+            Font font = copyCoordsLabel.getFont();
+            font = font.deriveFont(9f);
+            copyCoordsLabel.setFont(font);
+            mainControlPanel.add(copyCoordsLabel);
+
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
@@ -780,26 +803,6 @@ public class ImageViewerTab {
                 setSubContrast(SUB_CONTRAST);
                 createFlipbook();
             });
-
-            unwiseCutouts = new JCheckBox("Use unWISE coadds (ASC=DESC!)");
-            mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                previousRa = 0;
-                previousDec = 0;
-                createFlipbook();
-            });
-
-            markTarget = new JCheckBox("Mark target coordinates");
-            mainControlPanel.add(markTarget);
-
-            showCrosshairs = new JCheckBox("Show crosshairs with coords (*)");
-            mainControlPanel.add(showCrosshairs);
-
-            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
-            Font font = copyCoordsLabel.getFont();
-            font = font.deriveFont(9f);
-            copyCoordsLabel.setFont(font);
-            mainControlPanel.add(copyCoordsLabel);
 
             mainControlPanel.add(new JLabel(header("Nearest BYWP9 subjects:")));
 
