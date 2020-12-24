@@ -170,7 +170,7 @@ public class BatchQueryTab {
 
             centerRow.add(new JLabel("Lookup table:"));
 
-            lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.MLTY_DWARFS});
+            lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.BROWN_DWARFS});
             centerRow.add(lookupTables);
 
             JButton queryButton = new JButton("Start query");
@@ -343,7 +343,7 @@ public class BatchQueryTab {
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
                 break;
-            case MLTY_DWARFS:
+            case BROWN_DWARFS:
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {

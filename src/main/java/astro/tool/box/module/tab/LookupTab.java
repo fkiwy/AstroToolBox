@@ -64,7 +64,7 @@ public class LookupTab {
                         fileName = "/SpectralTypeLookupTable.csv";
                         tableName = "Main sequence lookup table (A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence ~ Eric Mamajek)";
                         break;
-                    case MLTY_DWARFS:
+                    case BROWN_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
                         tableName = "Brown dwarfs lookup table (Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey ~ William Best)";
                         break;

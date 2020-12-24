@@ -237,7 +237,7 @@ public class BrownDwarfTab {
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(100, 200));
         spectralTypePanel.add(remarks);
-        remarks.add(new JLabel("Brown dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLTY_DWARFS));
+        remarks.add(new JLabel("Brown dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.BROWN_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
         remarks.add(new JLabel("W1-W2, W2-W3, K-W1, J-K, g-r, r-i, i-z, i-y, z-y and M_G"));
         baseFrame.setVisible(true);
