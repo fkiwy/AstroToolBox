@@ -61,7 +61,7 @@ public class Application {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
         baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
-        baseFrame.setSize(new Dimension(1250, 850));
+        baseFrame.setSize(new Dimension(1255, 850));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);

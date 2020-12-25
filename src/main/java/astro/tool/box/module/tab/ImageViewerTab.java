@@ -463,13 +463,13 @@ public class ImageViewerTab {
             rightPanel = new JPanel();
             mainPanel.add(rightPanel, BorderLayout.EAST);
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-            rightPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+            rightPanel.setBorder(new EmptyBorder(15, 5, 5, 5));
 
             //===================
             // Tab: Main controls
             //===================
             int rows = 50;
-            int controlPanelWidth = 250;
+            int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
@@ -775,7 +775,7 @@ public class ImageViewerTab {
             markTarget = new JCheckBox("Mark target");
             settingsPanel.add(markTarget);
 
-            unwiseCutouts = new JCheckBox("Use unWISE");
+            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds"));
             settingsPanel.add(unwiseCutouts);
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 previousRa = 0;
@@ -783,7 +783,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            showCrosshairs = new JCheckBox("Display crosshairs pointer (*)");
+            showCrosshairs = new JCheckBox("Crosshairs (*)");
             mainControlPanel.add(showCrosshairs);
 
             JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
@@ -1088,8 +1088,6 @@ public class ImageViewerTab {
             warning.setFont(font);
             overlaysControlPanel.add(warning);
 
-            overlaysControlPanel.add(new JLabel());
-
             JLabel saveOverlaysMessage = createLabel("", JColor.DARKER_GREEN);
             Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
                 saveOverlaysMessage.setText("");
@@ -1132,7 +1130,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel saveOverlaysLabel = new JLabel("(*) Custom overlays NOT included!");
+            JLabel saveOverlaysLabel = new JLabel("(*) Custom overlays not included!");
             saveOverlaysLabel.setFont(font);
             overlaysControlPanel.add(saveOverlaysLabel);
 
