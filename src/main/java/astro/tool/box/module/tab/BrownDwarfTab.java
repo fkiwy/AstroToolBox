@@ -178,6 +178,7 @@ public class BrownDwarfTab {
                     baseFrame.setCursor(Cursor.getDefaultCursor());
                 }
             }
+            selectedEntry.setLookupTable(LookupTable.BROWN_DWARFS);
             List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
             displaySpectralTypes(results, spectralTypePanel, distancePanel);
         }

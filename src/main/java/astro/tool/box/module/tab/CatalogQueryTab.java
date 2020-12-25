@@ -506,6 +506,7 @@ public class CatalogQueryTab {
     //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
+            catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
             List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();

@@ -210,6 +210,7 @@ public class ImageViewerTab {
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
     private final DistanceLookupService distanceLookupService;
+    private final Overlays overlays;
     private List<CatalogEntry> simbadEntries;
     private List<CatalogEntry> gaiaEntries;
     private List<CatalogEntry> gaiaTpmEntries;
@@ -329,7 +330,6 @@ public class ImageViewerTab {
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
     private CatalogEntry pmCatalogEntry;
-    private Overlays overlays;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
@@ -4589,8 +4589,10 @@ public class ImageViewerTab {
     }
 
     private void setSpectralType(CatalogEntry catalogEntry) {
+        catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
         List<LookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
         if (results.isEmpty()) {
+            catalogEntry.setLookupTable(LookupTable.BROWN_DWARFS);
             results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
         }
         if (results.isEmpty()) {
@@ -4933,6 +4935,7 @@ public class ImageViewerTab {
             JButton collectButton = new JButton("Add to object collection");
             collectPanel.add(collectButton);
             collectButton.addActionListener((ActionEvent evt) -> {
+                catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
                 collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
             });

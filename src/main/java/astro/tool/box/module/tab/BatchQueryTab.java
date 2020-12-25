@@ -397,6 +397,7 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
+                    catalogEntry.setLookupTable(selectedTable);
                     List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, includeColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
