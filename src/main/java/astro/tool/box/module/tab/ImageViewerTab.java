@@ -40,6 +40,7 @@ import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.WiseBand;
@@ -4885,6 +4886,7 @@ public class ImageViewerTab {
         container.add(detailPanel);
 
         if (!simpleLayout) {
+            catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
             container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
             if (catalogEntry instanceof AllWiseCatalogEntry) {
@@ -4911,6 +4913,7 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
+            catalogEntry.setLookupTable(LookupTable.BROWN_DWARFS);
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
             container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
 

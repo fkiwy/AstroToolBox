@@ -13,6 +13,7 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.LookupTable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -116,6 +117,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     // Most likely spectral type
     private String spt;
+
+    private LookupTable table;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -320,6 +323,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public void setLookupTable(LookupTable table) {
+        this.table = table;
+    }
+
+    @Override
     public String getMagnitudes() {
         return String.format("u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
     }
@@ -452,7 +460,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            return u_mag - g_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (u_mag - 0.91) - (g_mag - -0.08);
+            } else {
+                return u_mag - g_mag;
+            }
         }
     }
 
@@ -460,7 +472,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            return g_mag - r_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (g_mag - -0.08) - (r_mag - 0.16);
+            } else {
+                return g_mag - r_mag;
+            }
         }
     }
 
@@ -468,7 +484,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            return r_mag - i_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (r_mag - 0.16) - (i_mag - 0.37);
+            } else {
+                return r_mag - i_mag;
+            }
         }
     }
 
@@ -476,7 +496,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            return i_mag - z_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (i_mag - 0.37) - (z_mag - 0.54);
+            } else {
+                return i_mag - z_mag;
+            }
         }
     }
 

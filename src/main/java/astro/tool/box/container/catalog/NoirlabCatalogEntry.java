@@ -12,6 +12,7 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -131,6 +132,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     // Most likely spectral type
     private String spt;
+
+    private LookupTable table;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -407,7 +410,6 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         bands.put(Band.r, r_mag);
         bands.put(Band.i, i_mag);
         bands.put(Band.z, z_mag);
-        bands.put(Band.y, y_mag);
         return bands;
     }
 
@@ -418,9 +420,13 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
-        colors.put(Color.i_y, get_i_y());
-        //colors.put(Color.z_y, get_z_y()); -> inconsistent with other colors
+        colors.put(Color.z_Y, get_z_y());
         return colors;
+    }
+
+    @Override
+    public void setLookupTable(LookupTable table) {
+        this.table = table;
     }
 
     @Override
@@ -562,7 +568,11 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            return u_mag - g_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (u_mag - 0.91) - (g_mag - -0.08);
+            } else {
+                return u_mag - g_mag;
+            }
         }
     }
 
@@ -570,7 +580,11 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            return g_mag - r_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (g_mag - -0.08) - (r_mag - 0.16);
+            } else {
+                return g_mag - r_mag;
+            }
         }
     }
 
@@ -578,7 +592,11 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            return r_mag - i_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (r_mag - 0.16) - (i_mag - 0.37);
+            } else {
+                return r_mag - i_mag;
+            }
         }
     }
 
@@ -586,15 +604,11 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            return i_mag - z_mag;
-        }
-    }
-
-    public double get_i_y() {
-        if (i_mag == 0 || y_mag == 0) {
-            return 0;
-        } else {
-            return i_mag - y_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (i_mag - 0.37) - (z_mag - 0.54);
+            } else {
+                return i_mag - z_mag;
+            }
         }
     }
 
@@ -602,7 +616,11 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (z_mag == 0 || y_mag == 0) {
             return 0;
         } else {
-            return z_mag - y_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (z_mag - 0.54) - (y_mag - 0.634);
+            } else {
+                return z_mag - y_mag;
+            }
         }
     }
 
