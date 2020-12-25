@@ -10,6 +10,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
+import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -449,7 +450,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (gMeanPSFMag - -0.08) - (rMeanPSFMag - 0.16);
+                return (gMeanPSFMag - ABToVega.g.val) - (rMeanPSFMag - ABToVega.r.val);
             } else {
                 return gMeanPSFMag - rMeanPSFMag;
             }
@@ -461,7 +462,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (rMeanPSFMag - 0.16) - (iMeanPSFMag - 0.37);
+                return (rMeanPSFMag - ABToVega.r.val) - (iMeanPSFMag - ABToVega.i.val);
             } else {
                 return rMeanPSFMag - iMeanPSFMag;
             }
@@ -473,7 +474,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (iMeanPSFMag - 0.37) - (zMeanPSFMag - 0.54);
+                return (iMeanPSFMag - ABToVega.i.val) - (zMeanPSFMag - ABToVega.z.val);
             } else {
                 return iMeanPSFMag - zMeanPSFMag;
             }
@@ -485,7 +486,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (iMeanPSFMag - 0.37) - (yMeanPSFMag - 0.634);
+                return (iMeanPSFMag - ABToVega.i.val) - (yMeanPSFMag - ABToVega.Y.val);
             } else {
                 return iMeanPSFMag - yMeanPSFMag;
             }
@@ -497,7 +498,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (zMeanPSFMag - 0.54) - (yMeanPSFMag - 0.634);
+                return (zMeanPSFMag - ABToVega.z.val) - (yMeanPSFMag - ABToVega.Y.val);
             } else {
                 return zMeanPSFMag - yMeanPSFMag;
             }

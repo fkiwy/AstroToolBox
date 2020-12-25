@@ -8,6 +8,7 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -569,7 +570,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (u_mag - 0.91) - (g_mag - -0.08);
+                return (u_mag - ABToVega.u.val) - (g_mag - ABToVega.g.val);
             } else {
                 return u_mag - g_mag;
             }
@@ -581,7 +582,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (g_mag - -0.08) - (r_mag - 0.16);
+                return (g_mag - ABToVega.g.val) - (r_mag - ABToVega.r.val);
             } else {
                 return g_mag - r_mag;
             }
@@ -593,7 +594,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (r_mag - 0.16) - (i_mag - 0.37);
+                return (r_mag - ABToVega.r.val) - (i_mag - ABToVega.i.val);
             } else {
                 return r_mag - i_mag;
             }
@@ -605,7 +606,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (i_mag - 0.37) - (z_mag - 0.54);
+                return (i_mag - ABToVega.i.val) - (z_mag - ABToVega.z.val);
             } else {
                 return i_mag - z_mag;
             }
@@ -617,7 +618,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
             return 0;
         } else {
             if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (z_mag - 0.54) - (y_mag - 0.634);
+                return (z_mag - ABToVega.z.val) - (y_mag - ABToVega.Y.val);
             } else {
                 return z_mag - y_mag;
             }
