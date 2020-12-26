@@ -1691,7 +1691,7 @@ public class ImageViewerTab {
 
                         // Display regular Pan-STARRS image
                         ps1Label = new JLabel(new ImageIcon(processedPs1Image));
-                        ps1Label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+                        ps1Label.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(ps1Label);
                     }
 
@@ -1706,7 +1706,7 @@ public class ImageViewerTab {
 
                         // Display regular SDSS image
                         JLabel sdssLabel = new JLabel(new ImageIcon(processedSdssImage));
-                        sdssLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+                        sdssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(sdssLabel);
                     }
 
