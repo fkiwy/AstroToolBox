@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
-    public static final String CATALOG_NAME = "NOIRLab DR2";
+    public static final String CATALOG_NAME = "NSC DR2";
 
     // Unique source identifier (unique within a particular Data Release)
     private String sourceId;

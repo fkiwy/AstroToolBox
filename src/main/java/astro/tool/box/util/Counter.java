@@ -22,7 +22,7 @@ public class Counter {
         total += value;
     }
 
-    public int getTotal() {
+    public int total() {
         return total;
     }
 

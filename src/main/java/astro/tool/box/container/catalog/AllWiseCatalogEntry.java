@@ -406,8 +406,8 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.J_H, getJ_H());
-        colors.put(Color.H_K, getH_K());
+        //colors.put(Color.J_H, getJ_H());
+        //colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
