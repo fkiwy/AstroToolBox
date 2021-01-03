@@ -1180,6 +1180,54 @@ public class ImageViewerTab {
 
             overlaysControlPanel.add(saveOverlaysMessage);
 
+            overlaysControlPanel.add(new JLabel(header("Overlay shortcut keys:")));
+
+            Font fKeyFont = font.deriveFont(9.5f);
+
+            JLabel fkeyLabel = new JLabel(html("F1: " + SimbadCatalogEntry.CATALOG_NAME + LINE_BREAK + "F2: " + AllWiseCatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F3: " + CatWiseCatalogEntry.CATALOG_NAME + LINE_BREAK + "F4: " + UnWiseCatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F5: " + GaiaCatalogEntry.CATALOG_NAME + LINE_BREAK + "F6: " + GaiaDR3CatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F7: " + NoirlabCatalogEntry.CATALOG_NAME + LINE_BREAK + "F8: " + PanStarrsCatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F9: " + SDSSCatalogEntry.CATALOG_NAME + LINE_BREAK + "F10: " + VHSCatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F11: " + GaiaWDCatalogEntry.CATALOG_NAME + LINE_BREAK + "F12: " + TwoMassCatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            overlaysControlPanel.add(new JLabel(html("<u>PM vectors:</u>")));
+
+            fkeyLabel = new JLabel(html("F13: " + GaiaCatalogEntry.CATALOG_NAME + LINE_BREAK + "F14: " + GaiaDR3CatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F15: " + NoirlabCatalogEntry.CATALOG_NAME + LINE_BREAK + "F16: " + CatWiseCatalogEntry.CATALOG_NAME));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            overlaysControlPanel.add(new JLabel(html("<u>WISE artifacts:</u>")));
+
+            fkeyLabel = new JLabel(html("F17: Ghosts" + LINE_BREAK + "F18: Halos"));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
+            fkeyLabel = new JLabel(html("F19: Latents" + LINE_BREAK + "F20: Spikes"));
+            fkeyLabel.setFont(fKeyFont);
+            overlaysControlPanel.add(fkeyLabel);
+
             //====================
             // Tab: Mouse settings
             //====================
@@ -2189,7 +2237,36 @@ public class ImageViewerTab {
                     catWiseProperMotion.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForF17 = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ghostOverlay.setSelected(!ghostOverlay.isSelected());
+                    ghostOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
+            Action keyActionForF18 = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    haloOverlay.setSelected(!haloOverlay.isSelected());
+                    haloOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
+            Action keyActionForF19 = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    latentOverlay.setSelected(!latentOverlay.isSelected());
+                    latentOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
+            Action keyActionForF20 = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    spikeOverlay.setSelected(!spikeOverlay.isSelected());
+                    spikeOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
 
+            // Assign actions to function keys
             InputMap iMap = mainPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             ActionMap aMap = mainPanel.getActionMap();
             int i = 1;
@@ -2230,7 +2307,6 @@ public class ImageViewerTab {
             iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
             aMap.put("keyActionForF" + i, keyActionForF12);
 
-            // Assign actions to function keys
             iMap = leftPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             aMap = leftPanel.getActionMap();
             i = 1;
@@ -2245,6 +2321,18 @@ public class ImageViewerTab {
             i++;
             iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
             aMap.put("keyActionForF" + i, keyActionForF16);
+            i++;
+            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
+            aMap.put("keyActionForF" + i, keyActionForF17);
+            i++;
+            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
+            aMap.put("keyActionForF" + i, keyActionForF18);
+            i++;
+            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
+            aMap.put("keyActionForF" + i, keyActionForF19);
+            i++;
+            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
+            aMap.put("keyActionForF" + i, keyActionForF20);
 
             tabbedPane.addTab(TAB_NAME, mainPanel);
         } catch (Exception ex) {
