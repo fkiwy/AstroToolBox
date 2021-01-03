@@ -1204,7 +1204,7 @@ public class ImageViewerTab {
             fkeyLabel.setFont(fKeyFont);
             overlaysControlPanel.add(fkeyLabel);
 
-            fkeyLabel = new JLabel(html("F11: " + GaiaWDCatalogEntry.CATALOG_NAME + LINE_BREAK + "F12: " + TwoMassCatalogEntry.CATALOG_NAME));
+            fkeyLabel = new JLabel(html("F11: " + TwoMassCatalogEntry.CATALOG_NAME + LINE_BREAK + "F12: " + GaiaWDCatalogEntry.CATALOG_NAME));
             fkeyLabel.setFont(fKeyFont);
             overlaysControlPanel.add(fkeyLabel);
 
@@ -2198,15 +2198,15 @@ public class ImageViewerTab {
             Action keyActionForF11 = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    gaiaWDOverlay.setSelected(!gaiaWDOverlay.isSelected());
-                    gaiaWDOverlay.getActionListeners()[0].actionPerformed(null);
+                    twoMassOverlay.setSelected(!twoMassOverlay.isSelected());
+                    twoMassOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
             Action keyActionForF12 = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    twoMassOverlay.setSelected(!twoMassOverlay.isSelected());
-                    twoMassOverlay.getActionListeners()[0].actionPerformed(null);
+                    gaiaWDOverlay.setSelected(!gaiaWDOverlay.isSelected());
+                    gaiaWDOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
             Action keyActionForF13 = new AbstractAction() {
