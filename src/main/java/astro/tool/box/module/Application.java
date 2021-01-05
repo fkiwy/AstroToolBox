@@ -44,7 +44,7 @@ public class Application {
 
     private ImageViewerTab imageViewerTab;
 
-    private static boolean configLoaded;
+    private static boolean configLoaded = true;
 
     public Application() {
         try {

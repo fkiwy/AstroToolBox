@@ -44,11 +44,11 @@ public class CoordsConverterTool {
             mainPanel.add(coordsToConvert);
 
             mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
-            JComboBox<CoordsSystem> systemsToConvertFrom = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
+            JComboBox<CoordsSystem> systemsToConvertFrom = new JComboBox(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
             mainPanel.add(systemsToConvertFrom);
 
             mainPanel.add(new JLabel("To: ", JLabel.RIGHT));
-            JComboBox<CoordsSystem> systemsToConvertTo = new JComboBox<>(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
+            JComboBox<CoordsSystem> systemsToConvertTo = new JComboBox(new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
             systemsToConvertTo.setSelectedItem(CoordsSystem.SEXAGESIMAL);
             mainPanel.add(systemsToConvertTo);
 

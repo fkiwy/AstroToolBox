@@ -170,7 +170,7 @@ public class BatchQueryTab {
 
             centerRow.add(new JLabel("Lookup table:"));
 
-            lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.BROWN_DWARFS});
+            lookupTables = new JComboBox(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.BROWN_DWARFS});
             centerRow.add(lookupTables);
 
             JButton queryButton = new JButton("Start query");

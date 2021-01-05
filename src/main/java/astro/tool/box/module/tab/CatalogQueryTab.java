@@ -600,7 +600,7 @@ public class CatalogQueryTab {
 
             collectPanel.add(new JLabel("Object type:"));
 
-            JComboBox objectTypes = new JComboBox<>(ObjectType.labels());
+            JComboBox objectTypes = new JComboBox(ObjectType.labels());
             collectPanel.add(objectTypes);
 
             JButton collectButton = new JButton("Add to object collection");

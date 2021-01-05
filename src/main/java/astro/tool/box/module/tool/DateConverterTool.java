@@ -52,11 +52,11 @@ public class DateConverterTool {
             mainPanel.add(new JLabel("Time is not required."));
 
             mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
-            JComboBox<DateSystem> systemsToConvertFrom = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
+            JComboBox<DateSystem> systemsToConvertFrom = new JComboBox(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
             mainPanel.add(systemsToConvertFrom);
 
             mainPanel.add(new JLabel("To: ", JLabel.RIGHT));
-            JComboBox<DateSystem> systemsToConvertTo = new JComboBox<>(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
+            JComboBox<DateSystem> systemsToConvertTo = new JComboBox(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
             systemsToConvertTo.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
             mainPanel.add(systemsToConvertTo);
 

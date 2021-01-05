@@ -516,7 +516,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Bands:"));
 
-            wiseBands = new JComboBox<>(WiseBand.values());
+            wiseBands = new JComboBox(WiseBand.values());
             mainControlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
@@ -551,7 +551,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Epochs:"));
 
-            epochs = new JComboBox<>(Epoch.values());
+            epochs = new JComboBox(Epoch.values());
             mainControlPanel.add(epochs);
             epochs.setMaximumRowCount(Epoch.values().length);
             epochs.setSelectedItem(epoch);
@@ -728,45 +728,6 @@ public class ImageViewerTab {
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
 
-            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds"));
-            settingsPanel.add(unwiseCutouts);
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                if (decalsCutouts.isSelected()) {
-                    decalsCutouts.setSelected(false);
-                    pixelScale = PIXEL_SCALE_WISE;
-                }
-                previousRa = 0;
-                previousDec = 0;
-                createFlipbook();
-            });
-
-            decalsCutouts = new JCheckBox("DECaLS cutouts");
-            settingsPanel.add(decalsCutouts);
-            decalsCutouts.addActionListener((ActionEvent evt) -> {
-                if (unwiseCutouts.isSelected()) {
-                    unwiseCutouts.setSelected(false);
-                }
-                if (decalsCutouts.isSelected()) {
-                    pixelScale = PIXEL_SCALE_DECAM;
-                } else {
-                    pixelScale = PIXEL_SCALE_WISE;
-                }
-                previousRa = 0;
-                previousDec = 0;
-                createFlipbook();
-            });
-
-            noirlabCutouts = new JCheckBox("NSC DR2 cutouts");
-            //settingsPanel.add(noirlabCutouts);
-            noirlabCutouts.addActionListener((ActionEvent evt) -> {
-                previousRa = 0;
-                previousDec = 0;
-                createFlipbook();
-            });
-
-            settingsPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(settingsPanel);
-
             autoContrast = new JCheckBox("Auto-contrast", true);
             settingsPanel.add(autoContrast);
             autoContrast.addActionListener((ActionEvent evt) -> {
@@ -847,6 +808,42 @@ public class ImageViewerTab {
                 }
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 setSubContrast(SUB_CONTRAST);
+                createFlipbook();
+            });
+
+            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds (ASC=DESC)"));
+            mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
+                if (decalsCutouts.isSelected()) {
+                    decalsCutouts.setSelected(false);
+                    pixelScale = PIXEL_SCALE_WISE;
+                }
+                previousRa = 0;
+                previousDec = 0;
+                createFlipbook();
+            });
+
+            decalsCutouts = new JCheckBox(html("DECaLS cutouts (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
+            mainControlPanel.add(decalsCutouts);
+            decalsCutouts.addActionListener((ActionEvent evt) -> {
+                if (unwiseCutouts.isSelected()) {
+                    unwiseCutouts.setSelected(false);
+                }
+                if (decalsCutouts.isSelected()) {
+                    pixelScale = PIXEL_SCALE_DECAM;
+                } else {
+                    pixelScale = PIXEL_SCALE_WISE;
+                }
+                previousRa = 0;
+                previousDec = 0;
+                createFlipbook();
+            });
+
+            noirlabCutouts = new JCheckBox("NSC DR2 cutouts");
+            //mainControlPanel.add(noirlabCutouts);
+            noirlabCutouts.addActionListener((ActionEvent evt) -> {
+                previousRa = 0;
+                previousDec = 0;
                 createFlipbook();
             });
 
@@ -5369,7 +5366,7 @@ public class ImageViewerTab {
 
             collectPanel.add(new JLabel("Object type:"));
 
-            JComboBox objectTypes = new JComboBox<>(ObjectType.labels());
+            JComboBox objectTypes = new JComboBox(ObjectType.labels());
             collectPanel.add(objectTypes);
 
             JButton collectButton = new JButton("Add to object collection");

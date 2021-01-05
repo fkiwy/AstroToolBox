@@ -54,7 +54,7 @@ public class LookupTab {
 
             filePanel.add(new JLabel("Lookup table:"));
 
-            JComboBox lookupTables = new JComboBox<>(LookupTable.values());
+            JComboBox lookupTables = new JComboBox(LookupTable.values());
             filePanel.add(lookupTables);
             lookupTables.addActionListener((ActionEvent evt) -> {
                 String fileName;

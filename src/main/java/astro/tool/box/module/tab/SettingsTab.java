@@ -334,12 +334,12 @@ public class SettingsTab {
             imageViewerSettings.add(numberOfEpochsField);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
-            JComboBox wiseBands = new JComboBox<>(WiseBand.values());
+            JComboBox wiseBands = new JComboBox(WiseBand.values());
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
 
             imageViewerSettings.add(new JLabel("Epochs: ", JLabel.RIGHT));
-            JComboBox epochs = new JComboBox<>(Epoch.values());
+            JComboBox epochs = new JComboBox(Epoch.values());
             epochs.setSelectedItem(epoch);
             imageViewerSettings.add(epochs);
 
