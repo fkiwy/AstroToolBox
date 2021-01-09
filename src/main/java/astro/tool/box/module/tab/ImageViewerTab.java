@@ -64,7 +64,6 @@ import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.SpectralTypeLookupService;
-import astro.tool.box.util.CSVParser;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
@@ -252,7 +251,6 @@ public class ImageViewerTab {
     private JPanel zooniversePanel2;
     private JCheckBox unwiseCutouts;
     private JCheckBox decalsCutouts;
-    private JCheckBox noirlabCutouts;
     private JCheckBox autoContrast;
     private JCheckBox keepContrast;
     private JCheckBox blurImages;
@@ -834,14 +832,6 @@ public class ImageViewerTab {
                 } else {
                     pixelScale = PIXEL_SCALE_WISE;
                 }
-                previousRa = 0;
-                previousDec = 0;
-                createFlipbook();
-            });
-
-            noirlabCutouts = new JCheckBox("NSC DR2 cutouts");
-            //mainControlPanel.add(noirlabCutouts);
-            noirlabCutouts.addActionListener((ActionEvent evt) -> {
                 previousRa = 0;
                 previousDec = 0;
                 createFlipbook();
@@ -2611,7 +2601,7 @@ public class ImageViewerTab {
                         applyProperMotion(new CatWiseCatalogEntry());
                     }
                 }
-                if (!unwiseCutouts.isSelected() && !decalsCutouts.isSelected() && !noirlabCutouts.isSelected()) {
+                if (!unwiseCutouts.isSelected() && !decalsCutouts.isSelected()) {
                     try {
                         InputStream stream = getImageData(1, numberOfEpochs + 5);
                         stream.close();
@@ -3555,8 +3545,6 @@ public class ImageViewerTab {
         writeLogEntry("Downloading ...");
         if (decalsCutouts.isSelected()) {
             retrieveDecalsImages(band, images);
-        } else if (noirlabCutouts.isSelected()) {
-            downloadNoirlabImages(band, images);
         } else {
             for (int i = 0; i < requestedEpochs.size(); i++) {
                 int requestedEpoch = requestedEpochs.get(i);
@@ -3927,59 +3915,6 @@ public class ImageViewerTab {
             return true;
         } catch (IOException | FitsException ex) {
             return false;
-        }
-    }
-
-    private void downloadNoirlabImages(int band, Map<String, ImageContainer> images) throws Exception {
-        double cutoutSize = toInteger(sizeField.getText()) / DEG_ARCSEC;
-        String siaUrl = String.format("https://datalab.noao.edu/sia/nsc_dr2?POS=%f,%f&SIZE=%f,%f&FORMAT=ALL&INTERSECT=OVERLAPS&VERB=2", targetRa, targetDec, cutoutSize / cos(toRadians(targetDec)), cutoutSize);
-        System.out.println(siaUrl);
-        String response = readResponse(establishHttpConnection(siaUrl), "NSC DR2 cutout service");
-        System.out.println(response);
-        if (response.isEmpty()) {
-            return;
-        }
-        try (Scanner scanner = new Scanner(response)) {
-            String[] columnNames = CSVParser.parseLine(scanner.nextLine());
-            Map<String, Integer> columns = new HashMap<>();
-            for (int i = 0; i < columnNames.length; i++) {
-                columns.put(columnNames[i], i);
-            }
-            int requestedEpoch = 0;
-            while (scanner.hasNextLine()) {
-                String[] columnValues = CSVParser.parseLine(scanner.nextLine());
-                String obs_bandpass = columnValues[columns.get("obs_bandpass")];
-                String prodtype = columnValues[columns.get("prodtype")];
-                String proctype = columnValues[columns.get("proctype")];
-                String selectedBand;
-                switch (band) {
-                    case 1:
-                        selectedBand = "i";
-                        break;
-                    case 2:
-                        selectedBand = "z";
-                        break;
-                    default:
-                        selectedBand = "";
-                        break;
-                }
-                if (obs_bandpass.startsWith(selectedBand) && prodtype.equals("image") && proctype.equals("Stack")) {
-                    String imageKey = band + "_" + requestedEpoch;
-                    ImageContainer container = images.get(imageKey);
-                    if (container != null) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
-                        continue;
-                    }
-                    String access_url = columnValues[columns.get("access_url")];
-                    LocalDateTime date_obs = LocalDateTime.parse(columnValues[columns.get("date_obs")]);
-                    HttpURLConnection connection = establishHttpConnection(access_url);
-                    Fits fits = new Fits(connection.getInputStream());
-                    images.put(imageKey, new ImageContainer(requestedEpoch, date_obs, fits));
-                    String imageDate = date_obs.format(DATE_FORMATTER);
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
-                    requestedEpoch++;
-                }
-            }
         }
     }
 
