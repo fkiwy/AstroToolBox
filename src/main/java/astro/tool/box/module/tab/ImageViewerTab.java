@@ -81,6 +81,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -1168,53 +1169,23 @@ public class ImageViewerTab {
 
             overlaysControlPanel.add(saveOverlaysMessage);
 
-            overlaysControlPanel.add(new JLabel(header("Overlay shortcut keys:")));
+            overlaysControlPanel.add(new JLabel(header("Overlay shortcuts:")));
+            overlaysControlPanel.add(new JLabel("Alt+S: " + SimbadCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+A: " + AllWiseCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+C: " + CatWiseCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+U: " + UnWiseCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+G: " + GaiaDR3CatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+N: " + NoirlabCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+P: " + PanStarrsCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+D: " + SDSSCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+V: " + VHSCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+M: " + TwoMassCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Alt+W: " + GaiaWDCatalogEntry.CATALOG_NAME));
 
-            Font fKeyFont = font.deriveFont(9.5f);
-
-            JLabel fkeyLabel = new JLabel(html("F1: " + SimbadCatalogEntry.CATALOG_NAME + LINE_BREAK + "F2: " + AllWiseCatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F3: " + CatWiseCatalogEntry.CATALOG_NAME + LINE_BREAK + "F4: " + UnWiseCatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F5: " + GaiaCatalogEntry.CATALOG_NAME + LINE_BREAK + "F6: " + GaiaDR3CatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F7: " + NoirlabCatalogEntry.CATALOG_NAME + LINE_BREAK + "F8: " + PanStarrsCatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F9: " + SDSSCatalogEntry.CATALOG_NAME + LINE_BREAK + "F10: " + VHSCatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F11: " + TwoMassCatalogEntry.CATALOG_NAME + LINE_BREAK + "F12: " + GaiaWDCatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            overlaysControlPanel.add(new JLabel(html("<u>PM vectors:</u>")));
-
-            fkeyLabel = new JLabel(html("F13: " + GaiaCatalogEntry.CATALOG_NAME + LINE_BREAK + "F14: " + GaiaDR3CatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F15: " + NoirlabCatalogEntry.CATALOG_NAME + LINE_BREAK + "F16: " + CatWiseCatalogEntry.CATALOG_NAME));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            overlaysControlPanel.add(new JLabel(html("<u>WISE artifacts:</u>")));
-
-            fkeyLabel = new JLabel(html("F17: Ghosts" + LINE_BREAK + "F18: Halos"));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
-
-            fkeyLabel = new JLabel(html("F19: Latents" + LINE_BREAK + "F20: Spikes"));
-            fkeyLabel.setFont(fKeyFont);
-            overlaysControlPanel.add(fkeyLabel);
+            overlaysControlPanel.add(new JLabel(header("PM vector shortcuts:")));
+            overlaysControlPanel.add(new JLabel("Ctrl+Alt+G: " + GaiaDR3CatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Ctrl+Alt+N: " + NoirlabCatalogEntry.CATALOG_NAME));
+            overlaysControlPanel.add(new JLabel("Ctrl+Alt+C: " + CatWiseCatalogEntry.CATALOG_NAME));
 
             //====================
             // Tab: Mouse settings
@@ -2113,214 +2084,150 @@ public class ImageViewerTab {
             });
 
             // Define actions for function keys
-            Action keyActionForF1 = new AbstractAction() {
+            Action keyActionForAltS = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     simbadOverlay.setSelected(!simbadOverlay.isSelected());
                     simbadOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF2 = new AbstractAction() {
+            Action keyActionForAltA = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     allWiseOverlay.setSelected(!allWiseOverlay.isSelected());
                     allWiseOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF3 = new AbstractAction() {
+            Action keyActionForAltC = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     catWiseOverlay.setSelected(!catWiseOverlay.isSelected());
                     catWiseOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF4 = new AbstractAction() {
+            Action keyActionForAltU = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     unWiseOverlay.setSelected(!unWiseOverlay.isSelected());
                     unWiseOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF5 = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    gaiaOverlay.setSelected(!gaiaOverlay.isSelected());
-                    gaiaOverlay.getActionListeners()[0].actionPerformed(null);
-                }
-            };
-            Action keyActionForF6 = new AbstractAction() {
+            Action keyActionForAltG = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gaiaDR3Overlay.setSelected(!gaiaDR3Overlay.isSelected());
                     gaiaDR3Overlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF7 = new AbstractAction() {
+            Action keyActionForAltN = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     noirlabOverlay.setSelected(!noirlabOverlay.isSelected());
                     noirlabOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF8 = new AbstractAction() {
+            Action keyActionForAltP = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     panStarrsOverlay.setSelected(!panStarrsOverlay.isSelected());
                     panStarrsOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF9 = new AbstractAction() {
+            Action keyActionForAltD = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     sdssOverlay.setSelected(!sdssOverlay.isSelected());
                     sdssOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF10 = new AbstractAction() {
+            Action keyActionForAltV = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     vhsOverlay.setSelected(!vhsOverlay.isSelected());
                     vhsOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF11 = new AbstractAction() {
+            Action keyActionForAltM = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     twoMassOverlay.setSelected(!twoMassOverlay.isSelected());
                     twoMassOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF12 = new AbstractAction() {
+            Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gaiaWDOverlay.setSelected(!gaiaWDOverlay.isSelected());
                     gaiaWDOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF13 = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    gaiaProperMotion.setSelected(!gaiaProperMotion.isSelected());
-                    gaiaProperMotion.getActionListeners()[0].actionPerformed(null);
-                }
-            };
-            Action keyActionForF14 = new AbstractAction() {
+            Action keyActionForCtrlAltG = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     gaiaDR3ProperMotion.setSelected(!gaiaDR3ProperMotion.isSelected());
                     gaiaDR3ProperMotion.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF15 = new AbstractAction() {
+            Action keyActionForCtrlAltN = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     noirlabProperMotion.setSelected(!noirlabProperMotion.isSelected());
                     noirlabProperMotion.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF16 = new AbstractAction() {
+            Action keyActionForCtrlAltC = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     catWiseProperMotion.setSelected(!catWiseProperMotion.isSelected());
                     catWiseProperMotion.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForF17 = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ghostOverlay.setSelected(!ghostOverlay.isSelected());
-                    ghostOverlay.getActionListeners()[0].actionPerformed(null);
-                }
-            };
-            Action keyActionForF18 = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    haloOverlay.setSelected(!haloOverlay.isSelected());
-                    haloOverlay.getActionListeners()[0].actionPerformed(null);
-                }
-            };
-            Action keyActionForF19 = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    latentOverlay.setSelected(!latentOverlay.isSelected());
-                    latentOverlay.getActionListeners()[0].actionPerformed(null);
-                }
-            };
-            Action keyActionForF20 = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    spikeOverlay.setSelected(!spikeOverlay.isSelected());
-                    spikeOverlay.getActionListeners()[0].actionPerformed(null);
-                }
-            };
 
             // Assign actions to function keys
             InputMap iMap = mainPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             ActionMap aMap = mainPanel.getActionMap();
-            int i = 1;
-            String fKey = "released F";
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF1);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF2);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF3);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF4);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF5);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF6);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF7);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF8);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF9);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF10);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF11);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke(fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF12);
 
-            iMap = leftPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            aMap = leftPanel.getActionMap();
-            i = 1;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF13);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF14);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF15);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF16);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF17);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF18);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF19);
-            i++;
-            iMap.put(KeyStroke.getKeyStroke("shift " + fKey + i), "keyActionForF" + i);
-            aMap.put("keyActionForF" + i, keyActionForF20);
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK), "keyActionForAltS");
+            aMap.put("keyActionForAltS", keyActionForAltS);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK), "keyActionForAltA");
+            aMap.put("keyActionForAltA", keyActionForAltA);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK), "keyActionForAltC");
+            aMap.put("keyActionForAltC", keyActionForAltC);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, ActionEvent.ALT_MASK), "keyActionForAltU");
+            aMap.put("keyActionForAltU", keyActionForAltU);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.ALT_MASK), "keyActionForAltG");
+            aMap.put("keyActionForAltG", keyActionForAltG);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.ALT_MASK), "keyActionForAltN");
+            aMap.put("keyActionForAltN", keyActionForAltN);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK), "keyActionForAltP");
+            aMap.put("keyActionForAltP", keyActionForAltP);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK), "keyActionForAltD");
+            aMap.put("keyActionForAltD", keyActionForAltD);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.ALT_MASK), "keyActionForAltV");
+            aMap.put("keyActionForAltV", keyActionForAltV);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK), "keyActionForAltM");
+            aMap.put("keyActionForAltM", keyActionForAltM);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
+            aMap.put("keyActionForAltW", keyActionForAltW);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltG");
+            aMap.put("keyActionForCtrlAltG", keyActionForCtrlAltG);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltN");
+            aMap.put("keyActionForCtrlAltN", keyActionForCtrlAltN);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltC");
+            aMap.put("keyActionForCtrlAltC", keyActionForCtrlAltC);
 
             tabbedPane.addTab(TAB_NAME, mainPanel);
         } catch (Exception ex) {
