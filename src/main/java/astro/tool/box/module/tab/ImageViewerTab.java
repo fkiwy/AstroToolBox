@@ -16,6 +16,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Overlays;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.Artifact;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
@@ -3871,7 +3872,11 @@ public class ImageViewerTab {
         Counter requestedEpoch = new Counter();
         boolean imageFound = downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr5", 2016);
         if (imageFound) {
-            downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);
+            downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);/*
+        } else {
+            imageFound = downloadDecalsCutouts(requestedEpoch, band, images, "des-dr1", 2015);
+        }
+        if (imageFound) {*/
             downloadDecalsCutouts(requestedEpoch, band, images, "dr8", 2019);
         }
     }
@@ -3903,14 +3908,12 @@ public class ImageViewerTab {
             enhanceImage(fits, 1000);
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
             images.put(imageKey, new ImageContainer(requestedEpoch.total(), obsDate, fits));
-            String imageDate = obsDate.format(DATE_FORMATTER);
-            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " | " + imageDate + " > downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " | " + survey + " > downloaded");
             requestedEpoch.add();
             imageKey = band + "_" + requestedEpoch.total();
             obsDate = LocalDateTime.of(year, Month.SEPTEMBER, 1, 0, 0);
             images.put(imageKey, new ImageContainer(requestedEpoch.total(), obsDate, fits));
-            imageDate = obsDate.format(DATE_FORMATTER);
-            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " | " + imageDate + " > downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " | " + survey + " > downloaded");
             requestedEpoch.add();
             return true;
         } catch (IOException | FitsException ex) {
@@ -5078,9 +5081,9 @@ public class ImageViewerTab {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
-            CatWiseCatalogEntry catWiseCatalog = (CatWiseCatalogEntry) catalogEntry;
-            String ab_flags = catWiseCatalog.getAb_flags();
-            String cc_flags = catWiseCatalog.getCc_flags();
+            Artifact artifact = (Artifact) catalogEntry;
+            String ab_flags = artifact.getAb_flags();
+            String cc_flags = artifact.getCc_flags();
             if (cc_flags.isEmpty()) {
                 cc_flags = "0000";
             }
