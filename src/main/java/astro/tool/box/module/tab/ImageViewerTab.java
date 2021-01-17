@@ -859,17 +859,17 @@ public class ImageViewerTab {
             overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Overlays", overlaysScrollPanel);
 
-            overlaysControlPanel.add(new JLabel(header("Catalog overlays:")));
+            overlaysControlPanel.add(new JLabel(header("Catalog overlays: (*)")));
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            simbadOverlay = new JCheckBox(SimbadCatalogEntry.CATALOG_NAME, overlays.isSimbad());
+            simbadOverlay = new JCheckBox(html("<u>S</u>IMBAD"), overlays.isSimbad());
             simbadOverlay.setForeground(Color.RED);
             simbadOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(simbadOverlay);
-            allWiseOverlay = new JCheckBox(AllWiseCatalogEntry.CATALOG_NAME, overlays.isAllwise());
+            allWiseOverlay = new JCheckBox(html("<u>A</u>llWISE"), overlays.isAllwise());
             allWiseOverlay.setForeground(Color.GREEN.darker());
             allWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -878,13 +878,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            catWiseOverlay = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME, overlays.isCatwise());
+            catWiseOverlay = new JCheckBox(html("<u>C</u>atWISE2020"), overlays.isCatwise());
             catWiseOverlay.setForeground(Color.MAGENTA);
             catWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(catWiseOverlay);
-            unWiseOverlay = new JCheckBox(UnWiseCatalogEntry.CATALOG_NAME, overlays.isUnwise());
+            unWiseOverlay = new JCheckBox(html("<u>u</u>nWISE"), overlays.isUnwise());
             unWiseOverlay.setForeground(JColor.MINT.val);
             unWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -893,13 +893,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            gaiaOverlay = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME, overlays.isGaiadr2());
+            gaiaOverlay = new JCheckBox("Gaia DR2", overlays.isGaiadr2());
             gaiaOverlay.setForeground(Color.CYAN.darker());
             gaiaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(gaiaOverlay);
-            gaiaDR3Overlay = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME, overlays.isGaiadr3());
+            gaiaDR3Overlay = new JCheckBox(html("<u>G</u>aia eDR3"), overlays.isGaiadr3());
             gaiaDR3Overlay.setForeground(Color.CYAN.darker());
             gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -908,13 +908,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            noirlabOverlay = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME, overlays.isNoirlab());
+            noirlabOverlay = new JCheckBox(html("<u>N</u>SC DR2"), overlays.isNoirlab());
             noirlabOverlay.setForeground(JColor.NAVY.val);
             noirlabOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(noirlabOverlay);
-            panStarrsOverlay = new JCheckBox(PanStarrsCatalogEntry.CATALOG_NAME, overlays.isPanstar());
+            panStarrsOverlay = new JCheckBox(html("<u>P</u>an-STARRS"), overlays.isPanstar());
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             panStarrsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -923,7 +923,7 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            sdssOverlay = new JCheckBox(SDSSCatalogEntry.CATALOG_NAME, overlays.isSdss());
+            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR16"), overlays.isSdss());
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -938,13 +938,13 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            vhsOverlay = new JCheckBox(VHSCatalogEntry.CATALOG_NAME, overlays.isVhs());
+            vhsOverlay = new JCheckBox(html("<u>V</u>HS DR4"), overlays.isVhs());
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
-            gaiaWDOverlay = new JCheckBox(GaiaWDCatalogEntry.CATALOG_NAME, overlays.isGaiawd());
+            gaiaWDOverlay = new JCheckBox(html("Gaia DR2 <u>W</u>D"), overlays.isGaiawd());
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
             gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -953,25 +953,29 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + TwoMassCatalogEntry.CATALOG_NAME + "&nbsp;</span>"), overlays.isTwomass());
+            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;2<u>M</u>ASS&nbsp;</span>"), overlays.isTwomass());
             twoMassOverlay.setForeground(JColor.ORANGE.val);
             twoMassOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(twoMassOverlay);
-            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;" + SpitzerCatalogEntry.CATALOG_NAME + "&nbsp;</span>"), overlays.isSpitzer());
+            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spitzer/WISE&nbsp;</span>"), overlays.isSpitzer());
             spitzerOverlay.setForeground(JColor.YELLOW.val);
             spitzerOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(spitzerOverlay);
 
-            ssoOverlay = new JCheckBox(SSOCatalogEntry.CATALOG_NAME, overlays.isSso());
+            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlaysControlPanel.add(ssoOverlay);
+
+            JLabel overlayShortcutsLabel = new JLabel("(*) Shortcuts: Alt+[underscored letter]");
+            overlayShortcutsLabel.setFont(font);
+            overlaysControlPanel.add(overlayShortcutsLabel);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -1013,17 +1017,17 @@ public class ImageViewerTab {
                 }
             });
 
-            overlaysControlPanel.add(new JLabel(header("Proper motion vectors:")));
+            overlaysControlPanel.add(new JLabel(header("Proper motion vectors: (*)")));
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
-            gaiaProperMotion = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME, overlays.isPmgaiadr2());
+            gaiaProperMotion = new JCheckBox("Gaia DR2", overlays.isPmgaiadr2());
             gaiaProperMotion.setForeground(Color.CYAN.darker());
             gaiaProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(gaiaProperMotion);
-            gaiaDR3ProperMotion = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME, overlays.isPmgaiadr3());
+            gaiaDR3ProperMotion = new JCheckBox(html("<u>G</u>aia eDR3"), overlays.isPmgaiadr3());
             gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
             gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -1032,13 +1036,13 @@ public class ImageViewerTab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
-            noirlabProperMotion = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME, overlays.isPmnoirlab());
+            noirlabProperMotion = new JCheckBox(html("<u>N</u>SC DR2"), overlays.isPmnoirlab());
             noirlabProperMotion.setForeground(JColor.NAVY.val);
             noirlabProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(noirlabProperMotion);
-            catWiseProperMotion = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME, overlays.isPmcatwise());
+            catWiseProperMotion = new JCheckBox(html("<u>C</u>atWISE2020"), overlays.isPmcatwise());
             catWiseProperMotion.setForeground(Color.MAGENTA);
             catWiseProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -1057,6 +1061,10 @@ public class ImageViewerTab {
                 noirlabTpmEntries = null;
                 processImages();
             });
+
+            JLabel pmVectorShortcutsLabel = new JLabel("(*) Shortcuts: Ctrl+Alt+[underscored letter]");
+            pmVectorShortcutsLabel.setFont(font);
+            overlaysControlPanel.add(pmVectorShortcutsLabel);
 
             overlaysControlPanel.add(new JLabel(header("WISE artifacts (*):")));
 
@@ -1168,24 +1176,6 @@ public class ImageViewerTab {
             overlaysControlPanel.add(saveOverlaysLabel);
 
             overlaysControlPanel.add(saveOverlaysMessage);
-
-            overlaysControlPanel.add(new JLabel(header("Overlay shortcuts:")));
-            overlaysControlPanel.add(new JLabel("Alt+S: " + SimbadCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+A: " + AllWiseCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+C: " + CatWiseCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+U: " + UnWiseCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+G: " + GaiaDR3CatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+N: " + NoirlabCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+P: " + PanStarrsCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+D: " + SDSSCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+V: " + VHSCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+M: " + TwoMassCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Alt+W: " + GaiaWDCatalogEntry.CATALOG_NAME));
-
-            overlaysControlPanel.add(new JLabel(header("PM vector shortcuts:")));
-            overlaysControlPanel.add(new JLabel("Ctrl+Alt+G: " + GaiaDR3CatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Ctrl+Alt+N: " + NoirlabCatalogEntry.CATALOG_NAME));
-            overlaysControlPanel.add(new JLabel("Ctrl+Alt+C: " + CatWiseCatalogEntry.CATALOG_NAME));
 
             //====================
             // Tab: Mouse settings

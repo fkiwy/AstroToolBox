@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
-    public static final String CATALOG_NAME = "Gaia EDR3";
+    public static final String CATALOG_NAME = "Gaia eDR3";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
