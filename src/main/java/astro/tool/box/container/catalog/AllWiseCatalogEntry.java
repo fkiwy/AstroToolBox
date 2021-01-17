@@ -356,8 +356,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, ALLWISE_CATALOG_ID_VIZIER, "RAJ2000", "DEJ2000");
-        //return createIrsaUrl(ALLWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/328/allwise", "RAJ2000", "DEJ2000");
     }
 
     @Override

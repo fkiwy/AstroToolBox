@@ -180,8 +180,8 @@ public class SSOCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("orbital incl. (deg)", roundTo3DecNZ(incl), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("perih. passage time", convertMJDToDateTime(new BigDecimal(Double.toString(pertime))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("observation time", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dist. to prediced ra (arcsec)", roundTo3DecNZ(dra), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dist. to prediced dec (arcsec)", roundTo3DecNZ(ddec), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dist. to predict ra (arcsec)", roundTo3DecNZ(dra), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dist. to predict dec (arcsec)", roundTo3DecNZ(ddec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator()));
@@ -263,7 +263,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(SSO_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl("neowiser_p1ba_mch", ra, dec, searchRadius / DEG_ARCSEC);
     }
 
     @Override
@@ -274,7 +274,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to prediced ra (arcsec),dist. to prediced dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
+        String columnTitles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to predict ra (arcsec),dist. to predict dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
         return columnTitles.split(",", 15);
     }
 

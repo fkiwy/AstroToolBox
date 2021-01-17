@@ -251,14 +251,12 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, GAIA_CATALOG_ID_VIZIER, "ra", "dec");
-        //return createIrsaUrl(GAIA_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, GAIA_CATALOG_ID, "ra", "dec");
     }
 
     @Override
     public String getProperMotionQueryUrl() {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=" + createProperMotionQuery();
-        //return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
     }
 
     private String createProperMotionQuery() {
@@ -283,8 +281,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       teff_val,");
         addRow(query, "       radius_val,");
         addRow(query, "       lum_val");
-        addRow(query, "FROM   \"" + GAIA_CATALOG_ID_VIZIER + "\"");
-        //addRow(query, "FROM   " + GAIA_CATALOG_ID);
+        addRow(query, "FROM   \"" + GAIA_CATALOG_ID + "\"");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
         return encodeQuery(query.toString());

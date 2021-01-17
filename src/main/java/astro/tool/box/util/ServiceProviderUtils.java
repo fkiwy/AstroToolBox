@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class ServiceProviderUtils {
 
-    private static final String SERVICE_NOT_AVAILABLE = "%s is currently unavailable!";
+    private static final String SERVICE_NOT_AVAILABLE = "%s is currently not available!";
 
     public static String createIrsaUrl(String catalogId, double degRA, double degDE, double degRadius) {
         return IRSA_BASE_URL + "?table=" + catalogId + "&RA=" + degRA + "&DEC=" + degDE + "&SR=" + degRadius + "&format=csv";
@@ -34,18 +34,6 @@ public class ServiceProviderUtils {
 
     public static String createSdssUrl(double degRA, double degDE, double degRadius) {
         return SDSS_BASE_URL + "/SkyServerWS/ImagingQuery/Cone?ra=" + degRA + "&dec=" + degDE + "&radius=" + degRadius + "&limit=0&format=csv&imgparams=objid,run,rerun,camcol,field,obj,ra,dec,raErr,decErr,type,clean,mjd,specObjID,u,g,r,i,z,Err_u,Err_g,Err_r,Err_i,Err_z";
-    }
-
-    public static String createVHSUrl(double degRA, double degDE, double degRadius) {
-        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20SrcID,%20RAJ2000,%20DEJ2000,%20Mclass,%20Yap3,%20Jap3,%20Hap3,%20Ksap3,%20e_Yap3,%20e_Jap3,%20e_Hap3,%20e_Ksap3,%20%22Y-Jpnt%22,%20%22J-Hpnt%22,%20%22H-Kspnt%22,%20%22J-Kspnt%22%20FROM%20%22II/359/vhs_dr4%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RAJ2000,%20DEJ2000),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
-    }
-
-    public static String createGaiaWDUrl(double degRA, double degDE, double degRadius) {
-        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20WD,%20Source,%20RA_ICRS,%20DE_ICRS,%20Plx,%20pmRA,%20pmDE,%20%22Gmag%22,%20BPmag,%20RPmag,%20SDSS,%20umag,%20%22gmag%22,%20rmag,%20imag,%20zmag,%20Pwd,%20TeffH,%20loggH,%20MassH,%20TeffHe,%20loggHe,%20MassHe%20FROM%20%22J/MNRAS/482/4570/gaia2wd%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RA_ICRS,%20DE_ICRS),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
-    }
-
-    public static String createSpitzerUrl(double degRA, double degDE, double degRadius) {
-        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20RAJ2000,%20DEJ2000,%20%22[3.6]%22,%20%22e_[3.6]%22,%20%22[4.5]%22,%20%22e_[4.5]%22,%20%22S/G1%22,%20%22S/G2%22,%20%22[3.4]%22,%20%22e_[3.4]%22,%20%22[4.6]%22,%20%22e_[4.6]%22,%20%22[12]%22,%20%22e_[12]%22,%20%22[22]%22,%20%22e_[22]%22,%20Jmag,%20e_Jmag,%20Hmag,%20e_Hmag,%20Kmag,%20e_Kmag%20FROM%20%22J/AJ/144/148/table3%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20RAJ2000,%20DEJ2000),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
     public static String createVizieRUrl(double degRA, double degDE, double degRadius, String tableName, String raColName, String decColName) {

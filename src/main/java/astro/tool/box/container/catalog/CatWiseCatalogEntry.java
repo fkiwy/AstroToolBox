@@ -256,14 +256,12 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, CATWISE_CATALOG_ID_VISIER, "RA_ICRS", "DE_ICRS");
-        //return createIrsaUrl(CATWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, CATWISE_CATALOG_ID, "RA_ICRS", "DE_ICRS");
     }
 
     @Override
     public String getProperMotionQueryUrl() {
         return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=" + createProperMotionQuery();
-        //return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
     }
 
     private String createProperMotionQuery() {
@@ -290,8 +288,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
         addRow(query, "       e_plx2,");
         addRow(query, "       ccf,");
         addRow(query, "       abf");
-        addRow(query, "FROM   \"" + CATWISE_CATALOG_ID_VISIER + "\"");
-        //addRow(query, "FROM   " + CATWISE_CATALOG_ID);
+        addRow(query, "FROM   \"" + CATWISE_CATALOG_ID + "\"");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm / ARCSEC_MAS + ")");
         return encodeQuery(query.toString());

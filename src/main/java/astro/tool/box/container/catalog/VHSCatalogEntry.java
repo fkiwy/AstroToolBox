@@ -226,7 +226,7 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVHSUrl(ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/359/vhs_dr4", "RAJ2000", "DEJ2000");
     }
 
     @Override

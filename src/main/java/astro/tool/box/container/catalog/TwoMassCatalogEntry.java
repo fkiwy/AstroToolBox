@@ -316,8 +316,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, TWO_MASS_CATALOG_ID_VIZIER, "RAJ2000", "DEJ2000");
-        //return createIrsaUrl(TWO_MASS_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/246/out", "RAJ2000", "DEJ2000");
     }
 
     @Override

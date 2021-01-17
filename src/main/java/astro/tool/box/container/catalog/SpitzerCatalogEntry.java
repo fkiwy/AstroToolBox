@@ -275,7 +275,7 @@ public class SpitzerCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createSpitzerUrl(ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/AJ/144/148/table3", "RAJ2000", "DEJ2000");
     }
 
     @Override
