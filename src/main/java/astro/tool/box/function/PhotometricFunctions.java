@@ -121,17 +121,16 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
-        double toleranceValue;
+        double maxDeviation;
         if (minEntry instanceof MainSequenceLookup) {
-            toleranceValue = 1.0;
+            maxDeviation = 1.0;
         } else {
-            toleranceValue = 0.2;
+            maxDeviation = 0.2;
         }
-        //System.out.println("toleranceValue=" + toleranceValue);
         double avgColorValue = (minColorValue + maxColorValue) / 2;
-        if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + toleranceValue) {
+        if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + maxDeviation) {
             return new LookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
-        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - toleranceValue) {
+        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - maxDeviation) {
             return new LookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
         } else {
             return null;

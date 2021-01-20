@@ -105,7 +105,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("2MASS")];
+        sourceId = values[columns.get("2MASS")].trim();
         ra = toDouble(values[columns.get("RAJ2000")]);
         dec = toDouble(values[columns.get("DEJ2000")]);
         Jmag = toDouble(values[columns.get("Jmag")]);
@@ -316,8 +316,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, TWO_MASS_CATALOG_ID_VIZIER, "RAJ2000", "DEJ2000");
-        //return createIrsaUrl(TWO_MASS_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/246/out", "RAJ2000", "DEJ2000");
     }
 
     @Override

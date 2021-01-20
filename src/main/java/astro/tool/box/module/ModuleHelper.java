@@ -15,6 +15,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
@@ -53,9 +54,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -94,7 +93,9 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "v2.2.2";
+    public static final String PGM_VERSION = "2.3.0";
+    public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
+    public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
@@ -102,8 +103,6 @@ public class ModuleHelper {
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
-
-    public static final LocalDate GAIA_DR3_RELEASE_DATE = LocalDate.of(2020, Month.DECEMBER, 3);
 
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
@@ -116,28 +115,28 @@ public class ModuleHelper {
         // Plug in catalogs here
         SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
         catalogInstances.put(simbadCatalogEntry.getCatalogName(), simbadCatalogEntry);
-        GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
-        catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
-        if (LocalDate.now().isAfter(GAIA_DR3_RELEASE_DATE)) {
-            GaiaDR3CatalogEntry gaiaDR3CatalogEntry = new GaiaDR3CatalogEntry();
-            catalogInstances.put(gaiaDR3CatalogEntry.getCatalogName(), gaiaDR3CatalogEntry);
-        }
         AllWiseCatalogEntry allWiseCatalogEntry = new AllWiseCatalogEntry();
         catalogInstances.put(allWiseCatalogEntry.getCatalogName(), allWiseCatalogEntry);
         CatWiseCatalogEntry catWiseCatalogEntry = new CatWiseCatalogEntry();
         catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
         UnWiseCatalogEntry unWiseCatalogEntry = new UnWiseCatalogEntry();
         catalogInstances.put(unWiseCatalogEntry.getCatalogName(), unWiseCatalogEntry);
+        GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
+        catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
+        GaiaDR3CatalogEntry gaiaDR3CatalogEntry = new GaiaDR3CatalogEntry();
+        catalogInstances.put(gaiaDR3CatalogEntry.getCatalogName(), gaiaDR3CatalogEntry);
+        NoirlabCatalogEntry noirlabCatalogEntry = new NoirlabCatalogEntry();
+        catalogInstances.put(noirlabCatalogEntry.getCatalogName(), noirlabCatalogEntry);
         PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
         catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
         SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
-        TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
-        catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
         GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
+        TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
+        catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         SpitzerCatalogEntry spitzerCatalogEntry = new SpitzerCatalogEntry();
         catalogInstances.put(spitzerCatalogEntry.getCatalogName(), spitzerCatalogEntry);
 
@@ -211,7 +210,7 @@ public class ModuleHelper {
     }
 
     public static String header(String text) {
-        return html("<span style='background:#BEBEBE;color:#880000'>&nbsp;<u>" + text + "</u>&nbsp;</span>");
+        return html("<span style='background:gray;color:white'>&nbsp;" + text + "&nbsp;</span>");
     }
 
     public static String html(String text) {
@@ -282,7 +281,11 @@ public class ModuleHelper {
 
     public static void copyCoordsToClipboard(double degRA, double degDE) {
         String coordsToCopy = roundTo7DecNZ(degRA) + " " + roundTo7DecNZ(degDE);
-        StringSelection stringSelection = new StringSelection(coordsToCopy);
+        copyToClipboard(coordsToCopy);
+    }
+
+    public static void copyToClipboard(String toCopy) {
+        StringSelection stringSelection = new StringSelection(toCopy);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
     }
@@ -468,6 +471,12 @@ public class ModuleHelper {
                 spectralTypes.add(WD_WARNING);
             }
         }
+        if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+            GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                spectralTypes.add(WD_WARNING);
+            }
+        }
         CollectedObject collectedObject = new CollectedObject.Builder()
                 .setDiscoveryDate(LocalDateTime.now())
                 .setObjectType(objectType)
@@ -514,7 +523,7 @@ public class ModuleHelper {
             tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
         }
 
-        message.setText("Object has been added to collection!");
+        message.setText("Added!");
         messageTimer.restart();
     }
 

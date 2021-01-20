@@ -9,10 +9,12 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.LookupTable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -116,6 +118,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     // Most likely spectral type
     private String spt;
+
+    private LookupTable table;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -302,6 +306,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.g, g_mag);
         bands.put(Band.r, r_mag);
         bands.put(Band.i, i_mag);
         bands.put(Band.z, z_mag);
@@ -316,6 +321,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
         return colors;
+    }
+
+    @Override
+    public void setLookupTable(LookupTable table) {
+        this.table = table;
     }
 
     @Override
@@ -451,7 +461,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            return u_mag - g_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (u_mag - ABToVega.u.val) - (g_mag - ABToVega.g.val);
+            } else {
+                return u_mag - g_mag;
+            }
         }
     }
 
@@ -459,7 +473,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            return g_mag - r_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (g_mag - ABToVega.g.val) - (r_mag - ABToVega.r.val);
+            } else {
+                return g_mag - r_mag;
+            }
         }
     }
 
@@ -467,7 +485,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            return r_mag - i_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (r_mag - ABToVega.r.val) - (i_mag - ABToVega.i.val);
+            } else {
+                return r_mag - i_mag;
+            }
         }
     }
 
@@ -475,7 +497,11 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            return i_mag - z_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (i_mag - ABToVega.i.val) - (z_mag - ABToVega.z.val);
+            } else {
+                return i_mag - z_mag;
+            }
         }
     }
 

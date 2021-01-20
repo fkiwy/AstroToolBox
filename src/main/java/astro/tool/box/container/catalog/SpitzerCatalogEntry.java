@@ -20,8 +20,7 @@ import java.util.Objects;
 
 public class SpitzerCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Spitzer/WISE photometric catalog";
-    public static final String CATALOG_SHORT_NAME = "Spitzer/WISE";
+    public static final String CATALOG_NAME = "Spitzer/WISE";
 
     // Unique source identifier
     private String sourceId;
@@ -276,7 +275,7 @@ public class SpitzerCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createSpitzerUrl(ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/AJ/144/148/table3", "RAJ2000", "DEJ2000");
     }
 
     @Override
@@ -324,19 +323,20 @@ public class SpitzerCatalogEntry implements CatalogEntry {
         bands.put(Band.K, Kmag);
         bands.put(Band.W1, W1mag);
         bands.put(Band.W2, W2mag);
+        bands.put(Band.W3, W3mag);
         return bands;
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.CH1_CH2, getCH1_CH2());
-        colors.put(Color.J_H, getJ_H());
-        colors.put(Color.H_K, getH_K());
+        //colors.put(Color.J_H, getJ_H());
+        //colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
         colors.put(Color.W1_W4, getW1_W4());
+        colors.put(Color.W2_W3, getW2_W3());
         colors.put(Color.J_W2, getJ_W2());
         colors.put(Color.K_W1, getK_W1());
         return colors;

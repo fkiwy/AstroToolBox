@@ -163,7 +163,7 @@ public class WhiteDwarfTab {
         remarks.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
         remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " (*), " + LookupTable.WHITE_DWARFS_PURE_HE + " (*),"));
         remarks.add(new JLabel(LookupTable.WHITE_DWARFS_DA + " (**), " + LookupTable.WHITE_DWARFS_DB + " (**)"));
-        remarks.add(new JLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r, r-i and r-J"));
+        remarks.add(new JLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r, r-i, i-z and r-J"));
         String hyperlink = "https://vizier.u-strasbg.fr/viz-bin/VizieR?-source=J/A%2BA/565/A11";
         remarks.add(createHyperlink("(*) Gaia photometry for white dwarfs (Carrasco+, 2014)", hyperlink));
         hyperlink = "http://www.astro.umontreal.ca/~bergeron/CoolingModels";
@@ -179,7 +179,7 @@ public class WhiteDwarfTab {
             resultRows.add(resultValues.split(",", 7));
         });
 
-        String titles = "teff,mass (Msun),logg,age,matched colors,nearest color,gap to nearest color";
+        String titles = "teff,mass (Msun),logg,age,matched color,nearest color,difference";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(resultRows.toArray(rows), columns);

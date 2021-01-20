@@ -10,6 +10,7 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
@@ -54,6 +55,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -457,7 +459,10 @@ public class CatalogQueryTab {
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
         detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
+                new LineBorder(selectedEntry.getCatalogColor(), 5),
+                selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)",
+                TitledBorder.LEFT,
+                TitledBorder.TOP
         ));
 
         List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
@@ -501,6 +506,7 @@ public class CatalogQueryTab {
     //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
+            catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
             List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
 
             List<String[]> spectralTypes = new ArrayList<>();
@@ -511,7 +517,7 @@ public class CatalogQueryTab {
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,radius (Rsun),mass (Msun),matched colors,nearest color,gap to nearest color";
+            String titles = "spt,teff,radius (Rsun),mass (Msun),matched color,nearest color,difference";
             String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
@@ -561,6 +567,13 @@ public class CatalogQueryTab {
                     warning = true;
                 }
             }
+            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    warning = true;
+                }
+            }
             if (!warning) {
                 remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
                 remarks.add(new JLabel("to early type as well to late type stars."));
@@ -587,7 +600,7 @@ public class CatalogQueryTab {
 
             collectPanel.add(new JLabel("Object type:"));
 
-            JComboBox objectTypes = new JComboBox<>(ObjectType.labels());
+            JComboBox objectTypes = new JComboBox(ObjectType.labels());
             collectPanel.add(objectTypes);
 
             JButton collectButton = new JButton("Add to object collection");

@@ -9,11 +9,13 @@ import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.Epoch;
+import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.tab.ImageViewerTab;
@@ -96,7 +98,7 @@ public class InfoSheet {
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
             }).collect(Collectors.toList());
             brownDwarfsLookupService = new SpectralTypeLookupService(entries);
         }
@@ -306,8 +308,8 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)", mainHeader));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M-L-T-Y dwarfs spectral type lookup (***)", null));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type lookup (***)", null, LookupTable.BROWN_DWARFS));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});
@@ -355,9 +357,10 @@ public class InfoSheet {
         return true;
     }
 
-    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader) throws Exception {
+    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader, LookupTable lookupTable) throws Exception {
         List<BatchResult> batchResults = new ArrayList<>();
         for (CatalogEntry catalogEntry : catalogEntries) {
+            catalogEntry.setLookupTable(lookupTable);
             List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
             if (catalogEntry instanceof SimbadCatalogEntry) {
                 SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
@@ -377,6 +380,12 @@ public class InfoSheet {
             }
             if (catalogEntry instanceof GaiaCatalogEntry) {
                 GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
+                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                    spectralTypes.add(WD_WARNING);
+                }
+            }
+            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     spectralTypes.add(WD_WARNING);
                 }

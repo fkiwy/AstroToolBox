@@ -20,8 +20,7 @@ import java.util.Map;
 
 public class GaiaWDCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Gaia DR2 white dwarf candidates";
-    public static final String CATALOG_SHORT_NAME = "Gaia DR2 WD";
+    public static final String CATALOG_NAME = "Gaia DR2 WD";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -272,7 +271,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createGaiaWDUrl(ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/MNRAS/482/4570/gaia2wd", "RA_ICRS", "DE_ICRS");
     }
 
     @Override

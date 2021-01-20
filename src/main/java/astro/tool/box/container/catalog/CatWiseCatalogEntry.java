@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
+public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Artifact {
 
-    public static final String CATALOG_NAME = "CatWISE";
+    public static final String CATALOG_NAME = "CatWISE2020";
 
     // Unique WISE source designation
     private String sourceId;
@@ -43,6 +43,12 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     // Instrumental profile-fit photometry flux uncertainty in mag units, band 2
     private double W2_err;
+
+    // Instrumental profile-fit photometry S/N ratio, band 1
+    private double W1_snr;
+
+    // Instrumental profile-fit photometry S/N ratio, band 2
+    private double W2_snr;
 
     // Apparent motion in RA
     private double pmra;
@@ -119,26 +125,28 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
     public CatWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("source_name")];
-        ra = toDouble(values[columns.get("ra")]);
-        dec = toDouble(values[columns.get("dec")]);
-        W1mag = toDouble(values[columns.get("w1mpro")]);
-        W1_err = toDouble(values[columns.get("w1sigmpro")]);
-        W2mag = toDouble(values[columns.get("w2mpro")]);
-        W2_err = toDouble(values[columns.get("w2sigmpro")]);
-        meanObsMJD = toDouble(values[columns.get("meanobsmjd")]);
-        ra_pm = toDouble(values[columns.get("ra_pm")]);
-        dec_pm = toDouble(values[columns.get("dec_pm")]);
-        pmra = toDouble(values[columns.get("pmra")]) * ARCSEC_MAS;
-        pmdec = toDouble(values[columns.get("pmdec")]) * ARCSEC_MAS;
-        pmra_err = toDouble(values[columns.get("sigpmra")]) * ARCSEC_MAS;
-        pmdec_err = toDouble(values[columns.get("sigpmdec")]) * ARCSEC_MAS;
-        par_pm = toDouble(values[columns.get("par_pm")]) * ARCSEC_MAS;
-        par_pmsig = toDouble(values[columns.get("par_pmsig")]) * ARCSEC_MAS;
-        par_stat = toDouble(values[columns.get("par_stat")]) * ARCSEC_MAS;
-        par_sigma = toDouble(values[columns.get("par_sigma")]) * ARCSEC_MAS;
-        cc_flags = values[columns.get("cc_flags")];
-        ab_flags = values[columns.get("ab_flags")];
+        sourceId = values[columns.get("Name")];
+        ra = toDouble(values[columns.get("RA_ICRS")]);
+        dec = toDouble(values[columns.get("DE_ICRS")]);
+        W1mag = toDouble(values[columns.get("W1mproPM")]);
+        W1_err = toDouble(values[columns.get("e_W1mproPM")]);
+        W2mag = toDouble(values[columns.get("W2mproPM")]);
+        W2_err = toDouble(values[columns.get("e_W2mproPM")]);
+        W1_snr = toDouble(values[columns.get("snrW1pm")]);
+        W2_snr = toDouble(values[columns.get("snrW2pm")]);
+        meanObsMJD = toDouble(values[columns.get("MJD")]);
+        ra_pm = toDouble(values[columns.get("RAPMdeg")]);
+        dec_pm = toDouble(values[columns.get("DEPMdeg")]);
+        pmra = toDouble(values[columns.get("pmRA")]) * ARCSEC_MAS;
+        pmdec = toDouble(values[columns.get("pmDE")]) * ARCSEC_MAS;
+        pmra_err = toDouble(values[columns.get("e_pmRA")]) * ARCSEC_MAS;
+        pmdec_err = toDouble(values[columns.get("e_pmDE")]) * ARCSEC_MAS;
+        par_pm = toDouble(values[columns.get("plx1")]) * ARCSEC_MAS;
+        par_pmsig = toDouble(values[columns.get("e_plx1")]) * ARCSEC_MAS;
+        par_stat = toDouble(values[columns.get("plx2")]) * ARCSEC_MAS;
+        par_sigma = toDouble(values[columns.get("e_plx2")]) * ARCSEC_MAS;
+        cc_flags = values[columns.get("ccf")];
+        ab_flags = values[columns.get("abf")];
     }
 
     @Override
@@ -156,6 +164,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         catalogElements.add(new CatalogElement("W1 err", roundTo3DecNZ(W1_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 (mag)", roundTo3DecNZ(W2mag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("W2 err", roundTo3DecNZ(W2_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W1 snr", roundTo1DecNZ(W1_snr), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("W2 snr", roundTo1DecNZ(W2_snr), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo2DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("pmra err", roundTo2DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo2DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
@@ -180,6 +190,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         sb.append(", W1_err=").append(W1_err);
         sb.append(", W2mag=").append(W2mag);
         sb.append(", W2_err=").append(W2_err);
+        sb.append(", W1_snr=").append(W1_snr);
+        sb.append(", W2_snr=").append(W2_snr);
         sb.append(", pmra=").append(pmra);
         sb.append(", pmra_err=").append(pmra_err);
         sb.append(", pmdec=").append(pmdec);
@@ -207,8 +219,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 53 * hash + Objects.hashCode(this.sourceId);
+        int hash = 7;
+        hash = 73 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -244,39 +256,41 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(CATWISE_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, CATWISE_CATALOG_ID, "RA_ICRS", "DE_ICRS");
     }
 
     @Override
     public String getProperMotionQueryUrl() {
-        return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=" + createProperMotionQuery();
     }
 
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
-        addRow(query, "SELECT source_name,");
-        addRow(query, "       ra,");
-        addRow(query, "       dec,");
-        addRow(query, "       w1mpro,");
-        addRow(query, "       w1sigmpro,");
-        addRow(query, "       w2mpro,");
-        addRow(query, "       w2sigmpro,");
-        addRow(query, "       meanobsmjd,");
-        addRow(query, "       ra_pm,");
-        addRow(query, "       dec_pm,");
-        addRow(query, "       pmra,");
-        addRow(query, "       pmdec,");
-        addRow(query, "       sigpmra,");
-        addRow(query, "       sigpmdec,");
-        addRow(query, "       par_pm,");
-        addRow(query, "       par_pmsig,");
-        addRow(query, "       par_stat,");
-        addRow(query, "       par_sigma,");
-        addRow(query, "       cc_flags,");
-        addRow(query, "       ab_flags");
-        addRow(query, "FROM   " + CATWISE_CATALOG_ID);
-        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-        addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
+        addRow(query, "SELECT Name,");
+        addRow(query, "       RA_ICRS,");
+        addRow(query, "       DE_ICRS,");
+        addRow(query, "       W1mproPM,");
+        addRow(query, "       e_W1mproPM,");
+        addRow(query, "       W2mproPM,");
+        addRow(query, "       e_W2mproPM,");
+        addRow(query, "       snrW1pm,");
+        addRow(query, "       snrW2pm,");
+        addRow(query, "       MJD,");
+        addRow(query, "       RAPMdeg,");
+        addRow(query, "       DEPMdeg,");
+        addRow(query, "       pmRA,");
+        addRow(query, "       pmDE,");
+        addRow(query, "       e_pmRA,");
+        addRow(query, "       e_pmDE,");
+        addRow(query, "       plx1,");
+        addRow(query, "       e_plx1,");
+        addRow(query, "       plx2,");
+        addRow(query, "       e_plx2,");
+        addRow(query, "       ccf,");
+        addRow(query, "       abf");
+        addRow(query, "FROM   \"" + CATWISE_CATALOG_ID + "\"");
+        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
+        addRow(query, "AND   (SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm / ARCSEC_MAS + ")");
         return encodeQuery(query.toString());
     }
 
@@ -287,14 +301,14 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getW1_W2());
-        return columnValues.split(",", 20);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo1Dec(W1_snr) + "," + roundTo1Dec(W2_snr) + "," + roundTo2Dec(pmra) + "," + roundTo2Dec(pmra_err) + "," + roundTo2Dec(pmdec) + "," + roundTo2Dec(pmdec_err) + "," + roundTo1Dec(par_pm) + "," + roundTo1Dec(par_pmsig) + "," + roundTo1Dec(par_stat) + "," + roundTo1Dec(par_sigma) + "," + cc_flags + "," + ab_flags + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getW1_W2());
+        return columnValues.split(",", 22);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
-        return columnTitles.split(",", 20);
+        String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W1 snr,W2 snr,pmra,pmra err,pmdec,pmdec err,plx PM desc-asc (mas),plx PM desc-asc err,plx stat. sol. (mas),plx stat. sol. err,cc flags,ab flags,tpm (mas/yr),W1-W2";
+        return columnTitles.split(",", 22);
     }
 
     @Override
@@ -463,20 +477,22 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery {
         return dec_pm;
     }
 
+    @Override
+    public String getCc_flags() {
+        return cc_flags;
+    }
+
+    @Override
+    public String getAb_flags() {
+        return ab_flags;
+    }
+
     public double getW1_W2() {
         if (W1mag == 0 || W2mag == 0) {
             return 0;
         } else {
             return W1mag - W2mag;
         }
-    }
-
-    public String getCc_flags() {
-        return cc_flags;
-    }
-
-    public String getAb_flags() {
-        return ab_flags;
     }
 
 }

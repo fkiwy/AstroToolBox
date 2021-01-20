@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>astro.tool.box</groupId>
     <artifactId>AstroToolBox</artifactId>
-    <version>2.2.2</version>
+    <version>2.3.0</version>
     <packaging>jar</packaging>
     <name>AstroToolBox</name>
     <properties>
@@ -63,6 +63,11 @@
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
             <version>5.5.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.20</version>
         </dependency>
     </dependencies>
 </project>

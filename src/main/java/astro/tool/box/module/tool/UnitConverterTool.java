@@ -43,11 +43,11 @@ public class UnitConverterTool {
             mainPanel.add(valueToConvert);
 
             mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
-            JComboBox<Unit> unitsToConvertFrom = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            JComboBox<Unit> unitsToConvertFrom = new JComboBox(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             mainPanel.add(unitsToConvertFrom);
 
             mainPanel.add(new JLabel("To: ", JLabel.RIGHT));
-            JComboBox<Unit> unitsToConvertTo = new JComboBox<>(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
+            JComboBox<Unit> unitsToConvertTo = new JComboBox(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             unitsToConvertTo.setSelectedItem(Unit.MAS);
             mainPanel.add(unitsToConvertTo);
 

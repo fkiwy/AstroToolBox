@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
-    public static final String CATALOG_NAME = "Gaia EDR3";
+    public static final String CATALOG_NAME = "Gaia eDR3";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -259,7 +259,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       g_rp,");
         addRow(query, "       dr2_radial_velocity,");
         addRow(query, "       dr2_radial_velocity_error");
-        addRow(query, "FROM   " + GAIA_DR3_CATALOG_ID);
+        addRow(query, "FROM   gaiaedr3.gaia_source");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         return query.toString();
     }

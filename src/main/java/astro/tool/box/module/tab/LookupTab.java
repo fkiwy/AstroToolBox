@@ -54,7 +54,7 @@ public class LookupTab {
 
             filePanel.add(new JLabel("Lookup table:"));
 
-            JComboBox lookupTables = new JComboBox<>(LookupTable.values());
+            JComboBox lookupTables = new JComboBox(LookupTable.values());
             filePanel.add(lookupTables);
             lookupTables.addActionListener((ActionEvent evt) -> {
                 String fileName;
@@ -62,27 +62,27 @@ public class LookupTab {
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = "Main sequence lookup table (A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence by Eric Mamajek)";
+                        tableName = "Main sequence lookup table (A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence ~ Eric Mamajek)";
                         break;
-                    case MLTY_DWARFS:
+                    case BROWN_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
-                        tableName = "M, L, T & Y dwarfs lookup table";
+                        tableName = "Brown dwarfs lookup table (Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey ~ William Best)";
                         break;
                     case WHITE_DWARFS_PURE_H:
                         fileName = "/WhiteDwarfPureHLookupTable.csv";
-                        tableName = "White dwarfs pure H lookup table (Gaia photometry for white dwarfs by J. M. Carrasco)";
+                        tableName = "White dwarfs pure H lookup table (Gaia photometry for white dwarfs ~ J. M. Carrasco)";
                         break;
                     case WHITE_DWARFS_PURE_HE:
                         fileName = "/WhiteDwarfPureHeLookupTable.csv";
-                        tableName = "White dwarfs pure He lookup table (Gaia photometry for white dwarfs by J. M. Carrasco)";
+                        tableName = "White dwarfs pure He lookup table (Gaia photometry for white dwarfs ~ J. M. Carrasco)";
                         break;
                     case WHITE_DWARFS_DA:
                         fileName = "/WhiteDwarfDALookupTable.csv";
-                        tableName = "White dwarfs DA lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs by Pierre Bergeron)";
+                        tableName = "White dwarfs DA lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs ~ Pierre Bergeron)";
                         break;
                     case WHITE_DWARFS_DB:
                         fileName = "/WhiteDwarfDBLookupTable.csv";
-                        tableName = "White dwarfs DB lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs by Pierre Bergeron)";
+                        tableName = "White dwarfs DB lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs ~ Pierre Bergeron)";
                         break;
                     default:
                         fileName = "";

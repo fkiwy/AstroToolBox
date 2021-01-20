@@ -60,10 +60,7 @@ public class DistanceLookupResult {
         if (!Objects.equals(this.spt, other.spt)) {
             return false;
         }
-        if (this.bandKey != other.bandKey) {
-            return false;
-        }
-        return true;
+        return this.bandKey == other.bandKey;
     }
 
     public Band getBandKey() {

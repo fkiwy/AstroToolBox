@@ -3,6 +3,7 @@ package astro.tool.box.container.catalog;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
+import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import static astro.tool.box.util.Constants.LINE_SEP;
 import java.util.List;
@@ -18,6 +19,9 @@ public interface CatalogEntry {
             entryData.append(LINE_SEP).append(catalogElement.getName()).append(" = ").append(catalogElement.getValue());
         }
         return entryData.toString();
+    }
+
+    default void setLookupTable(LookupTable table) {
     }
 
     CatalogEntry copy();
@@ -81,7 +85,7 @@ public interface CatalogEntry {
     String getSpt();
 
     void setSpt(String spt);
-    
+
     List<CatalogElement> getCatalogElements();
 
     double getPlx();

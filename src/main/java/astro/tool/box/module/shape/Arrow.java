@@ -6,6 +6,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 public class Arrow implements Drawable {
 
@@ -43,6 +44,7 @@ public class Arrow implements Drawable {
         //double xPlus = (size / 2) * cos(vectorAngle);
         //double yPlus = (size / 2) * sin(vectorAngle);
         g2d.setColor(color);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(STROKE_WIDTH));
         g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xLeft), (int) round(y2 + yLeft));
         g2d.drawLine((int) round(x2), (int) round(y2), (int) round(x2 + xRight), (int) round(y2 + yRight));

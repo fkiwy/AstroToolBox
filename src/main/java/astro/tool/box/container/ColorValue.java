@@ -42,10 +42,7 @@ public class ColorValue {
         if (Double.doubleToLongBits(this.value) != Double.doubleToLongBits(other.value)) {
             return false;
         }
-        if (this.color != other.color) {
-            return false;
-        }
-        return true;
+        return this.color == other.color;
     }
 
     public Color getColor() {

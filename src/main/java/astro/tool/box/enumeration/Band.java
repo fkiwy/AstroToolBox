@@ -12,6 +12,7 @@ public enum Band {
     K("K"),
     W1("W1"),
     W2("W2"),
+    W3("W3"),
     G("G");
 
     public String val;

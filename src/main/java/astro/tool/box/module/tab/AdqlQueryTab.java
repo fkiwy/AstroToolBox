@@ -7,6 +7,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.exception.ADQLException;
@@ -122,7 +123,7 @@ public class AdqlQueryTab {
                     String query = textEditor.getText();
                     if (query.isEmpty() || query.contains("Find all comovers")) {
                         CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                        if (selectedEntry != null && selectedEntry instanceof GaiaCatalogEntry) {
+                        if (selectedEntry != null && (selectedEntry instanceof GaiaCatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
                             String comoverQuery = createComoverQuery();
                             comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
                             comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
@@ -158,7 +159,7 @@ public class AdqlQueryTab {
                 }
             });
 
-            String saveMessage = "File has been saved!";
+            String saveMessage = "File saved!";
             JLabel message = createLabel("", JColor.DARKER_GREEN);
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
@@ -532,7 +533,7 @@ public class AdqlQueryTab {
 
     private String createComoverQuery() {
         StringBuilder query = new StringBuilder();
-        addRow(query, "-- Find all comovers in Gaia DR2 within a radius of one degree, having proper motions within +/- 10% of the target's ones");
+        addRow(query, "-- Find all comovers in Gaia within a radius of one degree, having proper motions within +/- 10% of the target's ones");
         addRow(query, "SELECT ra AS RA,");
         addRow(query, "       dec AS dec,");
         addRow(query, "       source_id AS source_id,");

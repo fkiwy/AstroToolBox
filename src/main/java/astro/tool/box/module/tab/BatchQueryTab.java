@@ -9,6 +9,7 @@ import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -169,7 +170,7 @@ public class BatchQueryTab {
 
             centerRow.add(new JLabel("Lookup table:"));
 
-            lookupTables = new JComboBox<>(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.MLTY_DWARFS});
+            lookupTables = new JComboBox(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.BROWN_DWARFS});
             centerRow.add(lookupTables);
 
             JButton queryButton = new JButton("Start query");
@@ -342,11 +343,11 @@ public class BatchQueryTab {
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
                 break;
-            case MLTY_DWARFS:
+            case BROWN_DWARFS:
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 22));
+                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -370,7 +371,7 @@ public class BatchQueryTab {
             }
             while (scanner.hasNextLine()) {
                 if (toCancel) {
-                    echoField.setText("Query has been cancelled.");
+                    echoField.setText("Query cancelled.");
                     echoField.setBackground(JColor.LIGHT_YELLOW.val);
                     future.complete(AsynchResult.CANCELLED);
                     isProcessing = false;
@@ -396,6 +397,7 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
+                    catalogEntry.setLookupTable(selectedTable);
                     List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, includeColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
@@ -415,6 +417,12 @@ public class BatchQueryTab {
                     }
                     if (catalogEntry instanceof GaiaCatalogEntry) {
                         GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
+                        if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                            spectralTypes.add(WD_WARNING);
+                        }
+                    }
+                    if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                        GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                         if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                             spectralTypes.add(WD_WARNING);
                         }

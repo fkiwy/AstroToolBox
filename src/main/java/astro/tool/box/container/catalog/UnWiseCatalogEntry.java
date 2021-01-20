@@ -5,13 +5,14 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import static astro.tool.box.util.Utils.addRow;
+import static astro.tool.box.util.Utils.encodeQuery;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -202,7 +203,26 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createUnWiseUrl(ra, dec, searchRadius / DEG_ARCSEC);
+        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
+    }
+
+    private String createCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT unwise_objid,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       mag_w1_vg,");
+        addRow(query, "       mag_w2_vg,");
+        addRow(query, "       w1_w2_vg,");
+        addRow(query, "       qf_w1,");
+        addRow(query, "       qf_w2,");
+        addRow(query, "       flags_unwise_w1,");
+        addRow(query, "       flags_unwise_w2,");
+        addRow(query, "       flags_info_w1,");
+        addRow(query, "       flags_info_w2");
+        addRow(query, "FROM   unwise_dr1.object");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
     }
 
     @Override
