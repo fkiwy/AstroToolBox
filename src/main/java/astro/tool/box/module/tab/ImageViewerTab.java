@@ -3771,10 +3771,11 @@ public class ImageViewerTab {
         if (imageFound) {
             downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);/*
         } else {
-            imageFound = downloadDecalsCutouts(requestedEpoch, band, images, "des-dr1", 2015);
+            imageFound = downloadDecalsCutouts(requestedEpoch, band, images, "des-dr2", 2017);
         }
         if (imageFound) {*/
-            downloadDecalsCutouts(requestedEpoch, band, images, "dr8", 2019);
+            downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr8", 2019);
+            downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr9", 2020);
         }
     }
 
@@ -4238,8 +4239,14 @@ public class ImageViewerTab {
 
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-        imageViewerTab.getUnwiseCutouts().setSelected(unwiseCutouts.isSelected());
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
+        if (decalsCutouts.isSelected()) {
+            imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
+            imageViewerTab.getDecalsCutouts().setSelected(decalsCutouts.isSelected());
+        } else {
+            imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
+            imageViewerTab.getUnwiseCutouts().setSelected(unwiseCutouts.isSelected());
+        }
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.setQuadrantCount(quadrantCount);
         imageViewerTab.getZoomSlider().setValue(ZOOM);
@@ -5433,6 +5440,10 @@ public class ImageViewerTab {
         return unwiseCutouts;
     }
 
+    public JCheckBox getDecalsCutouts() {
+        return decalsCutouts;
+    }
+
     public Timer getTimer() {
         return timer;
     }
@@ -5484,6 +5495,10 @@ public class ImageViewerTab {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public void setPixelScale(double pixelScale) {
+        this.pixelScale = pixelScale;
     }
 
     public void setAsyncDownloads(boolean asyncDownloads) {
