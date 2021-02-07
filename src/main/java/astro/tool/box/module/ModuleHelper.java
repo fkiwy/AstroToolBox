@@ -93,7 +93,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.3.0";
+    public static final String PGM_VERSION = "2.3.1";
     public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
     public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
 
