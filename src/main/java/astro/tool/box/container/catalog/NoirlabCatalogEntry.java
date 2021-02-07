@@ -431,7 +431,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getMagnitudes() {
-        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s, VR=%s, Y=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag), roundTo3DecNZ(vr_mag), roundTo3DecNZ(y_mag));
+        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s; VR=%s; Y=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag), roundTo3DecNZ(vr_mag), roundTo3DecNZ(y_mag));
     }
 
     @Override
