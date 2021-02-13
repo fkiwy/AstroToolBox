@@ -2497,17 +2497,29 @@ public class ImageViewerTab {
                 decalsImage = null;
                 processedDecalsImage = null;
                 if (legacyImages) {
-                    CompletableFuture.supplyAsync(() -> decalsImage = fetchDecalsImage(targetRa, targetDec, size));
+                    CompletableFuture.supplyAsync(() -> {
+                        decalsImage = fetchDecalsImage(targetRa, targetDec, size);
+                        processedDecalsImage = zoom(rotate(decalsImage, quadrantCount), zoom);
+                        return null;
+                    });
                 }
                 ps1Image = null;
                 processedPs1Image = null;
                 if (panstarrsImages) {
-                    CompletableFuture.supplyAsync(() -> ps1Image = fetchPs1Image(targetRa, targetDec, size));
+                    CompletableFuture.supplyAsync(() -> {
+                        ps1Image = fetchPs1Image(targetRa, targetDec, size);
+                        processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
+                        return null;
+                    });
                 }
                 sdssImage = null;
                 processedSdssImage = null;
                 if (sdssImages) {
-                    CompletableFuture.supplyAsync(() -> sdssImage = fetchSdssImage(targetRa, targetDec, size));
+                    CompletableFuture.supplyAsync(() -> {
+                        sdssImage = fetchSdssImage(targetRa, targetDec, size);
+                        processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
+                        return null;
+                    });
                 }
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
