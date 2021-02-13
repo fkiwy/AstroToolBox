@@ -406,7 +406,7 @@ public class ImageViewerTab {
     private boolean hasException;
     private boolean asyncDownloads;
     private boolean panstarrsImages;
-    private boolean legacyImages = true;
+    private boolean legacyImages;
     private boolean sdssImages;
 
     public static final List<String> BROWN_DWARFS = new ArrayList<>();

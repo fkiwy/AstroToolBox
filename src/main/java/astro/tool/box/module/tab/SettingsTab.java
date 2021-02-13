@@ -101,6 +101,7 @@ public class SettingsTab {
     private static final String DIFFERENT_SIZE = "differentSize";
     private static final String PROPER_MOTION = "properMotion";
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
+    private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
 
@@ -113,6 +114,7 @@ public class SettingsTab {
     private int differentSize;
     private int properMotion;
     private boolean asyncDownloads;
+    private boolean legacyImages;
     private boolean panstarrsImages;
     private boolean sdssImages;
 
@@ -284,6 +286,7 @@ public class SettingsTab {
             differentSize = Integer.parseInt(USER_SETTINGS.getProperty(DIFFERENT_SIZE, String.valueOf(ImageViewerTab.DIFFERENT_SIZE)));
             properMotion = Integer.parseInt(USER_SETTINGS.getProperty(PROPER_MOTION, String.valueOf(ImageViewerTab.PROPER_MOTION)));
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
+            legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 
@@ -326,6 +329,7 @@ public class SettingsTab {
             imageViewerTab.setZoom(zoom);
             imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
             imageViewerTab.setAsyncDownloads(asyncDownloads);
+            imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
 
@@ -364,9 +368,11 @@ public class SettingsTab {
             imageViewerSettings.add(properMotionField);
 
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
-            JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
+            JPanel downloadPanel = new JPanel(new GridLayout(1, 3));
             imageViewerSettings.add(downloadPanel);
-            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
+            JCheckBox legacyImagesCheckBox = new JCheckBox("DESI", legacyImages);
+            downloadPanel.add(legacyImagesCheckBox);
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox("PS1", panstarrsImages);
             downloadPanel.add(panstarrsImagesCheckBox);
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
@@ -457,6 +463,7 @@ public class SettingsTab {
                     differentSize = Integer.parseInt(differentSizeField.getText());
                     properMotion = Integer.parseInt(properMotionField.getText());
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
+                    legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
@@ -543,6 +550,7 @@ public class SettingsTab {
                 imageViewerTab.setZoom(zoom);
                 imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
                 imageViewerTab.setAsyncDownloads(asyncDownloads);
+                imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setSdssImages(sdssImages);
 
@@ -553,6 +561,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
+                USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 
