@@ -65,7 +65,7 @@ import org.json.JSONObject;
 
 public class AdqlQueryTab {
 
-    public static final String TAB_NAME = "ADQL Query";
+    public static final String TAB_NAME = "IRSA TAP";
     private static final String IRSA_TABLES = "IRSA tables";
     private static final String QUERY_SERVICE = "ADQL query";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
