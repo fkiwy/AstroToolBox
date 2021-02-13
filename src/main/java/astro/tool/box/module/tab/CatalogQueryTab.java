@@ -402,7 +402,7 @@ public class CatalogQueryTab {
         linkPanel.add(wiseViewField);
         linkPanel.add(createHyperlink("IRSA Finder Chart", getFinderChartUrl(degRA, degDE, finderChartFOV)));
         linkPanel.add(finderChartField);
-        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE)));
+        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE, "unwise-neo6")));
         JButton saveButton = new JButton("Change FoV");
         saveButton.addActionListener((ActionEvent e) -> {
             try {

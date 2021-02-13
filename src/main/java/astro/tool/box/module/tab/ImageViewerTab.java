@@ -1733,6 +1733,7 @@ public class ImageViewerTab {
                     }
 
                     // Display DECaLS images
+                    JLabel decalsLabel = null;
                     if (processedDecalsImage != null) {
                         // Create and display magnified DECaLS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
@@ -1742,7 +1743,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular DECaLS image
-                        JLabel decalsLabel = new JLabel(new ImageIcon(processedDecalsImage));
+                        decalsLabel = new JLabel(new ImageIcon(processedDecalsImage));
                         decalsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(decalsLabel);
                     }
@@ -2041,6 +2042,35 @@ public class ImageViewerTab {
                             public void mousePressed(MouseEvent evt) {
                                 try {
                                     Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView)));
+                                } catch (IOException | URISyntaxException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+
+                            @Override
+                            public void mouseReleased(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseEntered(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseExited(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseClicked(MouseEvent evt) {
+                            }
+                        });
+                    }
+
+                    if (decalsLabel != null) {
+                        decalsLabel.addMouseListener(new MouseListener() {
+                            @Override
+                            public void mousePressed(MouseEvent evt) {
+                                try {
+                                    Desktop.getDesktop().browse(new URI(getLegacySkyViewerUrl(targetRa, targetDec, "ls-dr9")));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
