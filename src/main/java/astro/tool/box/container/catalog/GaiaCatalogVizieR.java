@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
+public class GaiaCatalogVizieR implements CatalogEntry, ProperMotionQuery {
 
     public static final String CATALOG_NAME = "Gaia DR2";
 
@@ -114,10 +114,10 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     private String[] values;
 
-    public GaiaCatalogEntry() {
+    public GaiaCatalogVizieR() {
     }
 
-    public GaiaCatalogEntry(Map<String, Integer> columns, String[] values) {
+    public GaiaCatalogVizieR(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
         sourceId = toLong(values[columns.get("source_id")]);
@@ -144,7 +144,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public CatalogEntry copy() {
-        return new GaiaCatalogEntry(columns, values);
+        return new GaiaCatalogVizieR(columns, values);
     }
 
     @Override
@@ -230,13 +230,13 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GaiaCatalogEntry other = (GaiaCatalogEntry) obj;
+        final GaiaCatalogVizieR other = (GaiaCatalogVizieR) obj;
         return this.sourceId == other.sourceId;
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new GaiaCatalogEntry(columns, values);
+        return new GaiaCatalogVizieR(columns, values);
     }
 
     @Override
@@ -251,12 +251,12 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(GAIA_DR2_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, GAIA_CATALOG_ID, "ra", "dec");
     }
 
     @Override
     public String getProperMotionQueryUrl() {
-        return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=" + createProperMotionQuery();
     }
 
     private String createProperMotionQuery() {
@@ -281,7 +281,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       teff_val,");
         addRow(query, "       radius_val,");
         addRow(query, "       lum_val");
-        addRow(query, "FROM   " + GAIA_DR2_CATALOG_ID);
+        addRow(query, "FROM   \"" + GAIA_CATALOG_ID + "\"");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
         return encodeQuery(query.toString());

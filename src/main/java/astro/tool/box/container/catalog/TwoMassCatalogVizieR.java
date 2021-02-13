@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class TwoMassCatalogEntry implements CatalogEntry {
+public class TwoMassCatalogVizieR implements CatalogEntry {
 
     public static final String CATALOG_NAME = "2MASS";
 
@@ -99,33 +99,33 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     private String[] values;
 
-    public TwoMassCatalogEntry() {
+    public TwoMassCatalogVizieR() {
     }
 
-    public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
+    public TwoMassCatalogVizieR(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("designation")];
-        ra = toDouble(values[columns.get("ra")]);
-        dec = toDouble(values[columns.get("dec")]);
-        Jmag = toDouble(values[columns.get("j_m")]);
-        J_err = toDouble(values[columns.get("j_cmsig")]);
-        Hmag = toDouble(values[columns.get("h_m")]);
-        H_err = toDouble(values[columns.get("h_cmsig")]);
-        Kmag = toDouble(values[columns.get("k_m")]);
-        K_err = toDouble(values[columns.get("k_cmsig")]);
-        xdate = values[columns.get("xdate")];
-        ph_qual = values[columns.get("ph_qual")];
-        rd_flg = values[columns.get("rd_flg")];
-        bl_flg = values[columns.get("bl_flg")];
-        cc_flg = values[columns.get("cc_flg")];
-        gal_contam = toInteger(values[columns.get("gal_contam")]);
-        mp_flg = toInteger(values[columns.get("mp_flg")]);
+        sourceId = values[columns.get("2MASS")].trim();
+        ra = toDouble(values[columns.get("RAJ2000")]);
+        dec = toDouble(values[columns.get("DEJ2000")]);
+        Jmag = toDouble(values[columns.get("Jmag")]);
+        J_err = toDouble(values[columns.get("e_Jmag")]);
+        Hmag = toDouble(values[columns.get("Hmag")]);
+        H_err = toDouble(values[columns.get("e_Hmag")]);
+        Kmag = toDouble(values[columns.get("Kmag")]);
+        K_err = toDouble(values[columns.get("e_Kmag")]);
+        xdate = values[columns.get("Date")];
+        ph_qual = values[columns.get("Qflg")];
+        rd_flg = values[columns.get("Rflg")];
+        bl_flg = values[columns.get("Bflg")];
+        cc_flg = values[columns.get("Cflg")];
+        gal_contam = toInteger(values[columns.get("Xflg")]);
+        mp_flg = toInteger(values[columns.get("Aflg")]);
     }
 
     @Override
     public CatalogEntry copy() {
-        return new TwoMassCatalogEntry(columns, values);
+        return new TwoMassCatalogVizieR(columns, values);
     }
 
     @Override
@@ -295,13 +295,13 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final TwoMassCatalogEntry other = (TwoMassCatalogEntry) obj;
+        final TwoMassCatalogVizieR other = (TwoMassCatalogVizieR) obj;
         return Objects.equals(this.sourceId, other.sourceId);
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new TwoMassCatalogEntry(columns, values);
+        return new TwoMassCatalogVizieR(columns, values);
     }
 
     @Override
@@ -316,7 +316,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl("fp_psc", ra, dec, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/246/out", "RAJ2000", "DEJ2000");
     }
 
     @Override

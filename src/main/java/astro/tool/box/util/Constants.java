@@ -36,6 +36,8 @@ public class Constants {
 
     public static final String GAIA_CATALOG_ID = "I/345/gaia2";
 
+    public static final String GAIA_DR2_CATALOG_ID = "gaia_dr2_source";
+
     public static final String LINE_BREAK = "<br/>";
 
     public static final String LINE_SEP = System.lineSeparator();
