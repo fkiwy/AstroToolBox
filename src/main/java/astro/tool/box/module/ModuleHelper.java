@@ -34,6 +34,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -527,6 +528,24 @@ public class ModuleHelper {
         messageTimer.restart();
     }
 
+    public static BufferedImage zoom(BufferedImage image, int zoom) {
+        zoom = zoom == 0 ? 1 : zoom;
+        Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
+        BufferedImage zoomedImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics graphics = zoomedImage.createGraphics();
+        graphics.drawImage(scaledImage, 0, 0, null);
+        graphics.dispose();
+        return zoomedImage;
+    }
+
+    public static BufferedImage convertToGray(BufferedImage colorImage) {
+        BufferedImage grayImage = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics graphics = grayImage.getGraphics();
+        graphics.drawImage(colorImage, 0, 0, null);
+        graphics.dispose();
+        return grayImage;
+    }
+
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
         List<JLabel> subjects = new ArrayList<>();
         try {
@@ -557,19 +576,6 @@ public class ModuleHelper {
         return bi;
     }
 
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
-        BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames, targetRa, targetDec, (int) round(size * 4), 256);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-        } catch (IOException ex) {
-            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
-        }
-        return bi;
-    }
-
     public static SortedMap<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
         SortedMap<String, String> fileNames = new TreeMap<>();
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
@@ -592,6 +598,33 @@ public class ModuleHelper {
             }
         }
         return fileNames;
+    }
+
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
+        BufferedImage bi;
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames, targetRa, targetDec, size * 4, 256);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+        } catch (IOException ex) {
+            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+        }
+        return bi;
+    }
+
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) throws IOException {
+        BufferedImage bi;
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%s&dec=%s&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), (int) round(size * 4), band);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+            bi = zoom(bi, 256);
+        } catch (IOException ex) {
+            bi = null;
+        }
+        return bi;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {

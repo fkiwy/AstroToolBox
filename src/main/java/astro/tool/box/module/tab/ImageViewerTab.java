@@ -77,7 +77,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -292,6 +291,7 @@ public class ImageViewerTab {
     private JCheckBox sloanImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
+    private JCheckBox decalsImages;
     private JCheckBox staticTimeSeries;
     private JCheckBox animatedTimeSeries;
     private JCheckBox createDataSheet;
@@ -1235,15 +1235,22 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
+            decalsImages = new JCheckBox("DECaLS g, r & z bands", false);
+            mouseControlPanel.add(decalsImages);
+            decalsImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
             staticTimeSeries = new JCheckBox("Time series - static", false);
             mouseControlPanel.add(staticTimeSeries);
             staticTimeSeries.addActionListener((ActionEvent evt) -> {
-                if (animatedTimeSeries.isSelected()) {
+                if (staticTimeSeries.isSelected() || animatedTimeSeries.isSelected()) {
                     dssImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
+                    decalsImages.setSelected(false);
                     animatedTimeSeries.setSelected(false);
                 }
                 createDataSheet.setSelected(false);
@@ -1258,6 +1265,7 @@ public class ImageViewerTab {
                     sloanImages.setSelected(true);
                     allwiseImages.setSelected(true);
                     ps1Images.setSelected(true);
+                    decalsImages.setSelected(true);
                     staticTimeSeries.setSelected(false);
                 } else {
                     dssImages.setSelected(false);
@@ -1265,6 +1273,7 @@ public class ImageViewerTab {
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
+                    decalsImages.setSelected(false);
                 }
                 createDataSheet.setSelected(false);
             });
@@ -1279,6 +1288,7 @@ public class ImageViewerTab {
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
+                    decalsImages.setSelected(false);
                     staticTimeSeries.setSelected(false);
                     animatedTimeSeries.setSelected(false);
                 }
@@ -1829,6 +1839,9 @@ public class ImageViewerTab {
                                             if (ps1Images.isSelected()) {
                                                 numberOfPanels++;
                                             }
+                                            if (decalsImages.isSelected()) {
+                                                numberOfPanels++;
+                                            }
                                             if (staticTimeSeries.isSelected()) {
                                                 numberOfPanels++;
                                             }
@@ -1856,6 +1869,9 @@ public class ImageViewerTab {
                                             }
                                             if (ps1Images.isSelected()) {
                                                 displayPs1Images(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (decalsImages.isSelected()) {
+                                                displayDecalsImages(targetRa, targetDec, fieldOfView, counter);
                                             }
                                             if (staticTimeSeries.isSelected()) {
                                                 displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
@@ -4045,16 +4061,6 @@ public class ImageViewerTab {
         return op.filter(image, null);
     }
 
-    private BufferedImage zoom(BufferedImage image, int zoom) {
-        zoom = zoom == 0 ? 1 : zoom;
-        Image scaled = image.getScaledInstance((naxis1 > naxis2 ? 1 : -1) * zoom, (naxis1 > naxis2 ? -1 : 1) * zoom, Image.SCALE_DEFAULT);
-        image = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = image.createGraphics();
-        graphics.drawImage(scaled, 0, 0, null);
-        graphics.dispose();
-        return image;
-    }
-
     private Fits getImage(int band, int epoch) {
         return images.get(band + "_" + epoch);
     }
@@ -4535,6 +4541,53 @@ public class ImageViewerTab {
         }
     }
 
+    private void displayDecalsImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            JPanel bandPanel = new JPanel(new GridLayout(1, 3));
+
+            BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
+            if (image != null) {
+                image = convertToGray(image);
+                bandPanel.add(buildImagePanel(image, "g"));
+            }
+            image = retrieveDecalsImage(targetRa, targetDec, size, "r");
+            if (image != null) {
+                image = convertToGray(image);
+                bandPanel.add(buildImagePanel(image, "r"));
+            }
+            image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            if (image != null) {
+                image = convertToGray(image);
+                bandPanel.add(buildImagePanel(image, "z"));
+            }
+            image = retrieveDecalsImage(targetRa, targetDec, size, "grz");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "g-r-z"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("DECaLS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.total());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void displayStaticTimeSeries(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -4560,6 +4613,11 @@ public class ImageViewerTab {
             if (!imageInfos.isEmpty()) {
                 image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
                 bandPanel.add(buildImagePanel(image, "PS1 - z"));
+            }
+            image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            if (image != null) {
+                image = convertToGray(image);
+                bandPanel.add(buildImagePanel(image, "DECaLS - z"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4618,6 +4676,13 @@ public class ImageViewerTab {
                 if (!imageInfos.isEmpty()) {
                     image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
                     imageList.add(new Couple("PS1 - z", image));
+                }
+            }
+            if (decalsImages.isSelected()) {
+                image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+                if (image != null) {
+                    image = convertToGray(image);
+                    imageList.add(new Couple("DECaLS - z", image));
                 }
             }
 

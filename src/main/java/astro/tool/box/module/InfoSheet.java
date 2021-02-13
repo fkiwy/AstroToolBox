@@ -275,11 +275,39 @@ public class InfoSheet {
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size));
                 imageLabels.add("y");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size));
-                imageLabels.add("y");
+                imageLabels.add("y-i-g");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size));
 
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
             }
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g");
+            if (bufferedImage != null) {
+                imageLabels.add("g");
+                bufferedImage = convertToGray(bufferedImage);
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r");
+            if (bufferedImage != null) {
+                imageLabels.add("r");
+                bufferedImage = convertToGray(bufferedImage);
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            if (bufferedImage != null) {
+                imageLabels.add("z");
+                bufferedImage = convertToGray(bufferedImage);
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz");
+            if (bufferedImage != null) {
+                imageLabels.add("g-r-z");
+                bufferedImages.add(bufferedImage);
+            }
+
+            createPdfTable("DECaLS", imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
