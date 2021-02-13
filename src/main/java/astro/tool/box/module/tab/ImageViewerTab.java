@@ -30,7 +30,6 @@ import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
-import astro.tool.box.container.catalog.SpitzerCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
@@ -235,7 +234,6 @@ public class ImageViewerTab {
     private List<CatalogEntry> twoMassEntries;
     private List<CatalogEntry> vhsEntries;
     private List<CatalogEntry> gaiaWDEntries;
-    private List<CatalogEntry> spitzerEntries;
     private List<CatalogEntry> noirlabEntries;
     private List<CatalogEntry> noirlabTpmEntries;
     private List<CatalogEntry> ssoEntries;
@@ -272,7 +270,6 @@ public class ImageViewerTab {
     private JCheckBox twoMassOverlay;
     private JCheckBox vhsOverlay;
     private JCheckBox gaiaWDOverlay;
-    private JCheckBox spitzerOverlay;
     private JCheckBox noirlabOverlay;
     private JCheckBox showBrownDwarfsOnly;
     private JCheckBox displaySpectralTypes;
@@ -932,7 +929,7 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(sdssOverlay);
-            spectrumOverlay = new JCheckBox("SDSS spectra", overlays.isSpectra());
+            spectrumOverlay = new JCheckBox("SDSS Spectra", overlays.isSpectra());
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             spectrumOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -956,25 +953,18 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            twoMassOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;2<u>M</u>ASS&nbsp;</span>"), overlays.isTwomass());
+            twoMassOverlay = new JCheckBox(html("2<u>M</u>ASS"), overlays.isTwomass());
             twoMassOverlay.setForeground(JColor.ORANGE.val);
             twoMassOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(twoMassOverlay);
-            spitzerOverlay = new JCheckBox(html("<span style='background:black'>&nbsp;Spitzer/WISE&nbsp;</span>"), overlays.isSpitzer());
-            spitzerOverlay.setForeground(JColor.YELLOW.val);
-            spitzerOverlay.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-            overlayPanel.add(spitzerOverlay);
-
-            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
+            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlaysControlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
 
             JLabel overlayShortcutsLabel = new JLabel("(*) Shortcuts: Alt+[underscored letter]");
             overlayShortcutsLabel.setFont(font);
@@ -1153,7 +1143,6 @@ public class ImageViewerTab {
                 overlays.setVhs(vhsOverlay.isSelected());
                 overlays.setGaiawd(gaiaWDOverlay.isSelected());
                 overlays.setTwomass(twoMassOverlay.isSelected());
-                overlays.setSpitzer(spitzerOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
                 overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
@@ -1952,10 +1941,6 @@ public class ImageViewerTab {
                                         showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
                                         count++;
                                     }
-                                    if (spitzerOverlay.isSelected() && spitzerEntries != null) {
-                                        showCatalogInfo(spitzerEntries, mouseX, mouseY, JColor.YELLOW.val);
-                                        count++;
-                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         count++;
@@ -2326,9 +2311,6 @@ public class ImageViewerTab {
             count++;
         }
         if (twoMassOverlay.isSelected()) {
-            count++;
-        }
-        if (spitzerOverlay.isSelected()) {
             count++;
         }
         if (gaiaProperMotion.isSelected()) {
@@ -3150,7 +3132,6 @@ public class ImageViewerTab {
         twoMassEntries = null;
         vhsEntries = null;
         gaiaWDEntries = null;
-        spitzerEntries = null;
         noirlabEntries = null;
         noirlabTpmEntries = null;
         ssoEntries = null;
@@ -3413,18 +3394,6 @@ public class ImageViewerTab {
                 });
             } else {
                 drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
-            }
-        }
-        if (spitzerOverlay.isSelected()) {
-            if (spitzerEntries == null) {
-                spitzerEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    spitzerEntries = fetchCatalogEntries(new SpitzerCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawOverlay(image, spitzerEntries, JColor.YELLOW.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {

@@ -19,7 +19,6 @@ import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
-import astro.tool.box.container.catalog.SpitzerCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
@@ -48,7 +47,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import static java.lang.Math.round;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -138,8 +136,6 @@ public class ModuleHelper {
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
         TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
         catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
-        SpitzerCatalogEntry spitzerCatalogEntry = new SpitzerCatalogEntry();
-        catalogInstances.put(spitzerCatalogEntry.getCatalogName(), spitzerCatalogEntry);
 
         return catalogInstances;
     }
