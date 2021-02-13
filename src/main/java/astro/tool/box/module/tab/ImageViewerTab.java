@@ -328,8 +328,10 @@ public class ImageViewerTab {
     private Timer timer;
 
     private BufferedImage wiseImage;
+    private BufferedImage decalsImage;
     private BufferedImage ps1Image;
     private BufferedImage sdssImage;
+    private BufferedImage processedDecalsImage;
     private BufferedImage processedPs1Image;
     private BufferedImage processedSdssImage;
     private Map<String, ImageContainer> imagesW1 = new HashMap<>();
@@ -404,6 +406,7 @@ public class ImageViewerTab {
     private boolean hasException;
     private boolean asyncDownloads;
     private boolean panstarrsImages;
+    private boolean legacyImages = true;
     private boolean sdssImages;
 
     public static final List<String> BROWN_DWARFS = new ArrayList<>();
@@ -1729,6 +1732,21 @@ public class ImageViewerTab {
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
                     }
 
+                    // Display DECaLS images
+                    if (processedDecalsImage != null) {
+                        // Create and display magnified DECaLS image
+                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            BufferedImage magnifiedDecalsImage = processedDecalsImage.getSubimage(upperLeftX, upperLeftY, width, height);
+                            magnifiedDecalsImage = zoom(magnifiedDecalsImage, 200);
+                            rightPanel.add(new JLabel(new ImageIcon(magnifiedDecalsImage)));
+                        }
+
+                        // Display regular DECaLS image
+                        JLabel decalsLabel = new JLabel(new ImageIcon(processedDecalsImage));
+                        decalsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+                        imagePanel.add(decalsLabel);
+                    }
+
                     // Display Pan-STARRS images
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
@@ -2474,8 +2492,13 @@ public class ImageViewerTab {
                 epochCountW1 = 0;
                 epochCountW2 = 0;
                 imageCutOff = false;
-                initCatalogEntries();
                 pmCatalogEntry = null;
+                initCatalogEntries();
+                decalsImage = null;
+                processedDecalsImage = null;
+                if (legacyImages) {
+                    CompletableFuture.supplyAsync(() -> decalsImage = fetchDecalsImage(targetRa, targetDec, size));
+                }
                 ps1Image = null;
                 processedPs1Image = null;
                 if (panstarrsImages) {
@@ -3049,6 +3072,9 @@ public class ImageViewerTab {
     }
 
     private void processImages() {
+        if (decalsImage != null) {
+            processedDecalsImage = zoom(rotate(decalsImage, quadrantCount), zoom);
+        }
         if (ps1Image != null) {
             processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
         }
@@ -3103,14 +3129,19 @@ public class ImageViewerTab {
             scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
             grid.add(scrollPanel);
         }
+        if (decalsImage != null) {
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(decalsImage, quadrantCount), zoom))));
+            pane.setBorder(createEtchedBorder("DESI Legacy Imaging Surveys"));
+            grid.add(pane);
+        }
         if (ps1Image != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("Pan-STARRS stack y/i/g"));
+            pane.setBorder(createEtchedBorder("Pan-STARRS1"));
             grid.add(pane);
         }
         if (sdssImage != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(sdssImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("Sloan Digital Sky Survey (SDSS)"));
+            pane.setBorder(createEtchedBorder("Sloan Digital Sky Survey"));
             grid.add(pane);
         }
         imagePanel.removeAll();
@@ -4264,6 +4295,20 @@ public class ImageViewerTab {
         return true;
     }
 
+    private BufferedImage fetchDecalsImage(double targetRa, double targetDec, double size) {
+        try {
+            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.25&layer=ls-dr9&size=%d&bands=grz", targetRa, targetDec, (int) round(size * pixelScale * 4));
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedImage image;
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+                image = ImageIO.read(stream);
+            }
+            return image;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size) {
         try {
             List<String> fileNames = new ArrayList<>();
@@ -4297,7 +4342,7 @@ public class ImageViewerTab {
 
     private BufferedImage fetchSdssImage(double targetRa, double targetDec, double size) {
         try {
-            int resolution = 1000;
+            int resolution = 1024;
             String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * pixelScale / resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
@@ -5572,6 +5617,10 @@ public class ImageViewerTab {
 
     public void setPanstarrsImages(boolean panstarrsImages) {
         this.panstarrsImages = panstarrsImages;
+    }
+
+    public void setLegacyImages(boolean legacyImages) {
+        this.legacyImages = legacyImages;
     }
 
     public void setSdssImages(boolean sdssImages) {

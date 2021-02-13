@@ -565,7 +565,7 @@ public class ModuleHelper {
 
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
         BufferedImage bi;
-        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%s&DEC=%s&subsetsize=%s&thumbnail_size=large&survey=%s&%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), roundTo2DecNZ(size / 60f), survey, band);
+        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=large&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -615,7 +615,7 @@ public class ModuleHelper {
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) throws IOException {
         BufferedImage bi;
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%s&dec=%s&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), (int) round(size * 4), band);
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", targetRa, targetDec, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
