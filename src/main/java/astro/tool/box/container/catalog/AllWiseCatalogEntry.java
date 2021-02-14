@@ -445,8 +445,8 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        //colors.put(Color.J_H, getJ_H());
-        //colors.put(Color.H_K, getH_K());
+        colors.put(Color.J_H, getJ_H());
+        colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
@@ -459,7 +459,29 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("W1=%s; W2=%s; W3=%s; W4=%s", roundTo3DecNZ(W1mag), roundTo3DecNZ(W2mag), roundTo3DecNZ(W3mag), roundTo3DecNZ(W4mag));
+        StringBuilder mags = new StringBuilder();
+        if (W1mag != 0) {
+            mags.append("W1=").append(roundTo3DecNZ(W1mag)).append(" ");
+        }
+        if (W2mag != 0) {
+            mags.append("W2=").append(roundTo3DecNZ(W2mag)).append(" ");
+        }
+        if (W3mag != 0) {
+            mags.append("W3=").append(roundTo3DecNZ(W3mag)).append(" ");
+        }
+        if (W4mag != 0) {
+            mags.append("W4=").append(roundTo3DecNZ(W4mag)).append(" ");
+        }
+        if (Jmag != 0) {
+            mags.append("J=").append(roundTo3DecNZ(Jmag)).append(" ");
+        }
+        if (Hmag != 0) {
+            mags.append("H=").append(roundTo3DecNZ(Hmag)).append(" ");
+        }
+        if (Kmag != 0) {
+            mags.append("K=").append(roundTo3DecNZ(Kmag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -569,17 +591,27 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public double getPmra() {
-        return pmra;
+        return 0;
     }
 
     @Override
     public double getPmdec() {
-        return pmdec;
+        return 0;
     }
 
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
     public double getRa_pm() {

@@ -443,7 +443,7 @@ public class ModuleHelper {
         return spectralTypes;
     }
 
-    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
+    public static void collectObject(String objectType, CatalogEntry catalogEntry, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
@@ -519,9 +519,6 @@ public class ModuleHelper {
             DefaultTableModel tableModel = (DefaultTableModel) collectionTable.getModel();
             tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
         }
-
-        message.setText("Added!");
-        messageTimer.restart();
     }
 
     public static BufferedImage zoom(BufferedImage image, int zoom) {

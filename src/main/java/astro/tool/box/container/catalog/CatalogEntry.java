@@ -96,4 +96,8 @@ public interface CatalogEntry {
 
     double getTargetDistance();
 
+    double getParallacticDistance();
+
+    double getTotalProperMotion();
+
 }

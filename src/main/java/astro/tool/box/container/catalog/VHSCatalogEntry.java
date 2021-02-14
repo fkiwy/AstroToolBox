@@ -274,7 +274,20 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("Y=%s; J=%s; H=%s; K=%s", roundTo3DecNZ(y_ap3), roundTo3DecNZ(j_ap3), roundTo3DecNZ(h_ap3), roundTo3DecNZ(ks_ap3));
+        StringBuilder mags = new StringBuilder();
+        if (y_ap3 != 0) {
+            mags.append("Y=").append(roundTo3DecNZ(y_ap3)).append(" ");
+        }
+        if (j_ap3 != 0) {
+            mags.append("J=").append(roundTo3DecNZ(j_ap3)).append(" ");
+        }
+        if (h_ap3 != 0) {
+            mags.append("H=").append(roundTo3DecNZ(h_ap3)).append(" ");
+        }
+        if (ks_ap3 != 0) {
+            mags.append("K=").append(roundTo3DecNZ(ks_ap3)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -395,6 +408,16 @@ public class VHSCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
     public double getY_J() {

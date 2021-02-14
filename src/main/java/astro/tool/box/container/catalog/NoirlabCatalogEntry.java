@@ -433,7 +433,29 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getMagnitudes() {
-        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s; VR=%s; Y=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag), roundTo3DecNZ(vr_mag), roundTo3DecNZ(y_mag));
+        StringBuilder mags = new StringBuilder();
+        if (u_mag != 0) {
+            mags.append("u=").append(roundTo3DecNZ(u_mag)).append(" ");
+        }
+        if (g_mag != 0) {
+            mags.append("g=").append(roundTo3DecNZ(g_mag)).append(" ");
+        }
+        if (r_mag != 0) {
+            mags.append("r=").append(roundTo3DecNZ(r_mag)).append(" ");
+        }
+        if (i_mag != 0) {
+            mags.append("i=").append(roundTo3DecNZ(i_mag)).append(" ");
+        }
+        if (z_mag != 0) {
+            mags.append("z=").append(roundTo3DecNZ(z_mag)).append(" ");
+        }
+        if (y_mag != 0) {
+            mags.append("y=").append(roundTo3DecNZ(y_mag)).append(" ");
+        }
+        if (vr_mag != 0) {
+            mags.append("vr=").append(roundTo3DecNZ(vr_mag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -556,14 +578,20 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return calculateTotalProperMotion(pmra, pmdec);
+    }
+
     public double getMeanEpoch() {
         LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).toLocalDate();
         long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
         return days / 365.2425;
-    }
-
-    public double getTotalProperMotion() {
-        return calculateTotalProperMotion(pmra, pmdec);
     }
 
     public double get_u_g() {

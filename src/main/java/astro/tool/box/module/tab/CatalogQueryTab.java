@@ -603,11 +603,16 @@ public class CatalogQueryTab {
             JComboBox objectTypes = new JComboBox(ObjectType.labels());
             collectPanel.add(objectTypes);
 
-            JButton collectButton = new JButton("Add to object collection");
+            JButton collectButton = new JButton("Add to collection");
             collectPanel.add(collectButton);
+            Timer collectTimer = new Timer(3000, (ActionEvent e) -> {
+                collectButton.setText("Copy coords");
+            });
             collectButton.addActionListener((ActionEvent evt) -> {
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService, collectionTable);
+                collectObject(selectedObjectType, catalogEntry, baseFrame, spectralTypeLookupService, collectionTable);
+                collectButton.setText("Copied!");
+                collectTimer.restart();
             });
 
             collectPanel.add(message);

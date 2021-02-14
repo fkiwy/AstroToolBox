@@ -389,7 +389,17 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("J=%s; H=%s; K=%s", roundTo3DecNZ(Jmag), roundTo3DecNZ(Hmag), roundTo3DecNZ(Kmag));
+        StringBuilder mags = new StringBuilder();
+        if (Jmag != 0) {
+            mags.append("J=").append(roundTo3DecNZ(Jmag)).append(" ");
+        }
+        if (Hmag != 0) {
+            mags.append("H=").append(roundTo3DecNZ(Hmag)).append(" ");
+        }
+        if (Kmag != 0) {
+            mags.append("K=").append(roundTo3DecNZ(Kmag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -510,6 +520,16 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
     public double getJ_H() {

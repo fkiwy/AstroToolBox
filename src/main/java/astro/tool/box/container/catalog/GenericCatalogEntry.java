@@ -246,4 +246,14 @@ public class GenericCatalogEntry implements CatalogEntry {
         return 0;
     }
 
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
+    }
+
 }

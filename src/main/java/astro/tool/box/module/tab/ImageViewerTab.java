@@ -5325,38 +5325,89 @@ public class ImageViewerTab {
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(collectPanel);
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
-            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
-                message.setText("");
-            });
-
             collectPanel.add(new JLabel("Object type:"));
 
             JComboBox objectTypes = new JComboBox(ObjectType.labels());
             collectPanel.add(objectTypes);
 
-            JButton collectButton = new JButton("Add to object collection");
+            JButton collectButton = new JButton("Add to collection");
             collectPanel.add(collectButton);
+            Timer collectTimer = new Timer(3000, (ActionEvent e) -> {
+                collectButton.setText("Add to collection");
+            });
             collectButton.addActionListener((ActionEvent evt) -> {
                 catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
+                collectObject(selectedObjectType, catalogEntry, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
+                collectButton.setText("Copied!");
+                collectTimer.restart();
             });
 
             JButton copyCoordsButton = new JButton("Copy coords");
             collectPanel.add(copyCoordsButton);
+            Timer copyCoordsTimer = new Timer(3000, (ActionEvent e) -> {
+                copyCoordsButton.setText("Copy coords");
+            });
             copyCoordsButton.addActionListener((ActionEvent evt) -> {
                 StringBuilder toCopy = new StringBuilder();
                 toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
                 toCopy.append(" ");
                 toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
                 copyToClipboard(toCopy.toString());
-                message.setText("Copied!");
-                messageTimer.restart();
+                copyCoordsButton.setText("Copied!");
+                copyCoordsTimer.restart();
+            });
+
+            JButton copyInfoButton = new JButton("Copy digest");
+            collectPanel.add(copyInfoButton);
+            Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
+                copyInfoButton.setText("Copy digest");
+            });
+            copyInfoButton.addActionListener((ActionEvent evt) -> {
+                StringBuilder toCopy = new StringBuilder();
+                toCopy.append(catalogEntry.getCatalogName()).append(": ").append(catalogEntry.getSourceId());
+                toCopy.append(LINE_SEP);
+                toCopy.append("ra=").append(roundTo7DecNZ(catalogEntry.getRa()));
+                toCopy.append(" ");
+                toCopy.append("dec=").append(roundTo7DecNZ(catalogEntry.getDec()));
+                toCopy.append(LINE_SEP);
+                if (catalogEntry.getPlx() != 0) {
+                    toCopy.append("plx=").append(roundTo3DecNZ(catalogEntry.getPlx())).append(" mas");
+                    toCopy.append(LINE_SEP);
+                }
+                if (catalogEntry.getParallacticDistance() != 0) {
+                    toCopy.append("dist=").append(roundTo3DecNZ(catalogEntry.getParallacticDistance())).append(" pc");
+                    toCopy.append(LINE_SEP);
+                }
+                if (catalogEntry.getPmra() != 0 || catalogEntry.getPmdec() != 0) {
+                    toCopy.append("pmra=").append(roundTo3DecNZ(catalogEntry.getPmra()));
+                    toCopy.append(" ");
+                    toCopy.append("pmdec=").append(roundTo3DecNZ(catalogEntry.getPmdec()));
+                    toCopy.append(LINE_SEP);
+                    toCopy.append("tpm=").append(roundTo3DecNZ(catalogEntry.getTotalProperMotion())).append(" mas/yr");
+                    toCopy.append(LINE_SEP);
+                }
+                toCopy.append(catalogEntry.getMagnitudes());
+                toCopy.append(LINE_SEP);
+                Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors();
+                colors.entrySet().forEach(entry -> {
+                    double value = entry.getValue();
+                    if (value != 0) {
+                        String label = entry.getKey().val;
+                        toCopy.append(label).append("=").append(roundTo3DecNZ(value));
+                        toCopy.append(LINE_SEP);
+                    }
+                });
+                copyToClipboard(toCopy.toString());
+                copyInfoButton.setText("Copied!");
+                copyInfoTimer.restart();
             });
 
             JButton copyAllButton = new JButton("Copy all");
             collectPanel.add(copyAllButton);
+            Timer copyAllTimer = new Timer(3000, (ActionEvent e) -> {
+                copyAllButton.setText("Copy all");
+            });
             copyAllButton.addActionListener((ActionEvent evt) -> {
                 StringBuilder toCopy = new StringBuilder();
                 toCopy.append(catalogEntry.getEntryData());
@@ -5375,11 +5426,9 @@ public class ImageViewerTab {
                     });
                 });
                 copyToClipboard(toCopy.toString());
-                message.setText("Copied!");
-                messageTimer.restart();
+                copyAllButton.setText("Copied!");
+                copyAllTimer.restart();
             });
-
-            collectPanel.add(message);
         }
 
         JFrame catalogFrame = new JFrame();

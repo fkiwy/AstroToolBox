@@ -338,7 +338,14 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
 
     @Override
     public String getMagnitudes() {
-        return String.format("W1=%s; W2=%s", roundTo3DecNZ(W1mag), roundTo3DecNZ(W2mag));
+        StringBuilder mags = new StringBuilder();
+        if (W1mag != 0) {
+            mags.append("W1=").append(roundTo3DecNZ(W1mag)).append(" ");
+        }
+        if (W2mag != 0) {
+            mags.append("W2=").append(roundTo3DecNZ(W2mag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -461,6 +468,12 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
     public double getTotalProperMotion() {
         return calculateTotalProperMotion(pmra, pmdec);
     }
