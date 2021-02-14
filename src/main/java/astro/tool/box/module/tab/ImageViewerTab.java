@@ -1684,7 +1684,7 @@ public class ImageViewerTab {
                     }
 
                     imagePanel.removeAll();
-                    imagePanel.setBorder(createEtchedBorder(component.getTitle()));
+                    imagePanel.add(new JLabel(" " + component.getTitle()));
                     imagePanel.add(imageLabel);
 
                     // Initialize positions of magnified WISE image
@@ -1732,6 +1732,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular DECaLS image
+                        imagePanel.add(new JLabel(" DECaLS"));
                         decalsLabel = new JLabel(new ImageIcon(processedDecalsImage));
                         decalsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(decalsLabel);
@@ -1748,6 +1749,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular Pan-STARRS image
+                        imagePanel.add(new JLabel(" Pan-STARRS"));
                         ps1Label = new JLabel(new ImageIcon(processedPs1Image));
                         ps1Label.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(ps1Label);
@@ -1763,6 +1765,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular SDSS image
+                        imagePanel.add(new JLabel(" SDSS"));
                         JLabel sdssLabel = new JLabel(new ImageIcon(processedSdssImage));
                         sdssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(sdssLabel);
@@ -3154,17 +3157,17 @@ public class ImageViewerTab {
         }
         if (decalsImage != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(decalsImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("DESI Legacy Imaging Surveys"));
+            pane.setBorder(createEtchedBorder("DECaLS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("Pan-STARRS1"));
+            pane.setBorder(createEtchedBorder("Pan-STARRS"));
             grid.add(pane);
         }
         if (sdssImage != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(sdssImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("Sloan Digital Sky Survey"));
+            pane.setBorder(createEtchedBorder("SDSS"));
             grid.add(pane);
         }
         imagePanel.removeAll();

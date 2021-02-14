@@ -192,7 +192,7 @@ public class SettingsTab {
             lookAndFeelGroup.add(javaButton);
             lookAndFeelGroup.add(osButton);
 
-            globalSettings.add(new JLabel("TAP provider:", JLabel.RIGHT));
+            globalSettings.add(new JLabel("TAP provider for catalogs (*):", JLabel.RIGHT));
 
             radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
@@ -206,6 +206,9 @@ public class SettingsTab {
             ButtonGroup tapProviderGroup = new ButtonGroup();
             tapProviderGroup.add(irsaButton);
             tapProviderGroup.add(vizierButton);
+
+            globalSettings.add(new JLabel("(*) Only for AllWISE, CatWISE, ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Gaia DR2 and 2MASS", JLabel.LEFT));
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
@@ -237,11 +240,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(10, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(11, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 275));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 300));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -291,11 +294,11 @@ public class SettingsTab {
             catalogQuerySettings.add(finderChartFovField);
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(10, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 275));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 300));
             containerPanel.add(imageViewerSettings);
 
             numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
@@ -389,14 +392,16 @@ public class SettingsTab {
             imageViewerSettings.add(properMotionField);
 
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
-            JPanel downloadPanel = new JPanel(new GridLayout(1, 3));
+            JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
-            JCheckBox legacyImagesCheckBox = new JCheckBox("DESI", legacyImages);
+            JCheckBox legacyImagesCheckBox = new JCheckBox("DECaLS", legacyImages);
             downloadPanel.add(legacyImagesCheckBox);
-            JCheckBox panstarrsImagesCheckBox = new JCheckBox("PS1", panstarrsImages);
-            downloadPanel.add(panstarrsImagesCheckBox);
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
+
+            imageViewerSettings.add(new JLabel());
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
+            imageViewerSettings.add(panstarrsImagesCheckBox);
 
             imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
             JCheckBox asynchDownloadsCheckBox = new JCheckBox();
