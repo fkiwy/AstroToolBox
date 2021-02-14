@@ -14,6 +14,7 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -251,12 +252,20 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(GAIA_DR2_CATALOG_ID, ra, dec, searchRadius / DEG_ARCSEC);
+        if (TapProvider.IRSA.equals(getTapProvider())) {
+            return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "gaia_dr2_source");
+        } else {
+            return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "I/345/gaia2", "ra", "dec");
+        }
     }
 
     @Override
     public String getProperMotionQueryUrl() {
-        return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+        if (TapProvider.IRSA.equals(getTapProvider())) {
+            return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+        } else {
+            return VIZIER_TAP_URL + createProperMotionQuery();
+        }
     }
 
     private String createProperMotionQuery() {
@@ -281,7 +290,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       teff_val,");
         addRow(query, "       radius_val,");
         addRow(query, "       lum_val");
-        addRow(query, "FROM   " + GAIA_DR2_CATALOG_ID);
+        addRow(query, "FROM   " + (TapProvider.IRSA.equals(getTapProvider()) ? "gaia_dr2_source" : "\"I/345/gaia2\""));
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
         return encodeQuery(query.toString());

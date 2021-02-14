@@ -49,7 +49,7 @@ public class Application {
     public Application() {
         try {
             loadUserSettings();
-            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, LookAndFeel.OS.name()));
+            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
             setLookAndFeel(lookAndFeel);
             CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
             ToolTipManager.sharedInstance().setDismissDelay(60000);

@@ -6,12 +6,14 @@ import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Utils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.TapProvider;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -148,37 +150,71 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     public AllWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("designation")];
-        ra = toDouble(values[columns.get("ra")]);
-        dec = toDouble(values[columns.get("dec")]);
-        W1mag = toDouble(values[columns.get("w1mpro")]);
-        W1_err = toDouble(values[columns.get("w1sigmpro")]);
-        W2mag = toDouble(values[columns.get("w2mpro")]);
-        W2_err = toDouble(values[columns.get("w2sigmpro")]);
-        W3mag = toDouble(values[columns.get("w3mpro")]);
-        W3_err = toDouble(values[columns.get("w3sigmpro")]);
-        W4mag = toDouble(values[columns.get("w4mpro")]);
-        W4_err = toDouble(values[columns.get("w4sigmpro")]);
-        W1_snr = toDouble(values[columns.get("w1snr")]);
-        W2_snr = toDouble(values[columns.get("w2snr")]);
-        W3_snr = toDouble(values[columns.get("w3snr")]);
-        W4_snr = toDouble(values[columns.get("w4snr")]);
-        ra_pm = toDouble(values[columns.get("ra_pm")]);
-        dec_pm = toDouble(values[columns.get("dec_pm")]);
-        pmra = toDouble(values[columns.get("pmra")]);
-        pmra_err = toDouble(values[columns.get("sigpmra")]);
-        pmdec = toDouble(values[columns.get("pmdec")]);
-        pmdec_err = toDouble(values[columns.get("sigpmdec")]);
-        cc_flags = values[columns.get("cc_flags")];
-        ext_flg = toInteger(values[columns.get("ext_flg")]);
-        var_flg = values[columns.get("var_flg")];
-        ph_qual = values[columns.get("ph_qual")];
-        Jmag = toDouble(values[columns.get("j_m_2mass")]);
-        J_err = toDouble(values[columns.get("j_msig_2mass")]);
-        Hmag = toDouble(values[columns.get("h_m_2mass")]);
-        H_err = toDouble(values[columns.get("h_msig_2mass")]);
-        Kmag = toDouble(values[columns.get("k_m_2mass")]);
-        K_err = toDouble(values[columns.get("k_msig_2mass")]);
+        if (TapProvider.IRSA.equals(getTapProvider())) {
+            sourceId = values[columns.get("designation")];
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            W1mag = toDouble(values[columns.get("w1mpro")]);
+            W1_err = toDouble(values[columns.get("w1sigmpro")]);
+            W2mag = toDouble(values[columns.get("w2mpro")]);
+            W2_err = toDouble(values[columns.get("w2sigmpro")]);
+            W3mag = toDouble(values[columns.get("w3mpro")]);
+            W3_err = toDouble(values[columns.get("w3sigmpro")]);
+            W4mag = toDouble(values[columns.get("w4mpro")]);
+            W4_err = toDouble(values[columns.get("w4sigmpro")]);
+            W1_snr = toDouble(values[columns.get("w1snr")]);
+            W2_snr = toDouble(values[columns.get("w2snr")]);
+            W3_snr = toDouble(values[columns.get("w3snr")]);
+            W4_snr = toDouble(values[columns.get("w4snr")]);
+            ra_pm = toDouble(values[columns.get("ra_pm")]);
+            dec_pm = toDouble(values[columns.get("dec_pm")]);
+            pmra = toDouble(values[columns.get("pmra")]);
+            pmra_err = toDouble(values[columns.get("sigpmra")]);
+            pmdec = toDouble(values[columns.get("pmdec")]);
+            pmdec_err = toDouble(values[columns.get("sigpmdec")]);
+            cc_flags = values[columns.get("cc_flags")];
+            ext_flg = toInteger(values[columns.get("ext_flg")]);
+            var_flg = values[columns.get("var_flg")];
+            ph_qual = values[columns.get("ph_qual")];
+            Jmag = toDouble(values[columns.get("j_m_2mass")]);
+            J_err = toDouble(values[columns.get("j_msig_2mass")]);
+            Hmag = toDouble(values[columns.get("h_m_2mass")]);
+            H_err = toDouble(values[columns.get("h_msig_2mass")]);
+            Kmag = toDouble(values[columns.get("k_m_2mass")]);
+            K_err = toDouble(values[columns.get("k_msig_2mass")]);
+        } else {
+            sourceId = values[columns.get("AllWISE")];
+            ra = toDouble(values[columns.get("RAJ2000")]);
+            dec = toDouble(values[columns.get("DEJ2000")]);
+            W1mag = toDouble(values[columns.get("W1mag")]);
+            W1_err = toDouble(values[columns.get("e_W1mag")]);
+            W2mag = toDouble(values[columns.get("W2mag")]);
+            W2_err = toDouble(values[columns.get("e_W2mag")]);
+            W3mag = toDouble(values[columns.get("W3mag")]);
+            W3_err = toDouble(values[columns.get("e_W3mag")]);
+            W4mag = toDouble(values[columns.get("W4mag")]);
+            W4_err = toDouble(values[columns.get("e_W4mag")]);
+            W1_snr = toDouble(values[columns.get("snr1")]);
+            W2_snr = toDouble(values[columns.get("snr2")]);
+            W3_snr = toDouble(values[columns.get("snr3")]);
+            W4_snr = toDouble(values[columns.get("snr4")]);
+            ra_pm = toDouble(values[columns.get("RA_pm")]);
+            dec_pm = toDouble(values[columns.get("DE_pm")]);
+            pmra = toDouble(values[columns.get("pmRA")]);
+            pmra_err = toDouble(values[columns.get("e_pmRA")]);
+            pmdec = toDouble(values[columns.get("pmDE")]);
+            pmdec_err = toDouble(values[columns.get("e_pmDE")]);
+            cc_flags = values[columns.get("ccf")];
+            ext_flg = toInteger(values[columns.get("ex")]);
+            var_flg = values[columns.get("var")];
+            ph_qual = values[columns.get("qph")];
+            Jmag = toDouble(values[columns.get("Jmag")]);
+            J_err = toDouble(values[columns.get("e_Jmag")]);
+            Hmag = toDouble(values[columns.get("Hmag")]);
+            H_err = toDouble(values[columns.get("e_Hmag")]);
+            Kmag = toDouble(values[columns.get("Kmag")]);
+            K_err = toDouble(values[columns.get("e_Kmag")]);
+        }
     }
 
     @Override
@@ -356,7 +392,11 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl("allwise_p3as_psd", ra, dec, searchRadius / DEG_ARCSEC);
+        if (TapProvider.IRSA.equals(getTapProvider())) {
+            return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "allwise_p3as_psd");
+        } else {
+            return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/328/allwise", "RAJ2000", "DEJ2000");
+        }
     }
 
     @Override

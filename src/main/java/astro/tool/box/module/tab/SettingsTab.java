@@ -6,6 +6,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
+import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -51,6 +52,8 @@ public class SettingsTab {
     public static final String PROP_FILE_NAME = "/AstroToolBox.properties";
     public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     public static final Properties USER_SETTINGS = new Properties();
+    public static String DEFAULT_TAP_PROVIDER = TapProvider.IRSA.name();
+    public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.OS.name();
     public static String CURRENT_LOOK_AND_FEEL;
 
     private final JFrame baseFrame;
@@ -61,6 +64,7 @@ public class SettingsTab {
 
     // Global settings
     public static final String LOOK_AND_FEEL = "lookAndFeel";
+    public static final String TAP_PROVIDER = "tapProvider";
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
@@ -69,6 +73,7 @@ public class SettingsTab {
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
+    private TapProvider tapProvider;
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
@@ -145,14 +150,15 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(10, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(11, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 275));
+            globalSettings.setPreferredSize(new Dimension(450, 300));
             containerPanel.add(globalSettings);
 
-            lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
+            lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
+            tapProvider = TapProvider.valueOf(USER_SETTINGS.getProperty(TAP_PROVIDER, DEFAULT_TAP_PROVIDER));
             proxyAddress = USER_SETTINGS.getProperty(PROXY_ADDRESS, "");
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
@@ -176,15 +182,30 @@ public class SettingsTab {
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
 
-            JRadioButton javaRadioButton = new JRadioButton("Java", lookAndFeel.equals(LookAndFeel.Java));
-            radioPanel.add(javaRadioButton);
+            JRadioButton javaButton = new JRadioButton("Java", lookAndFeel.equals(LookAndFeel.Java));
+            radioPanel.add(javaButton);
 
-            JRadioButton osRadioButton = new JRadioButton("OS", lookAndFeel.equals(LookAndFeel.OS));
-            radioPanel.add(osRadioButton);
+            JRadioButton osButton = new JRadioButton("OS", lookAndFeel.equals(LookAndFeel.OS));
+            radioPanel.add(osButton);
 
-            ButtonGroup radioGroup = new ButtonGroup();
-            radioGroup.add(javaRadioButton);
-            radioGroup.add(osRadioButton);
+            ButtonGroup lookAndFeelGroup = new ButtonGroup();
+            lookAndFeelGroup.add(javaButton);
+            lookAndFeelGroup.add(osButton);
+
+            globalSettings.add(new JLabel("TAP provider:", JLabel.RIGHT));
+
+            radioPanel = new JPanel(new GridLayout(1, 2));
+            globalSettings.add(radioPanel);
+
+            JRadioButton irsaButton = new JRadioButton("IRSA", tapProvider.equals(TapProvider.IRSA));
+            radioPanel.add(irsaButton);
+
+            JRadioButton vizierButton = new JRadioButton("VizieR", tapProvider.equals(TapProvider.VIZIER));
+            radioPanel.add(vizierButton);
+
+            ButtonGroup tapProviderGroup = new ButtonGroup();
+            tapProviderGroup.add(irsaButton);
+            tapProviderGroup.add(vizierButton);
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
@@ -422,7 +443,8 @@ public class SettingsTab {
             applyButton.addActionListener((ActionEvent evt) -> {
                 try {
                     // Global settings
-                    lookAndFeel = javaRadioButton.isSelected() ? LookAndFeel.Java : LookAndFeel.OS;
+                    lookAndFeel = javaButton.isSelected() ? LookAndFeel.Java : LookAndFeel.OS;
+                    tapProvider = irsaButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
@@ -479,6 +501,7 @@ public class SettingsTab {
                 }
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
+                USER_SETTINGS.setProperty(TAP_PROVIDER, tapProvider.name());
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));

@@ -24,7 +24,17 @@ public class ServiceProviderUtils {
 
     private static final String SERVICE_NOT_AVAILABLE = "%s is currently not available!";
 
-    public static String createIrsaUrl(String catalogId, double degRA, double degDE, double degRadius) {
+    public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
+        boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
+        String simbadBaseUrl = useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
+        return simbadBaseUrl + "SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,%27.%27%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+    }
+
+    public static String createVizieRUrl(double degRA, double degDE, double degRadius, String tableName, String raColName, String decColName) {
+        return VIZIER_TAP_URL + "SELECT%20*%20FROM%20%22" + tableName + "%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20" + raColName + ",%20" + decColName + "),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+    }
+
+    public static String createIrsaUrl(double degRA, double degDE, double degRadius, String catalogId) {
         return IRSA_BASE_URL + "?table=" + catalogId + "&RA=" + degRA + "&DEC=" + degDE + "&SR=" + degRadius + "&format=csv";
     }
 
@@ -34,16 +44,6 @@ public class ServiceProviderUtils {
 
     public static String createSdssUrl(double degRA, double degDE, double degRadius) {
         return SDSS_BASE_URL + "/SkyServerWS/ImagingQuery/Cone?ra=" + degRA + "&dec=" + degDE + "&radius=" + degRadius + "&limit=0&format=csv&imgparams=objid,run,rerun,camcol,field,obj,ra,dec,raErr,decErr,type,clean,mjd,specObjID,u,g,r,i,z,Err_u,Err_g,Err_r,Err_i,Err_z";
-    }
-
-    public static String createVizieRUrl(double degRA, double degDE, double degRadius, String tableName, String raColName, String decColName) {
-        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=SELECT%20*%20FROM%20%22" + tableName + "%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20" + raColName + ",%20" + decColName + "),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
-    }
-
-    public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
-        boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
-        String simbadBaseUrl = useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
-        return simbadBaseUrl + "?request=doQuery&lang=adql&format=csv&query=SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,%27.%27%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
     }
 
     public static HttpURLConnection establishHttpConnection(String url) throws IOException {

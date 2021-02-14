@@ -256,7 +256,7 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(CATWISE2020_REJECT_TABLE, ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "catwise_2020_reject");
     }
 
     @Override
@@ -288,7 +288,7 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
         addRow(query, "       par_sigma,");
         addRow(query, "       cc_flags,");
         addRow(query, "       ab_flags");
-        addRow(query, "FROM   " + CATWISE2020_REJECT_TABLE);
+        addRow(query, "FROM   catwise_2020_reject");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
         return encodeQuery(query.toString());

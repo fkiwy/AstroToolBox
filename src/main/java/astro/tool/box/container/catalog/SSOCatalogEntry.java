@@ -263,7 +263,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl("neowiser_p1ba_mch", ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "neowiser_p1ba_mch");
     }
 
     @Override
