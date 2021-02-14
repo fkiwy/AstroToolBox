@@ -92,7 +92,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.3.2";
+    public static final String PGM_VERSION = "2.3.3";
     public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
     public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
 
@@ -241,11 +241,11 @@ public class ModuleHelper {
         Pattern pattern = Pattern.compile(".*[a-zA-Z]+.*");
         Matcher matcher = pattern.matcher(coords);
         if (matcher.matches()) {
-            NameResolverService nameResolverService = new NameResolverService();
             try {
+                NameResolverService nameResolverService = new NameResolverService();
                 coords = nameResolverService.getCoordinatesByName(coords);
             } catch (Exception ex) {
-                showErrorDialog(null, ex.getMessage());
+                coords = coords.replaceAll("[^\\d .-]", "");
             }
         }
         String[] parts = splitCoordinates(coords);
