@@ -3116,7 +3116,7 @@ public class ImageViewerTab {
         timer.restart();
     }
 
-    private void initCatalogEntries() {
+    public void initCatalogEntries() {
         simbadEntries = null;
         gaiaEntries = null;
         gaiaDR3Entries = null;

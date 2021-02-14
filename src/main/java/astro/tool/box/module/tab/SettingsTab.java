@@ -532,6 +532,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(FINDER_CHART_FOV, finderChartFovField.getText());
 
                 // Image viewer settings
+                imageViewerTab.initCatalogEntries();
                 imageViewerTab.getTimer().stop();
 
                 wiseBandsBox = imageViewerTab.getWiseBands();
