@@ -5339,7 +5339,7 @@ public class ImageViewerTab {
                 catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
                 collectObject(selectedObjectType, catalogEntry, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
-                collectButton.setText("Copied!");
+                collectButton.setText("Added!");
                 collectTimer.restart();
             });
 
