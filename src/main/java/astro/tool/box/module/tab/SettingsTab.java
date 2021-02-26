@@ -207,10 +207,8 @@ public class SettingsTab {
             tapProviderGroup.add(irsaButton);
             tapProviderGroup.add(vizierButton);
 
-            //globalSettings.add(new JLabel("(*) AllWISE, CatWISE, 2MASS ", JLabel.RIGHT));
-            //globalSettings.add(new JLabel("and Gaia DR2", JLabel.LEFT));
-            globalSettings.add(new JLabel("(*) AllWISE, 2MASS & Gaia DR2", JLabel.RIGHT));
-            globalSettings.add(new JLabel("", JLabel.LEFT));
+            globalSettings.add(new JLabel("(*) AllWISE, CatWISE, 2MASS ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("and Gaia DR2", JLabel.LEFT));
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);

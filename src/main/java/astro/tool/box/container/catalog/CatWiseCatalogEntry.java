@@ -13,6 +13,7 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.TapProvider;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -125,8 +126,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
     public CatWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        //if (TapProvider.IRSA.equals(getTapProvider())) {
-        if (true) {
+        if (TapProvider.IRSA.equals(getTapProvider())) {
             sourceId = values[columns.get("source_name")];
             ra = toDouble(values[columns.get("ra")]);
             dec = toDouble(values[columns.get("dec")]);
@@ -282,8 +282,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
 
     @Override
     public String getCatalogUrl() {
-        //if (TapProvider.IRSA.equals(getTapProvider())) {
-        if (true) {
+        if (TapProvider.IRSA.equals(getTapProvider())) {
             return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "catwise_2020");
         } else {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/365/catwise", "RA_ICRS", "DE_ICRS");
@@ -292,8 +291,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
 
     @Override
     public String getProperMotionQueryUrl() {
-        //if (TapProvider.IRSA.equals(getTapProvider())) {
-        if (true) {
+        if (TapProvider.IRSA.equals(getTapProvider())) {
             return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
         } else {
             return VIZIER_TAP_URL + createProperMotionQuery();
@@ -302,8 +300,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
 
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
-        //if (TapProvider.IRSA.equals(getTapProvider())) {
-        if (true) {
+        if (TapProvider.IRSA.equals(getTapProvider())) {
             addRow(query, "SELECT source_name,");
             addRow(query, "       ra,");
             addRow(query, "       dec,");
