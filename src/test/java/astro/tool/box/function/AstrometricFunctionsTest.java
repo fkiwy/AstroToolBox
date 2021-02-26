@@ -20,7 +20,7 @@ public class AstrometricFunctionsTest {
                 new NumberPair(194.3350473, 71.8972063),
                 ConversionFactors.DEG_MAS
         );
-        assertEquals(Double.valueOf(2826.575566769283), Double.valueOf(angularDistance));
+        assertEquals(Double.valueOf(2826.5738956785763), Double.valueOf(angularDistance));
     }
 
     @Test
@@ -35,7 +35,7 @@ public class AstrometricFunctionsTest {
                 ConversionFactors.DEG_MAS
         );
         assertEquals(Double.valueOf(-764.7266590340704), Double.valueOf(properMotions.getX()));
-        assertEquals(Double.valueOf(212.17590650534777), Double.valueOf(properMotions.getY()));
+        assertEquals(Double.valueOf(212.17590649248856), Double.valueOf(properMotions.getY()));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class AstrometricFunctionsTest {
     public void calculateLinearDistance() {
         // Linear distance between Sirius and Vega
         double linearDistance = AstrometricFunctions.calculateLinearDistance(new NumberPair(101.2871553, -16.7161159), new NumberPair(279.2347348, 38.783689), 379.21, 130.23);
-        assertEquals(Double.valueOf(10.170011231287699), Double.valueOf(linearDistance));
+        assertEquals(Double.valueOf(10.170011231287697), Double.valueOf(linearDistance));
     }
 
     @Test
