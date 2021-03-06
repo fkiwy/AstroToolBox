@@ -206,11 +206,15 @@ public class ModuleHelper {
     }
 
     public static String header(String text) {
-        return html("<span style='background:silver;color:black'>&nbsp;" + text + "&nbsp;</span>");
+        return html("<span style='background:#505050;color:#C0C0C0'>&nbsp;" + text + "&nbsp;</span>");
     }
 
     public static String html(String text) {
         return "<html>" + text + "</html>";
+    }
+
+    public static JLabel createMessageLabel() {
+        return createLabel("", JColor.DARK_GREEN);
     }
 
     public static JLabel createLabel(Object text, JColor color) {
@@ -299,10 +303,10 @@ public class ModuleHelper {
         //    label.setBackground(JColor.WHITE.val);
         //}
         if (element.isComputed()) {
-            label.setForeground(JColor.DARKER_GREEN.val);
+            label.setForeground(JColor.DARK_GREEN.val);
         }
         if (element.isFaulty()) {
-            label.setForeground(JColor.DARK_RED.val);
+            label.setForeground(JColor.RED.val);
         }
         if (element.getToolTip() != null) {
             label.setToolTipText(html(element.getToolTip()));
@@ -320,10 +324,10 @@ public class ModuleHelper {
         field.setBackground(new JLabel().getBackground());
         //}
         if (element.isComputed()) {
-            field.setForeground(JColor.DARKER_GREEN.val);
+            field.setForeground(JColor.DARK_GREEN.val);
         }
         if (element.isFaulty()) {
-            field.setForeground(JColor.DARK_RED.val);
+            field.setForeground(JColor.RED.val);
         }
         field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());

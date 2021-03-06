@@ -4,11 +4,11 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Epoch;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
 import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
@@ -432,7 +432,7 @@ public class SettingsTab {
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             gridPanel.add(buttonPanel);
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            JLabel message = createMessageLabel();
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -650,7 +650,7 @@ public class SettingsTab {
                     isFlatLaf = true;
                     break;
                 case Flat_Dark:
-                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
+                    UIManager.setLookAndFeel(new FlatDarkLaf());
                     isFlatLaf = true;
                     break;
                 case Flat_Darcula:

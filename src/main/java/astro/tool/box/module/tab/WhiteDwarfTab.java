@@ -111,7 +111,7 @@ public class WhiteDwarfTab {
                     resultPanel.removeAll();
                     selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        resultPanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
+                        resultPanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.RED));
                         return;
                     } else {
                         JPanel entryPanel = new JPanel(new GridLayout(2, 1));
@@ -122,7 +122,7 @@ public class WhiteDwarfTab {
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                                entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                                entryPanel.add(createLabel(AGN_WARNING, JColor.RED));
                             }
                         }
                     }
@@ -204,7 +204,7 @@ public class WhiteDwarfTab {
         columnModel.getColumn(6).setPreferredWidth(100);
 
         JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(resultTable);
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), html(panelTitle), TitledBorder.LEFT, TitledBorder.TOP

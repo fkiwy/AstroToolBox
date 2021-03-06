@@ -136,9 +136,9 @@ public class BrownDwarfTab {
         distancePanel.repaint();
         selectedEntry = catalogQueryTab.getSelectedEntry();
         if (selectedEntry == null) {
-            spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
+            spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.RED));
         } else {
-            distancePanel.add(createLabel("No spectral type selected in the table above!", JColor.DARK_RED));
+            distancePanel.add(createLabel("No spectral type selected in the table above!", JColor.RED));
             JPanel entryPanel = new JPanel(new GridLayout(2, 1));
             spectralTypePanel.add(entryPanel);
             String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
@@ -147,19 +147,19 @@ public class BrownDwarfTab {
             if (selectedEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                    entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    entryPanel.add(createLabel(AGN_WARNING, JColor.RED));
                 }
             }
             if (selectedEntry instanceof GaiaCatalogEntry) {
                 GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    entryPanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    entryPanel.add(createLabel(WD_WARNING, JColor.RED));
                 }
             }
             if (selectedEntry instanceof GaiaDR3CatalogEntry) {
                 GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) selectedEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    entryPanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    entryPanel.add(createLabel(WD_WARNING, JColor.RED));
                 }
             }
             if (dustExtinction.isSelected()) {
@@ -228,7 +228,7 @@ public class BrownDwarfTab {
         });
 
         JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(resultTable);
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder()
@@ -269,7 +269,7 @@ public class BrownDwarfTab {
         columnModel.getColumn(1).setPreferredWidth(100);
 
         JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No bands available / No match", JColor.DARK_RED))
+                ? new JScrollPane(createLabel("No bands available / No match", JColor.RED))
                 : new JScrollPane(resultTable);
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder()

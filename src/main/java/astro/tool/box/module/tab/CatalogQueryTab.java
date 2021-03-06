@@ -545,7 +545,7 @@ public class CatalogQueryTab {
             spectralTypeInfo.setPreferredSize(new Dimension(SPT_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                    ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                     : new JScrollPane(spectralTypeTable);
             spectralTypeInfo.add(spectralTypePanel);
 
@@ -556,21 +556,21 @@ public class CatalogQueryTab {
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                    remarks.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    remarks.add(createLabel(AGN_WARNING, JColor.RED));
                     warning = true;
                 }
             }
             if (catalogEntry instanceof GaiaCatalogEntry) {
                 GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    remarks.add(createLabel(WD_WARNING, JColor.RED));
                     warning = true;
                 }
             }
             if (catalogEntry instanceof GaiaDR3CatalogEntry) {
                 GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    remarks.add(createLabel(WD_WARNING, JColor.RED));
                     warning = true;
                 }
             }
@@ -593,11 +593,6 @@ public class CatalogQueryTab {
             collectPanel.setBorder(BorderFactory.createEtchedBorder());
             spectralTypeInfo.add(collectPanel);
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
-            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
-                message.setText("");
-            });
-
             collectPanel.add(new JLabel("Object type:"));
 
             JComboBox objectTypes = new JComboBox(ObjectType.labels());
@@ -614,8 +609,6 @@ public class CatalogQueryTab {
                 collectButton.setText("Copied!");
                 collectTimer.restart();
             });
-
-            collectPanel.add(message);
 
             bottomPanel.add(spectralTypeInfo);
         } catch (Exception ex) {

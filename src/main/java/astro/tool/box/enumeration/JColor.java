@@ -21,7 +21,6 @@ public enum JColor {
     DARK_GREEN(java.awt.Color.GREEN.darker()),
     DARK_YELLOW(java.awt.Color.YELLOW.darker()),
     DARK_GRAY(java.awt.Color.DARK_GRAY),
-    DARKER_GREEN(new java.awt.Color(0, 100, 0)),
     LIGHT_RED(new java.awt.Color(255, 204, 204)),
     LIGHT_BLUE(new java.awt.Color(204, 229, 255)),
     LIGHT_GREEN(new java.awt.Color(204, 255, 204)),

@@ -160,7 +160,7 @@ public class AdqlQueryTab {
             });
 
             String saveMessage = "File saved!";
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            JLabel message = createMessageLabel();
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -673,7 +673,7 @@ public class AdqlQueryTab {
     private void showQueryErrorMessage(String message) {
         JTextArea errorMessage = new JTextArea(message);
         errorMessage.setBorder(new EmptyBorder(5, 5, 5, 5));
-        errorMessage.setForeground(JColor.DARK_RED.val);
+        errorMessage.setForeground(JColor.RED.val);
         errorMessage.setFont(MONO_FONT);
         errorMessage.setEditable(false);
 

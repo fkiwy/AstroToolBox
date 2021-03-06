@@ -1095,7 +1095,7 @@ public class ImageViewerTab {
             warning.setFont(font);
             overlaysControlPanel.add(warning);
 
-            JLabel saveOverlaysMessage = createLabel("", JColor.DARKER_GREEN);
+            JLabel saveOverlaysMessage = createMessageLabel();
             Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
                 saveOverlaysMessage.setText("");
             });
@@ -5271,7 +5271,7 @@ public class ImageViewerTab {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    messagePanel.add(createLabel(AGN_WARNING, JColor.RED));
                     container.add(messagePanel);
                 }
             }
@@ -5279,7 +5279,7 @@ public class ImageViewerTab {
                 GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    messagePanel.add(createLabel(WD_WARNING, JColor.RED));
                     container.add(messagePanel);
                 }
             }
@@ -5287,7 +5287,7 @@ public class ImageViewerTab {
                 GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    messagePanel.add(createLabel(WD_WARNING, JColor.RED));
                     container.add(messagePanel);
                 }
             }
@@ -5408,7 +5408,7 @@ public class ImageViewerTab {
         catalogFrame.setIconImage(getToolBoxImage());
         catalogFrame.setTitle("Object details");
         catalogFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        catalogFrame.setSize(650, 550);
+        catalogFrame.setSize(650, 600);
         catalogFrame.setLocation(windowShift, windowShift);
         catalogFrame.setAlwaysOnTop(true);
         catalogFrame.setResizable(true);
@@ -5447,7 +5447,7 @@ public class ImageViewerTab {
         columnModel.getColumn(6).setPreferredWidth(100);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Main sequence spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
@@ -5483,7 +5483,7 @@ public class ImageViewerTab {
         columnModel.getColumn(3).setPreferredWidth(100);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Brown dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
