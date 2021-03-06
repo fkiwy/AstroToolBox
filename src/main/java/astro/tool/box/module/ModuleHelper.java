@@ -141,7 +141,7 @@ public class ModuleHelper {
 
     public static JLabel createHyperlink(String label, String uri) {
         JLabel hyperlink = new JLabel(label);
-        hyperlink.setForeground(JColor.DARK_BLUE.val);
+        hyperlink.setForeground(JColor.LINK_BLUE.val);
         hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         hyperlink.addMouseListener(new MouseAdapter() {
             @Override
