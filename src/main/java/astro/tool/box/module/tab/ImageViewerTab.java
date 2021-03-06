@@ -584,16 +584,11 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            JPanel whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(whitePanel);
-            whitePanel.setBackground(Color.WHITE);
-
             highScaleLabel = new JLabel(String.format(HIGH_SCALE_LABEL, highContrast));
-            whitePanel.add(highScaleLabel);
+            mainControlPanel.add(highScaleLabel);
 
             highScaleSlider = new JSlider(0, 1000, HIGH_CONTRAST);
             mainControlPanel.add(highScaleSlider);
-            highScaleSlider.setBackground(Color.WHITE);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -610,16 +605,11 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JPanel grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(grayPanel);
-            grayPanel.setBackground(Color.LIGHT_GRAY);
-
             lowScaleLabel = new JLabel(String.format(LOW_SCALE_LABEL, lowContrast));
-            grayPanel.add(lowScaleLabel);
+            mainControlPanel.add(lowScaleLabel);
 
             lowScaleSlider = new JSlider(0, 100, LOW_CONTRAST);
             mainControlPanel.add(lowScaleSlider);
-            lowScaleSlider.setBackground(Color.LIGHT_GRAY);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -641,14 +631,12 @@ public class ImageViewerTab {
 
             subScalePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(subScalePanel);
-            subScalePanel.setBackground(Color.WHITE);
 
             subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
             subScalePanel.add(subScaleLabel);
 
             subScaleSlider = new JSlider(1, 19, SUB_CONTRAST);
             mainControlPanel.add(subScaleSlider);
-            subScaleSlider.setBackground(Color.WHITE);
             subScaleSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -662,16 +650,11 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(grayPanel);
-            grayPanel.setBackground(Color.LIGHT_GRAY);
-
             JLabel speedLabel = new JLabel(String.format("Playback speed: %d ms", speed));
-            grayPanel.add(speedLabel);
+            mainControlPanel.add(speedLabel);
 
             speedSlider = new JSlider(0, 2000, SPEED);
             mainControlPanel.add(speedSlider);
-            speedSlider.setBackground(Color.LIGHT_GRAY);
             speedSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -683,16 +666,11 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(whitePanel);
-            whitePanel.setBackground(Color.WHITE);
-
             JLabel zoomLabel = new JLabel(String.format("Image zoom: %d", zoom));
-            whitePanel.add(zoomLabel);
+            mainControlPanel.add(zoomLabel);
 
             zoomSlider = new JSlider(0, 2000, ZOOM);
             mainControlPanel.add(zoomSlider);
-            zoomSlider.setBackground(Color.WHITE);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -704,16 +682,13 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            grayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(grayPanel);
-            grayPanel.setBackground(Color.LIGHT_GRAY);
-
             epochLabel = new JLabel(String.format(EPOCH_LABEL, selectedEpochs));
-            grayPanel.add(epochLabel);
+            mainControlPanel.add(epochLabel);
 
-            epochSlider = new JSlider(2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
+            epochSlider = new JSlider(JSlider.HORIZONTAL, 2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
             mainControlPanel.add(epochSlider);
-            epochSlider.setBackground(Color.LIGHT_GRAY);
+            epochSlider.setMajorTickSpacing(1);
+            epochSlider.setPaintTicks(true);
             epochSlider.addChangeListener((ChangeEvent e) -> {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
@@ -972,7 +947,6 @@ public class ImageViewerTab {
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
-            useCustomOverlays.setBackground(Color.WHITE);
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
                 if (customOverlays.isEmpty()) {
                     showInfoDialog(baseFrame, "No custom overlays added yet.");
@@ -988,7 +962,6 @@ public class ImageViewerTab {
                         customOverlays.values().forEach(customOverlay -> {
                             JCheckBox checkBox = new JCheckBox(customOverlay.getName());
                             checkBox.setForeground(customOverlay.getColor());
-                            checkBox.setBackground(Color.WHITE);
                             checkBox.addActionListener((ActionEvent e) -> {
                                 processImages();
                             });
@@ -1501,7 +1474,7 @@ public class ImageViewerTab {
                 processImages();
             });
             ==================================================================*/
-            drawCrosshairs = new JCheckBox(header("Draw crosshairs (*)"));
+            drawCrosshairs = new JCheckBox(header("Draw crosshairs: (*)"));
             advancedControlPanel.add(drawCrosshairs);
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
                 if (!drawCrosshairs.isSelected()) {

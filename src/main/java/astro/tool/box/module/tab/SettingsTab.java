@@ -8,6 +8,9 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -177,24 +180,15 @@ public class SettingsTab {
             }
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            globalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Look & Feel: ", JLabel.RIGHT));
+
+            JComboBox themes = new JComboBox(LookAndFeel.values());
+            themes.setSelectedItem(lookAndFeel);
+            globalSettings.add(themes);
+
+            globalSettings.add(new JLabel("TAP provider for catalogs (*): ", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
-            globalSettings.add(radioPanel);
-
-            JRadioButton javaButton = new JRadioButton("Java", lookAndFeel.equals(LookAndFeel.Java));
-            radioPanel.add(javaButton);
-
-            JRadioButton osButton = new JRadioButton("OS", lookAndFeel.equals(LookAndFeel.OS));
-            radioPanel.add(osButton);
-
-            ButtonGroup lookAndFeelGroup = new ButtonGroup();
-            lookAndFeelGroup.add(javaButton);
-            lookAndFeelGroup.add(osButton);
-
-            globalSettings.add(new JLabel("TAP provider for catalogs (*):", JLabel.RIGHT));
-
-            radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
 
             JRadioButton irsaButton = new JRadioButton("IRSA", tapProvider.equals(TapProvider.IRSA));
@@ -448,7 +442,7 @@ public class SettingsTab {
             applyButton.addActionListener((ActionEvent evt) -> {
                 try {
                     // Global settings
-                    lookAndFeel = javaButton.isSelected() ? LookAndFeel.Java : LookAndFeel.OS;
+                    lookAndFeel = (LookAndFeel) themes.getSelectedItem();
                     tapProvider = irsaButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
@@ -638,11 +632,40 @@ public class SettingsTab {
     }
 
     public static void setLookAndFeel(LookAndFeel lookAndFeel) {
+        boolean isFlatLaf = false;
         try {
-            if (lookAndFeel.equals(LookAndFeel.Java)) {
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            } else {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            switch (lookAndFeel) {
+                case Java:
+                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                    break;
+                case OS:
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    break;
+                case Flat_Light:
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_IntelliJ:
+                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Dark:
+                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Darcula:
+                    UIManager.setLookAndFeel(new FlatDarculaLaf());
+                    isFlatLaf = true;
+                    break;
+            }
+            if (isFlatLaf) {
+                UIManager.put("Button.arc", 0);
+                UIManager.put("Component.arc", 0);
+                UIManager.put("CheckBox.arc", 0);
+                UIManager.put("ProgressBar.arc", 0);
+                UIManager.put("Component.arrowType", "triangle");
+                UIManager.put("ScrollBar.showButtons", true);
+                UIManager.put("ScrollBar.width", 15);
             }
         } catch (Exception e) {
         }
