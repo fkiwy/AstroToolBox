@@ -311,7 +311,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_NAVY.val;
+        return JColor.NAVY.val;
     }
 
     @Override

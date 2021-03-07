@@ -11,7 +11,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -258,7 +257,7 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_GRAY.val;
+        return java.awt.Color.BLUE;
     }
 
     @Override

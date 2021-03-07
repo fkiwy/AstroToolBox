@@ -257,7 +257,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_BROWN.val;
+        return JColor.BROWN.val;
     }
 
     @Override

@@ -12,7 +12,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -251,7 +250,7 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_YELLOW.val;
+        return java.awt.Color.MAGENTA;
     }
 
     @Override

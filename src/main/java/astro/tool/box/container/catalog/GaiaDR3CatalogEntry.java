@@ -12,7 +12,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -227,7 +226,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_BLUE.val;
+        return java.awt.Color.CYAN.darker();
     }
 
     @Override

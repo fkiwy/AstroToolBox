@@ -264,7 +264,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_STEEL.val;
+        return JColor.STEEL.val;
     }
 
     @Override

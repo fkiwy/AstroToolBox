@@ -221,7 +221,7 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_PINK.val;
+        return JColor.PINK.val;
     }
 
     @Override

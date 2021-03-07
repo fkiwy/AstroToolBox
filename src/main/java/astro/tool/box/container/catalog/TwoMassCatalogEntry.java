@@ -332,7 +332,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_ORANGE.val;
+        return JColor.ORANGE.val;
     }
 
     @Override

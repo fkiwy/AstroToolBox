@@ -34,7 +34,6 @@ import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
@@ -151,6 +150,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -245,7 +245,6 @@ public class ImageViewerTab {
     private JLabel lowScaleLabel;
     private JLabel subScaleLabel;
     private JLabel epochLabel;
-    private JPanel subScalePanel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JCheckBox unwiseCutouts;
@@ -569,14 +568,14 @@ public class ImageViewerTab {
                     autoContrast.setSelected(true);
                     optimizeContrast.setSelected(false);
                     blurImages.setSelected(true);
-                    subScalePanel.setBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, Color.RED.darker()));
-                    subScaleSlider.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.RED.darker()));
+                    subScaleLabel.setForeground(Color.RED);
+                    subScaleSlider.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.RED));
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                     setSubContrast(subContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     optimizeContrast.setSelected(true);
                     blurImages.setSelected(false);
-                    subScalePanel.setBorder(BorderFactory.createEmptyBorder());
+                    subScaleLabel.setForeground(lowScaleLabel.getForeground());
                     subScaleSlider.setBorder(BorderFactory.createEmptyBorder());
                     setContrast(lowContrastSaved, highContrastSaved);
                     setSubContrast(SUB_CONTRAST);
@@ -590,12 +589,12 @@ public class ImageViewerTab {
             highScaleSlider = new JSlider(0, 1000, HIGH_CONTRAST);
             mainControlPanel.add(highScaleSlider);
             highScaleSlider.addChangeListener((ChangeEvent e) -> {
+                highContrast = highScaleSlider.getValue();
+                highScaleLabel.setText(String.format(HIGH_SCALE_LABEL, highContrast));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                highContrast = highScaleSlider.getValue();
-                highScaleLabel.setText(String.format(HIGH_SCALE_LABEL, highContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     highContrastSaved = highContrast;
                 }
@@ -611,12 +610,12 @@ public class ImageViewerTab {
             lowScaleSlider = new JSlider(0, 100, LOW_CONTRAST);
             mainControlPanel.add(lowScaleSlider);
             lowScaleSlider.addChangeListener((ChangeEvent e) -> {
+                lowContrast = lowScaleSlider.getValue();
+                lowScaleLabel.setText(String.format(LOW_SCALE_LABEL, lowContrast));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                lowContrast = lowScaleSlider.getValue();
-                lowScaleLabel.setText(String.format(LOW_SCALE_LABEL, lowContrast));
                 if (!Epoch.isSubtracted(epoch)) {
                     lowContrastSaved = lowContrast;
                 }
@@ -629,21 +628,18 @@ public class ImageViewerTab {
                 }
             });
 
-            subScalePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(subScalePanel);
-
             subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
-            subScalePanel.add(subScaleLabel);
+            mainControlPanel.add(subScaleLabel);
 
             subScaleSlider = new JSlider(1, 19, SUB_CONTRAST);
             mainControlPanel.add(subScaleSlider);
             subScaleSlider.addChangeListener((ChangeEvent e) -> {
+                subContrast = subScaleSlider.getValue();
+                subScaleLabel.setText(String.format(SUB_SCALE_LABEL, subContrast));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                subContrast = subScaleSlider.getValue();
-                subScaleLabel.setText(String.format(SUB_SCALE_LABEL, subContrast));
                 if (Epoch.isSubtracted(epoch)) {
                     subContrastSaved = subContrast;
                 }
@@ -656,13 +652,13 @@ public class ImageViewerTab {
             speedSlider = new JSlider(0, 2000, SPEED);
             mainControlPanel.add(speedSlider);
             speedSlider.addChangeListener((ChangeEvent e) -> {
+                speed = speedSlider.getValue();
+                speedLabel.setText(String.format("Playback speed: %d ms", speed));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                speed = speedSlider.getValue();
                 timer.setDelay(speed);
-                speedLabel.setText(String.format("Playback speed: %d ms", speed));
                 processImages();
             });
 
@@ -672,13 +668,13 @@ public class ImageViewerTab {
             zoomSlider = new JSlider(0, 2000, ZOOM);
             mainControlPanel.add(zoomSlider);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
+                zoom = zoomSlider.getValue();
+                zoom = zoom < 100 ? 100 : zoom;
+                zoomLabel.setText(String.format("Image zoom: %d", zoom));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                zoom = zoomSlider.getValue();
-                zoom = zoom < 100 ? 100 : zoom;
-                zoomLabel.setText(String.format("Image zoom: %d", zoom));
                 processImages();
             });
 
@@ -690,12 +686,12 @@ public class ImageViewerTab {
             epochSlider.setMajorTickSpacing(1);
             epochSlider.setPaintTicks(true);
             epochSlider.addChangeListener((ChangeEvent e) -> {
+                selectedEpochs = epochSlider.getValue();
+                epochLabel.setText(String.format(EPOCH_LABEL, selectedEpochs));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                selectedEpochs = epochSlider.getValue();
-                epochLabel.setText(String.format(EPOCH_LABEL, selectedEpochs));
                 reloadImages = true;
                 createFlipbook();
             });
@@ -5259,8 +5255,7 @@ public class ImageViewerTab {
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.setBorder(new EmptyBorder(3, 3, 3, 3));
-        container.setBackground(color);
+        container.setBorder(new LineBorder(color, 3));
         container.add(detailPanel);
 
         if (!simpleLayout) {
@@ -5322,11 +5317,7 @@ public class ImageViewerTab {
                 copyCoordsButton.setText("Copy coords");
             });
             copyCoordsButton.addActionListener((ActionEvent evt) -> {
-                StringBuilder toCopy = new StringBuilder();
-                toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
-                toCopy.append(" ");
-                toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
-                copyToClipboard(toCopy.toString());
+                copyToClipboard(copyObjectCoordinates(catalogEntry));
                 copyCoordsButton.setText("Copied!");
                 copyCoordsTimer.restart();
             });
@@ -5337,41 +5328,7 @@ public class ImageViewerTab {
                 copyInfoButton.setText("Copy digest");
             });
             copyInfoButton.addActionListener((ActionEvent evt) -> {
-                StringBuilder toCopy = new StringBuilder();
-                toCopy.append(catalogEntry.getCatalogName()).append(": ").append(catalogEntry.getSourceId());
-                toCopy.append(LINE_SEP);
-                toCopy.append("ra=").append(roundTo7DecNZ(catalogEntry.getRa()));
-                toCopy.append(" ");
-                toCopy.append("dec=").append(roundTo7DecNZ(catalogEntry.getDec()));
-                toCopy.append(LINE_SEP);
-                if (catalogEntry.getPlx() != 0) {
-                    toCopy.append("plx=").append(roundTo3DecNZ(catalogEntry.getPlx())).append(" mas");
-                    toCopy.append(LINE_SEP);
-                }
-                if (catalogEntry.getParallacticDistance() != 0) {
-                    toCopy.append("dist=").append(roundTo3DecNZ(catalogEntry.getParallacticDistance())).append(" pc");
-                    toCopy.append(LINE_SEP);
-                }
-                if (catalogEntry.getPmra() != 0 || catalogEntry.getPmdec() != 0) {
-                    toCopy.append("pmra=").append(roundTo3DecNZ(catalogEntry.getPmra()));
-                    toCopy.append(" ");
-                    toCopy.append("pmdec=").append(roundTo3DecNZ(catalogEntry.getPmdec()));
-                    toCopy.append(LINE_SEP);
-                    toCopy.append("tpm=").append(roundTo3DecNZ(catalogEntry.getTotalProperMotion())).append(" mas/yr");
-                    toCopy.append(LINE_SEP);
-                }
-                toCopy.append(catalogEntry.getMagnitudes());
-                toCopy.append(LINE_SEP);
-                Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors();
-                colors.entrySet().forEach(entry -> {
-                    double value = entry.getValue();
-                    if (value != 0) {
-                        String label = entry.getKey().val;
-                        toCopy.append(label).append("=").append(roundTo3DecNZ(value));
-                        toCopy.append(LINE_SEP);
-                    }
-                });
-                copyToClipboard(toCopy.toString());
+                copyToClipboard(copyObjectDigest(catalogEntry));
                 copyInfoButton.setText("Copied!");
                 copyInfoTimer.restart();
             });
@@ -5382,23 +5339,7 @@ public class ImageViewerTab {
                 copyAllButton.setText("Copy all");
             });
             copyAllButton.addActionListener((ActionEvent evt) -> {
-                StringBuilder toCopy = new StringBuilder();
-                toCopy.append(catalogEntry.getEntryData());
-                toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
-                toCopy.append(LINE_SEP).append("* Main sequence table:");
-                mainSequenceResults.forEach(entry -> {
-                    toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
-                });
-                toCopy.append(LINE_SEP).append("* Brown dwarfs only:");
-                brownDwarfsResults.forEach(entry -> {
-                    toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
-                    List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
-                    toCopy.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
-                    distanceResults.forEach(result -> {
-                        toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
-                    });
-                });
-                copyToClipboard(toCopy.toString());
+                copyToClipboard(copyObjectInfo(catalogEntry, mainSequenceResults, brownDwarfsResults, distanceLookupService));
                 copyAllButton.setText("Copied!");
                 copyAllTimer.restart();
             });
@@ -5408,7 +5349,7 @@ public class ImageViewerTab {
         catalogFrame.setIconImage(getToolBoxImage());
         catalogFrame.setTitle("Object details");
         catalogFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        catalogFrame.setSize(650, 600);
+        catalogFrame.setSize(700, 600);
         catalogFrame.setLocation(windowShift, windowShift);
         catalogFrame.setAlwaysOnTop(true);
         catalogFrame.setResizable(true);

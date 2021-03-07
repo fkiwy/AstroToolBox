@@ -266,7 +266,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_PURPLE.val;
+        return JColor.PURPLE.val;
     }
 
     @Override

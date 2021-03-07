@@ -22,10 +22,12 @@ import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.Color;
@@ -206,7 +208,7 @@ public class ModuleHelper {
     }
 
     public static String header(String text) {
-        return html("<span style='background:#505050;color:#C0C0C0'>&nbsp;" + text + "&nbsp;</span>");
+        return html("<span style='background:#505050;color:#E0E0E0'>&nbsp;" + text + "&nbsp;</span>");
     }
 
     public static String html(String text) {
@@ -522,6 +524,76 @@ public class ModuleHelper {
             DefaultTableModel tableModel = (DefaultTableModel) collectionTable.getModel();
             tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
         }
+    }
+
+    public static String copyObjectCoordinates(CatalogEntry catalogEntry) {
+        StringBuilder toCopy = new StringBuilder();
+        toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
+        toCopy.append(" ");
+        toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
+        return toCopy.toString();
+    }
+
+    public static String copyObjectDigest(CatalogEntry catalogEntry) {
+        StringBuilder toCopy = new StringBuilder();
+        toCopy.append(catalogEntry.getCatalogName()).append(": ").append(catalogEntry.getSourceId());
+        toCopy.append(LINE_SEP);
+        toCopy.append("ra=").append(roundTo7DecNZ(catalogEntry.getRa()));
+        toCopy.append(" ");
+        toCopy.append("dec=").append(roundTo7DecNZ(catalogEntry.getDec()));
+        toCopy.append(LINE_SEP);
+        if (catalogEntry.getPlx() != 0) {
+            toCopy.append("plx=").append(roundTo3DecNZ(catalogEntry.getPlx())).append(" mas");
+            toCopy.append(LINE_SEP);
+        }
+        if (catalogEntry.getParallacticDistance() != 0) {
+            toCopy.append("dist=").append(roundTo3DecNZ(catalogEntry.getParallacticDistance())).append(" pc");
+            toCopy.append(LINE_SEP);
+        }
+        if (catalogEntry.getPmra() != 0 || catalogEntry.getPmdec() != 0) {
+            toCopy.append("pmra=").append(roundTo3DecNZ(catalogEntry.getPmra()));
+            toCopy.append(" ");
+            toCopy.append("pmdec=").append(roundTo3DecNZ(catalogEntry.getPmdec()));
+            toCopy.append(LINE_SEP);
+            toCopy.append("tpm=").append(roundTo3DecNZ(catalogEntry.getTotalProperMotion())).append(" mas/yr");
+            toCopy.append(LINE_SEP);
+        }
+        toCopy.append(catalogEntry.getMagnitudes());
+        toCopy.append(LINE_SEP);
+        Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors();
+        colors.entrySet().forEach(entry -> {
+            double value = entry.getValue();
+            if (value != 0) {
+                String label = entry.getKey().val;
+                toCopy.append(label).append("=").append(roundTo3DecNZ(value));
+                toCopy.append(LINE_SEP);
+            }
+        });
+        return toCopy.toString();
+    }
+
+    public static String copyObjectInfo(CatalogEntry catalogEntry, List<LookupResult> mainSequenceResults, List<LookupResult> brownDwarfsResults, DistanceLookupService distanceLookupService) {
+        StringBuilder toCopy = new StringBuilder();
+        toCopy.append(catalogEntry.getEntryData());
+        toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
+        if (mainSequenceResults != null) {
+            toCopy.append(LINE_SEP).append("* Main sequence table:");
+            mainSequenceResults.forEach(entry -> {
+                toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+            });
+        }
+        if (brownDwarfsResults != null) {
+            toCopy.append(LINE_SEP).append("* Brown dwarfs only:");
+            brownDwarfsResults.forEach(entry -> {
+                toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+                List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
+                toCopy.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
+                distanceResults.forEach(result -> {
+                    toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
+                });
+            });
+        }
+        return toCopy.toString();
     }
 
     public static BufferedImage zoom(BufferedImage image, int zoom) {
