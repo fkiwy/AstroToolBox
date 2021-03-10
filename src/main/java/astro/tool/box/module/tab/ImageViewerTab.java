@@ -209,7 +209,6 @@ public class ImageViewerTab {
     public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.846;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
     public static final double GAIADR3_ALLWISE_EPOCH_DIFF = 5.441;
-    public static final double NOIRLAB_ALLWISE_EPOCH_DIFF = GAIADR2_ALLWISE_EPOCH_DIFF;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
