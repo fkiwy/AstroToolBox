@@ -300,8 +300,9 @@ public class ImageViewerTab {
     private JCheckBox checkProperMotion;
     private JCheckBox useAboveCoords;
     private JCheckBox useGaiaPM;
-    private JCheckBox useCatwisePM;
+    private JCheckBox useGaiaDR3PM;
     private JCheckBox useNoirlabPM;
+    private JCheckBox useCatwisePM;
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
@@ -1526,6 +1527,7 @@ public class ImageViewerTab {
             checkObjectMotionPrompt.applyTo(checkObjectMotionField);
             checkObjectMotionField.addActionListener((ActionEvent evt) -> {
                 useGaiaPM.setSelected(false);
+                useGaiaDR3PM.setSelected(false);
                 useCatwisePM.setSelected(false);
                 useNoirlabPM.setSelected(false);
                 displayMotionChecker();
@@ -1540,8 +1542,8 @@ public class ImageViewerTab {
             useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useGaiaPM);
 
-            useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useCatwisePM);
+            useGaiaDR3PM = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useGaiaDR3PM);
 
             checkerPanel = new JPanel(new GridLayout(1, 2));
             advancedControlPanel.add(checkerPanel);
@@ -1549,8 +1551,12 @@ public class ImageViewerTab {
             useNoirlabPM = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
             checkerPanel.add(useNoirlabPM);
 
+            useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
+            checkerPanel.add(useCatwisePM);
+
             useGaiaPM.addActionListener((ActionEvent evt) -> {
                 if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useGaiaDR3PM.setSelected(false);
                     useCatwisePM.setSelected(false);
                     useNoirlabPM.setSelected(false);
                     applyProperMotion(new GaiaCatalogEntry());
@@ -1558,11 +1564,12 @@ public class ImageViewerTab {
                 displayMotionChecker();
             });
 
-            useCatwisePM.addActionListener((ActionEvent evt) -> {
-                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+            useGaiaDR3PM.addActionListener((ActionEvent evt) -> {
+                if (useGaiaDR3PM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useGaiaPM.setSelected(false);
+                    useCatwisePM.setSelected(false);
                     useNoirlabPM.setSelected(false);
-                    applyProperMotion(new CatWiseCatalogEntry());
+                    applyProperMotion(new GaiaDR3CatalogEntry());
                 }
                 displayMotionChecker();
             });
@@ -1570,8 +1577,19 @@ public class ImageViewerTab {
             useNoirlabPM.addActionListener((ActionEvent evt) -> {
                 if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                     useGaiaPM.setSelected(false);
+                    useGaiaDR3PM.setSelected(false);
                     useCatwisePM.setSelected(false);
                     applyProperMotion(new NoirlabCatalogEntry());
+                }
+                displayMotionChecker();
+            });
+
+            useCatwisePM.addActionListener((ActionEvent evt) -> {
+                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                    useGaiaPM.setSelected(false);
+                    useGaiaDR3PM.setSelected(false);
+                    useNoirlabPM.setSelected(false);
+                    applyProperMotion(new CatWiseCatalogEntry());
                 }
                 displayMotionChecker();
             });
@@ -2537,6 +2555,12 @@ public class ImageViewerTab {
                     if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                         applyProperMotion(new GaiaCatalogEntry());
                     }
+                    if (useGaiaDR3PM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                        applyProperMotion(new GaiaDR3CatalogEntry());
+                    }
+                    if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
+                        applyProperMotion(new NoirlabCatalogEntry());
+                    }
                     if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
                         applyProperMotion(new CatWiseCatalogEntry());
                     }
@@ -3008,20 +3032,21 @@ public class ImageViewerTab {
 
         double numberOfYears = 0;
         if (pmCatalogEntry != null) {
+            ra = pmCatalogEntry.getRa();
+            dec = pmCatalogEntry.getDec();
             if (useGaiaPM.isSelected()) {
-                ra = pmCatalogEntry.getRa();
-                dec = pmCatalogEntry.getDec();
                 numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
+            }
+            if (useGaiaDR3PM.isSelected()) {
+                numberOfYears = GAIADR3_ALLWISE_EPOCH_DIFF;
+            }
+            if (useNoirlabPM.isSelected()) {
+                numberOfYears = ((NoirlabCatalogEntry) pmCatalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
             if (useCatwisePM.isSelected()) {
                 ra = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
                 dec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
-            }
-            if (useNoirlabPM.isSelected()) {
-                ra = pmCatalogEntry.getRa();
-                dec = pmCatalogEntry.getDec();
-                numberOfYears = ((NoirlabCatalogEntry) pmCatalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
         }
 
@@ -5173,13 +5198,13 @@ public class ImageViewerTab {
             if (catalogEntry instanceof GaiaDR3CatalogEntry) {
                 numberOfYears = GAIADR3_ALLWISE_EPOCH_DIFF;
             }
+            if (catalogEntry instanceof NoirlabCatalogEntry) {
+                numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
+            }
             if (catalogEntry instanceof CatWiseCatalogEntry) {
                 ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
                 dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
-            }
-            if (catalogEntry instanceof NoirlabCatalogEntry) {
-                numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
             if (showProperMotion.isSelected()) {
