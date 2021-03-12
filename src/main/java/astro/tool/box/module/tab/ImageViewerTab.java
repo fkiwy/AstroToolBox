@@ -55,6 +55,7 @@ import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.CrossHair;
 import astro.tool.box.module.shape.Diamond;
+import astro.tool.box.module.shape.Disk;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.module.shape.Square;
 import astro.tool.box.module.shape.Text;
@@ -280,6 +281,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaDR3ProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox noirlabProperMotion;
+    private JCheckBox showProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImages;
     private JCheckBox twoMassImages;
@@ -1020,6 +1022,12 @@ public class ImageViewerTab {
                 gaiaDR3TpmEntries = null;
                 catWiseTpmEntries = null;
                 noirlabTpmEntries = null;
+                processImages();
+            });
+
+            showProperMotion = new JCheckBox("Show motion");
+            overlaysControlPanel.add(showProperMotion);
+            showProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
 
@@ -2645,30 +2653,30 @@ public class ImageViewerTab {
                 case ALL:
                     flipbook = new FlipbookComponent[epochCount];
                     for (int i = 0; i < epochCount; i++) {
-                        flipbook[i] = new FlipbookComponent(wiseBand.val, i, getEpochCoordinates(i > 1 ? i + EPOCH_GAP : i));
+                        flipbook[i] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                     }
                     break;
                 case ASCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 0; i < epochCount; i += 2) {
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, getEpochCoordinates(i > 0 ? i + EPOCH_GAP : i));
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, i > 0 ? i + EPOCH_GAP : i);
                     }
                     break;
                 case DESCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 1; i < epochCount; i += 2) {
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, getEpochCoordinates(i > 1 ? i + EPOCH_GAP : i));
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                     }
                     break;
                 case ASCENDING_DESCENDING:
                     flipbook = new FlipbookComponent[epochCount];
                     k = 0;
                     for (int i = 0; i < epochCount; i += 2) {
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, getEpochCoordinates(i > 0 ? i + EPOCH_GAP : i));
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, i > 0 ? i + EPOCH_GAP : i);
                         k++;
                     }
                     for (int i = 1; i < epochCount; i += 2) {
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, getEpochCoordinates(i > 1 ? i + EPOCH_GAP : i));
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                         k++;
                     }
                     break;
@@ -2693,7 +2701,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true, getEpochCoordinates(i > 2 ? i + EPOCH_GAP : i - 2));
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true, i > 2 ? i + EPOCH_GAP : i - 2);
                         k++;
                     }
                     for (int i = 3; i < epochCount; i += 2) {
@@ -2714,7 +2722,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, fits);
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true, getEpochCoordinates(i > 3 ? i + EPOCH_GAP : i - 2));
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true, i > 3 ? i + EPOCH_GAP : i - 2);
                         k++;
                     }
                     break;
@@ -2739,7 +2747,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, takeAverage(fits, 2));
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true, getEpochCoordinates(i > 2 ? i + EPOCH_GAP + 2 : i - 2));
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true, i > 2 ? i + EPOCH_GAP + 2 : i - 2);
                         k++;
                     }
                     for (int i = 3; i < epochCount - 2; i += 2) {
@@ -2760,7 +2768,7 @@ public class ImageViewerTab {
                             addImage(WiseBand.W2.val, 900 + i, takeAverage(fits, 2));
                         }
                         differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true, getEpochCoordinates(i > 3 ? i + EPOCH_GAP + 2 : i - 2));
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true, i > 3 ? i + EPOCH_GAP + 2 : i - 2);
                         k++;
                     }
                     break;
@@ -2802,8 +2810,8 @@ public class ImageViewerTab {
                         }
                         addImage(WiseBand.W2.val, 700, takeAverage(fits, epochCount / 2));
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 600, true, getEpochCoordinates(0));
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 700, true, getEpochCoordinates(selectedEpochs * 2 + EPOCH_GAP - 1));
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 600, true, 0);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 700, true, selectedEpochs * 2 + EPOCH_GAP - 1);
                     break;
                 case YEAR:
                     flipbook = new FlipbookComponent[epochCount / 2];
@@ -2816,7 +2824,7 @@ public class ImageViewerTab {
                             fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 1);
                             addImage(WiseBand.W2.val, 101 + (i / 2), takeAverage(fits, 2));
                         }
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true, getEpochCoordinates(i > 1 ? i + EPOCH_GAP + 1 : i));
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true, i > 1 ? i + EPOCH_GAP + 1 : i);
                     }
                     break;
                 case FIRST_REMAINING:
@@ -2851,8 +2859,8 @@ public class ImageViewerTab {
                     if (epoch.equals(Epoch.FIRST_REMAINING_SUBTRACTED)) {
                         differenceImaging(100, 300);
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true, getEpochCoordinates(0));
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 300, true, getEpochCoordinates(selectedEpochs * 2 + EPOCH_GAP - 1));
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true, 0);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 300, true, selectedEpochs * 2 + EPOCH_GAP - 1);
                     break;
                 case FIRST_LAST:
                 case FIRST_LAST_SUBTRACTED:
@@ -2876,8 +2884,8 @@ public class ImageViewerTab {
                     if (epoch.equals(Epoch.FIRST_LAST_SUBTRACTED)) {
                         differenceImaging(100, 200);
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true, getEpochCoordinates(0));
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 200, true, getEpochCoordinates(selectedEpochs * 2 + EPOCH_GAP - 1));
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 100, true, 0);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 200, true, selectedEpochs * 2 + EPOCH_GAP - 1);
                     break;
                 case FIRST_LAST_PARALLAX:
                     flipbook = new FlipbookComponent[2];
@@ -2897,8 +2905,8 @@ public class ImageViewerTab {
                         fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, epochCount - 1);
                         addImage(WiseBand.W2.val, 500, takeAverage(fits, 2));
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 400, true, getEpochCoordinates(0));
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true, getEpochCoordinates(selectedEpochs * 2 + EPOCH_GAP - 1));
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 400, true, 0);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true, selectedEpochs * 2 + EPOCH_GAP - 1);
                     break;
                 case FIRST_LAST_ASCENDING:
                     flipbook = new FlipbookComponent[2];
@@ -2918,8 +2926,8 @@ public class ImageViewerTab {
                         fits = getImage(WiseBand.W2.val, epochCount - 2);
                         addImage(WiseBand.W2.val, 1200, fits);
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 1100, true, getEpochCoordinates(0));
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 1200, true, getEpochCoordinates(selectedEpochs * 2 + EPOCH_GAP - 2));
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 1100, true, 0);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 1200, true, selectedEpochs * 2 + EPOCH_GAP - 2);
                     break;
                 case FIRST_LAST_DESCENDING:
                     flipbook = new FlipbookComponent[2];
@@ -2939,8 +2947,8 @@ public class ImageViewerTab {
                         fits = getImage(WiseBand.W2.val, epochCount - 1);
                         addImage(WiseBand.W2.val, 1400, fits);
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 1300, true, getEpochCoordinates(1));
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 1400, true, getEpochCoordinates(selectedEpochs * 2 + EPOCH_GAP - 1));
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 1300, true, 1);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 1400, true, selectedEpochs * 2 + EPOCH_GAP - 1);
                     break;
             }
 
@@ -3017,6 +3025,10 @@ public class ImageViewerTab {
             }
         }
 
+        return getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
+    }
+
+    private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
         NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
         double fromRa = fromCoords.getX();
         double fromDec = fromCoords.getY();
@@ -3154,7 +3166,7 @@ public class ImageViewerTab {
             image = createImage(component.getBand(), component.getEpoch(), minValue, maxValue);
         }
         image = flip(zoom(image, zoom));
-        addOverlaysAndPMVectors(image);
+        addOverlaysAndPMVectors(image, component.getTotalEpochs());
         return image;
     }
 
@@ -3166,7 +3178,7 @@ public class ImageViewerTab {
 
         // Draw a circle around the object to check if proper motions are consistent
         if (checkProperMotion.isSelected()) {
-            NumberPair epochCoordinates = component.getEpochCoordinates();
+            NumberPair epochCoordinates = getEpochCoordinates(component.getTotalEpochs());
             NumberPair position = toPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
             Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 200, Color.RED);
             circle.draw(image.getGraphics());
@@ -3210,7 +3222,7 @@ public class ImageViewerTab {
         return image;
     }
 
-    private void addOverlaysAndPMVectors(BufferedImage image) {
+    private void addOverlaysAndPMVectors(BufferedImage image, int totalEpochs) {
         if (simbadOverlay.isSelected()) {
             if (simbadEntries == null) {
                 simbadEntries = Collections.emptyList();
@@ -3405,7 +3417,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker());
+                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), totalEpochs);
             }
         }
         if (gaiaDR3ProperMotion.isSelected()) {
@@ -3417,7 +3429,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker());
+                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), totalEpochs);
             }
         }
         if (noirlabProperMotion.isSelected()) {
@@ -3429,7 +3441,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val);
+                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, totalEpochs);
             }
         }
         if (catWiseProperMotion.isSelected()) {
@@ -3441,7 +3453,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
+                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
@@ -5141,7 +5153,7 @@ public class ImageViewerTab {
         });
     }
 
-    private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color) {
+    private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color, int totalEpochs) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
@@ -5170,31 +5182,43 @@ public class ImageViewerTab {
                 numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
-            NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-            double fromRa = fromCoords.getX();
-            double fromDec = fromCoords.getY();
-
-            NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
-            double fromX = fromPoint.getX();
-            double fromY = fromPoint.getY();
-
-            numberOfYears = selectedEpochs + 2; // +2 years -> hibernation period
-
-            NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
-            double toRa = toCoords.getX();
-            double toDec = toCoords.getY();
-
-            NumberPair toPoint = toPixelCoordinates(toRa, toDec);
-            double toX = toPoint.getX();
-            double toY = toPoint.getY();
-
-            Drawable toDraw;
-            if (displaySpectralTypes.isSelected()) {
-                toDraw = new Text(position.getX(), position.getY(), getOverlaySize(), color, catalogEntry.getSpt());
+            if (showProperMotion.isSelected()) {
+                NumberPair pixelCoords;
+                if (catalogEntry.getTotalProperMotion() > 30) {
+                    NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
+                    pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
+                } else {
+                    pixelCoords = toPixelCoordinates(ra, dec);
+                }
+                Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(200), color);
+                disk.draw(image.getGraphics());
             } else {
-                toDraw = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
+                NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+                double fromRa = fromCoords.getX();
+                double fromDec = fromCoords.getY();
+
+                NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
+                double fromX = fromPoint.getX();
+                double fromY = fromPoint.getY();
+
+                numberOfYears = selectedEpochs + 2; // +2 years -> hibernation period
+
+                NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
+                double toRa = toCoords.getX();
+                double toDec = toCoords.getY();
+
+                NumberPair toPoint = toPixelCoordinates(toRa, toDec);
+                double toX = toPoint.getX();
+                double toY = toPoint.getY();
+
+                Drawable toDraw;
+                if (displaySpectralTypes.isSelected()) {
+                    toDraw = new Text(position.getX(), position.getY(), getOverlaySize(), color, catalogEntry.getSpt());
+                } else {
+                    toDraw = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
+                }
+                toDraw.draw(graphics);
             }
-            toDraw.draw(graphics);
         });
     }
 
@@ -5470,8 +5494,12 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize() {
+        return getOverlaySize(100);
+    }
+
+    private double getOverlaySize(int val) {
         int x = decalsCutouts.isSelected() ? 1500 : 300;
-        return zoom / 100 + x / size;
+        return zoom / val + x / size;
     }
 
     public JCheckBox getBlurImages() {
