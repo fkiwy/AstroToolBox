@@ -639,7 +639,7 @@ public class ModuleHelper {
             }
             // GAIA DR2 Parallax + e_
             if (gaiaEntry.getPlx() != 0) {
-                params.append("&entry.1383168065=").append(roundTo3DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPlx_err()));
+                params.append("&entry.1383168065=").append(roundTo4DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo4DecNZ(gaiaEntry.getPlx_err()));
             }
             // GAIA ID
             params.append("&entry.1411207241=").append(gaiaEntry.getSourceId());
