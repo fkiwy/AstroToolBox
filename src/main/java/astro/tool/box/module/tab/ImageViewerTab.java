@@ -5209,12 +5209,8 @@ public class ImageViewerTab {
 
             if (showProperMotion.isSelected()) {
                 NumberPair pixelCoords;
-                if (catalogEntry.getTotalProperMotion() > 30) {
-                    NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
-                    pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
-                } else {
-                    pixelCoords = toPixelCoordinates(ra, dec);
-                }
+                NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
+                pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
                 Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(200), color);
                 disk.draw(image.getGraphics());
             } else {
