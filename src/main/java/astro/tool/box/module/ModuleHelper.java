@@ -601,9 +601,15 @@ public class ModuleHelper {
     public static void fillTygoForm(CatalogEntry catalogEntry, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
         StringBuilder params = new StringBuilder();
         // Citizen scientist name
-        params.append("entry.472808084=").append("Firstname Lastname");
+        String userName = getUserSetting("userName", "");
+        if (!userName.isEmpty()) {
+            params.append("entry.472808084=").append(userName);
+        }
         // Enter your email
-        params.append("&entry.1241683426=").append("email@gmail.com");
+        String userEmail = getUserSetting("userEmail", "");
+        if (!userEmail.isEmpty()) {
+            params.append("&entry.1241683426=").append(userEmail);
+        }
         // Exact Allwise RA
         params.append("&entry.1014230382=").append(roundTo7DecNZ(catalogEntry.getRa()));
         // Exact Allwise Decimal DEC

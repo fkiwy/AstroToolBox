@@ -633,7 +633,7 @@ public class CatalogQueryTab {
                 copyAllTimer.restart();
             });
 
-            JButton fillFormButton = new JButton("Fill out TYGO form");
+            JButton fillFormButton = new JButton("TYGO form");
             collectPanel.add(fillFormButton);
             fillFormButton.addActionListener((ActionEvent evt) -> {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);

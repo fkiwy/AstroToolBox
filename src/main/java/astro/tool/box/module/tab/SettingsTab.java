@@ -7,9 +7,7 @@ import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
-import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -91,6 +89,8 @@ public class SettingsTab {
     private static final String ALADIN_LITE_FOV = "aladinLiteFOV";
     private static final String WISE_VIEW_FOV = "wiseViewFOV";
     private static final String FINDER_CHART_FOV = "finderChartFOV";
+    private static final String USER_NAME = "userName";
+    private static final String USER_EMAIL = "userEmail";
 
     private boolean copyCoordsToClipboard;
     private int searchRadius;
@@ -247,6 +247,8 @@ public class SettingsTab {
             aladinLiteFOV = Integer.parseInt(USER_SETTINGS.getProperty(ALADIN_LITE_FOV, "300"));
             wiseViewFOV = Integer.parseInt(USER_SETTINGS.getProperty(WISE_VIEW_FOV, "100"));
             finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "100"));
+            String userName = USER_SETTINGS.getProperty(USER_NAME, "");
+            String userEmail = USER_SETTINGS.getProperty(USER_EMAIL, "");
 
             catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
             if (catalogQueryTab.getPanstarrsField() != null) {
@@ -286,6 +288,17 @@ public class SettingsTab {
             catalogQuerySettings.add(new JLabel("IRSA Finder Chart FoV: ", JLabel.RIGHT));
             JTextField finderChartFovField = new JTextField(String.valueOf(finderChartFOV));
             catalogQuerySettings.add(finderChartFovField);
+
+            catalogQuerySettings.add(new JLabel("Your name (*): ", JLabel.RIGHT));
+            JTextField userNameField = new JTextField(userName);
+            catalogQuerySettings.add(userNameField);
+
+            catalogQuerySettings.add(new JLabel("Your email (*): ", JLabel.RIGHT));
+            JTextField userEmailField = new JTextField(userEmail);
+            catalogQuerySettings.add(userEmailField);
+
+            catalogQuerySettings.add(new JLabel("(*) Name & email only for auto", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
 
             // Image viewer settings
             JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
@@ -529,6 +542,8 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(ALADIN_LITE_FOV, aladinLiteFovField.getText());
                 USER_SETTINGS.setProperty(WISE_VIEW_FOV, wiseViewFovField.getText());
                 USER_SETTINGS.setProperty(FINDER_CHART_FOV, finderChartFovField.getText());
+                USER_SETTINGS.setProperty(USER_NAME, userNameField.getText());
+                USER_SETTINGS.setProperty(USER_EMAIL, userEmailField.getText());
 
                 // Image viewer settings
                 imageViewerTab.initCatalogEntries();
@@ -645,16 +660,8 @@ public class SettingsTab {
                     UIManager.setLookAndFeel(new FlatLightLaf());
                     isFlatLaf = true;
                     break;
-                case Flat_IntelliJ:
-                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
-                    isFlatLaf = true;
-                    break;
                 case Flat_Dark:
                     UIManager.setLookAndFeel(new FlatDarkLaf());
-                    isFlatLaf = true;
-                    break;
-                case Flat_Darcula:
-                    UIManager.setLookAndFeel(new FlatDarculaLaf());
                     isFlatLaf = true;
                     break;
             }
