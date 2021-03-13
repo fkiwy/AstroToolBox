@@ -1026,7 +1026,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            showProperMotion = new JCheckBox("Show motion");
+            showProperMotion = new JCheckBox("Show motion as moving dots");
             overlaysControlPanel.add(showProperMotion);
             showProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
