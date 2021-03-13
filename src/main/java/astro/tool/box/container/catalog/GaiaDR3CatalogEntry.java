@@ -453,6 +453,28 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
+    // Needed to fill the TYGO form
+    public double getPlx_err() {
+        return plx_err;
+    }
+
+    public double getPmra_err() {
+        return pmra_err;
+    }
+
+    public double getPmdec_err() {
+        return pmdec_err;
+    }
+
+    public double getRadvel() {
+        return radvel;
+    }
+
+    public double getRadvel_err() {
+        return radvel_err;
+    }
+    //
+
     public double getTansverseVelocity() {
         return calculateTransverseVelocityFromParallax(pmra, pmdec, plx);
     }

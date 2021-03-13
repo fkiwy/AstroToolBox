@@ -6,6 +6,7 @@ import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.NumberPair;
@@ -27,6 +28,7 @@ import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -594,6 +596,66 @@ public class ModuleHelper {
             });
         }
         return toCopy.toString();
+    }
+
+    public static void fillTygoForm(CatalogEntry catalogEntry, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
+        StringBuilder params = new StringBuilder();
+        // Citizen scientist name
+        params.append("entry.472808084=").append("Firstname Lastname");
+        // Enter your email
+        params.append("&entry.1241683426=").append("email@gmail.com");
+        // Exact Allwise RA
+        params.append("&entry.1014230382=").append(roundTo7DecNZ(catalogEntry.getRa()));
+        // Exact Allwise Decimal DEC
+        params.append("&entry.504539104=").append(roundTo7DecNZ(catalogEntry.getDec()));
+        // Notes
+        if (!AllWiseCatalogEntry.class.isInstance(catalogEntry)) {
+            params.append("&entry.690953267=").append("Coordinates are from ").append(catalogEntry.getCatalogName());
+        }
+        // GAIA data
+        GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
+        gaiaEntry.setRa(catalogEntry.getRa());
+        gaiaEntry.setDec(catalogEntry.getDec());
+        gaiaEntry.setSearchRadius(5);
+        gaiaEntry = (GaiaDR3CatalogEntry) retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
+        if (gaiaEntry != null) {
+            // GAIA DR2 pmRA + e_pmRA (mas/y)
+            if (gaiaEntry.getPmra() != 0) {
+                params.append("&entry.905761395=").append(roundTo3DecNZ(gaiaEntry.getPmra())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmra_err()));
+            }
+            // GAIA DR2 pmDE + e_pmDE
+            if (gaiaEntry.getPmdec() != 0) {
+                params.append("&entry.965290776=").append(roundTo3DecNZ(gaiaEntry.getPmdec())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmdec_err()));
+            }
+            // GAIA RV + e_RV
+            if (gaiaEntry.getRadvel() != 0) {
+                params.append("&entry.702334724=").append(roundTo3DecNZ(gaiaEntry.getRadvel())).append(" ").append(roundTo3DecNZ(gaiaEntry.getRadvel_err()));
+            }
+            // GAIA DR2 Parallax + e_
+            if (gaiaEntry.getPlx() != 0) {
+                params.append("&entry.1383168065=").append(roundTo3DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPlx_err()));
+            }
+            // GAIA ID
+            params.append("&entry.1411207241=").append(gaiaEntry.getSourceId());
+        }
+        try {
+            Desktop.getDesktop().browse(new URI(getTygoFormUrl() + params.toString().replace(" ", "%20")));
+        } catch (IOException | URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static CatalogEntry retrieveCatalogEntry(CatalogEntry catalogEntry, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
+        try {
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogEntry);
+            if (!catalogEntries.isEmpty()) {
+                catalogEntries.sort(Comparator.comparing(CatalogEntry::getTargetDistance));
+                return catalogEntries.get(0);
+            }
+        } catch (IOException ex) {
+            showExceptionDialog(baseFrame, ex);
+        }
+        return null;
     }
 
     public static BufferedImage zoom(BufferedImage image, int zoom) {

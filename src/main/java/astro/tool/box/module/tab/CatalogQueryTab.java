@@ -633,6 +633,13 @@ public class CatalogQueryTab {
                 copyAllTimer.restart();
             });
 
+            JButton fillFormButton = new JButton("Fill out TYGO form");
+            collectPanel.add(fillFormButton);
+            fillFormButton.addActionListener((ActionEvent evt) -> {
+                fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
+
+            });
+
             bottomPanel.add(spectralTypeInfo);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);

@@ -5355,8 +5355,11 @@ public class ImageViewerTab {
                 collectTimer.restart();
             });
 
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            container.add(buttonPanel);
+
             JButton copyCoordsButton = new JButton("Copy coords");
-            collectPanel.add(copyCoordsButton);
+            buttonPanel.add(copyCoordsButton);
             Timer copyCoordsTimer = new Timer(3000, (ActionEvent e) -> {
                 copyCoordsButton.setText("Copy coords");
             });
@@ -5367,7 +5370,7 @@ public class ImageViewerTab {
             });
 
             JButton copyInfoButton = new JButton("Copy digest");
-            collectPanel.add(copyInfoButton);
+            buttonPanel.add(copyInfoButton);
             Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
                 copyInfoButton.setText("Copy digest");
             });
@@ -5378,7 +5381,7 @@ public class ImageViewerTab {
             });
 
             JButton copyAllButton = new JButton("Copy all");
-            collectPanel.add(copyAllButton);
+            buttonPanel.add(copyAllButton);
             Timer copyAllTimer = new Timer(3000, (ActionEvent e) -> {
                 copyAllButton.setText("Copy all");
             });
@@ -5387,13 +5390,20 @@ public class ImageViewerTab {
                 copyAllButton.setText("Copied!");
                 copyAllTimer.restart();
             });
+
+            JButton fillFormButton = new JButton("Fill out TYGO form");
+            buttonPanel.add(fillFormButton);
+            fillFormButton.addActionListener((ActionEvent evt) -> {
+                fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
+
+            });
         }
 
         JFrame catalogFrame = new JFrame();
         catalogFrame.setIconImage(getToolBoxImage());
         catalogFrame.setTitle("Object details");
         catalogFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        catalogFrame.setSize(700, 600);
+        catalogFrame.setSize(650, 650);
         catalogFrame.setLocation(windowShift, windowShift);
         catalogFrame.setAlwaysOnTop(true);
         catalogFrame.setResizable(true);
@@ -5488,26 +5498,13 @@ public class ImageViewerTab {
         catalogEntry.setRa(objectCoords.getX());
         catalogEntry.setDec(objectCoords.getY());
         catalogEntry.setSearchRadius(5);
-        pmCatalogEntry = retrieveCatalogEntry(catalogEntry);
+        pmCatalogEntry = retrieveCatalogEntry(catalogEntry, catalogQueryFacade, baseFrame);
         if (pmCatalogEntry == null) {
             showInfoDialog(baseFrame, NO_OBJECT_FOUND);
             checkObjectMotionField.setText(null);
         } else {
             checkObjectMotionField.setText(roundTo3DecNZ(pmCatalogEntry.getPmra()) + " " + roundTo3DecNZ(pmCatalogEntry.getPmdec()));
         }
-    }
-
-    private CatalogEntry retrieveCatalogEntry(CatalogEntry catalogEntry) {
-        try {
-            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogEntry);
-            if (!catalogEntries.isEmpty()) {
-                catalogEntries.sort(Comparator.comparing(CatalogEntry::getTargetDistance));
-                return catalogEntries.get(0);
-            }
-        } catch (IOException ex) {
-            showExceptionDialog(baseFrame, ex);
-        }
-        return null;
     }
 
     private double getFovDiagonal() {
