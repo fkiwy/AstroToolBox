@@ -765,15 +765,6 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard");
 
-            detectDifferences = new JCheckBox("Detect potential movers (*)");
-            mainControlPanel.add(detectDifferences);
-            detectDifferences.setToolTipText("Depends on contrast settings");
-            detectDifferences.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-
-            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
-
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
@@ -815,6 +806,15 @@ public class ImageViewerTab {
                 previousDec = 0;
                 createFlipbook();
             });
+
+            detectDifferences = new JCheckBox("Detect potential movers (*)");
+            mainControlPanel.add(detectDifferences);
+            detectDifferences.setToolTipText("Depends on contrast settings");
+            detectDifferences.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+
+            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
             mainControlPanel.add(new JLabel(header("Nearest BYWP9 subjects:")));
 
