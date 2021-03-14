@@ -1,6 +1,5 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
@@ -30,7 +29,7 @@ public class NameResolverService {
         }
         String ra = root.getElementsByTagName("jradeg").item(0).getTextContent().trim();
         String dec = root.getElementsByTagName("jdedeg").item(0).getTextContent().trim();
-        return roundTo7DecNZ(toDouble(ra)) + " " + roundTo7DecNZ(toDouble(dec));
+        return ra + " " + dec;
     }
 
 }

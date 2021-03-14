@@ -2,6 +2,7 @@ package astro.tool.box.module;
 
 import astro.tool.box.container.NumberPair;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class FlipbookComponent {
 
@@ -22,6 +23,8 @@ public class FlipbookComponent {
     private boolean firstEpoch;
 
     private NumberPair refValues;
+
+    private List<NumberPair> diffPixels;
 
     private BufferedImage image;
 
@@ -171,6 +174,14 @@ public class FlipbookComponent {
 
     public void setRefValues(NumberPair refValues) {
         this.refValues = refValues;
+    }
+
+    public List<NumberPair> getDiffPixels() {
+        return diffPixels;
+    }
+
+    public void setDiffPixels(List<NumberPair> diffPixels) {
+        this.diffPixels = diffPixels;
     }
 
     public BufferedImage getImage() {

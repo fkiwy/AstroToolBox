@@ -3,6 +3,7 @@ package astro.tool.box.module;
 import astro.tool.box.container.Version;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.module.tab.AdqlQueryTab;
 import astro.tool.box.module.tab.BatchQueryTab;
@@ -17,7 +18,6 @@ import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
-import static astro.tool.box.util.ServiceProviderUtils.*;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.io.IOException;
@@ -52,7 +52,9 @@ public class Application {
             LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
             setLookAndFeel(lookAndFeel);
             CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
-            ToolTipManager.sharedInstance().setDismissDelay(60000);
+            ToolTipManager manager = ToolTipManager.sharedInstance();
+            manager.setInitialDelay(100);
+            manager.setDismissDelay(60000);
         } catch (Exception e) {
         }
     }

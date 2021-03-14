@@ -72,7 +72,6 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -272,6 +271,7 @@ public class ImageViewerTab {
     private JCheckBox noirlabOverlay;
     private JCheckBox showBrownDwarfsOnly;
     private JCheckBox displaySpectralTypes;
+    private JCheckBox detectDifferences;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -763,12 +763,16 @@ public class ImageViewerTab {
 
             showCrosshairs = new JCheckBox("Crosshairs (*)");
             settingsPanel.add(showCrosshairs);
+            showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard");
 
-            JLabel copyCoordsLabel = new JLabel("(*) Click object to copy coords to clipboard");
-            Font font = copyCoordsLabel.getFont();
-            font = font.deriveFont(9f);
-            copyCoordsLabel.setFont(font);
-            mainControlPanel.add(copyCoordsLabel);
+            detectDifferences = new JCheckBox("Detect potential movers (*)");
+            mainControlPanel.add(detectDifferences);
+            detectDifferences.setToolTipText("Depends on contrast settings");
+            detectDifferences.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+
+            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
@@ -832,7 +836,9 @@ public class ImageViewerTab {
             overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Overlays", overlaysScrollPanel);
 
-            overlaysControlPanel.add(new JLabel(header("Catalog overlays: (*)")));
+            JLabel catalogOverlaysLabel = new JLabel(header("Catalog overlays: (*)"));
+            overlaysControlPanel.add(catalogOverlaysLabel);
+            catalogOverlaysLabel.setToolTipText("Shortcuts: Alt+[underscored letter]");
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
@@ -939,10 +945,6 @@ public class ImageViewerTab {
             });
             overlayPanel.add(ssoOverlay);
 
-            JLabel overlayShortcutsLabel = new JLabel("(*) Shortcuts: Alt+[underscored letter]");
-            overlayShortcutsLabel.setFont(font);
-            overlaysControlPanel.add(overlayShortcutsLabel);
-
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
             useCustomOverlays.addActionListener((ActionEvent evt) -> {
@@ -981,7 +983,9 @@ public class ImageViewerTab {
                 }
             });
 
-            overlaysControlPanel.add(new JLabel(header("Proper motion vectors: (*)")));
+            JLabel pmOverlaysLabel = new JLabel(header("Proper motion vectors: (*)"));
+            overlaysControlPanel.add(pmOverlaysLabel);
+            pmOverlaysLabel.setToolTipText("Shortcuts: Ctrl+Alt+[underscored letter]");
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
@@ -1032,11 +1036,12 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel pmVectorShortcutsLabel = new JLabel("(*) Shortcuts: Ctrl+Alt+[underscored letter]");
-            pmVectorShortcutsLabel.setFont(font);
-            overlaysControlPanel.add(pmVectorShortcutsLabel);
-
-            overlaysControlPanel.add(new JLabel(header("WISE artifacts (*):")));
+            JLabel artifactsLabel = new JLabel(header("WISE artifacts: (*)"));
+            overlaysControlPanel.add(artifactsLabel);
+            artifactsLabel.setToolTipText(html(""
+                    + "Small shapes represent affected sources." + LINE_BREAK
+                    + "Large shapes represent the actual artifacts.")
+            );
 
             JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(artifactPanel);
@@ -1068,11 +1073,9 @@ public class ImageViewerTab {
             });
             artifactPanel.add(spikeOverlay);
 
-            JLabel artifactLabel = new JLabel(html("(*) Small shapes represent affected sources." + LINE_BREAK + "Large shapes represent the actual artifacts."));
-            artifactLabel.setFont(font);
-            overlaysControlPanel.add(artifactLabel);
-
-            overlaysControlPanel.add(new JLabel(header("Experimental features (*):")));
+            JLabel featuresLabel = new JLabel(header("Experimental features: (*)"));
+            overlaysControlPanel.add(featuresLabel);
+            featuresLabel.setToolTipText("Spectral type estimates are based on single colors and may be wrong!");
 
             displaySpectralTypes = new JCheckBox("Display estimated spectral types", overlays.isEstspt());
             overlaysControlPanel.add(displaySpectralTypes);
@@ -1094,11 +1097,6 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel warning = new JLabel(html("(*) Warning: Spectral type estimates are based" + LINE_BREAK + "on single colors and may therefore be wrong."));
-            warning.setForeground(Color.RED);
-            warning.setFont(font);
-            overlaysControlPanel.add(warning);
-
             JLabel saveOverlaysMessage = createMessageLabel();
             Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
                 saveOverlaysMessage.setText("");
@@ -1106,6 +1104,7 @@ public class ImageViewerTab {
 
             JButton saveButton = new JButton("Save selected overlays (*)");
             overlaysControlPanel.add(saveButton);
+            saveButton.setToolTipText("Custom overlays not included!");
             saveButton.addActionListener((ActionEvent evt) -> {
                 overlays.setSimbad(simbadOverlay.isSelected());
                 overlays.setAllwise(allWiseOverlay.isSelected());
@@ -1140,9 +1139,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel saveOverlaysLabel = new JLabel("(*) Custom overlays not included!");
-            saveOverlaysLabel.setFont(font);
-            overlaysControlPanel.add(saveOverlaysLabel);
+            overlaysControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
             overlaysControlPanel.add(saveOverlaysMessage);
 
@@ -1265,10 +1262,7 @@ public class ImageViewerTab {
 
             changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
             mouseControlPanel.add(changeFovLabel);
-
-            JLabel fovLabel = new JLabel("(*) Spin wheel on WISE images to change FoV");
-            fovLabel.setFont(font);
-            mouseControlPanel.add(fovLabel);
+            changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view");
 
             mouseControlPanel.add(new JLabel(header("Mouse right click:")));
 
@@ -1480,6 +1474,11 @@ public class ImageViewerTab {
             ==================================================================*/
             drawCrosshairs = new JCheckBox(header("Draw crosshairs: (*)"));
             advancedControlPanel.add(drawCrosshairs);
+            drawCrosshairs.setToolTipText(html(""
+                    + "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
+                    + "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
+                    + "Wheel-click the crosshair center to delete it.")
+            );
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
                 if (!drawCrosshairs.isSelected()) {
                     crosshairs.clear();
@@ -1487,15 +1486,10 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel crosshairLabel = new JLabel(html("(*) Wheel click on object / Spin wheel to change" + LINE_BREAK + "the size / Wheel click on cross center to delete"));
-            crosshairLabel.setFont(font);
-            advancedControlPanel.add(crosshairLabel);
-
             advancedControlPanel.add(new JLabel("Crosshairs coordinates:"));
 
             crosshairCoords = new JTextArea();
             advancedControlPanel.add(new JScrollPane(crosshairCoords));
-            crosshairCoords.setFont(font);
             crosshairCoords.setBackground(new JLabel().getBackground());
 
             checkProperMotion = new JCheckBox(header("Check proper motion:"));
@@ -3117,6 +3111,9 @@ public class ImageViewerTab {
             return;
         }
         timer.stop();
+        if (detectDifferences.isSelected()) {
+            detectDifferences();
+        }
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
             component.setImage(processImage(component));
@@ -3190,7 +3187,14 @@ public class ImageViewerTab {
         } else {
             image = createImage(component.getBand(), component.getEpoch(), minValue, maxValue);
         }
-        image = flip(zoom(image, zoom));
+        image = zoom(image, zoom);
+        if (detectDifferences.isSelected()) {
+            for (NumberPair diffPixel : component.getDiffPixels()) {
+                Disk disk = new Disk(getZoomedValue(diffPixel.getX()), getZoomedValue(diffPixel.getY()), getOverlaySize(200), Color.RED);
+                disk.draw(image.getGraphics());
+            }
+        }
+        image = flip(image);
         addOverlaysAndPMVectors(image, component.getTotalEpochs());
         return image;
     }
@@ -3882,6 +3886,66 @@ public class ImageViewerTab {
             return true;
         } catch (IOException | FitsException ex) {
             return false;
+        }
+    }
+
+    private void detectDifferences() {
+        for (int i = 0; i < flipbook.length; i++) {
+            FlipbookComponent component1 = flipbook[i];
+            FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
+            int band = component1.getBand();
+            int epoch1 = component1.getEpoch();
+            int epoch2 = component2.getEpoch();
+            int minValue = (int) component1.getRefValues().getX();
+            int maxValue = (int) component1.getRefValues().getY();
+            List<NumberPair> diffPixels = new ArrayList<>();
+            if (band == 1 || band == 12) {
+                detectDifferencesPerBand(1, epoch1, epoch2, diffPixels, minValue, maxValue);
+            }
+            if (band == 2 || band == 12) {
+                detectDifferencesPerBand(2, epoch1, epoch2, diffPixels, minValue, maxValue);
+            }
+            component2.setDiffPixels(diffPixels);
+        }
+    }
+
+    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberPair> diffPixels, int minValue, int maxValue) {
+        try {
+            Fits fits = getImage(band, epoch1);
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values1 = (float[][]) imageData.getData();
+
+            fits = getImage(band, epoch2);
+            hdu = (ImageHDU) fits.getHDU(0);
+            imageData = (ImageData) hdu.getData();
+            float[][] values2 = (float[][]) imageData.getData();
+
+            List<NumberPair> pixels = new ArrayList<>();
+            for (int i = 0; i < naxis2; ++i) {
+                for (int j = 0; j < naxis1; ++j) {
+                    for (int k = max(0, i - 1); k <= min(i + 1, naxis2 - 1); k++) {
+                        for (int u = max(0, j - 1); u <= min(j + 1, naxis1 - 1); u++) {
+                            try {
+                                float value1 = processPixel(values1[k][u], minValue, maxValue);
+                                float value2 = processPixel(values2[k][u], minValue, maxValue);
+                                float max = max(value1, value2);
+                                float min = min(value1, value2);
+                                if (max - min > min / 2 && value1 == max) {
+                                    pixels.add(new NumberPair(j, i));
+                                }
+                            } catch (ArrayIndexOutOfBoundsException ex) {
+                            }
+                        }
+                    }
+                    if (pixels.size() > 2) {
+                        diffPixels.addAll(pixels);
+                    }
+                    pixels.clear();
+                }
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
