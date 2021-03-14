@@ -807,7 +807,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            detectDifferences = new JCheckBox("Detect potential movers (*)");
+            detectDifferences = new JCheckBox("Detect differences (*)");
             mainControlPanel.add(detectDifferences);
             detectDifferences.setToolTipText("Depends on contrast settings");
             detectDifferences.addActionListener((ActionEvent evt) -> {

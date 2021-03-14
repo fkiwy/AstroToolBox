@@ -210,7 +210,7 @@ public class ModuleHelper {
     }
 
     public static String header(String text) {
-        return html("<span style='background:#505050;color:#E0E0E0'>&nbsp;" + text + "&nbsp;</span>");
+        return html("<u>" + text + "</u>");
     }
 
     public static String html(String text) {
