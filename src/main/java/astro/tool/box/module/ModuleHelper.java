@@ -72,6 +72,7 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -209,14 +210,26 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String header(String text) {
-        return html("<u>" + text + "</u>");
-    }
-
     public static String html(String text) {
         return "<html>" + text + "</html>";
     }
 
+    public static JLabel createHeaderLabel(String text) {
+        JLabel header = new JLabel(" " + text);
+        header.setBackground(Color.BLACK);
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        return header;
+    }
+
+    public static JCheckBox createHeaderBox(String text) {
+        JCheckBox box = new JCheckBox(text);
+        box.setBackground(Color.BLACK);
+        box.setForeground(Color.WHITE);
+        //box.setOpaque(true);
+        return box;
+    }
+    
     public static JLabel createMessageLabel() {
         return createLabel("", JColor.DARK_GREEN);
     }

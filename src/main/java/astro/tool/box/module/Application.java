@@ -4,7 +4,6 @@ import astro.tool.box.container.Version;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
-import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.module.tab.AdqlQueryTab;
 import astro.tool.box.module.tab.BatchQueryTab;
 import astro.tool.box.module.tab.BrownDwarfTab;
@@ -30,7 +29,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 
 public class Application {
 
@@ -49,9 +47,7 @@ public class Application {
     public Application() {
         try {
             loadUserSettings();
-            LookAndFeel lookAndFeel = LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
-            setLookAndFeel(lookAndFeel);
-            CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
+            setLookAndFeel(getLookAndFeel());
             ToolTipManager manager = ToolTipManager.sharedInstance();
             manager.setInitialDelay(100);
             manager.setDismissDelay(60000);

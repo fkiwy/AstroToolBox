@@ -55,7 +55,6 @@ public class SettingsTab {
     public static final Properties USER_SETTINGS = new Properties();
     public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
     public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.OS.name();
-    public static String CURRENT_LOOK_AND_FEEL;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -507,10 +506,7 @@ public class SettingsTab {
 
                 // Global settings
                 setLookAndFeel(lookAndFeel);
-                if (!UIManager.getLookAndFeel().getName().equals(CURRENT_LOOK_AND_FEEL)) {
-                    CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
-                    SwingUtilities.updateComponentTreeUI(baseFrame);
-                }
+                SwingUtilities.updateComponentTreeUI(baseFrame);
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
                 USER_SETTINGS.setProperty(TAP_PROVIDER, tapProvider.name());
@@ -676,6 +672,10 @@ public class SettingsTab {
             }
         } catch (Exception e) {
         }
+    }
+
+    public static LookAndFeel getLookAndFeel() {
+        return LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
     }
 
     public static void loadUserSettings() {
