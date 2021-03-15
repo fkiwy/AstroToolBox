@@ -83,6 +83,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.RowFilter;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -216,6 +217,7 @@ public class ModuleHelper {
 
     public static JLabel createHeaderLabel(String text) {
         JLabel header = new JLabel(text);
+        header.setBorder(new EmptyBorder(0, 5, 0, 0));
         header.setBackground(Color.GRAY.brighter());
         header.setForeground(Color.BLACK);
         header.setOpaque(true);
