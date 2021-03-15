@@ -196,7 +196,7 @@ public class ImageViewerTab {
     public static final int DIFFERENT_SIZE = 100;
     public static final int PROPER_MOTION = 100;
     public static final String OVERLAYS_KEY = "overlays";
-    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
+    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" <span color='red'>(*)</span>";
     public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
 
     //Reference epochs:
@@ -761,7 +761,7 @@ public class ImageViewerTab {
             markTarget = new JCheckBox("Mark target");
             settingsPanel.add(markTarget);
 
-            showCrosshairs = new JCheckBox("Crosshairs (*)");
+            showCrosshairs = new JCheckBox(html("Crosshairs <span color='red'>(*)</span>"));
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard");
 
@@ -829,7 +829,7 @@ public class ImageViewerTab {
             overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Overlays", overlaysScrollPanel);
 
-            JLabel catalogOverlaysLabel = createHeaderLabel("Catalog overlays: (*)");
+            JLabel catalogOverlaysLabel = createHeaderLabel(html("Catalog overlays: <span color='red'>(*)</span>"));
             overlaysControlPanel.add(catalogOverlaysLabel);
             catalogOverlaysLabel.setToolTipText("Shortcuts: Alt+[underscored letter]");
 
@@ -976,7 +976,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel pmOverlaysLabel = createHeaderLabel("Proper motion vectors: (*)");
+            JLabel pmOverlaysLabel = createHeaderLabel(html("Proper motion vectors: <span color='red'>(*)</span>"));
             overlaysControlPanel.add(pmOverlaysLabel);
             pmOverlaysLabel.setToolTipText("Shortcuts: Ctrl+Alt+[underscored letter]");
 
@@ -1029,7 +1029,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel artifactsLabel = createHeaderLabel("WISE artifacts: (*)");
+            JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts: <span color='red'>(*)</span>"));
             overlaysControlPanel.add(artifactsLabel);
             artifactsLabel.setToolTipText(html(""
                     + "Small shapes represent affected sources." + LINE_BREAK
@@ -1066,7 +1066,7 @@ public class ImageViewerTab {
             });
             artifactPanel.add(spikeOverlay);
 
-            JLabel featuresLabel = createHeaderLabel("Experimental features: (*)");
+            JLabel featuresLabel = createHeaderLabel(html("Experimental features: <span color='red'>(*)</span>"));
             overlaysControlPanel.add(featuresLabel);
             featuresLabel.setToolTipText("Spectral type estimates are based on single colors and may be wrong!");
 
@@ -1095,7 +1095,7 @@ public class ImageViewerTab {
                 saveOverlaysMessage.setText("");
             });
 
-            JButton saveButton = new JButton("Save selected overlays (*)");
+            JButton saveButton = new JButton(html("Save selected overlays <span color='red'>(*)</span>"));
             overlaysControlPanel.add(saveButton);
             saveButton.setToolTipText("Custom overlays not included!");
             saveButton.addActionListener((ActionEvent evt) -> {
@@ -1253,7 +1253,7 @@ public class ImageViewerTab {
                 }
             });
 
-            changeFovLabel = new JLabel(String.format(CHANGE_FOV_TEXT, fieldOfView));
+            changeFovLabel = new JLabel(html(String.format(CHANGE_FOV_TEXT, fieldOfView)));
             mouseControlPanel.add(changeFovLabel);
             changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view");
 
@@ -1380,6 +1380,8 @@ public class ImageViewerTab {
                 }
             });
 
+            playerControlPanel.add(new JLabel());
+
             playerControlPanel.add(createHeaderLabel("Navigation buttons:"));
 
             JButton moveUpButton = new JButton("Move up");
@@ -1467,12 +1469,14 @@ public class ImageViewerTab {
                 processImages();
             });
             ==================================================================*/
-            drawCrosshairs = createHeaderBox("Draw crosshairs: (*)");
+            drawCrosshairs = createHeaderBox(html("Draw crosshairs: <span color='red'>(*)</span>"));
             advancedControlPanel.add(drawCrosshairs);
             drawCrosshairs.setToolTipText(html(""
+                    + "Tick the check box!" + LINE_BREAK
                     + "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
                     + "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
-                    + "Wheel-click the crosshair center to delete it.")
+                    + "Wheel-click the crosshair center to delete it." + LINE_BREAK
+                    + "The crosshair's coordinates appear in the text box below.")
             );
             drawCrosshairs.addActionListener((ActionEvent evt) -> {
                 if (!drawCrosshairs.isSelected()) {
@@ -1480,8 +1484,6 @@ public class ImageViewerTab {
                     crosshairCoords.setText("");
                 }
             });
-
-            advancedControlPanel.add(new JLabel("Crosshairs coordinates:"));
 
             crosshairCoords = new JTextArea();
             advancedControlPanel.add(new JScrollPane(crosshairCoords));
@@ -1649,7 +1651,7 @@ public class ImageViewerTab {
                 }
             });
 
-            detectDifferences = new JCheckBox("Detect differences (*)");
+            detectDifferences = new JCheckBox(html("Detect differences <span color='red'>(*)</span>"));
             advancedControlPanel.add(detectDifferences);
             detectDifferences.setToolTipText("Depends on contrast settings");
             detectDifferences.addActionListener((ActionEvent evt) -> {
@@ -2012,7 +2014,7 @@ public class ImageViewerTab {
                             } else if (fieldOfView > 0) {
                                 fieldOfView--;
                             }
-                            changeFovLabel.setText(String.format(CHANGE_FOV_TEXT, fieldOfView));
+                            changeFovLabel.setText(html(String.format(CHANGE_FOV_TEXT, fieldOfView)));
                         }
                     });
 

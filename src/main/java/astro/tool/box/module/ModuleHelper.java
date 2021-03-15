@@ -215,7 +215,7 @@ public class ModuleHelper {
     }
 
     public static JLabel createHeaderLabel(String text) {
-        JLabel header = new JLabel(" " + text);
+        JLabel header = new JLabel(text);
         header.setBackground(Color.GRAY.brighter());
         header.setForeground(Color.BLACK);
         header.setOpaque(true);
