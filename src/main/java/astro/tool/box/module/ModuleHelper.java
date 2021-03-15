@@ -216,20 +216,19 @@ public class ModuleHelper {
 
     public static JLabel createHeaderLabel(String text) {
         JLabel header = new JLabel(" " + text);
-        header.setBackground(Color.BLACK);
-        header.setForeground(Color.WHITE);
+        header.setBackground(Color.GRAY.brighter());
+        header.setForeground(Color.BLACK);
         header.setOpaque(true);
         return header;
     }
 
     public static JCheckBox createHeaderBox(String text) {
         JCheckBox box = new JCheckBox(text);
-        box.setBackground(Color.BLACK);
-        box.setForeground(Color.WHITE);
-        //box.setOpaque(true);
+        box.setBackground(Color.GRAY.brighter());
+        box.setForeground(Color.BLACK);
         return box;
     }
-    
+
     public static JLabel createMessageLabel() {
         return createLabel("", JColor.DARK_GREEN);
     }
