@@ -809,7 +809,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Nearest BYWP9 subjects:"));
+            mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects:"));
 
             zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(zooniversePanel1);
