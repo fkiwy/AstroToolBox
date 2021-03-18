@@ -64,7 +64,7 @@ public class ServiceProviderUtils {
             return reader.lines().collect(Collectors.joining(LINE_SEP));
         } catch (Exception ex) {
             if (ex.getMessage().contains(IRSA_TAP_URL)) {
-                throw new ADQLException();
+                throw new ADQLException(ex);
             }
             writeErrorLog(ex);
             showWarnDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));

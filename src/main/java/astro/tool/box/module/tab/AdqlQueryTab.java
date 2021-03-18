@@ -10,6 +10,7 @@ import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
+import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.exception.ADQLException;
 import astro.tool.box.util.CSVParser;
 import java.awt.BorderLayout;
@@ -23,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,11 +36,13 @@ import java.util.Scanner;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -65,9 +69,9 @@ import org.json.JSONObject;
 
 public class AdqlQueryTab {
 
-    public static final String TAB_NAME = "IRSA TAP";
-    private static final String IRSA_TABLES = "IRSA tables";
-    private static final String QUERY_SERVICE = "ADQL query";
+    public static final String TAB_NAME = "ADQL Query";
+    private static final String IRSA_TABLES = "Available tables";
+    private static final String QUERY_SERVICE = "TAP service";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -78,6 +82,7 @@ public class AdqlQueryTab {
     private JPanel catalogPanel;
     private JTextField statusField;
     private JTextField elapsedTime;
+    private JComboBox tapProvider;
     private TableRowSorter<TableModel> catalogTableSorter;
     private TableRowSorter<TableModel> catalogColumnSorter;
 
@@ -89,8 +94,6 @@ public class AdqlQueryTab {
     private String jobStatus;
     private String queryResults;
     private String previousTableName;
-
-    private boolean isSyntaxChecked;
 
     public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
         this.baseFrame = baseFrame;
@@ -105,40 +108,22 @@ public class AdqlQueryTab {
             JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
-            centerPanel = new JPanel();
-            centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-            centerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-            mainPanel.add(centerPanel, BorderLayout.CENTER);
-
             JTextArea textEditor = new JTextArea();
             textEditor.setBorder(new EmptyBorder(5, 5, 5, 5));
             textEditor.setFont(MONO_FONT);
             textEditor.setEditable(true);
             addUndoManager(textEditor);
 
-            tabbedPane.addChangeListener((ChangeEvent evt) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
-                int index = sourceTabbedPane.getSelectedIndex();
-                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
-                    String query = textEditor.getText();
-                    if (query.isEmpty() || query.contains("Find all comovers")) {
-                        CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                        if (selectedEntry != null && (selectedEntry instanceof GaiaCatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
-                            String comoverQuery = createComoverQuery();
-                            comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
-                            comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
-                            comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(selectedEntry.getPmra()));
-                            comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(selectedEntry.getPmdec()));
-                            textEditor.setText(comoverQuery);
-                        }
-                    }
-                }
-            });
-
             JScrollPane scrollEditor = new JScrollPane(textEditor);
-            scrollEditor.setPreferredSize(new Dimension(scrollEditor.getWidth(), 250));
-            scrollEditor.setBorder(createEtchedBorder(QUERY_SERVICE));
-            centerPanel.add(scrollEditor);
+            scrollEditor.setPreferredSize(new Dimension(scrollEditor.getWidth(), 200));
+            scrollEditor.setBorder(createEtchedBorder("ADQL query"));
+
+            centerPanel = new JPanel();
+            centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+            centerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+            JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollEditor, centerPanel);
+            mainPanel.add(splitPane, BorderLayout.CENTER);
 
             JFileChooser fileChooser = new JFileChooser();
 
@@ -233,13 +218,12 @@ public class AdqlQueryTab {
                 try {
                     response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
                     if (!response.isEmpty()) {
-                        isSyntaxChecked = true;
                         JSONObject obj = new JSONObject(response);
                         String validation = obj.getString("validation");
                         if (!validation.equals("ok")) {
                             JSONArray arr = obj.getJSONArray("errors");
                             String errorMessage = arr.getJSONObject(0).getString("message");
-                            showQueryErrorMessage(errorMessage);
+                            showErrorDialog(baseFrame, errorMessage);
                             initStatus();
                             return;
                         }
@@ -250,16 +234,23 @@ public class AdqlQueryTab {
                 startClock();
                 try {
                     runButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    response = readResponse(establishHttpConnection(createAsynchQueryUrl(encodedQuery)), QUERY_SERVICE);
+                    HttpURLConnection http = establishHttpConnection(createAsynchQueryUrl(encodedQuery));
+                    http.setRequestMethod("POST");
+                    response = readResponse(http, QUERY_SERVICE);
+                    System.out.println(response);
                     if (!response.isEmpty()) {
-                        String[] parts = response.split("<uws:jobId>");
-                        parts = parts[1].split("</uws:jobId>");
-                        jobId = parts[0];
+                        try {
+                            jobId = getJobIdentifier(response);
+                        } catch (Exception e) {
+                            stopClock();
+                            initStatus();
+                            showErrorDialog(baseFrame, "Unable to extract job id from response!");
+                        }
                     }
                 } catch (IOException | ADQLException ex) {
                     stopClock();
                     initStatus();
-                    showQueryErrorMessage(getQueryErrorMessage());
+                    showExceptionDialog(baseFrame, ex);
                 } finally {
                     runButton.setCursor(Cursor.getDefaultCursor());
                 }
@@ -285,7 +276,7 @@ public class AdqlQueryTab {
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.ERROR.toString())) {
                         stopClock();
-                        showQueryErrorMessage(getQueryErrorMessage());
+                        showErrorDialog(baseFrame, "Processing error!");
                     }
                     if (jobStatus.equals(JobStatus.ABORT.toString()) || jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         stopClock();
@@ -327,11 +318,11 @@ public class AdqlQueryTab {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)), QUERY_SERVICE);
+                        System.out.println(queryResults);
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
-                        showQueryErrorMessage(getQueryErrorMessage());
-                        showErrorDialog(baseFrame, "Query error!");
+                        showErrorDialog(baseFrame, "Processing error!");
                     } else if (jobStatus.equals(JobStatus.ABORT.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
                     }
@@ -362,12 +353,18 @@ public class AdqlQueryTab {
                 }
             });
 
-            JButton browseButton = new JButton("Browse IRSA tables");
+            topPanel.add(new JLabel("TAP provider:"));
+
+            tapProvider = new JComboBox(TapProvider.values());
+            topPanel.add(tapProvider);
+            tapProvider.setSelectedItem(TapProvider.VIZIER);
+
+            JButton browseButton = new JButton("Browse tables");
             topPanel.add(browseButton);
             browseButton.addActionListener((ActionEvent evt) -> {
                 browseButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
-                String query = "SELECT * FROM TAP_SCHEMA.TABLES ORDER BY TABLE_INDEX";
+                String query = "select * from tap_schema.tables order by table_name";
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
                     String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
@@ -411,6 +408,25 @@ public class AdqlQueryTab {
             });
 
             topPanel.add(message);
+
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
+                int index = sourceTabbedPane.getSelectedIndex();
+                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
+                    String query = textEditor.getText();
+                    if (query.isEmpty() || query.contains("Find all comovers")) {
+                        CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
+                        if (selectedEntry != null && (selectedEntry instanceof GaiaCatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
+                            String comoverQuery = createComoverQuery();
+                            comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
+                            comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
+                            comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(selectedEntry.getPmra()));
+                            comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(selectedEntry.getPmdec()));
+                            textEditor.setText(comoverQuery);
+                        }
+                    }
+                }
+            });
 
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
@@ -472,7 +488,7 @@ public class AdqlQueryTab {
                     int selectedRow = resultTable.getSelectedRow();
                     String tableName;
                     try {
-                        tableName = (String) resultTable.getValueAt(selectedRow, 3);
+                        tableName = (String) resultTable.getValueAt(selectedRow, getTableNameIndex());
                     } catch (ArrayIndexOutOfBoundsException ex) {
                         return;
                     }
@@ -482,7 +498,7 @@ public class AdqlQueryTab {
                     previousTableName = tableName;
                     resultTable.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     removeColumnPanel();
-                    String query = "SELECT * FROM TAP_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "' ORDER BY COLUMN_INDEX";
+                    String query = "select * from tap_schema.columns where table_name = '" + tableName + "' order by column_name";
                     String encodedQuery = query.replaceAll(" +", "%20");
                     try {
                         String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
@@ -557,30 +573,67 @@ public class AdqlQueryTab {
     }
 
     private String createSynchQueryUrl(String query) {
-        return IRSA_TAP_URL + "/sync?query=" + query + "&format=csv";
+        return getTapProviderUrl() + "/sync?request=doQuery&lang=ADQL&format=csv&query=" + query;
     }
 
     private String createAsynchQueryUrl(String query) {
-        return IRSA_TAP_URL + "/async?query=" + query + "&format=csv&phase=RUN";
+        String x = getTapProviderUrl() + "/async?request=doQuery&lang=ADQL&format=csv&phase=RUN&query=" + query;
+        System.out.println(x);
+        return x;
     }
 
     private String createStatusUrl(String jobId) {
-        return IRSA_TAP_URL + "/async/" + jobId + "/phase";
+        return getTapProviderUrl() + "/async/" + jobId + "/phase";
     }
 
     private String createResultUrl(String jobId) {
-        return IRSA_TAP_URL + "/async/" + jobId + "/results/result";
+        return getTapProviderUrl() + "/async/" + jobId + "/results/result";
     }
 
     private String createValidatorUrl(String query) {
         return "https://cdsportal.u-strasbg.fr/adqltuto/adqlvalidate?query=" + query;
     }
 
-    private void removeResultPanel() {
-        int count = centerPanel.getComponentCount();
-        if (count > 1) {
-            centerPanel.remove(1);
+    private String getTapProviderUrl() {
+        switch ((TapProvider) tapProvider.getSelectedItem()) {
+            case IRSA:
+                return IRSA_TAP_URL;
+            case VIZIER:
+                return VIZIER_BASE_URL;
+            default:
+                return null;
         }
+    }
+
+    private int getTableNameIndex() {
+        switch ((TapProvider) tapProvider.getSelectedItem()) {
+            case IRSA:
+                return 3;
+            case VIZIER:
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
+    private String getJobIdentifier(String response) {
+        String[] parts;
+        switch ((TapProvider) tapProvider.getSelectedItem()) {
+            case IRSA:
+                parts = response.split("<uws:jobId>");
+                parts = parts[1].split("</uws:jobId>");
+                return parts[0];
+            case VIZIER:
+                parts = response.split("<jobId>");
+                parts = parts[1].split("</jobId>");
+                return parts[0];
+            default:
+                return null;
+        }
+    }
+
+    private void removeResultPanel() {
+        centerPanel.removeAll();
     }
 
     private void removeColumnPanel() {
@@ -655,32 +708,6 @@ public class AdqlQueryTab {
 
         // Bind the redo action to ctl-Y
         textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
-    }
-
-    private String getQueryErrorMessage() {
-        StringBuilder message = new StringBuilder();
-        if (isSyntaxChecked) {
-            addRow(message, "There seems to be an error not related to ADQL syntax.");
-            addRow(message, "Check the table column names, they might be misspelled.");
-        } else {
-            addRow(message, "The ADQL syntax checker is currently not available.");
-            addRow(message, "Therefore, the exact cause of the error can't be identified.");
-            addRow(message, "Review the ADQL syntax and check the table column names.");
-        }
-        return message.toString();
-    }
-
-    private void showQueryErrorMessage(String message) {
-        JTextArea errorMessage = new JTextArea(message);
-        errorMessage.setBorder(new EmptyBorder(5, 5, 5, 5));
-        errorMessage.setForeground(JColor.RED.val);
-        errorMessage.setFont(MONO_FONT);
-        errorMessage.setEditable(false);
-
-        JScrollPane scrollPanel = new JScrollPane(errorMessage);
-        scrollPanel.setBorder(createEtchedBorder("Error(s)"));
-        centerPanel.add(scrollPanel);
-        baseFrame.setVisible(true);
     }
 
 }
