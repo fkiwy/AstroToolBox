@@ -11,7 +11,6 @@ import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.enumeration.TapProvider;
-import astro.tool.box.exception.ADQLException;
 import astro.tool.box.util.CSVParser;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -23,7 +22,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -64,14 +62,13 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
+    public static final String QUERY_SERVICE = "TAP service";
     private static final String IRSA_TABLES = "Available tables";
-    private static final String QUERY_SERVICE = "TAP service";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -138,7 +135,7 @@ public class AdqlQueryTab {
                         String content = String.join(LINE_SEP_TEXT_AREA, lines);
                         textEditor.setText(content);
                         scrollEditor.setBorder(createEtchedBorder("Current file: " + file.getName()));
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         showExceptionDialog(baseFrame, ex);
                     }
                 }
@@ -162,7 +159,7 @@ public class AdqlQueryTab {
                             scrollEditor.setBorder(createEtchedBorder("Current file: " + file.getName()));
                             message.setText(saveMessage);
                             timer.restart();
-                        } catch (IOException ex) {
+                        } catch (Exception ex) {
                             showExceptionDialog(baseFrame, ex);
                         }
                     }
@@ -172,7 +169,7 @@ public class AdqlQueryTab {
                     writer.write(textEditor.getText());
                     message.setText(saveMessage);
                     timer.restart();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -188,7 +185,7 @@ public class AdqlQueryTab {
                         scrollEditor.setBorder(createEtchedBorder("Current file: " + file.getName()));
                         message.setText(saveMessage);
                         timer.restart();
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         showExceptionDialog(baseFrame, ex);
                     }
                 }
@@ -228,7 +225,7 @@ public class AdqlQueryTab {
                             return;
                         }
                     }
-                } catch (IOException | JSONException ex) {
+                } catch (Exception ex) {
                 }
                 // Execute query
                 startClock();
@@ -246,8 +243,12 @@ public class AdqlQueryTab {
                             initStatus();
                             showErrorDialog(baseFrame, "Unable to extract job id from response!");
                         }
+                        String errorMessage = getErrorMessage(response);
+                        if (!errorMessage.isEmpty()) {
+                            showErrorDialog(baseFrame, errorMessage);
+                        }
                     }
-                } catch (IOException | ADQLException ex) {
+                } catch (Exception ex) {
                     stopClock();
                     initStatus();
                     showExceptionDialog(baseFrame, ex);
@@ -274,14 +275,10 @@ public class AdqlQueryTab {
                     jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
-                    if (jobStatus.equals(JobStatus.ERROR.toString())) {
-                        stopClock();
-                        showErrorDialog(baseFrame, "Processing error!");
-                    }
-                    if (jobStatus.equals(JobStatus.ABORT.toString()) || jobStatus.equals(JobStatus.COMPLETED.toString())) {
+                    if (jobStatus.equals(JobStatus.ERROR.toString()) || jobStatus.equals(JobStatus.ABORTED.toString()) || jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         stopClock();
                     }
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     stopClock();
                     initStatus();
                     showExceptionDialog(baseFrame, ex);
@@ -298,6 +295,28 @@ public class AdqlQueryTab {
             elapsedTime.setEditable(false);
             topPanel.add(elapsedTime);
 
+            JButton cancelButton = new JButton("Abort query");
+            topPanel.add(cancelButton);
+            cancelButton.addActionListener((ActionEvent evt) -> {
+                if (TapProvider.IRSA.equals(getTapProvider())) {
+                    showInfoDialog(baseFrame, "IRSA queries cannot be aborted.");
+                    return;
+                } else {
+                    if (!showConfirmDialog(baseFrame, "Do you really want to abort this query?")) {
+                        return;
+                    }
+                }
+                try {
+                    HttpURLConnection http = establishHttpConnection(createCancelUrl(jobId));
+                    http.setRequestMethod("POST");
+                    String response = readResponse(http, QUERY_SERVICE);
+                    System.out.println(response);
+                    showInfoDialog(baseFrame, "Query aborted!");
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
             JButton fetchButton = new JButton("Fetch results");
             topPanel.add(fetchButton);
             fetchButton.addActionListener((ActionEvent evt) -> {
@@ -311,22 +330,20 @@ public class AdqlQueryTab {
                     jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
-
                     if (jobStatus.equals(JobStatus.QUEUED.toString())) {
                         showInfoDialog(baseFrame, "Query is still queued!");
                     } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)), QUERY_SERVICE);
-                        System.out.println(queryResults);
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
                         showErrorDialog(baseFrame, "Processing error!");
-                    } else if (jobStatus.equals(JobStatus.ABORT.toString())) {
+                    } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
                     }
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     initStatus();
                     showExceptionDialog(baseFrame, ex);
                 } finally {
@@ -338,7 +355,7 @@ public class AdqlQueryTab {
             topPanel.add(exportButton);
             exportButton.addActionListener((ActionEvent evt) -> {
                 if (queryResults == null || queryResults.isEmpty()) {
-                    showErrorDialog(baseFrame, "Nothing to export yet!");
+                    showErrorDialog(baseFrame, "No results to export!");
                 } else {
                     try {
                         File tmpFile = File.createTempFile("AstroToolBox_", ".csv");
@@ -346,7 +363,7 @@ public class AdqlQueryTab {
                             writer.write(queryResults);
                         }
                         Desktop.getDesktop().open(tmpFile);
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         showExceptionDialog(baseFrame, ex);
                     }
 
@@ -364,7 +381,7 @@ public class AdqlQueryTab {
             browseButton.addActionListener((ActionEvent evt) -> {
                 browseButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
-                String query = "select * from tap_schema.tables order by table_name";
+                String query = "select schema_name, table_name, table_type, description from tap_schema.tables where schema_name != 'mydb' order by table_name";
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
                     String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
@@ -400,7 +417,7 @@ public class AdqlQueryTab {
                     });
 
                     baseFrame.setVisible(true);
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 } finally {
                     browseButton.setCursor(Cursor.getDefaultCursor());
@@ -488,7 +505,7 @@ public class AdqlQueryTab {
                     int selectedRow = resultTable.getSelectedRow();
                     String tableName;
                     try {
-                        tableName = (String) resultTable.getValueAt(selectedRow, getTableNameIndex());
+                        tableName = (String) resultTable.getValueAt(selectedRow, 2);
                     } catch (ArrayIndexOutOfBoundsException ex) {
                         return;
                     }
@@ -532,7 +549,7 @@ public class AdqlQueryTab {
                         });
 
                         baseFrame.setVisible(true);
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         showExceptionDialog(baseFrame, ex);
                     } finally {
                         resultTable.setCursor(Cursor.getDefaultCursor());
@@ -586,6 +603,10 @@ public class AdqlQueryTab {
         return getTapProviderUrl() + "/async/" + jobId + "/phase";
     }
 
+    private String createCancelUrl(String jobId) {
+        return getTapProviderUrl() + "/async/" + jobId + "/phase?phase=ABORT";
+    }
+
     private String createResultUrl(String jobId) {
         return getTapProviderUrl() + "/async/" + jobId + "/results/result";
     }
@@ -595,31 +616,23 @@ public class AdqlQueryTab {
     }
 
     private String getTapProviderUrl() {
-        switch ((TapProvider) tapProvider.getSelectedItem()) {
+        switch (getTapProvider()) {
             case IRSA:
                 return IRSA_TAP_URL;
             case VIZIER:
                 return VIZIER_BASE_URL;
+            case NOAO:
+                return NOAO_BASE_URL;
             default:
                 return null;
         }
     }
 
-    private int getTableNameIndex() {
-        switch ((TapProvider) tapProvider.getSelectedItem()) {
-            case IRSA:
-                return 3;
-            case VIZIER:
-                return 2;
-            default:
-                return 0;
-        }
-    }
-
     private String getJobIdentifier(String response) {
         String[] parts;
-        switch ((TapProvider) tapProvider.getSelectedItem()) {
+        switch (getTapProvider()) {
             case IRSA:
+            case NOAO:
                 parts = response.split("<uws:jobId>");
                 parts = parts[1].split("</uws:jobId>");
                 return parts[0];
@@ -630,6 +643,21 @@ public class AdqlQueryTab {
             default:
                 return null;
         }
+    }
+
+    private String getErrorMessage(String response) {
+        String[] parts;
+        try {
+            parts = response.split("<message>");
+            parts = parts[1].split("</message>");
+            return parts[0];
+        } catch (Exception ex) {
+        }
+        return "";
+    }
+
+    private TapProvider getTapProvider() {
+        return (TapProvider) tapProvider.getSelectedItem();
     }
 
     private void removeResultPanel() {
@@ -660,7 +688,7 @@ public class AdqlQueryTab {
             color = JColor.LIGHT_GREEN;
         } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
             color = JColor.LIGHT_RED;
-        } else if (jobStatus.equals(JobStatus.ABORT.toString())) {
+        } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
             color = JColor.LIGHT_RED;
         } else {
             color = JColor.LIGHT_YELLOW;

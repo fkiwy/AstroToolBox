@@ -6,6 +6,7 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
+import astro.tool.box.module.tab.AdqlQueryTab;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -63,7 +64,7 @@ public class ServiceProviderUtils {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return reader.lines().collect(Collectors.joining(LINE_SEP));
         } catch (Exception ex) {
-            if (ex.getMessage().contains(IRSA_TAP_URL)) {
+            if (AdqlQueryTab.QUERY_SERVICE.equals(serviceProvider)) {
                 throw new ADQLException(ex);
             }
             writeErrorLog(ex);
