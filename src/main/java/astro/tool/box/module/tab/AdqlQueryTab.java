@@ -194,7 +194,7 @@ public class AdqlQueryTab {
             JButton runButton = new JButton("Run query");
             topPanel.add(runButton);
             runButton.addActionListener((ActionEvent evt) -> {
-                if (jobStatus != null && (jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
+                if (jobStatus != null && (jobStatus.equals(JobStatus.PENDING.toString()) || jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
                     showErrorDialog(baseFrame, "Query is still running!");
                     return;
                 }
@@ -204,7 +204,7 @@ public class AdqlQueryTab {
                     return;
                 }
                 removeResultPanel();
-                jobStatus = JobStatus.QUEUED.toString();
+                jobStatus = JobStatus.PENDING.toString();
                 statusField.setText(jobStatus);
                 statusField.setBackground(getStatusColor(jobStatus).val);
                 queryResults = null;
@@ -245,7 +245,7 @@ public class AdqlQueryTab {
                         }
                         String errorMessage = getErrorMessage(response);
                         if (!errorMessage.isEmpty()) {
-                            showErrorDialog(baseFrame, errorMessage);
+                            showScrollableErrorDialog(baseFrame, errorMessage);
                         }
                     }
                 } catch (Exception ex) {
@@ -330,7 +330,9 @@ public class AdqlQueryTab {
                     jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
-                    if (jobStatus.equals(JobStatus.QUEUED.toString())) {
+                    if (jobStatus.equals(JobStatus.PENDING.toString())) {
+                        showInfoDialog(baseFrame, "Query is still pending!");
+                    } else if (jobStatus.equals(JobStatus.QUEUED.toString())) {
                         showInfoDialog(baseFrame, "Query is still queued!");
                     } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
                         showInfoDialog(baseFrame, "Query is still running!");
@@ -434,6 +436,7 @@ public class AdqlQueryTab {
                     if (query.isEmpty() || query.contains("Find all comovers")) {
                         CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
                         if (selectedEntry != null && (selectedEntry instanceof GaiaCatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
+                            tapProvider.setSelectedItem(TapProvider.IRSA);
                             String comoverQuery = createComoverQuery();
                             comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
                             comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
@@ -594,7 +597,7 @@ public class AdqlQueryTab {
     }
 
     private String createAsynchQueryUrl(String query) {
-        String x = getTapProviderUrl() + "/async?request=doQuery&lang=ADQL&format=csv&phase=RUN&query=" + query;
+        String x = getTapProviderUrl() + "/async?request=doQuery&lang=ADQL&format=csv&query=" + query + "&phase=RUN";
         System.out.println(x);
         return x;
     }
@@ -680,7 +683,9 @@ public class AdqlQueryTab {
 
     private JColor getStatusColor(String jobStatus) {
         JColor color;
-        if (jobStatus.equals(JobStatus.QUEUED.toString())) {
+        if (jobStatus.equals(JobStatus.PENDING.toString())) {
+            color = JColor.LIGHT_YELLOW;
+        } else if (jobStatus.equals(JobStatus.QUEUED.toString())) {
             color = JColor.LIGHT_YELLOW;
         } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
             color = JColor.LIGHT_BLUE;
@@ -689,7 +694,7 @@ public class AdqlQueryTab {
         } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
             color = JColor.LIGHT_RED;
         } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
-            color = JColor.LIGHT_RED;
+            color = JColor.LIGHT_ORANGE;
         } else {
             color = JColor.LIGHT_YELLOW;
         }

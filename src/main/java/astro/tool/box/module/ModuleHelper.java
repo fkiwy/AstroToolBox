@@ -184,6 +184,10 @@ public class ModuleHelper {
         JOptionPane.showMessageDialog(baseFrame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
+    public static void showScrollableErrorDialog(JFrame baseFrame, String message) {
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(message), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    
     public static void showExceptionDialog(JFrame baseFrame, Exception ex) {
         writeErrorLog(ex);
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
