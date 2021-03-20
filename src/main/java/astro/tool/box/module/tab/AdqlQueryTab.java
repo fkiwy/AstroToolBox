@@ -22,7 +22,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
@@ -68,9 +67,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 public class AdqlQueryTab {
 
@@ -645,7 +643,7 @@ public class AdqlQueryTab {
         }
     }
 
-    private String getJobIdentifier(String response) {
+    private String getJobIdentifier(String response) throws Exception {
         switch (getTapProvider()) {
             case IRSA:
             case NOAO:
@@ -657,7 +655,7 @@ public class AdqlQueryTab {
         }
     }
 
-    private String getErrorMessage(String response) {
+    private String getErrorMessage(String response) throws Exception {
         return parseXml(response, "message");
     }
 
@@ -745,14 +743,11 @@ public class AdqlQueryTab {
         textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
     }
 
-    private String parseXml(String xml, String tag) {
-        try {
-            InputSource input = new InputSource(new StringReader(xml));
-            org.w3c.dom.Document document = builder.parse(input);
-            return document.getElementsByTagName(tag).item(0).getTextContent();
-        } catch (IOException | DOMException | SAXException ex) {
-            return "";
-        }
+    private String parseXml(String xml, String tag) throws Exception {
+        InputSource input = new InputSource(new StringReader(xml));
+        org.w3c.dom.Document document = builder.parse(input);
+        Node node = document.getElementsByTagName(tag).item(0);
+        return node == null ? "" : node.getTextContent();
     }
 
 }
