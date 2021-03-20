@@ -64,7 +64,6 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Node;
@@ -100,11 +99,10 @@ public class AdqlQueryTab {
 
     private DocumentBuilder builder;
 
-    public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) throws ParserConfigurationException {
+    public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
-
     }
 
     public void init() {
@@ -250,6 +248,8 @@ public class AdqlQueryTab {
                     if (!response.isEmpty()) {
                         try {
                             jobId = getJobIdentifier(response);
+                            SettingsTab.setUserSetting("jobId", jobId);
+                            SettingsTab.saveSettings();
                         } catch (Exception e) {
                             stopClock();
                             initStatus();
@@ -290,14 +290,12 @@ public class AdqlQueryTab {
                     if (jobStatus.equals(JobStatus.ERROR.toString()) || jobStatus.equals(JobStatus.ABORTED.toString()) || jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         stopClock();
                     }
-                } catch (Exception ex) {
-                    stopClock();
-                    initStatus();
-                    showExceptionDialog(baseFrame, ex);
-                } finally {
                     Duration duration = Duration.between(startTime, Instant.now());
                     LocalTime time = LocalTime.ofSecondOfDay(duration.getSeconds());
                     elapsedTime.setText(time.format(timeFormatter));
+                } catch (Exception ex) {
+                    stopClock();
+                    initStatus();
                 }
             });
 
@@ -307,33 +305,11 @@ public class AdqlQueryTab {
             elapsedTime.setEditable(false);
             topPanel.add(elapsedTime);
 
-            JButton cancelButton = new JButton("Abort query");
-            topPanel.add(cancelButton);
-            cancelButton.addActionListener((ActionEvent evt) -> {
-                if (TapProvider.IRSA.equals(getTapProvider())) {
-                    showInfoDialog(baseFrame, "IRSA queries cannot be aborted.");
-                    return;
-                } else {
-                    if (!showConfirmDialog(baseFrame, "Do you really want to abort this query?")) {
-                        return;
-                    }
-                }
-                try {
-                    HttpURLConnection http = establishHttpConnection(createCancelUrl(jobId));
-                    http.setRequestMethod("POST");
-                    String response = readResponse(http, QUERY_SERVICE);
-                    System.out.println(response);
-                    showInfoDialog(baseFrame, "Query aborted!");
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
             JButton fetchButton = new JButton("Fetch results");
             topPanel.add(fetchButton);
             fetchButton.addActionListener((ActionEvent evt) -> {
                 if (jobId == null) {
-                    showErrorDialog(baseFrame, "No query submitted!");
+                    showInfoDialog(baseFrame, "No query submitted!");
                     return;
                 }
                 fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -359,7 +335,7 @@ public class AdqlQueryTab {
                     }
                 } catch (Exception ex) {
                     initStatus();
-                    showExceptionDialog(baseFrame, ex);
+                    showInfoDialog(baseFrame, "No results to fetch!");
                 } finally {
                     fetchButton.setCursor(Cursor.getDefaultCursor());
                 }
@@ -369,7 +345,7 @@ public class AdqlQueryTab {
             topPanel.add(exportButton);
             exportButton.addActionListener((ActionEvent evt) -> {
                 if (queryResults == null || queryResults.isEmpty()) {
-                    showErrorDialog(baseFrame, "No results to export!");
+                    showInfoDialog(baseFrame, "No results to export!");
                 } else {
                     try {
                         File tmpFile = File.createTempFile("AstroToolBox_", ".csv");
@@ -438,6 +414,50 @@ public class AdqlQueryTab {
                 }
             });
 
+            JButton cancelButton = new JButton("Abort query");
+            topPanel.add(cancelButton);
+            cancelButton.addActionListener((ActionEvent evt) -> {
+                if (TapProvider.IRSA.equals(getTapProvider())) {
+                    showInfoDialog(baseFrame, "IRSA does not allow to abort queries.");
+                    return;
+                } else {
+                    if (!showConfirmDialog(baseFrame, "Do you really want to abort this query?")) {
+                        return;
+                    }
+                }
+                try {
+                    HttpURLConnection http = establishHttpConnection(createCancelUrl(jobId));
+                    http.setRequestMethod("POST");
+                    String response = readResponse(http, QUERY_SERVICE);
+                    System.out.println(response);
+                    showInfoDialog(baseFrame, "Query aborted!");
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            JButton deleteButton = new JButton("Delete query");
+            topPanel.add(deleteButton);
+            deleteButton.addActionListener((ActionEvent evt) -> {
+                if (TapProvider.IRSA.equals(getTapProvider())) {
+                    showInfoDialog(baseFrame, "IRSA does not allow to delete queries.");
+                    return;
+                } else {
+                    if (!showConfirmDialog(baseFrame, "Do you really want to delete this query?")) {
+                        return;
+                    }
+                }
+                try {
+                    HttpURLConnection http = establishHttpConnection(createDeleteUrl(jobId));
+                    http.setRequestMethod("POST");
+                    String response = readResponse(http, QUERY_SERVICE);
+                    System.out.println(response);
+                    showInfoDialog(baseFrame, "Query deleted!");
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
             topPanel.add(message);
 
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
@@ -459,6 +479,12 @@ public class AdqlQueryTab {
                     }
                 }
             });
+
+            jobId = SettingsTab.getUserSetting("jobId", "");
+            if (!jobId.isEmpty()) {
+                statusField.setText("Resuming ...");
+                startClock();
+            }
 
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
@@ -620,6 +646,10 @@ public class AdqlQueryTab {
 
     private String createCancelUrl(String jobId) {
         return getTapProviderUrl() + "/async/" + jobId + "/phase?phase=ABORT";
+    }
+
+    private String createDeleteUrl(String jobId) {
+        return getTapProviderUrl() + "/async/" + jobId + "?action=DELETE";
     }
 
     private String createResultUrl(String jobId) {

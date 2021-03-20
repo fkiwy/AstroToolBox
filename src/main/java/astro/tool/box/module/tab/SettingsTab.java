@@ -616,13 +616,9 @@ public class SettingsTab {
                 String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
-                try (OutputStream output = new FileOutputStream(PROP_PATH)) {
-                    USER_SETTINGS.store(output, COMMENTS);
-                    message.setText("Settings applied!");
-                    timer.restart();
-                } catch (IOException ex) {
-                }
-
+                saveSettings();
+                message.setText("Settings applied!");
+                timer.restart();
             });
 
             buttonPanel.add(message);
@@ -685,6 +681,10 @@ public class SettingsTab {
         }
     }
 
+    public static void setUserSetting(String key, String value) {
+        USER_SETTINGS.setProperty(key, value);
+    }
+
     public static String getUserSetting(String key) {
         return USER_SETTINGS.getProperty(key);
     }
@@ -697,6 +697,13 @@ public class SettingsTab {
         String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
         String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
         return Arrays.asList(catalogs.split(","));
+    }
+
+    public static void saveSettings() {
+        try (OutputStream output = new FileOutputStream(PROP_PATH)) {
+            USER_SETTINGS.store(output, COMMENTS);
+        } catch (IOException ex) {
+        }
     }
 
 }
