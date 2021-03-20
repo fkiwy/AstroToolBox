@@ -187,7 +187,7 @@ public class ModuleHelper {
     public static void showScrollableErrorDialog(JFrame baseFrame, String message) {
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(message), "Error", JOptionPane.ERROR_MESSAGE);
     }
-    
+
     public static void showExceptionDialog(JFrame baseFrame, Exception ex) {
         writeErrorLog(ex);
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
@@ -672,6 +672,10 @@ public class ModuleHelper {
     public static CatalogEntry retrieveCatalogEntry(CatalogEntry catalogEntry, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
         try {
             List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogEntry);
+            for (CatalogEntry entry : catalogEntries) {
+                entry.setTargetRa(catalogEntry.getRa());
+                entry.setTargetDec(catalogEntry.getDec());
+            }
             if (!catalogEntries.isEmpty()) {
                 catalogEntries.sort(Comparator.comparing(CatalogEntry::getTargetDistance));
                 return catalogEntries.get(0);

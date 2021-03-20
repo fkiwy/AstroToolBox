@@ -362,7 +362,8 @@ public class AdqlQueryTab {
 
             topPanel.add(new JLabel("TAP provider:"));
 
-            tapProvider = new JComboBox(TapProvider.values());
+            //tapProvider = new JComboBox(TapProvider.values());
+            tapProvider = new JComboBox(new TapProvider[]{TapProvider.IRSA, TapProvider.VIZIER});
             topPanel.add(tapProvider);
             tapProvider.setSelectedItem(TapProvider.VIZIER);
 
