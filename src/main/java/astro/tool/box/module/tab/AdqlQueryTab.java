@@ -22,6 +22,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -61,8 +63,14 @@ import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.DOMException;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class AdqlQueryTab {
 
@@ -92,14 +100,20 @@ public class AdqlQueryTab {
     private String queryResults;
     private String previousTableName;
 
-    public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
+    private DocumentBuilder builder;
+
+    public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) throws ParserConfigurationException {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
+
     }
 
     public void init() {
         try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            builder = factory.newDocumentBuilder();
+
             JPanel mainPanel = new JPanel(new BorderLayout());
 
             JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -632,31 +646,19 @@ public class AdqlQueryTab {
     }
 
     private String getJobIdentifier(String response) {
-        String[] parts;
         switch (getTapProvider()) {
             case IRSA:
             case NOAO:
-                parts = response.split("<uws:jobId>");
-                parts = parts[1].split("</uws:jobId>");
-                return parts[0];
+                return parseXml(response, "uws:jobId");
             case VIZIER:
-                parts = response.split("<jobId>");
-                parts = parts[1].split("</jobId>");
-                return parts[0];
+                return parseXml(response, "jobId");
             default:
                 return null;
         }
     }
 
     private String getErrorMessage(String response) {
-        String[] parts;
-        try {
-            parts = response.split("<message>");
-            parts = parts[1].split("</message>");
-            return parts[0];
-        } catch (Exception ex) {
-        }
-        return "";
+        return parseXml(response, "message");
     }
 
     private TapProvider getTapProvider() {
@@ -741,6 +743,16 @@ public class AdqlQueryTab {
 
         // Bind the redo action to ctl-Y
         textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
+    }
+
+    private String parseXml(String xml, String tag) {
+        try {
+            InputSource input = new InputSource(new StringReader(xml));
+            org.w3c.dom.Document document = builder.parse(input);
+            return document.getElementsByTagName(tag).item(0).getTextContent();
+        } catch (IOException | DOMException | SAXException ex) {
+            return "";
+        }
     }
 
 }
