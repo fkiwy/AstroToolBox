@@ -33,7 +33,8 @@ public class AstrometricFunctions {
         double ra0 = toRadians(fromCoords.getX());
         double dec0 = toRadians(fromCoords.getY());
         double cosc = sin(dec0) * sin(dec) + cos(dec0) * cos(dec) * cos(ra - ra0);
-        return toDegrees(acos(cosc)) * conversionFactor;
+        double distance = toDegrees(acos(cosc)) * conversionFactor;
+        return Double.isInfinite(distance) || Double.isNaN(distance) ? 0 : distance;
     }
 
     /**

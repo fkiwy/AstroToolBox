@@ -579,7 +579,7 @@ public class InfoSheet {
             catalogEntry.setTargetDec(catalogQuery.getDec());
         });
         if (!catalogEntries.isEmpty()) {
-            catalogEntries.sort(Comparator.comparing(entry -> entry.getTargetDistance()));
+            catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
             return catalogEntries;
         }
         return null;

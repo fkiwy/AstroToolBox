@@ -5078,7 +5078,7 @@ public class ImageViewerTab {
         if (results.isEmpty()) {
             catalogEntry.setSpt("N/A");
         } else {
-            results.sort(Comparator.comparing(LookupResult::getGap));
+            results.sort(Comparator.comparingDouble(LookupResult::getGap));
             catalogEntry.setSpt(results.get(0).getSpt());
         }
     }

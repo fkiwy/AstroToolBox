@@ -669,15 +669,15 @@ public class ModuleHelper {
         }
     }
 
-    public static CatalogEntry retrieveCatalogEntry(CatalogEntry catalogEntry, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
+    public static CatalogEntry retrieveCatalogEntry(CatalogEntry catalogQuery, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
         try {
-            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogEntry);
-            for (CatalogEntry entry : catalogEntries) {
-                entry.setTargetRa(catalogEntry.getRa());
-                entry.setTargetDec(catalogEntry.getDec());
-            }
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+            catalogEntries.forEach(catalogEntry -> {
+                catalogEntry.setTargetRa(catalogQuery.getRa());
+                catalogEntry.setTargetDec(catalogQuery.getDec());
+            });
             if (!catalogEntries.isEmpty()) {
-                catalogEntries.sort(Comparator.comparing(CatalogEntry::getTargetDistance));
+                catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
                 return catalogEntries.get(0);
             }
         } catch (IOException ex) {
