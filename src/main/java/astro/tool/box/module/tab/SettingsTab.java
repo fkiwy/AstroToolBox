@@ -594,6 +594,8 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
+                USER_SETTINGS.setProperty(DIFFERENT_SIZE, differentSizeField.getText());
+                USER_SETTINGS.setProperty(PROPER_MOTION, properMotionField.getText());
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
                 USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
