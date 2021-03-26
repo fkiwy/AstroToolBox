@@ -216,7 +216,7 @@ public class PhotometricFunctions {
      * @return a boolean indicating that the object is a possible AGN
      */
     public static boolean isAPossibleAGN(double W1_W2, double W2_W3) {
-        return W1_W2 > 0.5 && W1_W2 < 3.0 && W2_W3 > 2.5 && W2_W3 < 6.0;
+        return W1_W2 >= 0.5 && W1_W2 <= 2.7 && W2_W3 >= 2.3 && W2_W3 <= 5.7;
     }
 
     /**

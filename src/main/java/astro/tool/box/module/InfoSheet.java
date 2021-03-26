@@ -336,8 +336,8 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type lookup (***)", null, LookupTable.BROWN_DWARFS));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimation (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type estimation (***)", null, LookupTable.BROWN_DWARFS));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});
@@ -370,8 +370,8 @@ public class InfoSheet {
 
             document.add(table);
 
-            document.add(new Paragraph("(**) Uses Eric Mamajek's lookup table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses a lookup table compiled from data of the following catalog: Catalog of M, L, & T dwarfs from PS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
+            document.add(new Paragraph("(**) Uses Eric Mamajek's table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses tables from this paper: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
 
             document.close();
 

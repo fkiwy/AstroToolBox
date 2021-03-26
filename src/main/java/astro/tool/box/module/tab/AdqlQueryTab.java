@@ -22,6 +22,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
@@ -66,8 +67,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class AdqlQueryTab {
 
@@ -112,8 +115,14 @@ public class AdqlQueryTab {
 
             JPanel mainPanel = new JPanel(new BorderLayout());
 
-            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel topPanel = new JPanel(new GridLayout(2, 1));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
+
+            JPanel firstRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            topPanel.add(firstRow);
+
+            JPanel secondRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            topPanel.add(secondRow);
 
             JTextArea textEditor = new JTextArea();
             textEditor.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -135,9 +144,9 @@ public class AdqlQueryTab {
             JFileChooser fileChooser = new JFileChooser();
 
             JButton importButton = new JButton("Import query");
-            topPanel.add(importButton);
+            firstRow.add(importButton);
             importButton.addActionListener((ActionEvent evt) -> {
-                int returnVal = fileChooser.showOpenDialog(topPanel);
+                int returnVal = fileChooser.showOpenDialog(firstRow);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     file = fileChooser.getSelectedFile();
                     try {
@@ -158,10 +167,10 @@ public class AdqlQueryTab {
             });
 
             JButton saveButton = new JButton("Save query");
-            topPanel.add(saveButton);
+            firstRow.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 if (file == null) {
-                    int returnVal = fileChooser.showSaveDialog(topPanel);
+                    int returnVal = fileChooser.showSaveDialog(firstRow);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         file = fileChooser.getSelectedFile();
                         try (FileWriter writer = new FileWriter(file)) {
@@ -185,9 +194,9 @@ public class AdqlQueryTab {
             });
 
             JButton saveAsButton = new JButton("Save As...");
-            topPanel.add(saveAsButton);
+            firstRow.add(saveAsButton);
             saveAsButton.addActionListener((ActionEvent evt) -> {
-                int returnVal = fileChooser.showSaveDialog(topPanel);
+                int returnVal = fileChooser.showSaveDialog(firstRow);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     file = fileChooser.getSelectedFile();
                     try (FileWriter writer = new FileWriter(file)) {
@@ -202,7 +211,7 @@ public class AdqlQueryTab {
             });
 
             JButton runButton = new JButton("Run query");
-            topPanel.add(runButton);
+            firstRow.add(runButton);
             runButton.addActionListener((ActionEvent evt) -> {
                 if (jobStatus != null && (jobStatus.equals(JobStatus.PENDING.toString()) || jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
                     showErrorDialog(baseFrame, "Query is still running!");
@@ -244,16 +253,18 @@ public class AdqlQueryTab {
                     HttpURLConnection http = establishHttpConnection(createAsynchQueryUrl(encodedQuery));
                     http.setRequestMethod("POST");
                     response = readResponse(http, QUERY_SERVICE);
-                    System.out.println(response);
                     if (!response.isEmpty()) {
                         try {
                             jobId = getJobIdentifier(response);
+                            http = establishHttpConnection(createRunUrl(jobId));
+                            http.setRequestMethod("POST");
+                            response = readResponse(http, QUERY_SERVICE);
                             SettingsTab.setUserSetting("jobId", jobId);
                             SettingsTab.saveSettings();
                         } catch (Exception e) {
                             stopClock();
                             initStatus();
-                            showErrorDialog(baseFrame, "Unable to extract job id from response!");
+                            showErrorDialog(baseFrame, e.getMessage());
                         }
                         String errorMessage = getErrorMessage(response);
                         if (!errorMessage.isEmpty()) {
@@ -269,10 +280,10 @@ public class AdqlQueryTab {
                 }
             });
 
-            topPanel.add(new JLabel("Status:"));
+            firstRow.add(new JLabel("Status:"));
 
             statusField = new JTextField(10);
-            topPanel.add(statusField);
+            firstRow.add(statusField);
             statusField.setEditable(false);
 
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -299,14 +310,14 @@ public class AdqlQueryTab {
                 }
             });
 
-            topPanel.add(new JLabel("Elapsed time:"));
+            firstRow.add(new JLabel("Elapsed time:"));
 
             elapsedTime = new JTextField(6);
             elapsedTime.setEditable(false);
-            topPanel.add(elapsedTime);
+            firstRow.add(elapsedTime);
 
             JButton fetchButton = new JButton("Fetch results");
-            topPanel.add(fetchButton);
+            firstRow.add(fetchButton);
             fetchButton.addActionListener((ActionEvent evt) -> {
                 if (jobId == null) {
                     showInfoDialog(baseFrame, "No query submitted!");
@@ -330,6 +341,11 @@ public class AdqlQueryTab {
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
                         showErrorDialog(baseFrame, "Processing error!");
+                        String response = readResponse(establishHttpConnection(createErrorUrl(jobId)), QUERY_SERVICE);
+                        String errorMessage = getErrorMessage(response);
+                        if (!errorMessage.isEmpty()) {
+                            showScrollableErrorDialog(baseFrame, errorMessage);
+                        }
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
                     }
@@ -342,7 +358,7 @@ public class AdqlQueryTab {
             });
 
             JButton exportButton = new JButton("Export results");
-            topPanel.add(exportButton);
+            firstRow.add(exportButton);
             exportButton.addActionListener((ActionEvent evt) -> {
                 if (queryResults == null || queryResults.isEmpty()) {
                     showInfoDialog(baseFrame, "No results to export!");
@@ -360,15 +376,58 @@ public class AdqlQueryTab {
                 }
             });
 
-            topPanel.add(new JLabel("TAP provider:"));
+            JButton abortButton = new JButton("Abort query");
+            firstRow.add(abortButton);
+            abortButton.addActionListener((ActionEvent evt) -> {
+                if (TapProvider.IRSA.equals(getTapProvider())) {
+                    showInfoDialog(baseFrame, "IRSA does not allow to abort queries.");
+                    return;
+                } else {
+                    if (!showConfirmDialog(baseFrame, "Do you really want to abort this query?")) {
+                        return;
+                    }
+                }
+                try {
+                    HttpURLConnection http = establishHttpConnection(createAbortUrl(jobId));
+                    http.setRequestMethod("POST");
+                    readResponse(http, QUERY_SERVICE);
+                    showInfoDialog(baseFrame, "Query aborted!");
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
 
-            //tapProvider = new JComboBox(TapProvider.values());
+            JButton deleteButton = new JButton("Delete query");
+            firstRow.add(deleteButton);
+            deleteButton.addActionListener((ActionEvent evt) -> {
+                if (TapProvider.IRSA.equals(getTapProvider())) {
+                    showInfoDialog(baseFrame, "IRSA does not allow to delete queries.");
+                    return;
+                } else {
+                    if (!showConfirmDialog(baseFrame, "Do you really want to delete this query?")) {
+                        return;
+                    }
+                }
+                try {
+                    HttpURLConnection http = establishHttpConnection(createDeleteUrl(jobId));
+                    http.setRequestMethod("POST");
+                    readResponse(http, QUERY_SERVICE);
+                    showInfoDialog(baseFrame, "Query deleted!");
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            firstRow.add(message);
+
+            secondRow.add(new JLabel("TAP provider:"));
+
             tapProvider = new JComboBox(new TapProvider[]{TapProvider.IRSA, TapProvider.VIZIER});
-            topPanel.add(tapProvider);
+            secondRow.add(tapProvider);
             tapProvider.setSelectedItem(TapProvider.VIZIER);
 
             JButton browseButton = new JButton("Browse tables");
-            topPanel.add(browseButton);
+            secondRow.add(browseButton);
             browseButton.addActionListener((ActionEvent evt) -> {
                 browseButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
@@ -414,52 +473,6 @@ public class AdqlQueryTab {
                     browseButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
-
-            JButton cancelButton = new JButton("Abort query");
-            topPanel.add(cancelButton);
-            cancelButton.addActionListener((ActionEvent evt) -> {
-                if (TapProvider.IRSA.equals(getTapProvider())) {
-                    showInfoDialog(baseFrame, "IRSA does not allow to abort queries.");
-                    return;
-                } else {
-                    if (!showConfirmDialog(baseFrame, "Do you really want to abort this query?")) {
-                        return;
-                    }
-                }
-                try {
-                    HttpURLConnection http = establishHttpConnection(createCancelUrl(jobId));
-                    http.setRequestMethod("POST");
-                    String response = readResponse(http, QUERY_SERVICE);
-                    System.out.println(response);
-                    showInfoDialog(baseFrame, "Query aborted!");
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            JButton deleteButton = new JButton("Delete query");
-            topPanel.add(deleteButton);
-            deleteButton.addActionListener((ActionEvent evt) -> {
-                if (TapProvider.IRSA.equals(getTapProvider())) {
-                    showInfoDialog(baseFrame, "IRSA does not allow to delete queries.");
-                    return;
-                } else {
-                    if (!showConfirmDialog(baseFrame, "Do you really want to delete this query?")) {
-                        return;
-                    }
-                }
-                try {
-                    HttpURLConnection http = establishHttpConnection(createDeleteUrl(jobId));
-                    http.setRequestMethod("POST");
-                    String response = readResponse(http, QUERY_SERVICE);
-                    System.out.println(response);
-                    showInfoDialog(baseFrame, "Query deleted!");
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            topPanel.add(message);
 
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
@@ -636,16 +649,18 @@ public class AdqlQueryTab {
     }
 
     private String createAsynchQueryUrl(String query) {
-        String x = getTapProviderUrl() + "/async?request=doQuery&lang=ADQL&format=csv&query=" + query + "&phase=RUN";
-        System.out.println(x);
-        return x;
+        return getTapProviderUrl() + "/async?request=doQuery&lang=ADQL&format=csv&query=" + query;
     }
 
     private String createStatusUrl(String jobId) {
         return getTapProviderUrl() + "/async/" + jobId + "/phase";
     }
 
-    private String createCancelUrl(String jobId) {
+    private String createRunUrl(String jobId) {
+        return getTapProviderUrl() + "/async/" + jobId + "/phase?phase=RUN";
+    }
+
+    private String createAbortUrl(String jobId) {
         return getTapProviderUrl() + "/async/" + jobId + "/phase?phase=ABORT";
     }
 
@@ -655,6 +670,10 @@ public class AdqlQueryTab {
 
     private String createResultUrl(String jobId) {
         return getTapProviderUrl() + "/async/" + jobId + "/results/result";
+    }
+
+    private String createErrorUrl(String jobId) {
+        return getTapProviderUrl() + "/async/" + jobId + "/error";
     }
 
     private String createValidatorUrl(String query) {
@@ -775,10 +794,14 @@ public class AdqlQueryTab {
     }
 
     private String parseXml(String xml, String tag) throws Exception {
-        InputSource input = new InputSource(new StringReader(xml));
-        org.w3c.dom.Document document = builder.parse(input);
-        Node node = document.getElementsByTagName(tag).item(0);
-        return node == null ? "" : node.getTextContent();
+        try {
+            InputSource input = new InputSource(new StringReader(xml));
+            org.w3c.dom.Document document = builder.parse(input);
+            Node node = document.getElementsByTagName(tag).item(0);
+            return node == null ? "" : node.getTextContent();
+        } catch (IOException | DOMException | SAXException ex) {
+            return "";
+        }
     }
 
 }
