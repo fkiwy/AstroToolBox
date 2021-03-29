@@ -402,6 +402,8 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("PHASE", "ABORT"));
                     doPost(createStatusUrl(jobId), params);
+                    SettingsTab.setUserSetting("jobId", "");
+                    SettingsTab.saveSettings();
                     showInfoDialog(baseFrame, "Query aborted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -423,6 +425,8 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("ACTION", "DELETE"));
                     doPost(createDeleteUrl(jobId), params);
+                    SettingsTab.setUserSetting("jobId", "");
+                    SettingsTab.saveSettings();
                     showInfoDialog(baseFrame, "Query deleted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
