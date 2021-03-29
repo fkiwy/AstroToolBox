@@ -188,14 +188,22 @@ public class ModuleHelper {
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(message), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void showExceptionDialog(JFrame baseFrame, Exception ex) {
-        writeErrorLog(ex);
-        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
+    public static void showExceptionDialog(JFrame baseFrame, Exception error) {
+        writeErrorLog(error);
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(formatError(error)), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void writeErrorLog(Exception ex) {
+    public static void writeErrorLog(Exception error) {
+        writeLogEntry(formatError(error));
+    }
+
+    public static void writeMessageLog(String message) {
+        writeLogEntry(formatMessage(message));
+    }
+
+    private static void writeLogEntry(String entry) {
         try {
-            Files.write(Paths.get(ERROR_FILE_PATH), getStackTrace(ex).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.write(Paths.get(ERROR_FILE_PATH), entry.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {
         }
     }
@@ -793,11 +801,19 @@ public class ModuleHelper {
         return array;
     }
 
-    public static String getStackTrace(Exception ex) {
+    public static String formatError(Exception error) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         pw.print(LocalDateTime.now().toString() + " ");
-        ex.printStackTrace(pw);
+        error.printStackTrace(pw);
+        return sw.toString();
+    }
+
+    public static String formatMessage(String message) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        pw.print(LocalDateTime.now().toString() + " ");
+        pw.println(message);
         return sw.toString();
     }
 

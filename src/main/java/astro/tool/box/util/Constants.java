@@ -10,8 +10,8 @@ public class Constants {
 
     public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
-    public static final String NOAO_BASE_URL = "https://datalab.noao.edu/tap";
-    
+    public static final String NOAO_BASE_URL = "http://datalab.noao.edu/tap";
+
     public static final String NOAO_TAP_URL = NOAO_BASE_URL + TAP_URL_PARAMS;
 
     public static final String ESAC_TAP_URL = "https://gea.esac.esa.int/tap-server/tap" + TAP_URL_PARAMS;

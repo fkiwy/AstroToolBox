@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
@@ -65,6 +65,14 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.DOMException;
@@ -250,21 +258,24 @@ public class AdqlQueryTab {
                 startClock();
                 try {
                     runButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    HttpURLConnection http = establishHttpConnection(createAsynchQueryUrl(encodedQuery));
-                    http.setRequestMethod("POST");
-                    response = readResponse(http, QUERY_SERVICE);
+                    List<NameValuePair> params = new ArrayList<>();
+                    params.add(new BasicNameValuePair("request", "doQuery"));
+                    params.add(new BasicNameValuePair("lang", "ADQL"));
+                    params.add(new BasicNameValuePair("format", "csv"));
+                    params.add(new BasicNameValuePair("query", query));
+                    response = doPost(createAsynchQueryUrl(), params);
                     if (!response.isEmpty()) {
                         try {
                             jobId = getJobIdentifier(response);
-                            http = establishHttpConnection(createRunUrl(jobId));
-                            http.setRequestMethod("POST");
-                            response = readResponse(http, QUERY_SERVICE);
+                            params = new ArrayList<>();
+                            params.add(new BasicNameValuePair("PHASE", "RUN"));
+                            response = doPost(createStatusUrl(jobId), params);
                             SettingsTab.setUserSetting("jobId", jobId);
                             SettingsTab.saveSettings();
-                        } catch (Exception e) {
+                        } catch (Exception ex) {
                             stopClock();
                             initStatus();
-                            showErrorDialog(baseFrame, e.getMessage());
+                            showErrorDialog(baseFrame, ex.getMessage());
                         }
                         String errorMessage = getErrorMessage(response);
                         if (!errorMessage.isEmpty()) {
@@ -388,9 +399,9 @@ public class AdqlQueryTab {
                     }
                 }
                 try {
-                    HttpURLConnection http = establishHttpConnection(createAbortUrl(jobId));
-                    http.setRequestMethod("POST");
-                    readResponse(http, QUERY_SERVICE);
+                    List<NameValuePair> params = new ArrayList<>();
+                    params.add(new BasicNameValuePair("PHASE", "ABORT"));
+                    doPost(createStatusUrl(jobId), params);
                     showInfoDialog(baseFrame, "Query aborted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -409,9 +420,9 @@ public class AdqlQueryTab {
                     }
                 }
                 try {
-                    HttpURLConnection http = establishHttpConnection(createDeleteUrl(jobId));
-                    http.setRequestMethod("POST");
-                    readResponse(http, QUERY_SERVICE);
+                    List<NameValuePair> params = new ArrayList<>();
+                    params.add(new BasicNameValuePair("ACTION", "DELETE"));
+                    doPost(createDeleteUrl(jobId), params);
                     showInfoDialog(baseFrame, "Query deleted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -422,7 +433,7 @@ public class AdqlQueryTab {
 
             secondRow.add(new JLabel("TAP provider:"));
 
-            tapProvider = new JComboBox(new TapProvider[]{TapProvider.IRSA, TapProvider.VIZIER});
+            tapProvider = new JComboBox(TapProvider.values());
             secondRow.add(tapProvider);
             tapProvider.setSelectedItem(TapProvider.VIZIER);
 
@@ -648,24 +659,16 @@ public class AdqlQueryTab {
         return getTapProviderUrl() + "/sync?request=doQuery&lang=ADQL&format=csv&query=" + query;
     }
 
-    private String createAsynchQueryUrl(String query) {
-        return getTapProviderUrl() + "/async?request=doQuery&lang=ADQL&format=csv&query=" + query;
+    private String createAsynchQueryUrl() {
+        return getTapProviderUrl() + "/async";
     }
 
     private String createStatusUrl(String jobId) {
         return getTapProviderUrl() + "/async/" + jobId + "/phase";
     }
 
-    private String createRunUrl(String jobId) {
-        return getTapProviderUrl() + "/async/" + jobId + "/phase?phase=RUN";
-    }
-
-    private String createAbortUrl(String jobId) {
-        return getTapProviderUrl() + "/async/" + jobId + "/phase?phase=ABORT";
-    }
-
     private String createDeleteUrl(String jobId) {
-        return getTapProviderUrl() + "/async/" + jobId + "?action=DELETE";
+        return getTapProviderUrl() + "/async/" + jobId;
     }
 
     private String createResultUrl(String jobId) {
@@ -801,6 +804,18 @@ public class AdqlQueryTab {
             return node == null ? "" : node.getTextContent();
         } catch (IOException | DOMException | SAXException ex) {
             return "";
+        }
+    }
+
+    private String doPost(String url, List<NameValuePair> params) throws UnsupportedEncodingException, IOException {
+        HttpPost post = new HttpPost(url);
+        post.setEntity(new UrlEncodedFormEntity(params));
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+                CloseableHttpResponse response = httpClient.execute(post)) {
+            writeMessageLog(post.getURI().toString());
+            writeMessageLog(params.toString());
+            writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+            return EntityUtils.toString(response.getEntity());
         }
     }
 
