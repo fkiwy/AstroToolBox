@@ -34,7 +34,7 @@ public class Utils {
         }
     }
 
-    private static String omitQueryComments(String query) {
+    public static String omitQueryComments(String query) {
         String[] lines = query.split(LINE_SEP_TEXT_AREA);
         List<String> results = new ArrayList<>();
         for (String line : lines) {

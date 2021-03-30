@@ -262,7 +262,7 @@ public class AdqlQueryTab {
                     params.add(new BasicNameValuePair("request", "doQuery"));
                     params.add(new BasicNameValuePair("lang", "ADQL"));
                     params.add(new BasicNameValuePair("format", "csv"));
-                    params.add(new BasicNameValuePair("query", query));
+                    params.add(new BasicNameValuePair("query", omitQueryComments(query)));
                     response = doPost(createAsynchQueryUrl(), params);
                     if (!response.isEmpty()) {
                         try {
