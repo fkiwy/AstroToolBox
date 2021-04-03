@@ -16,7 +16,6 @@ public class Overlays {
         VHS,
         GAIAWD,
         TWOMASS,
-        SPITZER,
         SSO,
         PM_GAIA_DR2,
         PM_GAIA_DR3,
@@ -43,7 +42,6 @@ public class Overlays {
     private boolean vhs;
     private boolean gaiawd;
     private boolean twomass;
-    private boolean spitzer;
     private boolean sso;
     private boolean pmgaiadr2;
     private boolean pmgaiadr3;
@@ -96,9 +94,6 @@ public class Overlays {
         }
         if (twomass) {
             overlays.append(ID.TWOMASS).append(",");
-        }
-        if (spitzer) {
-            overlays.append(ID.SPITZER).append(",");
         }
         if (sso) {
             overlays.append(ID.SSO).append(",");
@@ -178,9 +173,6 @@ public class Overlays {
         }
         if (overlays.contains(ID.TWOMASS.name())) {
             twomass = true;
-        }
-        if (overlays.contains(ID.SPITZER.name())) {
-            spitzer = true;
         }
         if (overlays.contains(ID.SSO.name())) {
             sso = true;
@@ -319,14 +311,6 @@ public class Overlays {
 
     public void setTwomass(boolean twomass) {
         this.twomass = twomass;
-    }
-
-    public boolean isSpitzer() {
-        return spitzer;
-    }
-
-    public void setSpitzer(boolean spitzer) {
-        this.spitzer = spitzer;
     }
 
     public boolean isSso() {

@@ -11,7 +11,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -258,12 +257,12 @@ public class SSOCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_GRAY.val;
+        return java.awt.Color.BLUE;
     }
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl("neowiser_p1ba_mch", ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "neowiser_p1ba_mch");
     }
 
     @Override
@@ -415,6 +414,16 @@ public class SSOCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
 }

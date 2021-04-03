@@ -266,7 +266,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_PURPLE.val;
+        return JColor.PURPLE.val;
     }
 
     @Override
@@ -325,7 +325,32 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("G=%s; BP=%s; RP=%s; u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(Gmag), roundTo3DecNZ(BPmag), roundTo3DecNZ(RPmag), roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
+        StringBuilder mags = new StringBuilder();
+        if (Gmag != 0) {
+            mags.append("G=").append(roundTo3DecNZ(Gmag)).append(" ");
+        }
+        if (BPmag != 0) {
+            mags.append("BP=").append(roundTo3DecNZ(BPmag)).append(" ");
+        }
+        if (RPmag != 0) {
+            mags.append("RP=").append(roundTo3DecNZ(RPmag)).append(" ");
+        }
+        if (u_mag != 0) {
+            mags.append("u=").append(roundTo3DecNZ(u_mag)).append(" ");
+        }
+        if (g_mag != 0) {
+            mags.append("g=").append(roundTo3DecNZ(g_mag)).append(" ");
+        }
+        if (r_mag != 0) {
+            mags.append("r=").append(roundTo3DecNZ(r_mag)).append(" ");
+        }
+        if (i_mag != 0) {
+            mags.append("i=").append(roundTo3DecNZ(i_mag)).append(" ");
+        }
+        if (z_mag != 0) {
+            mags.append("z=").append(roundTo3DecNZ(z_mag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -448,40 +473,18 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
-    public double getTeffH() {
-        return teffH;
-    }
-
-    public double getTeffHe() {
-        return teffHe;
-    }
-
-    public double getLoggH() {
-        return loggH;
-    }
-
-    public double getMassH() {
-        return massH;
-    }
-
-    public double getLoggHe() {
-        return loggHe;
-    }
-
-    public double getMassHe() {
-        return massHe;
-    }
-
+    @Override
     public double getParallacticDistance() {
         return calculateParallacticDistance(plx);
     }
 
-    public double getAbsoluteGmag() {
-        return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
-    }
-
+    @Override
     public double getTotalProperMotion() {
         return calculateTotalProperMotion(pmra, pmdec);
+    }
+
+    public double getAbsoluteGmag() {
+        return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
 
     public double getG_RP() {
@@ -530,6 +533,30 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         } else {
             return i_mag - z_mag;
         }
+    }
+
+    public double getTeffH() {
+        return teffH;
+    }
+
+    public double getTeffHe() {
+        return teffHe;
+    }
+
+    public double getLoggH() {
+        return loggH;
+    }
+
+    public double getMassH() {
+        return massH;
+    }
+
+    public double getLoggHe() {
+        return loggHe;
+    }
+
+    public double getMassHe() {
+        return massHe;
     }
 
 }

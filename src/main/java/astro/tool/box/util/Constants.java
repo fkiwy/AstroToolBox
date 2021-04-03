@@ -8,15 +8,21 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public static final String NOAO_TAP_URL = "https://datalab.noao.edu/tap/sync?request=doQuery&lang=ADQL&format=csv&query=";
+    public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
-    public static final String ESAC_TAP_URL = "https://gea.esac.esa.int/tap-server/tap/sync?request=doQuery&lang=adql&format=csv&query=";
+    public static final String NOAO_BASE_URL = "http://datalab.noao.edu/tap";
 
-    public static final String VIZIER_TAP_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap/sync";
+    public static final String NOAO_TAP_URL = NOAO_BASE_URL + TAP_URL_PARAMS;
 
-    public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap/sync";
+    public static final String ESAC_TAP_URL = "https://gea.esac.esa.int/tap-server/tap" + TAP_URL_PARAMS;
 
-    public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap/sync";
+    public static final String VIZIER_BASE_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap";
+
+    public static final String VIZIER_TAP_URL = VIZIER_BASE_URL + TAP_URL_PARAMS;
+
+    public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap" + TAP_URL_PARAMS;
+
+    public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap" + TAP_URL_PARAMS;
 
     public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr2/mean.csv";
 
@@ -27,14 +33,6 @@ public class Constants {
     public static final String IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP";
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
-
-    public static final String CATWISE_CATALOG_ID = "II/365/catwise";
-
-    public static final String CATWISE2020_CATALOG_ID = "catwise_2020";
-
-    public static final String CATWISE2020_REJECT_TABLE = "catwise_2020_reject";
-
-    public static final String GAIA_CATALOG_ID = "I/345/gaia2";
 
     public static final String LINE_BREAK = "<br/>";
 

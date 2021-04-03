@@ -257,7 +257,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_BROWN.val;
+        return JColor.BROWN.val;
     }
 
     @Override
@@ -322,7 +322,23 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("g=%s; r=%s; i=%s; z=%s; y=%s", roundTo3DecNZ(gMeanPSFMag), roundTo3DecNZ(rMeanPSFMag), roundTo3DecNZ(iMeanPSFMag), roundTo3DecNZ(zMeanPSFMag), roundTo3DecNZ(yMeanPSFMag));
+        StringBuilder mags = new StringBuilder();
+        if (gMeanPSFMag != 0) {
+            mags.append("g=").append(roundTo3DecNZ(gMeanPSFMag)).append(" ");
+        }
+        if (rMeanPSFMag != 0) {
+            mags.append("r=").append(roundTo3DecNZ(rMeanPSFMag)).append(" ");
+        }
+        if (iMeanPSFMag != 0) {
+            mags.append("i=").append(roundTo3DecNZ(iMeanPSFMag)).append(" ");
+        }
+        if (zMeanPSFMag != 0) {
+            mags.append("z=").append(roundTo3DecNZ(zMeanPSFMag)).append(" ");
+        }
+        if (yMeanPSFMag != 0) {
+            mags.append("y=").append(roundTo3DecNZ(yMeanPSFMag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -443,6 +459,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(raMean, decMean), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
     public double get_g_r() {

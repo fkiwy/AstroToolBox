@@ -192,7 +192,7 @@ public class CustomOverlaysTab {
         decColNamePrompt.applyTo(decColNameField);
         decColNameField.setText(overlayName == null ? "" : customOverlay.getDecColName());
 
-        JLabel message = createLabel("", JColor.DARKER_GREEN);
+        JLabel message = createMessageLabel();
         Timer timer = new Timer(3000, (ActionEvent e) -> {
             message.setText("");
         });

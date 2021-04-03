@@ -264,7 +264,7 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_STEEL.val;
+        return JColor.STEEL.val;
     }
 
     @Override
@@ -330,7 +330,23 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
+        StringBuilder mags = new StringBuilder();
+        if (u_mag != 0) {
+            mags.append("u=").append(roundTo3DecNZ(u_mag)).append(" ");
+        }
+        if (g_mag != 0) {
+            mags.append("g=").append(roundTo3DecNZ(g_mag)).append(" ");
+        }
+        if (r_mag != 0) {
+            mags.append("r=").append(roundTo3DecNZ(r_mag)).append(" ");
+        }
+        if (i_mag != 0) {
+            mags.append("i=").append(roundTo3DecNZ(i_mag)).append(" ");
+        }
+        if (z_mag != 0) {
+            mags.append("z=").append(roundTo3DecNZ(z_mag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -451,6 +467,16 @@ public class SDSSCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
     public BigInteger getSpecObjID() {

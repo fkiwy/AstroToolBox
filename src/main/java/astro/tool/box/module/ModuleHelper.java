@@ -6,6 +6,7 @@ import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
 import astro.tool.box.container.NumberPair;
@@ -19,14 +20,16 @@ import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
-import astro.tool.box.container.catalog.SpitzerCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.Color;
@@ -34,6 +37,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -47,7 +51,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import static java.lang.Math.round;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -69,6 +72,7 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -78,8 +82,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.RowFilter;
-import javax.swing.Timer;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -93,7 +97,7 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.3.1";
+    public static final String PGM_VERSION = "2.3.4";
     public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
     public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
 
@@ -137,15 +141,13 @@ public class ModuleHelper {
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
         TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
         catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
-        SpitzerCatalogEntry spitzerCatalogEntry = new SpitzerCatalogEntry();
-        catalogInstances.put(spitzerCatalogEntry.getCatalogName(), spitzerCatalogEntry);
 
         return catalogInstances;
     }
 
     public static JLabel createHyperlink(String label, String uri) {
         JLabel hyperlink = new JLabel(label);
-        hyperlink.setForeground(JColor.DARK_BLUE.val);
+        hyperlink.setForeground(JColor.LINK_BLUE.val);
         hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         hyperlink.addMouseListener(new MouseAdapter() {
             @Override
@@ -182,14 +184,26 @@ public class ModuleHelper {
         JOptionPane.showMessageDialog(baseFrame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void showExceptionDialog(JFrame baseFrame, Exception ex) {
-        writeErrorLog(ex);
-        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(getStackTrace(ex)), "Error", JOptionPane.ERROR_MESSAGE);
+    public static void showScrollableErrorDialog(JFrame baseFrame, String message) {
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(message), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void writeErrorLog(Exception ex) {
+    public static void showExceptionDialog(JFrame baseFrame, Exception error) {
+        writeErrorLog(error);
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(formatError(error)), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void writeErrorLog(Exception error) {
+        writeLogEntry(formatError(error));
+    }
+
+    public static void writeMessageLog(String message) {
+        writeLogEntry(formatMessage(message));
+    }
+
+    private static void writeLogEntry(String entry) {
         try {
-            Files.write(Paths.get(ERROR_FILE_PATH), getStackTrace(ex).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.write(Paths.get(ERROR_FILE_PATH), entry.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {
         }
     }
@@ -209,12 +223,28 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String header(String text) {
-        return html("<span style='background:gray;color:white'>&nbsp;" + text + "&nbsp;</span>");
-    }
-
     public static String html(String text) {
         return "<html>" + text + "</html>";
+    }
+
+    public static JLabel createHeaderLabel(String text) {
+        JLabel header = new JLabel(text);
+        header.setBorder(new EmptyBorder(0, 5, 0, 0));
+        header.setBackground(Color.GRAY.brighter());
+        header.setForeground(Color.BLACK);
+        header.setOpaque(true);
+        return header;
+    }
+
+    public static JCheckBox createHeaderBox(String text) {
+        JCheckBox box = new JCheckBox(text);
+        box.setBackground(Color.GRAY.brighter());
+        box.setForeground(Color.BLACK);
+        return box;
+    }
+
+    public static JLabel createMessageLabel() {
+        return createLabel("", JColor.DARK_GREEN);
     }
 
     public static JLabel createLabel(Object text, JColor color) {
@@ -244,11 +274,11 @@ public class ModuleHelper {
         Pattern pattern = Pattern.compile(".*[a-zA-Z]+.*");
         Matcher matcher = pattern.matcher(coords);
         if (matcher.matches()) {
-            NameResolverService nameResolverService = new NameResolverService();
             try {
+                NameResolverService nameResolverService = new NameResolverService();
                 coords = nameResolverService.getCoordinatesByName(coords);
             } catch (Exception ex) {
-                showErrorDialog(null, ex.getMessage());
+                coords = coords.replaceAll("[^\\d .-]", "");
             }
         }
         String[] parts = splitCoordinates(coords);
@@ -303,10 +333,10 @@ public class ModuleHelper {
         //    label.setBackground(JColor.WHITE.val);
         //}
         if (element.isComputed()) {
-            label.setForeground(JColor.DARKER_GREEN.val);
+            label.setForeground(JColor.DARK_GREEN.val);
         }
         if (element.isFaulty()) {
-            label.setForeground(JColor.DARK_RED.val);
+            label.setForeground(JColor.RED.val);
         }
         if (element.getToolTip() != null) {
             label.setToolTipText(html(element.getToolTip()));
@@ -324,10 +354,10 @@ public class ModuleHelper {
         field.setBackground(new JLabel().getBackground());
         //}
         if (element.isComputed()) {
-            field.setForeground(JColor.DARKER_GREEN.val);
+            field.setForeground(JColor.DARK_GREEN.val);
         }
         if (element.isFaulty()) {
-            field.setForeground(JColor.DARK_RED.val);
+            field.setForeground(JColor.RED.val);
         }
         field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());
@@ -446,7 +476,7 @@ public class ModuleHelper {
         return spectralTypes;
     }
 
-    public static void collectObject(String objectType, CatalogEntry catalogEntry, JLabel message, Timer messageTimer, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
+    public static void collectObject(String objectType, CatalogEntry catalogEntry, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
@@ -522,9 +552,164 @@ public class ModuleHelper {
             DefaultTableModel tableModel = (DefaultTableModel) collectionTable.getModel();
             tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
         }
+    }
 
-        message.setText("Added!");
-        messageTimer.restart();
+    public static String copyObjectCoordinates(CatalogEntry catalogEntry) {
+        StringBuilder toCopy = new StringBuilder();
+        toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
+        toCopy.append(" ");
+        toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
+        return toCopy.toString();
+    }
+
+    public static String copyObjectDigest(CatalogEntry catalogEntry) {
+        StringBuilder toCopy = new StringBuilder();
+        toCopy.append(catalogEntry.getCatalogName()).append(": ").append(catalogEntry.getSourceId());
+        toCopy.append(LINE_SEP);
+        toCopy.append("ra=").append(roundTo7DecNZ(catalogEntry.getRa()));
+        toCopy.append(" ");
+        toCopy.append("dec=").append(roundTo7DecNZ(catalogEntry.getDec()));
+        toCopy.append(LINE_SEP);
+        if (catalogEntry.getPlx() != 0) {
+            toCopy.append("plx=").append(roundTo3DecNZ(catalogEntry.getPlx())).append(" mas");
+            toCopy.append(LINE_SEP);
+        }
+        if (catalogEntry.getParallacticDistance() != 0) {
+            toCopy.append("dist=").append(roundTo3DecNZ(catalogEntry.getParallacticDistance())).append(" pc");
+            toCopy.append(LINE_SEP);
+        }
+        if (catalogEntry.getPmra() != 0 || catalogEntry.getPmdec() != 0) {
+            toCopy.append("pmra=").append(roundTo3DecNZ(catalogEntry.getPmra()));
+            toCopy.append(" ");
+            toCopy.append("pmdec=").append(roundTo3DecNZ(catalogEntry.getPmdec()));
+            toCopy.append(LINE_SEP);
+            toCopy.append("tpm=").append(roundTo3DecNZ(catalogEntry.getTotalProperMotion())).append(" mas/yr");
+            toCopy.append(LINE_SEP);
+        }
+        toCopy.append(catalogEntry.getMagnitudes());
+        toCopy.append(LINE_SEP);
+        Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors();
+        colors.entrySet().forEach(entry -> {
+            double value = entry.getValue();
+            if (value != 0) {
+                String label = entry.getKey().val;
+                toCopy.append(label).append("=").append(roundTo3DecNZ(value));
+                toCopy.append(LINE_SEP);
+            }
+        });
+        return toCopy.toString();
+    }
+
+    public static String copyObjectInfo(CatalogEntry catalogEntry, List<LookupResult> mainSequenceResults, List<LookupResult> brownDwarfsResults, DistanceLookupService distanceLookupService) {
+        StringBuilder toCopy = new StringBuilder();
+        toCopy.append(catalogEntry.getEntryData());
+        toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
+        if (mainSequenceResults != null) {
+            toCopy.append(LINE_SEP).append("* Main sequence table:");
+            mainSequenceResults.forEach(entry -> {
+                toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+            });
+        }
+        if (brownDwarfsResults != null) {
+            toCopy.append(LINE_SEP).append("* Brown dwarfs only:");
+            brownDwarfsResults.forEach(entry -> {
+                toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
+                List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
+                toCopy.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
+                distanceResults.forEach(result -> {
+                    toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
+                });
+            });
+        }
+        return toCopy.toString();
+    }
+
+    public static void fillTygoForm(CatalogEntry catalogEntry, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
+        StringBuilder params = new StringBuilder();
+        // Citizen scientist name
+        String userName = getUserSetting("userName", "");
+        if (!userName.isEmpty()) {
+            params.append("entry.472808084=").append(userName);
+        }
+        // Enter your email
+        String userEmail = getUserSetting("userEmail", "");
+        if (!userEmail.isEmpty()) {
+            params.append("&entry.1241683426=").append(userEmail);
+        }
+        // Exact Allwise RA
+        params.append("&entry.1014230382=").append(roundTo7DecNZ(catalogEntry.getRa()));
+        // Exact Allwise Decimal DEC
+        params.append("&entry.504539104=").append(roundTo7DecNZ(catalogEntry.getDec()));
+        // Notes
+        if (!AllWiseCatalogEntry.class.isInstance(catalogEntry)) {
+            params.append("&entry.690953267=").append("Coordinates are from ").append(catalogEntry.getCatalogName());
+        }
+        // GAIA data
+        GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
+        gaiaEntry.setRa(catalogEntry.getRa());
+        gaiaEntry.setDec(catalogEntry.getDec());
+        gaiaEntry.setSearchRadius(5);
+        gaiaEntry = (GaiaDR3CatalogEntry) retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
+        if (gaiaEntry != null) {
+            // GAIA DR2 pmRA + e_pmRA (mas/y)
+            if (gaiaEntry.getPmra() != 0) {
+                params.append("&entry.905761395=").append(roundTo3DecNZ(gaiaEntry.getPmra())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmra_err()));
+            }
+            // GAIA DR2 pmDE + e_pmDE
+            if (gaiaEntry.getPmdec() != 0) {
+                params.append("&entry.965290776=").append(roundTo3DecNZ(gaiaEntry.getPmdec())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmdec_err()));
+            }
+            // GAIA RV + e_RV
+            if (gaiaEntry.getRadvel() != 0) {
+                params.append("&entry.702334724=").append(roundTo3DecNZ(gaiaEntry.getRadvel())).append(" ").append(roundTo3DecNZ(gaiaEntry.getRadvel_err()));
+            }
+            // GAIA DR2 Parallax + e_
+            if (gaiaEntry.getPlx() != 0) {
+                params.append("&entry.1383168065=").append(roundTo4DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo4DecNZ(gaiaEntry.getPlx_err()));
+            }
+            // GAIA ID
+            params.append("&entry.1411207241=").append(gaiaEntry.getSourceId());
+        }
+        try {
+            Desktop.getDesktop().browse(new URI(getTygoFormUrl() + params.toString().replace(" ", "%20")));
+        } catch (IOException | URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static CatalogEntry retrieveCatalogEntry(CatalogEntry catalogQuery, CatalogQueryFacade catalogQueryFacade, JFrame baseFrame) {
+        try {
+            List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+            catalogEntries.forEach(catalogEntry -> {
+                catalogEntry.setTargetRa(catalogQuery.getRa());
+                catalogEntry.setTargetDec(catalogQuery.getDec());
+            });
+            if (!catalogEntries.isEmpty()) {
+                catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
+                return catalogEntries.get(0);
+            }
+        } catch (IOException ex) {
+            showExceptionDialog(baseFrame, ex);
+        }
+        return null;
+    }
+
+    public static BufferedImage zoom(BufferedImage image, int zoom) {
+        zoom = zoom == 0 ? 1 : zoom;
+        Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
+        BufferedImage zoomedImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics graphics = zoomedImage.createGraphics();
+        graphics.drawImage(scaledImage, 0, 0, null);
+        graphics.dispose();
+        return zoomedImage;
+    }
+
+    public static BufferedImage convertToGray(BufferedImage colorImage) {
+        BufferedImage grayImage = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics graphics = grayImage.getGraphics();
+        graphics.drawImage(colorImage, 0, 0, null);
+        graphics.dispose();
+        return grayImage;
     }
 
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
@@ -546,26 +731,13 @@ public class ModuleHelper {
 
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
         BufferedImage bi;
-        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%s&DEC=%s&subsetsize=%s&thumbnail_size=large&survey=%s&%s", roundTo6DecNZ(targetRa), roundTo6DecNZ(targetDec), roundTo2DecNZ(size / 60f), survey, band);
+        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=large&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             bi = ImageIO.read(stream);
         } catch (IOException ex) {
             bi = null;
-        }
-        return bi;
-    }
-
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
-        BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d", fileNames, targetRa, targetDec, (int) round(size * 4), 256);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-        } catch (IOException ex) {
-            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
         }
         return bi;
     }
@@ -594,6 +766,33 @@ public class ModuleHelper {
         return fileNames;
     }
 
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
+        BufferedImage bi;
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames, targetRa, targetDec, size * 4, 256);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+        } catch (IOException ex) {
+            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+        }
+        return bi;
+    }
+
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) throws IOException {
+        BufferedImage bi;
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", targetRa, targetDec, size * 4, band);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+            bi = zoom(bi, 256);
+        } catch (IOException ex) {
+            bi = null;
+        }
+        return bi;
+    }
+
     public static String[] concatArrays(String[] arg1, String[] arg2) {
         int length = arg1.length + arg2.length;
         String[] array = new String[length];
@@ -602,11 +801,19 @@ public class ModuleHelper {
         return array;
     }
 
-    public static String getStackTrace(Exception ex) {
+    public static String formatError(Exception error) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         pw.print(LocalDateTime.now().toString() + " ");
-        ex.printStackTrace(pw);
+        error.printStackTrace(pw);
+        return sw.toString();
+    }
+
+    public static String formatMessage(String message) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        pw.print(LocalDateTime.now().toString() + " ");
+        pw.println(message);
         return sw.toString();
     }
 

@@ -13,7 +13,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -246,17 +246,25 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_BLUE.val;
+        return java.awt.Color.CYAN.darker();
     }
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, GAIA_CATALOG_ID, "ra", "dec");
+        if (TapProvider.IRSA.equals(getTapProvider())) {
+            return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "gaia_dr2_source");
+        } else {
+            return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "I/345/gaia2", "ra", "dec");
+        }
     }
 
     @Override
     public String getProperMotionQueryUrl() {
-        return VIZIER_TAP_URL + "?request=doQuery&lang=adql&format=csv&query=" + createProperMotionQuery();
+        if (TapProvider.IRSA.equals(getTapProvider())) {
+            return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+        } else {
+            return VIZIER_TAP_URL + createProperMotionQuery();
+        }
     }
 
     private String createProperMotionQuery() {
@@ -281,7 +289,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         addRow(query, "       teff_val,");
         addRow(query, "       radius_val,");
         addRow(query, "       lum_val");
-        addRow(query, "FROM   \"" + GAIA_CATALOG_ID + "\"");
+        addRow(query, "FROM   " + (TapProvider.IRSA.equals(getTapProvider()) ? "gaia_dr2_source" : "\"I/345/gaia2\""));
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
         return encodeQuery(query.toString());
@@ -327,7 +335,17 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getMagnitudes() {
-        return String.format("G=%s; BP=%s; RP=%s", roundTo3DecNZ(Gmag), roundTo3DecNZ(BPmag), roundTo3DecNZ(RPmag));
+        StringBuilder mags = new StringBuilder();
+        if (Gmag != 0) {
+            mags.append("G=").append(roundTo3DecNZ(Gmag)).append(" ");
+        }
+        if (BPmag != 0) {
+            mags.append("BP=").append(roundTo3DecNZ(BPmag)).append(" ");
+        }
+        if (RPmag != 0) {
+            mags.append("RP=").append(roundTo3DecNZ(RPmag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -450,14 +468,12 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    @Override
     public double getParallacticDistance() {
         return calculateParallacticDistance(plx);
     }
 
-    public double getAbsoluteGmag() {
-        return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
-    }
-
+    @Override
     public double getTotalProperMotion() {
         return calculateTotalProperMotion(pmra, pmdec);
     }
@@ -468,6 +484,10 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     public double getTotalVelocity() {
         return calculateTotalVelocity(radvel, getTansverseVelocity());
+    }
+
+    public double getAbsoluteGmag() {
+        return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
 
     public double getBP_RP() {

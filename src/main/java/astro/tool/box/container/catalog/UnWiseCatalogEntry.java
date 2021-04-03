@@ -198,7 +198,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_MINT.val;
+        return JColor.MINT.val;
     }
 
     @Override
@@ -264,7 +264,14 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("W1=%s; W2=%s", roundTo3DecNZ(mag_w1_vg), roundTo3DecNZ(mag_w2_vg));
+        StringBuilder mags = new StringBuilder();
+        if (mag_w1_vg != 0) {
+            mags.append("W1=").append(roundTo3DecNZ(mag_w1_vg)).append(" ");
+        }
+        if (mag_w2_vg != 0) {
+            mags.append("W2=").append(roundTo3DecNZ(mag_w2_vg)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -385,6 +392,16 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return 0;
     }
 
     public double getW1_W2() {

@@ -4,9 +4,11 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Epoch;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookAndFeel;
+import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -51,7 +53,8 @@ public class SettingsTab {
     public static final String PROP_FILE_NAME = "/AstroToolBox.properties";
     public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     public static final Properties USER_SETTINGS = new Properties();
-    public static String CURRENT_LOOK_AND_FEEL;
+    public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
+    public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.OS.name();
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -61,6 +64,7 @@ public class SettingsTab {
 
     // Global settings
     public static final String LOOK_AND_FEEL = "lookAndFeel";
+    public static final String TAP_PROVIDER = "tapProvider";
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
@@ -69,6 +73,7 @@ public class SettingsTab {
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
+    private TapProvider tapProvider;
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
@@ -83,6 +88,8 @@ public class SettingsTab {
     private static final String ALADIN_LITE_FOV = "aladinLiteFOV";
     private static final String WISE_VIEW_FOV = "wiseViewFOV";
     private static final String FINDER_CHART_FOV = "finderChartFOV";
+    private static final String USER_NAME = "userName";
+    private static final String USER_EMAIL = "userEmail";
 
     private boolean copyCoordsToClipboard;
     private int searchRadius;
@@ -101,6 +108,7 @@ public class SettingsTab {
     private static final String DIFFERENT_SIZE = "differentSize";
     private static final String PROPER_MOTION = "properMotion";
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
+    private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
 
@@ -113,6 +121,7 @@ public class SettingsTab {
     private int differentSize;
     private int properMotion;
     private boolean asyncDownloads;
+    private boolean legacyImages;
     private boolean panstarrsImages;
     private boolean sdssImages;
 
@@ -143,14 +152,15 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(10, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(11, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 275));
+            globalSettings.setPreferredSize(new Dimension(450, 300));
             containerPanel.add(globalSettings);
 
-            lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, "OS"));
+            lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
+            tapProvider = TapProvider.valueOf(USER_SETTINGS.getProperty(TAP_PROVIDER, DEFAULT_TAP_PROVIDER));
             proxyAddress = USER_SETTINGS.getProperty(PROXY_ADDRESS, "");
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
@@ -169,20 +179,29 @@ public class SettingsTab {
             }
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            globalSettings.add(new JLabel("Look & Feel:", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Look & Feel: ", JLabel.RIGHT));
+
+            JComboBox themes = new JComboBox(LookAndFeel.values());
+            themes.setSelectedItem(lookAndFeel);
+            globalSettings.add(themes);
+
+            globalSettings.add(new JLabel("TAP provider for catalogs (*): ", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
 
-            JRadioButton javaRadioButton = new JRadioButton("Java", lookAndFeel.equals(LookAndFeel.Java));
-            radioPanel.add(javaRadioButton);
+            JRadioButton irsaButton = new JRadioButton("IRSA", tapProvider.equals(TapProvider.IRSA));
+            radioPanel.add(irsaButton);
 
-            JRadioButton osRadioButton = new JRadioButton("OS", lookAndFeel.equals(LookAndFeel.OS));
-            radioPanel.add(osRadioButton);
+            JRadioButton vizierButton = new JRadioButton("VizieR", tapProvider.equals(TapProvider.VIZIER));
+            radioPanel.add(vizierButton);
 
-            ButtonGroup radioGroup = new ButtonGroup();
-            radioGroup.add(javaRadioButton);
-            radioGroup.add(osRadioButton);
+            ButtonGroup tapProviderGroup = new ButtonGroup();
+            tapProviderGroup.add(irsaButton);
+            tapProviderGroup.add(vizierButton);
+
+            globalSettings.add(new JLabel("(*) AllWISE, CatWISE, 2MASS ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("and Gaia DR2", JLabel.LEFT));
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
@@ -214,11 +233,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(10, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(11, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 275));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 300));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -227,6 +246,8 @@ public class SettingsTab {
             aladinLiteFOV = Integer.parseInt(USER_SETTINGS.getProperty(ALADIN_LITE_FOV, "300"));
             wiseViewFOV = Integer.parseInt(USER_SETTINGS.getProperty(WISE_VIEW_FOV, "100"));
             finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "100"));
+            String userName = USER_SETTINGS.getProperty(USER_NAME, "");
+            String userEmail = USER_SETTINGS.getProperty(USER_EMAIL, "");
 
             catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
             if (catalogQueryTab.getPanstarrsField() != null) {
@@ -267,12 +288,23 @@ public class SettingsTab {
             JTextField finderChartFovField = new JTextField(String.valueOf(finderChartFOV));
             catalogQuerySettings.add(finderChartFovField);
 
+            catalogQuerySettings.add(new JLabel("Your name (*): ", JLabel.RIGHT));
+            JTextField userNameField = new JTextField(userName);
+            catalogQuerySettings.add(userNameField);
+
+            catalogQuerySettings.add(new JLabel("Your email (*): ", JLabel.RIGHT));
+            JTextField userEmailField = new JTextField(userEmail);
+            catalogQuerySettings.add(userEmailField);
+
+            catalogQuerySettings.add(new JLabel("(*) Name & email only for auto", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
+
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(10, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 275));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 300));
             containerPanel.add(imageViewerSettings);
 
             numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
@@ -284,6 +316,7 @@ public class SettingsTab {
             differentSize = Integer.parseInt(USER_SETTINGS.getProperty(DIFFERENT_SIZE, String.valueOf(ImageViewerTab.DIFFERENT_SIZE)));
             properMotion = Integer.parseInt(USER_SETTINGS.getProperty(PROPER_MOTION, String.valueOf(ImageViewerTab.PROPER_MOTION)));
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
+            legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 
@@ -326,6 +359,7 @@ public class SettingsTab {
             imageViewerTab.setZoom(zoom);
             imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
             imageViewerTab.setAsyncDownloads(asyncDownloads);
+            imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
 
@@ -366,10 +400,14 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
-            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
-            downloadPanel.add(panstarrsImagesCheckBox);
+            JCheckBox legacyImagesCheckBox = new JCheckBox("DECaLS", legacyImages);
+            downloadPanel.add(legacyImagesCheckBox);
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
+
+            imageViewerSettings.add(new JLabel());
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
+            imageViewerSettings.add(panstarrsImagesCheckBox);
 
             imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
             JCheckBox asynchDownloadsCheckBox = new JCheckBox();
@@ -406,7 +444,7 @@ public class SettingsTab {
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             gridPanel.add(buttonPanel);
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
+            JLabel message = createMessageLabel();
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 message.setText("");
             });
@@ -416,7 +454,8 @@ public class SettingsTab {
             applyButton.addActionListener((ActionEvent evt) -> {
                 try {
                     // Global settings
-                    lookAndFeel = javaRadioButton.isSelected() ? LookAndFeel.Java : LookAndFeel.OS;
+                    lookAndFeel = (LookAndFeel) themes.getSelectedItem();
+                    tapProvider = irsaButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
@@ -457,6 +496,7 @@ public class SettingsTab {
                     differentSize = Integer.parseInt(differentSizeField.getText());
                     properMotion = Integer.parseInt(properMotionField.getText());
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
+                    legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
@@ -466,12 +506,10 @@ public class SettingsTab {
 
                 // Global settings
                 setLookAndFeel(lookAndFeel);
-                if (!UIManager.getLookAndFeel().getName().equals(CURRENT_LOOK_AND_FEEL)) {
-                    CURRENT_LOOK_AND_FEEL = UIManager.getLookAndFeel().getName();
-                    SwingUtilities.updateComponentTreeUI(baseFrame);
-                }
+                SwingUtilities.updateComponentTreeUI(baseFrame);
 
                 USER_SETTINGS.setProperty(LOOK_AND_FEEL, lookAndFeel.name());
+                USER_SETTINGS.setProperty(TAP_PROVIDER, tapProvider.name());
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
@@ -500,8 +538,11 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(ALADIN_LITE_FOV, aladinLiteFovField.getText());
                 USER_SETTINGS.setProperty(WISE_VIEW_FOV, wiseViewFovField.getText());
                 USER_SETTINGS.setProperty(FINDER_CHART_FOV, finderChartFovField.getText());
+                USER_SETTINGS.setProperty(USER_NAME, userNameField.getText());
+                USER_SETTINGS.setProperty(USER_EMAIL, userEmailField.getText());
 
                 // Image viewer settings
+                imageViewerTab.initCatalogEntries();
                 imageViewerTab.getTimer().stop();
 
                 wiseBandsBox = imageViewerTab.getWiseBands();
@@ -543,6 +584,7 @@ public class SettingsTab {
                 imageViewerTab.setZoom(zoom);
                 imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
                 imageViewerTab.setAsyncDownloads(asyncDownloads);
+                imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setSdssImages(sdssImages);
 
@@ -552,7 +594,10 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
+                USER_SETTINGS.setProperty(DIFFERENT_SIZE, differentSizeField.getText());
+                USER_SETTINGS.setProperty(PROPER_MOTION, properMotionField.getText());
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
+                USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 
@@ -573,13 +618,9 @@ public class SettingsTab {
                 String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
-                try (OutputStream output = new FileOutputStream(PROP_PATH)) {
-                    USER_SETTINGS.store(output, COMMENTS);
-                    message.setText("Settings applied!");
-                    timer.restart();
-                } catch (IOException ex) {
-                }
-
+                saveSettings();
+                message.setText("Settings applied!");
+                timer.restart();
             });
 
             buttonPanel.add(message);
@@ -600,14 +641,39 @@ public class SettingsTab {
     }
 
     public static void setLookAndFeel(LookAndFeel lookAndFeel) {
+        boolean isFlatLaf = false;
         try {
-            if (lookAndFeel.equals(LookAndFeel.Java)) {
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            } else {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            switch (lookAndFeel) {
+                case Java:
+                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                    break;
+                case OS:
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    break;
+                case Flat_Light:
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Dark:
+                    UIManager.setLookAndFeel(new FlatDarkLaf());
+                    isFlatLaf = true;
+                    break;
+            }
+            if (isFlatLaf) {
+                UIManager.put("Button.arc", 0);
+                UIManager.put("Component.arc", 0);
+                UIManager.put("CheckBox.arc", 0);
+                UIManager.put("ProgressBar.arc", 0);
+                UIManager.put("Component.arrowType", "triangle");
+                UIManager.put("ScrollBar.showButtons", true);
+                UIManager.put("ScrollBar.width", 15);
             }
         } catch (Exception e) {
         }
+    }
+
+    public static LookAndFeel getLookAndFeel() {
+        return LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
     }
 
     public static void loadUserSettings() {
@@ -615,6 +681,10 @@ public class SettingsTab {
             USER_SETTINGS.load(input);
         } catch (IOException ex) {
         }
+    }
+
+    public static void setUserSetting(String key, String value) {
+        USER_SETTINGS.setProperty(key, value);
     }
 
     public static String getUserSetting(String key) {
@@ -629,6 +699,13 @@ public class SettingsTab {
         String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
         String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
         return Arrays.asList(catalogs.split(","));
+    }
+
+    public static void saveSettings() {
+        try (OutputStream output = new FileOutputStream(PROP_PATH)) {
+            USER_SETTINGS.store(output, COMMENTS);
+        } catch (IOException ex) {
+        }
     }
 
 }

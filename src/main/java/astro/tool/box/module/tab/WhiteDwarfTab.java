@@ -111,7 +111,7 @@ public class WhiteDwarfTab {
                     resultPanel.removeAll();
                     selectedEntry = catalogQueryTab.getSelectedEntry();
                     if (selectedEntry == null) {
-                        resultPanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.DARK_RED));
+                        resultPanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.RED));
                         return;
                     } else {
                         JPanel entryPanel = new JPanel(new GridLayout(2, 1));
@@ -122,7 +122,7 @@ public class WhiteDwarfTab {
                         if (selectedEntry instanceof AllWiseCatalogEntry) {
                             AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
                             if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                                entryPanel.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                                entryPanel.add(createLabel(AGN_WARNING, JColor.RED));
                             }
                         }
                     }
@@ -149,13 +149,13 @@ public class WhiteDwarfTab {
         }
 
         List<LookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookup(colors, teffH, loggH, massH);
-        displayTemperatures(whiteDwarfPureHResults, resultPanel, String.format("Carrasco (*): Pure H - %s: teff H = <span style='color:blue'>%s</span>; mass H = <span style='color:blue'>%s</span>; logg H = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
+        displayTemperatures(whiteDwarfPureHResults, resultPanel, String.format("Carrasco (*): Pure H - %s: teff H = <span style='color:#1E90FF'>%s</span>; mass H = <span style='color:#1E90FF'>%s</span>; logg H = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
         List<LookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookup(colors, teffHe, loggHe, massHe);
-        displayTemperatures(whiteDwarfPureHeResults, resultPanel, String.format("Carrasco (*): Pure He - %s: teff He = <span style='color:blue'>%s</span>; mass He = <span style='color:blue'>%s</span>; logg He = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
+        displayTemperatures(whiteDwarfPureHeResults, resultPanel, String.format("Carrasco (*): Pure He - %s: teff He = <span style='color:#1E90FF'>%s</span>; mass He = <span style='color:#1E90FF'>%s</span>; logg He = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
         List<LookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookup(colors, teffH, loggH, massH);
-        displayTemperatures(whiteDwarfDAResults, resultPanel, String.format("Bergeron (**): DA (pure H) - %s: teff H = <span style='color:blue'>%s</span>; mass H = <span style='color:blue'>%s</span>; logg H = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
+        displayTemperatures(whiteDwarfDAResults, resultPanel, String.format("Bergeron (**): DA (pure H) - %s: teff H = <span style='color:#1E90FF'>%s</span>; mass H = <span style='color:#1E90FF'>%s</span>; logg H = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
         List<LookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookup(colors, teffHe, loggHe, massHe);
-        displayTemperatures(whiteDwarfDBResults, resultPanel, String.format("Bergeron (**): DB (pure He) - %s: teff He = <span style='color:blue'>%s</span>; mass He = <span style='color:blue'>%s</span>; logg He = <span style='color:blue'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
+        displayTemperatures(whiteDwarfDBResults, resultPanel, String.format("Bergeron (**): DB (pure He) - %s: teff He = <span style='color:#1E90FF'>%s</span>; mass He = <span style='color:#1E90FF'>%s</span>; logg He = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(100, 600));
@@ -204,7 +204,7 @@ public class WhiteDwarfTab {
         columnModel.getColumn(6).setPreferredWidth(100);
 
         JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(resultTable);
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), html(panelTitle), TitledBorder.LEFT, TitledBorder.TOP

@@ -2,6 +2,7 @@ package astro.tool.box.module;
 
 import astro.tool.box.container.NumberPair;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class FlipbookComponent {
 
@@ -15,13 +16,15 @@ public class FlipbookComponent {
 
     private int epochCount;
 
+    private int totalEpochs;
+
     private boolean isMerged;
 
     private boolean firstEpoch;
 
     private NumberPair refValues;
 
-    private NumberPair epochCoordinates;
+    private List<NumberPair> diffPixels;
 
     private BufferedImage image;
 
@@ -36,17 +39,17 @@ public class FlipbookComponent {
         this.isMerged = isMerged;
     }
 
-    public FlipbookComponent(int band, int epoch, NumberPair epochCoordinates) {
+    public FlipbookComponent(int band, int epoch, int totalEpochs) {
         this.band = band;
         this.epoch = epoch;
-        this.epochCoordinates = epochCoordinates;
+        this.totalEpochs = totalEpochs;
     }
 
-    public FlipbookComponent(int band, int epoch, boolean isMerged, NumberPair epochCoordinates) {
+    public FlipbookComponent(int band, int epoch, boolean isMerged, int totalEpochs) {
         this.band = band;
         this.epoch = epoch;
         this.isMerged = isMerged;
-        this.epochCoordinates = epochCoordinates;
+        this.totalEpochs = totalEpochs;
     }
 
     @Override
@@ -157,6 +160,10 @@ public class FlipbookComponent {
         this.epochCount = epochCount;
     }
 
+    public int getTotalEpochs() {
+        return totalEpochs;
+    }
+
     public boolean isFirstEpoch() {
         return firstEpoch;
     }
@@ -169,12 +176,12 @@ public class FlipbookComponent {
         this.refValues = refValues;
     }
 
-    public NumberPair getEpochCoordinates() {
-        return epochCoordinates;
+    public List<NumberPair> getDiffPixels() {
+        return diffPixels;
     }
 
-    public void setEpochCoordinates(NumberPair epochCoordinates) {
-        this.epochCoordinates = epochCoordinates;
+    public void setDiffPixels(List<NumberPair> diffPixels) {
+        this.diffPixels = diffPixels;
     }
 
     public BufferedImage getImage() {

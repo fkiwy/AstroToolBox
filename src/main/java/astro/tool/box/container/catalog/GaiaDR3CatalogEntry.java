@@ -12,7 +12,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -227,7 +226,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_BLUE.val;
+        return java.awt.Color.CYAN.darker();
     }
 
     @Override
@@ -311,7 +310,17 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     @Override
     public String getMagnitudes() {
-        return String.format("G=%s; BP=%s; RP=%s", roundTo3DecNZ(Gmag), roundTo3DecNZ(BPmag), roundTo3DecNZ(RPmag));
+        StringBuilder mags = new StringBuilder();
+        if (Gmag != 0) {
+            mags.append("G=").append(roundTo3DecNZ(Gmag)).append(" ");
+        }
+        if (BPmag != 0) {
+            mags.append("BP=").append(roundTo3DecNZ(BPmag)).append(" ");
+        }
+        if (RPmag != 0) {
+            mags.append("RP=").append(roundTo3DecNZ(RPmag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -434,17 +443,37 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    @Override
     public double getParallacticDistance() {
         return calculateParallacticDistance(plx);
     }
 
-    public double getAbsoluteGmag() {
-        return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
-    }
-
+    @Override
     public double getTotalProperMotion() {
         return calculateTotalProperMotion(pmra, pmdec);
     }
+
+    // Needed to fill the TYGO form
+    public double getPlx_err() {
+        return plx_err;
+    }
+
+    public double getPmra_err() {
+        return pmra_err;
+    }
+
+    public double getPmdec_err() {
+        return pmdec_err;
+    }
+
+    public double getRadvel() {
+        return radvel;
+    }
+
+    public double getRadvel_err() {
+        return radvel_err;
+    }
+    //
 
     public double getTansverseVelocity() {
         return calculateTransverseVelocityFromParallax(pmra, pmdec, plx);
@@ -452,6 +481,10 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
 
     public double getTotalVelocity() {
         return calculateTotalVelocity(radvel, getTansverseVelocity());
+    }
+
+    public double getAbsoluteGmag() {
+        return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
 
     public double getBP_RP() {

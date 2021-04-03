@@ -35,7 +35,7 @@ public class CrossHair implements Drawable {
         g2d.drawLine(x, y - size, x, y + size);
         g2d.setFont(new Font("default", Font.BOLD, size - 8));
         int width = g2d.getFontMetrics().stringWidth(label);
-        g2d.drawString(label, x - width / 2, y - size);
+        g2d.drawString(label, x - width / 2 + 5, y - size);
     }
 
 }

@@ -12,7 +12,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -251,12 +250,12 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_YELLOW.val;
+        return java.awt.Color.MAGENTA;
     }
 
     @Override
     public String getCatalogUrl() {
-        return createIrsaUrl(CATWISE2020_REJECT_TABLE, ra, dec, searchRadius / DEG_ARCSEC);
+        return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "catwise_2020_reject");
     }
 
     @Override
@@ -288,7 +287,7 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
         addRow(query, "       par_sigma,");
         addRow(query, "       cc_flags,");
         addRow(query, "       ab_flags");
-        addRow(query, "FROM   " + CATWISE2020_REJECT_TABLE);
+        addRow(query, "FROM   catwise_2020_reject");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
         return encodeQuery(query.toString());
@@ -338,7 +337,14 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
 
     @Override
     public String getMagnitudes() {
-        return String.format("W1=%s; W2=%s", roundTo3DecNZ(W1mag), roundTo3DecNZ(W2mag));
+        StringBuilder mags = new StringBuilder();
+        if (W1mag != 0) {
+            mags.append("W1=").append(roundTo3DecNZ(W1mag)).append(" ");
+        }
+        if (W2mag != 0) {
+            mags.append("W2=").append(roundTo3DecNZ(W2mag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -461,6 +467,12 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
     }
 
+    @Override
+    public double getParallacticDistance() {
+        return 0;
+    }
+
+    @Override
     public double getTotalProperMotion() {
         return calculateTotalProperMotion(pmra, pmdec);
     }

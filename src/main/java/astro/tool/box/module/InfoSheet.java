@@ -275,11 +275,39 @@ public class InfoSheet {
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size));
                 imageLabels.add("y");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size));
-                imageLabels.add("y");
+                imageLabels.add("y-i-g");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size));
 
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
             }
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g");
+            if (bufferedImage != null) {
+                imageLabels.add("g");
+                bufferedImage = convertToGray(bufferedImage);
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r");
+            if (bufferedImage != null) {
+                imageLabels.add("r");
+                bufferedImage = convertToGray(bufferedImage);
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            if (bufferedImage != null) {
+                imageLabels.add("z");
+                bufferedImage = convertToGray(bufferedImage);
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz");
+            if (bufferedImage != null) {
+                imageLabels.add("g-r-z");
+                bufferedImages.add(bufferedImage);
+            }
+
+            createPdfTable("DECaLS", imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -308,8 +336,8 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type lookup (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type lookup (***)", null, LookupTable.BROWN_DWARFS));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimation (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type estimation (***)", null, LookupTable.BROWN_DWARFS));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});
@@ -342,8 +370,8 @@ public class InfoSheet {
 
             document.add(table);
 
-            document.add(new Paragraph("(**) Uses Eric Mamajek's lookup table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses a lookup table compiled from data of the following catalog: Catalog of M, L, & T dwarfs from PS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
+            document.add(new Paragraph("(**) Uses Eric Mamajek's table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses tables from this paper: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
 
             document.close();
 
@@ -551,7 +579,7 @@ public class InfoSheet {
             catalogEntry.setTargetDec(catalogQuery.getDec());
         });
         if (!catalogEntries.isEmpty()) {
-            catalogEntries.sort(Comparator.comparing(entry -> entry.getTargetDistance()));
+            catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
             return catalogEntries;
         }
         return null;

@@ -22,12 +22,12 @@ import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -70,8 +70,6 @@ public class CatalogQueryTab {
     public static final String TAB_NAME = "Catalog Search";
 
     private static final int BOTTOM_PANEL_HEIGHT = 375;
-    private static final int LINK_PANEL_WIDTH = 250;
-    private static final int SPT_PANEL_WIDTH = 425;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -372,18 +370,17 @@ public class CatalogQueryTab {
         resizeColumnWidth(catalogTable);
 
         JScrollPane catalogScrollPanel = new JScrollPane(catalogTable);
-        catalogScrollPanel.setBackground(catalogEntry.getCatalogColor());
         catalogScrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
+                new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(catalogScrollPanel, catalogEntry.getCatalogNumber());
     }
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
-        JPanel linkPanel = new JPanel(new GridLayout(19, 2));
-        linkPanel.setPreferredSize(new Dimension(LINK_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
+        JPanel linkPanel = new JPanel(new GridLayout(17, 2));
+        linkPanel.setPreferredSize(new Dimension(250, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "External resources", TitledBorder.LEFT, TitledBorder.TOP
+                new LineBorder(Color.LIGHT_GRAY, 3), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         linkPanel.add(new JLabel("Image viewers:"));
@@ -402,7 +399,7 @@ public class CatalogQueryTab {
         linkPanel.add(wiseViewField);
         linkPanel.add(createHyperlink("IRSA Finder Chart", getFinderChartUrl(degRA, degDE, finderChartFOV)));
         linkPanel.add(finderChartField);
-        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE)));
+        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE, "unwise-neo6")));
         JButton saveButton = new JButton("Change FoV");
         saveButton.addActionListener((ActionEvent e) -> {
             try {
@@ -436,30 +433,23 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("CatWISE2020", getSpecificCatalogsUrl("II/365/catwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("unWISE", getSpecificCatalogsUrl("II/363/unwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia DR2", getSpecificCatalogsUrl("I/345/gaia2", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia Distances", getSpecificCatalogsUrl("I/347/gaia2dis", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("VHS DR4", getSpecificCatalogsUrl("II/359/vhs_dr4", degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel());
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenWidth = screenSize.getSize().width;
-        int frameWidth = baseFrame.getWidth();
         int maxRows = 19;
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setPreferredSize(new Dimension(frameWidth + (frameWidth > screenWidth * 0.9 ? -75 : 75) - (LINK_PANEL_WIDTH + SPT_PANEL_WIDTH), BOTTOM_PANEL_HEIGHT));
+        detailPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                new LineBorder(selectedEntry.getCatalogColor(), 5),
+                new LineBorder(selectedEntry.getCatalogColor(), 3),
                 selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)",
                 TitledBorder.LEFT,
                 TitledBorder.TOP
@@ -540,12 +530,12 @@ public class CatalogQueryTab {
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
+                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(SPT_PANEL_WIDTH, BOTTOM_PANEL_HEIGHT));
+            spectralTypeInfo.setPreferredSize(new Dimension(425, BOTTOM_PANEL_HEIGHT));
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.DARK_RED))
+                    ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                     : new JScrollPane(spectralTypeTable);
             spectralTypeInfo.add(spectralTypePanel);
 
@@ -556,21 +546,21 @@ public class CatalogQueryTab {
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                    remarks.add(createLabel(AGN_WARNING, JColor.DARK_RED));
+                    remarks.add(createLabel(AGN_WARNING, JColor.RED));
                     warning = true;
                 }
             }
             if (catalogEntry instanceof GaiaCatalogEntry) {
                 GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    remarks.add(createLabel(WD_WARNING, JColor.RED));
                     warning = true;
                 }
             }
             if (catalogEntry instanceof GaiaDR3CatalogEntry) {
                 GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    remarks.add(createLabel(WD_WARNING, JColor.DARK_RED));
+                    remarks.add(createLabel(WD_WARNING, JColor.RED));
                     warning = true;
                 }
             }
@@ -593,24 +583,62 @@ public class CatalogQueryTab {
             collectPanel.setBorder(BorderFactory.createEtchedBorder());
             spectralTypeInfo.add(collectPanel);
 
-            JLabel message = createLabel("", JColor.DARKER_GREEN);
-            Timer messageTimer = new Timer(3000, (ActionEvent e) -> {
-                message.setText("");
-            });
-
             collectPanel.add(new JLabel("Object type:"));
 
             JComboBox objectTypes = new JComboBox(ObjectType.labels());
             collectPanel.add(objectTypes);
 
-            JButton collectButton = new JButton("Add to object collection");
+            JButton collectButton = new JButton("Add to collection");
             collectPanel.add(collectButton);
+            Timer collectTimer = new Timer(3000, (ActionEvent e) -> {
+                collectButton.setText("Add to collection");
+            });
             collectButton.addActionListener((ActionEvent evt) -> {
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, message, messageTimer, baseFrame, spectralTypeLookupService, collectionTable);
+                collectObject(selectedObjectType, catalogEntry, baseFrame, spectralTypeLookupService, collectionTable);
+                collectButton.setText("Added!");
+                collectTimer.restart();
             });
 
-            collectPanel.add(message);
+            JButton copyCoordsButton = new JButton("Copy coords");
+            collectPanel.add(copyCoordsButton);
+            Timer copyCoordsTimer = new Timer(3000, (ActionEvent e) -> {
+                copyCoordsButton.setText("Copy coords");
+            });
+            copyCoordsButton.addActionListener((ActionEvent evt) -> {
+                copyToClipboard(copyObjectCoordinates(catalogEntry));
+                copyCoordsButton.setText("Copied!");
+                copyCoordsTimer.restart();
+            });
+
+            JButton copyInfoButton = new JButton("Copy digest");
+            collectPanel.add(copyInfoButton);
+            Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
+                copyInfoButton.setText("Copy digest");
+            });
+            copyInfoButton.addActionListener((ActionEvent evt) -> {
+                copyToClipboard(copyObjectDigest(catalogEntry));
+                copyInfoButton.setText("Copied!");
+                copyInfoTimer.restart();
+            });
+
+            JButton copyAllButton = new JButton("Copy all");
+            collectPanel.add(copyAllButton);
+            Timer copyAllTimer = new Timer(3000, (ActionEvent e) -> {
+                copyAllButton.setText("Copy all");
+            });
+            copyAllButton.addActionListener((ActionEvent evt) -> {
+                copyToClipboard(copyObjectInfo(catalogEntry, results, null, null));
+                copyAllButton.setText("Copied!");
+                copyAllTimer.restart();
+            });
+
+            JButton fillFormButton = new JButton("TYGO form");
+            collectPanel.add(fillFormButton);
+            fillFormButton.addActionListener((ActionEvent evt) -> {
+                fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
+
+            });
 
             bottomPanel.add(spectralTypeInfo);
         } catch (Exception ex) {

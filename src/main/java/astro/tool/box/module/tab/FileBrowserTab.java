@@ -3,7 +3,6 @@ package astro.tool.box.module.tab;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.module.Application;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
@@ -116,8 +115,8 @@ public class FileBrowserTab {
             JTextField addColumnsField = new JTextField(15);
             topPanel.add(addColumnsField);
 
-            JLabel topPanelMessage = createLabel("", JColor.DARKER_GREEN);
-            JLabel bottomPanelMessage = createLabel("", JColor.DARKER_GREEN);
+            JLabel topPanelMessage = createMessageLabel();
+            JLabel bottomPanelMessage = createMessageLabel();
             Timer timer = new Timer(3000, (ActionEvent e) -> {
                 topPanelMessage.setText("");
                 bottomPanelMessage.setText("");

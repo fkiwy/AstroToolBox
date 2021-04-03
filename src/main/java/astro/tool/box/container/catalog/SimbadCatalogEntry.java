@@ -13,7 +13,6 @@ import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -287,7 +286,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_RED.val;
+        return java.awt.Color.RED;
     }
 
     @Override
@@ -376,7 +375,50 @@ public class SimbadCatalogEntry implements CatalogEntry {
 
     @Override
     public String getMagnitudes() {
-        return String.format("U=%s; B=%s; V=%s; R=%s; I=%s; G=%s; J=%s; H=%s; K=%s; u=%s; g=%s; r=%s; i=%s; z=%s", roundTo3DecNZ(Umag), roundTo3DecNZ(Bmag), roundTo3DecNZ(Vmag), roundTo3DecNZ(Rmag), roundTo3DecNZ(Imag), roundTo3DecNZ(Gmag), roundTo3DecNZ(Jmag), roundTo3DecNZ(Hmag), roundTo3DecNZ(Kmag), roundTo3DecNZ(u_mag), roundTo3DecNZ(g_mag), roundTo3DecNZ(r_mag), roundTo3DecNZ(i_mag), roundTo3DecNZ(z_mag));
+        StringBuilder mags = new StringBuilder();
+        if (Umag != 0) {
+            mags.append("U=").append(roundTo3DecNZ(Umag)).append(" ");
+        }
+        if (Bmag != 0) {
+            mags.append("B=").append(roundTo3DecNZ(Bmag)).append(" ");
+        }
+        if (Vmag != 0) {
+            mags.append("V=").append(roundTo3DecNZ(Vmag)).append(" ");
+        }
+        if (Rmag != 0) {
+            mags.append("R=").append(roundTo3DecNZ(Rmag)).append(" ");
+        }
+        if (Imag != 0) {
+            mags.append("I=").append(roundTo3DecNZ(Imag)).append(" ");
+        }
+        if (Gmag != 0) {
+            mags.append("G=").append(roundTo3DecNZ(Gmag)).append(" ");
+        }
+        if (Jmag != 0) {
+            mags.append("J=").append(roundTo3DecNZ(Jmag)).append(" ");
+        }
+        if (Hmag != 0) {
+            mags.append("H=").append(roundTo3DecNZ(Hmag)).append(" ");
+        }
+        if (Kmag != 0) {
+            mags.append("K=").append(roundTo3DecNZ(Kmag)).append(" ");
+        }
+        if (u_mag != 0) {
+            mags.append("u=").append(roundTo3DecNZ(u_mag)).append(" ");
+        }
+        if (g_mag != 0) {
+            mags.append("g=").append(roundTo3DecNZ(g_mag)).append(" ");
+        }
+        if (r_mag != 0) {
+            mags.append("r=").append(roundTo3DecNZ(r_mag)).append(" ");
+        }
+        if (i_mag != 0) {
+            mags.append("i=").append(roundTo3DecNZ(i_mag)).append(" ");
+        }
+        if (z_mag != 0) {
+            mags.append("z=").append(roundTo3DecNZ(z_mag)).append(" ");
+        }
+        return mags.toString();
     }
 
     @Override
@@ -497,6 +539,16 @@ public class SimbadCatalogEntry implements CatalogEntry {
     @Override
     public double getTargetDistance() {
         return calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(ra, dec), DEG_ARCSEC);
+    }
+
+    @Override
+    public double getParallacticDistance() {
+        return calculateParallacticDistance(plx);
+    }
+
+    @Override
+    public double getTotalProperMotion() {
+        return calculateTotalProperMotion(pmra, pmdec);
     }
 
     public double getAbsoluteGmag() {
