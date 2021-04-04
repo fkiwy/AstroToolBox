@@ -910,7 +910,7 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            vhsOverlay = new JCheckBox(html("<u>V</u>HS DR4"), overlays.isVhs());
+            vhsOverlay = new JCheckBox(html("<u>V</u>HS DR5"), overlays.isVhs());
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();

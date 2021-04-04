@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class VHSCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "VHS DR4";
+    public static final String CATALOG_NAME = "VHS DR5";
 
     // Unique identifier of this merged detection as assigned by merge algorithm
     private long sourceId;
@@ -226,7 +226,7 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/359/vhs_dr4", "RAJ2000", "DEJ2000");
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/367/vhs_dr5", "RAJ2000", "DEJ2000");
     }
 
     @Override

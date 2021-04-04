@@ -438,7 +438,7 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("VHS DR4", getSpecificCatalogsUrl("II/359/vhs_dr4", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("VHS DR5", getSpecificCatalogsUrl("II/367/vhs_dr5", degRA, degDE, degRadius)));
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
@@ -530,7 +530,7 @@ public class CatalogQueryTab {
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
+                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type estimation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypeInfo.setPreferredSize(new Dimension(425, BOTTOM_PANEL_HEIGHT));
 
