@@ -530,7 +530,7 @@ public class CatalogQueryTab {
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type estimation", TitledBorder.LEFT, TitledBorder.TOP
+                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypeInfo.setPreferredSize(new Dimension(425, BOTTOM_PANEL_HEIGHT));
 
