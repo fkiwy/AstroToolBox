@@ -149,7 +149,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
             cc_flags = values[columns.get("cc_flags")];
             ab_flags = values[columns.get("ab_flags")];
         } else {
-            sourceId = values[columns.get("Name")];
+            sourceId = values[columns.get("Name")].trim();
             ra = toDouble(values[columns.get("RA_ICRS")]);
             dec = toDouble(values[columns.get("DE_ICRS")]);
             W1mag = toDouble(values[columns.get("W1mproPM")]);
