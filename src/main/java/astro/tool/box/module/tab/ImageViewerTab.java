@@ -1309,9 +1309,6 @@ public class ImageViewerTab {
             backwardButton.addActionListener((ActionEvent evt) -> {
                 timer.stop();
                 imageNumber -= 2;
-                if (imageNumber < 0) {
-                    imageNumber = flipbook.length - 1;
-                }
                 timer.setRepeats(false);
                 timer.start();
             });
@@ -1662,10 +1659,16 @@ public class ImageViewerTab {
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
-                    staticView.setSelected(false);
+                    if (flipbook == null) {
+                        return;
+                    }
+                    if (imageNumber < 0) {
+                        imageNumber = flipbook.length - 1;
+                    }
                     if (imageNumber > flipbook.length - 1) {
                         imageNumber = 0;
                     }
+                    staticView.setSelected(false);
 
                     FlipbookComponent component = flipbook[imageNumber];
                     wiseImage = addCrosshairs(component.getImage(), component);
