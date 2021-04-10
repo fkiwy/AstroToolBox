@@ -85,6 +85,9 @@ public class AdqlQueryTab {
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
     private static final String IRSA_TABLES = "Available tables";
+    private static final String JOB_ID = "jobId";
+    private static final String ASYNC_TAP_PROVIDER = "asyncTapProvider";
+    private static final TapProvider DEFAULT_TAP_PROVIDER = TapProvider.VIZIER;
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -270,7 +273,8 @@ public class AdqlQueryTab {
                             params = new ArrayList<>();
                             params.add(new BasicNameValuePair("PHASE", "RUN"));
                             response = doPost(createStatusUrl(jobId), params);
-                            SettingsTab.setUserSetting("jobId", jobId);
+                            SettingsTab.setUserSetting(JOB_ID, jobId);
+                            SettingsTab.setUserSetting(ASYNC_TAP_PROVIDER, getTapProvider().name());
                             SettingsTab.saveSettings();
                         } catch (Exception ex) {
                             stopClock();
@@ -402,7 +406,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("PHASE", "ABORT"));
                     doPost(createStatusUrl(jobId), params);
-                    SettingsTab.setUserSetting("jobId", "");
+                    SettingsTab.setUserSetting(JOB_ID, "");
                     SettingsTab.saveSettings();
                     showInfoDialog(baseFrame, "Query aborted!");
                 } catch (Exception ex) {
@@ -425,7 +429,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("ACTION", "DELETE"));
                     doPost(createDeleteUrl(jobId), params);
-                    SettingsTab.setUserSetting("jobId", "");
+                    SettingsTab.setUserSetting(JOB_ID, "");
                     SettingsTab.saveSettings();
                     showInfoDialog(baseFrame, "Query deleted!");
                 } catch (Exception ex) {
@@ -439,7 +443,7 @@ public class AdqlQueryTab {
 
             tapProvider = new JComboBox(TapProvider.values());
             secondRow.add(tapProvider);
-            tapProvider.setSelectedItem(TapProvider.VIZIER);
+            tapProvider.setSelectedItem(DEFAULT_TAP_PROVIDER);
 
             JButton browseButton = new JButton("Browse tables");
             secondRow.add(browseButton);
@@ -509,8 +513,10 @@ public class AdqlQueryTab {
                 }
             });
 
-            jobId = SettingsTab.getUserSetting("jobId", "");
+            jobId = SettingsTab.getUserSetting(JOB_ID, "");
             if (!jobId.isEmpty()) {
+                String provider = SettingsTab.getUserSetting(ASYNC_TAP_PROVIDER, DEFAULT_TAP_PROVIDER.name());
+                tapProvider.setSelectedItem(TapProvider.valueOf(provider));
                 statusField.setText("Resuming ...");
                 startClock();
             }
