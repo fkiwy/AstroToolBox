@@ -283,7 +283,7 @@ public class ImageViewerTab {
     private JCheckBox noirlabProperMotion;
     private JCheckBox showProperMotion;
     private JCheckBox useCustomOverlays;
-    private JCheckBox dssImages;
+    private JCheckBox skySurveyImages;
     private JCheckBox twoMassImages;
     private JCheckBox sloanImages;
     private JCheckBox allwiseImages;
@@ -329,9 +329,11 @@ public class ImageViewerTab {
     private BufferedImage decalsImage;
     private BufferedImage ps1Image;
     private BufferedImage sdssImage;
+    private BufferedImage dssImage;
     private BufferedImage processedDecalsImage;
     private BufferedImage processedPs1Image;
     private BufferedImage processedSdssImage;
+    private BufferedImage processedDssImage;
     private Map<String, ImageContainer> imagesW1 = new HashMap<>();
     private Map<String, ImageContainer> imagesW2 = new HashMap<>();
     private Map<String, Fits> images;
@@ -403,9 +405,10 @@ public class ImageViewerTab {
     private boolean timerStopped;
     private boolean hasException;
     private boolean asyncDownloads;
-    private boolean panstarrsImages;
     private boolean legacyImages;
+    private boolean panstarrsImages;
     private boolean sdssImages;
+    private boolean dssImages;
 
     public static final List<String> BROWN_DWARFS = new ArrayList<>();
 
@@ -763,7 +766,7 @@ public class ImageViewerTab {
 
             showCrosshairs = new JCheckBox(html("Crosshairs <span color='red'>(*)</span>"));
             settingsPanel.add(showCrosshairs);
-            showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard");
+            showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
             mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
@@ -1164,9 +1167,9 @@ public class ImageViewerTab {
 
             mouseControlPanel.add(new JLabel("Select images to display:"));
 
-            dssImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
-            mouseControlPanel.add(dssImages);
-            dssImages.addActionListener((ActionEvent evt) -> {
+            skySurveyImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
+            mouseControlPanel.add(skySurveyImages);
+            skySurveyImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
@@ -1204,7 +1207,7 @@ public class ImageViewerTab {
             mouseControlPanel.add(staticTimeSeries);
             staticTimeSeries.addActionListener((ActionEvent evt) -> {
                 if (staticTimeSeries.isSelected() || animatedTimeSeries.isSelected()) {
-                    dssImages.setSelected(false);
+                    skySurveyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
@@ -1219,7 +1222,7 @@ public class ImageViewerTab {
             mouseControlPanel.add(animatedTimeSeries);
             animatedTimeSeries.addActionListener((ActionEvent evt) -> {
                 if (animatedTimeSeries.isSelected()) {
-                    dssImages.setSelected(true);
+                    skySurveyImages.setSelected(true);
                     twoMassImages.setSelected(true);
                     sloanImages.setSelected(true);
                     allwiseImages.setSelected(true);
@@ -1227,7 +1230,7 @@ public class ImageViewerTab {
                     decalsImages.setSelected(true);
                     staticTimeSeries.setSelected(false);
                 } else {
-                    dssImages.setSelected(false);
+                    skySurveyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
@@ -1242,7 +1245,7 @@ public class ImageViewerTab {
             createDataSheet.addActionListener((ActionEvent evt) -> {
                 if (createDataSheet.isSelected()) {
                     setImageViewer(this);
-                    dssImages.setSelected(false);
+                    skySurveyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
@@ -1768,6 +1771,22 @@ public class ImageViewerTab {
                         imagePanel.add(sdssLabel);
                     }
 
+                    // Display DSS images
+                    if (processedDssImage != null) {
+                        // Create and display magnified DSS image
+                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            BufferedImage magnifiedDssImage = processedDssImage.getSubimage(upperLeftX, upperLeftY, width, height);
+                            magnifiedDssImage = zoom(magnifiedDssImage, 200);
+                            rightPanel.add(new JLabel(new ImageIcon(magnifiedDssImage)));
+                        }
+
+                        // Display regular DSS image
+                        imagePanel.add(new JLabel(" DSS"));
+                        JLabel dssLabel = new JLabel(new ImageIcon(processedDssImage));
+                        dssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+                        imagePanel.add(dssLabel);
+                    }
+
                     baseFrame.setVisible(true);
                     imageNumber++;
 
@@ -1832,7 +1851,7 @@ public class ImageViewerTab {
                                             }
                                         } else {
                                             int numberOfPanels = 0;
-                                            if (dssImages.isSelected()) {
+                                            if (skySurveyImages.isSelected()) {
                                                 numberOfPanels++;
                                             }
                                             if (twoMassImages.isSelected()) {
@@ -1863,7 +1882,7 @@ public class ImageViewerTab {
                                                 verticalSpacing = PANEL_HEIGHT;
                                             }
                                             Counter counter = new Counter(verticalSpacing);
-                                            if (dssImages.isSelected()) {
+                                            if (skySurveyImages.isSelected()) {
                                                 displayDssImages(newRa, newDec, fieldOfView, counter);
                                             }
                                             if (twoMassImages.isSelected()) {
@@ -2533,6 +2552,15 @@ public class ImageViewerTab {
                         return null;
                     });
                 }
+                dssImage = null;
+                processedDssImage = null;
+                if (dssImages) {
+                    CompletableFuture.supplyAsync(() -> {
+                        dssImage = fetchDssImage(targetRa, targetDec, size);
+                        processedDssImage = zoom(rotate(dssImage, quadrantCount), zoom);
+                        return null;
+                    });
+                }
                 zooniversePanel1.removeAll();
                 zooniversePanel2.removeAll();
                 List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
@@ -3116,6 +3144,9 @@ public class ImageViewerTab {
         if (sdssImage != null) {
             processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
         }
+        if (dssImage != null) {
+            processedDssImage = zoom(rotate(dssImage, quadrantCount), zoom);
+        }
         if (flipbook == null || !flipbookComplete) {
             return;
         }
@@ -3179,6 +3210,11 @@ public class ImageViewerTab {
         if (sdssImage != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(sdssImage, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("SDSS"));
+            grid.add(pane);
+        }
+        if (dssImage != null) {
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(dssImage, quadrantCount), zoom))));
+            pane.setBorder(createEtchedBorder("DSS"));
             grid.add(pane);
         }
         imagePanel.removeAll();
@@ -4447,6 +4483,15 @@ public class ImageViewerTab {
         }
     }
 
+    private BufferedImage fetchDssImage(double targetRa, double targetDec, double size) {
+        try {
+            BufferedImage image = retrieveImage(targetRa, targetDec, (int) round(size * pixelScale), "dss", "file_type=colorimage");
+            return image;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -4784,7 +4829,7 @@ public class ImageViewerTab {
         try {
             BufferedImage image;
             List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
-            if (dssImages.isSelected()) {
+            if (skySurveyImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("DSS2 - IR", image));
@@ -5720,6 +5765,10 @@ public class ImageViewerTab {
 
     public void setSdssImages(boolean sdssImages) {
         this.sdssImages = sdssImages;
+    }
+
+    public void setDssImages(boolean dssImages) {
+        this.dssImages = dssImages;
     }
 
 }

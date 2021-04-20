@@ -239,23 +239,24 @@ public class AdqlQueryTab {
                 statusField.setBackground(getStatusColor(jobStatus).val);
                 queryResults = null;
                 jobId = null;
-                String encodedQuery = encodeQuery(query);
                 String response;
                 // Validate query
-                try {
-                    response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
-                    if (!response.isEmpty()) {
-                        JSONObject obj = new JSONObject(response);
-                        String validation = obj.getString("validation");
-                        if (!validation.equals("ok")) {
-                            JSONArray arr = obj.getJSONArray("errors");
-                            String errorMessage = arr.getJSONObject(0).getString("message");
-                            showErrorDialog(baseFrame, errorMessage);
-                            initStatus();
-                            return;
+                if (!TapProvider.NOAO.equals(getTapProvider())) {
+                    try {
+                        response = readResponse(establishHttpConnection(createValidatorUrl(encodeQuery(query))), "Query validator");
+                        if (!response.isEmpty()) {
+                            JSONObject obj = new JSONObject(response);
+                            String validation = obj.getString("validation");
+                            if (!validation.equals("ok")) {
+                                JSONArray arr = obj.getJSONArray("errors");
+                                String errorMessage = arr.getJSONObject(0).getString("message");
+                                showErrorDialog(baseFrame, errorMessage);
+                                initStatus();
+                                return;
+                            }
                         }
+                    } catch (Exception ex) {
                     }
-                } catch (Exception ex) {
                 }
                 // Execute query
                 startClock();
