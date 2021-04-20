@@ -283,7 +283,7 @@ public class ImageViewerTab {
     private JCheckBox noirlabProperMotion;
     private JCheckBox showProperMotion;
     private JCheckBox useCustomOverlays;
-    private JCheckBox skySurveyImages;
+    private JCheckBox allSkyImages;
     private JCheckBox twoMassImages;
     private JCheckBox sloanImages;
     private JCheckBox allwiseImages;
@@ -1167,9 +1167,9 @@ public class ImageViewerTab {
 
             mouseControlPanel.add(new JLabel("Select images to display:"));
 
-            skySurveyImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
-            mouseControlPanel.add(skySurveyImages);
-            skySurveyImages.addActionListener((ActionEvent evt) -> {
+            allSkyImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
+            mouseControlPanel.add(allSkyImages);
+            allSkyImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
@@ -1207,7 +1207,7 @@ public class ImageViewerTab {
             mouseControlPanel.add(staticTimeSeries);
             staticTimeSeries.addActionListener((ActionEvent evt) -> {
                 if (staticTimeSeries.isSelected() || animatedTimeSeries.isSelected()) {
-                    skySurveyImages.setSelected(false);
+                    allSkyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
@@ -1222,7 +1222,7 @@ public class ImageViewerTab {
             mouseControlPanel.add(animatedTimeSeries);
             animatedTimeSeries.addActionListener((ActionEvent evt) -> {
                 if (animatedTimeSeries.isSelected()) {
-                    skySurveyImages.setSelected(true);
+                    allSkyImages.setSelected(true);
                     twoMassImages.setSelected(true);
                     sloanImages.setSelected(true);
                     allwiseImages.setSelected(true);
@@ -1230,7 +1230,7 @@ public class ImageViewerTab {
                     decalsImages.setSelected(true);
                     staticTimeSeries.setSelected(false);
                 } else {
-                    skySurveyImages.setSelected(false);
+                    allSkyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
@@ -1245,7 +1245,7 @@ public class ImageViewerTab {
             createDataSheet.addActionListener((ActionEvent evt) -> {
                 if (createDataSheet.isSelected()) {
                     setImageViewer(this);
-                    skySurveyImages.setSelected(false);
+                    allSkyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
                     allwiseImages.setSelected(false);
@@ -1851,7 +1851,7 @@ public class ImageViewerTab {
                                             }
                                         } else {
                                             int numberOfPanels = 0;
-                                            if (skySurveyImages.isSelected()) {
+                                            if (allSkyImages.isSelected()) {
                                                 numberOfPanels++;
                                             }
                                             if (twoMassImages.isSelected()) {
@@ -1882,7 +1882,7 @@ public class ImageViewerTab {
                                                 verticalSpacing = PANEL_HEIGHT;
                                             }
                                             Counter counter = new Counter(verticalSpacing);
-                                            if (skySurveyImages.isSelected()) {
+                                            if (allSkyImages.isSelected()) {
                                                 displayDssImages(newRa, newDec, fieldOfView, counter);
                                             }
                                             if (twoMassImages.isSelected()) {
@@ -4829,7 +4829,7 @@ public class ImageViewerTab {
         try {
             BufferedImage image;
             List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
-            if (skySurveyImages.isSelected()) {
+            if (allSkyImages.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("DSS2 - IR", image));
