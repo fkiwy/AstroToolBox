@@ -3207,6 +3207,7 @@ public class ImageViewerTab {
         gaiaWDEntries = null;
         noirlabEntries = null;
         noirlabTpmEntries = null;
+        tessEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -5459,7 +5460,7 @@ public class ImageViewerTab {
         scrollPanel.setPreferredSize(new Dimension(650, 330));
         scrollPanel.setMinimumSize(new Dimension(650, 330));
         scrollPanel.setMaximumSize(new Dimension(650, 330));
-        
+
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.setBorder(new LineBorder(color, 3));
