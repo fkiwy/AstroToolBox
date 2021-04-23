@@ -13,6 +13,7 @@ public enum JColor {
     PINK(new java.awt.Color(122, 0, 153)),
     PURPLE(new java.awt.Color(170, 0, 255)),
     MINT(new java.awt.Color(0, 128, 85)),
+    LILAC(new java.awt.Color(153, 153, 255, 255)),
     OLIVE(new java.awt.Color(102, 102, 51)),
     NAVY(new java.awt.Color(0, 143, 179)),
     GRAY(java.awt.Color.GRAY),

@@ -445,9 +445,16 @@ public class CatalogQueryTab {
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
-        int maxRows = 19;
+        List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
+
+        int size = catalogElements.size();
+        int rows = size / 2;
+        int remainder = size % 2;
+        rows += remainder;
+
+        int maxRows = rows > 19 ? rows : 19;
+
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(selectedEntry.getCatalogColor(), 3),
                 selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)",
@@ -455,16 +462,11 @@ public class CatalogQueryTab {
                 TitledBorder.TOP
         ));
 
-        List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
         catalogElements.forEach(element -> {
             addLabelToPanel(element, detailPanel);
             addFieldToPanel(element, detailPanel);
         });
 
-        int size = catalogElements.size();
-        int rows = size / 2;
-        int remainder = size % 2;
-        rows += remainder;
         if (remainder == 1) {
             addEmptyCatalogElement(detailPanel);
         }
@@ -473,7 +475,9 @@ public class CatalogQueryTab {
             addEmptyCatalogElement(detailPanel);
         }
 
-        bottomPanel.add(detailPanel);
+        JScrollPane scrollPanel = new JScrollPane(detailPanel);
+        scrollPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
+        bottomPanel.add(scrollPanel);
     }
 
     /*private void displayProperMotions(CatalogEntry selectedEntry) {

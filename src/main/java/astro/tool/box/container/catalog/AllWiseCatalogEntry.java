@@ -412,6 +412,12 @@ public class AllWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
+        if (W1mag != 0) {
+            W1mag = W1mag - extinctionsByBand.get(WISE_1);
+        }
+        if (W2mag != 0) {
+            W2mag = W2mag - extinctionsByBand.get(WISE_2);
+        }
         if (Jmag != 0) {
             Jmag = Jmag - extinctionsByBand.get(TWO_MASS_J);
         }
@@ -421,36 +427,30 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (Kmag != 0) {
             Kmag = Kmag - extinctionsByBand.get(TWO_MASS_K);
         }
-        if (W1mag != 0) {
-            W1mag = W1mag - extinctionsByBand.get(WISE_1);
-        }
-        if (W2mag != 0) {
-            W2mag = W2mag - extinctionsByBand.get(WISE_2);
-        }
     }
 
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.J, Jmag);
-        bands.put(Band.H, Hmag);
-        bands.put(Band.K, Kmag);
         bands.put(Band.W1, W1mag);
         bands.put(Band.W2, W2mag);
         bands.put(Band.W3, W3mag);
+        bands.put(Band.J, Jmag);
+        bands.put(Band.H, Hmag);
+        bands.put(Band.K, Kmag);
         return bands;
     }
 
     @Override
     public Map<Color, Double> getColors() {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.J_H, getJ_H());
-        colors.put(Color.H_K, getH_K());
-        colors.put(Color.J_K, getJ_K());
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
         colors.put(Color.W1_W4, getW1_W4());
         colors.put(Color.W2_W3, getW2_W3());
+        colors.put(Color.J_H, getJ_H());
+        colors.put(Color.H_K, getH_K());
+        colors.put(Color.J_K, getJ_K());
         colors.put(Color.J_W2, getJ_W2());
         colors.put(Color.K_W1, getK_W1());
         return colors;
@@ -625,46 +625,6 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         return cc_flags;
     }
 
-    public double getJ_H() {
-        if (Jmag == 0 || Hmag == 0) {
-            return 0;
-        } else {
-            return Jmag - Hmag;
-        }
-    }
-
-    public double getH_K() {
-        if (Hmag == 0 || Kmag == 0) {
-            return 0;
-        } else {
-            return Hmag - Kmag;
-        }
-    }
-
-    public double getJ_K() {
-        if (Jmag == 0 || Kmag == 0) {
-            return 0;
-        } else {
-            return Jmag - Kmag;
-        }
-    }
-
-    public double getK_W1() {
-        if (Kmag == 0 || W1mag == 0) {
-            return 0;
-        } else {
-            return Kmag - W1mag;
-        }
-    }
-
-    public double getJ_W2() {
-        if (Jmag == 0 || W2mag == 0) {
-            return 0;
-        } else {
-            return Jmag - W2mag;
-        }
-    }
-
     public double getW1_W2() {
         if (W1mag == 0 || W2mag == 0) {
             return 0;
@@ -702,6 +662,46 @@ public class AllWiseCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return W3mag - W4mag;
+        }
+    }
+
+    public double getJ_H() {
+        if (Jmag == 0 || Hmag == 0) {
+            return 0;
+        } else {
+            return Jmag - Hmag;
+        }
+    }
+
+    public double getH_K() {
+        if (Hmag == 0 || Kmag == 0) {
+            return 0;
+        } else {
+            return Hmag - Kmag;
+        }
+    }
+
+    public double getJ_K() {
+        if (Jmag == 0 || Kmag == 0) {
+            return 0;
+        } else {
+            return Jmag - Kmag;
+        }
+    }
+
+    public double getK_W1() {
+        if (Kmag == 0 || W1mag == 0) {
+            return 0;
+        } else {
+            return Kmag - W1mag;
+        }
+    }
+
+    public double getJ_W2() {
+        if (Jmag == 0 || W2mag == 0) {
+            return 0;
+        } else {
+            return Jmag - W2mag;
         }
     }
 

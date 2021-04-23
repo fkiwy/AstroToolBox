@@ -30,6 +30,7 @@ import astro.tool.box.container.catalog.ProperMotionQuery;
 import astro.tool.box.container.catalog.SDSSCatalogEntry;
 import astro.tool.box.container.catalog.SSOCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.TessCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
@@ -235,6 +236,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> gaiaWDEntries;
     private List<CatalogEntry> noirlabEntries;
     private List<CatalogEntry> noirlabTpmEntries;
+    private List<CatalogEntry> tessEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -269,9 +271,7 @@ public class ImageViewerTab {
     private JCheckBox vhsOverlay;
     private JCheckBox gaiaWDOverlay;
     private JCheckBox noirlabOverlay;
-    private JCheckBox showBrownDwarfsOnly;
-    private JCheckBox displaySpectralTypes;
-    private JCheckBox detectDifferences;
+    private JCheckBox tessOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -282,6 +282,9 @@ public class ImageViewerTab {
     private JCheckBox catWiseProperMotion;
     private JCheckBox noirlabProperMotion;
     private JCheckBox showProperMotion;
+    private JCheckBox showBrownDwarfsOnly;
+    private JCheckBox displaySpectralTypes;
+    private JCheckBox detectDifferences;
     private JCheckBox useCustomOverlays;
     private JCheckBox allSkyImages;
     private JCheckBox twoMassImages;
@@ -934,12 +937,19 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(twoMassOverlay);
-            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
+            tessOverlay = new JCheckBox(html("<u>T</u>ESS"), overlays.isTess());
+            tessOverlay.setForeground(JColor.LILAC.val);
+            tessOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(tessOverlay);
+
+            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlayPanel.add(ssoOverlay);
+            overlaysControlPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -1115,6 +1125,7 @@ public class ImageViewerTab {
                 overlays.setVhs(vhsOverlay.isSelected());
                 overlays.setGaiawd(gaiaWDOverlay.isSelected());
                 overlays.setTwomass(twoMassOverlay.isSelected());
+                overlays.setTess(tessOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
                 overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
@@ -1960,6 +1971,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
                                         count++;
                                     }
+                                    if (tessOverlay.isSelected() && tessEntries != null) {
+                                        showCatalogInfo(tessEntries, mouseX, mouseY, JColor.LILAC.val);
+                                        count++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         count++;
@@ -2212,6 +2227,13 @@ public class ImageViewerTab {
                     twoMassOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForAltT = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    tessOverlay.setSelected(!tessOverlay.isSelected());
+                    tessOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
             Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2275,6 +2297,9 @@ public class ImageViewerTab {
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK), "keyActionForAltM");
             aMap.put("keyActionForAltM", keyActionForAltM);
 
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.ALT_MASK), "keyActionForAltT");
+            aMap.put("keyActionForAltT", keyActionForAltT);
+
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
             aMap.put("keyActionForAltW", keyActionForAltW);
 
@@ -2330,6 +2355,9 @@ public class ImageViewerTab {
             count++;
         }
         if (twoMassOverlay.isSelected()) {
+            count++;
+        }
+        if (tessOverlay.isSelected()) {
             count++;
         }
         if (gaiaProperMotion.isSelected()) {
@@ -3451,6 +3479,18 @@ public class ImageViewerTab {
                 });
             } else {
                 drawOverlay(image, twoMassEntries, JColor.ORANGE.val, Shape.CIRCLE);
+            }
+        }
+        if (tessOverlay.isSelected()) {
+            if (tessEntries == null) {
+                tessEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    tessEntries = fetchCatalogEntries(new TessCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, tessEntries, JColor.LILAC.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {
@@ -5394,7 +5434,7 @@ public class ImageViewerTab {
         if (simpleLayout) {
             maxRows = rows > 30 ? rows : 30;
         } else {
-            maxRows = 19;
+            maxRows = rows > 19 ? rows : 19;
         }
 
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
@@ -5415,10 +5455,15 @@ public class ImageViewerTab {
             addEmptyCatalogElement(detailPanel);
         }
 
+        JScrollPane scrollPanel = new JScrollPane(detailPanel);
+        scrollPanel.setPreferredSize(new Dimension(650, 330));
+        scrollPanel.setMinimumSize(new Dimension(650, 330));
+        scrollPanel.setMaximumSize(new Dimension(650, 330));
+        
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.setBorder(new LineBorder(color, 3));
-        container.add(detailPanel);
+        container.add(scrollPanel);
 
         if (!simpleLayout) {
             catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
