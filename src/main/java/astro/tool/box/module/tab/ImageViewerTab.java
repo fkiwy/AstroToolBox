@@ -5457,6 +5457,7 @@ public class ImageViewerTab {
         }
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
+        scrollPanel.setBorder(BorderFactory.createEmptyBorder());
         scrollPanel.setPreferredSize(new Dimension(650, 330));
         scrollPanel.setMinimumSize(new Dimension(650, 330));
         scrollPanel.setMaximumSize(new Dimension(650, 330));
