@@ -5219,7 +5219,7 @@ public class ImageViewerTab {
                 imageFrame.add(new JLabel(new ImageIcon(spectrum)));
                 imageFrame.setSize(1200, 900);
                 imageFrame.setAlwaysOnTop(true);
-                imageFrame.setResizable(true);
+                imageFrame.setResizable(false);
                 imageFrame.setVisible(true);
             }
         } catch (Exception ex) {
@@ -5570,7 +5570,7 @@ public class ImageViewerTab {
         catalogFrame.setSize(650, 650);
         catalogFrame.setLocation(windowShift, windowShift);
         catalogFrame.setAlwaysOnTop(true);
-        catalogFrame.setResizable(true);
+        catalogFrame.setResizable(false);
         catalogFrame.setVisible(true);
         windowShift += 10;
     }
