@@ -481,7 +481,7 @@ public class TessCatalogEntry implements CatalogEntry {
                 + roundTo3Dec(getParallacticDistance()) + ","
                 + roundTo3Dec(getTotalProperMotion()) + ","
                 + roundTo3Dec(getAbsoluteGmag());
-        return columnValues.split(",", 64);
+        return columnValues.split(",", 72);
     }
 
     @Override
@@ -514,6 +514,10 @@ public class TessCatalogEntry implements CatalogEntry {
                 + "BP err,"
                 + "RP (mag),"
                 + "RP err,"
+                + "B (mag),"
+                + "B err,"
+                + "V (mag),"
+                + "V err,"
                 + "u (mag),"
                 + "u err,"
                 + "g (mag),"
@@ -540,6 +544,7 @@ public class TessCatalogEntry implements CatalogEntry {
                 + "K err,"
                 + "G-RP,"
                 + "BP-RP,"
+                + "B-V,"
                 + "u-g,"
                 + "g-r,"
                 + "r-i,"
@@ -553,7 +558,7 @@ public class TessCatalogEntry implements CatalogEntry {
                 + "dist (1/plx),"
                 + "tpm (mas/yr),"
                 + "Absolute G (mag)";
-        return columnTitles.split(",", 64);
+        return columnTitles.split(",", 72);
     }
 
     @Override
