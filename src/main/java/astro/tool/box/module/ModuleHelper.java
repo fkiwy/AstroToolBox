@@ -335,12 +335,12 @@ public class ModuleHelper {
         //    label.setOpaque(true);
         //    label.setBackground(JColor.WHITE.val);
         //}
-        if (element.isComputed()) {
-            label.setForeground(JColor.DARK_GREEN.val);
-        }
-        if (element.isFaulty()) {
-            label.setForeground(JColor.RED.val);
-        }
+        //if (element.isComputed()) {
+        //    label.setForeground(JColor.DARK_GREEN.val);
+        //}
+        //if (element.isFaulty()) {
+        //    label.setForeground(JColor.RED.val);
+        //}
         if (element.getToolTip() != null) {
             label.setToolTipText(html(element.getToolTip()));
         }
