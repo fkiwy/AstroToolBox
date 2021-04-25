@@ -195,47 +195,9 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GaiaWDCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", wdId=").append(wdId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", plx=").append(plx);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", Gmag=").append(Gmag);
-        sb.append(", BPmag=").append(BPmag);
-        sb.append(", RPmag=").append(RPmag);
-        sb.append(", sdssId=").append(sdssId);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", pwd=").append(pwd);
-        sb.append(", teffH=").append(teffH);
-        sb.append(", loggH=").append(loggH);
-        sb.append(", massH=").append(massH);
-        sb.append(", teffHe=").append(teffHe);
-        sb.append(", loggHe=").append(loggHe);
-        sb.append(", massHe=").append(massHe);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        int hash = 3;
+        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 

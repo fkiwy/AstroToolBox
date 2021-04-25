@@ -138,36 +138,9 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("UnWiseCatalogEntry{unwise_objid=").append(unwise_objid);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", mag_w1_vg=").append(mag_w1_vg);
-        sb.append(", mag_w2_vg=").append(mag_w2_vg);
-        sb.append(", w1_w2_vg=").append(w1_w2_vg);
-        sb.append(", qf_w1=").append(qf_w1);
-        sb.append(", qf_w2=").append(qf_w2);
-        sb.append(", flags_unwise_w1=").append(flags_unwise_w1);
-        sb.append(", flags_unwise_w2=").append(flags_unwise_w2);
-        sb.append(", flags_info_w1=").append(flags_info_w1);
-        sb.append(", flags_info_w2=").append(flags_info_w2);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
-        hash = 31 * hash + Objects.hashCode(this.unwise_objid);
+        hash = 13 * hash + Objects.hashCode(this.unwise_objid);
         return hash;
     }
 

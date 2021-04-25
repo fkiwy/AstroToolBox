@@ -9,10 +9,12 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.LookupTable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,23 +51,71 @@ public class TessCatalogEntry implements CatalogEntry {
     // Proper motion error in declination
     private double pmdec_err;
 
-    // G-band mean magnitude
+    // Effective temperature
+    private double teff;
+
+    // Uncertainty in teff
+    private double teff_err;
+
+    // Surface Gravity
+    private double logg;
+
+    // Uncertainty in logg
+    private double logg_err;
+
+    // Radius
+    private double rad;
+
+    // Uncertainty in rad
+    private double rad_err;
+
+    // Mass
+    private double mass;
+
+    // Uncertainty in mass
+    private double mass_err;
+
+    // Stellar Luminosity
+    private double lum;
+
+    // Uncertainty in lum
+    private double lum_err;
+
+    // Distance 
+    private double dist;
+
+    // Uncertainty in dist 
+    private double dist_err;
+
+    // Magnitude in G band
     private double Gmag;
 
-    // Error in G-band magnitude
+    // Error in G magnitude
     private double G_err;
 
-    // Integrated BP mean magnitude
+    // Magnitude in BP band
     private double BPmag;
 
     // Error in BP magnitude
     private double BP_err;
 
-    // Integrated RP mean magnitude
+    // Magnitude in RP band
     private double RPmag;
 
     // Error in RP magnitude
     private double RP_err;
+
+    // Magnitude in B band
+    private double Bmag;
+
+    // Error in B magnitude
+    private double B_err;
+
+    // Magnitude in V band
+    private double Vmag;
+
+    // Error in V magnitude
+    private double V_err;
 
     // Magnitude in u band
     private double u_mag;
@@ -97,46 +147,46 @@ public class TessCatalogEntry implements CatalogEntry {
     // Error in z magnitude
     private double z_err;
 
-    // Instrumental profile-fit photometry magnitude, band 1
+    // Magnitude in W1 band
     private double W1mag;
 
-    // Instrumental profile-fit photometry flux uncertainty in mag units, band 1
+    // Error in W1 magnitude
     private double W1_err;
 
-    // Instrumental profile-fit photometry magnitude, band 2
+    // Magnitude in W2 band
     private double W2mag;
 
-    // Instrumental profile-fit photometry flux uncertainty in mag units, band 2
+    // Error in W2 magnitude
     private double W2_err;
 
-    // Instrumental profile-fit photometry magnitude, band 3
+    // Magnitude in W3 band
     private double W3mag;
 
-    // Instrumental profile-fit photometry flux uncertainty in mag units, band 3
+    // Error in W3 magnitude
     private double W3_err;
 
-    // Instrumental profile-fit photometry magnitude, band 4
+    // Magnitude in W4 band
     private double W4mag;
 
-    // Instrumental profile-fit photometry flux uncertainty in mag units, band 4
+    // Error in W4 magnitude
     private double W4_err;
 
-    // J magnitude entry of the associated 2MASS All-Sky PSC source
+    // Magnitude in J band
     private double Jmag;
 
-    // J photometric uncertainty of the associated 2MASS All-Sky PSC source
+    // Error in J magnitude
     private double J_err;
 
-    // H magnitude entry of the associated 2MASS All-Sky PSC source
+    // Magnitude in H band
     private double Hmag;
 
-    // H photometric uncertainty of the associated 2MASS All-Sky PSC source
+    // Error in H magnitude
     private double H_err;
 
-    // K magnitude entry of the associated 2MASS All-Sky PSC source
+    // Magnitude in K band
     private double Kmag;
 
-    // K photometric uncertainty of the associated 2MASS All-Sky PSC source
+    // Error in K magnitude
     private double K_err;
 
     // Right ascension used for distance calculation
@@ -163,6 +213,8 @@ public class TessCatalogEntry implements CatalogEntry {
     // Most likely spectral type
     private String spt;
 
+    private LookupTable table;
+
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     private Map<String, Integer> columns;
@@ -184,12 +236,28 @@ public class TessCatalogEntry implements CatalogEntry {
         pmra_err = toDouble(values[columns.get("e_pmRA")]);
         pmdec = toDouble(values[columns.get("pmDE")]);
         pmdec_err = toDouble(values[columns.get("e_pmDE")]);
+        teff = toDouble(values[columns.get("Teff")]);
+        teff_err = toDouble(values[columns.get("s_Teff")]);
+        logg = toDouble(values[columns.get("logg")]);
+        logg_err = toDouble(values[columns.get("s_logg")]);
+        rad = toDouble(values[columns.get("Rad")]);
+        rad_err = toDouble(values[columns.get("s_Rad")]);
+        mass = toDouble(values[columns.get("Mass")]);
+        mass_err = toDouble(values[columns.get("s_Mass")]);
+        lum = toDouble(values[columns.get("Lum")]);
+        lum_err = toDouble(values[columns.get("s_Lum")]);
+        dist = toDouble(values[columns.get("Dist")]);
+        dist_err = toDouble(values[columns.get("s_Dist")]);
         Gmag = toDouble(values[columns.get("Gmag")]);
         G_err = toDouble(values[columns.get("e_Gmag")]);
         BPmag = toDouble(values[columns.get("BPmag")]);
         BP_err = toDouble(values[columns.get("e_BPmag")]);
         RPmag = toDouble(values[columns.get("RPmag")]);
         RP_err = toDouble(values[columns.get("e_RPmag")]);
+        Bmag = toDouble(values[columns.get("Bmag")]);
+        B_err = toDouble(values[columns.get("e_Bmag")]);
+        Vmag = toDouble(values[columns.get("Vmag")]);
+        V_err = toDouble(values[columns.get("e_Vmag")]);
         u_mag = toDouble(values[columns.get("umag")]);
         u_err = toDouble(values[columns.get("e_umag")]);
         g_mag = toDouble(values[columns.get("gmag")]);
@@ -229,16 +297,32 @@ public class TessCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("plx err", roundTo4DecNZ(plx_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true, false, isProperMotionFaulty(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("teff (K)", roundTo3DecNZ(teff), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("teff err", roundTo3DecNZ(teff_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("logg [cm/s2]", roundTo3DecNZ(logg), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("logg err", roundTo3DecNZ(logg_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("radius (Rsun)", roundTo3DecNZ(rad), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("radius err", roundTo3DecNZ(rad_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("mass (Msun)", roundTo3DecNZ(mass), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("mass err", roundTo3DecNZ(mass_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("luminosity (Lsun)", roundTo3DecNZ(lum), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("luminosity err", roundTo3DecNZ(lum_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("distance (pc)", roundTo3DecNZ(dist), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("distance err", roundTo3DecNZ(dist_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G err", roundTo3DecNZ(G_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP (mag)", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP err", roundTo3DecNZ(BP_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("RP (mag)", roundTo3DecNZ(RPmag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("RP err", roundTo3DecNZ(RP_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("B (mag)", roundTo3DecNZ(Bmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("B err", roundTo3DecNZ(B_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("V (mag)", roundTo3DecNZ(Vmag), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("V err", roundTo3DecNZ(V_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
@@ -265,6 +349,7 @@ public class TessCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("K err", roundTo3DecNZ(K_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(getG_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(getBP_RP()), Alignment.RIGHT, getDoubleComparator(), false, true));
+        catalogElements.add(new CatalogElement("B-V", roundTo3DecNZ(getB_V()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -281,63 +366,9 @@ public class TessCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("TessCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", plx=").append(plx);
-        sb.append(", plx_err=").append(plx_err);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmra_err=").append(pmra_err);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", pmdec_err=").append(pmdec_err);
-        sb.append(", Gmag=").append(Gmag);
-        sb.append(", G_err=").append(G_err);
-        sb.append(", BPmag=").append(BPmag);
-        sb.append(", BP_err=").append(BP_err);
-        sb.append(", RPmag=").append(RPmag);
-        sb.append(", RP_err=").append(RP_err);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", u_err=").append(u_err);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", g_err=").append(g_err);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", r_err=").append(r_err);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", i_err=").append(i_err);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", z_err=").append(z_err);
-        sb.append(", W1mag=").append(W1mag);
-        sb.append(", W1_err=").append(W1_err);
-        sb.append(", W2mag=").append(W2mag);
-        sb.append(", W2_err=").append(W2_err);
-        sb.append(", W3mag=").append(W3mag);
-        sb.append(", W3_err=").append(W3_err);
-        sb.append(", W4mag=").append(W4mag);
-        sb.append(", W4_err=").append(W4_err);
-        sb.append(", Jmag=").append(Jmag);
-        sb.append(", J_err=").append(J_err);
-        sb.append(", Hmag=").append(Hmag);
-        sb.append(", H_err=").append(H_err);
-        sb.append(", Kmag=").append(Kmag);
-        sb.append(", K_err=").append(K_err);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        int hash = 3;
+        hash = 29 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
@@ -378,14 +409,151 @@ public class TessCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(G_err) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(BP_err) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(RP_err) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag());
-        return columnValues.split(",", 55);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + sourceId + ","
+                + roundTo7Dec(ra) + ","
+                + roundTo7Dec(dec) + ","
+                + roundTo4Dec(plx) + ","
+                + roundTo4Dec(plx_err) + ","
+                + roundTo3Dec(pmra) + ","
+                + roundTo3Dec(pmra_err) + ","
+                + roundTo3Dec(pmdec) + ","
+                + roundTo3Dec(pmdec_err) + ","
+                + roundTo3Dec(teff) + ","
+                + roundTo3Dec(teff_err) + ","
+                + roundTo3Dec(logg) + ","
+                + roundTo3Dec(logg_err) + ","
+                + roundTo3Dec(rad) + ","
+                + roundTo3Dec(rad_err) + ","
+                + roundTo3Dec(mass) + ","
+                + roundTo3Dec(mass_err) + ","
+                + roundTo3Dec(lum) + ","
+                + roundTo3Dec(lum_err) + ","
+                + roundTo3Dec(dist) + ","
+                + roundTo3Dec(dist_err) + ","
+                + roundTo3Dec(Gmag) + ","
+                + roundTo3Dec(G_err) + ","
+                + roundTo3Dec(BPmag) + ","
+                + roundTo3Dec(BP_err) + ","
+                + roundTo3Dec(RPmag) + ","
+                + roundTo3Dec(RP_err) + ","
+                + roundTo3Dec(Bmag) + ","
+                + roundTo3Dec(B_err) + ","
+                + roundTo3Dec(Vmag) + ","
+                + roundTo3Dec(V_err) + ","
+                + roundTo3Dec(u_mag) + ","
+                + roundTo3Dec(u_err) + ","
+                + roundTo3Dec(g_mag) + ","
+                + roundTo3Dec(g_err) + ","
+                + roundTo3Dec(r_mag) + ","
+                + roundTo3Dec(r_err) + ","
+                + roundTo3Dec(i_mag) + ","
+                + roundTo3Dec(i_err) + ","
+                + roundTo3Dec(z_mag) + ","
+                + roundTo3Dec(z_err) + ","
+                + roundTo3Dec(W1mag) + ","
+                + roundTo3Dec(W1_err) + ","
+                + roundTo3Dec(W2mag) + ","
+                + roundTo3Dec(W2_err) + ","
+                + roundTo3Dec(W3mag) + ","
+                + roundTo3Dec(W3_err) + ","
+                + roundTo3Dec(W4mag) + ","
+                + roundTo3Dec(W4_err) + ","
+                + roundTo3Dec(Jmag) + ","
+                + roundTo3Dec(J_err) + ","
+                + roundTo3Dec(Hmag) + ","
+                + roundTo3Dec(H_err) + ","
+                + roundTo3Dec(Kmag) + ","
+                + roundTo3Dec(K_err) + ","
+                + roundTo3Dec(getB_V()) + ","
+                + roundTo3Dec(getG_RP()) + ","
+                + roundTo3Dec(getBP_RP()) + ","
+                + roundTo3Dec(get_u_g()) + ","
+                + roundTo3Dec(get_g_r()) + ","
+                + roundTo3Dec(get_r_i()) + ","
+                + roundTo3Dec(get_i_z()) + ","
+                + roundTo3Dec(getW1_W2()) + ","
+                + roundTo3Dec(getW2_W3()) + ","
+                + roundTo3Dec(getJ_W2()) + ","
+                + roundTo3Dec(getJ_H()) + ","
+                + roundTo3Dec(getH_K()) + ","
+                + roundTo3Dec(getJ_K()) + ","
+                + roundTo3Dec(getParallacticDistance()) + ","
+                + roundTo3Dec(getTotalProperMotion()) + ","
+                + roundTo3Dec(getAbsoluteGmag());
+        return columnValues.split(",", 64);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),TIC id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),G err,BP (mag),BP err,RP (mag),RP err,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,J (mag),J err,H (mag),H err,K (mag),K err,G-RP,BP-RP,u-g,g-r,r-i,i-z,W1-W2,W2-W3,J-W2,J-H,H-K,J-K,dist (1/plx),tpm (mas/yr),Absolute G (mag)";
-        return columnTitles.split(",", 55);
+        String columnTitles = "dist (arcsec),"
+                + "TIC id,"
+                + "ra,"
+                + "dec,"
+                + "plx (mas),"
+                + "plx err,"
+                + "pmra (mas/yr),"
+                + "pmra err,"
+                + "pmdec (mas/yr),"
+                + "pmdec err,"
+                + "teff (K),"
+                + "teff err,"
+                + "logg [cm/s2],"
+                + "logg err,"
+                + "radius (Rsun),"
+                + "radius err,"
+                + "mass (Msun),"
+                + "mass err,"
+                + "luminosity (Lsun),"
+                + "luminosity err,"
+                + "distance (pc),"
+                + "distance err,"
+                + "G (mag),"
+                + "G err,"
+                + "BP (mag),"
+                + "BP err,"
+                + "RP (mag),"
+                + "RP err,"
+                + "u (mag),"
+                + "u err,"
+                + "g (mag),"
+                + "g err,"
+                + "r (mag),"
+                + "r err,"
+                + "i (mag),"
+                + "i err,"
+                + "z (mag),"
+                + "z err,"
+                + "W1 (mag),"
+                + "W1 err,"
+                + "W2 (mag),"
+                + "W2 err,"
+                + "W3 (mag),"
+                + "W3 err,"
+                + "W4 (mag),"
+                + "W4 err,"
+                + "J (mag),"
+                + "J err,"
+                + "H (mag),"
+                + "H err,"
+                + "K (mag),"
+                + "K err,"
+                + "G-RP,"
+                + "BP-RP,"
+                + "u-g,"
+                + "g-r,"
+                + "r-i,"
+                + "i-z,"
+                + "W1-W2,"
+                + "W2-W3,"
+                + "J-W2,"
+                + "J-H,"
+                + "H-K,"
+                + "J-K,"
+                + "dist (1/plx),"
+                + "tpm (mas/yr),"
+                + "Absolute G (mag)";
+        return columnTitles.split(",", 64);
     }
 
     @Override
@@ -445,6 +613,7 @@ public class TessCatalogEntry implements CatalogEntry {
         colors.put(Color.M_G, getAbsoluteGmag());
         colors.put(Color.G_RP, getG_RP());
         colors.put(Color.BP_RP, getBP_RP());
+        colors.put(Color.B_V, getB_V());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
@@ -462,6 +631,11 @@ public class TessCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public void setLookupTable(LookupTable table) {
+        this.table = table;
+    }
+
+    @Override
     public String getMagnitudes() {
         StringBuilder mags = new StringBuilder();
         if (Gmag != 0) {
@@ -472,6 +646,12 @@ public class TessCatalogEntry implements CatalogEntry {
         }
         if (RPmag != 0) {
             mags.append("RP=").append(roundTo3DecNZ(RPmag)).append(" ");
+        }
+        if (Bmag != 0) {
+            mags.append("B=").append(roundTo3DecNZ(Bmag)).append(" ");
+        }
+        if (Vmag != 0) {
+            mags.append("V=").append(roundTo3DecNZ(Vmag)).append(" ");
         }
         if (u_mag != 0) {
             mags.append("u=").append(roundTo3DecNZ(u_mag)).append(" ");
@@ -662,11 +842,23 @@ public class TessCatalogEntry implements CatalogEntry {
         }
     }
 
+    public double getB_V() {
+        if (Bmag == 0 || Vmag == 0) {
+            return 0;
+        } else {
+            return Bmag - Vmag;
+        }
+    }
+
     public double get_u_g() {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            return u_mag - g_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (u_mag - ABToVega.u.val) - (g_mag - ABToVega.g.val);
+            } else {
+                return u_mag - g_mag;
+            }
         }
     }
 
@@ -674,7 +866,11 @@ public class TessCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            return g_mag - r_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (g_mag - ABToVega.g.val) - (r_mag - ABToVega.r.val);
+            } else {
+                return g_mag - r_mag;
+            }
         }
     }
 
@@ -682,7 +878,11 @@ public class TessCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            return r_mag - i_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (r_mag - ABToVega.r.val) - (i_mag - ABToVega.i.val);
+            } else {
+                return r_mag - i_mag;
+            }
         }
     }
 
@@ -690,7 +890,11 @@ public class TessCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            return i_mag - z_mag;
+            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
+                return (i_mag - ABToVega.i.val) - (z_mag - ABToVega.z.val);
+            } else {
+                return i_mag - z_mag;
+            }
         }
     }
 

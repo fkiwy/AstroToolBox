@@ -206,46 +206,9 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CatWiseCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", W1mag=").append(W1mag);
-        sb.append(", W1_err=").append(W1_err);
-        sb.append(", W2mag=").append(W2mag);
-        sb.append(", W2_err=").append(W2_err);
-        sb.append(", W1_snr=").append(W1_snr);
-        sb.append(", W2_snr=").append(W2_snr);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmra_err=").append(pmra_err);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", pmdec_err=").append(pmdec_err);
-        sb.append(", par_pm=").append(par_pm);
-        sb.append(", par_pmsig=").append(par_pmsig);
-        sb.append(", par_stat=").append(par_stat);
-        sb.append(", par_sigma=").append(par_sigma);
-        sb.append(", cc_flags=").append(cc_flags);
-        sb.append(", ab_flags=").append(ab_flags);
-        sb.append(", meanObsMJD=").append(meanObsMJD);
-        sb.append(", ra_pm=").append(ra_pm);
-        sb.append(", dec_pm=").append(dec_pm);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.sourceId);
+        int hash = 5;
+        hash = 83 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 

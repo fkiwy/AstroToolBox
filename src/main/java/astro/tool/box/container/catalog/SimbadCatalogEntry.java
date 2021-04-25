@@ -213,49 +213,9 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SimbadCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", objectType=").append(objectType);
-        sb.append(", spectralType=").append(spectralType);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", plx=").append(plx);
-        sb.append(", plx_err=").append(plx_err);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", radvel=").append(radvel);
-        sb.append(", redshift=").append(redshift);
-        sb.append(", rvtype=").append(rvtype);
-        sb.append(", Umag=").append(Umag);
-        sb.append(", Bmag=").append(Bmag);
-        sb.append(", Vmag=").append(Vmag);
-        sb.append(", Rmag=").append(Rmag);
-        sb.append(", Imag=").append(Imag);
-        sb.append(", Gmag=").append(Gmag);
-        sb.append(", Jmag=").append(Jmag);
-        sb.append(", Hmag=").append(Hmag);
-        sb.append(", Kmag=").append(Kmag);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 17 * hash + Objects.hashCode(this.sourceId);
+        int hash = 5;
+        hash = 31 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 

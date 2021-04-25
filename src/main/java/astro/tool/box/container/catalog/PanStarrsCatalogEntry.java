@@ -190,43 +190,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("PanStarrsCatalogEntry{objID=").append(objID);
-        sb.append(", objName=").append(objName);
-        sb.append(", qualityFlag=").append(qualityFlag);
-        sb.append(", raMean=").append(raMean);
-        sb.append(", decMean=").append(decMean);
-        sb.append(", raMeanErr=").append(raMeanErr);
-        sb.append(", decMeanErr=").append(decMeanErr);
-        sb.append(", epochMean=").append(epochMean);
-        sb.append(", nDetections=").append(nDetections);
-        sb.append(", gMeanPSFMag=").append(gMeanPSFMag);
-        sb.append(", gMeanPSFMagErr=").append(gMeanPSFMagErr);
-        sb.append(", rMeanPSFMag=").append(rMeanPSFMag);
-        sb.append(", rMeanPSFMagErr=").append(rMeanPSFMagErr);
-        sb.append(", iMeanPSFMag=").append(iMeanPSFMag);
-        sb.append(", iMeanPSFMagErr=").append(iMeanPSFMagErr);
-        sb.append(", zMeanPSFMag=").append(zMeanPSFMag);
-        sb.append(", zMeanPSFMagErr=").append(zMeanPSFMagErr);
-        sb.append(", yMeanPSFMag=").append(yMeanPSFMag);
-        sb.append(", yMeanPSFMagErr=").append(yMeanPSFMagErr);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", qualityFlags=").append(qualityFlags);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
-        hash = 47 * hash + (int) (this.objID ^ (this.objID >>> 32));
+        hash = 79 * hash + (int) (this.objID ^ (this.objID >>> 32));
         return hash;
     }
 

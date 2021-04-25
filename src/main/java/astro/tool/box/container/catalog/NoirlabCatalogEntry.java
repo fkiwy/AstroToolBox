@@ -71,44 +71,44 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     // Magnitude in u band
     private double u_mag;
 
-    // Magnitude in g band
-    private double g_mag;
-
-    // Magnitude in r band
-    private double r_mag;
-
-    // Magnitude in i band
-    private double i_mag;
-
-    // Magnitude in z band
-    private double z_mag;
-
-    // Magnitude in VR band
-    private double vr_mag;
-
-    // Magnitude in Y band
-    private double y_mag;
-
     // Error in u magnitude
     private double u_err;
+
+    // Magnitude in g band
+    private double g_mag;
 
     // Error in g magnitude
     private double g_err;
 
+    // Magnitude in r band
+    private double r_mag;
+
     // Error in r magnitude
     private double r_err;
+
+    // Magnitude in i band
+    private double i_mag;
 
     // Error in i magnitude
     private double i_err;
 
+    // Magnitude in z band
+    private double z_mag;
+
     // Error in z magnitude
     private double z_err;
 
-    // Error in VR band
-    private double vr_err;
+    // Magnitude in Y band
+    private double y_mag;
 
     // Error in Y band
     private double y_err;
+
+    // Magnitude in VR band
+    private double vr_mag;
+
+    // Error in VR band
+    private double vr_err;
 
     // Right ascension used for distance calculation
     private double targetRa;
@@ -162,19 +162,19 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         ndet = toInteger(values[columns.get("ndet")]);
         delta_mjd = toDouble(values[columns.get("deltamjd")]);
         u_mag = getFixedMag(toDouble(values[columns.get("umag")]));
-        g_mag = getFixedMag(toDouble(values[columns.get("gmag")]));
-        r_mag = getFixedMag(toDouble(values[columns.get("rmag")]));
-        i_mag = getFixedMag(toDouble(values[columns.get("imag")]));
-        z_mag = getFixedMag(toDouble(values[columns.get("zmag")]));
-        vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
-        y_mag = getFixedMag(toDouble(values[columns.get("ymag")]));
         u_err = getFixedErr(toDouble(values[columns.get("uerr")]));
+        g_mag = getFixedMag(toDouble(values[columns.get("gmag")]));
         g_err = getFixedErr(toDouble(values[columns.get("gerr")]));
+        r_mag = getFixedMag(toDouble(values[columns.get("rmag")]));
         r_err = getFixedErr(toDouble(values[columns.get("rerr")]));
+        i_mag = getFixedMag(toDouble(values[columns.get("imag")]));
         i_err = getFixedErr(toDouble(values[columns.get("ierr")]));
+        z_mag = getFixedMag(toDouble(values[columns.get("zmag")]));
         z_err = getFixedErr(toDouble(values[columns.get("zerr")]));
-        vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
+        y_mag = getFixedMag(toDouble(values[columns.get("ymag")]));
         y_err = getFixedErr(toDouble(values[columns.get("yerr")]));
+        vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
+        vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
     }
 
     private String getFixedPM(String pm) {
@@ -233,54 +233,9 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("NoirlabCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", ra_err=").append(ra_err);
-        sb.append(", dec=").append(dec);
-        sb.append(", dec_err=").append(dec_err);
-        sb.append(", type=").append(type);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmra_err=").append(pmra_err);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", pmdec_err=").append(pmdec_err);
-        sb.append(", mean_mjd=").append(mean_mjd);
-        sb.append(", ndet=").append(ndet);
-        sb.append(", delta_mjd=").append(delta_mjd);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", vr_mag=").append(vr_mag);
-        sb.append(", y_mag=").append(y_mag);
-        sb.append(", u_err=").append(u_err);
-        sb.append(", g_err=").append(g_err);
-        sb.append(", r_err=").append(r_err);
-        sb.append(", i_err=").append(i_err);
-        sb.append(", z_err=").append(z_err);
-        sb.append(", vr_err=").append(vr_err);
-        sb.append(", y_err=").append(y_err);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", spt=").append(spt);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append(", columns=").append(columns);
-        sb.append(", values=").append(values);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + Objects.hashCode(this.sourceId);
+        int hash = 5;
+        hash = 23 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -422,7 +377,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
-        colors.put(Color.z_Y, get_z_y());
+        //colors.put(Color.z_Y, get_z_y());
         return colors;
     }
 

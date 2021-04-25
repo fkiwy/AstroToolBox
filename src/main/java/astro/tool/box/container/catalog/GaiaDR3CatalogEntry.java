@@ -161,41 +161,9 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GaiaCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", plx=").append(plx);
-        sb.append(", plx_err=").append(plx_err);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmra_err=").append(pmra_err);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", pmdec_err=").append(pmdec_err);
-        sb.append(", Gmag=").append(Gmag);
-        sb.append(", BPmag=").append(BPmag);
-        sb.append(", RPmag=").append(RPmag);
-        sb.append(", BP_RP=").append(BP_RP);
-        sb.append(", BP_G=").append(BP_G);
-        sb.append(", G_RP=").append(G_RP);
-        sb.append(", radvel=").append(radvel);
-        sb.append(", radvel_err=").append(radvel_err);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 

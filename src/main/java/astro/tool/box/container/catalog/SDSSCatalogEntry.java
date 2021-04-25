@@ -71,29 +71,29 @@ public class SDSSCatalogEntry implements CatalogEntry {
     // Magnitude in u band
     private double u_mag;
 
-    // Magnitude in g band
-    private double g_mag;
-
-    // Magnitude in r band
-    private double r_mag;
-
-    // Magnitude in i band
-    private double i_mag;
-
-    // Magnitude in z band
-    private double z_mag;
-
     // Error in u magnitude
     private double u_err;
+
+    // Magnitude in g band
+    private double g_mag;
 
     // Error in g magnitude
     private double g_err;
 
+    // Magnitude in r band
+    private double r_mag;
+
     // Error in r magnitude
     private double r_err;
 
+    // Magnitude in i band
+    private double i_mag;
+
     // Error in i magnitude
     private double i_err;
+
+    // Magnitude in z band
+    private double z_mag;
 
     // Error in z magnitude
     private double z_err;
@@ -148,14 +148,14 @@ public class SDSSCatalogEntry implements CatalogEntry {
         mjd = toInteger(values[columns.get("mjd")]);
         specObjID = new BigInteger(values[columns.get("specObjID")]);
         u_mag = toDouble(values[columns.get("u")]);
-        g_mag = toDouble(values[columns.get("g")]);
-        r_mag = toDouble(values[columns.get("r")]);
-        i_mag = toDouble(values[columns.get("i")]);
-        z_mag = toDouble(values[columns.get("z")]);
         u_err = toDouble(values[columns.get("Err_u")]);
+        g_mag = toDouble(values[columns.get("g")]);
         g_err = toDouble(values[columns.get("Err_g")]);
+        r_mag = toDouble(values[columns.get("r")]);
         r_err = toDouble(values[columns.get("Err_r")]);
+        i_mag = toDouble(values[columns.get("i")]);
         i_err = toDouble(values[columns.get("Err_i")]);
+        z_mag = toDouble(values[columns.get("z")]);
         z_err = toDouble(values[columns.get("Err_z")]);
     }
 
@@ -193,47 +193,9 @@ public class SDSSCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SDSSCatalogEntry{objID=").append(objID);
-        sb.append(", run=").append(run);
-        sb.append(", rerun=").append(rerun);
-        sb.append(", camcol=").append(camcol);
-        sb.append(", field=").append(field);
-        sb.append(", obj=").append(obj);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", raErr=").append(raErr);
-        sb.append(", decErr=").append(decErr);
-        sb.append(", type=").append(type);
-        sb.append(", clean=").append(clean);
-        sb.append(", mjd=").append(mjd);
-        sb.append(", specObjID=").append(specObjID);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", u_err=").append(u_err);
-        sb.append(", g_err=").append(g_err);
-        sb.append(", r_err=").append(r_err);
-        sb.append(", i_err=").append(i_err);
-        sb.append(", z_err=").append(z_err);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 5;
-        hash = 29 * hash + (int) (this.objID ^ (this.objID >>> 32));
+        hash = 67 * hash + (int) (this.objID ^ (this.objID >>> 32));
         return hash;
     }
 

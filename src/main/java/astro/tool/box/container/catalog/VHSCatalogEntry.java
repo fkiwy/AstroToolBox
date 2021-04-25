@@ -158,39 +158,9 @@ public class VHSCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("VHSCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", objectType=").append(objectType);
-        sb.append(", y_ap3=").append(y_ap3);
-        sb.append(", y_ap3_err=").append(y_ap3_err);
-        sb.append(", j_ap3=").append(j_ap3);
-        sb.append(", j_ap3_err=").append(j_ap3_err);
-        sb.append(", h_ap3=").append(h_ap3);
-        sb.append(", h_ap3_err=").append(h_ap3_err);
-        sb.append(", ks_ap3=").append(ks_ap3);
-        sb.append(", ks_ap3_err=").append(ks_ap3_err);
-        sb.append(", y_j_pnt=").append(y_j_pnt);
-        sb.append(", j_h_pnt=").append(j_h_pnt);
-        sb.append(", h_ks_pnt=").append(h_ks_pnt);
-        sb.append(", j_ks_pnt=").append(j_ks_pnt);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
-        hash = 41 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 

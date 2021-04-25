@@ -308,54 +308,9 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("AllWiseCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", W1mag=").append(W1mag);
-        sb.append(", W1_err=").append(W1_err);
-        sb.append(", W2mag=").append(W2mag);
-        sb.append(", W2_err=").append(W2_err);
-        sb.append(", W3mag=").append(W3mag);
-        sb.append(", W3_err=").append(W3_err);
-        sb.append(", W4mag=").append(W4mag);
-        sb.append(", W4_err=").append(W4_err);
-        sb.append(", W1_snr=").append(W1_snr);
-        sb.append(", W2_snr=").append(W2_snr);
-        sb.append(", W3_snr=").append(W3_snr);
-        sb.append(", W4_snr=").append(W4_snr);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmra_err=").append(pmra_err);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", pmdec_err=").append(pmdec_err);
-        sb.append(", cc_flags=").append(cc_flags);
-        sb.append(", ext_flg=").append(ext_flg);
-        sb.append(", var_flg=").append(var_flg);
-        sb.append(", ph_qual=").append(ph_qual);
-        sb.append(", Jmag=").append(Jmag);
-        sb.append(", J_err=").append(J_err);
-        sb.append(", Hmag=").append(Hmag);
-        sb.append(", H_err=").append(H_err);
-        sb.append(", Kmag=").append(Kmag);
-        sb.append(", K_err=").append(K_err);
-        sb.append(", ra_pm=").append(ra_pm);
-        sb.append(", dec_pm=").append(dec_pm);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 3;
-        hash = 37 * hash + Objects.hashCode(this.sourceId);
+        hash = 73 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 

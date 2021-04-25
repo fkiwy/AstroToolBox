@@ -349,7 +349,7 @@ public class AstrometricFunctions {
      */
     public static boolean isProperMotionFaulty(double value, double error) {
         value = Math.abs(value);
-        return value - error < value / 2;
+        return error > value / 2;
     }
 
 }
