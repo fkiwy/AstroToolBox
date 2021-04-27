@@ -481,7 +481,7 @@ public class ModuleHelper {
 
     public static void collectObject(String objectType, CatalogEntry catalogEntry, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
-        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
             SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
             StringBuilder simbadType = new StringBuilder();
@@ -591,7 +591,7 @@ public class ModuleHelper {
         }
         toCopy.append(catalogEntry.getMagnitudes());
         toCopy.append(LINE_SEP);
-        Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors();
+        Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors(false);
         colors.entrySet().forEach(entry -> {
             double value = entry.getValue();
             if (value != 0) {

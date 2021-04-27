@@ -40,7 +40,6 @@ import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.WiseBand;
@@ -444,14 +443,14 @@ public class ImageViewerTab {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             mainSequenceSpectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
@@ -5158,11 +5157,9 @@ public class ImageViewerTab {
     }
 
     private void setSpectralType(CatalogEntry catalogEntry) {
-        catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
-        List<LookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+        List<LookupResult> results = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
         if (results.isEmpty()) {
-            catalogEntry.setLookupTable(LookupTable.BROWN_DWARFS);
-            results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            results = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
         }
         if (results.isEmpty()) {
             catalogEntry.setSpt("N/A");
@@ -5468,8 +5465,7 @@ public class ImageViewerTab {
         container.add(scrollPanel);
 
         if (!simpleLayout) {
-            catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
-            List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
@@ -5495,8 +5491,7 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            catalogEntry.setLookupTable(LookupTable.BROWN_DWARFS);
-            List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -5513,7 +5508,6 @@ public class ImageViewerTab {
                 collectButton.setText("Add to collection");
             });
             collectButton.addActionListener((ActionEvent evt) -> {
-                catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
                 collectObject(selectedObjectType, catalogEntry, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
                 collectButton.setText("Added!");

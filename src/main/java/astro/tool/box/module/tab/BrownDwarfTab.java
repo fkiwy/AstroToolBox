@@ -69,7 +69,7 @@ public class BrownDwarfTab {
         InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
@@ -178,8 +178,7 @@ public class BrownDwarfTab {
                     baseFrame.setCursor(Cursor.getDefaultCursor());
                 }
             }
-            selectedEntry.setLookupTable(LookupTable.BROWN_DWARFS);
-            List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
+            List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors(true));
             displaySpectralTypes(results, spectralTypePanel, distancePanel);
         }
     }

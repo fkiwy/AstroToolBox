@@ -338,7 +338,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                        return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -347,7 +347,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -397,8 +397,7 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
-                    catalogEntry.setLookupTable(selectedTable);
-                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, includeColors.isSelected());
+                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, includeColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                         StringBuilder simbadType = new StringBuilder();

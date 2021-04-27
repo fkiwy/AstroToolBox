@@ -252,7 +252,7 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         return new LinkedHashMap<>();
     }
 

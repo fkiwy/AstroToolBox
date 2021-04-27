@@ -10,12 +10,11 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
-import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.LookupTable;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -103,8 +102,6 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     // Most likely spectral type
     private String spt;
-
-    private LookupTable table;
 
     private List<StringPair> qualityFlags;
 
@@ -244,19 +241,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        if (gMeanPSFMag != 0) {
-            gMeanPSFMag = gMeanPSFMag - extinctionsByBand.get(SDSS_G);
-        }
-        if (rMeanPSFMag != 0) {
-            rMeanPSFMag = rMeanPSFMag - extinctionsByBand.get(SDSS_R);
-        }
-        if (iMeanPSFMag != 0) {
-            iMeanPSFMag = iMeanPSFMag - extinctionsByBand.get(SDSS_I);
-        }
-        if (zMeanPSFMag != 0) {
-            zMeanPSFMag = zMeanPSFMag - extinctionsByBand.get(SDSS_Z);
-        }
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
+        throw new NoExtinctionValuesException();
     }
 
     @Override
@@ -271,19 +257,14 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.g_r, get_g_r());
-        colors.put(Color.r_i, get_r_i());
-        colors.put(Color.i_z, get_i_z());
-        colors.put(Color.i_y, get_i_y());
-        colors.put(Color.z_y, get_z_y());
+        colors.put(Color.g_r_PS1, get_g_r());
+        colors.put(Color.r_i_PS1, get_r_i());
+        colors.put(Color.i_z_PS1, get_i_z());
+        colors.put(Color.i_y_PS1, get_i_y());
+        colors.put(Color.z_y_PS1, get_z_y());
         return colors;
-    }
-
-    @Override
-    public void setLookupTable(LookupTable table) {
-        this.table = table;
     }
 
     @Override
@@ -441,11 +422,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (gMeanPSFMag == 0 || rMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (gMeanPSFMag - ABToVega.g.val) - (rMeanPSFMag - ABToVega.r.val);
-            } else {
-                return gMeanPSFMag - rMeanPSFMag;
-            }
+            return gMeanPSFMag - rMeanPSFMag;
         }
     }
 
@@ -453,11 +430,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (rMeanPSFMag == 0 || iMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (rMeanPSFMag - ABToVega.r.val) - (iMeanPSFMag - ABToVega.i.val);
-            } else {
-                return rMeanPSFMag - iMeanPSFMag;
-            }
+            return rMeanPSFMag - iMeanPSFMag;
         }
     }
 
@@ -465,11 +438,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (iMeanPSFMag == 0 || zMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (iMeanPSFMag - ABToVega.i.val) - (zMeanPSFMag - ABToVega.z.val);
-            } else {
-                return iMeanPSFMag - zMeanPSFMag;
-            }
+            return iMeanPSFMag - zMeanPSFMag;
         }
     }
 
@@ -477,11 +446,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (iMeanPSFMag == 0 || yMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (iMeanPSFMag - ABToVega.i.val) - (yMeanPSFMag - ABToVega.Y.val);
-            } else {
-                return iMeanPSFMag - yMeanPSFMag;
-            }
+            return iMeanPSFMag - yMeanPSFMag;
         }
     }
 
@@ -489,11 +454,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (zMeanPSFMag == 0 || yMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (zMeanPSFMag - ABToVega.z.val) - (yMeanPSFMag - ABToVega.Y.val);
-            } else {
-                return zMeanPSFMag - yMeanPSFMag;
-            }
+            return zMeanPSFMag - yMeanPSFMag;
         }
     }
 

@@ -9,6 +9,7 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.ABOffset;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -114,6 +115,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     // Most likely spectral type
     private String spt;
+
+    private boolean toVega;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -269,11 +272,14 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public Map<Band, Double> getBands() {
-        return new LinkedHashMap<>();
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.G, Gmag);
+        return bands;
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
+        this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
         colors.put(Color.G_RP, getG_RP());
@@ -469,7 +475,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            return u_mag - g_mag;
+            if (toVega) {
+                return (u_mag - ABOffset.u.val) - (g_mag - ABOffset.g.val);
+            } else {
+                return u_mag - g_mag;
+            }
         }
     }
 
@@ -477,7 +487,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            return g_mag - r_mag;
+            if (toVega) {
+                return (g_mag - ABOffset.g.val) - (r_mag - ABOffset.r.val);
+            } else {
+                return g_mag - r_mag;
+            }
         }
     }
 
@@ -485,7 +499,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            return r_mag - i_mag;
+            if (toVega) {
+                return (r_mag - ABOffset.r.val) - (i_mag - ABOffset.i.val);
+            } else {
+                return r_mag - i_mag;
+            }
         }
     }
 
@@ -493,7 +511,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            return i_mag - z_mag;
+            if (toVega) {
+                return (i_mag - ABOffset.i.val) - (z_mag - ABOffset.z.val);
+            } else {
+                return i_mag - z_mag;
+            }
         }
     }
 

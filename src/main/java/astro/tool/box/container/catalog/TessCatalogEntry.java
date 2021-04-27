@@ -9,12 +9,11 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ABToVega;
+import astro.tool.box.enumeration.ABOffset;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.LookupTable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -213,7 +212,7 @@ public class TessCatalogEntry implements CatalogEntry {
     // Most likely spectral type
     private String spt;
 
-    private LookupTable table;
+    private boolean toVega;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -598,22 +597,19 @@ public class TessCatalogEntry implements CatalogEntry {
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.G, Gmag);
-        bands.put(Band.g, g_mag);
-        bands.put(Band.r, r_mag);
-        bands.put(Band.i, i_mag);
-        bands.put(Band.z, z_mag);
         bands.put(Band.W1, W1mag);
         bands.put(Band.W2, W2mag);
         bands.put(Band.W3, W3mag);
         bands.put(Band.J, Jmag);
         bands.put(Band.H, Hmag);
         bands.put(Band.K, Kmag);
+        bands.put(Band.G, Gmag);
         return bands;
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
+        this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
         colors.put(Color.G_RP, getG_RP());
@@ -626,18 +622,11 @@ public class TessCatalogEntry implements CatalogEntry {
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
         colors.put(Color.W1_W4, getW1_W4());
-        colors.put(Color.W2_W3, getW2_W3());
         colors.put(Color.J_H, getJ_H());
         colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.K_W1, getK_W1());
-        colors.put(Color.J_W2, getJ_W2());
         return colors;
-    }
-
-    @Override
-    public void setLookupTable(LookupTable table) {
-        this.table = table;
     }
 
     @Override
@@ -859,8 +848,8 @@ public class TessCatalogEntry implements CatalogEntry {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (u_mag - ABToVega.u.val) - (g_mag - ABToVega.g.val);
+            if (toVega) {
+                return (u_mag - ABOffset.u.val) - (g_mag - ABOffset.g.val);
             } else {
                 return u_mag - g_mag;
             }
@@ -871,8 +860,8 @@ public class TessCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (g_mag - ABToVega.g.val) - (r_mag - ABToVega.r.val);
+            if (toVega) {
+                return (g_mag - ABOffset.g.val) - (r_mag - ABOffset.r.val);
             } else {
                 return g_mag - r_mag;
             }
@@ -883,8 +872,8 @@ public class TessCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (r_mag - ABToVega.r.val) - (i_mag - ABToVega.i.val);
+            if (toVega) {
+                return (r_mag - ABOffset.r.val) - (i_mag - ABOffset.i.val);
             } else {
                 return r_mag - i_mag;
             }
@@ -895,8 +884,8 @@ public class TessCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (i_mag - ABToVega.i.val) - (z_mag - ABToVega.z.val);
+            if (toVega) {
+                return (i_mag - ABOffset.i.val) - (z_mag - ABOffset.z.val);
             } else {
                 return i_mag - z_mag;
             }

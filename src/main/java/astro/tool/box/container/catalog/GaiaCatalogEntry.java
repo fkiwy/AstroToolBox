@@ -290,7 +290,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
         colors.put(Color.BP_RP, getBP_RP());

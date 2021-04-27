@@ -15,7 +15,6 @@ import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.Epoch;
-import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.tab.ImageViewerTab;
@@ -91,14 +90,14 @@ public class InfoSheet {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             mainSequenceLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             brownDwarfsLookupService = new SpectralTypeLookupService(entries);
         }
@@ -336,8 +335,8 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type evaluation (***)", null, LookupTable.BROWN_DWARFS));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (**)", mainHeader));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type evaluation (***)", null));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});
@@ -385,11 +384,10 @@ public class InfoSheet {
         return true;
     }
 
-    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader, LookupTable lookupTable) throws Exception {
+    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader) throws Exception {
         List<BatchResult> batchResults = new ArrayList<>();
         for (CatalogEntry catalogEntry : catalogEntries) {
-            catalogEntry.setLookupTable(lookupTable);
-            List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+            List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
             if (catalogEntry instanceof SimbadCatalogEntry) {
                 SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                 StringBuilder simbadType = new StringBuilder();

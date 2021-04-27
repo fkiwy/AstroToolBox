@@ -117,7 +117,7 @@ public class CatalogQueryTab {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
@@ -500,8 +500,7 @@ public class CatalogQueryTab {
     //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
-            List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors(true));
 
             List<String[]> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
@@ -580,7 +579,7 @@ public class CatalogQueryTab {
             remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
             remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
-            remarks.add(new JLabel("Version in use: 2019.3.22"));
+            remarks.add(new JLabel("Version in use: 2021.03.02"));
             remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));

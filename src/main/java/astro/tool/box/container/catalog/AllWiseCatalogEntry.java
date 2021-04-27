@@ -397,16 +397,14 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.W1_W2, getW1_W2());
         colors.put(Color.W1_W3, getW1_W3());
         colors.put(Color.W1_W4, getW1_W4());
-        colors.put(Color.W2_W3, getW2_W3());
         colors.put(Color.J_H, getJ_H());
         colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
-        colors.put(Color.J_W2, getJ_W2());
         colors.put(Color.K_W1, getK_W1());
         return colors;
     }

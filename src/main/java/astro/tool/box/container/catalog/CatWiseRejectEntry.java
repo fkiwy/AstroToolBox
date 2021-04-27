@@ -292,7 +292,7 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.W1_W2, getW1_W2());
         return colors;

@@ -126,7 +126,7 @@ public class WhiteDwarfTab {
                             }
                         }
                     }
-                    performLookup(resultPanel, selectedEntry.getColors());
+                    performLookup(resultPanel, selectedEntry.getColors(false));
                 }
             });
 

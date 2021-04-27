@@ -349,7 +349,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.J_H, getJ_H());
         colors.put(Color.H_K, getH_K());

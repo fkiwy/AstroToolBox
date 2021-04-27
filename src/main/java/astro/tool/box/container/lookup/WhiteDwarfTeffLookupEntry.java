@@ -39,7 +39,6 @@ public class WhiteDwarfTeffLookupEntry implements WhiteDwarfLookup {
         colors.put(Color.r_i, toDouble(values[9]));
         colors.put(Color.i_z, toDouble(values[10]));
         colors.put(Color.V_J, toDouble(values[11]));
-        colors.put(Color.r_J, toDouble(values[12]));
         colors.put(Color.G_RP, toDouble(values[13]));
         colors.put(Color.BP_RP, toDouble(values[14]));
     }
