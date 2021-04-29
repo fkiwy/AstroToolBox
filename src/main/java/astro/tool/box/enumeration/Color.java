@@ -23,13 +23,13 @@ public enum Color {
     r_i("r-i"),
     i_z("i-z"),
     z_Y("z-Y"),
-    g_r_PS1("(g-r)ps1"),
-    r_i_PS1("(r-i)ps1"),
-    i_z_PS1("(i-z)ps1"),
-    i_y_PS1("(i-y)ps1"),
-    z_y_PS1("(z-y)ps1"),
-    i_z_DES("(i-z)des"),
-    z_Y_DES("(z-Y)des");
+    g_r_PS1("g-r"),
+    r_i_PS1("r-i"),
+    i_z_PS1("i-z"),
+    i_y_PS1("i-y"),
+    z_y_PS1("z-y"),
+    i_z_DES("i-z"),
+    z_Y_DES("z-Y");
 
     public String val;
 

@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TessCatalogEntry implements CatalogEntry {
+public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
 
     public static final String CATALOG_NAME = "TESS Input Catalog";
 
@@ -816,6 +816,7 @@ public class TessCatalogEntry implements CatalogEntry {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
+    @Override
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
@@ -828,6 +829,7 @@ public class TessCatalogEntry implements CatalogEntry {
         }
     }
 
+    @Override
     public double getBP_RP() {
         if (BPmag == 0 || RPmag == 0) {
             return 0;

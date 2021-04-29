@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
+public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteDwarf {
 
     public static final String CATALOG_NAME = "Gaia DR2";
 
@@ -451,10 +451,12 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery {
         return calculateTotalVelocity(radvel, getTansverseVelocity());
     }
 
+    @Override
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
 
+    @Override
     public double getBP_RP() {
         if (BPmag == 0 || RPmag == 0) {
             return 0;

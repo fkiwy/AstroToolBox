@@ -24,6 +24,7 @@ import astro.tool.box.container.catalog.TessCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.function.AstrometricFunctions;
@@ -498,14 +499,8 @@ public class ModuleHelper {
                 spectralTypes.add(AGN_WARNING);
             }
         }
-        if (catalogEntry instanceof GaiaCatalogEntry) {
-            GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
-            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                spectralTypes.add(WD_WARNING);
-            }
-        }
-        if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-            GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+        if (catalogEntry instanceof WhiteDwarf) {
+            WhiteDwarf entry = (WhiteDwarf) catalogEntry;
             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                 spectralTypes.add(WD_WARNING);
             }

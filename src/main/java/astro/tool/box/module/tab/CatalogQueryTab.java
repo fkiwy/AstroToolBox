@@ -9,8 +9,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
@@ -505,12 +504,12 @@ public class CatalogQueryTab {
             List<String[]> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
                 String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
-                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
+                String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap()) + ","
+                        + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun());
                 spectralTypes.add(spectralType.split(",", 7));
             });
 
-            String titles = "spt,teff,radius (Rsun),mass (Msun),matched color,nearest color,difference";
+            String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
             String[] columns = titles.split(",", 7);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
@@ -524,18 +523,18 @@ public class CatalogQueryTab {
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             TableColumnModel columnModel = spectralTypeTable.getColumnModel();
             columnModel.getColumn(0).setPreferredWidth(50);
-            columnModel.getColumn(1).setPreferredWidth(50);
-            columnModel.getColumn(2).setPreferredWidth(55);
+            columnModel.getColumn(1).setPreferredWidth(100);
+            columnModel.getColumn(2).setPreferredWidth(75);
             columnModel.getColumn(3).setPreferredWidth(50);
-            columnModel.getColumn(4).setPreferredWidth(100);
-            columnModel.getColumn(5).setPreferredWidth(50);
-            columnModel.getColumn(6).setPreferredWidth(50);
+            columnModel.getColumn(4).setPreferredWidth(50);
+            columnModel.getColumn(5).setPreferredWidth(75);
+            columnModel.getColumn(6).setPreferredWidth(75);
 
             JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(425, BOTTOM_PANEL_HEIGHT));
+            spectralTypeInfo.setPreferredSize(new Dimension(500, BOTTOM_PANEL_HEIGHT));
 
             JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                     ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
@@ -553,23 +552,16 @@ public class CatalogQueryTab {
                     warning = true;
                 }
             }
-            if (catalogEntry instanceof GaiaCatalogEntry) {
-                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    remarks.add(createLabel(WD_WARNING, JColor.RED));
-                    warning = true;
-                }
-            }
-            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof WhiteDwarf) {
+                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     remarks.add(createLabel(WD_WARNING, JColor.RED));
                     warning = true;
                 }
             }
             if (!warning) {
-                remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
-                remarks.add(new JLabel("to early type as well to late type stars."));
+                remarks.add(new JLabel("Note that for some colors, results may be contradictory,"));
+                remarks.add(new JLabel("as they may fit to early type as well to late type stars."));
                 remarks.add(new JLabel("The more colors match, the better the results, in general."));
                 remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
             }

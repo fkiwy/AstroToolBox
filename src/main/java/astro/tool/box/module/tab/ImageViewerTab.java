@@ -34,6 +34,7 @@ import astro.tool.box.container.catalog.TessCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -5475,16 +5476,8 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            if (catalogEntry instanceof GaiaCatalogEntry) {
-                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(WD_WARNING, JColor.RED));
-                    container.add(messagePanel);
-                }
-            }
-            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof WhiteDwarf) {
+                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                     messagePanel.add(createLabel(WD_WARNING, JColor.RED));
@@ -5574,12 +5567,12 @@ public class ImageViewerTab {
         List<String[]> spectralTypes = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-            String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
-                    + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
+            String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap()) + ","
+                    + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun());
             spectralTypes.add(spectralType.split(",", 7));
         });
 
-        String titles = "spt,teff,radius (Rsun),mass (Msun),matched color,nearest color,difference";
+        String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
@@ -5593,12 +5586,12 @@ public class ImageViewerTab {
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel columnModel = spectralTypeTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(1).setPreferredWidth(50);
-        columnModel.getColumn(2).setPreferredWidth(55);
+        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(75);
         columnModel.getColumn(3).setPreferredWidth(50);
-        columnModel.getColumn(4).setPreferredWidth(100);
-        columnModel.getColumn(5).setPreferredWidth(100);
-        columnModel.getColumn(6).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(50);
+        columnModel.getColumn(5).setPreferredWidth(75);
+        columnModel.getColumn(6).setPreferredWidth(75);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
@@ -5618,7 +5611,7 @@ public class ImageViewerTab {
             spectralTypes.add(spectralType.split(",", 4));
         });
 
-        String titles = "spt,matched color,nearest color,difference";
+        String titles = "spt,matched color,nearest color,offset";
         String[] columns = titles.split(",", 4);
         Object[][] rows = new Object[][]{};
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
@@ -5633,8 +5626,8 @@ public class ImageViewerTab {
         TableColumnModel columnModel = spectralTypeTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
         columnModel.getColumn(1).setPreferredWidth(100);
-        columnModel.getColumn(2).setPreferredWidth(100);
-        columnModel.getColumn(3).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(75);
+        columnModel.getColumn(3).setPreferredWidth(50);
 
         JScrollPane spectralTypePanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))

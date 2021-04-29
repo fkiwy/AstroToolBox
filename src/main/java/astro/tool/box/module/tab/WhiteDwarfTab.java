@@ -179,7 +179,7 @@ public class WhiteDwarfTab {
             resultRows.add(resultValues.split(",", 7));
         });
 
-        String titles = "teff,mass (Msun),logg,age,matched color,nearest color,difference";
+        String titles = "teff,mass (Msun),logg,age,matched color,nearest color,offset";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(resultRows.toArray(rows), columns);
@@ -196,12 +196,12 @@ public class WhiteDwarfTab {
         resultTable.getRowSorter().toggleSortOrder(0);
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(1).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(100);
         columnModel.getColumn(2).setPreferredWidth(50);
         columnModel.getColumn(3).setPreferredWidth(100);
         columnModel.getColumn(4).setPreferredWidth(100);
-        columnModel.getColumn(5).setPreferredWidth(100);
-        columnModel.getColumn(6).setPreferredWidth(100);
+        columnModel.getColumn(5).setPreferredWidth(75);
+        columnModel.getColumn(6).setPreferredWidth(50);
 
         JScrollPane scrollPanel = resultRows.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))

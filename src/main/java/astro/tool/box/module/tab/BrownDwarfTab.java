@@ -8,6 +8,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -150,14 +151,8 @@ public class BrownDwarfTab {
                     entryPanel.add(createLabel(AGN_WARNING, JColor.RED));
                 }
             }
-            if (selectedEntry instanceof GaiaCatalogEntry) {
-                GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    entryPanel.add(createLabel(WD_WARNING, JColor.RED));
-                }
-            }
-            if (selectedEntry instanceof GaiaDR3CatalogEntry) {
-                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) selectedEntry;
+            if (selectedEntry instanceof WhiteDwarf) {
+                WhiteDwarf entry = (WhiteDwarf) selectedEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     entryPanel.add(createLabel(WD_WARNING, JColor.RED));
                 }
@@ -191,7 +186,7 @@ public class BrownDwarfTab {
             resultRows.add(resultValues.split(",", 4));
         });
 
-        String titles = "spt,matched color,nearest color,difference";
+        String titles = "spt,matched color,nearest color,offset";
         String[] columns = titles.split(",", 4);
         Object[][] rows = new Object[][]{};
         JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
