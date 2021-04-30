@@ -54,7 +54,7 @@ public class SettingsTab {
     public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     public static final Properties USER_SETTINGS = new Properties();
     public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
-    public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.OS.name();
+    public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.Flat_Light.name();
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;

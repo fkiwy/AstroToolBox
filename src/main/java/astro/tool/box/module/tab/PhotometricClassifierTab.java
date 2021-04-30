@@ -83,6 +83,7 @@ public class PhotometricClassifierTab {
     private Map<String, Integer> sptOccurrencesAltogether;
     private Map<String, Integer> sptOccurrencesMainSequence;
     private Map<String, Integer> sptOccurrencesBrownDwarfs;
+    private Map<String, Integer> sptOccurrencesSimbad;
 
     public PhotometricClassifierTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -208,6 +209,7 @@ public class PhotometricClassifierTab {
                         sptOccurrencesAltogether = new HashMap();
                         sptOccurrencesMainSequence = new HashMap();
                         sptOccurrencesBrownDwarfs = new HashMap();
+                        sptOccurrencesSimbad = new HashMap();
                         List<BatchResult> batchResults;
                         batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence);
                         displayQueryResults(batchResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
@@ -216,6 +218,9 @@ public class PhotometricClassifierTab {
                         displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
                         displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
                         displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs", JColor.BROWN.val);
+                        if (!sptOccurrencesSimbad.isEmpty()) {
+                            displayClassification(sptOccurrencesSimbad, "SIMBAD object type", Color.LIGHT_GRAY);
+                        }
                         baseFrame.setVisible(true);
                     }
                 } catch (Exception ex) {
@@ -228,6 +233,9 @@ public class PhotometricClassifierTab {
             });
 
             coordsField.addActionListener((ActionEvent evt) -> {
+                searchButton.getActionListeners()[0].actionPerformed(evt);
+            });
+            radiusField.addActionListener((ActionEvent evt) -> {
                 searchButton.getActionListeners()[0].actionPerformed(evt);
             });
         } catch (Exception ex) {
@@ -267,8 +275,9 @@ public class PhotometricClassifierTab {
                 simbadType.append(simbadEntry.getObjectType());
                 String spectralType = simbadEntry.getSpectralType();
                 if (!spectralType.isEmpty()) {
-                    simbadType.append(" ").append(spectralType);
+                    simbadType.append(": ").append(spectralType);
                 }
+                sptOccurrencesSimbad.put(simbadType.toString(), 1);
                 simbadType.append("; ");
                 spectralTypes.add(0, simbadType.toString());
             }
@@ -377,7 +386,7 @@ public class PhotometricClassifierTab {
         resultTable.setRowSorter(createResultTableSorter(defaultTableModel, spectralTypes));
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(75);
-        columnModel.getColumn(1).setPreferredWidth(150);
+        columnModel.getColumn(1).setPreferredWidth(195);
 
         JScrollPane resultScrollPanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
