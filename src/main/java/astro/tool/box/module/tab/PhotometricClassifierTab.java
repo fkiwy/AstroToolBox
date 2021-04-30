@@ -56,7 +56,7 @@ import javax.swing.table.TableColumnModel;
 
 public class PhotometricClassifierTab {
 
-    private static final String TAB_NAME = "Photometric classifier";
+    private static final String TAB_NAME = "Photometric Classifier";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -81,7 +81,9 @@ public class PhotometricClassifierTab {
     private double targetDec;
     private double searchRadius;
 
-    private Map<String, Integer> sptOccurrences;
+    private Map<String, Integer> sptOccurrencesAltogether;
+    private Map<String, Integer> sptOccurrencesMainSequence;
+    private Map<String, Integer> sptOccurrencesBrownDwarfs;
 
     public PhotometricClassifierTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -204,13 +206,17 @@ public class PhotometricClassifierTab {
                                 }
                             }
                         }
-                        sptOccurrences = new HashMap();
+                        sptOccurrencesAltogether = new HashMap();
+                        sptOccurrencesMainSequence = new HashMap();
+                        sptOccurrencesBrownDwarfs = new HashMap();
                         List<BatchResult> batchResults;
-                        batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries);
+                        batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence);
                         displayQueryResults(batchResults, "Main sequence spectral type evaluation");
-                        batchResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries);
+                        batchResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs);
                         displayQueryResults(batchResults, "Brown dwarfs spectral type evaluation");
-                        displayClassification();
+                        displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether");
+                        displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence");
+                        displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs");
                         baseFrame.setVisible(true);
                     }
                 } catch (Exception ex) {
@@ -243,7 +249,7 @@ public class PhotometricClassifierTab {
         return null;
     }
 
-    private List<BatchResult> performSpectralTypeLookup(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries) throws Exception {
+    private List<BatchResult> performSpectralTypeLookup(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, Map<String, Integer> sptOccurrences) throws Exception {
         List<BatchResult> batchResults = new ArrayList<>();
         int rowNumber = 1;
         for (CatalogEntry catalogEntry : catalogEntries) {
@@ -251,7 +257,7 @@ public class PhotometricClassifierTab {
             List<String> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
                 String spectralType = entry.getSpt();
-                addOccurrence(spectralType.replace("V", ""));
+                addOccurrence(spectralType.replace("V", ""), sptOccurrences);
                 String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
                 spectralType += ": " + matchedColor + "; ";
                 spectralTypes.add(spectralType);
@@ -271,7 +277,7 @@ public class PhotometricClassifierTab {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     String spectralType = AGN_WARNING;
-                    addOccurrence(spectralType);
+                    addOccurrence(spectralType, sptOccurrences);
                     spectralTypes.add(spectralType);
                 }
             }
@@ -279,7 +285,7 @@ public class PhotometricClassifierTab {
                 WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     String spectralType = WD_WARNING;
-                    addOccurrence(spectralType);
+                    addOccurrence(spectralType, sptOccurrences);
                     spectralTypes.add(spectralType);
                 }
             }
@@ -302,7 +308,7 @@ public class PhotometricClassifierTab {
         return batchResults;
     }
 
-    private void displayQueryResults(List<BatchResult> batchResults, String header) {
+    private void displayQueryResults(List<BatchResult> batchResults, String title) {
         List<Object[]> list = new ArrayList<>();
         batchResults.forEach(entry -> {
             list.add(entry.getColumnValues());
@@ -344,12 +350,12 @@ public class PhotometricClassifierTab {
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);
         resultScrollPanel.setPreferredSize(new Dimension(resultScrollPanel.getWidth(), resultScrollPanel.getHeight()));
         resultScrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), header, TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), title, TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(resultScrollPanel);
     }
 
-    private void displayClassification() {
+    private void displayClassification(Map<String, Integer> sptOccurrences, String title) {
         List<String[]> spectralTypes = new ArrayList();
         sptOccurrences.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).forEach(entry -> {
             spectralTypes.add(new String[]{entry.getValue().toString(), entry.getKey()});
@@ -378,15 +384,17 @@ public class PhotometricClassifierTab {
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(resultTable);
         resultScrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Photometric classification", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), title, TitledBorder.LEFT, TitledBorder.TOP
         ));
         resultScrollPanel.setPreferredSize(new Dimension(300, 200));
         bottomPanel.add(resultScrollPanel);
     }
 
-    private void addOccurrence(String spectralType) {
+    private void addOccurrence(String spectralType, Map<String, Integer> sptOccurrences) {
         Integer occurrences = sptOccurrences.get(spectralType);
         sptOccurrences.put(spectralType, occurrences == null ? 1 : occurrences + 1);
+        occurrences = sptOccurrencesAltogether.get(spectralType);
+        sptOccurrencesAltogether.put(spectralType, occurrences == null ? 1 : occurrences + 1);
     }
 
 }
