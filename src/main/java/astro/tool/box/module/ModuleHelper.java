@@ -773,7 +773,7 @@ public class ModuleHelper {
         return subjects;
     }
 
-    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
+    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
         BufferedImage bi;
         String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=large&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
@@ -810,7 +810,7 @@ public class ModuleHelper {
         return fileNames;
     }
 
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) {
         BufferedImage bi;
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames, targetRa, targetDec, size * 4, 256);
         try {
@@ -823,7 +823,7 @@ public class ModuleHelper {
         return bi;
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) throws IOException {
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) {
         BufferedImage bi;
         String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", targetRa, targetDec, size * 4, band);
         try {

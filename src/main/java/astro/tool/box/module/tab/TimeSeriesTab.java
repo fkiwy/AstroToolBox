@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 public class TimeSeriesTab {
 
     private static final String TAB_NAME = "Time Series";
+    private static final int MAX_IMAGES = 6;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -57,7 +58,7 @@ public class TimeSeriesTab {
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
-            centerPanel = new JPanel(new GridLayout(10, 1));
+            centerPanel = new JPanel(new GridLayout(0, 1));
             mainPanel.add(centerPanel, BorderLayout.CENTER);
 
             bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -163,8 +164,8 @@ public class TimeSeriesTab {
         }
     }
 
-    private void displayDssImages(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+    private void displayDssImages(double targetRa, double targetDec, int size) {
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("DSS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
@@ -199,8 +200,8 @@ public class TimeSeriesTab {
         }
     }
 
-    private void display2MassImages(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+    private void display2MassImages(double targetRa, double targetDec, int size) {
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("2MASS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
@@ -227,8 +228,8 @@ public class TimeSeriesTab {
         }
     }
 
-    private void displaySdssImages(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+    private void displaySdssImages(double targetRa, double targetDec, int size) {
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("SDSS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
@@ -263,8 +264,8 @@ public class TimeSeriesTab {
         }
     }
 
-    private void displayAllwiseImages(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+    private void displayAllwiseImages(double targetRa, double targetDec, int size) {
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("AllWISE"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
@@ -303,7 +304,7 @@ public class TimeSeriesTab {
         }
 
         // Fetch images for Pan-STARRS filters
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("Pan-STARRS"));
 
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
@@ -320,8 +321,8 @@ public class TimeSeriesTab {
         }
     }
 
-    private void displayDecalsImages(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+    private void displayDecalsImages(double targetRa, double targetDec, int size) {
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("DECaLS"));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
@@ -352,7 +353,7 @@ public class TimeSeriesTab {
     }
 
     private void displayStaticTimeSeries(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("Time series"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
@@ -407,7 +408,7 @@ public class TimeSeriesTab {
     }
 
     private void addFillerPanel(JPanel bandPanel) {
-        for (int i = bandPanel.getComponentCount(); i < 7; i++) {
+        for (int i = bandPanel.getComponentCount(); i < MAX_IMAGES + 1; i++) {
             bandPanel.add(new JPanel());
         }
     }
