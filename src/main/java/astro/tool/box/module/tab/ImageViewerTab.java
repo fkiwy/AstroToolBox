@@ -2472,7 +2472,7 @@ public class ImageViewerTab {
         }
     }
 
-    private boolean assembleFlipbook() {
+    public boolean assembleFlipbook() {
         try {
             timer.stop();
             timerStopped = true;

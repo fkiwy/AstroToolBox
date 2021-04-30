@@ -82,7 +82,7 @@ public class Application {
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();
 
-        TimeSeriesTab timeSeriesTab = new TimeSeriesTab(baseFrame, tabbedPane);
+        TimeSeriesTab timeSeriesTab = new TimeSeriesTab(baseFrame, tabbedPane, imageViewerTab);
         timeSeriesTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);

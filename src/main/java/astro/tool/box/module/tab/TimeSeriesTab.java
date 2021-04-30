@@ -3,6 +3,9 @@ package astro.tool.box.module.tab;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.Epoch;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.shape.Circle;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -11,6 +14,7 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +35,7 @@ public class TimeSeriesTab {
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
+    private final ImageViewerTab imageViewerTab;
 
     private JPanel mainPanel;
     private JPanel topPanel;
@@ -44,10 +49,10 @@ public class TimeSeriesTab {
     private double targetDec;
     private int fieldOfView;
 
-    public TimeSeriesTab(JFrame baseFrame, JTabbedPane tabbedPane) {
+    public TimeSeriesTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
-
+        this.imageViewerTab = imageViewerTab;
     }
 
     public void init() {
@@ -141,7 +146,8 @@ public class TimeSeriesTab {
                         displayAllwiseImages(targetRa, targetDec, fieldOfView);
                         displayPs1Images(targetRa, targetDec, fieldOfView);
                         displayDecalsImages(targetRa, targetDec, fieldOfView);
-                        displayStaticTimeSeries(targetRa, targetDec, fieldOfView);
+                        displayTimeSeries(targetRa, targetDec, fieldOfView);
+                        displayWiseTimeSeries(targetRa, targetDec, fieldOfView);
                         baseFrame.setVisible(true);
                     }
                 } catch (Exception ex) {
@@ -193,8 +199,7 @@ public class TimeSeriesTab {
             bandPanel.add(buildImagePanel(image, "dss2IR-dss1Red-dss1Blue"));
         }
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
@@ -221,8 +226,7 @@ public class TimeSeriesTab {
             bandPanel.add(buildImagePanel(image, "K-H-J"));
         }
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
@@ -257,8 +261,7 @@ public class TimeSeriesTab {
             bandPanel.add(buildImagePanel(image, "z-g-u"));
         }
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
@@ -289,8 +292,7 @@ public class TimeSeriesTab {
             bandPanel.add(buildImagePanel(image, "W4-W2-W1"));
         }
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
@@ -314,8 +316,7 @@ public class TimeSeriesTab {
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
@@ -345,14 +346,13 @@ public class TimeSeriesTab {
             bandPanel.add(buildImagePanel(image, "g-r-z"));
         }
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
     }
 
-    private void displayStaticTimeSeries(double targetRa, double targetDec, int size) throws Exception {
+    private void displayTimeSeries(double targetRa, double targetDec, int size) throws Exception {
         JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
         bandPanel.setBorder(createEmptyBorder("Time series"));
 
@@ -383,8 +383,36 @@ public class TimeSeriesTab {
             bandPanel.add(buildImagePanel(image, "DECaLS - z"));
         }
 
-        int componentCount = bandPanel.getComponentCount();
-        if (componentCount > 0) {
+        if (bandPanel.getComponentCount() > 0) {
+            addFillerPanel(bandPanel);
+            centerPanel.add(bandPanel);
+        }
+    }
+
+    private void displayWiseTimeSeries(double targetRa, double targetDec, int size) throws Exception {
+        JTextField coordinateField = imageViewerTab.getCoordsField();
+        ActionListener actionListener = coordinateField.getActionListeners()[0];
+        coordinateField.removeActionListener(actionListener);
+        coordinateField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
+        coordinateField.addActionListener(actionListener);
+        JTextField sizeField = imageViewerTab.getSizeField();
+        actionListener = sizeField.getActionListeners()[0];
+        sizeField.removeActionListener(actionListener);
+        sizeField.setText(String.valueOf(size));
+        sizeField.addActionListener(actionListener);
+        imageViewerTab.getZoomSlider().setValue(250);
+        imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
+        imageViewerTab.assembleFlipbook();
+
+        JPanel bandPanel = new JPanel(new GridLayout(1, 0));
+        bandPanel.setBorder(createEmptyBorder("WISE time series"));
+
+        for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
+            BufferedImage image = imageViewerTab.processImage(component);
+            bandPanel.add(buildImagePanel(image, component.getTitle()));
+        }
+
+        if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
         }
