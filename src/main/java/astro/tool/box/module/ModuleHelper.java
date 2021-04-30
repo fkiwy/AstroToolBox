@@ -436,6 +436,10 @@ public class ModuleHelper {
     }
 
     public static void resizeColumnWidth(JTable table) {
+        resizeColumnWidth(table, 300);
+    }
+
+    public static void resizeColumnWidth(JTable table, int maxColWidth) {
         TableColumnModel columnModel = table.getColumnModel();
         for (int column = 0; column < table.getColumnCount(); column++) {
             int width = 0; // Min width
@@ -444,8 +448,8 @@ public class ModuleHelper {
                 Component component = table.prepareRenderer(renderer, row, column);
                 width = Math.max(component.getPreferredSize().width + 1, width);
             }
-            if (width > 300) {
-                width = 300; // Max width
+            if (maxColWidth > 0 && width > maxColWidth) {
+                width = maxColWidth; // Max width
             }
             columnModel.getColumn(column).setPreferredWidth(width + 20);
         }
@@ -463,6 +467,48 @@ public class ModuleHelper {
                 return false;
             }
         };
+    }
+
+    public static void alignResultColumns(JTable table) {
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        int i = 0;
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+    }
+
+    public static TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        int i = 0;
+        sorter.setComparator(i++, getIntegerComparator());
+        sorter.setComparator(i++, getIntegerComparator());
+        sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getStringComparator());
+        return sorter;
     }
 
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {

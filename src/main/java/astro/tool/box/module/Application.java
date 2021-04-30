@@ -13,6 +13,7 @@ import astro.tool.box.module.tab.FileBrowserTab;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
+import astro.tool.box.module.tab.PhotometricClassifierTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
@@ -76,6 +77,9 @@ public class Application {
 
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
+
+        PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        photoClassTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
         adqlQueryTab.init();

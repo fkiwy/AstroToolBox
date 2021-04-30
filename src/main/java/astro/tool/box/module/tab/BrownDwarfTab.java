@@ -97,7 +97,7 @@ public class BrownDwarfTab {
             dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction for bands u, g, r, i, z, J, H, K, W1 & W2");
             extinctionPanel.add(dustExtinction);
 
-            JPanel spectralTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel spectralTypePanel = new JPanel();
             spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -105,7 +105,7 @@ public class BrownDwarfTab {
             spectralTypePanel.setPreferredSize(new Dimension(500, 300));
             containerPanel.add(spectralTypePanel, BorderLayout.CENTER);
 
-            JPanel distancePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel distancePanel = new JPanel();
             distancePanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Distance evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));

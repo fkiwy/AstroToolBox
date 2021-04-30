@@ -3,7 +3,6 @@ package astro.tool.box.module.tab;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
-import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
@@ -59,10 +58,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class BatchQueryTab {
 
@@ -527,48 +523,6 @@ public class BatchQueryTab {
                 BorderFactory.createEtchedBorder(), "Batch query results", TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(resultScrollPanel);
-    }
-
-    private void alignResultColumns(JTable table) {
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-        int i = 0;
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-    }
-
-    private TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
-        int i = 0;
-        sorter.setComparator(i++, getIntegerComparator());
-        sorter.setComparator(i++, getIntegerComparator());
-        sorter.setComparator(i++, getStringComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getStringComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getStringComparator());
-        sorter.setComparator(i++, getStringComparator());
-        return sorter;
     }
 
     public JPanel getBottomRow() {
