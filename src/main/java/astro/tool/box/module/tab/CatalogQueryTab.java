@@ -93,8 +93,6 @@ public class CatalogQueryTab {
     private final Map<String, CatalogEntry> catalogInstances;
     private final Map<Integer, List<CatalogEntry>> catalogResults;
 
-    //private AllWiseCatalogEntry selectedAllWiseEntry;
-    //private CatWiseCatalogEntry selectedCatWiseEntry;
     private CatalogEntry selectedEntry;
 
     private boolean copyCoordsToClipboard;
@@ -106,6 +104,7 @@ public class CatalogQueryTab {
 
     private double targetRa;
     private double targetDec;
+    private double searchRadius;
 
     public CatalogQueryTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
@@ -170,7 +169,6 @@ public class CatalogQueryTab {
                         showErrorDialog(baseFrame, "Search radius must not be empty!");
                         return;
                     }
-                    double searchRadius;
                     List<String> errorMessages = new ArrayList<>();
                     try {
                         NumberPair coordinates = getCoordinates(coords);
@@ -199,7 +197,7 @@ public class CatalogQueryTab {
                             errorMessages.add("Radius must not be larger than 300 arcsec.");
                         }
                     } catch (Exception ex) {
-                        searchRadius = Double.valueOf(0);
+                        searchRadius = 0;
                         errorMessages.add("Invalid radius!");
                     }
                     List<String> selectedCatalogs = new ArrayList<>();
@@ -284,7 +282,7 @@ public class CatalogQueryTab {
                     String coords = coordsField.getText();
                     if (!coords.isEmpty() && selectedEntry != null) {
                         removeAndRecreateBottomPanel();
-                        displayLinks(targetRa, targetDec, targetRa);
+                        displayLinks(targetRa, targetDec, searchRadius);
                         displayCatalogDetails(selectedEntry);
                         displaySpectralTypes(selectedEntry);
                     }
@@ -298,8 +296,6 @@ public class CatalogQueryTab {
     }
 
     private int queryCatalog(CatalogEntry catalogQuery) throws IOException {
-        //selectedAllWiseEntry = null;
-        //selectedCatWiseEntry = null;
         List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
@@ -360,7 +356,6 @@ public class CatalogQueryTab {
                     }
                     displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     displayCatalogDetails(selected);
-                    //displayProperMotions(selected);
                     displaySpectralTypes(selected);
                     baseFrame.setVisible(true);
                 }
@@ -479,24 +474,6 @@ public class CatalogQueryTab {
         bottomPanel.add(scrollPanel);
     }
 
-    /*private void displayProperMotions(CatalogEntry selectedEntry) {
-        if (selectedEntry instanceof AllWiseCatalogEntry) {
-            selectedAllWiseEntry = (AllWiseCatalogEntry) selectedEntry;
-        } else if (selectedEntry instanceof CatWiseCatalogEntry) {
-            selectedCatWiseEntry = (CatWiseCatalogEntry) selectedEntry;
-        }
-        if (selectedAllWiseEntry != null && selectedCatWiseEntry != null) {
-            NumberPair properMotions = calculateProperMotions(
-                    new NumberPair(selectedAllWiseEntry.getRa_pm(), selectedAllWiseEntry.getDec_pm()),
-                    new NumberPair(selectedCatWiseEntry.getRa_pm(), selectedCatWiseEntry.getDec_pm()),
-                    55400,
-                    56700,
-                    DEG_MAS
-            );
-            System.out.println("Apparent motions: " + properMotions);
-        }
-    }*/
-    //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
             List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors(true));
@@ -645,7 +622,7 @@ public class CatalogQueryTab {
         if (centerPanel != null) {
             mainPanel.remove(centerPanel);
         }
-        centerPanel = new JPanel(new GridLayout(2, 3));
+        centerPanel = new JPanel(new GridLayout(2, 0));
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         centerPanel.setPreferredSize(new Dimension(centerPanel.getWidth(), 250));
     }
@@ -741,14 +718,6 @@ public class CatalogQueryTab {
 
     public void setFinderChartFOV(int finderChartFOV) {
         this.finderChartFOV = finderChartFOV;
-    }
-
-    public double getTargetRa() {
-        return targetRa;
-    }
-
-    public double getTargetDec() {
-        return targetDec;
     }
 
 }
