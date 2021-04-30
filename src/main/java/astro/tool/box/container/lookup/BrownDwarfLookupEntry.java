@@ -40,8 +40,8 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.i_z_PS1, toDouble(values[14]));
         colors.put(Color.i_y_PS1, toDouble(values[22]));
         colors.put(Color.z_y_PS1, toDouble(values[15]));
-        colors.put(Color.J_H, toDouble(values[17]));
-        colors.put(Color.H_K, toDouble(values[18]));
+        //colors.put(Color.J_H, toDouble(values[17]));
+        //colors.put(Color.H_K, toDouble(values[18]));
         colors.put(Color.K_W1, toDouble(values[19]));
         colors.put(Color.W1_W2, toDouble(values[20]));
         colors.put(Color.J_K, toDouble(values[25]));

@@ -1,5 +1,10 @@
 package astro.tool.box.module.tab;
 
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
@@ -12,17 +17,10 @@ import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.facade.CatalogQueryFacade;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.module.ModuleHelper.*;
-import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -49,6 +47,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
@@ -116,7 +115,7 @@ public class PhotometricClassifierTab {
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
-            centerPanel = new JPanel(new GridLayout(0, 1));
+            centerPanel = new JPanel(new GridLayout(2, 1));
             mainPanel.add(centerPanel, BorderLayout.CENTER);
 
             bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -211,12 +210,12 @@ public class PhotometricClassifierTab {
                         sptOccurrencesBrownDwarfs = new HashMap();
                         List<BatchResult> batchResults;
                         batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence);
-                        displayQueryResults(batchResults, "Main sequence spectral type evaluation");
+                        displayQueryResults(batchResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
                         batchResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs);
-                        displayQueryResults(batchResults, "Brown dwarfs spectral type evaluation");
-                        displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether");
-                        displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence");
-                        displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs");
+                        displayQueryResults(batchResults, "Brown dwarfs spectral type evaluation", JColor.BROWN.val);
+                        displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
+                        displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
+                        displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs", JColor.BROWN.val);
                         baseFrame.setVisible(true);
                     }
                 } catch (Exception ex) {
@@ -308,7 +307,7 @@ public class PhotometricClassifierTab {
         return batchResults;
     }
 
-    private void displayQueryResults(List<BatchResult> batchResults, String title) {
+    private void displayQueryResults(List<BatchResult> batchResults, String title, Color borderColor) {
         List<Object[]> list = new ArrayList<>();
         batchResults.forEach(entry -> {
             list.add(entry.getColumnValues());
@@ -345,17 +344,17 @@ public class PhotometricClassifierTab {
                 }
             }
         });
-        resizeColumnWidth(resultTable, 0);
+        resizeColumnWidth(resultTable, 300);
 
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);
         resultScrollPanel.setPreferredSize(new Dimension(resultScrollPanel.getWidth(), resultScrollPanel.getHeight()));
         resultScrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), title, TitledBorder.LEFT, TitledBorder.TOP
+                new LineBorder(borderColor, 2), title, TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(resultScrollPanel);
     }
 
-    private void displayClassification(Map<String, Integer> sptOccurrences, String title) {
+    private void displayClassification(Map<String, Integer> sptOccurrences, String title, Color borderColor) {
         List<String[]> spectralTypes = new ArrayList();
         sptOccurrences.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).forEach(entry -> {
             spectralTypes.add(new String[]{entry.getValue().toString(), entry.getKey()});
@@ -383,10 +382,10 @@ public class PhotometricClassifierTab {
         JScrollPane resultScrollPanel = spectralTypes.isEmpty()
                 ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
                 : new JScrollPane(resultTable);
+        resultScrollPanel.setPreferredSize(new Dimension(300, 250));
         resultScrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), title, TitledBorder.LEFT, TitledBorder.TOP
+                new LineBorder(borderColor, 2), title, TitledBorder.LEFT, TitledBorder.TOP
         ));
-        resultScrollPanel.setPreferredSize(new Dimension(300, 200));
         bottomPanel.add(resultScrollPanel);
     }
 
