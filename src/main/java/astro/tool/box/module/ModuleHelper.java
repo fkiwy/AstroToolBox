@@ -268,8 +268,12 @@ public class ModuleHelper {
     }
 
     public static Border createEmptyBorder(String boderTitle) {
+        return createEmptyBorder(boderTitle, null);
+    }
+
+    public static Border createEmptyBorder(String boderTitle, Color titleColor) {
         return BorderFactory.createTitledBorder(
-                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, null, titleColor
         );
     }
 

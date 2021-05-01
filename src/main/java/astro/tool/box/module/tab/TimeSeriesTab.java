@@ -394,7 +394,7 @@ public class TimeSeriesTab {
 
     private void displayTimeSeries(double targetRa, double targetDec, int size) throws Exception {
         JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
-        bandPanel.setBorder(createEmptyBorder("Time series"));
+        bandPanel.setBorder(createEmptyBorder("Cross survey time series", Color.RED));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
@@ -407,6 +407,10 @@ public class TimeSeriesTab {
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "SDSS - z", Shape.CROSS, 2));
+        }
+        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "IRAC4", Shape.CROSS, 2));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
         if (image != null) {
@@ -431,7 +435,7 @@ public class TimeSeriesTab {
 
     private void displayDecalsTimeSeries(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
-        bandPanel.setBorder(createEmptyBorder("DECaLS time series"));
+        bandPanel.setBorder(createEmptyBorder("DECaLS time series", Color.RED));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr5");
         if (image != null) {
@@ -457,6 +461,7 @@ public class TimeSeriesTab {
     }
 
     private void displayWiseTimeSeries(double targetRa, double targetDec, int size) throws Exception {
+        imageViewerTab.setAsyncDownloads(false);
         JTextField coordinateField = imageViewerTab.getCoordsField();
         ActionListener actionListener = coordinateField.getActionListeners()[0];
         coordinateField.removeActionListener(actionListener);
@@ -469,10 +474,10 @@ public class TimeSeriesTab {
         sizeField.addActionListener(actionListener);
         imageViewerTab.getZoomSlider().setValue(250);
         imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
-        imageViewerTab.assembleFlipbook();
+        imageViewerTab.createFlipbook();
 
         JPanel bandPanel = new JPanel(new GridLayout(1, 0));
-        bandPanel.setBorder(createEmptyBorder("WISE time series"));
+        bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
 
         for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
             BufferedImage image = imageViewerTab.processImage(component);

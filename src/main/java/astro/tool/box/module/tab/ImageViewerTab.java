@@ -2464,7 +2464,7 @@ public class ImageViewerTab {
         return new NumberPair(x, y);
     }
     ==========================================================================*/
-    private void createFlipbook() {
+    public void createFlipbook() {
         if (asyncDownloads) {
             CompletableFuture.supplyAsync(() -> assembleFlipbook());
         } else {
