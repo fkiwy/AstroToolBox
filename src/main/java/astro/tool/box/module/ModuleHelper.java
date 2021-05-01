@@ -824,8 +824,12 @@ public class ModuleHelper {
     }
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) {
+        return retrieveDecalsImage(targetRa, targetDec, size, band, "ls-dr9");
+    }
+
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, String layer) {
         BufferedImage bi;
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", targetRa, targetDec, size * 4, band);
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=%s&size=%d&bands=%s", targetRa, targetDec, layer, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
