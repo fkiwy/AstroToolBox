@@ -4,9 +4,12 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Epoch;
+import astro.tool.box.enumeration.Shape;
 import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.shape.Circle;
+import astro.tool.box.module.shape.Cross;
+import astro.tool.box.module.shape.Drawable;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -358,29 +361,29 @@ public class TimeSeriesTab {
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS2 - IR"));
+            bandPanel.add(buildImagePanel(image, "DSS2 - IR", Shape.CROSS));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS - K"));
+            bandPanel.add(buildImagePanel(image, "2MASS - K", Shape.CROSS));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS - z"));
+            bandPanel.add(buildImagePanel(image, "SDSS - z", Shape.CROSS));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "WISE - W2"));
+            bandPanel.add(buildImagePanel(image, "WISE - W2", Shape.CROSS));
         }
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
-            bandPanel.add(buildImagePanel(image, "PS1 - z"));
+            bandPanel.add(buildImagePanel(image, "PS1 - z", Shape.CROSS));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z");
         if (image != null) {
             image = convertToGray(image);
-            bandPanel.add(buildImagePanel(image, "DECaLS - z"));
+            bandPanel.add(buildImagePanel(image, "DECaLS - z", Shape.CROSS));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -409,7 +412,7 @@ public class TimeSeriesTab {
 
         for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
             BufferedImage image = imageViewerTab.processImage(component);
-            bandPanel.add(buildImagePanel(image, component.getTitle()));
+            bandPanel.add(buildImagePanel(image, component.getTitle(), Shape.CROSS));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -419,19 +422,31 @@ public class TimeSeriesTab {
     }
 
     private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
+        return buildImagePanel(image, imageHeader, Shape.CIRCLE);
+    }
+
+    private JPanel buildImagePanel(BufferedImage image, String imageHeader, Shape shape) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(new JLabel(new ImageIcon(drawCenterCircle(image))));
+        panel.add(new JLabel(new ImageIcon(drawCenterShape(image, shape))));
         return panel;
     }
 
-    private BufferedImage drawCenterCircle(BufferedImage image) {
+    private BufferedImage drawCenterShape(BufferedImage image, Shape shape) {
         image = zoom(image, 200);
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
-        Circle circle = new Circle(x, y, 10, Color.MAGENTA);
-        circle.draw(g);
+        Drawable drawable;
+        switch (shape) {
+            case CROSS:
+                drawable = new Cross(x, y, 50, Color.MAGENTA);
+                break;
+            default:
+                drawable = new Circle(x, y, 10, Color.MAGENTA);
+                break;
+        }
+        drawable.draw(g);
         return image;
     }
 
