@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -165,30 +166,46 @@ public class TimeSeriesTab {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
                     } else {
-                        displayDssImages(targetRa, targetDec, fieldOfView);
-                        display2MassImages(targetRa, targetDec, fieldOfView);
-                        displaySdssImages(targetRa, targetDec, fieldOfView);
-                        displaySpitzerImages(targetRa, targetDec, fieldOfView);
-                        displayAllwiseImages(targetRa, targetDec, fieldOfView);
-                        displayPs1Images(targetRa, targetDec, fieldOfView);
-                        displayDecalsImages(targetRa, targetDec, fieldOfView);
-                        displayTimeSeries(targetRa, targetDec, fieldOfView);
-                        displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
-                        displayWiseTimeSeries(targetRa, targetDec, fieldOfView);
-                        List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
-                        for (CatalogEntry catalogEntry : catalogInstances.values()) {
-                            if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
-                                double searchRadius = fieldOfView * sqrt(2) / 2; // diagonal of the fov divided by 2
-                                catalogEntry.setRa(targetRa);
-                                catalogEntry.setDec(targetDec);
-                                catalogEntry.setSearchRadius(searchRadius);
-                                List<CatalogEntry> results = performQuery(catalogEntry);
-                                if (results != null) {
-                                    displayCatalogResults(results);
-                                }
+                        CompletableFuture.supplyAsync(() -> {
+                            try {
+                                displayDssImages(targetRa, targetDec, fieldOfView);
+                                display2MassImages(targetRa, targetDec, fieldOfView);
+                                displaySdssImages(targetRa, targetDec, fieldOfView);
+                                displaySpitzerImages(targetRa, targetDec, fieldOfView);
+                                displayAllwiseImages(targetRa, targetDec, fieldOfView);
+                                displayPs1Images(targetRa, targetDec, fieldOfView);
+                                displayDecalsImages(targetRa, targetDec, fieldOfView);
+                                displayTimeSeries(targetRa, targetDec, fieldOfView);
+                                displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
+                                displayWiseTimeSeries(targetRa, targetDec, fieldOfView);
+                            } catch (Exception ex) {
+                                showExceptionDialog(baseFrame, ex);
                             }
-                        }
-                        baseFrame.setVisible(true);
+                            baseFrame.setVisible(true);
+                            return null;
+                        });
+                        CompletableFuture.supplyAsync(() -> {
+                            try {
+                                List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
+                                for (CatalogEntry catalogEntry : catalogInstances.values()) {
+                                    if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
+                                        double searchRadius = fieldOfView * sqrt(2) / 2; // diagonal of the fov divided by 2
+                                        catalogEntry.setRa(targetRa);
+                                        catalogEntry.setDec(targetDec);
+                                        catalogEntry.setSearchRadius(searchRadius);
+                                        List<CatalogEntry> results;
+                                        results = performQuery(catalogEntry);
+                                        if (results != null) {
+                                            displayCatalogResults(results);
+                                        }
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                showExceptionDialog(baseFrame, ex);
+                            }
+                            baseFrame.setVisible(true);
+                            return null;
+                        });
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -606,7 +623,6 @@ public class TimeSeriesTab {
                     imageViewerTab.getCoordsField().setText(coords);
                     imageViewerTab.getEpochs().setSelectedItem(Epoch.FIRST_LAST);
                     tabbedPane.setSelectedIndex(3);
-
                 }
             }
         });
