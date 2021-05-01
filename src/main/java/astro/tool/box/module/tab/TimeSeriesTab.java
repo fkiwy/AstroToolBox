@@ -3,25 +3,35 @@ package astro.tool.box.module.tab;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.Shape;
+import astro.tool.box.facade.CatalogQueryFacade;
 import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
+import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
+import astro.tool.box.service.CatalogQueryService;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import static java.lang.Math.sqrt;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -29,7 +39,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableModel;
 
 public class TimeSeriesTab {
 
@@ -40,10 +56,13 @@ public class TimeSeriesTab {
     private final JTabbedPane tabbedPane;
     private final ImageViewerTab imageViewerTab;
 
+    private final Map<String, CatalogEntry> catalogInstances;
+    private final CatalogQueryFacade catalogQueryFacade;
+
     private JPanel mainPanel;
     private JPanel topPanel;
     private JPanel centerPanel;
-    private JPanel bottomPanel;
+    private JTabbedPane bottomPanel;
     private JButton searchButton;
     private JTextField coordsField;
     private JTextField fovField;
@@ -56,6 +75,8 @@ public class TimeSeriesTab {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
+        catalogInstances = getCatalogInstances();
+        catalogQueryFacade = new CatalogQueryService();
     }
 
     public void init() {
@@ -69,7 +90,8 @@ public class TimeSeriesTab {
             centerPanel = new JPanel(new GridLayout(0, 1));
             mainPanel.add(centerPanel, BorderLayout.CENTER);
 
-            bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            bottomPanel = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+            bottomPanel.setPreferredSize(new Dimension(bottomPanel.getWidth(), 200));
             mainPanel.add(bottomPanel, BorderLayout.PAGE_END);
 
             JLabel coordsLabel = new JLabel("Coordinates:");
@@ -153,6 +175,19 @@ public class TimeSeriesTab {
                         displayTimeSeries(targetRa, targetDec, fieldOfView);
                         displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
                         displayWiseTimeSeries(targetRa, targetDec, fieldOfView);
+                        List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
+                        for (CatalogEntry catalogEntry : catalogInstances.values()) {
+                            if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
+                                double searchRadius = fieldOfView * sqrt(2) / 2; // diagonal of the fov divided by 2
+                                catalogEntry.setRa(targetRa);
+                                catalogEntry.setDec(targetDec);
+                                catalogEntry.setSearchRadius(searchRadius);
+                                List<CatalogEntry> results = performQuery(catalogEntry);
+                                if (results != null) {
+                                    displayCatalogResults(results);
+                                }
+                            }
+                        }
                         baseFrame.setVisible(true);
                     }
                 } catch (Exception ex) {
@@ -523,6 +558,66 @@ public class TimeSeriesTab {
         for (int i = bandPanel.getComponentCount(); i < MAX_IMAGES + 1; i++) {
             bandPanel.add(new JPanel());
         }
+    }
+
+    private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {
+        List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
+        catalogEntries.forEach(catalogEntry -> {
+            catalogEntry.setTargetRa(catalogQuery.getRa());
+            catalogEntry.setTargetDec(catalogQuery.getDec());
+        });
+        if (!catalogEntries.isEmpty()) {
+            catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
+            return catalogEntries;
+        }
+        return null;
+    }
+
+    private void displayCatalogResults(List<CatalogEntry> catalogEntries) {
+        List<Object[]> list = new ArrayList<>();
+        catalogEntries.forEach(entry -> {
+            list.add(entry.getColumnValues());
+        });
+        CatalogEntry catalogEntry = catalogEntries.get(0);
+        Object[] columns = catalogEntry.getColumnTitles();
+        Object[][] rows = new Object[][]{};
+        DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
+        JTable catalogTable = new JTable(defaultTableModel) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return true;
+            }
+        };
+        alignCatalogColumns(catalogTable, catalogEntry);
+        catalogTable.setAutoCreateRowSorter(true);
+        catalogTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        catalogTable.setRowSorter(createCatalogTableSorter(defaultTableModel, catalogEntry));
+        catalogTable.getRowSorter().toggleSortOrder(0);
+        catalogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        catalogTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if (!e.getValueIsAdjusting()) {
+                String sourceId = (String) catalogTable.getValueAt(catalogTable.getSelectedRow(), 1);
+                CatalogEntry selected = catalogEntries.stream().filter(entry -> {
+                    return entry.getSourceId().equals(sourceId);
+                }).findFirst().get();
+                if (selected != null) {
+                    String coords = selected.getRa() + " " + selected.getDec();
+                    imageViewerTab.setAsyncDownloads(true);
+                    imageViewerTab.getCoordsField().setText(coords);
+                    imageViewerTab.getEpochs().setSelectedItem(Epoch.FIRST_LAST);
+                    tabbedPane.setSelectedIndex(3);
+
+                }
+            }
+        });
+
+        resizeColumnWidth(catalogTable);
+
+        JScrollPane catalogScrollPanel = new JScrollPane(catalogTable);
+        catalogScrollPanel.setBorder(BorderFactory.createTitledBorder(
+                new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
+        ));
+        bottomPanel.addTab(catalogEntry.getCatalogName(), catalogScrollPanel);
     }
 
 }

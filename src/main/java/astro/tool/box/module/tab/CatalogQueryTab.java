@@ -13,7 +13,6 @@ import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
-import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
@@ -58,11 +57,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class CatalogQueryTab {
 
@@ -633,27 +629,6 @@ public class CatalogQueryTab {
         }
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         mainPanel.add(bottomPanel, BorderLayout.PAGE_END);
-    }
-
-    private void alignCatalogColumns(JTable table, CatalogEntry entry) {
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-        List<CatalogElement> elements = entry.getCatalogElements();
-        for (int i = 0; i < elements.size(); i++) {
-            Alignment alignment = elements.get(i).getAlignment();
-            table.getColumnModel().getColumn(i).setCellRenderer(alignment.equals(Alignment.LEFT) ? leftRenderer : rightRenderer);
-        }
-    }
-
-    private TableRowSorter createCatalogTableSorter(DefaultTableModel defaultTableModel, CatalogEntry entry) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
-        List<CatalogElement> elements = entry.getCatalogElements();
-        for (int i = 0; i < elements.size(); i++) {
-            sorter.setComparator(i, elements.get(i).getComparator());
-        }
-        return sorter;
     }
 
     public JPanel getTopPanel() {

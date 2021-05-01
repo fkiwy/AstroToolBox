@@ -5669,7 +5669,8 @@ public class ImageViewerTab {
 
     private double getOverlaySize(int val) {
         int x = decalsCutouts.isSelected() ? 1500 : 300;
-        return zoom / val + x / size;
+        double overlaySize = zoom / val + x / size;
+        return min(overlaySize, 15);
     }
 
     public JCheckBox getBlurImages() {

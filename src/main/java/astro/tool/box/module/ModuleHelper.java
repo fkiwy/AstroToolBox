@@ -27,6 +27,7 @@ import astro.tool.box.container.catalog.VHSCatalogEntry;
 import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
@@ -374,6 +375,27 @@ public class ModuleHelper {
             field.setToolTipText(html(element.getToolTip()));
         }
         panel.add(field);
+    }
+
+    public static void alignCatalogColumns(JTable table, CatalogEntry entry) {
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        List<CatalogElement> elements = entry.getCatalogElements();
+        for (int i = 0; i < elements.size(); i++) {
+            Alignment alignment = elements.get(i).getAlignment();
+            table.getColumnModel().getColumn(i).setCellRenderer(alignment.equals(Alignment.LEFT) ? leftRenderer : rightRenderer);
+        }
+    }
+
+    public static TableRowSorter createCatalogTableSorter(DefaultTableModel defaultTableModel, CatalogEntry entry) {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        List<CatalogElement> elements = entry.getCatalogElements();
+        for (int i = 0; i < elements.size(); i++) {
+            sorter.setComparator(i, elements.get(i).getComparator());
+        }
+        return sorter;
     }
 
     public static void alignResultColumns(JTable table, List<String[]> rows) {

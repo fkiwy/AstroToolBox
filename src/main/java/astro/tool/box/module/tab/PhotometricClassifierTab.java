@@ -63,8 +63,8 @@ public class PhotometricClassifierTab {
     private final ImageViewerTab imageViewerTab;
 
     private final Map<String, CatalogEntry> catalogInstances;
-
     private final CatalogQueryFacade catalogQueryFacade;
+
     private final SpectralTypeLookupService mainSequenceLookupService;
     private final SpectralTypeLookupService brownDwarfsLookupService;
 
@@ -343,7 +343,7 @@ public class PhotometricClassifierTab {
                     return entry.getRowNumber() == rowNumber;
                 }).findFirst().get();
                 if (selected != null) {
-                    String coords = selected.getTargetRa() + " " + selected.getTargetDec();
+                    String coords = selected.getRa() + " " + selected.getDec();
                     imageViewerTab.getCoordsField().setText(coords);
                     catalogQueryTab.getCoordsField().setText(coords);
                     catalogQueryTab.getRadiusField().setText(roundTo2DecNZ(searchRadius));
