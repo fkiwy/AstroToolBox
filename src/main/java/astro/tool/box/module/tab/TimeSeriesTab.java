@@ -282,11 +282,11 @@ public class TimeSeriesTab {
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC1"));
+            bandPanel.add(buildImagePanel(image, "IRAC2"));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC1"));
+            bandPanel.add(buildImagePanel(image, "IRAC3"));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
         if (image != null) {
