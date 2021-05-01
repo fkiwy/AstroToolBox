@@ -368,8 +368,8 @@ public class InfoSheet {
 
             document.add(table);
 
-            document.add(new Paragraph("(**) Uses Eric Mamajek's table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses tables from this paper: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
+            document.add(new Paragraph("(**) Uses colors from: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses colors from: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data and the thin disk scale height of early L types (A. Carnero Rosell)", SMALL_FONT));
 
             document.close();
 

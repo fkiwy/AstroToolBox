@@ -146,6 +146,7 @@ public class TimeSeriesTab {
                         displayDssImages(targetRa, targetDec, fieldOfView);
                         display2MassImages(targetRa, targetDec, fieldOfView);
                         displaySdssImages(targetRa, targetDec, fieldOfView);
+                        displaySpitzerImages(targetRa, targetDec, fieldOfView);
                         displayAllwiseImages(targetRa, targetDec, fieldOfView);
                         displayPs1Images(targetRa, targetDec, fieldOfView);
                         displayDecalsImages(targetRa, targetDec, fieldOfView);
@@ -263,6 +264,41 @@ public class TimeSeriesTab {
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "z-g-u"));
+        }
+
+        if (bandPanel.getComponentCount() > 0) {
+            addFillerPanel(bandPanel);
+            centerPanel.add(bandPanel);
+        }
+    }
+
+    private void displaySpitzerImages(double targetRa, double targetDec, int size) {
+        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        bandPanel.setBorder(createEmptyBorder("Spitzer (SEIP)"));
+
+        BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "IRAC1"));
+        }
+        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "IRAC1"));
+        }
+        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "IRAC1"));
+        }
+        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "IRAC4"));
+        }
+        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "MIPS24"));
+        }
+        image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "3-color"));
         }
 
         if (bandPanel.getComponentCount() > 0) {

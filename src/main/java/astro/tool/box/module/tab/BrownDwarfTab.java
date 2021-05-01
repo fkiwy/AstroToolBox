@@ -6,8 +6,6 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.DistanceLookupResult;
@@ -230,11 +228,11 @@ public class BrownDwarfTab {
         spectralTypePanel.add(scrollPanel);
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(100, 200));
+        remarks.setPreferredSize(new Dimension(500, 200));
         spectralTypePanel.add(remarks);
         remarks.add(new JLabel("Brown dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.BROWN_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        remarks.add(new JLabel("W1-W2, W2-W3, K-W1, J-K, g-r, r-i, i-z, i-y, z-y and M_G"));
+        remarks.add(new JLabel("W1-W2, K-W1, J-K, g-r, r-i, i-z, i-y, z-y, M_G"));
         baseFrame.setVisible(true);
     }
 
@@ -271,10 +269,10 @@ public class BrownDwarfTab {
         distancePanel.add(scrollPanel);
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(100, 200));
+        remarks.setPreferredSize(new Dimension(500, 200));
         distancePanel.add(remarks);
         remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
-        remarks.add(new JLabel("if available: g, r, i, z, y, J, H, K, W1, W2, W3 and G"));
+        remarks.add(new JLabel("if available: g, r, i, z, y, J, H, K, W1, W2, W3, G"));
         remarks.add(new JLabel("Absolute magnitudes are from the brown dwarfs lookup table."));
         baseFrame.setVisible(true);
     }
