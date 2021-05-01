@@ -259,6 +259,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -286,6 +287,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -321,6 +323,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -356,6 +359,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -387,6 +391,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -411,6 +416,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -441,6 +447,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -482,6 +489,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -509,6 +517,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
@@ -539,6 +548,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
         }
     }
 
