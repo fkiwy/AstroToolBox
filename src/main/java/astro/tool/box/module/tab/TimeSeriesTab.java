@@ -367,7 +367,6 @@ public class TimeSeriesTab {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-
         }
     }
 
