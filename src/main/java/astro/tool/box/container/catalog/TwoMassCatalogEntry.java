@@ -89,9 +89,6 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
@@ -405,16 +402,6 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override

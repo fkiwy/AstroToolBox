@@ -149,15 +149,6 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public int getCatalogNumber() {
-        return 0;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-    }
-
-    @Override
     public double getTargetRa() {
         return targetRa;
     }

@@ -74,12 +74,6 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Total proper motion
-    private double tpm;
-
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
@@ -134,7 +128,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("coadd flags W2", String.valueOf(flags_unwise_w2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W1", String.valueOf(flags_info_w1), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W2", String.valueOf(flags_info_w2), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(w1_w2_vg), Alignment.RIGHT, getDoubleComparator(), true));
     }
 
     @Override
@@ -200,7 +194,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(getW1_W2());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(w1_w2_vg);
         return columnValues.split(",", 13);
     }
 
@@ -231,7 +225,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.W1_W2, getW1_W2());
+        colors.put(Color.W1_W2, w1_w2_vg);
         return colors;
     }
 
@@ -280,16 +274,6 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -375,14 +359,6 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
-    }
-
-    public double getW1_W2() {
-        if (mag_w1_vg == 0 || mag_w2_vg == 0) {
-            return 0;
-        } else {
-            return mag_w1_vg - mag_w2_vg;
-        }
     }
 
 }

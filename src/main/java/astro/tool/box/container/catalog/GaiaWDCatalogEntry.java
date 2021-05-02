@@ -107,12 +107,6 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Total proper motion
-    private double tpm;
-
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
@@ -354,16 +348,6 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override

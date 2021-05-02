@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +68,11 @@ public class CatalogQueryTab {
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
 
+    private final Map<String, CatalogEntry> catalogInstances;
+    private final CatalogQueryFacade catalogQueryFacade;
+
+    private final SpectralTypeLookupService spectralTypeLookupService;
+
     private JPanel mainPanel;
     private JPanel topPanel;
     private JPanel centerPanel;
@@ -82,12 +86,7 @@ public class CatalogQueryTab {
     private JTextField wiseViewField;
     private JTextField finderChartField;
     private JTable collectionTable;
-
-    private final CatalogQueryFacade catalogQueryFacade;
-    private final SpectralTypeLookupService spectralTypeLookupService;
-
-    private final Map<String, CatalogEntry> catalogInstances;
-    private final Map<Integer, List<CatalogEntry>> catalogResults;
+    private JTable currentTable;
 
     private CatalogEntry selectedEntry;
 
@@ -105,7 +104,6 @@ public class CatalogQueryTab {
     public CatalogQueryTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
-        catalogResults = new HashMap<>();
         catalogInstances = getCatalogInstances();
         catalogQueryFacade = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
@@ -221,7 +219,6 @@ public class CatalogQueryTab {
                         removeAndRecreateBottomPanel();
 
                         int count = 0;
-                        int catalogNumber = 0;
                         StringBuilder resultsPerCatalog = new StringBuilder();
                         Iterator<String> iter = selectedCatalogs.listIterator();
                         while (iter.hasNext()) {
@@ -229,12 +226,8 @@ public class CatalogQueryTab {
                             catalogQuery.setRa(targetRa);
                             catalogQuery.setDec(targetDec);
                             catalogQuery.setSearchRadius(searchRadius);
-                            catalogQuery.setCatalogNumber(catalogNumber++);
                             int results = queryCatalog(catalogQuery);
                             count += results;
-                            if (results == 0 && catalogNumber > 0) {
-                                catalogNumber--;
-                            }
                             resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
                             if (iter.hasNext()) {
                                 resultsPerCatalog.append("; ");
@@ -296,11 +289,9 @@ public class CatalogQueryTab {
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
             catalogEntry.setTargetDec(catalogQuery.getDec());
-            catalogEntry.setCatalogNumber(catalogQuery.getCatalogNumber());
             catalogEntry.loadCatalogElements();
         });
         if (!catalogEntries.isEmpty()) {
-            catalogResults.put(catalogQuery.getCatalogNumber(), catalogEntries);
             displayCatalogResults(catalogEntries, catalogQuery.getSearchRadius());
         }
         return catalogEntries.size();
@@ -330,16 +321,13 @@ public class CatalogQueryTab {
         catalogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         catalogTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
-                Component[] components = centerPanel.getComponents();
-                for (int i = 0; i < components.length; i++) {
-                    if (i != catalogEntry.getCatalogNumber()) {
-                        Component component = components[i];
-                        if (component != null) {
-                            centerPanel.remove(component);
-                            displayCatalogResults(catalogResults.get(i), degRadius);
-                        }
+                if (currentTable != null && currentTable != catalogTable) {
+                    try {
+                        currentTable.clearSelection();
+                    } catch (Exception ex) {
                     }
                 }
+                currentTable = catalogTable;
                 String sourceId = (String) catalogTable.getValueAt(catalogTable.getSelectedRow(), 1);
                 CatalogEntry selected = catalogEntries.stream().filter(entry -> {
                     return entry.getSourceId().equals(sourceId);
@@ -363,7 +351,7 @@ public class CatalogQueryTab {
         catalogScrollPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
-        centerPanel.add(catalogScrollPanel, catalogEntry.getCatalogNumber());
+        centerPanel.add(catalogScrollPanel);
     }
 
     private void displayLinks(double degRA, double degDE, double degRadius) {

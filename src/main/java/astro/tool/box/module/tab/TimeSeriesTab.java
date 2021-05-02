@@ -67,6 +67,7 @@ public class TimeSeriesTab {
     private JButton searchButton;
     private JTextField coordsField;
     private JTextField fovField;
+    private JTable currentTable;
 
     private double targetRa;
     private double targetDec;
@@ -637,6 +638,13 @@ public class TimeSeriesTab {
         catalogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         catalogTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
+                if (currentTable != null && currentTable != catalogTable) {
+                    try {
+                        currentTable.clearSelection();
+                    } catch (Exception ex) {
+                    }
+                }
+                currentTable = catalogTable;
                 String sourceId = (String) catalogTable.getValueAt(catalogTable.getSelectedRow(), 1);
                 CatalogEntry selected = catalogEntries.stream().filter(entry -> {
                     return entry.getSourceId().equals(sourceId);

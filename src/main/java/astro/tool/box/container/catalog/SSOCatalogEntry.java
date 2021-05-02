@@ -105,9 +105,6 @@ public class SSOCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     private Map<String, Integer> columns;
@@ -294,16 +291,6 @@ public class SSOCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override

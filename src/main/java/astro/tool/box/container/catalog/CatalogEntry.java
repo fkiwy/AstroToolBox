@@ -58,10 +58,6 @@ public interface CatalogEntry {
 
     void setSearchRadius(double searchRadius);
 
-    int getCatalogNumber();
-
-    void setCatalogNumber(int catalogNumber);
-
     double getTargetRa();
 
     void setTargetRa(double targetRa);
