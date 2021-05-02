@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
@@ -47,7 +48,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     private double decMeanErr;
 
     // Modified Julian Date of the mean epoch corresponding to raMean, decMean (equinox J2000)
-    private double epochMean;
+    private LocalDateTime epochMean;
 
     // Number of single epoch detections in all filters
     private int nDetections;
@@ -126,7 +127,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         decMean = toDouble(values[columns.get("decMean")]);
         raMeanErr = toDouble(values[columns.get("raMeanErr")]);
         decMeanErr = toDouble(values[columns.get("decMeanErr")]);
-        epochMean = toDouble(values[columns.get("epochMean")]);
+        epochMean = convertMJDToDateTime(new BigDecimal(values[columns.get("epochMean")]));
         nDetections = toInteger(values[columns.get("nDetections")]);
         gMeanPSFMag = toDouble(values[columns.get("gMeanPSFMag")]);
         gMeanPSFMagErr = toDouble(values[columns.get("gMeanPSFMagErr")]);
@@ -156,7 +157,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec err", roundTo4DecNZ(decMeanErr), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("mean observ. time", convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("mean observ. time", epochMean.format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(nDetections), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(gMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g err", roundTo3DecNZ(gMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
@@ -227,7 +228,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + epochMean.format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
         return columnValues.split(",", 24);
     }
 
@@ -403,6 +404,10 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
+    }
+
+    public LocalDateTime getObsDate() {
+        return epochMean;
     }
 
     public double get_g_r() {

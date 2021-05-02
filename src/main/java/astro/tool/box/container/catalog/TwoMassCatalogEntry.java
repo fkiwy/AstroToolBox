@@ -14,6 +14,7 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.TapProvider;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -487,6 +488,10 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
+    }
+
+    public LocalDateTime getObsDate() {
+        return LocalDateTime.parse(xdate + "T00:00:00");
     }
 
     public double getJ_H() {

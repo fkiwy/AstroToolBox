@@ -1,5 +1,6 @@
 package astro.tool.box.module.tab;
 
+import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
@@ -27,6 +28,7 @@ import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.CatalogQueryService;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -38,6 +40,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import static java.lang.Math.sqrt;
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -61,9 +65,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 
-public class TimeSeriesTab {
+public class ImageSurveyTab {
 
-    private static final String TAB_NAME = "Time Series";
+    private static final String TAB_NAME = "Image Surveys";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -82,11 +86,16 @@ public class TimeSeriesTab {
     private JTextField fovField;
     private JTable currentTable;
 
+    private TwoMassCatalogEntry twoMassEntry;
+    private AllWiseCatalogEntry allWiseEntry;
+    private SdssCatalogEntry sdssEntry;
+    private PanStarrsCatalogEntry panStarrsEntry;
+
     private double targetRa;
     private double targetDec;
     private int fieldOfView;
 
-    public TimeSeriesTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
+    public ImageSurveyTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
@@ -134,6 +143,8 @@ public class TimeSeriesTab {
                     if (bottomPanel.getComponentCount() > 0) {
                         bottomPanel.removeAll();
                     }
+                    twoMassEntry = null;
+                    allWiseEntry = null;
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -234,6 +245,22 @@ public class TimeSeriesTab {
                                             displayCatalogResults(results);
                                         }
                                     }
+                                }
+                                if (twoMassEntry != null && allWiseEntry != null) {
+                                    long days = Duration.between(twoMassEntry.getObsDate(), convertMJDToDateTime(new BigDecimal("55400"))).toDays();
+                                    NumberPair properMotions = calculateProperMotions(
+                                            new NumberPair(twoMassEntry.getRa(), twoMassEntry.getDec()),
+                                            new NumberPair(allWiseEntry.getRa_pm(), allWiseEntry.getDec_pm()),
+                                            0, (int) days, DEG_MAS);
+                                    System.out.println("properMotions=" + properMotions);
+                                }
+                                if (sdssEntry != null && panStarrsEntry != null) {
+                                    long days = Duration.between(sdssEntry.getObsDate(), panStarrsEntry.getObsDate()).toDays();
+                                    NumberPair properMotions = calculateProperMotions(
+                                            new NumberPair(sdssEntry.getRa(), sdssEntry.getDec()),
+                                            new NumberPair(panStarrsEntry.getRa(), panStarrsEntry.getDec()),
+                                            0, (int) days, DEG_MAS);
+                                    System.out.println("properMotions=" + properMotions);
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
@@ -623,6 +650,21 @@ public class TimeSeriesTab {
         });
         if (!catalogEntries.isEmpty()) {
             catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
+            CatalogEntry nearestEntry = catalogEntries.get(0);
+            switch (nearestEntry.getCatalogName()) {
+                case TwoMassCatalogEntry.CATALOG_NAME:
+                    twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
+                    break;
+                case AllWiseCatalogEntry.CATALOG_NAME:
+                    allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
+                    break;
+                case SdssCatalogEntry.CATALOG_NAME:
+                    sdssEntry = (SdssCatalogEntry) nearestEntry;
+                    break;
+                case PanStarrsCatalogEntry.CATALOG_NAME:
+                    panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
+                    break;
+            }
             return catalogEntries;
         }
         return null;
