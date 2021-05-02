@@ -20,7 +20,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -33,6 +32,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -51,7 +51,6 @@ import javax.swing.table.DefaultTableModel;
 public class TimeSeriesTab {
 
     private static final String TAB_NAME = "Time Series";
-    private static final int MAX_IMAGES = 6;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -89,7 +88,8 @@ public class TimeSeriesTab {
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
-            centerPanel = new JPanel(new GridLayout(0, 1));
+            centerPanel = new JPanel();
+            centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
             scrollPanel = new JScrollPane(centerPanel);
             mainPanel.add(scrollPanel, BorderLayout.CENTER);
 
@@ -257,7 +257,7 @@ public class TimeSeriesTab {
     }
 
     private void displayDssImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("DSS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
@@ -286,7 +286,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
             baseFrame.setVisible(true);
@@ -294,7 +293,7 @@ public class TimeSeriesTab {
     }
 
     private void display2MassImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("2MASS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
@@ -315,7 +314,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
             baseFrame.setVisible(true);
@@ -323,7 +321,7 @@ public class TimeSeriesTab {
     }
 
     private void displaySdssImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("SDSS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
@@ -352,7 +350,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -361,7 +358,7 @@ public class TimeSeriesTab {
     }
 
     private void displaySpitzerImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Spitzer (SEIP)"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
@@ -390,7 +387,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -398,7 +394,7 @@ public class TimeSeriesTab {
     }
 
     private void displayAllwiseImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("AllWISE"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
@@ -423,7 +419,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -438,7 +433,7 @@ public class TimeSeriesTab {
         }
 
         // Fetch images for Pan-STARRS filters
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Pan-STARRS"));
 
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
@@ -449,7 +444,6 @@ public class TimeSeriesTab {
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -457,7 +451,7 @@ public class TimeSeriesTab {
     }
 
     private void displayDecalsImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("DECaLS"));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
@@ -481,7 +475,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -489,7 +482,7 @@ public class TimeSeriesTab {
     }
 
     private void displayTimeSeries(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Cross survey time series", Color.RED));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
@@ -524,7 +517,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -532,7 +524,7 @@ public class TimeSeriesTab {
     }
 
     private void displayDecalsTimeSeries(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new GridLayout(1, MAX_IMAGES));
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("DECaLS time series", Color.RED));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr5");
@@ -553,7 +545,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -561,13 +552,13 @@ public class TimeSeriesTab {
     }
 
     private void displayWiseTimeSeries() throws Exception {
-        JPanel bandPanel = new JPanel(new GridLayout(1, 0));
-        bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
-
         FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
         if (flipbook == null) {
             return;
         }
+
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
 
         for (FlipbookComponent component : flipbook) {
             BufferedImage image = imageViewerTab.processImage(component);
@@ -575,7 +566,6 @@ public class TimeSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -609,12 +599,6 @@ public class TimeSeriesTab {
         }
         drawable.draw(g);
         return image;
-    }
-
-    private void addFillerPanel(JPanel bandPanel) {
-        for (int i = bandPanel.getComponentCount(); i < MAX_IMAGES + 1; i++) {
-            bandPanel.add(new JPanel());
-        }
     }
 
     private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {
