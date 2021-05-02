@@ -63,6 +63,7 @@ public class TimeSeriesTab {
     private JPanel mainPanel;
     private JPanel topPanel;
     private JPanel centerPanel;
+    private JScrollPane scrollPanel;
     private JTabbedPane bottomPanel;
     private JButton searchButton;
     private JTextField coordsField;
@@ -83,13 +84,14 @@ public class TimeSeriesTab {
     public void init() {
         try {
             mainPanel = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            tabbedPane.addTab(TAB_NAME, mainPanel);
 
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
             centerPanel = new JPanel(new GridLayout(0, 1));
-            mainPanel.add(centerPanel, BorderLayout.CENTER);
+            scrollPanel = new JScrollPane(centerPanel);
+            mainPanel.add(scrollPanel, BorderLayout.CENTER);
 
             bottomPanel = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
             bottomPanel.setPreferredSize(new Dimension(bottomPanel.getWidth(), 200));
@@ -166,6 +168,19 @@ public class TimeSeriesTab {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
                     } else {
+                        JTextField coordinateField = imageViewerTab.getCoordsField();
+                        ActionListener actionListener = coordinateField.getActionListeners()[0];
+                        coordinateField.removeActionListener(actionListener);
+                        coordinateField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
+                        coordinateField.addActionListener(actionListener);
+                        JTextField sizeField = imageViewerTab.getSizeField();
+                        actionListener = sizeField.getActionListeners()[0];
+                        sizeField.removeActionListener(actionListener);
+                        sizeField.setText(String.valueOf(fieldOfView));
+                        sizeField.addActionListener(actionListener);
+                        imageViewerTab.getZoomSlider().setValue(250);
+                        imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
+
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 displayDssImages(targetRa, targetDec, fieldOfView);
@@ -177,13 +192,14 @@ public class TimeSeriesTab {
                                 displayDecalsImages(targetRa, targetDec, fieldOfView);
                                 displayTimeSeries(targetRa, targetDec, fieldOfView);
                                 displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
-                                displayWiseTimeSeries(targetRa, targetDec, fieldOfView);
+                                displayWiseTimeSeries();
                             } catch (Exception ex) {
                                 showExceptionDialog(baseFrame, ex);
                             }
                             baseFrame.setVisible(true);
                             return null;
                         });
+
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
@@ -259,6 +275,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
             baseFrame.setVisible(true);
         }
     }
@@ -287,6 +304,7 @@ public class TimeSeriesTab {
         if (bandPanel.getComponentCount() > 0) {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
             baseFrame.setVisible(true);
         }
     }
@@ -324,6 +342,8 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+
         }
     }
 
@@ -360,6 +380,7 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -392,6 +413,7 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -417,6 +439,7 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -448,6 +471,7 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -490,6 +514,7 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -518,29 +543,20 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
-    private void displayWiseTimeSeries(double targetRa, double targetDec, int size) throws Exception {
-        imageViewerTab.setAsyncDownloads(false);
-        JTextField coordinateField = imageViewerTab.getCoordsField();
-        ActionListener actionListener = coordinateField.getActionListeners()[0];
-        coordinateField.removeActionListener(actionListener);
-        coordinateField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-        coordinateField.addActionListener(actionListener);
-        JTextField sizeField = imageViewerTab.getSizeField();
-        actionListener = sizeField.getActionListeners()[0];
-        sizeField.removeActionListener(actionListener);
-        sizeField.setText(String.valueOf(size));
-        sizeField.addActionListener(actionListener);
-        imageViewerTab.getZoomSlider().setValue(250);
-        imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
-        imageViewerTab.createFlipbook();
-
+    private void displayWiseTimeSeries() throws Exception {
         JPanel bandPanel = new JPanel(new GridLayout(1, 0));
         bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
 
-        for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
+        FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
+        if (flipbook == null) {
+            return;
+        }
+
+        for (FlipbookComponent component : flipbook) {
             BufferedImage image = imageViewerTab.processImage(component);
             bandPanel.add(buildImagePanel(image, component.getTitle(), Shape.CROSS, 2));
         }
@@ -549,6 +565,7 @@ public class TimeSeriesTab {
             addFillerPanel(bandPanel);
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -592,6 +609,7 @@ public class TimeSeriesTab {
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
             catalogEntry.setTargetDec(catalogQuery.getDec());
+            catalogEntry.loadCatalogElements();
         });
         if (!catalogEntries.isEmpty()) {
             catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
@@ -619,7 +637,6 @@ public class TimeSeriesTab {
         catalogTable.setAutoCreateRowSorter(true);
         catalogTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         catalogTable.setRowSorter(createCatalogTableSorter(defaultTableModel, catalogEntry));
-        catalogTable.getRowSorter().toggleSortOrder(0);
         catalogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         catalogTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
@@ -629,9 +646,7 @@ public class TimeSeriesTab {
                 }).findFirst().get();
                 if (selected != null) {
                     String coords = selected.getRa() + " " + selected.getDec();
-                    imageViewerTab.setAsyncDownloads(true);
                     imageViewerTab.getCoordsField().setText(coords);
-                    imageViewerTab.getEpochs().setSelectedItem(Epoch.FIRST_LAST);
                     tabbedPane.setSelectedIndex(3);
                 }
             }
