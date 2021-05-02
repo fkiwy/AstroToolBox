@@ -114,9 +114,6 @@ public class TimeSeriesTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    fovField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     if (centerPanel.getComponentCount() > 0) {
                         centerPanel.removeAll();
                     }
@@ -157,6 +154,9 @@ public class TimeSeriesTab {
                     }
                     try {
                         fieldOfView = Integer.valueOf(fov);
+                        if (fieldOfView < 10) {
+                            errorMessages.add("Field of view must not be smaller than 10 arcsec.");
+                        }
                         if (fieldOfView > 300) {
                             errorMessages.add("Field of view must not be larger than 300 arcsec.");
                         }
@@ -168,6 +168,7 @@ public class TimeSeriesTab {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
                     } else {
+                        imageViewerTab.setWaitCursor(false);
                         JTextField coordinateField = imageViewerTab.getCoordsField();
                         ActionListener actionListener = coordinateField.getActionListeners()[0];
                         coordinateField.removeActionListener(actionListener);
@@ -183,6 +184,7 @@ public class TimeSeriesTab {
 
                         CompletableFuture.supplyAsync(() -> {
                             try {
+                                setWaitCursor();
                                 displayDssImages(targetRa, targetDec, fieldOfView);
                                 display2MassImages(targetRa, targetDec, fieldOfView);
                                 displaySdssImages(targetRa, targetDec, fieldOfView);
@@ -193,10 +195,13 @@ public class TimeSeriesTab {
                                 displayTimeSeries(targetRa, targetDec, fieldOfView);
                                 displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
                                 displayWiseTimeSeries();
+                                baseFrame.setVisible(true);
                             } catch (Exception ex) {
                                 showExceptionDialog(baseFrame, ex);
+                            } finally {
+                                imageViewerTab.setWaitCursor(true);
+                                setDefaultCursor();
                             }
-                            baseFrame.setVisible(true);
                             return null;
                         });
 
@@ -216,19 +221,15 @@ public class TimeSeriesTab {
                                         }
                                     }
                                 }
+                                baseFrame.setVisible(true);
                             } catch (Exception ex) {
                                 showExceptionDialog(baseFrame, ex);
                             }
-                            baseFrame.setVisible(true);
                             return null;
                         });
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
-                } finally {
-                    baseFrame.setCursor(Cursor.getDefaultCursor());
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                    fovField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                 }
             });
 
@@ -241,6 +242,18 @@ public class TimeSeriesTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
+    }
+
+    private void setWaitCursor() {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        fovField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    }
+
+    private void setDefaultCursor() {
+        baseFrame.setCursor(Cursor.getDefaultCursor());
+        coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+        fovField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
     }
 
     private void displayDssImages(double targetRa, double targetDec, int size) {

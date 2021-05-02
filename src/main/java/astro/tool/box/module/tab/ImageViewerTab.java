@@ -412,6 +412,7 @@ public class ImageViewerTab {
     private boolean panstarrsImages;
     private boolean sdssImages;
     private boolean dssImages;
+    private boolean waitCursor = true;
 
     public static final List<String> BROWN_DWARFS = new ArrayList<>();
 
@@ -3071,7 +3072,9 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
-            baseFrame.setCursor(Cursor.getDefaultCursor());
+            if (waitCursor) {
+                baseFrame.setCursor(Cursor.getDefaultCursor());
+            }
         }
         return true;
     }
@@ -5804,6 +5807,10 @@ public class ImageViewerTab {
 
     public void setDssImages(boolean dssImages) {
         this.dssImages = dssImages;
+    }
+
+    public void setWaitCursor(boolean waitCursor) {
+        this.waitCursor = waitCursor;
     }
 
 }
