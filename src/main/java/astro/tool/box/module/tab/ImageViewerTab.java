@@ -27,13 +27,13 @@ import astro.tool.box.container.catalog.GenericCatalogEntry;
 import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.ProperMotionQuery;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
-import astro.tool.box.container.catalog.SSOCatalogEntry;
+import astro.tool.box.container.catalog.SdssCatalogEntry;
+import astro.tool.box.container.catalog.SsoCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.TessCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
-import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.catalog.VhsCatalogEntry;
 import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -3429,7 +3429,7 @@ public class ImageViewerTab {
             if (sdssEntries == null) {
                 sdssEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry());
+                    sdssEntries = fetchCatalogEntries(new SdssCatalogEntry());
                     processImages();
                     return null;
                 });
@@ -3441,7 +3441,7 @@ public class ImageViewerTab {
             if (sdssEntries == null) {
                 sdssEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    sdssEntries = fetchCatalogEntries(new SDSSCatalogEntry());
+                    sdssEntries = fetchCatalogEntries(new SdssCatalogEntry());
                     processImages();
                     return null;
                 });
@@ -3453,7 +3453,7 @@ public class ImageViewerTab {
             if (vhsEntries == null) {
                 vhsEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    vhsEntries = fetchCatalogEntries(new VHSCatalogEntry());
+                    vhsEntries = fetchCatalogEntries(new VhsCatalogEntry());
                     processImages();
                     return null;
                 });
@@ -3501,7 +3501,7 @@ public class ImageViewerTab {
             if (ssoEntries == null) {
                 ssoEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    ssoEntries = fetchCatalogEntries(new SSOCatalogEntry());
+                    ssoEntries = fetchCatalogEntries(new SsoCatalogEntry());
                     processImages();
                     return null;
                 });
@@ -5183,7 +5183,7 @@ public class ImageViewerTab {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
-            SDSSCatalogEntry sdssCatalogEntry = (SDSSCatalogEntry) catalogEntry;
+            SdssCatalogEntry sdssCatalogEntry = (SdssCatalogEntry) catalogEntry;
             if (!sdssCatalogEntry.getSpecObjID().equals(new BigInteger("0"))) {
                 Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), JColor.OLIVE.val);
                 toDraw.draw(graphics);
@@ -5194,7 +5194,7 @@ public class ImageViewerTab {
     private void showSpectrumInfo(List<CatalogEntry> catalogEntries, int x, int y) {
         catalogEntries.forEach(catalogEntry -> {
             double radius = getOverlaySize() / 2;
-            SDSSCatalogEntry sdssCatalogEntry = (SDSSCatalogEntry) catalogEntry;
+            SdssCatalogEntry sdssCatalogEntry = (SdssCatalogEntry) catalogEntry;
             if (!sdssCatalogEntry.getSpecObjID().equals(new BigInteger("0"))
                     && catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
@@ -5206,7 +5206,7 @@ public class ImageViewerTab {
     private void displaySdssSpectrum(CatalogEntry catalogEntry) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            SDSSCatalogEntry SDSSCatalogEntry = (SDSSCatalogEntry) catalogEntry;
+            SdssCatalogEntry SDSSCatalogEntry = (SdssCatalogEntry) catalogEntry;
             String spectrumUrl = SDSS_BASE_URL + "/en/get/specById.ashx?ID=" + SDSSCatalogEntry.getSpecObjID();
             HttpURLConnection connection = establishHttpConnection(spectrumUrl);
             BufferedImage spectrum;
@@ -5424,7 +5424,7 @@ public class ImageViewerTab {
     }
 
     private void displayCatalogPanel(CatalogEntry catalogEntry, Color color) {
-        boolean simpleLayout = catalogEntry instanceof GenericCatalogEntry || catalogEntry instanceof SSOCatalogEntry;
+        boolean simpleLayout = catalogEntry instanceof GenericCatalogEntry || catalogEntry instanceof SsoCatalogEntry;
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
 
         int elements = catalogElements.size();
@@ -5730,6 +5730,58 @@ public class ImageViewerTab {
 
     public JCheckBox getDecalsCutouts() {
         return decalsCutouts;
+    }
+
+    public JCheckBox getSimbadOverlay() {
+        return simbadOverlay;
+    }
+
+    public JCheckBox getGaiaOverlay() {
+        return gaiaOverlay;
+    }
+
+    public JCheckBox getGaiaDR3Overlay() {
+        return gaiaDR3Overlay;
+    }
+
+    public JCheckBox getAllWiseOverlay() {
+        return allWiseOverlay;
+    }
+
+    public JCheckBox getCatWiseOverlay() {
+        return catWiseOverlay;
+    }
+
+    public JCheckBox getUnWiseOverlay() {
+        return unWiseOverlay;
+    }
+
+    public JCheckBox getPanStarrsOverlay() {
+        return panStarrsOverlay;
+    }
+
+    public JCheckBox getSdssOverlay() {
+        return sdssOverlay;
+    }
+
+    public JCheckBox getTwoMassOverlay() {
+        return twoMassOverlay;
+    }
+
+    public JCheckBox getVhsOverlay() {
+        return vhsOverlay;
+    }
+
+    public JCheckBox getGaiaWDOverlay() {
+        return gaiaWDOverlay;
+    }
+
+    public JCheckBox getNoirlabOverlay() {
+        return noirlabOverlay;
+    }
+
+    public JCheckBox getTessOverlay() {
+        return tessOverlay;
     }
 
     public Timer getTimer() {

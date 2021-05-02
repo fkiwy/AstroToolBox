@@ -5,7 +5,7 @@ import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
+import astro.tool.box.container.catalog.SdssCatalogEntry;
 import astro.tool.box.module.tab.AdqlQueryTab;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class ServiceProviderUtils {
 
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(response));
-        if (catalogEntry instanceof SDSSCatalogEntry) {
+        if (catalogEntry instanceof SdssCatalogEntry) {
             reader.readLine();
         }
         String headerLine = reader.readLine();

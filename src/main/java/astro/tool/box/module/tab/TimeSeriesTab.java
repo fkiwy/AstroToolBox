@@ -1,18 +1,31 @@
 package astro.tool.box.module.tab;
 
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.container.catalog.NoirlabCatalogEntry;
+import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.SdssCatalogEntry;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.TessCatalogEntry;
+import astro.tool.box.container.catalog.TwoMassCatalogEntry;
+import astro.tool.box.container.catalog.UnWiseCatalogEntry;
+import astro.tool.box.container.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.facade.CatalogQueryFacade;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
-import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
 import astro.tool.box.service.CatalogQueryService;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -650,8 +663,7 @@ public class TimeSeriesTab {
                     return entry.getSourceId().equals(sourceId);
                 }).findFirst().get();
                 if (selected != null) {
-                    String coords = selected.getRa() + " " + selected.getDec();
-                    imageViewerTab.getCoordsField().setText(coords);
+                    activateSelectedCatalogOverlay(imageViewerTab, selected);
                     tabbedPane.setSelectedIndex(3);
                 }
             }
@@ -664,6 +676,52 @@ public class TimeSeriesTab {
                 new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
         bottomPanel.addTab(catalogEntry.getCatalogName(), catalogScrollPanel);
+    }
+
+    private void activateSelectedCatalogOverlay(ImageViewerTab imageViewerTab, CatalogEntry selected) {
+        switch (selected.getCatalogName()) {
+            case SimbadCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getSimbadOverlay().setSelected(true);
+                break;
+            case GaiaCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getGaiaOverlay().setSelected(true);
+                break;
+            case GaiaDR3CatalogEntry.CATALOG_NAME:
+                imageViewerTab.getGaiaDR3Overlay().setSelected(true);
+                break;
+            case AllWiseCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getAllWiseOverlay().setSelected(true);
+                break;
+            case CatWiseCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getCatWiseOverlay().setSelected(true);
+                break;
+            case UnWiseCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getUnWiseOverlay().setSelected(true);
+                break;
+            case PanStarrsCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getPanStarrsOverlay().setSelected(true);
+                break;
+            case SdssCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getSdssOverlay().setSelected(true);
+                break;
+            case TwoMassCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getTwoMassOverlay().setSelected(true);
+                break;
+            case VhsCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getVhsOverlay().setSelected(true);
+                break;
+            case GaiaWDCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getGaiaWDOverlay().setSelected(true);
+                break;
+            case NoirlabCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getNoirlabOverlay().setSelected(true);
+                break;
+            case TessCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getTessOverlay().setSelected(true);
+                break;
+
+        }
+
     }
 
 }
