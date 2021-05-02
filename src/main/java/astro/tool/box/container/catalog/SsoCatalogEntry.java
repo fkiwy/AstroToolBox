@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-//
+
 public class SsoCatalogEntry implements CatalogEntry {
 
     public static final String CATALOG_NAME = "Solar System Objects";
