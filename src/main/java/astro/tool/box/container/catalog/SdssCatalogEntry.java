@@ -16,6 +16,7 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,21 +28,6 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     // Unique object identifier
     private long objID;
-
-    // Run number
-    private int run;
-
-    // Rerun number
-    private int rerun;
-
-    // Camera column
-    private int camcol;
-
-    // Field number
-    private int field;
-
-    // Object number within a field (usually changes between reruns of the same field)
-    private int obj;
 
     // J2000 Right Ascension (r-band)
     private double ra;
@@ -62,7 +48,7 @@ public class SdssCatalogEntry implements CatalogEntry {
     private int clean;
 
     // Date of observation
-    private int mjd;
+    private LocalDateTime mjd;
 
     // Pointer to the spectrum of object, if exists, else 0
     private BigInteger specObjID;
@@ -130,18 +116,13 @@ public class SdssCatalogEntry implements CatalogEntry {
         this.columns = columns;
         this.values = values;
         objID = toLong(values[columns.get("objid")]);
-        run = toInteger(values[columns.get("run")]);
-        rerun = toInteger(values[columns.get("rerun")]);
-        camcol = toInteger(values[columns.get("camcol")]);
-        field = toInteger(values[columns.get("field")]);
-        obj = toInteger(values[columns.get("obj")]);
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
         raErr = toDouble(values[columns.get("raErr")]);
         decErr = toDouble(values[columns.get("decErr")]);
         type = toInteger(values[columns.get("type")]);
         clean = toInteger(values[columns.get("clean")]);
-        mjd = toInteger(values[columns.get("mjd")]);
+        mjd = convertMJDToDateTime(new BigDecimal(values[columns.get("mjd")]));
         specObjID = new BigInteger(values[columns.get("specObjID")]);
         u_mag = toDouble(values[columns.get("u")]);
         u_err = toDouble(values[columns.get("Err_u")]);
@@ -170,7 +151,7 @@ public class SdssCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dec err", roundTo7DecNZ(decErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("object type", getSdssObjectType(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("photometry flag", getSdssPhotometryFlag(clean), Alignment.LEFT, getStringComparator(), true));
-        catalogElements.add(new CatalogElement("observation date", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("observation date", mjd.format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("spectrum pointer", String.valueOf(specObjID), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
@@ -232,7 +213,7 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(raErr) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(decErr) + "," + getSdssObjectType(type) + "," + getSdssPhotometryFlag(clean) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(raErr) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(decErr) + "," + getSdssObjectType(type) + "," + getSdssPhotometryFlag(clean) + "," + mjd.format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
         return columnValues.split(",", 24);
     }
 
@@ -416,6 +397,10 @@ public class SdssCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
+    }
+
+    public LocalDateTime getObsDate() {
+        return mjd;
     }
 
     public BigInteger getSpecObjID() {
