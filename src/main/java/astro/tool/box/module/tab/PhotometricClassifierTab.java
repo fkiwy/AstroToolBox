@@ -3,7 +3,7 @@ package astro.tool.box.module.tab;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
-import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.NumberPair;
@@ -325,12 +325,7 @@ public class PhotometricClassifierTab {
         Object[] columns = result.getColumnTitles();
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -373,13 +368,7 @@ public class PhotometricClassifierTab {
         String[] columns = titles.split(",", 2);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(spectralTypes.toArray(rows), columns);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
-
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, spectralTypes);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

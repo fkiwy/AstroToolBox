@@ -183,12 +183,7 @@ public class WhiteDwarfTab {
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(resultRows.toArray(rows), columns);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, resultRows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

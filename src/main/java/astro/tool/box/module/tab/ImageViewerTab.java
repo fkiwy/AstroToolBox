@@ -5578,12 +5578,7 @@ public class ImageViewerTab {
         String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
         String[] columns = titles.split(",", 7);
         Object[][] rows = new Object[][]{};
-        JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
         alignResultColumns(spectralTypeTable, spectralTypes);
         spectralTypeTable.setAutoCreateRowSorter(true);
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -5617,12 +5612,7 @@ public class ImageViewerTab {
         String titles = "spt,matched color,nearest color,offset";
         String[] columns = titles.split(",", 4);
         Object[][] rows = new Object[][]{};
-        JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
         alignResultColumns(spectralTypeTable, spectralTypes);
         spectralTypeTable.setAutoCreateRowSorter(true);
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

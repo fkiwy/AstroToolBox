@@ -488,12 +488,7 @@ public class BatchQueryTab {
         Object[] columns = result.getColumnTitles();
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

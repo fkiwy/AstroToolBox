@@ -336,12 +336,7 @@ public class FileBrowserTab {
     private void displayQueryResults(String[] columnNames, List<String[]> rows) {
         Object[][] data = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
-        resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, rows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

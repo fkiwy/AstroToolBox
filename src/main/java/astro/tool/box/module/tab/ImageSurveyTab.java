@@ -1,10 +1,11 @@
 package astro.tool.box.module.tab;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
-import static astro.tool.box.module.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.*;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -28,7 +29,6 @@ import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.CatalogQueryService;
-import static astro.tool.box.util.ConversionFactors.DEG_MAS;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -64,6 +64,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 public class ImageSurveyTab {
 
@@ -90,6 +91,7 @@ public class ImageSurveyTab {
     private AllWiseCatalogEntry allWiseEntry;
     private SdssCatalogEntry sdssEntry;
     private PanStarrsCatalogEntry panStarrsEntry;
+    private GaiaDR3CatalogEntry gaiaDR3Entry;
 
     private double targetRa;
     private double targetDec;
@@ -246,13 +248,20 @@ public class ImageSurveyTab {
                                         }
                                     }
                                 }
+                                List<String[]> resultRows = new ArrayList<>();
                                 if (twoMassEntry != null && allWiseEntry != null) {
                                     long days = Duration.between(twoMassEntry.getObsDate(), convertMJDToDateTime(new BigDecimal("55400"))).toDays();
                                     NumberPair properMotions = calculateProperMotions(
                                             new NumberPair(twoMassEntry.getRa(), twoMassEntry.getDec()),
                                             new NumberPair(allWiseEntry.getRa_pm(), allWiseEntry.getDec_pm()),
                                             0, (int) days, DEG_MAS);
-                                    System.out.println("properMotions=" + properMotions);
+                                    double pmRA = properMotions.getX();
+                                    double pmDE = properMotions.getY();
+                                    double tpm = calculateTotalProperMotion(pmRA, pmDE);
+                                    resultRows.add(new String[]{
+                                        "Proper motions calculated from 2MASS and AllWISE coordinates:",
+                                        roundTo3Dec(pmRA), roundTo3Dec(pmDE), roundTo3Dec(tpm)
+                                    });
                                 }
                                 if (sdssEntry != null && panStarrsEntry != null) {
                                     long days = Duration.between(sdssEntry.getObsDate(), panStarrsEntry.getObsDate()).toDays();
@@ -260,7 +269,35 @@ public class ImageSurveyTab {
                                             new NumberPair(sdssEntry.getRa(), sdssEntry.getDec()),
                                             new NumberPair(panStarrsEntry.getRa(), panStarrsEntry.getDec()),
                                             0, (int) days, DEG_MAS);
-                                    System.out.println("properMotions=" + properMotions);
+                                    double pmRA = properMotions.getX();
+                                    double pmDE = properMotions.getY();
+                                    double tpm = calculateTotalProperMotion(pmRA, pmDE);
+                                    resultRows.add(new String[]{"Proper motions calculated from SDSS and Pan-STARRS coordinates:",
+                                        roundTo3Dec(pmRA), roundTo3Dec(pmDE), roundTo3Dec(tpm)
+                                    });
+                                }
+                                if (gaiaDR3Entry != null) {
+                                    resultRows.add(new String[]{
+                                        "Proper motions from " + gaiaDR3Entry.getCatalogName() + ":",
+                                        roundTo3Dec(gaiaDR3Entry.getPmra()),
+                                        roundTo3Dec(gaiaDR3Entry.getPmdec()),
+                                        roundTo3Dec(gaiaDR3Entry.getTotalProperMotion())
+                                    });
+                                }
+                                if (!resultRows.isEmpty()) {
+                                    String titles = ",pmRA (mas/yr),pmDE (mas/yr),tpm (mas/yr)";
+                                    String[] columns = titles.split(",", 4);
+                                    Object[][] rows = new Object[][]{};
+                                    JTable resultTable = new JTable(resultRows.toArray(rows), columns);
+                                    alignResultColumns(resultTable, resultRows);
+                                    resultTable.setAutoCreateRowSorter(true);
+                                    resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                                    TableColumnModel columnModel = resultTable.getColumnModel();
+                                    columnModel.getColumn(0).setPreferredWidth(380);
+                                    columnModel.getColumn(1).setPreferredWidth(100);
+                                    columnModel.getColumn(2).setPreferredWidth(100);
+                                    columnModel.getColumn(3).setPreferredWidth(100);
+                                    bottomPanel.addTab("Proper motion estimate", new JScrollPane(resultTable));
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
@@ -664,6 +701,9 @@ public class ImageSurveyTab {
                 case PanStarrsCatalogEntry.CATALOG_NAME:
                     panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
                     break;
+                case GaiaDR3CatalogEntry.CATALOG_NAME:
+                    gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
+                    break;
             }
             return catalogEntries;
         }
@@ -679,12 +719,7 @@ public class ImageSurveyTab {
         Object[] columns = catalogEntry.getColumnTitles();
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
-        JTable catalogTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable catalogTable = new JTable(defaultTableModel);
         alignCatalogColumns(catalogTable, catalogEntry);
         catalogTable.setAutoCreateRowSorter(true);
         catalogTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

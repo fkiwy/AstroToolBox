@@ -563,13 +563,7 @@ public class AdqlQueryTab {
     private JScrollPane displayQueryResults(TableRowSorter<TableModel> sorter, String[] columnNames, List<String[]> rows, String panelName) {
         Object[][] data = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
-
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, rows);
         addComparatorsToTableSorter(sorter, defaultTableModel, rows);
         resultTable.setAutoCreateRowSorter(true);

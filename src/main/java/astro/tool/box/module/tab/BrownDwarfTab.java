@@ -187,12 +187,7 @@ public class BrownDwarfTab {
         String titles = "spt,matched color,nearest color,offset";
         String[] columns = titles.split(",", 4);
         Object[][] rows = new Object[][]{};
-        JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(resultRows.toArray(rows), columns);
         alignResultColumns(resultTable, resultRows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -247,12 +242,7 @@ public class BrownDwarfTab {
         String titles = "distance (pc),matched bands";
         String[] columns = titles.split(",", 2);
         Object[][] rows = new Object[][]{};
-        JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(resultRows.toArray(rows), columns);
         alignResultColumns(resultTable, resultRows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

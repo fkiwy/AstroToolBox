@@ -300,12 +300,7 @@ public class ObjectCollectionTab {
     private void displayQueryResults(String[] columnNames, List<String[]> rows) {
         Object[][] data = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
-        resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        resultTable = new JTable(defaultTableModel);
 
         // Save sort keys
         List sortKeys = objectCollectionSorter.getSortKeys();
