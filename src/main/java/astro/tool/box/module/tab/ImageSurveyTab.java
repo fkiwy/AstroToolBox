@@ -29,6 +29,7 @@ import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.CatalogQueryService;
+import com.itextpdf.text.pdf.FloatLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -260,7 +261,11 @@ public class ImageSurveyTab {
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
                                         "Proper motions calculated from 2MASS and AllWISE coordinates:",
-                                        roundTo3Dec(pmRA), roundTo3Dec(pmDE), roundTo3Dec(tpm)
+                                        twoMassEntry.getSourceId(),
+                                        roundTo3DecLZ(twoMassEntry.getTargetDistance()),
+                                        allWiseEntry.getSourceId(),
+                                        roundTo3DecLZ(allWiseEntry.getTargetDistance()),
+                                        roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
                                     });
                                 }
                                 if (sdssEntry != null && panStarrsEntry != null) {
@@ -272,21 +277,29 @@ public class ImageSurveyTab {
                                     double pmRA = properMotions.getX();
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
-                                    resultRows.add(new String[]{"Proper motions calculated from SDSS and Pan-STARRS coordinates:",
-                                        roundTo3Dec(pmRA), roundTo3Dec(pmDE), roundTo3Dec(tpm)
+                                    resultRows.add(new String[]{
+                                        "Proper motions calculated from SDSS and Pan-STARRS coordinates:",
+                                        sdssEntry.getSourceId(),
+                                        roundTo3DecLZ(sdssEntry.getTargetDistance()),
+                                        panStarrsEntry.getSourceId(),
+                                        roundTo3DecLZ(panStarrsEntry.getTargetDistance()),
+                                        roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
                                     });
                                 }
                                 if (gaiaDR3Entry != null) {
                                     resultRows.add(new String[]{
                                         "Proper motions from " + gaiaDR3Entry.getCatalogName() + ":",
-                                        roundTo3Dec(gaiaDR3Entry.getPmra()),
-                                        roundTo3Dec(gaiaDR3Entry.getPmdec()),
-                                        roundTo3Dec(gaiaDR3Entry.getTotalProperMotion())
+                                        gaiaDR3Entry.getSourceId(),
+                                        roundTo3DecLZ(gaiaDR3Entry.getTargetDistance()),
+                                        "", "",
+                                        roundTo3DecLZ(gaiaDR3Entry.getPmra()),
+                                        roundTo3DecLZ(gaiaDR3Entry.getPmdec()),
+                                        roundTo3DecLZ(gaiaDR3Entry.getTotalProperMotion())
                                     });
                                 }
                                 if (!resultRows.isEmpty()) {
-                                    String titles = ",pmRA (mas/yr),pmDE (mas/yr),tpm (mas/yr)";
-                                    String[] columns = titles.split(",", 4);
+                                    String titles = ",source id 1,dist 1 (arcsec),source id 2,dist 2 (arcsec),pmRA (mas/yr),pmDE (mas/yr),tpm (mas/yr)";
+                                    String[] columns = titles.split(",", 8);
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     alignResultColumns(resultTable, resultRows);
@@ -294,10 +307,20 @@ public class ImageSurveyTab {
                                     resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
                                     TableColumnModel columnModel = resultTable.getColumnModel();
                                     columnModel.getColumn(0).setPreferredWidth(380);
-                                    columnModel.getColumn(1).setPreferredWidth(100);
+                                    columnModel.getColumn(1).setPreferredWidth(150);
                                     columnModel.getColumn(2).setPreferredWidth(100);
-                                    columnModel.getColumn(3).setPreferredWidth(100);
-                                    bottomPanel.addTab("Proper motion estimate", new JScrollPane(resultTable));
+                                    columnModel.getColumn(3).setPreferredWidth(150);
+                                    columnModel.getColumn(4).setPreferredWidth(100);
+                                    columnModel.getColumn(5).setPreferredWidth(100);
+                                    columnModel.getColumn(6).setPreferredWidth(100);
+                                    columnModel.getColumn(7).setPreferredWidth(100);
+                                    JPanel container = new JPanel();
+                                    container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+                                    container.add(new JScrollPane(resultTable));
+                                    JPanel warning = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                                    warning.add(new JLabel(html("<span style='color:red'>Check if the sources used to calculate the proper motions correspond the same object!</span>")));
+                                    container.add(warning);
+                                    bottomPanel.addTab("Proper motion estimate", container);
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
