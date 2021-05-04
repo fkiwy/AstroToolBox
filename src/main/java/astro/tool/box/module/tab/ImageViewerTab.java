@@ -289,6 +289,7 @@ public class ImageViewerTab {
     private JCheckBox allSkyImages;
     private JCheckBox twoMassImages;
     private JCheckBox sloanImages;
+    private JCheckBox spitzerImages;
     private JCheckBox allwiseImages;
     private JCheckBox ps1Images;
     private JCheckBox decalsImages;
@@ -1197,6 +1198,12 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
+            spitzerImages = new JCheckBox("Spitzer CH1, CH2, CH3, CH4, MIPS24", false);
+            mouseControlPanel.add(spitzerImages);
+            spitzerImages.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
             allwiseImages = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
             mouseControlPanel.add(allwiseImages);
             allwiseImages.addActionListener((ActionEvent evt) -> {
@@ -1222,6 +1229,7 @@ public class ImageViewerTab {
                     allSkyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
+                    spitzerImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
                     decalsImages.setSelected(false);
@@ -1237,6 +1245,7 @@ public class ImageViewerTab {
                     allSkyImages.setSelected(true);
                     twoMassImages.setSelected(true);
                     sloanImages.setSelected(true);
+                    spitzerImages.setSelected(true);
                     allwiseImages.setSelected(true);
                     ps1Images.setSelected(true);
                     decalsImages.setSelected(true);
@@ -1245,6 +1254,7 @@ public class ImageViewerTab {
                     allSkyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
+                    spitzerImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
                     decalsImages.setSelected(false);
@@ -1260,6 +1270,7 @@ public class ImageViewerTab {
                     allSkyImages.setSelected(false);
                     twoMassImages.setSelected(false);
                     sloanImages.setSelected(false);
+                    spitzerImages.setSelected(false);
                     allwiseImages.setSelected(false);
                     ps1Images.setSelected(false);
                     decalsImages.setSelected(false);
@@ -1873,6 +1884,9 @@ public class ImageViewerTab {
                                                 if (sloanImages.isSelected()) {
                                                     numberOfPanels++;
                                                 }
+                                                if (spitzerImages.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
                                                 if (allwiseImages.isSelected()) {
                                                     numberOfPanels++;
                                                 }
@@ -1903,6 +1917,9 @@ public class ImageViewerTab {
                                                 }
                                                 if (sloanImages.isSelected()) {
                                                     displaySdssImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (spitzerImages.isSelected()) {
+                                                    displaySpitzerImages(newRa, newDec, fieldOfView, counter);
                                                 }
                                                 if (allwiseImages.isSelected()) {
                                                     displayAllwiseImages(newRa, newDec, fieldOfView, counter);
@@ -4687,6 +4704,58 @@ public class ImageViewerTab {
         }
     }
 
+    private void displaySpitzerImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            JPanel bandPanel = new JPanel(new GridLayout(1, 5));
+
+            BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "IRAC1"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "IRAC2"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "IRAC3"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "IRAC4"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "MIPS24"));
+            }
+            image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "3-color"));
+            }
+
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle("Spitzer (SEIP) - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.total());
+            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void displayAllwiseImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -4834,6 +4903,10 @@ public class ImageViewerTab {
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, "SDSS - z"));
             }
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            if (image != null) {
+                bandPanel.add(buildImagePanel(image, "Spitzer - CH4"));
+            }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, "WISE - W2"));
@@ -4892,6 +4965,12 @@ public class ImageViewerTab {
                 image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("SDSS - z", image));
+                }
+            }
+            if (spitzerImages.isSelected()) {
+                image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+                if (image != null) {
+                    imageList.add(new Couple("Spitzer - CH4", image));
                 }
             }
             if (allwiseImages.isSelected()) {
