@@ -29,7 +29,6 @@ import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.CatalogQueryService;
-import com.itextpdf.text.pdf.FloatLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -64,12 +63,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class ImageSurveyTab {
+public class MotionChecker {
 
-    private static final String TAB_NAME = "Image Surveys";
+    private static final String TAB_NAME = "Motion Checker";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -93,12 +93,14 @@ public class ImageSurveyTab {
     private SdssCatalogEntry sdssEntry;
     private PanStarrsCatalogEntry panStarrsEntry;
     private GaiaDR3CatalogEntry gaiaDR3Entry;
+    private CatWiseCatalogEntry catWiseEntry;
+    private NoirlabCatalogEntry noirlabEntry;
 
     private double targetRa;
     private double targetDec;
     private int fieldOfView;
 
-    public ImageSurveyTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
+    public MotionChecker(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
@@ -260,11 +262,9 @@ public class ImageSurveyTab {
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
-                                        "Proper motions calculated from 2MASS and AllWISE coordinates:",
+                                        "Calculated from 2MASS and AllWISE coordinates:",
                                         twoMassEntry.getSourceId(),
-                                        roundTo3DecLZ(twoMassEntry.getTargetDistance()),
                                         allWiseEntry.getSourceId(),
-                                        roundTo3DecLZ(allWiseEntry.getTargetDistance()),
                                         roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
                                     });
                                 }
@@ -278,49 +278,41 @@ public class ImageSurveyTab {
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
-                                        "Proper motions calculated from SDSS and Pan-STARRS coordinates:",
+                                        "Calculated from SDSS and Pan-STARRS coordinates:",
                                         sdssEntry.getSourceId(),
-                                        roundTo3DecLZ(sdssEntry.getTargetDistance()),
                                         panStarrsEntry.getSourceId(),
-                                        roundTo3DecLZ(panStarrsEntry.getTargetDistance()),
                                         roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
                                     });
                                 }
-                                if (gaiaDR3Entry != null) {
-                                    resultRows.add(new String[]{
-                                        "Proper motions from " + gaiaDR3Entry.getCatalogName() + ":",
-                                        gaiaDR3Entry.getSourceId(),
-                                        roundTo3DecLZ(gaiaDR3Entry.getTargetDistance()),
-                                        "", "",
-                                        roundTo3DecLZ(gaiaDR3Entry.getPmra()),
-                                        roundTo3DecLZ(gaiaDR3Entry.getPmdec()),
-                                        roundTo3DecLZ(gaiaDR3Entry.getTotalProperMotion())
-                                    });
-                                }
+                                addProperMotionEntry(gaiaDR3Entry, resultRows);
+                                addProperMotionEntry(catWiseEntry, resultRows);
+                                addProperMotionEntry(noirlabEntry, resultRows);
                                 if (!resultRows.isEmpty()) {
-                                    String titles = ",source id 1,dist 1 (arcsec),source id 2,dist 2 (arcsec),pmRA (mas/yr),pmDE (mas/yr),tpm (mas/yr)";
-                                    String[] columns = titles.split(",", 8);
+                                    String[] columns = new String[]{"Proper motion origin", "source id 1", "source id 2", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     alignResultColumns(resultTable, resultRows);
                                     resultTable.setAutoCreateRowSorter(true);
                                     resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
                                     TableColumnModel columnModel = resultTable.getColumnModel();
-                                    columnModel.getColumn(0).setPreferredWidth(380);
+                                    columnModel.getColumn(0).setPreferredWidth(300);
                                     columnModel.getColumn(1).setPreferredWidth(150);
-                                    columnModel.getColumn(2).setPreferredWidth(100);
-                                    columnModel.getColumn(3).setPreferredWidth(150);
+                                    columnModel.getColumn(2).setPreferredWidth(150);
+                                    columnModel.getColumn(3).setPreferredWidth(100);
                                     columnModel.getColumn(4).setPreferredWidth(100);
                                     columnModel.getColumn(5).setPreferredWidth(100);
-                                    columnModel.getColumn(6).setPreferredWidth(100);
-                                    columnModel.getColumn(7).setPreferredWidth(100);
+                                    DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+                                    leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+                                    columnModel.getColumn(1).setCellRenderer(leftRenderer);
+                                    columnModel.getColumn(2).setCellRenderer(leftRenderer);
                                     JPanel container = new JPanel();
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
-                                    JPanel warning = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                                    warning.add(new JLabel(html("<span style='color:red'>Check if the sources used to calculate the proper motions correspond the same object!</span>")));
-                                    container.add(warning);
-                                    bottomPanel.addTab("Proper motion estimate", container);
+                                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                                    messagePanel.add(new JLabel(red("Please check that all the sources listed above correspond to the same object!")));
+                                    messagePanel.setBackground(Color.WHITE);
+                                    container.add(messagePanel);
+                                    bottomPanel.addTab(bold("Proper motions"), container);
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
@@ -355,6 +347,20 @@ public class ImageSurveyTab {
         baseFrame.setCursor(Cursor.getDefaultCursor());
         coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         fovField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+    }
+
+    private void addProperMotionEntry(CatalogEntry entry, List<String[]> resultRows) {
+        if (entry != null) {
+            double pmRA = entry.getPmra();
+            double pmDE = entry.getPmdec();
+            double tpm = entry.getTotalProperMotion();
+            resultRows.add(new String[]{
+                entry.getCatalogName() + ":",
+                entry.getSourceId(),
+                "N/A",
+                roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
+            });
+        }
     }
 
     private void displayDssImages(double targetRa, double targetDec, int size) {
@@ -726,6 +732,12 @@ public class ImageSurveyTab {
                     break;
                 case GaiaDR3CatalogEntry.CATALOG_NAME:
                     gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
+                    break;
+                case CatWiseCatalogEntry.CATALOG_NAME:
+                    catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
+                    break;
+                case NoirlabCatalogEntry.CATALOG_NAME:
+                    noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
                     break;
             }
             return catalogEntries;

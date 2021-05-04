@@ -15,7 +15,7 @@ import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.PhotometricClassifierTab;
 import astro.tool.box.module.tab.SettingsTab;
-import astro.tool.box.module.tab.ImageSurveyTab;
+import astro.tool.box.module.tab.MotionChecker;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
@@ -79,8 +79,8 @@ public class Application {
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
 
-        ImageSurveyTab imageSurveyTab = new ImageSurveyTab(baseFrame, tabbedPane, imageViewerTab);
-        imageSurveyTab.init();
+        MotionChecker motionCheckerTab = new MotionChecker(baseFrame, tabbedPane, imageViewerTab);
+        motionCheckerTab.init();
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();
