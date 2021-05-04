@@ -262,7 +262,7 @@ public class MotionChecker {
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
-                                        "Calculated from 2MASS and AllWISE coordinates:",
+                                        "Calculated from 2MASS and AllWISE coordinates",
                                         twoMassEntry.getSourceId(),
                                         allWiseEntry.getSourceId(),
                                         roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
@@ -278,7 +278,7 @@ public class MotionChecker {
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
-                                        "Calculated from SDSS and Pan-STARRS coordinates:",
+                                        "Calculated from SDSS and Pan-STARRS coordinates",
                                         sdssEntry.getSourceId(),
                                         panStarrsEntry.getSourceId(),
                                         roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
@@ -294,6 +294,29 @@ public class MotionChecker {
                                     alignResultColumns(resultTable, resultRows);
                                     resultTable.setAutoCreateRowSorter(true);
                                     resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                                    resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent event) -> {
+                                        if (!event.getValueIsAdjusting()) {
+                                            String label = (String) resultTable.getValueAt(resultTable.getSelectedRow(), 0);
+                                            if (label.isEmpty()) {
+                                                return;
+                                            }
+                                            deselectedCatalogOverlay(imageViewerTab);
+                                            if (label.contains("2MASS")) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, twoMassEntry);
+                                                activateSelectedCatalogOverlay(imageViewerTab, allWiseEntry);
+                                            } else if (label.contains("SDSS")) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, sdssEntry);
+                                                activateSelectedCatalogOverlay(imageViewerTab, panStarrsEntry);
+                                            } else if (label.contains(gaiaDR3Entry.getCatalogName())) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, gaiaDR3Entry);
+                                            } else if (label.contains(catWiseEntry.getCatalogName())) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, catWiseEntry);
+                                            } else if (label.contains(noirlabEntry.getCatalogName())) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, noirlabEntry);
+                                            }
+                                            tabbedPane.setSelectedIndex(3);
+                                        }
+                                    });
                                     TableColumnModel columnModel = resultTable.getColumnModel();
                                     columnModel.getColumn(0).setPreferredWidth(300);
                                     columnModel.getColumn(1).setPreferredWidth(150);
@@ -310,6 +333,7 @@ public class MotionChecker {
                                     container.add(new JScrollPane(resultTable));
                                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                                     messagePanel.add(new JLabel(red("Please check that all the sources listed above correspond to the same object!")));
+                                    messagePanel.add(new JLabel("Clicking any row above will take you to the Image Viewer with the appropriate overlays enabled."));
                                     messagePanel.setBackground(Color.WHITE);
                                     container.add(messagePanel);
                                     bottomPanel.addTab(bold("Proper motions"), container);
@@ -355,7 +379,7 @@ public class MotionChecker {
             double pmDE = entry.getPmdec();
             double tpm = entry.getTotalProperMotion();
             resultRows.add(new String[]{
-                entry.getCatalogName() + ":",
+                entry.getCatalogName(),
                 entry.getSourceId(),
                 "N/A",
                 roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
@@ -830,9 +854,23 @@ public class MotionChecker {
             case TessCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getTessOverlay().setSelected(true);
                 break;
-
         }
+    }
 
+    private void deselectedCatalogOverlay(ImageViewerTab imageViewerTab) {
+        imageViewerTab.getSimbadOverlay().setSelected(false);
+        imageViewerTab.getGaiaOverlay().setSelected(false);
+        imageViewerTab.getGaiaDR3Overlay().setSelected(false);
+        imageViewerTab.getAllWiseOverlay().setSelected(false);
+        imageViewerTab.getCatWiseOverlay().setSelected(false);
+        imageViewerTab.getUnWiseOverlay().setSelected(false);
+        imageViewerTab.getPanStarrsOverlay().setSelected(false);
+        imageViewerTab.getSdssOverlay().setSelected(false);
+        imageViewerTab.getTwoMassOverlay().setSelected(false);
+        imageViewerTab.getVhsOverlay().setSelected(false);
+        imageViewerTab.getGaiaWDOverlay().setSelected(false);
+        imageViewerTab.getNoirlabOverlay().setSelected(false);
+        imageViewerTab.getTessOverlay().setSelected(false);
     }
 
 }
