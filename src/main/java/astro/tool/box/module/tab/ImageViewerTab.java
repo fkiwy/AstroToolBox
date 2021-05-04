@@ -4559,7 +4559,7 @@ public class ImageViewerTab {
     private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
             if (image != null) {
@@ -4611,7 +4611,7 @@ public class ImageViewerTab {
     private void display2MassImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 4));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
             if (image != null) {
@@ -4655,7 +4655,7 @@ public class ImageViewerTab {
     private void displaySdssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 5));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
             if (image != null) {
@@ -4707,7 +4707,7 @@ public class ImageViewerTab {
     private void displaySpitzerImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 5));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
             if (image != null) {
@@ -4759,7 +4759,7 @@ public class ImageViewerTab {
     private void displayAllwiseImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 4));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (image != null) {
@@ -4814,7 +4814,7 @@ public class ImageViewerTab {
             }
 
             // Fetch images for Pan-STARRS filters
-            JPanel bandPanel = new JPanel(new GridLayout(1, 6));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size), "r"));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size), "i"));
@@ -4842,7 +4842,7 @@ public class ImageViewerTab {
     private void displayDecalsImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 3));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
             if (image != null) {
@@ -4889,7 +4889,7 @@ public class ImageViewerTab {
     private void displayStaticTimeSeries(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JPanel bandPanel = new JPanel(new GridLayout(1, 5));
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (image != null) {

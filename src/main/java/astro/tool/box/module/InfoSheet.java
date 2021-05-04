@@ -232,6 +232,41 @@ public class InfoSheet {
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC1");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC2");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC3");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC4");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("MIPS24");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
+            if (bufferedImage != null) {
+                imageLabels.add("3-color");
+                bufferedImages.add(bufferedImage);
+            }
+
+            createPdfTable("Spitzer (SEIP)", imageLabels, bufferedImages, writer, document);
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (bufferedImage != null) {
                 imageLabels.add("W1");
@@ -503,6 +538,7 @@ public class InfoSheet {
         PdfPTable table = new PdfPTable(numberOfCells);
         table.setTotalWidth(widths);
         table.setLockedWidth(true);
+        table.setKeepTogether(true);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
         PdfPCell tableHeader = new PdfPCell(new Phrase(header, LARGE_FONT));
