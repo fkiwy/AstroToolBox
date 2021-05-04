@@ -1862,59 +1862,62 @@ public class ImageViewerTab {
                                                 displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
                                             }
                                         } else {
-                                            int numberOfPanels = 0;
-                                            if (allSkyImages.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            if (twoMassImages.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            if (sloanImages.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            if (allwiseImages.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            if (ps1Images.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            if (decalsImages.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            if (staticTimeSeries.isSelected()) {
-                                                numberOfPanels++;
-                                            }
-                                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                                            int screenHeight = screenSize.height;
-                                            int verticalSpacing;
-                                            int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
-                                            if (totalPanelHeight > screenHeight) {
-                                                verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels);
-                                            } else {
-                                                verticalSpacing = PANEL_HEIGHT;
-                                            }
-                                            Counter counter = new Counter(verticalSpacing);
-                                            if (allSkyImages.isSelected()) {
-                                                displayDssImages(newRa, newDec, fieldOfView, counter);
-                                            }
-                                            if (twoMassImages.isSelected()) {
-                                                display2MassImages(newRa, newDec, fieldOfView, counter);
-                                            }
-                                            if (sloanImages.isSelected()) {
-                                                displaySdssImages(newRa, newDec, fieldOfView, counter);
-                                            }
-                                            if (allwiseImages.isSelected()) {
-                                                displayAllwiseImages(newRa, newDec, fieldOfView, counter);
-                                            }
-                                            if (ps1Images.isSelected()) {
-                                                displayPs1Images(newRa, newDec, fieldOfView, counter);
-                                            }
-                                            if (decalsImages.isSelected()) {
-                                                displayDecalsImages(targetRa, targetDec, fieldOfView, counter);
-                                            }
-                                            if (staticTimeSeries.isSelected()) {
-                                                displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
-                                            }
+                                            CompletableFuture.supplyAsync(() -> {
+                                                int numberOfPanels = 0;
+                                                if (allSkyImages.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (twoMassImages.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (sloanImages.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (allwiseImages.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (ps1Images.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (decalsImages.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (staticTimeSeries.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                                int screenHeight = screenSize.height;
+                                                int verticalSpacing;
+                                                int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
+                                                if (totalPanelHeight > screenHeight) {
+                                                    verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels);
+                                                } else {
+                                                    verticalSpacing = PANEL_HEIGHT;
+                                                }
+                                                Counter counter = new Counter(verticalSpacing);
+                                                if (allSkyImages.isSelected()) {
+                                                    displayDssImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (twoMassImages.isSelected()) {
+                                                    display2MassImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (sloanImages.isSelected()) {
+                                                    displaySdssImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (allwiseImages.isSelected()) {
+                                                    displayAllwiseImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (ps1Images.isSelected()) {
+                                                    displayPs1Images(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (decalsImages.isSelected()) {
+                                                    displayDecalsImages(targetRa, targetDec, fieldOfView, counter);
+                                                }
+                                                if (staticTimeSeries.isSelected()) {
+                                                    displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                return null;
+                                            });
                                         }
                                     }
                                     break;

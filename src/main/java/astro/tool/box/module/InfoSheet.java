@@ -104,6 +104,7 @@ public class InfoSheet {
 
     public Boolean create(JFrame baseFrame) {
         try {
+            imageViewerTab.setWaitCursor(false);
             JTextField coordsField = imageViewerTab.getCoordsField();
             ActionListener actionListener = coordsField.getActionListeners()[0];
             coordsField.removeActionListener(actionListener);
