@@ -150,6 +150,11 @@ public class MotionChecker {
                     }
                     twoMassEntry = null;
                     allWiseEntry = null;
+                    sdssEntry = null;
+                    panStarrsEntry = null;
+                    gaiaDR3Entry = null;
+                    catWiseEntry = null;
+                    noirlabEntry = null;
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
