@@ -103,18 +103,18 @@ public class InfoSheet {
     }
 
     public Boolean create(JFrame baseFrame) {
+        JTextField coordsField = imageViewerTab.getCoordsField();
+        ActionListener actionListener = coordsField.getActionListeners()[0];
+        coordsField.removeActionListener(actionListener);
+        coordsField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
+        coordsField.addActionListener(actionListener);
+        JTextField sizeField = imageViewerTab.getSizeField();
+        actionListener = sizeField.getActionListeners()[0];
+        sizeField.removeActionListener(actionListener);
+        sizeField.setText(String.valueOf(size));
+        sizeField.addActionListener(actionListener);
         try {
             imageViewerTab.setWaitCursor(false);
-            JTextField coordsField = imageViewerTab.getCoordsField();
-            ActionListener actionListener = coordsField.getActionListeners()[0];
-            coordsField.removeActionListener(actionListener);
-            coordsField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-            coordsField.addActionListener(actionListener);
-            JTextField sizeField = imageViewerTab.getSizeField();
-            actionListener = sizeField.getActionListeners()[0];
-            sizeField.removeActionListener(actionListener);
-            sizeField.setText(String.valueOf(size));
-            sizeField.addActionListener(actionListener);
             imageViewerTab.getZoomSlider().setValue(250);
             imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
 
@@ -415,6 +415,8 @@ public class InfoSheet {
         } finally {
             imageViewerTab.setWaitCursor(true);
             baseFrame.setCursor(Cursor.getDefaultCursor());
+            coordsField.setCursor(Cursor.getDefaultCursor());
+            sizeField.setCursor(Cursor.getDefaultCursor());
         }
 
         return true;
