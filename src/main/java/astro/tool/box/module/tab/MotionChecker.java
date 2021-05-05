@@ -291,7 +291,9 @@ public class MotionChecker {
                                 }
                                 addProperMotionEntry(gaiaDR3Entry, resultRows);
                                 addProperMotionEntry(catWiseEntry, resultRows);
-                                addProperMotionEntry(noirlabEntry, resultRows);
+                                if (noirlabEntry.getNdet() >= 5 && noirlabEntry.getDelta_mjd() >= 180) {
+                                    addProperMotionEntry(noirlabEntry, resultRows);
+                                }
                                 if (!resultRows.isEmpty()) {
                                     String[] columns = new String[]{"Proper motion origin", "source id 1", "source id 2", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
                                     Object[][] rows = new Object[][]{};

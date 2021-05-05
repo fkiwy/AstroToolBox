@@ -309,9 +309,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
-        addRow(query, "AND   ndet >= 2");
+        addRow(query, "AND   ndet >= 5");
         addRow(query, "AND   deltamjd >= 180");
-        addRow(query, "AND   class_star >= 0.7");
         addRow(query, "AND   pmra <> 'NaN' AND pmdec <> 'NaN'");
         addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
         return query.toString();
@@ -503,6 +502,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
         LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).toLocalDate();
         long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
         return days / 365.2425;
+    }
+
+    public int getNdet() {
+        return ndet;
+    }
+
+    public double getDelta_mjd() {
+        return delta_mjd;
     }
 
     public double get_u_g() {
