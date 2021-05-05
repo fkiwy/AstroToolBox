@@ -508,9 +508,7 @@ public class ImageViewerTab {
             coordsField = new JTextField();
             mainControlPanel.add(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
-                coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
-                coordsField.setCursor(Cursor.getDefaultCursor());
             });
 
             mainControlPanel.add(new JLabel("Field of view (arcsec):"));
@@ -518,9 +516,7 @@ public class ImageViewerTab {
             sizeField = new JTextField(String.valueOf(size));
             mainControlPanel.add(sizeField);
             sizeField.addActionListener((ActionEvent evt) -> {
-                sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createFlipbook();
-                sizeField.setCursor(Cursor.getDefaultCursor());
             });
 
             mainControlPanel.add(new JLabel("Bands:"));
@@ -2550,6 +2546,8 @@ public class ImageViewerTab {
                 return false;
             }
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 loadImages = true;
@@ -3094,6 +3092,8 @@ public class ImageViewerTab {
         } finally {
             if (waitCursor) {
                 baseFrame.setCursor(Cursor.getDefaultCursor());
+                coordsField.setCursor(Cursor.getDefaultCursor());
+                sizeField.setCursor(Cursor.getDefaultCursor());
             }
         }
         return true;

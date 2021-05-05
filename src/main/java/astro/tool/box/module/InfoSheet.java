@@ -413,6 +413,7 @@ public class InfoSheet {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
+            imageViewerTab.setWaitCursor(true);
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
 
