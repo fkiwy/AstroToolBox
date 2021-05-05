@@ -356,12 +356,9 @@ public class AdqlQueryTab {
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
-                        showErrorDialog(baseFrame, "Processing error!");
                         String response = readResponse(establishHttpConnection(createErrorUrl(jobId)), QUERY_SERVICE);
                         String errorMessage = getErrorMessage(response);
-                        if (!errorMessage.isEmpty()) {
-                            showScrollableErrorDialog(baseFrame, errorMessage);
-                        }
+                        showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
                     }

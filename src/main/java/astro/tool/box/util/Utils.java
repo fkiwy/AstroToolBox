@@ -22,12 +22,8 @@ public class Utils {
     }
 
     public static String encodeQuery(String query) {
-        query = omitQueryComments(query)
-                .replaceAll(LINE_SEP_TEXT_AREA, " ")
-                .replaceAll(" +", " ")
-                .replaceAll(";", "");
         try {
-            return URLEncoder.encode(query, "UTF-8");
+            return URLEncoder.encode(omitQueryComments(query), "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             writeErrorLog(ex);
             return query;
@@ -42,7 +38,7 @@ public class Utils {
                 results.add(line);
             }
         }
-        return String.join(LINE_SEP_TEXT_AREA, results);
+        return String.join(" ", results).replaceAll(";", "");
     }
 
 }
