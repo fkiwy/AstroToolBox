@@ -291,7 +291,7 @@ public class MotionChecker {
                                 }
                                 addProperMotionEntry(gaiaDR3Entry, resultRows);
                                 addProperMotionEntry(catWiseEntry, resultRows);
-                                if (noirlabEntry.getNdet() >= 5 && noirlabEntry.getDelta_mjd() >= 180) {
+                                if (noirlabEntry != null && noirlabEntry.getNdet() >= 5 && noirlabEntry.getDelta_mjd() >= 180) {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
                                 if (!resultRows.isEmpty()) {
