@@ -269,7 +269,9 @@ public class MotionChecker {
                                     resultRows.add(new String[]{
                                         "Calculated from 2MASS and AllWISE coordinates",
                                         twoMassEntry.getSourceId(),
+                                        roundTo3DecLZ(twoMassEntry.getTargetDistance()),
                                         allWiseEntry.getSourceId(),
+                                        roundTo3DecLZ(allWiseEntry.getTargetDistance()),
                                         roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
                                     });
                                 }
@@ -285,7 +287,9 @@ public class MotionChecker {
                                     resultRows.add(new String[]{
                                         "Calculated from SDSS and Pan-STARRS coordinates",
                                         sdssEntry.getSourceId(),
+                                        roundTo3DecLZ(sdssEntry.getTargetDistance()),
                                         panStarrsEntry.getSourceId(),
+                                        roundTo3DecLZ(panStarrsEntry.getTargetDistance()),
                                         roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
                                     });
                                 }
@@ -295,7 +299,7 @@ public class MotionChecker {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin", "source id 1", "source id 2", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
+                                    String[] columns = new String[]{"Proper motion origin", "source id 1", "dist (arcsec)", "source id 2", "dist (arcsec)", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     alignResultColumns(resultTable, resultRows);
@@ -327,14 +331,16 @@ public class MotionChecker {
                                     TableColumnModel columnModel = resultTable.getColumnModel();
                                     columnModel.getColumn(0).setPreferredWidth(300);
                                     columnModel.getColumn(1).setPreferredWidth(150);
-                                    columnModel.getColumn(2).setPreferredWidth(150);
-                                    columnModel.getColumn(3).setPreferredWidth(100);
+                                    columnModel.getColumn(2).setPreferredWidth(100);
+                                    columnModel.getColumn(3).setPreferredWidth(150);
                                     columnModel.getColumn(4).setPreferredWidth(100);
                                     columnModel.getColumn(5).setPreferredWidth(100);
+                                    columnModel.getColumn(6).setPreferredWidth(100);
+                                    columnModel.getColumn(7).setPreferredWidth(100);
                                     DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
                                     leftRenderer.setHorizontalAlignment(JLabel.LEFT);
                                     columnModel.getColumn(1).setCellRenderer(leftRenderer);
-                                    columnModel.getColumn(2).setCellRenderer(leftRenderer);
+                                    columnModel.getColumn(3).setCellRenderer(leftRenderer);
                                     JPanel container = new JPanel();
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
@@ -388,7 +394,8 @@ public class MotionChecker {
             resultRows.add(new String[]{
                 entry.getCatalogName(),
                 entry.getSourceId(),
-                "N/A",
+                roundTo3DecLZ(entry.getTargetDistance()),
+                "N/A", "999",
                 roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
             });
         }
