@@ -5548,7 +5548,7 @@ public class ImageViewerTab {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.setBorder(new LineBorder(color, 3));
-        container.add(scrollPanel);
+        container.add(simpleLayout ? detailPanel : scrollPanel);
 
         if (!simpleLayout) {
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
