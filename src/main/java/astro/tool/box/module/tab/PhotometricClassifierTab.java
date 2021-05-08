@@ -35,6 +35,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -139,15 +140,13 @@ public class PhotometricClassifierTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     if (centerPanel.getComponentCount() > 0) {
                         centerPanel.removeAll();
                     }
                     if (bottomPanel.getComponentCount() > 0) {
                         bottomPanel.removeAll();
                     }
+                    baseFrame.setVisible(true);
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -193,42 +192,48 @@ public class PhotometricClassifierTab {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
                     } else {
-                        List<CatalogEntry> catalogEntries = new ArrayList<>();
-                        List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
-                        for (CatalogEntry catalogEntry : catalogInstances.values()) {
-                            if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
-                                catalogEntry.setRa(targetRa);
-                                catalogEntry.setDec(targetDec);
-                                catalogEntry.setSearchRadius(searchRadius);
-                                List<CatalogEntry> results = performQuery(catalogEntry);
-                                if (results != null) {
-                                    catalogEntries.addAll(results);
+                        CompletableFuture.supplyAsync(() -> {
+                            try {
+                                setWaitCursor();
+                                List<CatalogEntry> catalogEntries = new ArrayList<>();
+                                List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
+                                for (CatalogEntry catalogEntry : catalogInstances.values()) {
+                                    if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
+                                        catalogEntry.setRa(targetRa);
+                                        catalogEntry.setDec(targetDec);
+                                        catalogEntry.setSearchRadius(searchRadius);
+                                        List<CatalogEntry> results = performQuery(catalogEntry);
+                                        if (results != null) {
+                                            catalogEntries.addAll(results);
+                                        }
+                                    }
                                 }
+                                sptOccurrencesAltogether = new HashMap();
+                                sptOccurrencesMainSequence = new HashMap();
+                                sptOccurrencesBrownDwarfs = new HashMap();
+                                sptOccurrencesSimbad = new HashMap();
+                                List<BatchResult> batchResults;
+                                batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence);
+                                displayQueryResults(batchResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
+                                batchResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs);
+                                displayQueryResults(batchResults, "Brown dwarfs spectral type evaluation", JColor.BROWN.val);
+                                displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
+                                displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
+                                displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs", JColor.BROWN.val);
+                                if (!sptOccurrencesSimbad.isEmpty()) {
+                                    displayClassification(sptOccurrencesSimbad, "SIMBAD object type", Color.LIGHT_GRAY);
+                                }
+                                baseFrame.setVisible(true);
+                            } catch (Exception ex) {
+                                showExceptionDialog(baseFrame, ex);
+                            } finally {
+                                setDefaultCursor();
                             }
-                        }
-                        sptOccurrencesAltogether = new HashMap();
-                        sptOccurrencesMainSequence = new HashMap();
-                        sptOccurrencesBrownDwarfs = new HashMap();
-                        sptOccurrencesSimbad = new HashMap();
-                        List<BatchResult> batchResults;
-                        batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence);
-                        displayQueryResults(batchResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
-                        batchResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs);
-                        displayQueryResults(batchResults, "Brown dwarfs spectral type evaluation", JColor.BROWN.val);
-                        displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
-                        displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
-                        displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs", JColor.BROWN.val);
-                        if (!sptOccurrencesSimbad.isEmpty()) {
-                            displayClassification(sptOccurrencesSimbad, "SIMBAD object type", Color.LIGHT_GRAY);
-                        }
-                        baseFrame.setVisible(true);
+                            return null;
+                        });
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
-                } finally {
-                    baseFrame.setCursor(Cursor.getDefaultCursor());
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                 }
             });
 
@@ -241,6 +246,18 @@ public class PhotometricClassifierTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
+    }
+
+    private void setWaitCursor() {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    }
+
+    private void setDefaultCursor() {
+        baseFrame.setCursor(Cursor.getDefaultCursor());
+        coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+        radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
     }
 
     private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {
