@@ -229,7 +229,7 @@ public class ModuleHelper {
     }
 
     public static String bold(String text) {
-        return html("<b>" + text + "</b>");
+        return html("<div style=color:white;background:gray;padding:5px>" + text + "</div>");
     }
 
     public static String red(String text) {
