@@ -299,7 +299,7 @@ public class MotionChecker {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin", "source id 1", "dist (arcsec)", "source id 2", "dist (arcsec)", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
+                                    String[] columns = new String[]{"Proper motion origin", "source 1", "dist (arcsec)", "source 2", "dist (arcsec)", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     alignResultColumns(resultTable, resultRows);
@@ -349,7 +349,7 @@ public class MotionChecker {
                                     messagePanel.add(new JLabel("Clicking any row above will take you to the Image Viewer with the appropriate overlays enabled."));
                                     messagePanel.setBackground(Color.WHITE);
                                     container.add(messagePanel);
-                                    bottomPanel.addTab(bold("Proper motions"), container);
+                                    bottomPanel.addTab(focus("Proper motions"), container);
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {

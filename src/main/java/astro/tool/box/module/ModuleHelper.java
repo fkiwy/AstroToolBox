@@ -228,8 +228,8 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String bold(String text) {
-        return html("<div style=color:white;background:gray;padding:5px>" + text + "</div>");
+    public static String focus(String text) {
+        return html("<div style=color:black;background:silver;padding:5px>" + text + "</div>");
     }
 
     public static String red(String text) {
