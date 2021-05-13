@@ -6,6 +6,7 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -583,6 +584,7 @@ public class FinderChartTab {
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
         if (bandPanel.getComponentCount() > 0) {
+            bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size), "WARP images"));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -614,6 +616,7 @@ public class FinderChartTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
+            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, "ls-dr9"), "Single exposures"));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -715,6 +718,13 @@ public class FinderChartTab {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
         panel.add(new JLabel(new ImageIcon(drawCenterShape(image))));
+        return panel;
+    }
+
+    private JPanel buildLinkPanel(String link, String imageHeader) {
+        JPanel panel = new JPanel();
+        panel.setBorder(createEtchedBorder(imageHeader));
+        panel.add(createHyperlink("Open in browser", link));
         return panel;
     }
 

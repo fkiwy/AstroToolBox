@@ -6,7 +6,7 @@ public class Urls {
 
     // FoV in arcsec
     public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView) {
-        return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=stack&size=" + fieldOfView * 4 + "&output_size=256";
+        return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=stack&filetypes=warp&size=" + fieldOfView * 4 + "&output_size=256&autoscale=99.8";
     }
 
     // FoV in degrees
@@ -31,6 +31,10 @@ public class Urls {
 
     public static String getLegacySkyViewerUrl(double degRA, double degDE, String layer) {
         return "http://legacysurvey.org/viewer?ra=" + degRA + "&dec=" + degDE + "&mark=" + degRA + "," + degDE + "&zoom=15&layer=" + layer;
+    }
+
+    public static String getLegacySingleExposuresUrl(double degRA, double degDE, String layer) {
+        return "http://legacysurvey.org/viewer/exposures/?ra=" + degRA + "&dec=" + degDE + "&layer=" + layer;
     }
 
     public static String getDataDiscoveryUrl() {
