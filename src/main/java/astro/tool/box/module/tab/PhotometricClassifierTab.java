@@ -355,7 +355,7 @@ public class PhotometricClassifierTab {
                     return entry.getRowNumber() == rowNumber;
                 }).findFirst().get();
                 if (selected != null) {
-                    String coords = selected.getRa() + " " + selected.getDec();
+                    String coords = roundTo7DecNZLZ(selected.getRa()) + " " + roundTo7DecNZLZ(selected.getDec());
                     imageViewerTab.getCoordsField().setText(coords);
                     catalogQueryTab.getCoordsField().setText(coords);
                     catalogQueryTab.getRadiusField().setText(roundTo2DecNZ(searchRadius));

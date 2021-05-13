@@ -487,6 +487,7 @@ public class ImageViewerTab {
 
             JScrollPane rightScrollPanel = new JScrollPane(rightPanel);
             rightScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+            rightScrollPanel.setPreferredSize(new Dimension(225, rightPanel.getHeight()));
 
             mainPanel.add(rightScrollPanel, BorderLayout.EAST);
 

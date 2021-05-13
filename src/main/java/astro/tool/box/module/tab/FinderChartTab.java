@@ -62,9 +62,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class MultipurposeTab {
+public class FinderChartTab {
 
-    private static final String TAB_NAME = "Multipurpose Interface";
+    private static final String TAB_NAME = "Finder Chart";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -95,7 +95,7 @@ public class MultipurposeTab {
     private double targetDec;
     private int fieldOfView;
 
-    public MultipurposeTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
+    public FinderChartTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
