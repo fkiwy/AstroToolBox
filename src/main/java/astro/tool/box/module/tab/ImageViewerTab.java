@@ -5018,7 +5018,7 @@ public class ImageViewerTab {
                         int i = 0;
                         for (Couple<String, BufferedImage> imageData : imageList) {
                             BufferedImage imageBuffer = imageData.getB();
-                            imageSet[i++] = drawCenterCircle(imageBuffer);
+                            imageSet[i++] = drawCenterShape(imageBuffer);
                         }
                         if (imageSet.length > 0) {
                             GifSequencer sequencer = new GifSequencer();
@@ -5068,18 +5068,8 @@ public class ImageViewerTab {
     private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(new JLabel(new ImageIcon(drawCenterCircle(image))));
+        panel.add(new JLabel(new ImageIcon(drawCenterShape(image))));
         return panel;
-    }
-
-    private BufferedImage drawCenterCircle(BufferedImage image) {
-        image = zoom(image, 200);
-        double x = image.getWidth() / 2;
-        double y = image.getHeight() / 2;
-        Graphics g = image.getGraphics();
-        Circle circle = new Circle(x, y, 10, Color.MAGENTA);
-        circle.draw(g);
-        return image;
     }
 
     private List<CatalogEntry> fetchCatalogEntries(CatalogEntry catalogQuery) {

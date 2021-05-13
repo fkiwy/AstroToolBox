@@ -559,11 +559,7 @@ public class InfoSheet {
         }
 
         for (BufferedImage bi : bufferedImages) {
-            double x = bi.getWidth() / 2;
-            double y = bi.getHeight() / 2;
-            Graphics g = bi.getGraphics();
-            Cross cross = new Cross(x, y, 30, Color.YELLOW);
-            cross.draw(g);
+            bi = drawCenterShape(bi);
             Image image = Image.getInstance(writer, bi, 1);
             PdfPCell cell = new PdfPCell(image, true);
             cell.setBorderWidth(0);

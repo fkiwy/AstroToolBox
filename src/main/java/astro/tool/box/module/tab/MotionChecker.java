@@ -22,10 +22,8 @@ import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
-import astro.tool.box.enumeration.Shape;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.FlipbookComponent;
-import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.CatalogQueryService;
@@ -631,33 +629,33 @@ public class MotionChecker {
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS2 - IR", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "DSS2 - IR"));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS - K", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "2MASS - K"));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS - z", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "SDSS - z"));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC4", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "IRAC4"));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "WISE - W2", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "WISE - W2"));
         }
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
-            bandPanel.add(buildImagePanel(image, "PS1 - z", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "PS1 - z"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z");
         if (image != null) {
             image = convertToGray(image);
-            bandPanel.add(buildImagePanel(image, "DECaLS - z", Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, "DECaLS - z"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -673,19 +671,19 @@ public class MotionChecker {
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr5");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS DR5", Shape.CROSS, 1));
+            bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr7");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS DR7", Shape.CROSS, 1));
+            bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr8");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "LS DR8", Shape.CROSS, 1));
+            bandPanel.add(buildImagePanel(image, "LS DR8"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr9");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "LS DR9", Shape.CROSS, 1));
+            bandPanel.add(buildImagePanel(image, "LS DR9"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -706,7 +704,7 @@ public class MotionChecker {
 
         for (FlipbookComponent component : flipbook) {
             BufferedImage image = imageViewerTab.processImage(component);
-            bandPanel.add(buildImagePanel(image, component.getTitle(), Shape.CROSS, 2));
+            bandPanel.add(buildImagePanel(image, component.getTitle()));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -717,32 +715,10 @@ public class MotionChecker {
     }
 
     private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
-        return buildImagePanel(image, imageHeader, Shape.CIRCLE, 2);
-    }
-
-    private JPanel buildImagePanel(BufferedImage image, String imageHeader, Shape shape, float strokeWidth) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(new JLabel(new ImageIcon(drawCenterShape(image, shape, strokeWidth))));
+        panel.add(new JLabel(new ImageIcon(drawCenterShape(image))));
         return panel;
-    }
-
-    private BufferedImage drawCenterShape(BufferedImage image, Shape shape, float strokeWidth) {
-        image = zoom(image, 200);
-        double x = image.getWidth() / 2;
-        double y = image.getHeight() / 2;
-        Graphics g = image.getGraphics();
-        Drawable drawable;
-        switch (shape) {
-            case CROSS:
-                drawable = new Cross(x, y, 50, Color.MAGENTA, strokeWidth);
-                break;
-            default:
-                drawable = new Circle(x, y, 10, Color.MAGENTA, strokeWidth);
-                break;
-        }
-        drawable.draw(g);
-        return image;
     }
 
     private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {

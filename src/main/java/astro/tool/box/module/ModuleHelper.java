@@ -32,6 +32,8 @@ import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.module.shape.Circle;
+import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -873,6 +875,16 @@ public class ModuleHelper {
             bi = null;
         }
         return bi;
+    }
+
+    public static BufferedImage drawCenterShape(BufferedImage image) {
+        image = zoom(image, 200);
+        double x = image.getWidth() / 2;
+        double y = image.getHeight() / 2;
+        Graphics g = image.getGraphics();
+        Drawable drawable = new Circle(x, y, 20, Color.YELLOW);
+        drawable.draw(g);
+        return image;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {
