@@ -117,7 +117,7 @@ public class VhsCatalogEntry implements CatalogEntry {
         y_ap3 = toDouble(values[columns.get("Yap3")]);
         y_ap3_err = toDouble(values[columns.get("e_Yap3")]);
         j_ap3 = toDouble(values[columns.get("Jap3")]);
-        j_ap3_err = toDouble(values[columns.get("e_Yap3")]);
+        j_ap3_err = toDouble(values[columns.get("e_Jap3")]);
         h_ap3 = toDouble(values[columns.get("Hap3")]);
         h_ap3_err = toDouble(values[columns.get("e_Hap3")]);
         ks_ap3 = toDouble(values[columns.get("Ksap3")]);
