@@ -24,15 +24,12 @@ import astro.tool.box.container.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.FlipbookComponent;
-import astro.tool.box.module.shape.Cross;
-import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.CatalogQueryService;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -65,9 +62,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class MotionChecker {
+public class MultipurposeInterface {
 
-    private static final String TAB_NAME = "Motion Checker";
+    private static final String TAB_NAME = "Multipurpose Interface";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -98,7 +95,7 @@ public class MotionChecker {
     private double targetDec;
     private int fieldOfView;
 
-    public MotionChecker(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
+    public MultipurposeInterface(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
