@@ -1,12 +1,13 @@
 package astro.tool.box.util;
 
+import astro.tool.box.enumeration.FileType;
 import static astro.tool.box.util.ConversionFactors.*;
 
 public class Urls {
 
     // FoV in arcsec
-    public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView) {
-        return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=stack&filetypes=warp&size=" + fieldOfView * 4 + "&output_size=256&autoscale=99.8";
+    public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView, FileType fileType) {
+        return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=" + fileType.val + "&size=" + fieldOfView * 4 + "&output_size=256&autoscale=99.8";
     }
 
     // FoV in degrees

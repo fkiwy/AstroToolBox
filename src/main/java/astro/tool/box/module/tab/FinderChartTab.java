@@ -23,6 +23,7 @@ import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
+import astro.tool.box.enumeration.FileType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.service.CatalogQueryService;
@@ -584,7 +585,7 @@ public class FinderChartTab {
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
         if (bandPanel.getComponentCount() > 0) {
-            bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size), "WARP images"));
+            bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP), "WARP images"));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
