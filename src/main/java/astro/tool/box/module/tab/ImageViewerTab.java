@@ -483,9 +483,12 @@ public class ImageViewerTab {
             mainPanel.add(splitPane, BorderLayout.CENTER);
 
             rightPanel = new JPanel();
-            mainPanel.add(rightPanel, BorderLayout.EAST);
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-            rightPanel.setBorder(new EmptyBorder(15, 5, 5, 5));
+
+            JScrollPane rightScrollPanel = new JScrollPane(rightPanel);
+            rightScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+            mainPanel.add(rightScrollPanel, BorderLayout.EAST);
 
             //===================
             // Tab: Main controls
@@ -1735,6 +1738,7 @@ public class ImageViewerTab {
                     if (!hideMagnifier.isSelected()) {
                         rightPanel.removeAll();
                         rightPanel.repaint();
+                        rightPanel.add(new JLabel("WISE"));
                         BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
                         magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
                         rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
@@ -1745,6 +1749,7 @@ public class ImageViewerTab {
                     if (processedDecalsImage != null) {
                         // Create and display magnified DECaLS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            rightPanel.add(new JLabel("DECaLS"));
                             BufferedImage magnifiedDecalsImage = processedDecalsImage.getSubimage(upperLeftX, upperLeftY, width, height);
                             magnifiedDecalsImage = zoom(magnifiedDecalsImage, 200);
                             rightPanel.add(new JLabel(new ImageIcon(magnifiedDecalsImage)));
@@ -1762,6 +1767,7 @@ public class ImageViewerTab {
                     if (processedPs1Image != null) {
                         // Create and display magnified Pan-STARRS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            rightPanel.add(new JLabel("Pan-STARRS"));
                             BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
                             magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
                             rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
@@ -1778,6 +1784,7 @@ public class ImageViewerTab {
                     if (processedSdssImage != null) {
                         // Create and display magnified SDSS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            rightPanel.add(new JLabel("SDSS"));
                             BufferedImage magnifiedSdssImage = processedSdssImage.getSubimage(upperLeftX, upperLeftY, width, height);
                             magnifiedSdssImage = zoom(magnifiedSdssImage, 200);
                             rightPanel.add(new JLabel(new ImageIcon(magnifiedSdssImage)));
@@ -1794,6 +1801,7 @@ public class ImageViewerTab {
                     if (processedDssImage != null) {
                         // Create and display magnified DSS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
+                            rightPanel.add(new JLabel("DSS"));
                             BufferedImage magnifiedDssImage = processedDssImage.getSubimage(upperLeftX, upperLeftY, width, height);
                             magnifiedDssImage = zoom(magnifiedDssImage, 200);
                             rightPanel.add(new JLabel(new ImageIcon(magnifiedDssImage)));

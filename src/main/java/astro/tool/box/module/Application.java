@@ -15,7 +15,7 @@ import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.PhotometricClassifierTab;
 import astro.tool.box.module.tab.SettingsTab;
-import astro.tool.box.module.tab.MultipurposeInterface;
+import astro.tool.box.module.tab.MultipurposeTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
@@ -61,7 +61,7 @@ public class Application {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
         baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
-        baseFrame.setSize(new Dimension(1255, 850));
+        baseFrame.setSize(new Dimension(1275, 875));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -79,8 +79,8 @@ public class Application {
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
 
-        MultipurposeInterface multipurposeInterface = new MultipurposeInterface(baseFrame, tabbedPane, imageViewerTab);
-        multipurposeInterface.init();
+        MultipurposeTab multipurposeTab = new MultipurposeTab(baseFrame, tabbedPane, imageViewerTab);
+        multipurposeTab.init();
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();

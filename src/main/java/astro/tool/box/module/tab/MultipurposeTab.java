@@ -62,7 +62,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class MultipurposeInterface {
+public class MultipurposeTab {
 
     private static final String TAB_NAME = "Multipurpose Interface";
 
@@ -95,7 +95,7 @@ public class MultipurposeInterface {
     private double targetDec;
     private int fieldOfView;
 
-    public MultipurposeInterface(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
+    public MultipurposeTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
