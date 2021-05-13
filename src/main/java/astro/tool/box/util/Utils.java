@@ -35,7 +35,7 @@ public class Utils {
         List<String> results = new ArrayList<>();
         for (String line : lines) {
             if (!line.startsWith("--")) {
-                results.add(line);
+                results.add(line.trim());
             }
         }
         return String.join(" ", results).replaceAll(";", "");
