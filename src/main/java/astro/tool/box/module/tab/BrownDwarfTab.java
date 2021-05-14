@@ -210,13 +210,12 @@ public class BrownDwarfTab {
             }
         });
 
-        JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                : new JScrollPane(resultTable);
-        scrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder()
-        ));
-        spectralTypePanel.add(scrollPanel);
+        spectralTypePanel.add(new JScrollPane(resultTable));
+        if (resultRows.isEmpty()) {
+            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            messagePanel.add(createLabel("No colors available / No match", JColor.RED));
+            spectralTypePanel.add(messagePanel);
+        }
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(500, 150));
@@ -246,13 +245,12 @@ public class BrownDwarfTab {
         columnModel.getColumn(0).setPreferredWidth(100);
         columnModel.getColumn(1).setPreferredWidth(100);
 
-        JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No bands available / No match", JColor.RED))
-                : new JScrollPane(resultTable);
-        scrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder()
-        ));
-        distancePanel.add(scrollPanel);
+        distancePanel.add(new JScrollPane(resultTable));
+        if (resultRows.isEmpty()) {
+            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            messagePanel.add(createLabel("No bands available / No match", JColor.RED));
+            distancePanel.add(messagePanel);
+        }
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(500, 150));

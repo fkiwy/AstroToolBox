@@ -85,7 +85,7 @@ public class PhotometricClassifierTab {
     private double targetDec;
     private double searchRadius;
 
-    private Set<String> nearestValues;
+    private Set<String> matchedColors;
 
     private Map<String, Integer> sptOccurrencesAltogether;
     private Map<String, Integer> sptOccurrencesMainSequence;
@@ -214,7 +214,7 @@ public class PhotometricClassifierTab {
                                         }
                                     }
                                 }
-                                nearestValues = new HashSet();
+                                matchedColors = new HashSet();
                                 sptOccurrencesAltogether = new HashMap();
                                 sptOccurrencesMainSequence = new HashMap();
                                 sptOccurrencesBrownDwarfs = new HashMap();
@@ -287,10 +287,11 @@ public class PhotometricClassifierTab {
             List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors(true));
             List<String> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
-                String nearestValue = roundTo3DecNZ(entry.getNearest());
+                String colorKey = entry.getColorKey().val;
+                String colorValue = roundTo3DecNZ(entry.getColorValue());
+                String matchedColor = colorKey + "=" + colorValue;
                 String spectralType = entry.getSpt();
-                addOccurrence(nearestValue, spectralType.replace("V", ""), sptOccurrences);
-                String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
+                addOccurrence(matchedColor + colorValue, spectralType.replace("V", ""), sptOccurrences);
                 spectralType += ": " + matchedColor + "; ";
                 spectralTypes.add(spectralType);
             });
@@ -422,15 +423,15 @@ public class PhotometricClassifierTab {
         bottomPanel.add(resultScrollPanel);
     }
 
-    private void addOccurrence(String nearestValue, String spectralType, Map<String, Integer> sptOccurrences) {
-        if (nearestValues.contains(nearestValue)) {
+    private void addOccurrence(String matchedColor, String spectralType, Map<String, Integer> sptOccurrences) {
+        if (matchedColors.contains(matchedColor)) {
             return;
         }
         Integer occurrences = sptOccurrences.get(spectralType);
         sptOccurrences.put(spectralType, occurrences == null ? 1 : occurrences + 1);
         occurrences = sptOccurrencesAltogether.get(spectralType);
         sptOccurrencesAltogether.put(spectralType, occurrences == null ? 1 : occurrences + 1);
-        nearestValues.add(nearestValue);
+        matchedColors.add(matchedColor);
     }
 
 }

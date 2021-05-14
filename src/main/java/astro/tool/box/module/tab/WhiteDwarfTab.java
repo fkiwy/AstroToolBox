@@ -163,13 +163,16 @@ public class WhiteDwarfTab {
         columnModel.getColumn(5).setPreferredWidth(75);
         columnModel.getColumn(6).setPreferredWidth(50);
 
-        JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                : new JScrollPane(resultTable);
+        JScrollPane scrollPanel = new JScrollPane(resultTable);
         scrollPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), html(panelTitle), TitledBorder.LEFT, TitledBorder.TOP
         ));
         resultPanel.add(scrollPanel);
+        if (resultRows.isEmpty()) {
+            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            messagePanel.add(createLabel("No colors available / No match", JColor.RED));
+            resultPanel.add(messagePanel);
+        }
     }
 
 }

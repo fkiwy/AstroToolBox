@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -482,52 +483,40 @@ public class CatalogQueryTab {
             columnModel.getColumn(5).setPreferredWidth(75);
             columnModel.getColumn(6).setPreferredWidth(75);
 
-            JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
+            JPanel spectralTypeInfo = new JPanel();
+            spectralTypeInfo.setLayout(new BoxLayout(spectralTypeInfo, BoxLayout.Y_AXIS));
             spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypeInfo.setPreferredSize(new Dimension(500, BOTTOM_PANEL_HEIGHT));
+            spectralTypeInfo.add(new JScrollPane(spectralTypeTable));
 
-            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                    : new JScrollPane(spectralTypeTable);
-            spectralTypeInfo.add(spectralTypePanel);
-
-            JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel remarks = new JPanel(new GridLayout(0, 1));
+            remarks.setPreferredSize(new Dimension(remarks.getWidth(), 100));
             spectralTypeInfo.add(remarks);
 
-            boolean warning = false;
+            if (spectralTypes.isEmpty()) {
+                remarks.add(createLabel("No colors available / No match", JColor.RED));
+            }
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     remarks.add(createLabel(AGN_WARNING, JColor.RED));
-                    warning = true;
                 }
             }
             if (catalogEntry instanceof WhiteDwarf) {
                 WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     remarks.add(createLabel(WD_WARNING, JColor.RED));
-                    warning = true;
                 }
             }
-            if (!warning) {
-                remarks.add(new JLabel("Note that for some colors, results may be contradictory,"));
-                remarks.add(new JLabel("as they may fit to early type as well to late type stars."));
-                remarks.add(new JLabel("The more colors match, the better the results, in general."));
-                remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
-            }
 
-            remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            spectralTypeInfo.add(remarks);
-            remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
+            remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table (version: 2021.03.02):"));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
             remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
-            remarks.add(new JLabel("Version in use: 2021.03.02"));
             remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            collectPanel.setBorder(BorderFactory.createEtchedBorder());
             spectralTypeInfo.add(collectPanel);
 
             collectPanel.add(new JLabel("Object type:"));
@@ -547,8 +536,11 @@ public class CatalogQueryTab {
                 collectTimer.restart();
             });
 
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            spectralTypeInfo.add(buttonPanel);
+
             JButton copyCoordsButton = new JButton("Copy coords");
-            collectPanel.add(copyCoordsButton);
+            buttonPanel.add(copyCoordsButton);
             Timer copyCoordsTimer = new Timer(3000, (ActionEvent e) -> {
                 copyCoordsButton.setText("Copy coords");
             });
@@ -559,7 +551,7 @@ public class CatalogQueryTab {
             });
 
             JButton copyInfoButton = new JButton("Copy digest");
-            collectPanel.add(copyInfoButton);
+            buttonPanel.add(copyInfoButton);
             Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
                 copyInfoButton.setText("Copy digest");
             });
@@ -570,7 +562,7 @@ public class CatalogQueryTab {
             });
 
             JButton copyAllButton = new JButton("Copy all");
-            collectPanel.add(copyAllButton);
+            buttonPanel.add(copyAllButton);
             Timer copyAllTimer = new Timer(3000, (ActionEvent e) -> {
                 copyAllButton.setText("Copy all");
             });
@@ -581,7 +573,7 @@ public class CatalogQueryTab {
             });
 
             JButton fillFormButton = new JButton("TYGO form");
-            collectPanel.add(fillFormButton);
+            buttonPanel.add(fillFormButton);
             fillFormButton.addActionListener((ActionEvent evt) -> {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
 

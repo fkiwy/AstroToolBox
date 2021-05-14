@@ -5569,8 +5569,18 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
+            if (mainSequenceResults.isEmpty()) {
+                JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                messagePanel.add(createLabel("No colors available / No match", JColor.RED));
+                container.add(messagePanel);
+            }
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
+            if (brownDwarfsResults.isEmpty()) {
+                JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                messagePanel.add(createLabel("No colors available / No match", JColor.RED));
+                container.add(messagePanel);
+            }
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(collectPanel);
@@ -5673,9 +5683,7 @@ public class ImageViewerTab {
         columnModel.getColumn(5).setPreferredWidth(75);
         columnModel.getColumn(6).setPreferredWidth(75);
 
-        JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                : new JScrollPane(spectralTypeTable);
+        JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Main sequence spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -5704,9 +5712,7 @@ public class ImageViewerTab {
         columnModel.getColumn(2).setPreferredWidth(75);
         columnModel.getColumn(3).setPreferredWidth(50);
 
-        JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                : new JScrollPane(spectralTypeTable);
+        JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Brown dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
         ));
