@@ -511,7 +511,7 @@ public class CatalogQueryTab {
                 }
             }
 
-            remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table (version: 2021.03.02):"));
+            remarks.add(new JLabel("This feature uses Eric Mamajek's spectral type lookup table (version: 2021.03.02):"));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
             remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
             remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
