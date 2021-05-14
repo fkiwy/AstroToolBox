@@ -2,15 +2,12 @@ package astro.tool.box.module.tab;
 
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
-import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.LookupResult;
-import astro.tool.box.container.lookup.WhiteDwarfAgeLookupEntry;
-import astro.tool.box.container.lookup.WhiteDwarfTeffLookupEntry;
+import astro.tool.box.container.lookup.WhiteDwarfLookupEntry;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
@@ -49,8 +46,6 @@ public class WhiteDwarfTab {
 
     private final EffectiveTemperatureLookupService whiteDwarfPureHLookupService;
     private final EffectiveTemperatureLookupService whiteDwarfPureHeLookupService;
-    private final EffectiveTemperatureLookupService whiteDwarfDALookupService;
-    private final EffectiveTemperatureLookupService whiteDwarfDBLookupService;
 
     private CatalogEntry selectedEntry;
 
@@ -62,46 +57,29 @@ public class WhiteDwarfTab {
         input = getClass().getResourceAsStream("/WhiteDwarfPureHLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHLookupService = new EffectiveTemperatureLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfPureHeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfTeffLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new EffectiveTemperatureLookupService(entries);
-        }
-        input = getClass().getResourceAsStream("/WhiteDwarfDALookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
-            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfAgeLookupEntry(line.split(SPLIT_CHAR, 42));
-            }).collect(Collectors.toList());
-            whiteDwarfDALookupService = new EffectiveTemperatureLookupService(entries);
-        }
-        input = getClass().getResourceAsStream("/WhiteDwarfDBLookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
-            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfAgeLookupEntry(line.split(SPLIT_CHAR, 42));
-            }).collect(Collectors.toList());
-            whiteDwarfDBLookupService = new EffectiveTemperatureLookupService(entries);
         }
     }
 
     public void init() {
         try {
             JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Effective temperature lookup for white dwarfs", TitledBorder.LEFT, TitledBorder.TOP
-            ));
 
             JPanel resultPanel = new JPanel();
             resultPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Effective temperature evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
-            resultPanel.setPreferredSize(new Dimension(600, 750));
+            resultPanel.setPreferredSize(new Dimension(600, 700));
             mainPanel.add(resultPanel);
 
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
@@ -114,17 +92,11 @@ public class WhiteDwarfTab {
                         resultPanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.RED));
                         return;
                     } else {
-                        JPanel entryPanel = new JPanel(new GridLayout(2, 1));
+                        JPanel entryPanel = new JPanel(new GridLayout(0, 1));
                         resultPanel.add(entryPanel);
                         String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
                                 + " RA = " + roundTo7DecNZ(selectedEntry.getRa()) + " dec = " + roundTo7DecNZ(selectedEntry.getDec());
                         entryPanel.add(new JLabel(catalogEntry));
-                        if (selectedEntry instanceof AllWiseCatalogEntry) {
-                            AllWiseCatalogEntry entry = (AllWiseCatalogEntry) selectedEntry;
-                            if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                                entryPanel.add(createLabel(AGN_WARNING, JColor.RED));
-                            }
-                        }
                     }
                     performLookup(resultPanel, selectedEntry.getColors(false));
                 }
@@ -149,25 +121,18 @@ public class WhiteDwarfTab {
         }
 
         List<LookupResult> whiteDwarfPureHResults = whiteDwarfPureHLookupService.lookup(colors, teffH, loggH, massH);
-        displayTemperatures(whiteDwarfPureHResults, resultPanel, String.format("Carrasco (*): Pure H - %s: teff H = <span style='color:#1E90FF'>%s</span>; mass H = <span style='color:#1E90FF'>%s</span>; logg H = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
+        displayTemperatures(whiteDwarfPureHResults, resultPanel, String.format("Pure <span style='color:red'>H</span> - %s: teff H = <span style='color:#1E90FF'>%s</span>; mass H = <span style='color:#1E90FF'>%s</span>; logg H = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
         List<LookupResult> whiteDwarfPureHeResults = whiteDwarfPureHeLookupService.lookup(colors, teffHe, loggHe, massHe);
-        displayTemperatures(whiteDwarfPureHeResults, resultPanel, String.format("Carrasco (*): Pure He - %s: teff He = <span style='color:#1E90FF'>%s</span>; mass He = <span style='color:#1E90FF'>%s</span>; logg He = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
-        List<LookupResult> whiteDwarfDAResults = whiteDwarfDALookupService.lookup(colors, teffH, loggH, massH);
-        displayTemperatures(whiteDwarfDAResults, resultPanel, String.format("Bergeron (**): DA (pure H) - %s: teff H = <span style='color:#1E90FF'>%s</span>; mass H = <span style='color:#1E90FF'>%s</span>; logg H = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffH), roundTo3DecNZ(massH), roundTo3DecNZ(loggH)));
-        List<LookupResult> whiteDwarfDBResults = whiteDwarfDBLookupService.lookup(colors, teffHe, loggHe, massHe);
-        displayTemperatures(whiteDwarfDBResults, resultPanel, String.format("Bergeron (**): DB (pure He) - %s: teff He = <span style='color:#1E90FF'>%s</span>; mass He = <span style='color:#1E90FF'>%s</span>; logg He = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
+        displayTemperatures(whiteDwarfPureHeResults, resultPanel, String.format("Pure <span style='color:red'>He</span> - %s: teff He = <span style='color:#1E90FF'>%s</span>; mass He = <span style='color:#1E90FF'>%s</span>; logg He = <span style='color:#1E90FF'>%s</span>", GaiaWDCatalogEntry.CATALOG_NAME, roundTo3DecNZ(teffHe), roundTo3DecNZ(massHe), roundTo3DecNZ(loggHe)));
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(600, 500));
+        remarks.setPreferredSize(new Dimension(600, 150));
         resultPanel.add(remarks);
         remarks.add(new JLabel("White dwarfs lookup tables are available in the " + LookupTab.TAB_NAME + " tab:"));
-        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " (*), " + LookupTable.WHITE_DWARFS_PURE_HE + " (*),"));
-        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_DA + " (**), " + LookupTable.WHITE_DWARFS_DB + " (**)"));
+        remarks.add(new JLabel(LookupTable.WHITE_DWARFS_PURE_H + " & " + LookupTable.WHITE_DWARFS_PURE_HE + " (*)"));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available: G-RP, BP-RP, B-V, V-J, g-r, r-i, i-z"));
         String hyperlink = "https://vizier.u-strasbg.fr/viz-bin/VizieR?-source=J/A%2BA/565/A11";
         remarks.add(createHyperlink("(*) Gaia photometry for white dwarfs (Carrasco+, 2014)", hyperlink));
-        hyperlink = "http://www.astro.umontreal.ca/~bergeron/CoolingModels";
-        remarks.add(createHyperlink("(**) Tables by Pierre Bergeron: www.astro.umontreal.ca/~bergeron/CoolingModels", hyperlink));
     }
 
     private void displayTemperatures(List<LookupResult> results, JPanel resultPanel, String panelTitle) {

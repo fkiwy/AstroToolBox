@@ -57,8 +57,8 @@ public class LookupTab {
             JComboBox lookupTables = new JComboBox(LookupTable.values());
             filePanel.add(lookupTables);
             lookupTables.addActionListener((ActionEvent evt) -> {
-                String fileName;
-                String tableName;
+                String fileName = null;
+                String tableName = null;
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
@@ -75,18 +75,6 @@ public class LookupTab {
                     case WHITE_DWARFS_PURE_HE:
                         fileName = "/WhiteDwarfPureHeLookupTable.csv";
                         tableName = "White dwarfs pure He lookup table - Gaia photometry for white dwarfs (J. M. Carrasco)";
-                        break;
-                    case WHITE_DWARFS_DA:
-                        fileName = "/WhiteDwarfDALookupTable.csv";
-                        tableName = "White dwarfs DA lookup table - Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs (Pierre Bergeron)";
-                        break;
-                    case WHITE_DWARFS_DB:
-                        fileName = "/WhiteDwarfDBLookupTable.csv";
-                        tableName = "White dwarfs DB lookup table - Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs (Pierre Bergeron)";
-                        break;
-                    default:
-                        fileName = "";
-                        tableName = "";
                         break;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
