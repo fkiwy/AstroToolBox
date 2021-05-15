@@ -49,7 +49,7 @@ public class ProperMotionsTool {
             mainPanel.add(toCoordsField);
 
             mainPanel.add(new JLabel("Elapsed time unit: ", JLabel.RIGHT));
-            JComboBox<Unit> timeUnits = new JComboBox(new Unit[]{Unit.YEAR, Unit.DAY});
+            JComboBox timeUnits = new JComboBox(new Unit[]{Unit.YEAR, Unit.DAY});
             mainPanel.add(timeUnits);
 
             mainPanel.add(new JLabel("Elapsed time: ", JLabel.RIGHT));
@@ -57,7 +57,7 @@ public class ProperMotionsTool {
             mainPanel.add(elapsedTimeField);
 
             mainPanel.add(new JLabel("Proper motions unit: ", JLabel.RIGHT));
-            JComboBox<Unit> resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
+            JComboBox resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
             mainPanel.add(resultUnits);
 
             mainPanel.add(new JLabel("Proper motions (pmra, pmdec): ", JLabel.RIGHT));

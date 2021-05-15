@@ -15,6 +15,7 @@ import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Overlays;
+import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.Artifact;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -39,6 +40,7 @@ import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.FileType;
 import astro.tool.box.enumeration.JColor;
@@ -232,6 +234,7 @@ public class ImageViewerTab {
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
     private final DistanceLookupService distanceLookupService;
+    private final List<SpectralTypeLookup> entries;
     private final Overlays overlays;
     private List<CatalogEntry> simbadEntries;
     private List<CatalogEntry> gaiaEntries;
@@ -361,6 +364,7 @@ public class ImageViewerTab {
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
     private CatalogEntry pmCatalogEntry;
+    private XYSeriesCollection dataset;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
@@ -466,7 +470,7 @@ public class ImageViewerTab {
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
-            List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+            entries = stream.skip(1).map(line -> {
                 return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
@@ -5664,13 +5668,13 @@ public class ImageViewerTab {
                 JFreeChart chart;
 
                 if (catalogEntry instanceof TessCatalogEntry) {
-                    XYDataset dataset = createTessDataset(catalogEntry);
+                    dataset = (XYSeriesCollection) createTessDataset(catalogEntry);
                     chart = createChart(dataset);
 
                     SymbolAxis axis = new SymbolAxis("Filter", new String[]{"u'", "g'", "r'", "i'", "z'", "J", "H", "K", "W1", "W2", "W3", "W4"});
                     chart.getXYPlot().setDomainAxis(axis);
                 } else {
-                    XYDataset dataset = createDataset(catalogEntry);
+                    dataset = (XYSeriesCollection) createDataset(catalogEntry);
                     chart = createChart(dataset);
 
                     SymbolAxis axis = new SymbolAxis("Filter", new String[]{"g", "r", "i", "z", "y", "J", "H", "K", "W1", "W2", "W3", "W4"});
@@ -5694,10 +5698,24 @@ public class ImageViewerTab {
                 chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
                 chartPanel.setBackground(Color.WHITE);
 
+                JPanel referencePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                referencePanel.add(new JLabel("Reference SED for spectral type: ", JLabel.RIGHT));
+                JComboBox spectralTypes = new JComboBox(SpectralType.values());
+                referencePanel.add(spectralTypes);
+                spectralTypes.addActionListener((ActionEvent e) -> {
+                    SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
+                    plotReferenceSed(dataset, selectedType.name());
+                });
+
+                JPanel sedPanel = new JPanel();
+                sedPanel.setLayout(new BoxLayout(sedPanel, BoxLayout.Y_AXIS));
+                sedPanel.add(chartPanel);
+                sedPanel.add(referencePanel);
+
                 JFrame catalogFrame = new JFrame();
                 catalogFrame.setIconImage(getToolBoxImage());
                 catalogFrame.setTitle("SED");
-                catalogFrame.add(chartPanel);
+                catalogFrame.add(sedPanel);
                 catalogFrame.setSize(1000, 750);
                 catalogFrame.setLocation(0, 0);
                 catalogFrame.setAlwaysOnTop(true);
@@ -5832,6 +5850,37 @@ public class ImageViewerTab {
         dataset.addSeries(series);
 
         return dataset;
+    }
+
+    private void plotReferenceSed(XYSeriesCollection dataset, String spectralType) {
+        Map<Band, Double> referenceMagnitudes = provideReferenceMagnitudes(spectralType);
+
+        XYSeries refSeries = new XYSeries(spectralType);
+
+        refSeries.add(0, referenceMagnitudes.get(Band.g) == 0 ? null : referenceMagnitudes.get(Band.g)); // g
+        refSeries.add(1, referenceMagnitudes.get(Band.r) == 0 ? null : referenceMagnitudes.get(Band.r)); // r
+        refSeries.add(2, referenceMagnitudes.get(Band.i) == 0 ? null : referenceMagnitudes.get(Band.i)); // i
+        refSeries.add(3, referenceMagnitudes.get(Band.z) == 0 ? null : referenceMagnitudes.get(Band.z)); // z
+        refSeries.add(4, referenceMagnitudes.get(Band.y) == 0 ? null : referenceMagnitudes.get(Band.y)); // y
+        refSeries.add(5, referenceMagnitudes.get(Band.J) == 0 ? null : referenceMagnitudes.get(Band.J)); // J
+        refSeries.add(6, referenceMagnitudes.get(Band.H) == 0 ? null : referenceMagnitudes.get(Band.H)); // H
+        refSeries.add(7, referenceMagnitudes.get(Band.K) == 0 ? null : referenceMagnitudes.get(Band.K)); // K
+        refSeries.add(8, referenceMagnitudes.get(Band.W1) == 0 ? null : referenceMagnitudes.get(Band.W1)); // W1
+        refSeries.add(9, referenceMagnitudes.get(Band.W2) == 0 ? null : referenceMagnitudes.get(Band.W2)); // W2
+        refSeries.add(10, referenceMagnitudes.get(Band.W3) == 0 ? null : referenceMagnitudes.get(Band.W3)); // W3
+
+        dataset.addSeries(refSeries);
+    }
+
+    private Map<Band, Double> provideReferenceMagnitudes(String spt) {
+        Map<Band, Double> absoluteMagnitudes = null;
+        for (SpectralTypeLookup lookupEntry : entries) {
+            BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
+            if (entry.getSpt().equals(spt)) {
+                absoluteMagnitudes = entry.getBands();
+            }
+        }
+        return absoluteMagnitudes;
     }
 
     private JFreeChart createChart(XYDataset dataset) {

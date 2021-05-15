@@ -75,7 +75,7 @@ public class BatchQueryTab {
     private JPanel centerPanel;
     private JTextField echoField;
     private JCheckBox includeColors;
-    private JComboBox<LookupTable> lookupTables;
+    private JComboBox lookupTables;
     private JProgressBar progressBar;
     private JButton cancelButton;
 
