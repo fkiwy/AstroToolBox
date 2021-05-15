@@ -958,4 +958,52 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         }
     }
 
+    public double get_u_mag() {
+        return u_mag;
+    }
+
+    public double get_g_mag() {
+        return g_mag;
+    }
+
+    public double get_r_mag() {
+        return r_mag;
+    }
+
+    public double get_i_mag() {
+        return i_mag;
+    }
+
+    public double get_z_mag() {
+        return z_mag;
+    }
+
+    public double getW1mag() {
+        return W1mag;
+    }
+
+    public double getW2mag() {
+        return W2mag;
+    }
+
+    public double getW3mag() {
+        return W3mag;
+    }
+
+    public double getW4mag() {
+        return W4mag;
+    }
+
+    public double getJmag() {
+        return Jmag;
+    }
+
+    public double getHmag() {
+        return Hmag;
+    }
+
+    public double getKmag() {
+        return Kmag;
+    }
+
 }
