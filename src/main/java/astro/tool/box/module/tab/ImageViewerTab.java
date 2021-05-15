@@ -5684,7 +5684,7 @@ public class ImageViewerTab {
                     plotReferenceSed(collection, selectedType.name());
                 });
 
-                JButton removeButton = new JButton("Remove reference SEDs");
+                JButton removeButton = new JButton("Remove all reference SEDs");
                 referencePanel.add(removeButton);
                 removeButton.addActionListener((ActionEvent e) -> {
                     spectralTypes.setSelectedItem(SpectralType.SELECT);
@@ -5857,7 +5857,7 @@ public class ImageViewerTab {
         ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
         ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
 
-        Font axisTickFont = new Font("Arial", Font.PLAIN, 11);
+        Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
         xAxis.setTickLabelFont(axisTickFont);
         yAxis.setTickLabelFont(axisTickFont);
 
@@ -5867,7 +5867,7 @@ public class ImageViewerTab {
 
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.RED);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0f));
+        renderer.setSeriesStroke(0, new BasicStroke(2));
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);
