@@ -5851,7 +5851,7 @@ public class ImageViewerTab {
 
         XYPlot plot = chart.getXYPlot();
 
-        SymbolAxis domainAxis = new SymbolAxis("Filter", new String[]{"g", "r", "i", "z", "y", "J", "H", "K", "W1", "W2", "W3", "W4"});
+        SymbolAxis domainAxis = new SymbolAxis("Filter", new String[]{"g (481 nm)", "r (617 nm)", "i (752 nm)", "z (866 nm)", "y (962 nm)", "J (1.25 μm)", "H (1.65 μm)", "K (2.15 μm)", "W1 (3.4 μm)", "W2 (4.6 μm)", "W3 (12 μm)", "W4 (22 μm)"});
         plot.setDomainAxis(domainAxis);
 
         ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
