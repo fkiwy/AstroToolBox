@@ -5687,13 +5687,6 @@ public class ImageViewerTab {
                     createReferenceDataset(selectedType.name(), collection);
                 });
 
-                referencePanel.add(useAbsoluteMagnitude);
-                useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
-                    spectralTypes.setSelectedItem(SpectralType.SELECT);
-                    collection.removeAllSeries();
-                    createDataset(catalogEntry, collection);
-                });
-
                 JButton removeButton = new JButton("Remove all reference SEDs");
                 referencePanel.add(removeButton);
                 removeButton.addActionListener((ActionEvent e) -> {
@@ -5702,6 +5695,13 @@ public class ImageViewerTab {
                     for (int i = numberOfSeries - 1; i > 0; i--) {
                         collection.removeSeries(i);
                     }
+                });
+
+                referencePanel.add(useAbsoluteMagnitude);
+                useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
+                    spectralTypes.setSelectedItem(SpectralType.SELECT);
+                    collection.removeAllSeries();
+                    createDataset(catalogEntry, collection);
                 });
 
                 JPanel sedPanel = new JPanel();
@@ -5909,7 +5909,7 @@ public class ImageViewerTab {
         yAxis.setLabelFont(axisLabelFont);
 
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesPaint(0, Color.RED);
+        renderer.setSeriesPaint(0, JColor.STEEL.val);
         renderer.setSeriesStroke(0, new BasicStroke(2));
 
         plot.setRenderer(renderer);
