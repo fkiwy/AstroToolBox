@@ -324,6 +324,7 @@ public class ImageViewerTab {
     private JCheckBox useGaiaDR3PM;
     private JCheckBox useNoirlabPM;
     private JCheckBox useCatwisePM;
+    private JCheckBox useAbsoluteMagnitude;
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
@@ -5667,7 +5668,9 @@ public class ImageViewerTab {
             createSedButton.addActionListener((ActionEvent evt) -> {
                 JFreeChart chart;
 
-                collection = createDataset(catalogEntry);
+                useAbsoluteMagnitude = new JCheckBox("Use absolute magnitude if available");
+
+                collection = createDataset(catalogEntry, null);
                 chart = createChart(collection);
 
                 ChartPanel chartPanel = new ChartPanel(chart);
@@ -5681,7 +5684,14 @@ public class ImageViewerTab {
                 referencePanel.add(spectralTypes);
                 spectralTypes.addActionListener((ActionEvent e) -> {
                     SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
-                    plotReferenceSed(collection, selectedType.name());
+                    createReferenceDataset(selectedType.name(), collection);
+                });
+
+                referencePanel.add(useAbsoluteMagnitude);
+                useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
+                    spectralTypes.setSelectedItem(SpectralType.SELECT);
+                    collection.removeAllSeries();
+                    createDataset(catalogEntry, collection);
                 });
 
                 JButton removeButton = new JButton("Remove all reference SEDs");
@@ -5724,7 +5734,7 @@ public class ImageViewerTab {
         windowShift += 10;
     }
 
-    private XYSeriesCollection createDataset(CatalogEntry catalogEntry) {
+    private XYSeriesCollection createDataset(CatalogEntry catalogEntry, XYSeriesCollection collection) {
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
@@ -5794,6 +5804,32 @@ public class ImageViewerTab {
             }
         }
 
+        if (useAbsoluteMagnitude.isSelected()) {
+            GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
+            gaiaEntry.setRa(catalogEntry.getRa());
+            gaiaEntry.setDec(catalogEntry.getDec());
+            gaiaEntry.setSearchRadius(5);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
+            if (retrievedEntry != null) {
+                gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
+                double plx = gaiaEntry.getPlx();
+                if (plx >= 5) {
+                    panStarrsEntry.set_g_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_g_mag(), plx));
+                    panStarrsEntry.set_r_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_r_mag(), plx));
+                    panStarrsEntry.set_i_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_i_mag(), plx));
+                    panStarrsEntry.set_z_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_z_mag(), plx));
+                    panStarrsEntry.set_y_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_y_mag(), plx));
+                    allWiseEntry.setJmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getJmag(), plx));
+                    allWiseEntry.setHmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getHmag(), plx));
+                    allWiseEntry.setKmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getKmag(), plx));
+                    allWiseEntry.setW1mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW1mag(), plx));
+                    allWiseEntry.setW2mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW2mag(), plx));
+                    allWiseEntry.setW3mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW3mag(), plx));
+                    allWiseEntry.setW4mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW4mag(), plx));
+                }
+            }
+        }
+
         XYSeries series = new XYSeries(seriesLabel.toString());
 
         series.add(0, panStarrsEntry.get_g_mag() == 0 ? null : panStarrsEntry.get_g_mag()); // g
@@ -5809,13 +5845,20 @@ public class ImageViewerTab {
         series.add(10, allWiseEntry.getW3mag() == 0 ? null : allWiseEntry.getW3mag()); // W3
         series.add(11, allWiseEntry.getW4mag() == 0 ? null : allWiseEntry.getW4mag()); // W4
 
-        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeriesCollection dataset;
+
+        if (collection == null) {
+            dataset = new XYSeriesCollection();
+        } else {
+            dataset = collection;
+        }
+
         dataset.addSeries(series);
 
         return dataset;
     }
 
-    private void plotReferenceSed(XYSeriesCollection collection, String spectralType) {
+    private void createReferenceDataset(String spectralType, XYSeriesCollection collection) {
         Map<Band, Double> referenceMagnitudes = provideReferenceMagnitudes(spectralType);
         if (referenceMagnitudes == null) {
             return;
