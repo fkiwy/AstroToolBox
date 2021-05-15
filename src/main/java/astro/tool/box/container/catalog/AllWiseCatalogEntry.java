@@ -673,4 +673,16 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         return Kmag;
     }
 
+    public void setJmag(double Jmag) {
+        this.Jmag = Jmag;
+    }
+
+    public void setHmag(double Hmag) {
+        this.Hmag = Hmag;
+    }
+
+    public void setKmag(double Kmag) {
+        this.Kmag = Kmag;
+    }
+
 }

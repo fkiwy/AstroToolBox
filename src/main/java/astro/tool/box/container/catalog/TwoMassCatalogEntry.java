@@ -518,4 +518,16 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         }
     }
 
+    public double getJmag() {
+        return Jmag;
+    }
+
+    public double getHmag() {
+        return Hmag;
+    }
+
+    public double getKmag() {
+        return Kmag;
+    }
+
 }

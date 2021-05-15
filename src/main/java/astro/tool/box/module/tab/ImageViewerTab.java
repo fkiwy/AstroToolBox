@@ -5753,7 +5753,7 @@ public class ImageViewerTab {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
             panStarrsEntry.setDec(catalogEntry.getDec());
-            panStarrsEntry.setSearchRadius(5);
+            panStarrsEntry.setSearchRadius(10);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
@@ -5766,7 +5766,7 @@ public class ImageViewerTab {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());
             allWiseEntry.setDec(catalogEntry.getDec());
-            allWiseEntry.setSearchRadius(5);
+            allWiseEntry.setSearchRadius(10);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
@@ -5782,6 +5782,35 @@ public class ImageViewerTab {
                 seriesLabel.append(" & ");
             }
             seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId());
+        }
+
+        if (allWiseEntry.getJmag() == 0 && allWiseEntry.getHmag() == 0 && allWiseEntry.getKmag() == 0) {
+            if (catalogEntry.getDec() < 0) {
+                VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
+                vhsEntry.setRa(catalogEntry.getRa());
+                vhsEntry.setDec(catalogEntry.getDec());
+                vhsEntry.setSearchRadius(10);
+                CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
+                if (retrievedEntry != null) {
+                    vhsEntry = (VhsCatalogEntry) retrievedEntry;
+                    allWiseEntry.setJmag(vhsEntry.getJmag());
+                    allWiseEntry.setHmag(vhsEntry.getHmag());
+                    allWiseEntry.setKmag(vhsEntry.getKmag());
+                    seriesLabel.append(" (J, H, K photometry is from Vista VHS)");
+                }
+            } else {
+                TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
+                twoMassEntry.setRa(catalogEntry.getRa());
+                twoMassEntry.setDec(catalogEntry.getDec());
+                twoMassEntry.setSearchRadius(10);
+                CatalogEntry retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryFacade, baseFrame);
+                if (retrievedEntry != null) {
+                    twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
+                    allWiseEntry.setJmag(twoMassEntry.getJmag());
+                    allWiseEntry.setHmag(twoMassEntry.getHmag());
+                    allWiseEntry.setKmag(twoMassEntry.getKmag());
+                }
+            }
         }
 
         XYSeries series = new XYSeries(seriesLabel.toString());
