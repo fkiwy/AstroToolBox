@@ -645,4 +645,32 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         }
     }
 
+    public double getW1mag() {
+        return W1mag;
+    }
+
+    public double getW2mag() {
+        return W2mag;
+    }
+
+    public double getW3mag() {
+        return W3mag;
+    }
+
+    public double getW4mag() {
+        return W4mag;
+    }
+
+    public double getJmag() {
+        return Jmag;
+    }
+
+    public double getHmag() {
+        return Hmag;
+    }
+
+    public double getKmag() {
+        return Kmag;
+    }
+
 }

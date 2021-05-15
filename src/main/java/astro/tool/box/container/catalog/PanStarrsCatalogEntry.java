@@ -450,4 +450,24 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         }
     }
 
+    public double get_g_mag() {
+        return gMeanPSFMag;
+    }
+
+    public double get_r_mag() {
+        return rMeanPSFMag;
+    }
+
+    public double get_i_mag() {
+        return iMeanPSFMag;
+    }
+
+    public double get_z_mag() {
+        return zMeanPSFMag;
+    }
+
+    public double get_y_mag() {
+        return yMeanPSFMag;
+    }
+
 }

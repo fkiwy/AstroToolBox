@@ -5658,29 +5658,53 @@ public class ImageViewerTab {
 
             });
 
-            if (catalogEntry instanceof TessCatalogEntry) {
-                JButton createSedButton = new JButton("Create SED");
-                buttonPanel.add(createSedButton);
-                createSedButton.addActionListener((ActionEvent evt) -> {
+            JButton createSedButton = new JButton("Create SED");
+            buttonPanel.add(createSedButton);
+            createSedButton.addActionListener((ActionEvent evt) -> {
+                JFreeChart chart;
+
+                if (catalogEntry instanceof TessCatalogEntry) {
+                    XYDataset dataset = createTessDataset(catalogEntry);
+                    chart = createChart(dataset);
+
+                    SymbolAxis axis = new SymbolAxis("Filter", new String[]{"u'", "g'", "r'", "i'", "z'", "J", "H", "K", "W1", "W2", "W3", "W4"});
+                    chart.getXYPlot().setDomainAxis(axis);
+                } else {
                     XYDataset dataset = createDataset(catalogEntry);
-                    JFreeChart chart = createChart(dataset);
+                    chart = createChart(dataset);
 
-                    ChartPanel chartPanel = new ChartPanel(chart);
-                    chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-                    chartPanel.setBackground(Color.WHITE);
+                    SymbolAxis axis = new SymbolAxis("Filter", new String[]{"g", "r", "i", "z", "y", "J", "H", "K", "W1", "W2", "W3", "W4"});
+                    chart.getXYPlot().setDomainAxis(axis);
+                }
 
-                    JFrame catalogFrame = new JFrame();
-                    catalogFrame.setIconImage(getToolBoxImage());
-                    catalogFrame.setTitle("SED");
-                    catalogFrame.add(chartPanel);
-                    catalogFrame.setSize(1000, 750);
-                    catalogFrame.setLocation(windowShift, windowShift);
-                    catalogFrame.setAlwaysOnTop(true);
-                    catalogFrame.setResizable(false);
-                    catalogFrame.setVisible(true);
-                    windowShift += 10;
-                });
-            }
+                XYPlot plot = chart.getXYPlot();
+
+                ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
+                ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
+
+                Font axisTickFont = new Font("Arial", Font.PLAIN, 11);
+                xAxis.setTickLabelFont(axisTickFont);
+                yAxis.setTickLabelFont(axisTickFont);
+
+                Font axisLabelFont = new Font("Verdana", Font.PLAIN, 12);
+                xAxis.setLabelFont(axisLabelFont);
+                yAxis.setLabelFont(axisLabelFont);
+
+                ChartPanel chartPanel = new ChartPanel(chart);
+                chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+                chartPanel.setBackground(Color.WHITE);
+
+                JFrame catalogFrame = new JFrame();
+                catalogFrame.setIconImage(getToolBoxImage());
+                catalogFrame.setTitle("SED");
+                catalogFrame.add(chartPanel);
+                catalogFrame.setSize(1000, 750);
+                catalogFrame.setLocation(0, 0);
+                catalogFrame.setAlwaysOnTop(true);
+                catalogFrame.setResizable(false);
+                catalogFrame.setVisible(true);
+            });
+
         }
 
         JFrame catalogFrame = new JFrame();
@@ -5695,15 +5719,16 @@ public class ImageViewerTab {
         windowShift += 10;
     }
 
-    private XYDataset createDataset(CatalogEntry catalogEntry) {
+    private XYDataset createTessDataset(CatalogEntry catalogEntry) {
+        TessCatalogEntry tessEntry = (TessCatalogEntry) catalogEntry;
+
         XYSeries series = new XYSeries(catalogEntry.getCatalogName() + ": " + catalogEntry.getSourceId());
 
-        TessCatalogEntry tessEntry = (TessCatalogEntry) catalogEntry;
-        series.add(0, tessEntry.get_u_mag() == 0 ? null : tessEntry.get_u_mag()); // u
-        series.add(1, tessEntry.get_g_mag() == 0 ? null : tessEntry.get_g_mag()); // g
-        series.add(2, tessEntry.get_r_mag() == 0 ? null : tessEntry.get_r_mag()); // r
-        series.add(3, tessEntry.get_i_mag() == 0 ? null : tessEntry.get_i_mag()); // i
-        series.add(4, tessEntry.get_z_mag() == 0 ? null : tessEntry.get_z_mag()); // z
+        series.add(0, tessEntry.get_u_mag() == 0 ? null : tessEntry.get_u_mag()); // u'
+        series.add(1, tessEntry.get_g_mag() == 0 ? null : tessEntry.get_g_mag()); // g'
+        series.add(2, tessEntry.get_r_mag() == 0 ? null : tessEntry.get_r_mag()); // r'
+        series.add(3, tessEntry.get_i_mag() == 0 ? null : tessEntry.get_i_mag()); // i'
+        series.add(4, tessEntry.get_z_mag() == 0 ? null : tessEntry.get_z_mag()); // z'
         series.add(5, tessEntry.getJmag() == 0 ? null : tessEntry.getJmag()); // J
         series.add(6, tessEntry.getHmag() == 0 ? null : tessEntry.getHmag()); // H
         series.add(7, tessEntry.getKmag() == 0 ? null : tessEntry.getKmag()); // K
@@ -5711,6 +5736,68 @@ public class ImageViewerTab {
         series.add(9, tessEntry.getW2mag() == 0 ? null : tessEntry.getW2mag()); // W2
         series.add(10, tessEntry.getW3mag() == 0 ? null : tessEntry.getW3mag()); // W3
         series.add(11, tessEntry.getW4mag() == 0 ? null : tessEntry.getW4mag()); // W4
+
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(series);
+
+        return dataset;
+    }
+
+    private XYDataset createDataset(CatalogEntry catalogEntry) {
+        PanStarrsCatalogEntry panStarrsEntry;
+        AllWiseCatalogEntry allWiseEntry;
+
+        if (catalogEntry instanceof PanStarrsCatalogEntry) {
+            panStarrsEntry = (PanStarrsCatalogEntry) catalogEntry;
+        } else {
+            panStarrsEntry = new PanStarrsCatalogEntry();
+            panStarrsEntry.setRa(catalogEntry.getRa());
+            panStarrsEntry.setDec(catalogEntry.getDec());
+            panStarrsEntry.setSearchRadius(5);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryFacade, baseFrame);
+            if (retrievedEntry != null) {
+                panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
+            }
+        }
+
+        if (catalogEntry instanceof AllWiseCatalogEntry) {
+            allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+        } else {
+            allWiseEntry = new AllWiseCatalogEntry();
+            allWiseEntry.setRa(catalogEntry.getRa());
+            allWiseEntry.setDec(catalogEntry.getDec());
+            allWiseEntry.setSearchRadius(5);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryFacade, baseFrame);
+            if (retrievedEntry != null) {
+                allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
+            }
+        }
+
+        StringBuilder seriesLabel = new StringBuilder();
+        if (!"0".equals(panStarrsEntry.getSourceId())) {
+            seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId());
+        }
+        if (allWiseEntry.getSourceId() != null) {
+            if (seriesLabel.length() != 0) {
+                seriesLabel.append(" & ");
+            }
+            seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId());
+        }
+
+        XYSeries series = new XYSeries(seriesLabel.toString());
+
+        series.add(0, panStarrsEntry.get_g_mag() == 0 ? null : panStarrsEntry.get_g_mag()); // g
+        series.add(1, panStarrsEntry.get_r_mag() == 0 ? null : panStarrsEntry.get_r_mag()); // r
+        series.add(2, panStarrsEntry.get_i_mag() == 0 ? null : panStarrsEntry.get_i_mag()); // i
+        series.add(3, panStarrsEntry.get_z_mag() == 0 ? null : panStarrsEntry.get_z_mag()); // z
+        series.add(4, panStarrsEntry.get_y_mag() == 0 ? null : panStarrsEntry.get_y_mag()); // y
+        series.add(5, allWiseEntry.getJmag() == 0 ? null : allWiseEntry.getJmag()); // J
+        series.add(6, allWiseEntry.getHmag() == 0 ? null : allWiseEntry.getHmag()); // H
+        series.add(7, allWiseEntry.getKmag() == 0 ? null : allWiseEntry.getKmag()); // K
+        series.add(8, allWiseEntry.getW1mag() == 0 ? null : allWiseEntry.getW1mag()); // W1
+        series.add(9, allWiseEntry.getW2mag() == 0 ? null : allWiseEntry.getW2mag()); // W2
+        series.add(10, allWiseEntry.getW3mag() == 0 ? null : allWiseEntry.getW3mag()); // W3
+        series.add(11, allWiseEntry.getW4mag() == 0 ? null : allWiseEntry.getW4mag()); // W4
 
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(series);
@@ -5727,20 +5814,6 @@ public class ImageViewerTab {
         );
 
         XYPlot plot = chart.getXYPlot();
-
-        SymbolAxis axis = new SymbolAxis("Filters", new String[]{"u", "g", "r", "i", "z", "J", "H", "K", "W1", "W2", "W3", "W4"});
-        plot.setDomainAxis(axis);
-
-        ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
-        ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
-
-        Font axisTickFont = new Font("Arial", Font.PLAIN, 11);
-        xAxis.setTickLabelFont(axisTickFont);
-        yAxis.setTickLabelFont(axisTickFont);
-
-        Font axisLabelFont = new Font("Verdana", Font.PLAIN, 12);
-        xAxis.setLabelFont(axisLabelFont);
-        yAxis.setLabelFont(axisLabelFont);
 
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.RED);
