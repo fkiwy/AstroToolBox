@@ -377,4 +377,16 @@ public class VhsCatalogEntry implements CatalogEntry {
         return 0;
     }
 
+    public double getJmag() {
+        return j_ap3;
+    }
+
+    public double getHmag() {
+        return h_ap3;
+    }
+
+    public double getKmag() {
+        return ks_ap3;
+    }
+
 }
