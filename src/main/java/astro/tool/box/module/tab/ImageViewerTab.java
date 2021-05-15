@@ -364,7 +364,7 @@ public class ImageViewerTab {
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
     private CatalogEntry pmCatalogEntry;
-    private XYSeriesCollection dataset;
+    private XYSeriesCollection collection;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
@@ -5667,44 +5667,31 @@ public class ImageViewerTab {
             createSedButton.addActionListener((ActionEvent evt) -> {
                 JFreeChart chart;
 
-                if (catalogEntry instanceof TessCatalogEntry) {
-                    dataset = (XYSeriesCollection) createTessDataset(catalogEntry);
-                    chart = createChart(dataset);
-
-                    SymbolAxis axis = new SymbolAxis("Filter", new String[]{"u'", "g'", "r'", "i'", "z'", "J", "H", "K", "W1", "W2", "W3", "W4"});
-                    chart.getXYPlot().setDomainAxis(axis);
-                } else {
-                    dataset = (XYSeriesCollection) createDataset(catalogEntry);
-                    chart = createChart(dataset);
-
-                    SymbolAxis axis = new SymbolAxis("Filter", new String[]{"g", "r", "i", "z", "y", "J", "H", "K", "W1", "W2", "W3", "W4"});
-                    chart.getXYPlot().setDomainAxis(axis);
-                }
-
-                XYPlot plot = chart.getXYPlot();
-
-                ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
-                ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
-
-                Font axisTickFont = new Font("Arial", Font.PLAIN, 11);
-                xAxis.setTickLabelFont(axisTickFont);
-                yAxis.setTickLabelFont(axisTickFont);
-
-                Font axisLabelFont = new Font("Verdana", Font.PLAIN, 12);
-                xAxis.setLabelFont(axisLabelFont);
-                yAxis.setLabelFont(axisLabelFont);
+                collection = createDataset(catalogEntry);
+                chart = createChart(collection);
 
                 ChartPanel chartPanel = new ChartPanel(chart);
                 chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
                 chartPanel.setBackground(Color.WHITE);
 
                 JPanel referencePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
                 referencePanel.add(new JLabel("Reference SED for spectral type: ", JLabel.RIGHT));
                 JComboBox spectralTypes = new JComboBox(SpectralType.values());
                 referencePanel.add(spectralTypes);
                 spectralTypes.addActionListener((ActionEvent e) -> {
                     SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
-                    plotReferenceSed(dataset, selectedType.name());
+                    plotReferenceSed(collection, selectedType.name());
+                });
+
+                JButton removeButton = new JButton("Remove reference SEDs");
+                referencePanel.add(removeButton);
+                removeButton.addActionListener((ActionEvent e) -> {
+                    spectralTypes.setSelectedItem(SpectralType.SELECT);
+                    int numberOfSeries = collection.getSeries().size();
+                    for (int i = numberOfSeries - 1; i > 0; i--) {
+                        collection.removeSeries(i);
+                    }
                 });
 
                 JPanel sedPanel = new JPanel();
@@ -5737,31 +5724,7 @@ public class ImageViewerTab {
         windowShift += 10;
     }
 
-    private XYDataset createTessDataset(CatalogEntry catalogEntry) {
-        TessCatalogEntry tessEntry = (TessCatalogEntry) catalogEntry;
-
-        XYSeries series = new XYSeries(catalogEntry.getCatalogName() + ": " + catalogEntry.getSourceId());
-
-        series.add(0, tessEntry.get_u_mag() == 0 ? null : tessEntry.get_u_mag()); // u'
-        series.add(1, tessEntry.get_g_mag() == 0 ? null : tessEntry.get_g_mag()); // g'
-        series.add(2, tessEntry.get_r_mag() == 0 ? null : tessEntry.get_r_mag()); // r'
-        series.add(3, tessEntry.get_i_mag() == 0 ? null : tessEntry.get_i_mag()); // i'
-        series.add(4, tessEntry.get_z_mag() == 0 ? null : tessEntry.get_z_mag()); // z'
-        series.add(5, tessEntry.getJmag() == 0 ? null : tessEntry.getJmag()); // J
-        series.add(6, tessEntry.getHmag() == 0 ? null : tessEntry.getHmag()); // H
-        series.add(7, tessEntry.getKmag() == 0 ? null : tessEntry.getKmag()); // K
-        series.add(8, tessEntry.getW1mag() == 0 ? null : tessEntry.getW1mag()); // W1
-        series.add(9, tessEntry.getW2mag() == 0 ? null : tessEntry.getW2mag()); // W2
-        series.add(10, tessEntry.getW3mag() == 0 ? null : tessEntry.getW3mag()); // W3
-        series.add(11, tessEntry.getW4mag() == 0 ? null : tessEntry.getW4mag()); // W4
-
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
-
-        return dataset;
-    }
-
-    private XYDataset createDataset(CatalogEntry catalogEntry) {
+    private XYSeriesCollection createDataset(CatalogEntry catalogEntry) {
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
@@ -5852,35 +5815,30 @@ public class ImageViewerTab {
         return dataset;
     }
 
-    private void plotReferenceSed(XYSeriesCollection dataset, String spectralType) {
+    private void plotReferenceSed(XYSeriesCollection collection, String spectralType) {
         Map<Band, Double> referenceMagnitudes = provideReferenceMagnitudes(spectralType);
-
-        XYSeries refSeries = new XYSeries(spectralType);
-
-        refSeries.add(0, referenceMagnitudes.get(Band.g) == 0 ? null : referenceMagnitudes.get(Band.g)); // g
-        refSeries.add(1, referenceMagnitudes.get(Band.r) == 0 ? null : referenceMagnitudes.get(Band.r)); // r
-        refSeries.add(2, referenceMagnitudes.get(Band.i) == 0 ? null : referenceMagnitudes.get(Band.i)); // i
-        refSeries.add(3, referenceMagnitudes.get(Band.z) == 0 ? null : referenceMagnitudes.get(Band.z)); // z
-        refSeries.add(4, referenceMagnitudes.get(Band.y) == 0 ? null : referenceMagnitudes.get(Band.y)); // y
-        refSeries.add(5, referenceMagnitudes.get(Band.J) == 0 ? null : referenceMagnitudes.get(Band.J)); // J
-        refSeries.add(6, referenceMagnitudes.get(Band.H) == 0 ? null : referenceMagnitudes.get(Band.H)); // H
-        refSeries.add(7, referenceMagnitudes.get(Band.K) == 0 ? null : referenceMagnitudes.get(Band.K)); // K
-        refSeries.add(8, referenceMagnitudes.get(Band.W1) == 0 ? null : referenceMagnitudes.get(Band.W1)); // W1
-        refSeries.add(9, referenceMagnitudes.get(Band.W2) == 0 ? null : referenceMagnitudes.get(Band.W2)); // W2
-        refSeries.add(10, referenceMagnitudes.get(Band.W3) == 0 ? null : referenceMagnitudes.get(Band.W3)); // W3
-
-        dataset.addSeries(refSeries);
-    }
-
-    private Map<Band, Double> provideReferenceMagnitudes(String spt) {
-        Map<Band, Double> absoluteMagnitudes = null;
-        for (SpectralTypeLookup lookupEntry : entries) {
-            BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
-            if (entry.getSpt().equals(spt)) {
-                absoluteMagnitudes = entry.getBands();
-            }
+        if (referenceMagnitudes == null) {
+            return;
         }
-        return absoluteMagnitudes;
+
+        XYSeries referenceSeries = new XYSeries(spectralType);
+
+        referenceSeries.add(0, referenceMagnitudes.get(Band.g) == 0 ? null : referenceMagnitudes.get(Band.g)); // g
+        referenceSeries.add(1, referenceMagnitudes.get(Band.r) == 0 ? null : referenceMagnitudes.get(Band.r)); // r
+        referenceSeries.add(2, referenceMagnitudes.get(Band.i) == 0 ? null : referenceMagnitudes.get(Band.i)); // i
+        referenceSeries.add(3, referenceMagnitudes.get(Band.z) == 0 ? null : referenceMagnitudes.get(Band.z)); // z
+        referenceSeries.add(4, referenceMagnitudes.get(Band.y) == 0 ? null : referenceMagnitudes.get(Band.y)); // y
+        referenceSeries.add(5, referenceMagnitudes.get(Band.J) == 0 ? null : referenceMagnitudes.get(Band.J)); // J
+        referenceSeries.add(6, referenceMagnitudes.get(Band.H) == 0 ? null : referenceMagnitudes.get(Band.H)); // H
+        referenceSeries.add(7, referenceMagnitudes.get(Band.K) == 0 ? null : referenceMagnitudes.get(Band.K)); // K
+        referenceSeries.add(8, referenceMagnitudes.get(Band.W1) == 0 ? null : referenceMagnitudes.get(Band.W1)); // W1
+        referenceSeries.add(9, referenceMagnitudes.get(Band.W2) == 0 ? null : referenceMagnitudes.get(Band.W2)); // W2
+        referenceSeries.add(10, referenceMagnitudes.get(Band.W3) == 0 ? null : referenceMagnitudes.get(Band.W3)); // W3
+
+        try {
+            collection.addSeries(referenceSeries);
+        } catch (IllegalArgumentException ex) {
+        }
     }
 
     private JFreeChart createChart(XYDataset dataset) {
@@ -5892,6 +5850,20 @@ public class ImageViewerTab {
         );
 
         XYPlot plot = chart.getXYPlot();
+
+        SymbolAxis domainAxis = new SymbolAxis("Filter", new String[]{"g", "r", "i", "z", "y", "J", "H", "K", "W1", "W2", "W3", "W4"});
+        plot.setDomainAxis(domainAxis);
+
+        ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
+        ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
+
+        Font axisTickFont = new Font("Arial", Font.PLAIN, 11);
+        xAxis.setTickLabelFont(axisTickFont);
+        yAxis.setTickLabelFont(axisTickFont);
+
+        Font axisLabelFont = new Font("Verdana", Font.PLAIN, 12);
+        xAxis.setLabelFont(axisLabelFont);
+        yAxis.setLabelFont(axisLabelFont);
 
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.RED);
@@ -5912,6 +5884,17 @@ public class ImageViewerTab {
         chart.getTitle().setFont(chartTitleFont);
 
         return chart;
+    }
+
+    private Map<Band, Double> provideReferenceMagnitudes(String spt) {
+        Map<Band, Double> absoluteMagnitudes = null;
+        for (SpectralTypeLookup lookupEntry : entries) {
+            BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
+            if (entry.getSpt().equals(spt)) {
+                absoluteMagnitudes = entry.getBands();
+            }
+        }
+        return absoluteMagnitudes;
     }
 
     private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results) {
