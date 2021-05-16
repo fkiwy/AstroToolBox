@@ -308,7 +308,7 @@ public class ImageBrowserTab {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin", "source 1", "dist (arcsec)", "source 2", "dist (arcsec)", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
+                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist (arcsec)", "source 2", "dist (arcsec)", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     alignResultColumns(resultTable, resultRows);
@@ -338,7 +338,7 @@ public class ImageBrowserTab {
                                         }
                                     });
                                     TableColumnModel columnModel = resultTable.getColumnModel();
-                                    columnModel.getColumn(0).setPreferredWidth(300);
+                                    columnModel.getColumn(0).setPreferredWidth(325);
                                     columnModel.getColumn(1).setPreferredWidth(150);
                                     columnModel.getColumn(2).setPreferredWidth(100);
                                     columnModel.getColumn(3).setPreferredWidth(150);
@@ -354,8 +354,8 @@ public class ImageBrowserTab {
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
                                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                                    messagePanel.add(new JLabel(red("Please check that all the sources listed above correspond to the same object!")));
-                                    messagePanel.add(new JLabel("Clicking any row above will take you to the Image Viewer with the appropriate overlays enabled."));
+                                    messagePanel.add(new JLabel("(*) Please check that all the sources listed above correspond to the same object!"));
+                                    messagePanel.add(new JLabel("Clicking on any row above will take you to the Image Viewer with the appropriate overlays enabled."));
                                     messagePanel.setBackground(Color.WHITE);
                                     container.add(messagePanel);
                                     bottomPanel.addTab("Proper motions", container);
@@ -696,11 +696,11 @@ public class ImageBrowserTab {
             bandPanel.add(buildImagePanel(image, "Spitzer - CH4"));
             imageList.add(new Couple("Spitzer - CH4", image));
         }
-        image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "WISE - W2"));
-            imageList.add(new Couple("WISE - W2", image));
-        }
+        //image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+        //if (image != null) {
+        //    bandPanel.add(buildImagePanel(image, "WISE - W2"));
+        //    imageList.add(new Couple("WISE - W2", image));
+        //}
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
@@ -832,28 +832,30 @@ public class ImageBrowserTab {
         if (!catalogEntries.isEmpty()) {
             catalogEntries.sort(Comparator.comparingDouble(CatalogEntry::getTargetDistance));
             CatalogEntry nearestEntry = catalogEntries.get(0);
-            switch (nearestEntry.getCatalogName()) {
-                case TwoMassCatalogEntry.CATALOG_NAME:
-                    twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
-                    break;
-                case AllWiseCatalogEntry.CATALOG_NAME:
-                    allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
-                    break;
-                case SdssCatalogEntry.CATALOG_NAME:
-                    sdssEntry = (SdssCatalogEntry) nearestEntry;
-                    break;
-                case PanStarrsCatalogEntry.CATALOG_NAME:
-                    panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
-                    break;
-                case GaiaDR3CatalogEntry.CATALOG_NAME:
-                    gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
-                    break;
-                case CatWiseCatalogEntry.CATALOG_NAME:
-                    catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
-                    break;
-                case NoirlabCatalogEntry.CATALOG_NAME:
-                    noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
-                    break;
+            if (nearestEntry.getTargetDistance() < 10) {
+                switch (nearestEntry.getCatalogName()) {
+                    case TwoMassCatalogEntry.CATALOG_NAME:
+                        twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
+                        break;
+                    case AllWiseCatalogEntry.CATALOG_NAME:
+                        allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
+                        break;
+                    case SdssCatalogEntry.CATALOG_NAME:
+                        sdssEntry = (SdssCatalogEntry) nearestEntry;
+                        break;
+                    case PanStarrsCatalogEntry.CATALOG_NAME:
+                        panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
+                        break;
+                    case GaiaDR3CatalogEntry.CATALOG_NAME:
+                        gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
+                        break;
+                    case CatWiseCatalogEntry.CATALOG_NAME:
+                        catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
+                        break;
+                    case NoirlabCatalogEntry.CATALOG_NAME:
+                        noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
+                        break;
+                }
             }
             return catalogEntries;
         }
