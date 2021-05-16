@@ -28,6 +28,7 @@ import astro.tool.box.enumeration.FileType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.util.Counter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -88,6 +89,10 @@ public class FinderChartTab {
     private JTextField fovField;
     private JTable currentTable;
 
+    private Timer timeSeriesTimer;
+    private Timer decalsTimeSeriesTimer;
+    private Timer wiseTimeSeriesTimer;
+
     private TwoMassCatalogEntry twoMassEntry;
     private AllWiseCatalogEntry allWiseEntry;
     private SdssCatalogEntry sdssEntry;
@@ -99,14 +104,6 @@ public class FinderChartTab {
     private double targetRa;
     private double targetDec;
     private int fieldOfView;
-
-    private int timeSeriesImageCount;
-    private int decalsTimeSeriesImageCount;
-    private int wiseTimeSeriesImageCount;
-
-    private Timer timeSeriesTimer;
-    private Timer decalsTimeSeriesTimer;
-    private Timer wiseTimeSeriesTimer;
 
     public FinderChartTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -716,23 +713,8 @@ public class FinderChartTab {
             imageList.add(new Couple("DECaLS - z", image));
         }
 
-        int componentCount = imageList.size();
-        if (componentCount > 0) {
-            JPanel displayPanel = new JPanel();
-            bandPanel.add(displayPanel);
-            timeSeriesImageCount = 0;
-            timeSeriesTimer = new Timer(300, (ActionEvent e) -> {
-                if (timeSeriesImageCount > componentCount - 1) {
-                    timeSeriesImageCount = 0;
-                }
-                displayPanel.removeAll();
-                Couple<String, BufferedImage> imageData = imageList.get(timeSeriesImageCount);
-                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
-                baseFrame.setVisible(true);
-                timeSeriesImageCount++;
-            });
-            timeSeriesTimer.start();
-        }
+        timeSeriesTimer = new Timer(300, null);
+        createTimeSeriesTimer(bandPanel, imageList, timeSeriesTimer);
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
@@ -768,23 +750,8 @@ public class FinderChartTab {
             imageList.add(new Couple("LS DR9", image));
         }
 
-        int componentCount = imageList.size();
-        if (componentCount > 0) {
-            JPanel displayPanel = new JPanel();
-            bandPanel.add(displayPanel);
-            decalsTimeSeriesImageCount = 0;
-            decalsTimeSeriesTimer = new Timer(300, (ActionEvent e) -> {
-                if (decalsTimeSeriesImageCount > componentCount - 1) {
-                    decalsTimeSeriesImageCount = 0;
-                }
-                displayPanel.removeAll();
-                Couple<String, BufferedImage> imageData = imageList.get(decalsTimeSeriesImageCount);
-                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
-                baseFrame.setVisible(true);
-                decalsTimeSeriesImageCount++;
-            });
-            decalsTimeSeriesTimer.start();
-        }
+        decalsTimeSeriesTimer = new Timer(300, null);
+        createTimeSeriesTimer(bandPanel, imageList, decalsTimeSeriesTimer);
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
@@ -810,28 +777,33 @@ public class FinderChartTab {
             imageList.add(new Couple(component.getTitle(), image));
         }
 
-        int componentCount = imageList.size();
-        if (componentCount > 0) {
-            JPanel displayPanel = new JPanel();
-            bandPanel.add(displayPanel);
-            wiseTimeSeriesImageCount = 0;
-            wiseTimeSeriesTimer = new Timer(300, (ActionEvent e) -> {
-                if (wiseTimeSeriesImageCount > componentCount - 1) {
-                    wiseTimeSeriesImageCount = 0;
-                }
-                displayPanel.removeAll();
-                Couple<String, BufferedImage> imageData = imageList.get(wiseTimeSeriesImageCount);
-                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
-                baseFrame.setVisible(true);
-                wiseTimeSeriesImageCount++;
-            });
-            wiseTimeSeriesTimer.start();
-        }
+        wiseTimeSeriesTimer = new Timer(300, null);
+        createTimeSeriesTimer(bandPanel, imageList, wiseTimeSeriesTimer);
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+        }
+    }
+
+    private void createTimeSeriesTimer(JPanel bandPanel, List<Couple<String, BufferedImage>> imageList, Timer timer) {
+        int componentCount = imageList.size();
+        if (componentCount > 0) {
+            JPanel displayPanel = new JPanel();
+            bandPanel.add(displayPanel);
+            Counter imageCounter = new Counter();
+            timer.addActionListener((ActionEvent e) -> {
+                if (imageCounter.value() > componentCount - 1) {
+                    imageCounter.init();
+                }
+                displayPanel.removeAll();
+                Couple<String, BufferedImage> imageData = imageList.get(imageCounter.value());
+                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
+                baseFrame.setVisible(true);
+                imageCounter.add();
+            });
+            timer.start();
         }
     }
 

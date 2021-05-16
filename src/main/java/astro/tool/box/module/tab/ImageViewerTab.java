@@ -3987,10 +3987,10 @@ public class ImageViewerTab {
     }
 
     private boolean downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) {
-        String imageKey = band + "_" + requestedEpoch.total();
+        String imageKey = band + "_" + requestedEpoch.value();
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " > already downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
             return true;
         }
         String selectedBand;
@@ -4012,13 +4012,13 @@ public class ImageViewerTab {
             Fits fits = new Fits(connection.getInputStream());
             enhanceImage(fits, 1000);
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
-            images.put(imageKey, new ImageContainer(requestedEpoch.total(), obsDate, fits));
-            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " | " + survey + " > downloaded");
+            images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
+            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
             requestedEpoch.add();
-            imageKey = band + "_" + requestedEpoch.total();
+            imageKey = band + "_" + requestedEpoch.value();
             obsDate = LocalDateTime.of(year, Month.SEPTEMBER, 1, 0, 0);
-            images.put(imageKey, new ImageContainer(requestedEpoch.total(), obsDate, fits));
-            writeLogEntry("band " + band + " | image " + requestedEpoch.total() + " | " + survey + " > downloaded");
+            images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
+            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
             requestedEpoch.add();
             return true;
         } catch (IOException | FitsException ex) {
@@ -4624,7 +4624,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("DSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4668,7 +4668,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4720,7 +4720,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("SDSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4772,7 +4772,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("Spitzer (SEIP) - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4820,7 +4820,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4855,7 +4855,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(6 * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4902,7 +4902,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("DECaLS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
@@ -4960,7 +4960,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
-            imageFrame.setLocation(0, counter.total());
+            imageFrame.setLocation(0, counter.value());
             imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
