@@ -15,7 +15,7 @@ import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
 import astro.tool.box.module.tab.PhotometricClassifierTab;
 import astro.tool.box.module.tab.SettingsTab;
-import astro.tool.box.module.tab.FinderChartTab;
+import astro.tool.box.module.tab.ImageBrowserTab;
 import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
@@ -79,8 +79,8 @@ public class Application {
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
 
-        FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
-        finderChartTab.init();
+        ImageBrowserTab imageBrowserTab = new ImageBrowserTab(baseFrame, tabbedPane, imageViewerTab);
+        imageBrowserTab.init();
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();

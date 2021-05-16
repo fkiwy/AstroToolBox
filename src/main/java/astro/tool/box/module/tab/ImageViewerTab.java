@@ -187,7 +187,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 public class ImageViewerTab {
 
-    public static final String TAB_NAME = "Image Viewer";
+    public static final String TAB_NAME = "Image Blinker";
     public static final String FITS_DIR = USER_HOME + "/.fits";
     public static final String EPOCH_LABEL = "Number of epochs: %d";
     public static final String HIGH_SCALE_LABEL = "Contrast - high scale: %d";

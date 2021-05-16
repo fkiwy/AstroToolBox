@@ -68,9 +68,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class FinderChartTab {
+public class ImageBrowserTab {
 
-    private static final String TAB_NAME = "Finder Chart";
+    private static final String TAB_NAME = "Image Browser";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -105,7 +105,7 @@ public class FinderChartTab {
     private double targetDec;
     private int fieldOfView;
 
-    public FinderChartTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
+    public ImageBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.imageViewerTab = imageViewerTab;
