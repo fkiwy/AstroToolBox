@@ -1,5 +1,6 @@
 package astro.tool.box.module.tab;
 
+import astro.tool.box.container.Couple;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
@@ -57,8 +58,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -96,6 +99,14 @@ public class FinderChartTab {
     private double targetRa;
     private double targetDec;
     private int fieldOfView;
+
+    private int timeSeriesImageCount;
+    private int decalsTimeSeriesImageCount;
+    private int wiseTimeSeriesImageCount;
+
+    private Timer timeSeriesTimer;
+    private Timer decalsTimeSeriesTimer;
+    private Timer wiseTimeSeriesTimer;
 
     public FinderChartTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -139,6 +150,10 @@ public class FinderChartTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
+                    stopTimers();
+                    timeSeriesTimer = null;
+                    decalsTimeSeriesTimer = null;
+                    wiseTimeSeriesTimer = null;
                     if (centerPanel.getComponentCount() > 0) {
                         centerPanel.removeAll();
                     }
@@ -366,8 +381,41 @@ public class FinderChartTab {
             fovField.addActionListener((ActionEvent evt) -> {
                 searchButton.getActionListeners()[0].actionPerformed(evt);
             });
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
+                int index = sourceTabbedPane.getSelectedIndex();
+                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
+                    restartTimers();
+                } else {
+                    stopTimers();
+                }
+            });
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void restartTimers() {
+        if (timeSeriesTimer != null) {
+            timeSeriesTimer.restart();
+        }
+        if (decalsTimeSeriesTimer != null) {
+            decalsTimeSeriesTimer.restart();
+        }
+        if (wiseTimeSeriesTimer != null) {
+            wiseTimeSeriesTimer.restart();
+        }
+    }
+
+    private void stopTimers() {
+        if (timeSeriesTimer != null) {
+            timeSeriesTimer.stop();
+        }
+        if (decalsTimeSeriesTimer != null) {
+            decalsTimeSeriesTimer.stop();
+        }
+        if (wiseTimeSeriesTimer != null) {
+            wiseTimeSeriesTimer.stop();
         }
     }
 
@@ -628,35 +676,62 @@ public class FinderChartTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Cross survey time series", Color.RED));
 
+        List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
+
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DSS2 - IR"));
+            imageList.add(new Couple("DSS2 - IR", image));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "2MASS - K"));
+            imageList.add(new Couple("2MASS - K", image));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "SDSS - z"));
+            imageList.add(new Couple("SDSS - z", image));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC4"));
+            bandPanel.add(buildImagePanel(image, "Spitzer - CH4"));
+            imageList.add(new Couple("Spitzer - CH4", image));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "WISE - W2"));
+            imageList.add(new Couple("WISE - W2", image));
         }
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
             bandPanel.add(buildImagePanel(image, "PS1 - z"));
+            imageList.add(new Couple("PS1 - z", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z");
         if (image != null) {
             image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "DECaLS - z"));
+            imageList.add(new Couple("DECaLS - z", image));
+        }
+
+        int componentCount = imageList.size();
+        if (componentCount > 0) {
+            JPanel displayPanel = new JPanel();
+            bandPanel.add(displayPanel);
+            timeSeriesImageCount = 0;
+            timeSeriesTimer = new Timer(300, (ActionEvent e) -> {
+                if (timeSeriesImageCount > componentCount - 1) {
+                    timeSeriesImageCount = 0;
+                }
+                displayPanel.removeAll();
+                Couple<String, BufferedImage> imageData = imageList.get(timeSeriesImageCount);
+                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
+                baseFrame.setVisible(true);
+                timeSeriesImageCount++;
+            });
+            timeSeriesTimer.start();
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -670,21 +745,45 @@ public class FinderChartTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("DECaLS time series", Color.RED));
 
+        List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
+
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr5");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
+            imageList.add(new Couple("DECaLS DR5", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr7");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
+            imageList.add(new Couple("DECaLS DR7", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr8");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "LS DR8"));
+            imageList.add(new Couple("LS DR8", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr9");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "LS DR9"));
+            imageList.add(new Couple("LS DR9", image));
+        }
+
+        int componentCount = imageList.size();
+        if (componentCount > 0) {
+            JPanel displayPanel = new JPanel();
+            bandPanel.add(displayPanel);
+            decalsTimeSeriesImageCount = 0;
+            decalsTimeSeriesTimer = new Timer(300, (ActionEvent e) -> {
+                if (decalsTimeSeriesImageCount > componentCount - 1) {
+                    decalsTimeSeriesImageCount = 0;
+                }
+                displayPanel.removeAll();
+                Couple<String, BufferedImage> imageData = imageList.get(decalsTimeSeriesImageCount);
+                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
+                baseFrame.setVisible(true);
+                decalsTimeSeriesImageCount++;
+            });
+            decalsTimeSeriesTimer.start();
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -703,9 +802,30 @@ public class FinderChartTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
 
+        List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
+
         for (FlipbookComponent component : flipbook) {
             BufferedImage image = imageViewerTab.processImage(component);
             bandPanel.add(buildImagePanel(image, component.getTitle()));
+            imageList.add(new Couple(component.getTitle(), image));
+        }
+
+        int componentCount = imageList.size();
+        if (componentCount > 0) {
+            JPanel displayPanel = new JPanel();
+            bandPanel.add(displayPanel);
+            wiseTimeSeriesImageCount = 0;
+            wiseTimeSeriesTimer = new Timer(300, (ActionEvent e) -> {
+                if (wiseTimeSeriesImageCount > componentCount - 1) {
+                    wiseTimeSeriesImageCount = 0;
+                }
+                displayPanel.removeAll();
+                Couple<String, BufferedImage> imageData = imageList.get(wiseTimeSeriesImageCount);
+                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
+                baseFrame.setVisible(true);
+                wiseTimeSeriesImageCount++;
+            });
+            wiseTimeSeriesTimer.start();
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -725,7 +845,7 @@ public class FinderChartTab {
     private JPanel buildLinkPanel(String link, String imageHeader) {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(createHyperlink("Open in browser", link));
+        panel.add(createHyperlink("Display in web browser", link));
         return panel;
     }
 

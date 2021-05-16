@@ -5744,7 +5744,7 @@ public class ImageViewerTab {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
             panStarrsEntry.setDec(catalogEntry.getDec());
-            panStarrsEntry.setSearchRadius(10);
+            panStarrsEntry.setSearchRadius(5);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
@@ -5757,7 +5757,7 @@ public class ImageViewerTab {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());
             allWiseEntry.setDec(catalogEntry.getDec());
-            allWiseEntry.setSearchRadius(10);
+            allWiseEntry.setSearchRadius(5);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
@@ -5780,7 +5780,7 @@ public class ImageViewerTab {
                 VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
                 vhsEntry.setRa(catalogEntry.getRa());
                 vhsEntry.setDec(catalogEntry.getDec());
-                vhsEntry.setSearchRadius(10);
+                vhsEntry.setSearchRadius(5);
                 CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
                 if (retrievedEntry != null) {
                     vhsEntry = (VhsCatalogEntry) retrievedEntry;
