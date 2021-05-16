@@ -276,7 +276,7 @@ public class FinderChartTab {
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
-                                        "Calculated from 2MASS and AllWISE coordinates",
+                                        "Calculated from " + TwoMassCatalogEntry.CATALOG_NAME + " and " + AllWiseCatalogEntry.CATALOG_NAME + " coordinates",
                                         twoMassEntry.getSourceId(),
                                         roundTo3DecLZ(twoMassEntry.getTargetDistance()),
                                         allWiseEntry.getSourceId(),
@@ -294,7 +294,7 @@ public class FinderChartTab {
                                     double pmDE = properMotions.getY();
                                     double tpm = calculateTotalProperMotion(pmRA, pmDE);
                                     resultRows.add(new String[]{
-                                        "Calculated from SDSS and Pan-STARRS coordinates",
+                                        "Calculated from " + SdssCatalogEntry.CATALOG_NAME + " and " + PanStarrsCatalogEntry.CATALOG_NAME + " coordinates",
                                         sdssEntry.getSourceId(),
                                         roundTo3DecLZ(sdssEntry.getTargetDistance()),
                                         panStarrsEntry.getSourceId(),
@@ -321,17 +321,17 @@ public class FinderChartTab {
                                                 return;
                                             }
                                             deselectedCatalogOverlay(imageViewerTab);
-                                            if (label.contains("2MASS")) {
+                                            if (label.contains(TwoMassCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, twoMassEntry);
                                                 activateSelectedCatalogOverlay(imageViewerTab, allWiseEntry);
-                                            } else if (label.contains("SDSS")) {
+                                            } else if (label.contains(SdssCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, sdssEntry);
                                                 activateSelectedCatalogOverlay(imageViewerTab, panStarrsEntry);
-                                            } else if (label.contains(gaiaDR3Entry.getCatalogName())) {
+                                            } else if (label.contains(GaiaDR3CatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, gaiaDR3Entry);
-                                            } else if (label.contains(catWiseEntry.getCatalogName())) {
+                                            } else if (label.contains(CatWiseCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, catWiseEntry);
-                                            } else if (label.contains(noirlabEntry.getCatalogName())) {
+                                            } else if (label.contains(NoirlabCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, noirlabEntry);
                                             }
                                             tabbedPane.setSelectedIndex(3);
@@ -358,7 +358,8 @@ public class FinderChartTab {
                                     messagePanel.add(new JLabel("Clicking any row above will take you to the Image Viewer with the appropriate overlays enabled."));
                                     messagePanel.setBackground(Color.WHITE);
                                     container.add(messagePanel);
-                                    bottomPanel.addTab(focus("Proper motions"), container);
+                                    bottomPanel.addTab("Proper motions", container);
+                                    bottomPanel.setSelectedIndex(bottomPanel.getTabCount() - 1);
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
