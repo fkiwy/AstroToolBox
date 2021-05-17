@@ -676,42 +676,41 @@ public class ImageBrowserTab {
 
         List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
 
-        BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
+        BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS2 - IR"));
-            imageList.add(new Couple("DSS2 - IR", image));
+            bandPanel.add(buildImagePanel(image, "DSS"));
+            imageList.add(new Couple("DSS", image));
         }
-        image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+        image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS - K"));
-            imageList.add(new Couple("2MASS - K", image));
+            bandPanel.add(buildImagePanel(image, "2MASS"));
+            imageList.add(new Couple("2MASS", image));
         }
-        image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
+        image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS - z"));
-            imageList.add(new Couple("SDSS - z", image));
+            bandPanel.add(buildImagePanel(image, "SDSS"));
+            imageList.add(new Couple("SDSS", image));
         }
-        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+        image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "Spitzer - CH4"));
-            imageList.add(new Couple("Spitzer - CH4", image));
+            bandPanel.add(buildImagePanel(image, "Spitzer"));
+            imageList.add(new Couple("Spitzer", image));
         }
-        //image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+        //image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
         //if (image != null) {
-        //    bandPanel.add(buildImagePanel(image, "WISE - W2"));
-        //    imageList.add(new Couple("WISE - W2", image));
+        //    bandPanel.add(buildImagePanel(image, "AllWISE"));
+        //    imageList.add(new Couple("AllWISE", image));
         //}
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
-            image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
-            bandPanel.add(buildImagePanel(image, "PS1 - z"));
-            imageList.add(new Couple("PS1 - z", image));
+            image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size);
+            bandPanel.add(buildImagePanel(image, "Pan-STARRS"));
+            imageList.add(new Couple("Pan-STARRS", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "g-r-z");
         if (image != null) {
-            image = convertToGray(image);
-            bandPanel.add(buildImagePanel(image, "DECaLS - z"));
-            imageList.add(new Couple("DECaLS - z", image));
+            bandPanel.add(buildImagePanel(image, "DECaLS"));
+            imageList.add(new Couple("DECaLS", image));
         }
 
         timeSeriesTimer = new Timer(300, null);

@@ -324,7 +324,6 @@ public class ImageViewerTab {
     private JCheckBox useGaiaDR3PM;
     private JCheckBox useNoirlabPM;
     private JCheckBox useCatwisePM;
-    private JCheckBox useAbsoluteMagnitude;
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
@@ -5666,12 +5665,8 @@ public class ImageViewerTab {
             JButton createSedButton = new JButton("Create SED");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
-                JFreeChart chart;
-
-                useAbsoluteMagnitude = new JCheckBox("Use absolute magnitude if available");
-
                 collection = createDataset(catalogEntry, null);
-                chart = createChart(collection);
+                JFreeChart chart = createChart(collection);
 
                 ChartPanel chartPanel = new ChartPanel(chart);
                 chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -5695,13 +5690,6 @@ public class ImageViewerTab {
                     for (int i = numberOfSeries - 1; i > 0; i--) {
                         collection.removeSeries(i);
                     }
-                });
-
-                referencePanel.add(useAbsoluteMagnitude);
-                useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
-                    spectralTypes.setSelectedItem(SpectralType.SELECT);
-                    collection.removeAllSeries();
-                    createDataset(catalogEntry, collection);
                 });
 
                 JPanel sedPanel = new JPanel();
@@ -5804,32 +5792,6 @@ public class ImageViewerTab {
             }
         }
 
-        if (useAbsoluteMagnitude.isSelected()) {
-            GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
-            gaiaEntry.setRa(catalogEntry.getRa());
-            gaiaEntry.setDec(catalogEntry.getDec());
-            gaiaEntry.setSearchRadius(5);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
-            if (retrievedEntry != null) {
-                gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
-                double plx = gaiaEntry.getPlx();
-                if (plx >= 5) {
-                    panStarrsEntry.set_g_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_g_mag(), plx));
-                    panStarrsEntry.set_r_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_r_mag(), plx));
-                    panStarrsEntry.set_i_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_i_mag(), plx));
-                    panStarrsEntry.set_z_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_z_mag(), plx));
-                    panStarrsEntry.set_y_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_y_mag(), plx));
-                    allWiseEntry.setJmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getJmag(), plx));
-                    allWiseEntry.setHmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getHmag(), plx));
-                    allWiseEntry.setKmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getKmag(), plx));
-                    allWiseEntry.setW1mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW1mag(), plx));
-                    allWiseEntry.setW2mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW2mag(), plx));
-                    allWiseEntry.setW3mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW3mag(), plx));
-                    allWiseEntry.setW4mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW4mag(), plx));
-                }
-            }
-        }
-
         XYSeries series = new XYSeries(seriesLabel.toString());
 
         series.add(0, panStarrsEntry.get_g_mag() == 0 ? null : panStarrsEntry.get_g_mag()); // g
@@ -5854,6 +5816,64 @@ public class ImageViewerTab {
         }
 
         dataset.addSeries(series);
+
+        for (SpectralTypeLookup lookupEntry : entries) {
+            BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
+            Map<Band, Double> bands = entry.getBands();
+            List<Double> diffMags = new ArrayList();
+            if (panStarrsEntry.get_g_mag() != 0) {
+                diffMags.add(abs(panStarrsEntry.get_g_mag() - bands.get(Band.g)));
+            }
+            if (panStarrsEntry.get_r_mag() != 0) {
+                diffMags.add(abs(panStarrsEntry.get_r_mag() - bands.get(Band.r)));
+            }
+            if (panStarrsEntry.get_i_mag() != 0) {
+                diffMags.add(abs(panStarrsEntry.get_i_mag() - bands.get(Band.i)));
+            }
+            if (panStarrsEntry.get_z_mag() != 0) {
+                diffMags.add(abs(panStarrsEntry.get_z_mag() - bands.get(Band.z)));
+            }
+            if (panStarrsEntry.get_y_mag() != 0) {
+                diffMags.add(abs(panStarrsEntry.get_y_mag() - bands.get(Band.y)));
+            }
+            if (allWiseEntry.getJmag() != 0) {
+                diffMags.add(abs(allWiseEntry.getJmag() - bands.get(Band.J)));
+            }
+            if (allWiseEntry.getHmag() != 0) {
+                diffMags.add(abs(allWiseEntry.getHmag() - bands.get(Band.H)));
+            }
+            if (allWiseEntry.getKmag() != 0) {
+                diffMags.add(abs(allWiseEntry.getKmag() - bands.get(Band.K)));
+            }
+            if (allWiseEntry.getW1mag() != 0) {
+                diffMags.add(abs(allWiseEntry.getW1mag() - bands.get(Band.W1)));
+            }
+            if (allWiseEntry.getW2mag() != 0) {
+                diffMags.add(abs(allWiseEntry.getW2mag() - bands.get(Band.W2)));
+            }
+            if (allWiseEntry.getW3mag() != 0) {
+                diffMags.add(abs(allWiseEntry.getW3mag() - bands.get(Band.W3)));
+            }
+            diffMags.sort(Comparator.naturalOrder());
+            double median;
+            int totalMags = diffMags.size();
+            if (totalMags > 2) {
+                if (totalMags % 2 == 0) {
+                    median = (diffMags.get(totalMags / 2) + diffMags.get(totalMags / 2 + 1)) / 2;
+                } else {
+                    median = diffMags.get((totalMags + 1) / 2);
+                }
+                int selectedMags = 0;
+                for (Double diffMag : diffMags) {
+                    if (diffMag >= median * 0.95 && diffMag <= median * 1.05) {
+                        selectedMags++;
+                    }
+                }
+                if (selectedMags > totalMags / 2) {
+                    createReferenceDataset(entry.getSpt(), dataset);
+                }
+            }
+        }
 
         return dataset;
     }
