@@ -5909,9 +5909,9 @@ public class ImageViewerTab {
                 diffMags.add(abs(allWiseEntry.getW3mag() - bands.get(Band.W3)));
             }
             diffMags.sort(Comparator.naturalOrder());
-            double median;
             int totalMags = diffMags.size();
             if (totalMags > 2) {
+                double median;
                 if (totalMags % 2 == 0) {
                     median = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
                 } else {
