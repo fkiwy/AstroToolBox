@@ -5680,35 +5680,33 @@ public class ImageViewerTab {
                 chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
                 chartPanel.setBackground(Color.WHITE);
 
-                JPanel referencePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-                referencePanel.add(new JLabel("Reference SED for spectral type: ", JLabel.RIGHT));
+                commandPanel.add(new JLabel("Reference SED for spectral type: ", JLabel.RIGHT));
                 JComboBox spectralTypes = new JComboBox(SpectralType.values());
-                referencePanel.add(spectralTypes);
+                commandPanel.add(spectralTypes);
                 spectralTypes.addActionListener((ActionEvent e) -> {
                     SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
                     createReferenceSed(selectedType.name(), collection);
                 });
 
                 JButton removeButton = new JButton("Remove all reference SEDs");
-                referencePanel.add(removeButton);
+                commandPanel.add(removeButton);
                 removeButton.addActionListener((ActionEvent e) -> {
                     spectralTypes.setSelectedItem(SpectralType.SELECT);
                     collection.removeAllSeries();
                     createSed(catalogEntry, collection, false);
                 });
 
-                referencePanel.add(useAbsoluteMagnitude);
+                commandPanel.add(useAbsoluteMagnitude);
                 useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
-                    spectralTypes.setSelectedItem(SpectralType.SELECT);
-                    collection.removeAllSeries();
-                    createSed(catalogEntry, collection, true);
+                    createSed(catalogEntry, collection, false);
                 });
 
                 JPanel sedPanel = new JPanel();
                 sedPanel.setLayout(new BoxLayout(sedPanel, BoxLayout.Y_AXIS));
                 sedPanel.add(chartPanel);
-                sedPanel.add(referencePanel);
+                sedPanel.add(commandPanel);
 
                 JFrame catalogFrame = new JFrame();
                 catalogFrame.setIconImage(getToolBoxImage());
@@ -5864,9 +5862,16 @@ public class ImageViewerTab {
 
         if (collection == null) {
             collection = new XYSeriesCollection();
+            collection.addSeries(series);
+        } else {
+            List<XYSeries> savedSeries = new ArrayList();
+            savedSeries.addAll(collection.getSeries());
+            collection.removeAllSeries();
+            collection.addSeries(series);
+            for (int i = 1; i < savedSeries.size(); i++) {
+                collection.addSeries(savedSeries.get(i));
+            }
         }
-
-        collection.addSeries(series);
 
         if (addReferenceSeds) {
             addReferenceSeds(panStarrsEntry, allWiseEntry, collection);
@@ -5915,7 +5920,7 @@ public class ImageViewerTab {
             }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
-            if (totalMags > 3) {
+            if (totalMags > 2) {
                 double median;
                 if (totalMags % 2 == 0) {
                     median = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
