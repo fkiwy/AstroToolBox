@@ -5600,8 +5600,13 @@ public class ImageViewerTab {
                 container.add(messagePanel);
             }
 
+            JPanel toolsPanel = new JPanel();
+            toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
+            toolsPanel.setBorder(createEtchedBorder("Miscellaneous"));
+            container.add(toolsPanel);
+
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            container.add(collectPanel);
+            toolsPanel.add(collectPanel);
 
             collectPanel.add(new JLabel("Object type:"));
 
@@ -5621,7 +5626,7 @@ public class ImageViewerTab {
             });
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            container.add(buttonPanel);
+            toolsPanel.add(buttonPanel);
 
             JButton copyCoordsButton = new JButton("Copy coords");
             buttonPanel.add(copyCoordsButton);
@@ -5910,20 +5915,27 @@ public class ImageViewerTab {
             }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
-            if (totalMags > 2) {
+            if (totalMags > 3) {
                 double median;
                 if (totalMags % 2 == 0) {
                     median = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
                 } else {
                     median = diffMags.get((totalMags - 1) / 2);
                 }
+                double offset = 0.2;
                 int selectedMags = 0;
                 for (Double diffMag : diffMags) {
-                    if (diffMag >= median * 0.95 && diffMag <= median * 1.05) {
+                    if (diffMag >= median - offset && diffMag <= median + offset) {
                         selectedMags++;
                     }
                 }
-                if (selectedMags > totalMags / 2) {
+                int weight;
+                if (totalMags < 7) {
+                    weight = 2;
+                } else {
+                    weight = 3;
+                }
+                if (selectedMags > totalMags - weight) {
                     createReferenceSed(entry.getSpt(), collection);
                 }
             }

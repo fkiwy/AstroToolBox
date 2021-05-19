@@ -483,17 +483,17 @@ public class CatalogQueryTab {
             columnModel.getColumn(5).setPreferredWidth(75);
             columnModel.getColumn(6).setPreferredWidth(75);
 
-            JPanel spectralTypeInfo = new JPanel();
-            spectralTypeInfo.setLayout(new BoxLayout(spectralTypeInfo, BoxLayout.Y_AXIS));
-            spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
+            JPanel container = new JPanel();
+            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+            container.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(500, BOTTOM_PANEL_HEIGHT));
-            spectralTypeInfo.add(new JScrollPane(spectralTypeTable));
+            container.setPreferredSize(new Dimension(500, BOTTOM_PANEL_HEIGHT));
+            container.add(new JScrollPane(spectralTypeTable));
 
             JPanel remarks = new JPanel(new GridLayout(0, 1));
             remarks.setPreferredSize(new Dimension(remarks.getWidth(), 100));
-            spectralTypeInfo.add(remarks);
+            container.add(remarks);
 
             if (spectralTypes.isEmpty()) {
                 remarks.add(createLabel("No colors available / No match", JColor.RED));
@@ -516,8 +516,13 @@ public class CatalogQueryTab {
             remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
             remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
+            JPanel toolsPanel = new JPanel();
+            toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
+            toolsPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+            container.add(toolsPanel);
+
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            spectralTypeInfo.add(collectPanel);
+            toolsPanel.add(collectPanel);
 
             collectPanel.add(new JLabel("Object type:"));
 
@@ -537,7 +542,7 @@ public class CatalogQueryTab {
             });
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            spectralTypeInfo.add(buttonPanel);
+            toolsPanel.add(buttonPanel);
 
             JButton copyCoordsButton = new JButton("Copy coords");
             buttonPanel.add(copyCoordsButton);
@@ -579,7 +584,7 @@ public class CatalogQueryTab {
 
             });
 
-            bottomPanel.add(spectralTypeInfo);
+            bottomPanel.add(container);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
