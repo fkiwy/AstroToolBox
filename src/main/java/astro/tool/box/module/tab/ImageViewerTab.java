@@ -15,6 +15,7 @@ import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Overlays;
+import astro.tool.box.container.SedPhotometry;
 import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.Artifact;
@@ -5794,33 +5795,24 @@ public class ImageViewerTab {
             seriesLabel.append(gaiaEntry.getCatalogName()).append(": ").append(gaiaEntry.getSourceId());
         }
 
-        PanStarrsCatalogEntry panStarrsClone = new PanStarrsCatalogEntry();
-        panStarrsClone.set_g_mag(panStarrsEntry.get_g_mag());
-        panStarrsClone.set_r_mag(panStarrsEntry.get_r_mag());
-        panStarrsClone.set_i_mag(panStarrsEntry.get_i_mag());
-        panStarrsClone.set_z_mag(panStarrsEntry.get_z_mag());
-        panStarrsClone.set_y_mag(panStarrsEntry.get_y_mag());
-        panStarrsEntry = panStarrsClone;
+        SedPhotometry photometry = new SedPhotometry();
+        photometry.set_g_mag(panStarrsEntry.get_g_mag());
+        photometry.set_r_mag(panStarrsEntry.get_r_mag());
+        photometry.set_i_mag(panStarrsEntry.get_i_mag());
+        photometry.set_z_mag(panStarrsEntry.get_z_mag());
+        photometry.set_y_mag(panStarrsEntry.get_y_mag());
+        photometry.setJmag(allWiseEntry.getJmag());
+        photometry.setHmag(allWiseEntry.getHmag());
+        photometry.setKmag(allWiseEntry.getKmag());
+        photometry.setW1mag(allWiseEntry.getW1mag());
+        photometry.setW2mag(allWiseEntry.getW2mag());
+        photometry.setW3mag(allWiseEntry.getW3mag());
+        photometry.setW4mag(allWiseEntry.getW4mag());
+        photometry.setBPmag(gaiaEntry.getBPmag());
+        photometry.setGmag(gaiaEntry.getGmag());
+        photometry.setRPmag(gaiaEntry.getRPmag());
 
-        AllWiseCatalogEntry allWiseClone = new AllWiseCatalogEntry();
-        allWiseClone.setJmag(allWiseEntry.getJmag());
-        allWiseClone.setHmag(allWiseEntry.getHmag());
-        allWiseClone.setKmag(allWiseEntry.getKmag());
-        allWiseClone.setW1mag(allWiseEntry.getW1mag());
-        allWiseClone.setW2mag(allWiseEntry.getW2mag());
-        allWiseClone.setW3mag(allWiseEntry.getW3mag());
-        allWiseClone.setW4mag(allWiseEntry.getW4mag());
-        allWiseEntry = allWiseClone;
-
-        GaiaDR3CatalogEntry gaiaClone = new GaiaDR3CatalogEntry();
-        gaiaClone.setSourceId(gaiaEntry.getSourceId());
-        gaiaClone.setPlx(gaiaEntry.getPlx());
-        gaiaClone.setBPmag(gaiaEntry.getBPmag());
-        gaiaClone.setGmag(gaiaEntry.getGmag());
-        gaiaClone.setRPmag(gaiaEntry.getRPmag());
-        gaiaEntry = gaiaClone;
-
-        if (allWiseEntry.getJmag() == 0 && allWiseEntry.getHmag() == 0 && allWiseEntry.getKmag() == 0) {
+        if (photometry.getJmag() == 0 && photometry.getHmag() == 0 && photometry.getKmag() == 0) {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
             vhsEntry.setRa(catalogEntry.getRa());
             vhsEntry.setDec(catalogEntry.getDec());
@@ -5828,9 +5820,9 @@ public class ImageViewerTab {
             CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 vhsEntry = (VhsCatalogEntry) retrievedEntry;
-                allWiseEntry.setJmag(vhsEntry.getJmag());
-                allWiseEntry.setHmag(vhsEntry.getHmag());
-                allWiseEntry.setKmag(vhsEntry.getKmag());
+                photometry.setJmag(vhsEntry.getJmag());
+                photometry.setHmag(vhsEntry.getHmag());
+                photometry.setKmag(vhsEntry.getKmag());
                 seriesLabel.append(" (J, H, K photometry is from Vista VHS)");
             } else {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
@@ -5840,9 +5832,9 @@ public class ImageViewerTab {
                 retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryFacade, baseFrame);
                 if (retrievedEntry != null) {
                     twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
-                    allWiseEntry.setJmag(twoMassEntry.getJmag());
-                    allWiseEntry.setHmag(twoMassEntry.getHmag());
-                    allWiseEntry.setKmag(twoMassEntry.getKmag());
+                    photometry.setJmag(twoMassEntry.getJmag());
+                    photometry.setHmag(twoMassEntry.getHmag());
+                    photometry.setKmag(twoMassEntry.getKmag());
                 }
             }
         }
@@ -5850,41 +5842,41 @@ public class ImageViewerTab {
         if (useAbsoluteMagnitude.isSelected() && !"0".equals(gaiaEntry.getSourceId())) {
             double plx = gaiaEntry.getPlx();
             if (plx >= 5) {
-                panStarrsEntry.set_g_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_g_mag(), plx));
-                panStarrsEntry.set_r_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_r_mag(), plx));
-                panStarrsEntry.set_i_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_i_mag(), plx));
-                panStarrsEntry.set_z_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_z_mag(), plx));
-                panStarrsEntry.set_y_mag(calculateAbsoluteMagnitudeFromParallax(panStarrsEntry.get_y_mag(), plx));
-                allWiseEntry.setJmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getJmag(), plx));
-                allWiseEntry.setHmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getHmag(), plx));
-                allWiseEntry.setKmag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getKmag(), plx));
-                allWiseEntry.setW1mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW1mag(), plx));
-                allWiseEntry.setW2mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW2mag(), plx));
-                allWiseEntry.setW3mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW3mag(), plx));
-                allWiseEntry.setW4mag(calculateAbsoluteMagnitudeFromParallax(allWiseEntry.getW4mag(), plx));
-                gaiaEntry.setBPmag(calculateAbsoluteMagnitudeFromParallax(gaiaEntry.getBPmag(), plx));
-                gaiaEntry.setGmag(calculateAbsoluteMagnitudeFromParallax(gaiaEntry.getGmag(), plx));
-                gaiaEntry.setRPmag(calculateAbsoluteMagnitudeFromParallax(gaiaEntry.getRPmag(), plx));
+                photometry.set_g_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_g_mag(), plx));
+                photometry.set_r_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_r_mag(), plx));
+                photometry.set_i_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_i_mag(), plx));
+                photometry.set_z_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_z_mag(), plx));
+                photometry.set_y_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_y_mag(), plx));
+                photometry.setJmag(calculateAbsoluteMagnitudeFromParallax(photometry.getJmag(), plx));
+                photometry.setHmag(calculateAbsoluteMagnitudeFromParallax(photometry.getHmag(), plx));
+                photometry.setKmag(calculateAbsoluteMagnitudeFromParallax(photometry.getKmag(), plx));
+                photometry.setW1mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW1mag(), plx));
+                photometry.setW2mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW2mag(), plx));
+                photometry.setW3mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW3mag(), plx));
+                photometry.setW4mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW4mag(), plx));
+                photometry.setBPmag(calculateAbsoluteMagnitudeFromParallax(photometry.getBPmag(), plx));
+                photometry.setGmag(calculateAbsoluteMagnitudeFromParallax(photometry.getGmag(), plx));
+                photometry.setRPmag(calculateAbsoluteMagnitudeFromParallax(photometry.getRPmag(), plx));
             }
         }
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
-        series.add(0, panStarrsEntry.get_g_mag() == 0 ? null : panStarrsEntry.get_g_mag()); // g
-        series.add(2, panStarrsEntry.get_r_mag() == 0 ? null : panStarrsEntry.get_r_mag()); // r
-        series.add(4, panStarrsEntry.get_i_mag() == 0 ? null : panStarrsEntry.get_i_mag()); // i
-        series.add(6, panStarrsEntry.get_z_mag() == 0 ? null : panStarrsEntry.get_z_mag()); // z
-        series.add(7, panStarrsEntry.get_y_mag() == 0 ? null : panStarrsEntry.get_y_mag()); // y
-        series.add(8, allWiseEntry.getJmag() == 0 ? null : allWiseEntry.getJmag()); // J
-        series.add(9, allWiseEntry.getHmag() == 0 ? null : allWiseEntry.getHmag()); // H
-        series.add(10, allWiseEntry.getKmag() == 0 ? null : allWiseEntry.getKmag()); // K
-        series.add(11, allWiseEntry.getW1mag() == 0 ? null : allWiseEntry.getW1mag()); // W1
-        series.add(12, allWiseEntry.getW2mag() == 0 ? null : allWiseEntry.getW2mag()); // W2
-        series.add(13, allWiseEntry.getW3mag() == 0 ? null : allWiseEntry.getW3mag()); // W3
-        series.add(14, allWiseEntry.getW4mag() == 0 ? null : allWiseEntry.getW4mag()); // W4
-        series.add(1, gaiaEntry.getBPmag() == 0 ? null : gaiaEntry.getBPmag()); // BP
-        series.add(3, gaiaEntry.getGmag() == 0 ? null : gaiaEntry.getGmag()); // G
-        series.add(5, gaiaEntry.getRPmag() == 0 ? null : gaiaEntry.getRPmag()); // RP
+        series.add(0, photometry.get_g_mag() == 0 ? null : photometry.get_g_mag()); // g
+        series.add(2, photometry.get_r_mag() == 0 ? null : photometry.get_r_mag()); // r
+        series.add(4, photometry.get_i_mag() == 0 ? null : photometry.get_i_mag()); // i
+        series.add(6, photometry.get_z_mag() == 0 ? null : photometry.get_z_mag()); // z
+        series.add(7, photometry.get_y_mag() == 0 ? null : photometry.get_y_mag()); // y
+        series.add(8, photometry.getJmag() == 0 ? null : photometry.getJmag()); // J
+        series.add(9, photometry.getHmag() == 0 ? null : photometry.getHmag()); // H
+        series.add(10, photometry.getKmag() == 0 ? null : photometry.getKmag()); // K
+        series.add(11, photometry.getW1mag() == 0 ? null : photometry.getW1mag()); // W1
+        series.add(12, photometry.getW2mag() == 0 ? null : photometry.getW2mag()); // W2
+        series.add(13, photometry.getW3mag() == 0 ? null : photometry.getW3mag()); // W3
+        series.add(14, photometry.getW4mag() == 0 ? null : photometry.getW4mag()); // W4
+        series.add(1, photometry.getBPmag() == 0 ? null : photometry.getBPmag()); // BP
+        series.add(3, photometry.getGmag() == 0 ? null : photometry.getGmag()); // G
+        series.add(5, photometry.getRPmag() == 0 ? null : photometry.getRPmag()); // RP
 
         if (collection == null) {
             collection = new XYSeriesCollection();
@@ -5900,52 +5892,52 @@ public class ImageViewerTab {
         }
 
         if (addReferenceSeds) {
-            addReferenceSeds(panStarrsEntry, allWiseEntry, gaiaEntry, collection);
+            addReferenceSeds(photometry, collection);
         }
 
         return collection;
     }
 
-    private void addReferenceSeds(PanStarrsCatalogEntry panStarrsEntry, AllWiseCatalogEntry allWiseEntry, GaiaDR3CatalogEntry gaiaEntry, XYSeriesCollection collection) {
+    private void addReferenceSeds(SedPhotometry photometry, XYSeriesCollection collection) {
         for (SpectralTypeLookup lookupEntry : entries) {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
             Map<Band, Double> bands = entry.getBands();
             List<Double> diffMags = new ArrayList();
-            if (panStarrsEntry.get_g_mag() != 0) {
-                diffMags.add(abs(panStarrsEntry.get_g_mag() - bands.get(Band.g)));
+            if (photometry.get_g_mag() != 0) {
+                diffMags.add(abs(photometry.get_g_mag() - bands.get(Band.g)));
             }
-            if (panStarrsEntry.get_r_mag() != 0) {
-                diffMags.add(abs(panStarrsEntry.get_r_mag() - bands.get(Band.r)));
+            if (photometry.get_r_mag() != 0) {
+                diffMags.add(abs(photometry.get_r_mag() - bands.get(Band.r)));
             }
-            if (panStarrsEntry.get_i_mag() != 0) {
-                diffMags.add(abs(panStarrsEntry.get_i_mag() - bands.get(Band.i)));
+            if (photometry.get_i_mag() != 0) {
+                diffMags.add(abs(photometry.get_i_mag() - bands.get(Band.i)));
             }
-            if (panStarrsEntry.get_z_mag() != 0) {
-                diffMags.add(abs(panStarrsEntry.get_z_mag() - bands.get(Band.z)));
+            if (photometry.get_z_mag() != 0) {
+                diffMags.add(abs(photometry.get_z_mag() - bands.get(Band.z)));
             }
-            if (panStarrsEntry.get_y_mag() != 0) {
-                diffMags.add(abs(panStarrsEntry.get_y_mag() - bands.get(Band.y)));
+            if (photometry.get_y_mag() != 0) {
+                diffMags.add(abs(photometry.get_y_mag() - bands.get(Band.y)));
             }
-            if (allWiseEntry.getJmag() != 0) {
-                diffMags.add(abs(allWiseEntry.getJmag() - bands.get(Band.J)));
+            if (photometry.getJmag() != 0) {
+                diffMags.add(abs(photometry.getJmag() - bands.get(Band.J)));
             }
-            if (allWiseEntry.getHmag() != 0) {
-                diffMags.add(abs(allWiseEntry.getHmag() - bands.get(Band.H)));
+            if (photometry.getHmag() != 0) {
+                diffMags.add(abs(photometry.getHmag() - bands.get(Band.H)));
             }
-            if (allWiseEntry.getKmag() != 0) {
-                diffMags.add(abs(allWiseEntry.getKmag() - bands.get(Band.K)));
+            if (photometry.getKmag() != 0) {
+                diffMags.add(abs(photometry.getKmag() - bands.get(Band.K)));
             }
-            if (allWiseEntry.getW1mag() != 0) {
-                diffMags.add(abs(allWiseEntry.getW1mag() - bands.get(Band.W1)));
+            if (photometry.getW1mag() != 0) {
+                diffMags.add(abs(photometry.getW1mag() - bands.get(Band.W1)));
             }
-            if (allWiseEntry.getW2mag() != 0) {
-                diffMags.add(abs(allWiseEntry.getW2mag() - bands.get(Band.W2)));
+            if (photometry.getW2mag() != 0) {
+                diffMags.add(abs(photometry.getW2mag() - bands.get(Band.W2)));
             }
-            if (allWiseEntry.getW3mag() != 0) {
-                diffMags.add(abs(allWiseEntry.getW3mag() - bands.get(Band.W3)));
+            if (photometry.getW3mag() != 0) {
+                diffMags.add(abs(photometry.getW3mag() - bands.get(Band.W3)));
             }
-            if (gaiaEntry.getGmag() != 0) {
-                diffMags.add(abs(gaiaEntry.getGmag() - bands.get(Band.G)));
+            if (photometry.getGmag() != 0) {
+                diffMags.add(abs(photometry.getGmag() - bands.get(Band.G)));
             }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
