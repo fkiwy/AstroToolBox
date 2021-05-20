@@ -256,7 +256,7 @@ public class BrownDwarfTab {
         remarks.setPreferredSize(new Dimension(500, 150));
         distancePanel.add(remarks);
         remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
-        remarks.add(new JLabel("if available: W1, W2, W3, J, H, K, g, r, i, z, y, G"));
+        remarks.add(new JLabel("if available: W1, W2, W3, J, H, K, g, r, i, z, y, G, RP"));
         remarks.add(new JLabel("Absolute magnitudes are from the brown dwarfs lookup table."));
         baseFrame.setVisible(true);
     }

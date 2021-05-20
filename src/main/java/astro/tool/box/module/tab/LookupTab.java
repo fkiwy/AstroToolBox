@@ -66,7 +66,7 @@ public class LookupTab {
                         break;
                     case BROWN_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
-                        tableName = "Brown dwarfs lookup table - Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data and the thin disk scale height of early L types (A. Carnero Rosell)";
+                        tableName = "Brown dwarfs lookup table - Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data (A. Carnero Rosell) / The Gaia Ultra-Cool Dwarf Sample: Structure at the end of the main sequence (R. Smart)";
                         break;
                     case WHITE_DWARFS_PURE_H:
                         fileName = "/WhiteDwarfPureHLookupTable.csv";

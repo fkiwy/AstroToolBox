@@ -261,6 +261,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Whi
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.G, Gmag);
+        bands.put(Band.RP, RPmag);
         return bands;
     }
 
@@ -446,6 +447,38 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Whi
     @Override
     public double getBP_RP() {
         return BP_RP;
+    }
+
+    public double getGmag() {
+        return Gmag;
+    }
+
+    public double getBPmag() {
+        return BPmag;
+    }
+
+    public double getRPmag() {
+        return RPmag;
+    }
+
+    public void setGmag(double Gmag) {
+        this.Gmag = Gmag;
+    }
+
+    public void setBPmag(double BPmag) {
+        this.BPmag = BPmag;
+    }
+
+    public void setRPmag(double RPmag) {
+        this.RPmag = RPmag;
+    }
+
+    public void setSourceId(String sourceId) {
+        this.sourceId = Long.valueOf(sourceId);
+    }
+
+    public void setPlx(double plx) {
+        this.plx = plx;
     }
 
 }
