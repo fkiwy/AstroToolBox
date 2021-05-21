@@ -470,24 +470,4 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         return yMeanPSFMag;
     }
 
-    public void set_g_mag(double gMeanPSFMag) {
-        this.gMeanPSFMag = gMeanPSFMag;
-    }
-
-    public void set_r_mag(double rMeanPSFMag) {
-        this.rMeanPSFMag = rMeanPSFMag;
-    }
-
-    public void set_i_mag(double iMeanPSFMag) {
-        this.iMeanPSFMag = iMeanPSFMag;
-    }
-
-    public void set_z_mag(double zMeanPSFMag) {
-        this.zMeanPSFMag = zMeanPSFMag;
-    }
-
-    public void set_y_mag(double yMeanPSFMag) {
-        this.yMeanPSFMag = yMeanPSFMag;
-    }
-
 }
