@@ -57,14 +57,14 @@ public class WhiteDwarfTab {
         input = getClass().getResourceAsStream("/WhiteDwarfPureHLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, WhiteDwarfLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             whiteDwarfPureHLookupService = new EffectiveTemperatureLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfPureHeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, 18));
+                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, WhiteDwarfLookupEntry.NUMBER_OF_COLUMNS));
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new EffectiveTemperatureLookupService(entries);
         }

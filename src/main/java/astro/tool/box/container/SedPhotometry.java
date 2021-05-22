@@ -2,56 +2,31 @@ package astro.tool.box.container;
 
 public class SedPhotometry {
 
-    // Magnitude in u band
     private double u_mag;
 
-    // Magnitude in g band
     private double g_mag;
 
-    // Magnitude in r band
     private double r_mag;
 
-    // Magnitude in i band
     private double i_mag;
 
-    // Magnitude in z band
     private double z_mag;
 
-    // Magnitude in y band
     private double y_mag;
 
-    // Magnitude in J band
     private double Jmag;
 
-    // Magnitude in H band
     private double Hmag;
 
-    // Magnitude in K band
     private double Kmag;
 
-    // Magnitude in W1 band
     private double W1mag;
 
-    // Magnitude in W2 band
     private double W2mag;
 
-    // Magnitude in W3 band
     private double W3mag;
 
-    // Magnitude in W4 band
     private double W4mag;
-
-    // Magnitude in G band
-    private double Gmag;
-
-    // Magnitude in BP band
-    private double BPmag;
-
-    // Magnitude in RP band
-    private double RPmag;
-
-    // Magnitude in B band
-    private double Bmag;
 
     public double get_u_mag() {
         return u_mag;
@@ -155,38 +130,6 @@ public class SedPhotometry {
 
     public void setW4mag(double W4mag) {
         this.W4mag = W4mag;
-    }
-
-    public double getGmag() {
-        return Gmag;
-    }
-
-    public void setGmag(double Gmag) {
-        this.Gmag = Gmag;
-    }
-
-    public double getBPmag() {
-        return BPmag;
-    }
-
-    public void setBPmag(double BPmag) {
-        this.BPmag = BPmag;
-    }
-
-    public double getRPmag() {
-        return RPmag;
-    }
-
-    public void setRPmag(double RPmag) {
-        this.RPmag = RPmag;
-    }
-
-    public double getBmag() {
-        return Bmag;
-    }
-
-    public void setBmag(double Bmag) {
-        this.Bmag = Bmag;
     }
 
 }

@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
 
+    public static final int NUMBER_OF_COLUMNS = 34;
+
     // Effective temperature
     private final int teff;
 
@@ -24,27 +26,27 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
 
     public WhiteDwarfLookupEntry(String[] values) {
         teff = (int) toDouble(values[0]);
-        logG = toDouble(values[15]);
-        msun = toDouble(values[16]);
-        age = values[17];
+        logG = toDouble(values[31]);
+        msun = toDouble(values[32]);
+        age = values[33];
         colors = new HashMap<>();
-        colors.put(Color.U_B, toDouble(values[1]));
-        colors.put(Color.B_V, toDouble(values[2]));
-        colors.put(Color.V_R, toDouble(values[3]));
-        colors.put(Color.R_I, toDouble(values[4]));
-        //colors.put(Color.J_H, toDouble(values[5]));
-        //colors.put(Color.H_K, toDouble(values[6]));
-        colors.put(Color.u_g, toDouble(values[7]));
-        colors.put(Color.g_r, toDouble(values[8]));
-        colors.put(Color.r_i, toDouble(values[9]));
-        colors.put(Color.i_z, toDouble(values[10]));
-        colors.put(Color.g_r_PS1, toDouble(values[8]));
-        colors.put(Color.r_i_PS1, toDouble(values[9]));
-        colors.put(Color.i_z_PS1, toDouble(values[10]));
-        colors.put(Color.i_z_DES, toDouble(values[10]));
-        colors.put(Color.V_J, toDouble(values[11]));
-        colors.put(Color.G_RP, toDouble(values[13]));
-        colors.put(Color.BP_RP, toDouble(values[14]));
+        colors.put(Color.U_B, toDouble(values[17]));
+        colors.put(Color.B_V, toDouble(values[18]));
+        colors.put(Color.V_R, toDouble(values[19]));
+        colors.put(Color.R_I, toDouble(values[20]));
+        //colors.put(Color.J_H, toDouble(values[21]));
+        //colors.put(Color.H_K, toDouble(values[22]));
+        colors.put(Color.u_g, toDouble(values[23]));
+        colors.put(Color.g_r, toDouble(values[24]));
+        colors.put(Color.r_i, toDouble(values[25]));
+        colors.put(Color.i_z, toDouble(values[26]));
+        colors.put(Color.g_r_PS1, toDouble(values[24]));
+        colors.put(Color.r_i_PS1, toDouble(values[25]));
+        colors.put(Color.i_z_PS1, toDouble(values[26]));
+        colors.put(Color.i_z_DES, toDouble(values[26]));
+        colors.put(Color.V_J, toDouble(values[27]));
+        colors.put(Color.G_RP, toDouble(values[29]));
+        colors.put(Color.BP_RP, toDouble(values[30]));
     }
 
     @Override

@@ -177,11 +177,11 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -5737,7 +5737,6 @@ public class ImageViewerTab {
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
-        GaiaDR3CatalogEntry gaiaEntry;
 
         if (catalogEntry instanceof PanStarrsCatalogEntry) {
             panStarrsEntry = (PanStarrsCatalogEntry) catalogEntry;
@@ -5765,19 +5764,6 @@ public class ImageViewerTab {
             }
         }
 
-        if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-            gaiaEntry = (GaiaDR3CatalogEntry) catalogEntry;
-        } else {
-            gaiaEntry = new GaiaDR3CatalogEntry();
-            gaiaEntry.setRa(catalogEntry.getRa());
-            gaiaEntry.setDec(catalogEntry.getDec());
-            gaiaEntry.setSearchRadius(5);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
-            if (retrievedEntry != null) {
-                gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
-            }
-        }
-
         StringBuilder seriesLabel = new StringBuilder();
         if (!"0".equals(panStarrsEntry.getSourceId())) {
             seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId());
@@ -5787,12 +5773,6 @@ public class ImageViewerTab {
                 seriesLabel.append(" & ");
             }
             seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId());
-        }
-        if (!"0".equals(gaiaEntry.getSourceId())) {
-            if (seriesLabel.length() > 0) {
-                seriesLabel.append(" & ");
-            }
-            seriesLabel.append(gaiaEntry.getCatalogName()).append(": ").append(gaiaEntry.getSourceId());
         }
 
         SedPhotometry photometry = new SedPhotometry();
@@ -5808,9 +5788,6 @@ public class ImageViewerTab {
         photometry.setW2mag(allWiseEntry.getW2mag());
         photometry.setW3mag(allWiseEntry.getW3mag());
         photometry.setW4mag(allWiseEntry.getW4mag());
-        photometry.setBPmag(gaiaEntry.getBPmag());
-        photometry.setGmag(gaiaEntry.getGmag());
-        photometry.setRPmag(gaiaEntry.getRPmag());
 
         if (photometry.getJmag() == 0 && photometry.getHmag() == 0 && photometry.getKmag() == 0) {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
@@ -5839,44 +5816,53 @@ public class ImageViewerTab {
             }
         }
 
-        if (useAbsoluteMagnitude.isSelected() && !"0".equals(gaiaEntry.getSourceId())) {
-            double plx = gaiaEntry.getPlx();
-            if (plx >= 5) {
-                photometry.set_g_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_g_mag(), plx));
-                photometry.set_r_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_r_mag(), plx));
-                photometry.set_i_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_i_mag(), plx));
-                photometry.set_z_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_z_mag(), plx));
-                photometry.set_y_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_y_mag(), plx));
-                photometry.setJmag(calculateAbsoluteMagnitudeFromParallax(photometry.getJmag(), plx));
-                photometry.setHmag(calculateAbsoluteMagnitudeFromParallax(photometry.getHmag(), plx));
-                photometry.setKmag(calculateAbsoluteMagnitudeFromParallax(photometry.getKmag(), plx));
-                photometry.setW1mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW1mag(), plx));
-                photometry.setW2mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW2mag(), plx));
-                photometry.setW3mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW3mag(), plx));
-                photometry.setW4mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW4mag(), plx));
-                photometry.setBPmag(calculateAbsoluteMagnitudeFromParallax(photometry.getBPmag(), plx));
-                photometry.setGmag(calculateAbsoluteMagnitudeFromParallax(photometry.getGmag(), plx));
-                photometry.setRPmag(calculateAbsoluteMagnitudeFromParallax(photometry.getRPmag(), plx));
+        if (useAbsoluteMagnitude.isSelected()) {
+            GaiaDR3CatalogEntry gaiaEntry;
+            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+                gaiaEntry = (GaiaDR3CatalogEntry) catalogEntry;
+            } else {
+                gaiaEntry = new GaiaDR3CatalogEntry();
+                gaiaEntry.setRa(catalogEntry.getRa());
+                gaiaEntry.setDec(catalogEntry.getDec());
+                gaiaEntry.setSearchRadius(5);
+                CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
+                if (retrievedEntry != null) {
+                    gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
+                }
+            }
+            if (!"0".equals(gaiaEntry.getSourceId())) {
+                double plx = gaiaEntry.getPlx();
+                if (plx >= 5) {
+                    photometry.set_g_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_g_mag(), plx));
+                    photometry.set_r_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_r_mag(), plx));
+                    photometry.set_i_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_i_mag(), plx));
+                    photometry.set_z_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_z_mag(), plx));
+                    photometry.set_y_mag(calculateAbsoluteMagnitudeFromParallax(photometry.get_y_mag(), plx));
+                    photometry.setJmag(calculateAbsoluteMagnitudeFromParallax(photometry.getJmag(), plx));
+                    photometry.setHmag(calculateAbsoluteMagnitudeFromParallax(photometry.getHmag(), plx));
+                    photometry.setKmag(calculateAbsoluteMagnitudeFromParallax(photometry.getKmag(), plx));
+                    photometry.setW1mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW1mag(), plx));
+                    photometry.setW2mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW2mag(), plx));
+                    photometry.setW3mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW3mag(), plx));
+                    photometry.setW4mag(calculateAbsoluteMagnitudeFromParallax(photometry.getW4mag(), plx));
+                }
             }
         }
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
-        series.add(0, photometry.get_g_mag() == 0 ? null : photometry.get_g_mag()); // g
-        series.add(2, photometry.get_r_mag() == 0 ? null : photometry.get_r_mag()); // r
-        series.add(4, photometry.get_i_mag() == 0 ? null : photometry.get_i_mag()); // i
-        series.add(6, photometry.get_z_mag() == 0 ? null : photometry.get_z_mag()); // z
-        series.add(7, photometry.get_y_mag() == 0 ? null : photometry.get_y_mag()); // y
-        series.add(8, photometry.getJmag() == 0 ? null : photometry.getJmag()); // J
-        series.add(9, photometry.getHmag() == 0 ? null : photometry.getHmag()); // H
-        series.add(10, photometry.getKmag() == 0 ? null : photometry.getKmag()); // K
-        series.add(11, photometry.getW1mag() == 0 ? null : photometry.getW1mag()); // W1
-        series.add(12, photometry.getW2mag() == 0 ? null : photometry.getW2mag()); // W2
-        series.add(13, photometry.getW3mag() == 0 ? null : photometry.getW3mag()); // W3
-        series.add(14, photometry.getW4mag() == 0 ? null : photometry.getW4mag()); // W4
-        series.add(1, photometry.getBPmag() == 0 ? null : photometry.getBPmag()); // BP
-        series.add(3, photometry.getGmag() == 0 ? null : photometry.getGmag()); // G
-        series.add(5, photometry.getRPmag() == 0 ? null : photometry.getRPmag()); // RP
+        series.add(log(0.4810), photometry.get_g_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_g_mag(), 3631))); // g
+        series.add(log(0.6170), photometry.get_r_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_r_mag(), 3631))); // r
+        series.add(log(0.7520), photometry.get_i_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_i_mag(), 3631))); // i
+        series.add(log(0.8660), photometry.get_z_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_z_mag(), 3631))); // z
+        series.add(log(0.9620), photometry.get_y_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_y_mag(), 3631))); // y
+        series.add(log(1.235), photometry.getJmag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getJmag(), 1594))); // J
+        series.add(log(1.662), photometry.getHmag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getHmag(), 1024))); // H
+        series.add(log(2.159), photometry.getKmag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getKmag(), 666.7))); // K
+        series.add(log(3.4), photometry.getW1mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW1mag(), 309.54))); // W1
+        series.add(log(4.6), photometry.getW2mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW2mag(), 171.79))); // W2
+        series.add(log(12), photometry.getW3mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW3mag(), 31.676))); // W3
+        series.add(log(22), photometry.getW4mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW4mag(), 8.3635))); // W4
 
         if (collection == null) {
             collection = new XYSeriesCollection();
@@ -5936,9 +5922,6 @@ public class ImageViewerTab {
             if (photometry.getW3mag() != 0) {
                 diffMags.add(abs(photometry.getW3mag() - bands.get(Band.W3)));
             }
-            if (photometry.getGmag() != 0) {
-                diffMags.add(abs(photometry.getGmag() - bands.get(Band.G)));
-            }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
             if (totalMags > 2) {
@@ -5976,20 +5959,17 @@ public class ImageViewerTab {
 
         XYSeries referenceSeries = new XYSeries(spectralType);
 
-        referenceSeries.add(0, referenceMagnitudes.get(Band.g) == 0 ? null : referenceMagnitudes.get(Band.g)); // g
-        referenceSeries.add(2, referenceMagnitudes.get(Band.r) == 0 ? null : referenceMagnitudes.get(Band.r)); // r
-        referenceSeries.add(4, referenceMagnitudes.get(Band.i) == 0 ? null : referenceMagnitudes.get(Band.i)); // i
-        referenceSeries.add(6, referenceMagnitudes.get(Band.z) == 0 ? null : referenceMagnitudes.get(Band.z)); // z
-        referenceSeries.add(7, referenceMagnitudes.get(Band.y) == 0 ? null : referenceMagnitudes.get(Band.y)); // y
-        referenceSeries.add(8, referenceMagnitudes.get(Band.J) == 0 ? null : referenceMagnitudes.get(Band.J)); // J
-        referenceSeries.add(9, referenceMagnitudes.get(Band.H) == 0 ? null : referenceMagnitudes.get(Band.H)); // H
-        referenceSeries.add(10, referenceMagnitudes.get(Band.K) == 0 ? null : referenceMagnitudes.get(Band.K)); // K
-        referenceSeries.add(11, referenceMagnitudes.get(Band.W1) == 0 ? null : referenceMagnitudes.get(Band.W1)); // W1
-        referenceSeries.add(12, referenceMagnitudes.get(Band.W2) == 0 ? null : referenceMagnitudes.get(Band.W2)); // W2
-        referenceSeries.add(13, referenceMagnitudes.get(Band.W3) == 0 ? null : referenceMagnitudes.get(Band.W3)); // W3
-        referenceSeries.add(1, null); // BP
-        referenceSeries.add(3, referenceMagnitudes.get(Band.G) == 0 ? null : referenceMagnitudes.get(Band.G)); // G
-        referenceSeries.add(5, referenceMagnitudes.get(Band.RP) == 0 ? null : referenceMagnitudes.get(Band.RP)); // RP
+        referenceSeries.add(log(0.4810), referenceMagnitudes.get(Band.g) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.g), 3631))); // g
+        referenceSeries.add(log(0.6170), referenceMagnitudes.get(Band.r) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.r), 3631))); // r
+        referenceSeries.add(log(0.7520), referenceMagnitudes.get(Band.i) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.i), 3631))); // i
+        referenceSeries.add(log(0.8660), referenceMagnitudes.get(Band.z) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.z), 3631))); // z
+        referenceSeries.add(log(0.9620), referenceMagnitudes.get(Band.y) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.y), 3631))); // y
+        referenceSeries.add(log(1.235), referenceMagnitudes.get(Band.J) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.J), 1594))); // J
+        referenceSeries.add(log(1.662), referenceMagnitudes.get(Band.H) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.H), 1024))); // H
+        referenceSeries.add(log(2.159), referenceMagnitudes.get(Band.K) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.K), 666.7))); // K
+        referenceSeries.add(log(3.4), referenceMagnitudes.get(Band.W1) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.W1), 309.54))); // W1
+        referenceSeries.add(log(4.6), referenceMagnitudes.get(Band.W2) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.W2), 171.79))); // W2
+        referenceSeries.add(log(12), referenceMagnitudes.get(Band.W3) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.W3), 31.676))); // W3
 
         try {
             collection.addSeries(referenceSeries);
@@ -6000,20 +5980,12 @@ public class ImageViewerTab {
     private JFreeChart createChart(XYDataset dataset) {
         JFreeChart chart = ChartFactory.createXYLineChart(
                 "Spectral Energy Distribution",
-                "Filter",
-                "Magnitude",
+                "log(λ)",
+                "log(F)",
                 dataset
         );
 
         XYPlot plot = chart.getXYPlot();
-
-        //SymbolAxis domainAxis = new SymbolAxis("Filter", new String[]{"g (481 nm)", "BP (532 nm)", "r (617 nm)", "G (673 nm)", "i (752 nm)", "RP (797 nm)", "z (866 nm)", "y (962 nm)", "J (1.25 μm)", "H (1.65 μm)", "K (2.15 μm)", "W1 (3.4 μm)", "W2 (4.6 μm)", "W3 (12 μm)", "W4 (22 μm)"});
-        SymbolAxis domainAxis = new SymbolAxis("Filter", new String[]{"g", "BP", "r", "G", "i", "RP", "z", "y", "J", "H", "K", "W1", "W2", "W3", "W4"});
-
-        plot.setDomainAxis(domainAxis);
-
-        ValueAxis axis = plot.getRangeAxis();
-        axis.setRange(5, 25);
 
         ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
         ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
@@ -6026,9 +5998,14 @@ public class ImageViewerTab {
         xAxis.setLabelFont(axisLabelFont);
         yAxis.setLabelFont(axisLabelFont);
 
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        XYSplineRenderer renderer = new XYSplineRenderer(100);
         renderer.setSeriesPaint(0, JColor.STEEL.val);
         renderer.setSeriesStroke(0, new BasicStroke(2));
+
+        List<String> toolTips = Arrays.asList("g (481 nm)", "r (617 nm)", "i (752 nm)", "z (866 nm)", "y (962 nm)", "J (1.25 μm)", "H (1.65 μm)", "K (2.15 μm)", "W1 (3.4 μm)", "W2 (4.6 μm)", "W3 (12 μm)", "W4 (22 μm)");
+        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
+        generator.addToolTipSeries(toolTips);
+        renderer.setSeriesToolTipGenerator(0, generator);
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);

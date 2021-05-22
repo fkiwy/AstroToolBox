@@ -288,4 +288,15 @@ public class PhotometricFunctions {
         return flag == 1 ? "clean" : "unclean";
     }
 
+    /**
+     * Convert magnitude to flux
+     *
+     * @param magnitude
+     * @param zeroPointFlux
+     * @return the flux
+     */
+    public static double convertMagnitudeToFlux(double magnitude, double zeroPointFlux) {
+        return zeroPointFlux * pow(10, -magnitude / 2.5);
+    }
+
 }
