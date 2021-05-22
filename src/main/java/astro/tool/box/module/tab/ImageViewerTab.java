@@ -5588,22 +5588,22 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            if (mainSequenceResults.isEmpty()) {
+            /*if (mainSequenceResults.isEmpty()) {
                 JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 messagePanel.add(createLabel("No colors available / No match", JColor.RED));
                 container.add(messagePanel);
-            }
+            }*/
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
-            if (brownDwarfsResults.isEmpty()) {
+            /*if (brownDwarfsResults.isEmpty()) {
                 JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 messagePanel.add(createLabel("No colors available / No match", JColor.RED));
                 container.add(messagePanel);
-            }
+            }*/
 
             JPanel toolsPanel = new JPanel();
             toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
-            toolsPanel.setBorder(createEtchedBorder("Miscellaneous"));
+            //toolsPanel.setBorder(createEtchedBorder("Miscellaneous"));
             container.add(toolsPanel);
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -5924,7 +5924,7 @@ public class ImageViewerTab {
             }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
-            if (totalMags > 2) {
+            if (totalMags >= 4) {
                 double median;
                 if (totalMags % 2 == 0) {
                     median = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
@@ -5938,13 +5938,7 @@ public class ImageViewerTab {
                         selectedMags++;
                     }
                 }
-                int weight;
-                if (totalMags < 7) {
-                    weight = 2;
-                } else {
-                    weight = 3;
-                }
-                if (selectedMags > totalMags - weight) {
+                if (selectedMags >= totalMags - 2) {
                     createReferenceSed(entry.getSpt(), collection);
                 }
             }
