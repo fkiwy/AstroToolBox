@@ -30,13 +30,13 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
         msun = toDouble(values[32]);
         age = values[33];
         colors = new HashMap<>();
-        colors.put(Color.U_B, toDouble(values[17]));
-        colors.put(Color.B_V, toDouble(values[18]));
-        colors.put(Color.V_R, toDouble(values[19]));
-        colors.put(Color.R_I, toDouble(values[20]));
-        //colors.put(Color.J_H, toDouble(values[21]));
-        //colors.put(Color.H_K, toDouble(values[22]));
-        colors.put(Color.u_g, toDouble(values[23]));
+        //colors.put(Color.U_B, toDouble(values[17]));
+        //colors.put(Color.B_V, toDouble(values[18]));
+        //colors.put(Color.V_R, toDouble(values[19]));
+        //colors.put(Color.R_I, toDouble(values[20]));
+        colors.put(Color.J_H, toDouble(values[21]));
+        colors.put(Color.H_K, toDouble(values[22]));
+        //colors.put(Color.u_g, toDouble(values[23]));
         colors.put(Color.g_r, toDouble(values[24]));
         colors.put(Color.r_i, toDouble(values[25]));
         colors.put(Color.i_z, toDouble(values[26]));
@@ -44,7 +44,7 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
         colors.put(Color.r_i_PS1, toDouble(values[25]));
         colors.put(Color.i_z_PS1, toDouble(values[26]));
         colors.put(Color.i_z_DES, toDouble(values[26]));
-        colors.put(Color.V_J, toDouble(values[27]));
+        //colors.put(Color.V_J, toDouble(values[27]));
         colors.put(Color.G_RP, toDouble(values[29]));
         colors.put(Color.BP_RP, toDouble(values[30]));
     }
