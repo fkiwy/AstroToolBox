@@ -118,6 +118,10 @@ public class ModuleHelper {
         return icon.getImage();
     }
 
+    public static ImageIcon getInfoIcon() {
+        return new ImageIcon(ModuleHelper.class.getResource("/icons/info.png"));
+    }
+
     public static Map<String, CatalogEntry> getCatalogInstances() {
         Map<String, CatalogEntry> catalogInstances = new LinkedHashMap<>();
 

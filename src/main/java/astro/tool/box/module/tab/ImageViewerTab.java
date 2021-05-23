@@ -181,7 +181,7 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -5708,6 +5708,19 @@ public class ImageViewerTab {
                     createSed(catalogEntry, collection, false);
                 });
 
+                String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
+                        + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
+
+               commandPanel.add(new JLabel("|"));
+
+                JLabel toolTip = new JLabel(getInfoIcon());
+                toolTip.setToolTipText(html(info));
+                commandPanel.add(toolTip);
+                
+                 JLabel infoLabel = new JLabel("Tooltip");
+                infoLabel.setToolTipText(html(info));
+                commandPanel.add(infoLabel);
+
                 JPanel sedPanel = new JPanel();
                 sedPanel.setLayout(new BoxLayout(sedPanel, BoxLayout.Y_AXIS));
                 sedPanel.add(chartPanel);
@@ -5988,9 +6001,6 @@ public class ImageViewerTab {
         ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
         ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
 
-        //yAxis.setRange(1E-18, 1E-13);
-        yAxis.setRange(-15, 5);
-
         Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
         xAxis.setTickLabelFont(axisTickFont);
         yAxis.setTickLabelFont(axisTickFont);
@@ -5999,9 +6009,11 @@ public class ImageViewerTab {
         xAxis.setLabelFont(axisLabelFont);
         yAxis.setLabelFont(axisLabelFont);
 
-        XYSplineRenderer renderer = new XYSplineRenderer(100);
-        //XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesPaint(0, JColor.STEEL.val);
+        //yAxis.setRange(-15, 5);
+        //yAxis.setRange(1E-18, 1E-13);
+        //XYSplineRenderer renderer = new XYSplineRenderer(100);
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setSeriesPaint(0, Color.BLACK);
         renderer.setSeriesStroke(0, new BasicStroke(2));
 
         List<String> toolTips = Arrays.asList("g (481 nm)", "r (617 nm)", "i (752 nm)", "z (866 nm)", "y (962 nm)", "J (1.25 μm)", "H (1.65 μm)", "K (2.15 μm)", "W1 (3.4 μm)", "W2 (4.6 μm)", "W3 (12 μm)", "W4 (22 μm)");
