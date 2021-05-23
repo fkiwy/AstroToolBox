@@ -89,7 +89,8 @@ public class ImageSeriesTab {
     private JTextField fovField;
     private JTable currentTable;
 
-    private Timer timeSeriesTimer;
+    private Timer infraredTimeSeriesTimer;
+    private Timer opticalTimeSeriesTimer;
     private Timer decalsTimeSeriesTimer;
     private Timer wiseTimeSeriesTimer;
 
@@ -148,7 +149,8 @@ public class ImageSeriesTab {
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
                     stopTimers();
-                    timeSeriesTimer = null;
+                    infraredTimeSeriesTimer = null;
+                    opticalTimeSeriesTimer = null;
                     decalsTimeSeriesTimer = null;
                     wiseTimeSeriesTimer = null;
                     if (centerPanel.getComponentCount() > 0) {
@@ -394,8 +396,11 @@ public class ImageSeriesTab {
     }
 
     private void restartTimers() {
-        if (timeSeriesTimer != null) {
-            timeSeriesTimer.restart();
+        if (infraredTimeSeriesTimer != null) {
+            infraredTimeSeriesTimer.restart();
+        }
+        if (opticalTimeSeriesTimer != null) {
+            opticalTimeSeriesTimer.restart();
         }
         if (decalsTimeSeriesTimer != null) {
             decalsTimeSeriesTimer.restart();
@@ -406,8 +411,11 @@ public class ImageSeriesTab {
     }
 
     private void stopTimers() {
-        if (timeSeriesTimer != null) {
-            timeSeriesTimer.stop();
+        if (infraredTimeSeriesTimer != null) {
+            infraredTimeSeriesTimer.stop();
+        }
+        if (opticalTimeSeriesTimer != null) {
+            opticalTimeSeriesTimer.stop();
         }
         if (decalsTimeSeriesTimer != null) {
             decalsTimeSeriesTimer.stop();
@@ -674,47 +682,63 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Cross survey time series", Color.RED));
 
-        List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
+        List<Couple<String, BufferedImage>> infraredImageList = new ArrayList<>();
+        List<Couple<String, BufferedImage>> opticalImageList = new ArrayList<>();
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DSS"));
-            imageList.add(new Couple("DSS", image));
+            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
+            if (image != null) {
+                infraredImageList.add(new Couple("DSS2 - IR", image));
+            }
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "2MASS"));
-            imageList.add(new Couple("2MASS", image));
+            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
+            if (image != null) {
+                infraredImageList.add(new Couple("2MASS - K", image));
+            }
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "SDSS"));
-            imageList.add(new Couple("SDSS", image));
+            opticalImageList.add(new Couple("SDSS", image));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "Spitzer"));
-            imageList.add(new Couple("Spitzer", image));
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            if (image != null) {
+                infraredImageList.add(new Couple("Spitzer - CH4", image));
+            }
         }
-        //image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
-        //if (image != null) {
-        //    bandPanel.add(buildImagePanel(image, "AllWISE"));
-        //    imageList.add(new Couple("AllWISE", image));
-        //}
+        image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "AllWISE"));
+            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+            if (image != null) {
+                infraredImageList.add(new Couple("WISE - W2", image));
+            }
+        }
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size);
             bandPanel.add(buildImagePanel(image, "Pan-STARRS"));
-            imageList.add(new Couple("Pan-STARRS", image));
+            opticalImageList.add(new Couple("Pan-STARRS", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "g-r-z");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DECaLS"));
-            imageList.add(new Couple("DECaLS", image));
+            opticalImageList.add(new Couple("DECaLS", image));
         }
 
-        timeSeriesTimer = new Timer(300, null);
-        createTimeSeriesTimer(bandPanel, imageList, timeSeriesTimer);
+        infraredTimeSeriesTimer = new Timer(300, null);
+        createTimeSeriesTimer(bandPanel, infraredImageList, infraredTimeSeriesTimer);
+
+        opticalTimeSeriesTimer = new Timer(300, null);
+        createTimeSeriesTimer(bandPanel, opticalImageList, opticalTimeSeriesTimer);
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
@@ -750,8 +774,10 @@ public class ImageSeriesTab {
             imageList.add(new Couple("LS DR9", image));
         }
 
-        decalsTimeSeriesTimer = new Timer(300, null);
-        createTimeSeriesTimer(bandPanel, imageList, decalsTimeSeriesTimer);
+        if (imageList.size() > 2) {
+            decalsTimeSeriesTimer = new Timer(300, null);
+            createTimeSeriesTimer(bandPanel, imageList, decalsTimeSeriesTimer);
+        }
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
@@ -789,7 +815,7 @@ public class ImageSeriesTab {
 
     private void createTimeSeriesTimer(JPanel bandPanel, List<Couple<String, BufferedImage>> imageList, Timer timer) {
         int componentCount = imageList.size();
-        if (componentCount > 0) {
+        if (componentCount > 1) {
             JPanel displayPanel = new JPanel();
             bandPanel.add(displayPanel);
             Counter imageCounter = new Counter();
