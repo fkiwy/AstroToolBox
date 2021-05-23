@@ -734,11 +734,38 @@ public class ImageSeriesTab {
             opticalImageList.add(new Couple("DECaLS", image));
         }
 
-        infraredTimeSeriesTimer = new Timer(300, null);
+        infraredTimeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, infraredImageList, infraredTimeSeriesTimer);
 
-        opticalTimeSeriesTimer = new Timer(300, null);
+        opticalTimeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, opticalImageList, opticalTimeSeriesTimer);
+
+        JPanel buttonPanel = buildButtonPanel("Save as GIF");
+        bandPanel.add(buttonPanel);
+
+        if (infraredImageList.size() > 1) {
+            JButton saveInfraredButton = new JButton("Infrared series");
+            buttonPanel.add(saveInfraredButton);
+            saveInfraredButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    saveAnimatedGif(infraredImageList, buttonPanel);
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+        }
+
+        if (opticalImageList.size() > 1) {
+            JButton saveOpticalButton = new JButton("Optical series");
+            buttonPanel.add(saveOpticalButton);
+            saveOpticalButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    saveAnimatedGif(opticalImageList, buttonPanel);
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+        }
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
@@ -775,8 +802,21 @@ public class ImageSeriesTab {
         }
 
         if (imageList.size() > 2) {
-            decalsTimeSeriesTimer = new Timer(300, null);
+            decalsTimeSeriesTimer = new Timer(500, null);
             createTimeSeriesTimer(bandPanel, imageList, decalsTimeSeriesTimer);
+
+            JPanel buttonPanel = buildButtonPanel("Save as GIF");
+            bandPanel.add(buttonPanel);
+
+            JButton saveButton = new JButton("DECaLS series");
+            buttonPanel.add(saveButton);
+            saveButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    saveAnimatedGif(imageList, buttonPanel);
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -803,7 +843,7 @@ public class ImageSeriesTab {
             imageList.add(new Couple(component.getTitle(), image));
         }
 
-        wiseTimeSeriesTimer = new Timer(300, null);
+        wiseTimeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, imageList, wiseTimeSeriesTimer);
 
         if (bandPanel.getComponentCount() > 0) {
@@ -844,6 +884,12 @@ public class ImageSeriesTab {
         JPanel panel = new JPanel();
         panel.setBorder(createEtchedBorder(imageHeader));
         panel.add(createHyperlink("Display in web browser", link));
+        return panel;
+    }
+
+    private JPanel buildButtonPanel(String imageHeader) {
+        JPanel panel = new JPanel();
+        panel.setBorder(createEtchedBorder(imageHeader));
         return panel;
     }
 

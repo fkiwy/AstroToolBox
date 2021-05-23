@@ -9,6 +9,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
+import astro.tool.box.container.Couple;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -37,6 +38,7 @@ import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.FileTypeFilter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -78,6 +80,7 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -905,6 +908,26 @@ public class ModuleHelper {
         pw.print(LocalDateTime.now().toString() + " ");
         pw.println(message);
         return sw.toString();
+    }
+
+    public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, JPanel container) throws Exception {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+        int returnVal = fileChooser.showSaveDialog(container);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            file = new File(file.getPath() + ".gif");
+            BufferedImage[] imageSet = new BufferedImage[imageList.size()];
+            int i = 0;
+            for (Couple<String, BufferedImage> imageData : imageList) {
+                BufferedImage imageBuffer = imageData.getB();
+                imageSet[i++] = drawCenterShape(imageBuffer);
+            }
+            if (imageSet.length > 0) {
+                GifSequencer sequencer = new GifSequencer();
+                sequencer.generateFromBI(imageSet, file, 500 / 10, true);
+            }
+        }
     }
 
 }
