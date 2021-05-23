@@ -181,14 +181,14 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class ImageViewerTab {
 
-    public static final String TAB_NAME = "Image Blinker";
+    public static final String TAB_NAME = "Image Viewer";
     public static final String FITS_DIR = USER_HOME + "/.fits";
     public static final String EPOCH_LABEL = "Number of epochs: %d";
     public static final String HIGH_SCALE_LABEL = "Contrast - high scale: %d";
@@ -5989,6 +5989,8 @@ public class ImageViewerTab {
         ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
 
         //yAxis.setRange(1E-18, 1E-13);
+        yAxis.setRange(-15, 5);
+
         Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
         xAxis.setTickLabelFont(axisTickFont);
         yAxis.setTickLabelFont(axisTickFont);
@@ -5997,8 +5999,8 @@ public class ImageViewerTab {
         xAxis.setLabelFont(axisLabelFont);
         yAxis.setLabelFont(axisLabelFont);
 
-        //XYSplineRenderer renderer = new XYSplineRenderer(100);
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        XYSplineRenderer renderer = new XYSplineRenderer(100);
+        //XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, JColor.STEEL.val);
         renderer.setSeriesStroke(0, new BasicStroke(2));
 
