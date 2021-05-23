@@ -289,14 +289,26 @@ public class PhotometricFunctions {
     }
 
     /**
+     * Convert magnitude to flux density
+     *
+     * @param magnitude
+     * @param zeroPointFlux
+     * @return the Flux density or F(ν) (Jy)
+     */
+    public static double convertMagnitudeToFluxDensity(double magnitude, double zeroPointFlux) {
+        return zeroPointFlux * pow(10, -magnitude / 2.5);
+    }
+
+    /**
      * Convert magnitude to flux
      *
      * @param magnitude
      * @param zeroPointFlux
-     * @return the flux
+     * @param wavelength
+     * @return the Flux or νF(ν) (W/m^2)
      */
-    public static double convertMagnitudeToFlux(double magnitude, double zeroPointFlux) {
-        return zeroPointFlux * pow(10, -magnitude / 2.5);
+    public static double convertMagnitudeToFlux(double magnitude, double zeroPointFlux, double wavelength) {
+        return convertMagnitudeToFluxDensity(magnitude, zeroPointFlux) * pow(10, -26 /*should be +26*/) * (299792458 / wavelength * 1000000 /*should be 10000*/);
     }
 
 }

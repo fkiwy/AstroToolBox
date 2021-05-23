@@ -5677,7 +5677,11 @@ public class ImageViewerTab {
                 collection = createSed(catalogEntry, null, true);
                 JFreeChart chart = createChart(collection);
 
-                ChartPanel chartPanel = new ChartPanel(chart);
+                ChartPanel chartPanel = new ChartPanel(chart) {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                    }
+                };
                 chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
                 chartPanel.setBackground(Color.WHITE);
 
@@ -5851,18 +5855,18 @@ public class ImageViewerTab {
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
-        series.add(log(0.4810), photometry.get_g_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_g_mag(), 3631))); // g
-        series.add(log(0.6170), photometry.get_r_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_r_mag(), 3631))); // r
-        series.add(log(0.7520), photometry.get_i_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_i_mag(), 3631))); // i
-        series.add(log(0.8660), photometry.get_z_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_z_mag(), 3631))); // z
-        series.add(log(0.9620), photometry.get_y_mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.get_y_mag(), 3631))); // y
-        series.add(log(1.235), photometry.getJmag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getJmag(), 1594))); // J
-        series.add(log(1.662), photometry.getHmag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getHmag(), 1024))); // H
-        series.add(log(2.159), photometry.getKmag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getKmag(), 666.7))); // K
-        series.add(log(3.4), photometry.getW1mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW1mag(), 309.54))); // W1
-        series.add(log(4.6), photometry.getW2mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW2mag(), 171.79))); // W2
-        series.add(log(12), photometry.getW3mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW3mag(), 31.676))); // W3
-        series.add(log(22), photometry.getW4mag() == 0 ? null : log(convertMagnitudeToFlux(photometry.getW4mag(), 8.3635))); // W4
+        series.add(log(0.481), photometry.get_g_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_g_mag(), 3631))); // g
+        series.add(log(0.617), photometry.get_r_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_r_mag(), 3631))); // r
+        series.add(log(0.752), photometry.get_i_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_i_mag(), 3631))); // i
+        series.add(log(0.866), photometry.get_z_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_z_mag(), 3631))); // z
+        series.add(log(0.962), photometry.get_y_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_y_mag(), 3631))); // y
+        series.add(log(1.235), photometry.getJmag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getJmag(), 1594))); // J
+        series.add(log(1.662), photometry.getHmag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getHmag(), 1024))); // H
+        series.add(log(2.159), photometry.getKmag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getKmag(), 666.7))); // K
+        series.add(log(3.4), photometry.getW1mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW1mag(), 309.54))); // W1
+        series.add(log(4.6), photometry.getW2mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW2mag(), 171.79))); // W2
+        series.add(log(12), photometry.getW3mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW3mag(), 31.676))); // W3
+        series.add(log(22), photometry.getW4mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW4mag(), 8.3635))); // W4
 
         if (collection == null) {
             collection = new XYSeriesCollection();
@@ -5953,17 +5957,17 @@ public class ImageViewerTab {
 
         XYSeries referenceSeries = new XYSeries(spectralType);
 
-        referenceSeries.add(log(0.4810), referenceMagnitudes.get(Band.g) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.g), 3631))); // g
-        referenceSeries.add(log(0.6170), referenceMagnitudes.get(Band.r) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.r), 3631))); // r
-        referenceSeries.add(log(0.7520), referenceMagnitudes.get(Band.i) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.i), 3631))); // i
-        referenceSeries.add(log(0.8660), referenceMagnitudes.get(Band.z) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.z), 3631))); // z
-        referenceSeries.add(log(0.9620), referenceMagnitudes.get(Band.y) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.y), 3631))); // y
-        referenceSeries.add(log(1.235), referenceMagnitudes.get(Band.J) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.J), 1594))); // J
-        referenceSeries.add(log(1.662), referenceMagnitudes.get(Band.H) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.H), 1024))); // H
-        referenceSeries.add(log(2.159), referenceMagnitudes.get(Band.K) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.K), 666.7))); // K
-        referenceSeries.add(log(3.4), referenceMagnitudes.get(Band.W1) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.W1), 309.54))); // W1
-        referenceSeries.add(log(4.6), referenceMagnitudes.get(Band.W2) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.W2), 171.79))); // W2
-        referenceSeries.add(log(12), referenceMagnitudes.get(Band.W3) == 0 ? null : log(convertMagnitudeToFlux(referenceMagnitudes.get(Band.W3), 31.676))); // W3
+        referenceSeries.add(log(0.481), referenceMagnitudes.get(Band.g) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.g), 3631))); // g
+        referenceSeries.add(log(0.617), referenceMagnitudes.get(Band.r) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.r), 3631))); // r
+        referenceSeries.add(log(0.752), referenceMagnitudes.get(Band.i) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.i), 3631))); // i
+        referenceSeries.add(log(0.866), referenceMagnitudes.get(Band.z) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.z), 3631))); // z
+        referenceSeries.add(log(0.962), referenceMagnitudes.get(Band.y) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.y), 3631))); // y
+        referenceSeries.add(log(1.235), referenceMagnitudes.get(Band.J) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.J), 1594))); // J
+        referenceSeries.add(log(1.662), referenceMagnitudes.get(Band.H) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.H), 1024))); // H
+        referenceSeries.add(log(2.159), referenceMagnitudes.get(Band.K) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.K), 666.7))); // K
+        referenceSeries.add(log(3.4), referenceMagnitudes.get(Band.W1) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.W1), 309.54))); // W1
+        referenceSeries.add(log(4.6), referenceMagnitudes.get(Band.W2) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.W2), 171.79))); // W2
+        referenceSeries.add(log(12), referenceMagnitudes.get(Band.W3) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.W3), 31.676))); // W3
 
         try {
             collection.addSeries(referenceSeries);
@@ -5984,6 +5988,7 @@ public class ImageViewerTab {
         ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
         ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
 
+        //yAxis.setRange(1E-18, 1E-13);
         Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
         xAxis.setTickLabelFont(axisTickFont);
         yAxis.setTickLabelFont(axisTickFont);
