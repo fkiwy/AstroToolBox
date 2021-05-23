@@ -846,6 +846,19 @@ public class ImageSeriesTab {
         wiseTimeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, imageList, wiseTimeSeriesTimer);
 
+        JPanel buttonPanel = buildButtonPanel("Save as GIF");
+        bandPanel.add(buttonPanel);
+
+        JButton saveButton = new JButton("WISE series");
+        buttonPanel.add(saveButton);
+        saveButton.addActionListener((ActionEvent evt) -> {
+            try {
+                saveAnimatedGif(imageList, buttonPanel);
+            } catch (Exception ex) {
+                showExceptionDialog(baseFrame, ex);
+            }
+        });
+
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
