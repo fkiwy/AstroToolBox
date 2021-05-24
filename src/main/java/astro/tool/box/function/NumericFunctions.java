@@ -227,6 +227,10 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_7DEC_NZ);
     }
 
+    public static String roundTo2DecSN(double number) {
+        return formatDouble(number, "0.##E0");
+    }
+
     public static String formatDouble(Double number, String pattern) {
         DecimalFormat df = new DecimalFormat(pattern);
         df.setRoundingMode(RoundingMode.HALF_UP);

@@ -177,12 +177,11 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -5639,7 +5638,7 @@ public class ImageViewerTab {
                 useAbsoluteMagnitude = new JCheckBox("Use absolute magnitude if available");
 
                 collection = createSed(catalogEntry, null, true);
-                JFreeChart chart = createChart(collection);
+                JFreeChart chart = createChart();
 
                 ChartPanel chartPanel = new ChartPanel(chart) {
                     @Override
@@ -5670,19 +5669,6 @@ public class ImageViewerTab {
                 commandPanel.add(useAbsoluteMagnitude);
                 useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
                     createSed(catalogEntry, collection, false);
-                });
-
-                JCheckBox lockRangeAxis = new JCheckBox("Lock y axis");
-                commandPanel.add(lockRangeAxis);
-                lockRangeAxis.addActionListener((ActionEvent e) -> {
-                    XYPlot plot = chart.getXYPlot();
-                    ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
-                    if (lockRangeAxis.isSelected()) {
-                        yAxis.setRange(-15, 5);
-                        //yAxis.setRange(1E-18, 1E-13);
-                    } else {
-                        yAxis.setAutoRange(true);
-                    }
                 });
 
                 String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
@@ -5843,18 +5829,18 @@ public class ImageViewerTab {
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
-        series.add(log(0.481), photometry.get_g_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_g_mag(), 3631))); // g
-        series.add(log(0.617), photometry.get_r_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_r_mag(), 3631))); // r
-        series.add(log(0.752), photometry.get_i_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_i_mag(), 3631))); // i
-        series.add(log(0.866), photometry.get_z_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_z_mag(), 3631))); // z
-        series.add(log(0.962), photometry.get_y_mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.get_y_mag(), 3631))); // y
-        series.add(log(1.235), photometry.getJmag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getJmag(), 1594))); // J
-        series.add(log(1.662), photometry.getHmag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getHmag(), 1024))); // H
-        series.add(log(2.159), photometry.getKmag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getKmag(), 666.7))); // K
-        series.add(log(3.4), photometry.getW1mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW1mag(), 309.54))); // W1
-        series.add(log(4.6), photometry.getW2mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW2mag(), 171.79))); // W2
-        series.add(log(12), photometry.getW3mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW3mag(), 31.676))); // W3
-        series.add(log(22), photometry.getW4mag() == 0 ? null : log(convertMagnitudeToFluxDensity(photometry.getW4mag(), 8.3635))); // W4
+        series.add(0.481, photometry.get_g_mag() == 0 ? null : convertMagnitudeToFlux(photometry.get_g_mag(), 3631, 0.481)); // g
+        series.add(0.617, photometry.get_r_mag() == 0 ? null : convertMagnitudeToFlux(photometry.get_r_mag(), 3631, 0.617)); // r
+        series.add(0.752, photometry.get_i_mag() == 0 ? null : convertMagnitudeToFlux(photometry.get_i_mag(), 3631, 0.752)); // i
+        series.add(0.866, photometry.get_z_mag() == 0 ? null : convertMagnitudeToFlux(photometry.get_z_mag(), 3631, 0.866)); // z
+        series.add(0.962, photometry.get_y_mag() == 0 ? null : convertMagnitudeToFlux(photometry.get_y_mag(), 3631, 0.962)); // y
+        series.add(1.235, photometry.getJmag() == 0 ? null : convertMagnitudeToFlux(photometry.getJmag(), 1594, 1.235)); // J
+        series.add(1.662, photometry.getHmag() == 0 ? null : convertMagnitudeToFlux(photometry.getHmag(), 1024, 1.662)); // H
+        series.add(2.159, photometry.getKmag() == 0 ? null : convertMagnitudeToFlux(photometry.getKmag(), 666.7, 2.159)); // K
+        series.add(3.4, photometry.getW1mag() == 0 ? null : convertMagnitudeToFlux(photometry.getW1mag(), 309.54, 3.4)); // W1
+        series.add(4.6, photometry.getW2mag() == 0 ? null : convertMagnitudeToFlux(photometry.getW2mag(), 171.79, 4.6)); // W2
+        series.add(12, photometry.getW3mag() == 0 ? null : convertMagnitudeToFlux(photometry.getW3mag(), 31.676, 12)); // W3
+        series.add(22, photometry.getW4mag() == 0 ? null : convertMagnitudeToFlux(photometry.getW4mag(), 8.3635, 22)); // W4
 
         if (collection == null) {
             collection = new XYSeriesCollection();
@@ -5945,17 +5931,17 @@ public class ImageViewerTab {
 
         XYSeries referenceSeries = new XYSeries(spectralType);
 
-        referenceSeries.add(log(0.481), referenceMagnitudes.get(Band.g) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.g), 3631))); // g
-        referenceSeries.add(log(0.617), referenceMagnitudes.get(Band.r) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.r), 3631))); // r
-        referenceSeries.add(log(0.752), referenceMagnitudes.get(Band.i) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.i), 3631))); // i
-        referenceSeries.add(log(0.866), referenceMagnitudes.get(Band.z) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.z), 3631))); // z
-        referenceSeries.add(log(0.962), referenceMagnitudes.get(Band.y) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.y), 3631))); // y
-        referenceSeries.add(log(1.235), referenceMagnitudes.get(Band.J) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.J), 1594))); // J
-        referenceSeries.add(log(1.662), referenceMagnitudes.get(Band.H) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.H), 1024))); // H
-        referenceSeries.add(log(2.159), referenceMagnitudes.get(Band.K) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.K), 666.7))); // K
-        referenceSeries.add(log(3.4), referenceMagnitudes.get(Band.W1) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.W1), 309.54))); // W1
-        referenceSeries.add(log(4.6), referenceMagnitudes.get(Band.W2) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.W2), 171.79))); // W2
-        referenceSeries.add(log(12), referenceMagnitudes.get(Band.W3) == 0 ? null : log(convertMagnitudeToFluxDensity(referenceMagnitudes.get(Band.W3), 31.676))); // W3
+        referenceSeries.add(0.481, referenceMagnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.g), 3631, 0.481)); // g
+        referenceSeries.add(0.617, referenceMagnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.r), 3631, 0.617)); // r
+        referenceSeries.add(0.752, referenceMagnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.i), 3631, 0.752)); // i
+        referenceSeries.add(0.866, referenceMagnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.z), 3631, 0.866)); // z
+        referenceSeries.add(0.962, referenceMagnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.y), 3631, 0.962)); // y
+        referenceSeries.add(1.235, referenceMagnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.J), 1594, 1.235)); // J
+        referenceSeries.add(1.662, referenceMagnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.H), 1024, 1.662)); // H
+        referenceSeries.add(2.159, referenceMagnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.K), 666.7, 2.159)); // K
+        referenceSeries.add(3.4, referenceMagnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.W1), 309.54, 3.4)); // W1
+        referenceSeries.add(4.6, referenceMagnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.W2), 171.79, 4.6)); // W2
+        referenceSeries.add(12, referenceMagnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(referenceMagnitudes.get(Band.W3), 31.676, 12)); // W3
 
         try {
             collection.addSeries(referenceSeries);
@@ -5963,18 +5949,36 @@ public class ImageViewerTab {
         }
     }
 
-    private JFreeChart createChart(XYDataset dataset) {
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "Spectral Energy Distribution",
-                "log(λ)",
-                "log(F)",
-                dataset
-        );
-
+    private JFreeChart createChart() {
+        JFreeChart chart = ChartFactory.createXYLineChart("Spectral Energy Distribution", "", "", collection);
         XYPlot plot = chart.getXYPlot();
 
-        ValueAxis xAxis = (ValueAxis) plot.getDomainAxis();
-        ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
+        XYSeries series = collection.getSeries(0);
+        List<String> toolTips = Arrays.asList(
+                "Pan-STARRS g: λ=0.481 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(0) == null ? 0. : series.getY(0))) + " W/m^2",
+                "Pan-STARRS r: λ=0.617 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(1) == null ? 0. : series.getY(1))) + " W/m^2",
+                "Pan-STARRS i: λ=0.752 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(2) == null ? 0. : series.getY(2))) + " W/m^2",
+                "Pan-STARRS z: λ=0.866 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(3) == null ? 0. : series.getY(3))) + " W/m^2",
+                "Pan-STARRS y: λ=0.962 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(4) == null ? 0. : series.getY(4))) + " W/m^2",
+                "J: λ=1.235 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(5) == null ? 0. : series.getY(5))) + " W/m^2",
+                "H: λ=1.662 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(6) == null ? 0. : series.getY(6))) + " W/m^2",
+                "K: λ=2.159 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(7) == null ? 0. : series.getY(7))) + " W/m^2",
+                "W1: λ=3.4 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(8) == null ? 0. : series.getY(8))) + " W/m^2",
+                "W2: λ=4.6 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(9) == null ? 0. : series.getY(9))) + " W/m^2",
+                "W3: λ=12 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(10) == null ? 0. : series.getY(10))) + " W/m^2",
+                "W4: λ=22 μm; νF(ν)=" + roundTo2DecSN((double) (series.getY(11) == null ? 0. : series.getY(11))) + " W/m^2"
+        );
+
+        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
+        generator.addToolTipSeries(toolTips);
+
+        LogAxis xAxis = new LogAxis("λ (μm)");
+        xAxis.setAutoRangeMinimumSize(0.1);
+        plot.setDomainAxis(xAxis);
+
+        LogAxis yAxis = new LogAxis("νF(ν) (W/m^2)");
+        yAxis.setAutoRangeMinimumSize(1E-18);
+        plot.setRangeAxis(yAxis);
 
         Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
         xAxis.setTickLabelFont(axisTickFont);
@@ -5988,10 +5992,6 @@ public class ImageViewerTab {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.BLACK);
         renderer.setSeriesStroke(0, new BasicStroke(2));
-
-        List<String> toolTips = Arrays.asList("g (481 nm)", "r (617 nm)", "i (752 nm)", "z (866 nm)", "y (962 nm)", "J (1.25 μm)", "H (1.65 μm)", "K (2.15 μm)", "W1 (3.4 μm)", "W2 (4.6 μm)", "W3 (12 μm)", "W4 (22 μm)");
-        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
-        generator.addToolTipSeries(toolTips);
         renderer.setSeriesToolTipGenerator(0, generator);
 
         plot.setRenderer(renderer);
