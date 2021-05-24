@@ -178,6 +178,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
@@ -5974,10 +5975,12 @@ public class ImageViewerTab {
 
         LogAxis xAxis = new LogAxis("λ (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
+        xAxis.setTickUnit(new NumberTickUnit(0.2));
         plot.setDomainAxis(xAxis);
 
         LogAxis yAxis = new LogAxis("νF(ν) (W/m^2)");
         yAxis.setAutoRangeMinimumSize(1E-18);
+        yAxis.setTickUnit(new NumberTickUnit(0.5));
         plot.setRangeAxis(yAxis);
 
         Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
