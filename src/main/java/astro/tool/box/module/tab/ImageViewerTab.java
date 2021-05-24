@@ -266,6 +266,7 @@ public class ImageViewerTab {
     private JLabel epochLabel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
+    private JScrollPane rightScrollPanel;
     private JCheckBox unwiseCutouts;
     private JCheckBox decalsCutouts;
     private JCheckBox autoContrast;
@@ -508,7 +509,7 @@ public class ImageViewerTab {
             rightPanel = new JPanel();
             rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 
-            JScrollPane rightScrollPanel = new JScrollPane(rightPanel);
+            rightScrollPanel = new JScrollPane(rightPanel);
             rightScrollPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
             rightScrollPanel.setPreferredSize(new Dimension(225, rightPanel.getHeight()));
 
@@ -1726,9 +1727,9 @@ public class ImageViewerTab {
             advancedControlPanel.add(hideMagnifier);
             hideMagnifier.addActionListener((ActionEvent evt) -> {
                 if (hideMagnifier.isSelected()) {
-                    rightPanel.setVisible(false);
+                    rightScrollPanel.setVisible(false);
                 } else {
-                    rightPanel.setVisible(true);
+                    rightScrollPanel.setVisible(true);
                 }
             });
 
