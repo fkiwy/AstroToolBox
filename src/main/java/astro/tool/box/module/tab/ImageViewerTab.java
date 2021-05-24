@@ -5711,15 +5711,15 @@ public class ImageViewerTab {
                 String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                         + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
-               commandPanel.add(new JLabel("|"));
+                commandPanel.add(new JLabel("|"));
+
+                JLabel infoLabel = new JLabel("Tooltip");
+                infoLabel.setToolTipText(html(info));
+                commandPanel.add(infoLabel);
 
                 JLabel toolTip = new JLabel(getInfoIcon());
                 toolTip.setToolTipText(html(info));
                 commandPanel.add(toolTip);
-                
-                 JLabel infoLabel = new JLabel("Tooltip");
-                infoLabel.setToolTipText(html(info));
-                commandPanel.add(infoLabel);
 
                 JPanel sedPanel = new JPanel();
                 sedPanel.setLayout(new BoxLayout(sedPanel, BoxLayout.Y_AXIS));
@@ -5783,13 +5783,10 @@ public class ImageViewerTab {
 
         StringBuilder seriesLabel = new StringBuilder();
         if (!"0".equals(panStarrsEntry.getSourceId())) {
-            seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId());
+            seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId()).append(" ");
         }
         if (allWiseEntry.getSourceId() != null) {
-            if (seriesLabel.length() > 0) {
-                seriesLabel.append(" & ");
-            }
-            seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId());
+            seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId()).append(" ");
         }
 
         SedPhotometry photometry = new SedPhotometry();
@@ -5814,10 +5811,10 @@ public class ImageViewerTab {
             CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 vhsEntry = (VhsCatalogEntry) retrievedEntry;
+                seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
                 photometry.setJmag(vhsEntry.getJmag());
                 photometry.setHmag(vhsEntry.getHmag());
                 photometry.setKmag(vhsEntry.getKmag());
-                seriesLabel.append(" (J, H, K photometry is from Vista VHS)");
             } else {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                 twoMassEntry.setRa(catalogEntry.getRa());
@@ -5826,6 +5823,7 @@ public class ImageViewerTab {
                 retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryFacade, baseFrame);
                 if (retrievedEntry != null) {
                     twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
+                    seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId()).append(" ");
                     photometry.setJmag(twoMassEntry.getJmag());
                     photometry.setHmag(twoMassEntry.getHmag());
                     photometry.setKmag(twoMassEntry.getKmag());
@@ -5955,7 +5953,7 @@ public class ImageViewerTab {
                         selectedMags++;
                     }
                 }
-                if (selectedMags >= totalMags - 2) {
+                if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
                     createReferenceSed(entry.getSpt(), collection);
                 }
             }
