@@ -5659,7 +5659,7 @@ public class ImageViewerTab {
                     createReferenceSed(selectedType.name(), collection);
                 });
 
-                JButton removeButton = new JButton("Remove all reference SEDs");
+                JButton removeButton = new JButton("Remove reference SEDs");
                 commandPanel.add(removeButton);
                 removeButton.addActionListener((ActionEvent e) -> {
                     spectralTypes.setSelectedItem(SpectralType.SELECT);
@@ -5670,6 +5670,19 @@ public class ImageViewerTab {
                 commandPanel.add(useAbsoluteMagnitude);
                 useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
                     createSed(catalogEntry, collection, false);
+                });
+
+                JCheckBox lockRangeAxis = new JCheckBox("Lock y axis");
+                commandPanel.add(lockRangeAxis);
+                lockRangeAxis.addActionListener((ActionEvent e) -> {
+                    XYPlot plot = chart.getXYPlot();
+                    ValueAxis yAxis = (ValueAxis) plot.getRangeAxis();
+                    if (lockRangeAxis.isSelected()) {
+                        yAxis.setRange(-15, 5);
+                        //yAxis.setRange(1E-18, 1E-13);
+                    } else {
+                        yAxis.setAutoRange(true);
+                    }
                 });
 
                 String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
@@ -5971,8 +5984,6 @@ public class ImageViewerTab {
         xAxis.setLabelFont(axisLabelFont);
         yAxis.setLabelFont(axisLabelFont);
 
-        //yAxis.setRange(-15, 5);
-        //yAxis.setRange(1E-18, 1E-13);
         //XYSplineRenderer renderer = new XYSplineRenderer(100);
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.BLACK);
