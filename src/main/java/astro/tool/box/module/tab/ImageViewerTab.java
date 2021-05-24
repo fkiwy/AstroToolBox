@@ -303,7 +303,6 @@ public class ImageViewerTab {
     private JCheckBox showProperMotion;
     private JCheckBox showBrownDwarfsOnly;
     private JCheckBox displaySpectralTypes;
-    private JCheckBox detectDifferences;
     private JCheckBox useCustomOverlays;
     private JCheckBox allSkyImages;
     private JCheckBox twoMassImages;
@@ -1731,13 +1730,6 @@ public class ImageViewerTab {
                 } else {
                     rightPanel.setVisible(true);
                 }
-            });
-
-            detectDifferences = new JCheckBox(html("Detect differences <span color='red'>(*)</span>"));
-            advancedControlPanel.add(detectDifferences);
-            detectDifferences.setToolTipText("Depends on contrast settings");
-            detectDifferences.addActionListener((ActionEvent evt) -> {
-                processImages();
             });
 
             advancedControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
@@ -3270,9 +3262,6 @@ public class ImageViewerTab {
             return;
         }
         timer.stop();
-        if (detectDifferences.isSelected()) {
-            detectDifferences();
-        }
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
             component.setImage(processImage(component));
@@ -3353,12 +3342,6 @@ public class ImageViewerTab {
             image = createImage(component.getBand(), component.getEpoch(), minValue, maxValue);
         }
         image = zoom(image, zoom);
-        if (detectDifferences.isSelected()) {
-            for (NumberPair diffPixel : component.getDiffPixels()) {
-                Disk disk = new Disk(getZoomedValue(diffPixel.getX()), getZoomedValue(diffPixel.getY()), getOverlaySize(200), Color.RED);
-                disk.draw(image.getGraphics());
-            }
-        }
         image = flip(image);
         addOverlaysAndPMVectors(image, component.getTotalEpochs());
         return image;
@@ -4063,66 +4046,6 @@ public class ImageViewerTab {
             return true;
         } catch (IOException | FitsException ex) {
             return false;
-        }
-    }
-
-    private void detectDifferences() {
-        for (int i = 0; i < flipbook.length; i++) {
-            FlipbookComponent component1 = flipbook[i];
-            FlipbookComponent component2 = flipbook[i + 1 == flipbook.length ? 0 : i + 1];
-            int band = component1.getBand();
-            int epoch1 = component1.getEpoch();
-            int epoch2 = component2.getEpoch();
-            int minValue = (int) component1.getRefValues().getX();
-            int maxValue = (int) component1.getRefValues().getY();
-            List<NumberPair> diffPixels = new ArrayList<>();
-            if (band == 1 || band == 12) {
-                detectDifferencesPerBand(1, epoch1, epoch2, diffPixels, minValue, maxValue);
-            }
-            if (band == 2 || band == 12) {
-                detectDifferencesPerBand(2, epoch1, epoch2, diffPixels, minValue, maxValue);
-            }
-            component2.setDiffPixels(diffPixels);
-        }
-    }
-
-    private void detectDifferencesPerBand(int band, int epoch1, int epoch2, List<NumberPair> diffPixels, int minValue, int maxValue) {
-        try {
-            Fits fits = getImage(band, epoch1);
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-
-            fits = getImage(band, epoch2);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-
-            List<NumberPair> pixels = new ArrayList<>();
-            for (int i = 0; i < naxis2; ++i) {
-                for (int j = 0; j < naxis1; ++j) {
-                    for (int k = max(0, i - 1); k <= min(i + 1, naxis2 - 1); k++) {
-                        for (int u = max(0, j - 1); u <= min(j + 1, naxis1 - 1); u++) {
-                            try {
-                                float value1 = processPixel(values1[k][u], minValue, maxValue);
-                                float value2 = processPixel(values2[k][u], minValue, maxValue);
-                                float max = max(value1, value2);
-                                float min = min(value1, value2);
-                                if (max - min > min / 2 && value1 == max) {
-                                    pixels.add(new NumberPair(j, i));
-                                }
-                            } catch (ArrayIndexOutOfBoundsException ex) {
-                            }
-                        }
-                    }
-                    if (pixels.size() > 2) {
-                        diffPixels.addAll(pixels);
-                    }
-                    pixels.clear();
-                }
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
         }
     }
 
