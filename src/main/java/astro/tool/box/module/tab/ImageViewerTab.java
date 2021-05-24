@@ -276,6 +276,7 @@ public class ImageViewerTab {
     private JCheckBox staticView;
     private JCheckBox markTarget;
     private JCheckBox showCrosshairs;
+    private JCheckBox reduceSensitivity;
     private JCheckBox simbadOverlay;
     private JCheckBox gaiaOverlay;
     private JCheckBox gaiaDR3Overlay;
@@ -332,6 +333,7 @@ public class ImageViewerTab {
     private JSlider highScaleSlider;
     private JSlider lowScaleSlider;
     private JSlider subScaleSlider;
+    private JSlider sensitivitySlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -394,6 +396,8 @@ public class ImageViewerTab {
     private int highContrastSaved = highContrast;
     private int lowContrastSaved = lowContrast;
     private int subContrastSaved = subContrast;
+
+    private double sensitivity;
 
     private double targetRa;
     private double targetDec;
@@ -676,6 +680,22 @@ public class ImageViewerTab {
                 processImages();
             });
 
+            JLabel sensitivityLabel = new JLabel("Sensitivity: 100%");
+            mainControlPanel.add(sensitivityLabel);
+
+            sensitivitySlider = new JSlider(0, 100, 100);
+            mainControlPanel.add(sensitivitySlider);
+            sensitivitySlider.addChangeListener((ChangeEvent e) -> {
+                int sliderValue = sensitivitySlider.getValue();
+                sensitivity = (100 - sliderValue) / 100.0;
+                sensitivityLabel.setText("Sensitivity: " + sliderValue + "%");
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                processImages();
+            });
+
             JLabel speedLabel = new JLabel(String.format("Playback speed: %d ms", speed));
             mainControlPanel.add(speedLabel);
 
@@ -793,6 +813,20 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
+            reduceSensitivity = new JCheckBox("Reduce sensitivity about 30%");
+            mainControlPanel.add(reduceSensitivity);
+            reduceSensitivity.addActionListener((ActionEvent evt) -> {
+                if (reduceSensitivity.isSelected()) {
+                    blurImages.setSelected(true);
+                    invertColors.setSelected(true);
+                    sensitivitySlider.setValue(70);
+                } else {
+                    blurImages.setSelected(false);
+                    invertColors.setSelected(false);
+                    sensitivitySlider.setValue(100);
+                }
+            });
+
             mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
             JButton resetDefaultsButton = new JButton("Image processing defaults");
@@ -803,6 +837,11 @@ public class ImageViewerTab {
                     blurImages.setSelected(true);
                 } else {
                     blurImages.setSelected(false);
+                }
+                if (reduceSensitivity.isSelected()) {
+                    blurImages.setSelected(true);
+                    invertColors.setSelected(true);
+                    sensitivitySlider.setValue(70);
                 }
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 setSubContrast(SUB_CONTRAST);
@@ -4333,6 +4372,7 @@ public class ImageViewerTab {
         value = stretch(value);
         value = contrast(value);
         value = min(1, value);
+        value = value < sensitivity ? 0 : value;
         return invertColors.isSelected() ? value : 1 - value;
     }
 
