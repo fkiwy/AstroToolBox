@@ -227,8 +227,8 @@ public class NumericFunctions {
         return formatDouble(number, PATTERN_7DEC_NZ);
     }
 
-    public static String roundTo2DecSN(double number) {
-        return formatDouble(number, "0.##E0");
+    public static String roundTo3DecSN(double number) {
+        return formatDouble(number, "0.###E0");
     }
 
     public static String formatDouble(Double number, String pattern) {
