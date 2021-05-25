@@ -3518,7 +3518,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawSectrumOverlay(image, sdssEntries);
+                drawSpectrumOverlay(image, sdssEntries);
             }
         }
         if (vhsOverlay.isSelected()) {
@@ -5242,7 +5242,7 @@ public class ImageViewerTab {
         return BROWN_DWARFS.contains(catalogEntry.getSpt());
     }
 
-    private void drawSectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
+    private void drawSpectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {
         Graphics graphics = image.getGraphics();
         catalogEntries.forEach(catalogEntry -> {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
