@@ -17,6 +17,7 @@ import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Overlays;
 import astro.tool.box.container.SedFluxes;
 import astro.tool.box.container.SedPhotometry;
+import astro.tool.box.container.SedReferences;
 import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.Artifact;
@@ -364,7 +365,9 @@ public class ImageViewerTab {
     private Map<String, ImageContainer> imagesW2 = new HashMap<>();
     private Map<String, Fits> images;
     private Map<String, CustomOverlay> customOverlays;
-    private Map<String, SedFluxes> sedFluxes;
+    private Map<Band, SedReferences> sedReferences;
+    private Map<Band, SedFluxes> sedFluxes;
+    private Map<Band, String> sedCatalogs;
     private List<Integer> requestedEpochs;
     private List<NumberPair> crosshairs;
     private FlipbookComponent[] flipbook;
@@ -5637,6 +5640,9 @@ public class ImageViewerTab {
             JButton createSedButton = new JButton("Create SED");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
+                sedReferences = new HashMap();
+                sedFluxes = new HashMap();
+                sedCatalogs = new HashMap();
                 useAbsoluteMagnitude = new JCheckBox("Use absolute magnitude if available");
 
                 XYSeriesCollection collection = createSed(catalogEntry, null, true);
@@ -5768,6 +5774,36 @@ public class ImageViewerTab {
         photometry.setW3mag(allWiseEntry.getW3mag());
         photometry.setW4mag(allWiseEntry.getW4mag());
 
+        // Pan-STARRS
+        sedCatalogs.put(Band.g, panStarrsEntry.getCatalogName());
+        sedCatalogs.put(Band.r, panStarrsEntry.getCatalogName());
+        sedCatalogs.put(Band.i, panStarrsEntry.getCatalogName());
+        sedCatalogs.put(Band.z, panStarrsEntry.getCatalogName());
+        sedCatalogs.put(Band.y, panStarrsEntry.getCatalogName());
+        sedReferences.put(Band.g, new SedReferences(3631, 0.481));
+        sedReferences.put(Band.r, new SedReferences(3631, 0.617));
+        sedReferences.put(Band.i, new SedReferences(3631, 0.752));
+        sedReferences.put(Band.z, new SedReferences(3631, 0.866));
+        sedReferences.put(Band.y, new SedReferences(3631, 0.962));
+
+        // WISE
+        sedCatalogs.put(Band.W1, allWiseEntry.getCatalogName());
+        sedCatalogs.put(Band.W2, allWiseEntry.getCatalogName());
+        sedCatalogs.put(Band.W3, allWiseEntry.getCatalogName());
+        sedCatalogs.put(Band.W4, allWiseEntry.getCatalogName());
+        sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
+        sedReferences.put(Band.W2, new SedReferences(171.79, 4.6));
+        sedReferences.put(Band.W3, new SedReferences(31.676, 12));
+        sedReferences.put(Band.W4, new SedReferences(8.3635, 22));
+
+        // 2MASS
+        sedCatalogs.put(Band.J, TwoMassCatalogEntry.CATALOG_NAME);
+        sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
+        sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
+        sedReferences.put(Band.J, new SedReferences(1594, 1.235));
+        sedReferences.put(Band.H, new SedReferences(1024, 1.662));
+        sedReferences.put(Band.K, new SedReferences(666.7, 2.159));
+
         if (photometry.getJmag() == 0 && photometry.getHmag() == 0 && photometry.getKmag() == 0) {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
             vhsEntry.setRa(catalogEntry.getRa());
@@ -5780,6 +5816,12 @@ public class ImageViewerTab {
                 photometry.setJmag(vhsEntry.getJmag());
                 photometry.setHmag(vhsEntry.getHmag());
                 photometry.setKmag(vhsEntry.getKmag());
+                sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
+                sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
+                sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
+                sedReferences.put(Band.J, new SedReferences(1594, 1.235));
+                sedReferences.put(Band.H, new SedReferences(1024, 1.662));
+                sedReferences.put(Band.K, new SedReferences(666.7, 2.159));
             } else {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                 twoMassEntry.setRa(catalogEntry.getRa());
@@ -5792,6 +5834,12 @@ public class ImageViewerTab {
                     photometry.setJmag(twoMassEntry.getJmag());
                     photometry.setHmag(twoMassEntry.getHmag());
                     photometry.setKmag(twoMassEntry.getKmag());
+                    sedCatalogs.put(Band.J, twoMassEntry.getCatalogName());
+                    sedCatalogs.put(Band.H, twoMassEntry.getCatalogName());
+                    sedCatalogs.put(Band.K, twoMassEntry.getCatalogName());
+                    sedReferences.put(Band.J, new SedReferences(1594, 1.235));
+                    sedReferences.put(Band.H, new SedReferences(1024, 1.662));
+                    sedReferences.put(Band.K, new SedReferences(666.7, 2.159));
                 }
             }
         }
@@ -5829,95 +5877,93 @@ public class ImageViewerTab {
             }
         }
 
-        sedFluxes = new HashMap();
-
-        sedFluxes.put("g", new SedFluxes(
+        sedFluxes.put(Band.g, new SedFluxes(
                 photometry.get_g_mag(),
-                convertMagnitudeToFlux(photometry.get_g_mag(), 3631, 0.481),
-                convertMagnitudeToFluxDensity(photometry.get_g_mag(), 3631),
-                convertMagnitudeToFluxLambda(photometry.get_g_mag(), 3631, 0.481)
+                convertMagnitudeToFlux(photometry.get_g_mag(), sedReferences.get(Band.g).getZeropoint(), sedReferences.get(Band.g).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.get_g_mag(), sedReferences.get(Band.g).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.get_g_mag(), sedReferences.get(Band.g).getZeropoint(), sedReferences.get(Band.g).getWavelenth())
         ));
-        sedFluxes.put("r", new SedFluxes(
+        sedFluxes.put(Band.r, new SedFluxes(
                 photometry.get_r_mag(),
-                convertMagnitudeToFlux(photometry.get_r_mag(), 3631, 0.617),
-                convertMagnitudeToFluxDensity(photometry.get_r_mag(), 3631),
-                convertMagnitudeToFluxLambda(photometry.get_r_mag(), 3631, 0.617)
+                convertMagnitudeToFlux(photometry.get_r_mag(), sedReferences.get(Band.r).getZeropoint(), sedReferences.get(Band.r).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.get_r_mag(), sedReferences.get(Band.r).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.get_r_mag(), sedReferences.get(Band.r).getZeropoint(), sedReferences.get(Band.r).getWavelenth())
         ));
-        sedFluxes.put("i", new SedFluxes(
+        sedFluxes.put(Band.i, new SedFluxes(
                 photometry.get_i_mag(),
-                convertMagnitudeToFlux(photometry.get_i_mag(), 3631, 0.752),
-                convertMagnitudeToFluxDensity(photometry.get_i_mag(), 3631),
-                convertMagnitudeToFluxLambda(photometry.get_i_mag(), 3631, 0.752)
+                convertMagnitudeToFlux(photometry.get_i_mag(), sedReferences.get(Band.i).getZeropoint(), sedReferences.get(Band.i).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.get_i_mag(), sedReferences.get(Band.i).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.get_i_mag(), sedReferences.get(Band.i).getZeropoint(), sedReferences.get(Band.i).getWavelenth())
         ));
-        sedFluxes.put("z", new SedFluxes(
+        sedFluxes.put(Band.z, new SedFluxes(
                 photometry.get_z_mag(),
-                convertMagnitudeToFlux(photometry.get_z_mag(), 3631, 0.866),
-                convertMagnitudeToFluxDensity(photometry.get_z_mag(), 3631),
-                convertMagnitudeToFluxLambda(photometry.get_z_mag(), 3631, 0.866)
+                convertMagnitudeToFlux(photometry.get_z_mag(), sedReferences.get(Band.z).getZeropoint(), sedReferences.get(Band.z).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.get_z_mag(), sedReferences.get(Band.z).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.get_z_mag(), sedReferences.get(Band.z).getZeropoint(), sedReferences.get(Band.z).getWavelenth())
         ));
-        sedFluxes.put("y", new SedFluxes(
+        sedFluxes.put(Band.y, new SedFluxes(
                 photometry.get_y_mag(),
-                convertMagnitudeToFlux(photometry.get_y_mag(), 3631, 0.962),
-                convertMagnitudeToFluxDensity(photometry.get_y_mag(), 3631),
-                convertMagnitudeToFluxLambda(photometry.get_y_mag(), 3631, 0.962)
+                convertMagnitudeToFlux(photometry.get_y_mag(), sedReferences.get(Band.y).getZeropoint(), sedReferences.get(Band.y).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.get_y_mag(), sedReferences.get(Band.y).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.get_y_mag(), sedReferences.get(Band.y).getZeropoint(), sedReferences.get(Band.y).getWavelenth())
         ));
-        sedFluxes.put("J", new SedFluxes(
+        sedFluxes.put(Band.J, new SedFluxes(
                 photometry.getJmag(),
-                convertMagnitudeToFlux(photometry.getJmag(), 1594, 1.235),
-                convertMagnitudeToFluxDensity(photometry.getJmag(), 1594),
-                convertMagnitudeToFluxLambda(photometry.getJmag(), 1594, 1.235)
+                convertMagnitudeToFlux(photometry.getJmag(), sedReferences.get(Band.J).getZeropoint(), sedReferences.get(Band.J).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getJmag(), sedReferences.get(Band.J).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getJmag(), sedReferences.get(Band.J).getZeropoint(), sedReferences.get(Band.J).getWavelenth())
         ));
-        sedFluxes.put("H", new SedFluxes(
+        sedFluxes.put(Band.H, new SedFluxes(
                 photometry.getHmag(),
-                convertMagnitudeToFlux(photometry.getHmag(), 1024, 1.662),
-                convertMagnitudeToFluxDensity(photometry.getHmag(), 1024),
-                convertMagnitudeToFluxLambda(photometry.getHmag(), 1024, 1.662)
+                convertMagnitudeToFlux(photometry.getHmag(), sedReferences.get(Band.H).getZeropoint(), sedReferences.get(Band.H).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getHmag(), sedReferences.get(Band.H).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getHmag(), sedReferences.get(Band.H).getZeropoint(), sedReferences.get(Band.H).getWavelenth())
         ));
-        sedFluxes.put("K", new SedFluxes(
+        sedFluxes.put(Band.K, new SedFluxes(
                 photometry.getKmag(),
-                convertMagnitudeToFlux(photometry.getKmag(), 666.7, 2.159),
-                convertMagnitudeToFluxDensity(photometry.getKmag(), 666.7),
-                convertMagnitudeToFluxLambda(photometry.getKmag(), 666.7, 2.159)
+                convertMagnitudeToFlux(photometry.getKmag(), sedReferences.get(Band.K).getZeropoint(), sedReferences.get(Band.K).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getKmag(), sedReferences.get(Band.K).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getKmag(), sedReferences.get(Band.K).getZeropoint(), sedReferences.get(Band.K).getWavelenth())
         ));
-        sedFluxes.put("W1", new SedFluxes(
+        sedFluxes.put(Band.W1, new SedFluxes(
                 photometry.getW1mag(),
-                convertMagnitudeToFlux(photometry.getW1mag(), 309.54, 3.4),
-                convertMagnitudeToFluxDensity(photometry.getW1mag(), 309.54),
-                convertMagnitudeToFluxLambda(photometry.getW1mag(), 309.54, 3.4)
+                convertMagnitudeToFlux(photometry.getW1mag(), sedReferences.get(Band.W1).getZeropoint(), sedReferences.get(Band.W1).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getW1mag(), sedReferences.get(Band.W1).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getW1mag(), sedReferences.get(Band.W1).getZeropoint(), sedReferences.get(Band.W1).getWavelenth())
         ));
-        sedFluxes.put("W2", new SedFluxes(
+        sedFluxes.put(Band.W2, new SedFluxes(
                 photometry.getW2mag(),
-                convertMagnitudeToFlux(photometry.getW2mag(), 171.79, 4.6),
-                convertMagnitudeToFluxDensity(photometry.getW2mag(), 171.79),
-                convertMagnitudeToFluxLambda(photometry.getW2mag(), 171.79, 4.6)
+                convertMagnitudeToFlux(photometry.getW2mag(), sedReferences.get(Band.W2).getZeropoint(), sedReferences.get(Band.W2).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getW2mag(), sedReferences.get(Band.W2).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getW2mag(), sedReferences.get(Band.W2).getZeropoint(), sedReferences.get(Band.W2).getWavelenth())
         ));
-        sedFluxes.put("W3", new SedFluxes(
+        sedFluxes.put(Band.W3, new SedFluxes(
                 photometry.getW3mag(),
-                convertMagnitudeToFlux(photometry.getW3mag(), 31.676, 12),
-                convertMagnitudeToFluxDensity(photometry.getW3mag(), 31.676),
-                convertMagnitudeToFluxLambda(photometry.getW3mag(), 31.676, 12)
+                convertMagnitudeToFlux(photometry.getW3mag(), sedReferences.get(Band.W3).getZeropoint(), sedReferences.get(Band.W3).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getW3mag(), sedReferences.get(Band.W3).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getW3mag(), sedReferences.get(Band.W3).getZeropoint(), sedReferences.get(Band.W3).getWavelenth())
         ));
-        sedFluxes.put("W4", new SedFluxes(
+        sedFluxes.put(Band.W4, new SedFluxes(
                 photometry.getW4mag(),
-                convertMagnitudeToFlux(photometry.getW4mag(), 8.3635, 22),
-                convertMagnitudeToFluxDensity(photometry.getW4mag(), 8.3635),
-                convertMagnitudeToFluxLambda(photometry.getW4mag(), 8.3635, 22)
+                convertMagnitudeToFlux(photometry.getW4mag(), sedReferences.get(Band.W4).getZeropoint(), sedReferences.get(Band.W4).getWavelenth()),
+                convertMagnitudeToFluxDensity(photometry.getW4mag(), sedReferences.get(Band.W4).getZeropoint()),
+                convertMagnitudeToFluxLambda(photometry.getW4mag(), sedReferences.get(Band.W4).getZeropoint(), sedReferences.get(Band.W4).getWavelenth())
         ));
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
-        series.add(0.481, photometry.get_g_mag() == 0 ? null : sedFluxes.get("g").getFlux()); // g
-        series.add(0.617, photometry.get_r_mag() == 0 ? null : sedFluxes.get("r").getFlux()); // r
-        series.add(0.752, photometry.get_i_mag() == 0 ? null : sedFluxes.get("i").getFlux()); // i
-        series.add(0.866, photometry.get_z_mag() == 0 ? null : sedFluxes.get("z").getFlux()); // z
-        series.add(0.962, photometry.get_y_mag() == 0 ? null : sedFluxes.get("y").getFlux()); // y
-        series.add(1.235, photometry.getJmag() == 0 ? null : sedFluxes.get("J").getFlux()); // J
-        series.add(1.662, photometry.getHmag() == 0 ? null : sedFluxes.get("H").getFlux()); // H
-        series.add(2.159, photometry.getKmag() == 0 ? null : sedFluxes.get("K").getFlux()); // K
-        series.add(3.4, photometry.getW1mag() == 0 ? null : sedFluxes.get("W1").getFlux()); // W1
-        series.add(4.6, photometry.getW2mag() == 0 ? null : sedFluxes.get("W2").getFlux()); // W2
-        series.add(12, photometry.getW3mag() == 0 ? null : sedFluxes.get("W3").getFlux()); // W3
-        series.add(22, photometry.getW4mag() == 0 ? null : sedFluxes.get("W4").getFlux()); // W4
+        series.add(sedReferences.get(Band.g).getWavelenth(), photometry.get_g_mag() == 0 ? null : sedFluxes.get(Band.g).getFlux()); // g
+        series.add(sedReferences.get(Band.r).getWavelenth(), photometry.get_r_mag() == 0 ? null : sedFluxes.get(Band.r).getFlux()); // r
+        series.add(sedReferences.get(Band.i).getWavelenth(), photometry.get_i_mag() == 0 ? null : sedFluxes.get(Band.i).getFlux()); // i
+        series.add(sedReferences.get(Band.z).getWavelenth(), photometry.get_z_mag() == 0 ? null : sedFluxes.get(Band.z).getFlux()); // z
+        series.add(sedReferences.get(Band.y).getWavelenth(), photometry.get_y_mag() == 0 ? null : sedFluxes.get(Band.y).getFlux()); // y
+        series.add(sedReferences.get(Band.J).getWavelenth(), photometry.getJmag() == 0 ? null : sedFluxes.get(Band.J).getFlux()); // J
+        series.add(sedReferences.get(Band.H).getWavelenth(), photometry.getHmag() == 0 ? null : sedFluxes.get(Band.H).getFlux()); // H
+        series.add(sedReferences.get(Band.K).getWavelenth(), photometry.getKmag() == 0 ? null : sedFluxes.get(Band.K).getFlux()); // K
+        series.add(sedReferences.get(Band.W1).getWavelenth(), photometry.getW1mag() == 0 ? null : sedFluxes.get(Band.W1).getFlux()); // W1
+        series.add(sedReferences.get(Band.W2).getWavelenth(), photometry.getW2mag() == 0 ? null : sedFluxes.get(Band.W2).getFlux()); // W2
+        series.add(sedReferences.get(Band.W3).getWavelenth(), photometry.getW3mag() == 0 ? null : sedFluxes.get(Band.W3).getFlux()); // W3
+        series.add(sedReferences.get(Band.W4).getWavelenth(), photometry.getW4mag() == 0 ? null : sedFluxes.get(Band.W4).getFlux()); // W4
 
         if (collection == null) {
             collection = new XYSeriesCollection();
@@ -6031,18 +6077,18 @@ public class ImageViewerTab {
         XYPlot plot = chart.getXYPlot();
 
         List<String> toolTips = Arrays.asList(
-                html("PS1 g=" + roundTo3DecNZ(sedFluxes.get("g").getMagnitude()) + " mag<br>λ=0.481 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("g").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("g").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("g").getFluxLambda()) + " W/m^2/μm"),
-                html("PS1 r=" + roundTo3DecNZ(sedFluxes.get("r").getMagnitude()) + " mag<br>λ=0.617 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("r").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("r").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("r").getFluxLambda()) + " W/m^2/μm"),
-                html("PS1 i=" + roundTo3DecNZ(sedFluxes.get("i").getMagnitude()) + " mag<br>λ=0.752 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("i").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("i").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("i").getFluxLambda()) + " W/m^2/μm"),
-                html("PS1 z=" + roundTo3DecNZ(sedFluxes.get("z").getMagnitude()) + " mag<br>λ=0.866 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("z").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("z").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("z").getFluxLambda()) + " W/m^2/μm"),
-                html("PS1 y=" + roundTo3DecNZ(sedFluxes.get("y").getMagnitude()) + " mag<br>λ=0.962 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("y").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("y").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("y").getFluxLambda()) + " W/m^2/μm"),
-                html("J=" + roundTo3DecNZ(sedFluxes.get("J").getMagnitude()) + " mag<br>λ=1.235 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("J").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("J").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("J").getFluxLambda()) + " W/m^2/μm"),
-                html("H=" + roundTo3DecNZ(sedFluxes.get("H").getMagnitude()) + " mag<br>λ=1.662 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("H").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("H").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("H").getFluxLambda()) + " W/m^2/μm"),
-                html("K=" + roundTo3DecNZ(sedFluxes.get("K").getMagnitude()) + " mag<br>λ=2.159 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("K").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("K").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("K").getFluxLambda()) + " W/m^2/μm"),
-                html("W1=" + roundTo3DecNZ(sedFluxes.get("W1").getMagnitude()) + " mag<br>λ=3.4 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("W1").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("W1").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("W1").getFluxLambda()) + " W/m^2/μm"),
-                html("W2=" + roundTo3DecNZ(sedFluxes.get("W2").getMagnitude()) + " mag<br>λ=4.6 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("W2").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("W2").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("W2").getFluxLambda()) + " W/m^2/μm"),
-                html("W3=" + roundTo3DecNZ(sedFluxes.get("W3").getMagnitude()) + " mag<br>λ=12 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("W3").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("W3").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("W3").getFluxLambda()) + " W/m^2/μm"),
-                html("W4=" + roundTo3DecNZ(sedFluxes.get("W4").getMagnitude()) + " mag<br>λ=22 μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get("W4").getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get("W4").getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get("W4").getFluxLambda()) + " W/m^2/μm")
+                html(sedCatalogs.get(Band.g) + " g=" + roundTo3DecNZ(sedFluxes.get(Band.g).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.g).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.g).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.g).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.g).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.r) + " r=" + roundTo3DecNZ(sedFluxes.get(Band.r).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.r).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.r).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.r).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.r).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.i) + " i=" + roundTo3DecNZ(sedFluxes.get(Band.i).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.i).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.i).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.i).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.i).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.z) + " z=" + roundTo3DecNZ(sedFluxes.get(Band.z).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.z).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.z).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.z).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.z).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.y) + " y=" + roundTo3DecNZ(sedFluxes.get(Band.y).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.y).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.y).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.y).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.y).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.J) + " J=" + roundTo3DecNZ(sedFluxes.get(Band.J).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.J).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.J).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.J).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.J).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.H) + " H=" + roundTo3DecNZ(sedFluxes.get(Band.H).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.H).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.H).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.H).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.H).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.K) + " K=" + roundTo3DecNZ(sedFluxes.get(Band.K).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.K).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.K).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.K).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.K).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.W1) + " W1=" + roundTo3DecNZ(sedFluxes.get(Band.W1).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.W1).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W1).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W1).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.W1).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.W2) + " W2=" + roundTo3DecNZ(sedFluxes.get(Band.W2).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.W2).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W2).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W2).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.W2).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.W3) + " W3=" + roundTo3DecNZ(sedFluxes.get(Band.W3).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.W3).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W3).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W3).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.W3).getFluxLambda()) + " W/m^2/μm"),
+                html(sedCatalogs.get(Band.W4) + " W4=" + roundTo3DecNZ(sedFluxes.get(Band.W4).getMagnitude()) + " mag<br>λ=" + sedReferences.get(Band.W4).getWavelenth() + " μm<br>F(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W4).getFluxDensity()) + " Jy<br>νF(ν)=" + roundTo3DecSN(sedFluxes.get(Band.W4).getFlux()) + " W/m^2<br>F(λ)=" + roundTo3DecSN(sedFluxes.get(Band.W4).getFluxLambda()) + " W/m^2/μm")
         );
 
         CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
