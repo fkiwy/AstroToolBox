@@ -5803,6 +5803,33 @@ public class ImageViewerTab {
         sedPhotometry.put(Band.H, allWiseEntry.getHmag());
         sedPhotometry.put(Band.K, allWiseEntry.getKmag());
 
+        if ("0".equals(panStarrsEntry.getSourceId())) {
+            NoirlabCatalogEntry noirlabEntry = new NoirlabCatalogEntry();
+            noirlabEntry.setRa(catalogEntry.getRa());
+            noirlabEntry.setDec(catalogEntry.getDec());
+            noirlabEntry.setSearchRadius(5);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryFacade, baseFrame);
+            if (retrievedEntry != null) {
+                noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
+                seriesLabel.append(noirlabEntry.getCatalogName()).append(": ").append(noirlabEntry.getSourceId()).append(" ");
+                sedCatalogs.put(Band.g, noirlabEntry.getCatalogName());
+                sedCatalogs.put(Band.r, noirlabEntry.getCatalogName());
+                sedCatalogs.put(Band.i, noirlabEntry.getCatalogName());
+                sedCatalogs.put(Band.z, noirlabEntry.getCatalogName());
+                sedCatalogs.put(Band.y, noirlabEntry.getCatalogName());
+                sedReferences.put(Band.g, new SedReferences(3631, 0.472));
+                sedReferences.put(Band.r, new SedReferences(3631, 0.6415));
+                sedReferences.put(Band.i, new SedReferences(3631, 0.7835));
+                sedReferences.put(Band.z, new SedReferences(3631, 0.926));
+                sedReferences.put(Band.y, new SedReferences(3631, 1.0095));
+                sedPhotometry.put(Band.g, noirlabEntry.get_g_mag());
+                sedPhotometry.put(Band.r, noirlabEntry.get_r_mag());
+                sedPhotometry.put(Band.i, noirlabEntry.get_i_mag());
+                sedPhotometry.put(Band.z, noirlabEntry.get_z_mag());
+                sedPhotometry.put(Band.y, noirlabEntry.get_y_mag());
+            }
+        }
+
         if (sedPhotometry.get(Band.J) == 0 && sedPhotometry.get(Band.H) == 0 && sedPhotometry.get(Band.K) == 0) {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
             vhsEntry.setRa(catalogEntry.getRa());
@@ -5979,12 +6006,12 @@ public class ImageViewerTab {
         CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
         generator.addToolTipSeries(toolTips);
 
-        LogAxis xAxis = new LogAxis("λ [μm])");
+        LogAxis xAxis = new LogAxis("λ [μm]");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("νF(ν) [W/m^2])");
+        LogAxis yAxis = new LogAxis("νF(ν) [W/m^2]");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(0.5));
         plot.setRangeAxis(yAxis);
