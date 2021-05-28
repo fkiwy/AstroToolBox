@@ -46,12 +46,14 @@ public class VizierCatalogsTab {
     private JButton findButton;
     private JTextField coordsField;
     private JTextField radiusField;
+    private JTextField rowsField;
     private JTextField findField;
     private JTextArea catalogArea;
 
     private double targetRa;
     private double targetDec;
     private double searchRadius;
+    private int numberOfRows;
 
     private int position;
     private int matchesFound;
@@ -97,6 +99,13 @@ public class VizierCatalogsTab {
             topPanel.add(radiusField);
             radiusField.setText("5");
 
+            JLabel rowsLabel = new JLabel("Number of rows per table:");
+            topPanel.add(rowsLabel);
+
+            rowsField = new JTextField(5);
+            topPanel.add(rowsField);
+            rowsField.setText("50");
+
             searchButton = new JButton("Search");
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
@@ -110,6 +119,11 @@ public class VizierCatalogsTab {
                     String radius = radiusField.getText();
                     if (radius.isEmpty()) {
                         showErrorDialog(baseFrame, "Search radius must not be empty!");
+                        return;
+                    }
+                    String rows = rowsField.getText();
+                    if (rows.isEmpty()) {
+                        showErrorDialog(baseFrame, "Number of rows must not be empty!");
                         return;
                     }
                     position = 0;
@@ -139,12 +153,23 @@ public class VizierCatalogsTab {
                     }
                     try {
                         searchRadius = Double.valueOf(radius);
-                        if (searchRadius > 100) {
-                            errorMessages.add("Radius must not be larger than 100 arcsec.");
+                        if (searchRadius > 300) {
+                            errorMessages.add("Radius must not be larger than 300 arcsec.");
                         }
                     } catch (Exception ex) {
                         searchRadius = 0;
                         errorMessages.add("Invalid radius!");
+                    }
+                    try {
+                        numberOfRows = Integer.valueOf(rows);
+                        if (numberOfRows > 500) {
+                            errorMessages.add("Number of rows must not be greater than 500.");
+                        } else if (numberOfRows < 1) {
+                            errorMessages.add("Number of rows must not be less than 1.");
+                        }
+                    } catch (Exception ex) {
+                        numberOfRows = 0;
+                        errorMessages.add("Invalid number of rows!");
                     }
                     if (!errorMessages.isEmpty()) {
                         String message = String.join(LINE_SEP, errorMessages);
@@ -154,8 +179,8 @@ public class VizierCatalogsTab {
                             try {
                                 setWaitCursor();
 
-                                String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=50&-sort=_r&-out.meta=hu&-oc.form=d&-out.form=mini&-out.all";
-                                url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius);
+                                String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.form=mini&-out.all";
+                                url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows);
 
                                 HttpURLConnection connection = establishHttpConnection(url);
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
@@ -184,15 +209,13 @@ public class VizierCatalogsTab {
                 }
             });
 
-            topPanel.add(new JLabel("(Max. number of rows per table = 50)"));
-
             JLabel findLabel = new JLabel("Find in search results:");
             topPanel.add(findLabel);
 
             findField = new JTextField(10);
             topPanel.add(findField);
 
-            findButton = new JButton("Next");
+            findButton = new JButton("Find");
             topPanel.add(findButton);
             findButton.addActionListener((ActionEvent e) -> {
                 String stringToFind = findField.getText().toLowerCase();
@@ -244,7 +267,7 @@ public class VizierCatalogsTab {
                 searchButton.getActionListeners()[0].actionPerformed(evt);
             });
             findField.addActionListener((ActionEvent evt) -> {
-                showInfoDialog(baseFrame, "Use the Next button, please!");
+                showInfoDialog(baseFrame, "Use the Find button, please!");
             });
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
