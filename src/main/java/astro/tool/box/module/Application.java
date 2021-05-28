@@ -17,6 +17,7 @@ import astro.tool.box.module.tab.PhotometricClassifierTab;
 import astro.tool.box.module.tab.SettingsTab;
 import astro.tool.box.module.tab.ImageSeriesTab;
 import astro.tool.box.module.tab.ToolTab;
+import astro.tool.box.module.tab.VizierCatalogsTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
 import java.awt.Dimension;
@@ -84,6 +85,9 @@ public class Application {
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();
+
+        VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
+        vizierCatalogsTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
         adqlQueryTab.init();

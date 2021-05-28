@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -47,7 +46,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
@@ -55,14 +53,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.UndoableEditEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.Document;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.http.NameValuePair;
@@ -754,48 +747,6 @@ public class AdqlQueryTab {
             color = JColor.LIGHT_YELLOW;
         }
         return color;
-    }
-
-    private void addUndoManager(JTextArea textEditor) {
-        final UndoManager manger = new UndoManager();
-        Document document = textEditor.getDocument();
-
-        // Listen for undo and redo events
-        document.addUndoableEditListener((UndoableEditEvent evt) -> {
-            manger.addEdit(evt.getEdit());
-        });
-
-        // Create an undo action and add it to the text component
-        textEditor.getActionMap().put("Undo", new AbstractAction("Undo") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (manger.canUndo()) {
-                        manger.undo();
-                    }
-                } catch (CannotUndoException e) {
-                }
-            }
-        });
-
-        // Bind the undo action to ctl-Z
-        textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
-
-        // Create a redo action and add it to the text component
-        textEditor.getActionMap().put("Redo", new AbstractAction("Redo") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (manger.canRedo()) {
-                        manger.redo();
-                    }
-                } catch (CannotRedoException e) {
-                }
-            }
-        });
-
-        // Bind the redo action to ctl-Y
-        textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
     }
 
     private String parseXml(String xml, String tag) throws Exception {

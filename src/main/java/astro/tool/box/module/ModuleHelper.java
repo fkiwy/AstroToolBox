@@ -49,6 +49,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -77,6 +78,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -87,18 +89,25 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.UndoableEditEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.Document;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -928,6 +937,48 @@ public class ModuleHelper {
                 sequencer.generateFromBI(imageSet, file, 500 / 10, true);
             }
         }
+    }
+
+    public static void addUndoManager(JTextArea textArea) {
+        final UndoManager manger = new UndoManager();
+        Document document = textArea.getDocument();
+
+        // Listen for undo and redo events
+        document.addUndoableEditListener((UndoableEditEvent evt) -> {
+            manger.addEdit(evt.getEdit());
+        });
+
+        // Create an undo action and add it to the text component
+        textArea.getActionMap().put("Undo", new AbstractAction("Undo") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    if (manger.canUndo()) {
+                        manger.undo();
+                    }
+                } catch (CannotUndoException e) {
+                }
+            }
+        });
+
+        // Bind the undo action to ctl-Z
+        textArea.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
+
+        // Create a redo action and add it to the text component
+        textArea.getActionMap().put("Redo", new AbstractAction("Redo") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    if (manger.canRedo()) {
+                        manger.redo();
+                    }
+                } catch (CannotRedoException e) {
+                }
+            }
+        });
+
+        // Bind the redo action to ctl-Y
+        textArea.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
     }
 
 }
