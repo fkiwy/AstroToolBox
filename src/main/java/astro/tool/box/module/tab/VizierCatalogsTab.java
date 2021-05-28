@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,6 +27,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 
@@ -40,7 +42,6 @@ public class VizierCatalogsTab {
     private JPanel mainPanel;
     private JPanel topPanel;
     private JPanel centerPanel;
-    private JPanel bottomPanel;
     private JButton searchButton;
     private JButton findButton;
     private JTextField coordsField;
@@ -53,6 +54,7 @@ public class VizierCatalogsTab {
     private double searchRadius;
 
     private int position;
+    private int matchesFound;
 
     public VizierCatalogsTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
@@ -67,11 +69,9 @@ public class VizierCatalogsTab {
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
 
-            centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            centerPanel = new JPanel();
+            centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
             mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-            bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainPanel.add(bottomPanel, BorderLayout.PAGE_END);
 
             catalogArea = new JTextArea();
             catalogArea.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -80,7 +80,9 @@ public class VizierCatalogsTab {
             DefaultCaret caret = (DefaultCaret) catalogArea.getCaret();
             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
-            mainPanel.add(new JScrollPane(catalogArea));
+            JScrollPane scrollPanel = new JScrollPane(catalogArea);
+            scrollPanel.setBorder(createEtchedBorder("Search results"));
+            centerPanel.add(scrollPanel);
 
             JLabel coordsLabel = new JLabel("Coordinates:");
             topPanel.add(coordsLabel);
@@ -99,12 +101,6 @@ public class VizierCatalogsTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    if (centerPanel.getComponentCount() > 0) {
-                        centerPanel.removeAll();
-                    }
-                    if (bottomPanel.getComponentCount() > 0) {
-                        bottomPanel.removeAll();
-                    }
                     baseFrame.setVisible(true);
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
@@ -117,6 +113,7 @@ public class VizierCatalogsTab {
                         return;
                     }
                     position = 0;
+                    matchesFound = 0;
                     catalogArea.setText(null);
                     List<String> errorMessages = new ArrayList<>();
                     try {
@@ -164,13 +161,13 @@ public class VizierCatalogsTab {
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                                     reader.lines().forEach(line -> {
                                         if (line.startsWith("#Title:")) {
-                                            line = line.replace("#Title:", "++++++++++");
+                                            line = line.replace("#Title:", "==========>");
                                         }
                                         if (!line.startsWith("#")) {
                                             catalogArea.append(line + LINE_SEP_TEXT_AREA);
                                         }
                                     });
-                                    catalogArea.append("++++++++++ END");
+                                    catalogArea.append("==========> END");
                                 }
 
                                 baseFrame.setVisible(true);
@@ -187,10 +184,12 @@ public class VizierCatalogsTab {
                 }
             });
 
-            JLabel findLabel = new JLabel("Find:");
+            topPanel.add(new JLabel("(Max. number of rows per table = 50)"));
+
+            JLabel findLabel = new JLabel("Find in search results:");
             topPanel.add(findLabel);
 
-            findField = new JTextField(25);
+            findField = new JTextField(10);
             topPanel.add(findField);
 
             findButton = new JButton("Next");
@@ -214,6 +213,7 @@ public class VizierCatalogsTab {
                             position++;
                         }
                         if (found) {
+                            matchesFound++;
                             catalogArea.requestFocusInWindow();
                             Rectangle viewRect = catalogArea.modelToView(position + findLength);
                             catalogArea.scrollRectToVisible(viewRect);
@@ -221,11 +221,18 @@ public class VizierCatalogsTab {
                             catalogArea.moveCaretPosition(position);
                             position += findLength;
                         } else {
+                            String message;
+                            if (matchesFound == 0) {
+                                message = "No match found for";
+                            } else {
+                                message = "No more matches found for";
+                                matchesFound = 0;
+                            }
+                            showInfoDialog(baseFrame, message + " '" + stringToFind + "'");
                             position = 0;
-                            showInfoDialog(baseFrame, "No match found for: " + stringToFind);
                         }
-                    } catch (Exception exp) {
-                        exp.printStackTrace();
+                    } catch (BadLocationException ex) {
+                        showErrorDialog(baseFrame, ex.getMessage());
                     }
                 }
             });

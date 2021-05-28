@@ -5683,9 +5683,7 @@ public class ImageViewerTab {
                 String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                         + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
-                commandPanel.add(new JLabel("|"));
-
-                JLabel infoLabel = new JLabel("Tooltip");
+                JLabel infoLabel = new JLabel(vGap("Tooltip"));
                 infoLabel.setToolTipText(html(info));
                 commandPanel.add(infoLabel);
 
