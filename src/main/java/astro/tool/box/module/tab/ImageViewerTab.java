@@ -5556,22 +5556,22 @@ public class ImageViewerTab {
                     container.add(messagePanel);
                 }
             }
-            /*if (mainSequenceResults.isEmpty()) {
+            if (mainSequenceResults.isEmpty()) {
                 JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 messagePanel.add(createLabel("No colors available / No match", JColor.RED));
                 container.add(messagePanel);
-            }*/
+            }
+
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
-            /*if (brownDwarfsResults.isEmpty()) {
+            if (brownDwarfsResults.isEmpty()) {
                 JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 messagePanel.add(createLabel("No colors available / No match", JColor.RED));
                 container.add(messagePanel);
-            }*/
+            }
 
             JPanel toolsPanel = new JPanel();
             toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
-            //toolsPanel.setBorder(createEtchedBorder("Miscellaneous"));
             container.add(toolsPanel);
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -5683,7 +5683,7 @@ public class ImageViewerTab {
                 String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                         + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
-                JLabel infoLabel = new JLabel(vGap("Tooltip"));
+                JLabel infoLabel = new JLabel("-  Tooltip");
                 infoLabel.setToolTipText(html(info));
                 commandPanel.add(infoLabel);
 

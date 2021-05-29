@@ -12,6 +12,7 @@ import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -106,6 +108,8 @@ public class VizierCatalogsTab {
             topPanel.add(rowsField);
             rowsField.setText("50");
 
+            JCheckBox allColumns = new JCheckBox("Include all columns");
+
             searchButton = new JButton("Search");
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
@@ -179,8 +183,9 @@ public class VizierCatalogsTab {
                             try {
                                 setWaitCursor();
 
-                                String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.form=mini&-out.all";
-                                url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows);
+                                String outAll = allColumns.isSelected() ? "&-out.all" : "";
+                                String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.form=mini%s";
+                                url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows, outAll);
 
                                 HttpURLConnection connection = establishHttpConnection(url);
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
@@ -196,7 +201,7 @@ public class VizierCatalogsTab {
                                 }
 
                                 baseFrame.setVisible(true);
-                            } catch (Exception ex) {
+                            } catch (IOException ex) {
                                 showExceptionDialog(baseFrame, ex);
                             } finally {
                                 setDefaultCursor();
@@ -209,7 +214,9 @@ public class VizierCatalogsTab {
                 }
             });
 
-            JLabel findLabel = new JLabel("Find in search results:");
+            topPanel.add(allColumns);
+
+            JLabel findLabel = new JLabel("-  Find in search results:");
             topPanel.add(findLabel);
 
             findField = new JTextField(10);

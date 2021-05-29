@@ -157,13 +157,10 @@ public class BatchQueryTab {
             JTextField radiusField = new JTextField("5", 3);
             centerRow.add(radiusField);
 
-            centerRow.add(new JLabel("Include colors:"));
-
-            includeColors = new JCheckBox();
-            includeColors.setName("includeColors");
+            includeColors = new JCheckBox("Include colors");
             centerRow.add(includeColors);
 
-            centerRow.add(new JLabel("Lookup table:"));
+            centerRow.add(new JLabel("-  Lookup table:"));
 
             lookupTables = new JComboBox(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.BROWN_DWARFS});
             centerRow.add(lookupTables);

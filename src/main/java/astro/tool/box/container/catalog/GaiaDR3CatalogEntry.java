@@ -231,7 +231,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Whi
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
-        addRow(query, "AND   SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
+        addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
         return query.toString();
     }
 

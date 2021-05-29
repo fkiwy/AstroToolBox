@@ -246,10 +246,6 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
-    public static String vGap(String text) {
-        return html("<div style='padding-left:50px'>" + text + "</div>");
-    }
-
     public static String html(String text) {
         return "<html>" + text + "</html>";
     }
