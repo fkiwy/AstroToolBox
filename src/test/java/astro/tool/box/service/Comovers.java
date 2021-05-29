@@ -150,6 +150,7 @@ public class Comovers {
         StringBuilder results = new StringBuilder();
         try (Scanner fileScanner = new Scanner(test.toString())) {
             String headerLine = fileScanner.nextLine();
+            results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
             Map<String, Integer> columns = new HashMap<>();
             for (int i = 0; i < headers.length; i++) {
@@ -162,8 +163,8 @@ public class Comovers {
                     System.out.println("read   =" + totalRead);
                     System.out.println("written=" + totalWritten);
                 }
-                String line = fileScanner.nextLine();
-                String[] values = CSVParser.parseLine(line);
+                String bodyLine = fileScanner.nextLine();
+                String[] values = CSVParser.parseLine(bodyLine);
                 double ra = toDouble(values[columns.get("ra")]);
                 double dec = toDouble(values[columns.get("dec")]);
                 double pmra = toDouble(values[columns.get("pmra")]);
@@ -186,7 +187,7 @@ public class Comovers {
                         double resultDec = toDouble(resultValues[2]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
                         if (distance > 1) {
-                            results.append(resultLine).append(LINE_SEP);
+                            results.append(bodyLine).append(LINE_SEP);
                             totalWritten++;
                         }
                     }

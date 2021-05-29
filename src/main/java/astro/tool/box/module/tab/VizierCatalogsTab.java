@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
@@ -42,7 +43,8 @@ public class VizierCatalogsTab {
     private final JTabbedPane tabbedPane;
 
     private JPanel mainPanel;
-    private JPanel topPanel;
+    private JPanel firstRow;
+    private JPanel secondRow;
     private JPanel centerPanel;
     private JButton searchButton;
     private JButton findButton;
@@ -60,6 +62,9 @@ public class VizierCatalogsTab {
     private int position;
     private int matchesFound;
 
+    private boolean firstTable = true;
+    private boolean titleAdded = false;
+
     public VizierCatalogsTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
@@ -70,8 +75,14 @@ public class VizierCatalogsTab {
             mainPanel = new JPanel(new BorderLayout());
             tabbedPane.addTab(TAB_NAME, mainPanel);
 
-            topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainPanel.add(topPanel, BorderLayout.PAGE_START);
+            JPanel layout = new JPanel(new GridLayout(2, 1));
+            mainPanel.add(layout, BorderLayout.PAGE_START);
+
+            firstRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            layout.add(firstRow);
+
+            secondRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            layout.add(secondRow);
 
             centerPanel = new JPanel();
             centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
@@ -89,29 +100,29 @@ public class VizierCatalogsTab {
             centerPanel.add(scrollPanel);
 
             JLabel coordsLabel = new JLabel("Coordinates:");
-            topPanel.add(coordsLabel);
+            firstRow.add(coordsLabel);
 
             coordsField = new JTextField(25);
-            topPanel.add(coordsField);
+            firstRow.add(coordsField);
 
             JLabel radiusLabel = new JLabel("Search radius (arcsec):");
-            topPanel.add(radiusLabel);
+            firstRow.add(radiusLabel);
 
             radiusField = new JTextField(5);
-            topPanel.add(radiusField);
+            firstRow.add(radiusField);
             radiusField.setText("5");
 
             JLabel rowsLabel = new JLabel("Number of rows per table:");
-            topPanel.add(rowsLabel);
+            firstRow.add(rowsLabel);
 
             rowsField = new JTextField(5);
-            topPanel.add(rowsField);
+            firstRow.add(rowsField);
             rowsField.setText("50");
 
             JCheckBox allColumns = new JCheckBox("Include all columns");
 
             searchButton = new JButton("Search");
-            topPanel.add(searchButton);
+            firstRow.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
                     baseFrame.setVisible(true);
@@ -132,6 +143,8 @@ public class VizierCatalogsTab {
                     }
                     position = 0;
                     matchesFound = 0;
+                    firstTable = true;
+                    titleAdded = false;
                     catalogArea.setText(null);
                     List<String> errorMessages = new ArrayList<>();
                     try {
@@ -190,13 +203,27 @@ public class VizierCatalogsTab {
                                 HttpURLConnection connection = establishHttpConnection(url);
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                                     reader.lines().forEach(line -> {
-                                        if (line.startsWith("#Title:")) {
-                                            line = line.replace("#Title:", "==========>");
+                                        line = line.trim();
+                                        if (line.startsWith("#RESOURCE")) {
+                                            titleAdded = false;
                                         }
-                                        if (!line.startsWith("#")) {
+                                        if (line.startsWith("#Title:") && !titleAdded) {
+                                            titleAdded = true;
+                                            if (firstTable) {
+                                                firstTable = false;
+                                            } else {
+                                                catalogArea.append(LINE_SEP_TEXT_AREA + LINE_SEP_TEXT_AREA);
+                                            }
+                                            String title = line.replace("#Title: ", "");
+                                            String headerDeco = createHeaderDeco(title);
+                                            catalogArea.append(headerDeco + LINE_SEP_TEXT_AREA);
+                                            catalogArea.append("===== " + title + " =====" + LINE_SEP_TEXT_AREA);
+                                            catalogArea.append(headerDeco + LINE_SEP_TEXT_AREA);
+                                        } else if (!line.startsWith("#") && !line.isEmpty()) {
                                             catalogArea.append(line + LINE_SEP_TEXT_AREA);
                                         }
                                     });
+                                    catalogArea.append(LINE_SEP_TEXT_AREA);
                                     catalogArea.append("==========> END");
                                 }
 
@@ -214,16 +241,16 @@ public class VizierCatalogsTab {
                 }
             });
 
-            topPanel.add(allColumns);
+            firstRow.add(allColumns);
 
-            JLabel findLabel = new JLabel("-  Find in search results:");
-            topPanel.add(findLabel);
+            JLabel findLabel = new JLabel("Find in search results:");
+            secondRow.add(findLabel);
 
             findField = new JTextField(10);
-            topPanel.add(findField);
+            secondRow.add(findField);
 
             findButton = new JButton("Find");
-            topPanel.add(findButton);
+            secondRow.add(findButton);
             findButton.addActionListener((ActionEvent e) -> {
                 String stringToFind = findField.getText().toLowerCase();
                 if (stringToFind != null && stringToFind.length() > 0) {
@@ -295,6 +322,15 @@ public class VizierCatalogsTab {
         radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         findField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         catalogArea.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+    }
+
+    private String createHeaderDeco(String title) {
+        int lengthOfTitle = title.length();
+        String headerDeco = "";
+        for (int i = 0; i < lengthOfTitle + 12; i++) {
+            headerDeco += "=";
+        }
+        return headerDeco;
     }
 
 }
