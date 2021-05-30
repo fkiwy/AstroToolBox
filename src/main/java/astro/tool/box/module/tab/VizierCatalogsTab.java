@@ -197,13 +197,13 @@ public class VizierCatalogsTab {
                                 setWaitCursor();
 
                                 String outAll = allColumns.isSelected() ? "&-out.all" : "";
-                                String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.form=mini%s";
+                                String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.add=_r&-out.form=mini%s";
                                 url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows, outAll);
 
                                 HttpURLConnection connection = establishHttpConnection(url);
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                                     reader.lines().forEach(line -> {
-                                        line = line.trim();
+                                        line = line.replaceAll("\\s+$", "");
                                         if (line.startsWith("#RESOURCE")) {
                                             titleAdded = false;
                                         }

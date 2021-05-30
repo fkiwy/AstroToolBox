@@ -20,13 +20,13 @@ import org.junit.Test;
 
 public class Comovers {
 
-    @Ignore
+    //@Ignore
     @Test
     public void noirlab() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2Z.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2N.csv"))) {
             String headerLine = fileScanner.nextLine();
             results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
@@ -42,13 +42,14 @@ public class Comovers {
                     System.out.println("written=" + totalWritten);
                 }
                 String bodyLine = fileScanner.nextLine();
+                System.out.println(bodyLine);
                 String[] values = CSVParser.parseLine(bodyLine);
                 double ra = toDouble(values[columns.get("ra")]);
                 double dec = toDouble(values[columns.get("dec")]);
                 double pmra = toDouble(values[columns.get("pmra")]);
                 double pmdec = toDouble(values[columns.get("pmra")]);
 
-                String comoverQuery = createComoverQuery();
+                String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
                 comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
@@ -57,22 +58,29 @@ public class Comovers {
                 String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
 
                 try (Scanner responseScanner = new Scanner(response)) {
-                    responseScanner.nextLine();
-                    while (responseScanner.hasNextLine()) {
-                        String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
-                        double resultRa = toDouble(resultValues[1]);
-                        double resultDec = toDouble(resultValues[2]);
-                        double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
-                        if (distance > 1) {
-                            results.append(bodyLine).append(LINE_SEP);
-                            totalWritten++;
+                    if (responseScanner.hasNextLine()) {
+                        responseScanner.nextLine();
+                        while (responseScanner.hasNextLine()) {
+                            String resultLine = responseScanner.nextLine();
+                            String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                            double resultRa = toDouble(resultValues[1]);
+                            double resultDec = toDouble(resultValues[2]);
+                            double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
+                            if (distance > 1) {
+                                System.out.println(bodyLine);
+                                results.append(bodyLine).append(LINE_SEP);
+                                totalWritten++;
+                            }
                         }
+                    } else {
+                        System.out.println("response=" + response);
+                        System.out.println("bodyLine=" + bodyLine);
                     }
+
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results NSC DR2.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
@@ -80,7 +88,7 @@ public class Comovers {
         System.out.println("totalWritten=" + totalWritten);
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void catwise() throws Exception {
         int totalRead = 0;
