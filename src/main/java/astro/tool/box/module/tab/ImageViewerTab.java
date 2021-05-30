@@ -4014,7 +4014,7 @@ public class ImageViewerTab {
         }
     }
 
-    private boolean downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) {
+    private boolean downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
         String imageKey = band + "_" + requestedEpoch.value();
         ImageContainer container = images.get(imageKey);
         if (container != null) {
@@ -4122,110 +4122,94 @@ public class ImageViewerTab {
         }
     }
 
-    private Fits addImages(int band1, int epoch1, int band2, int epoch2) {
-        try {
-            Fits fits = getImage(band1, epoch1);
-            ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) imageHDU.getData();
-            float[][] values1 = (float[][]) imageData.getData();
+    private Fits addImages(int band1, int epoch1, int band2, int epoch2) throws Exception {
+        Fits fits = getImage(band1, epoch1);
+        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+        ImageData imageData = (ImageData) imageHDU.getData();
+        float[][] values1 = (float[][]) imageData.getData();
 
-            fits = getImage(band2, epoch2);
-            imageHDU = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) imageHDU.getData();
-            float[][] values2 = (float[][]) imageData.getData();
+        fits = getImage(band2, epoch2);
+        imageHDU = (ImageHDU) fits.getHDU(0);
+        imageData = (ImageData) imageHDU.getData();
+        float[][] values2 = (float[][]) imageData.getData();
 
-            float[][] addedValues = new float[naxis2][naxis1];
-            for (int i = 0; i < naxis2; i++) {
-                for (int j = 0; j < naxis1; j++) {
-                    try {
-                        addedValues[i][j] = values1[i][j] + values2[i][j];
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
+        float[][] addedValues = new float[naxis2][naxis1];
+        for (int i = 0; i < naxis2; i++) {
+            for (int j = 0; j < naxis1; j++) {
+                try {
+                    addedValues[i][j] = values1[i][j] + values2[i][j];
+                } catch (ArrayIndexOutOfBoundsException ex) {
                 }
             }
+        }
 
-            Fits result = new Fits();
-            result.addHDU(FitsFactory.hduFactory(addedValues));
-            return result;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        Fits result = new Fits();
+        result.addHDU(FitsFactory.hduFactory(addedValues));
+        return result;
+    }
+
+    private Fits subtractImages(int band1, int epoch1, int band2, int epoch2) throws Exception {
+        Fits fits = getImage(band1, epoch1);
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        ImageData imageData = (ImageData) hdu.getData();
+        float[][] values1 = (float[][]) imageData.getData();
+
+        fits = getImage(band2, epoch2);
+        hdu = (ImageHDU) fits.getHDU(0);
+        imageData = (ImageData) hdu.getData();
+        float[][] values2 = (float[][]) imageData.getData();
+
+        float[][] subtractedValues = new float[naxis2][naxis1];
+        for (int i = 0; i < naxis2; i++) {
+            for (int j = 0; j < naxis1; j++) {
+                try {
+                    subtractedValues[i][j] = values1[i][j] - values2[i][j];
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+
+        Fits result = new Fits();
+        result.addHDU(FitsFactory.hduFactory(subtractedValues));
+        return result;
+    }
+
+    private Fits takeAverage(Fits fits, int numberOfImages) throws Exception {
+        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+        ImageData imageData = (ImageData) imageHDU.getData();
+        float[][] values = (float[][]) imageData.getData();
+
+        float[][] averagedValues = new float[naxis2][naxis1];
+        for (int i = 0; i < naxis2; i++) {
+            for (int j = 0; j < naxis1; j++) {
+                try {
+                    averagedValues[i][j] = values[i][j] / numberOfImages;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+
+        Fits result = new Fits();
+        result.addHDU(FitsFactory.hduFactory(averagedValues));
+        return result;
+    }
+
+    private void enhanceImage(Fits fits, int enhanceFactor) throws Exception {
+        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+        ImageData imageData = (ImageData) imageHDU.getData();
+        float[][] values = (float[][]) imageData.getData();
+
+        for (int i = 0; i < naxis2; i++) {
+            for (int j = 0; j < naxis1; j++) {
+                try {
+                    values[i][j] = values[i][j] * enhanceFactor;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
         }
     }
 
-    private Fits subtractImages(int band1, int epoch1, int band2, int epoch2) {
-        try {
-            Fits fits = getImage(band1, epoch1);
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-
-            fits = getImage(band2, epoch2);
-            hdu = (ImageHDU) fits.getHDU(0);
-            imageData = (ImageData) hdu.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-
-            float[][] subtractedValues = new float[naxis2][naxis1];
-            for (int i = 0; i < naxis2; i++) {
-                for (int j = 0; j < naxis1; j++) {
-                    try {
-                        subtractedValues[i][j] = values1[i][j] - values2[i][j];
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
-                }
-            }
-
-            Fits result = new Fits();
-            result.addHDU(FitsFactory.hduFactory(subtractedValues));
-            return result;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private Fits takeAverage(Fits fits, int numberOfImages) {
-        try {
-            ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) imageHDU.getData();
-            float[][] values = (float[][]) imageData.getData();
-
-            float[][] averagedValues = new float[naxis2][naxis1];
-            for (int i = 0; i < naxis2; i++) {
-                for (int j = 0; j < naxis1; j++) {
-                    try {
-                        averagedValues[i][j] = values[i][j] / numberOfImages;
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
-                }
-            }
-
-            Fits result = new Fits();
-            result.addHDU(FitsFactory.hduFactory(averagedValues));
-            return result;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void enhanceImage(Fits fits, int enhanceFactor) {
-        try {
-            ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) imageHDU.getData();
-            float[][] values = (float[][]) imageData.getData();
-
-            for (int i = 0; i < naxis2; i++) {
-                for (int j = 0; j < naxis1; j++) {
-                    try {
-                        values[i][j] = values[i][j] * enhanceFactor;
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void differenceImaging(int epoch1, int epoch2) {
+    private void differenceImaging(int epoch1, int epoch2) throws Exception {
         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
             Fits fits1 = subtractImages(WiseBand.W1.val, epoch1, WiseBand.W1.val, epoch2);
             Fits fits2 = subtractImages(WiseBand.W1.val, epoch2, WiseBand.W1.val, epoch1);

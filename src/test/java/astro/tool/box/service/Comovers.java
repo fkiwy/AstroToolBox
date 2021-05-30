@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class Comovers {
 
-    //Ignore
+    @Ignore
     @Test
     public void noirlab() throws Exception {
         int totalRead = 0;
@@ -28,6 +28,7 @@ public class Comovers {
         StringBuilder results = new StringBuilder();
         try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2Z.csv"))) {
             String headerLine = fileScanner.nextLine();
+            results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
             Map<String, Integer> columns = new HashMap<>();
             for (int i = 0; i < headers.length; i++) {
@@ -40,8 +41,8 @@ public class Comovers {
                     System.out.println("read   =" + totalRead);
                     System.out.println("written=" + totalWritten);
                 }
-                String line = fileScanner.nextLine();
-                String[] values = CSVParser.parseLine(line);
+                String bodyLine = fileScanner.nextLine();
+                String[] values = CSVParser.parseLine(bodyLine);
                 double ra = toDouble(values[columns.get("ra")]);
                 double dec = toDouble(values[columns.get("dec")]);
                 double pmra = toDouble(values[columns.get("pmra")]);
@@ -64,14 +65,14 @@ public class Comovers {
                         double resultDec = toDouble(resultValues[2]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
                         if (distance > 1) {
-                            results.append(resultLine).append(LINE_SEP);
+                            results.append(bodyLine).append(LINE_SEP);
                             totalWritten++;
                         }
                     }
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/results.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
@@ -79,14 +80,15 @@ public class Comovers {
         System.out.println("totalWritten=" + totalWritten);
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void catwise() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Custom overlays/CW2020 BYW Classifier.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers//CW2020 BYW Classifier Part 1.csv"))) {
             String headerLine = fileScanner.nextLine();
+            results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
             Map<String, Integer> columns = new HashMap<>();
             for (int i = 0; i < headers.length; i++) {
@@ -99,8 +101,8 @@ public class Comovers {
                     System.out.println("read   =" + totalRead);
                     System.out.println("written=" + totalWritten);
                 }
-                String line = fileScanner.nextLine();
-                String[] values = CSVParser.parseLine(line);
+                String bodyLine = fileScanner.nextLine();
+                String[] values = CSVParser.parseLine(bodyLine);
                 double ra = toDouble(values[columns.get("ra")]);
                 double dec = toDouble(values[columns.get("dec")]);
                 double pmra = toDouble(values[columns.get("PMRA")]) * 1000;
@@ -123,14 +125,14 @@ public class Comovers {
                         double resultDec = toDouble(resultValues[2]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
                         if (distance > 1) {
-                            results.append(resultLine).append(LINE_SEP);
+                            results.append(bodyLine).append(LINE_SEP);
                             totalWritten++;
                         }
                     }
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/results.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results part 1.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
@@ -194,7 +196,7 @@ public class Comovers {
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/results.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
