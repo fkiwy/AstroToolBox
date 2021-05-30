@@ -108,7 +108,7 @@ public class Comovers {
                 double pmra = toDouble(values[columns.get("PMRA")]) * 1000;
                 double pmdec = toDouble(values[columns.get("PMDec")]) * 1000;
 
-                String comoverQuery = createComoverQuery();
+                String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
                 comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
@@ -132,7 +132,7 @@ public class Comovers {
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results part 1.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results WD part 1.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
@@ -228,6 +228,34 @@ public class Comovers {
         addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
         addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
         //addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= 100");
+        return query.toString();
+    }
+
+    private String createComoverWdQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT source_id,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       parallax,");
+        addRow(query, "       parallax_error,");
+        addRow(query, "       pmra,");
+        addRow(query, "       pmra_error,");
+        addRow(query, "       pmdec,");
+        addRow(query, "       pmdec_error,");
+        addRow(query, "       phot_g_mean_mag,");
+        addRow(query, "       phot_bp_mean_mag,");
+        addRow(query, "       phot_rp_mean_mag,");
+        addRow(query, "       bp_rp,");
+        addRow(query, "       bp_g,");
+        addRow(query, "       g_rp,");
+        addRow(query, "       dr2_radial_velocity,");
+        addRow(query, "       dr2_radial_velocity_error");
+        addRow(query, "FROM   gaiaedr3.gaia_source");
+        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', [RA], [DE], 0.002777778))"); // 10 arcsec
+        addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
+        addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
+        addRow(query, "AND    bp_rp != 0 AND bp_rp <= 1.5");
+        addRow(query, "AND    phot_g_mean_mag + 5 - 5 * LOG10(1 / (parallax / 1000)) BETWEEN 10 AND 15");
         return query.toString();
     }
 
