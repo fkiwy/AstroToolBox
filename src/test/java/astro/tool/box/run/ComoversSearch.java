@@ -1,4 +1,4 @@
-package astro.tool.box.service;
+package astro.tool.box.run;
 
 import astro.tool.box.container.NumberPair;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
@@ -18,7 +18,7 @@ import java.util.Scanner;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class Comovers {
+public class ComoversSearch {
 
     //@Ignore
     @Test
@@ -42,12 +42,11 @@ public class Comovers {
                     System.out.println("written=" + totalWritten);
                 }
                 String bodyLine = fileScanner.nextLine();
-                System.out.println(bodyLine);
                 String[] values = CSVParser.parseLine(bodyLine);
                 double ra = toDouble(values[columns.get("ra")]);
                 double dec = toDouble(values[columns.get("dec")]);
                 double pmra = toDouble(values[columns.get("pmra")]);
-                double pmdec = toDouble(values[columns.get("pmra")]);
+                double pmdec = toDouble(values[columns.get("pmdec")]);
 
                 String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
@@ -58,25 +57,18 @@ public class Comovers {
                 String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
 
                 try (Scanner responseScanner = new Scanner(response)) {
-                    if (responseScanner.hasNextLine()) {
-                        responseScanner.nextLine();
-                        while (responseScanner.hasNextLine()) {
-                            String resultLine = responseScanner.nextLine();
-                            String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
-                            double resultRa = toDouble(resultValues[1]);
-                            double resultDec = toDouble(resultValues[2]);
-                            double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
-                            if (distance > 1) {
-                                System.out.println(bodyLine);
-                                results.append(bodyLine).append(LINE_SEP);
-                                totalWritten++;
-                            }
+                    responseScanner.nextLine();
+                    while (responseScanner.hasNextLine()) {
+                        String resultLine = responseScanner.nextLine();
+                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        double resultRa = toDouble(resultValues[1]);
+                        double resultDec = toDouble(resultValues[2]);
+                        double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
+                        if (distance > 1) {
+                            results.append(bodyLine).append(LINE_SEP);
+                            totalWritten++;
                         }
-                    } else {
-                        System.out.println("response=" + response);
-                        System.out.println("bodyLine=" + bodyLine);
                     }
-
                 }
             }
         }
@@ -155,6 +147,7 @@ public class Comovers {
         int totalWritten = 0;
         StringBuilder test = new StringBuilder();
         test.append("ra,dec,pmra,pmdec").append(LINE_SEP);
+        test.append("353.2612406,-63.7885657,44.617,-156.7").append(LINE_SEP);
         test.append("28.7563406,-13.1309493,109.075,-128.078").append(LINE_SEP);
         test.append("60.1940385,-26.1918167,-58.654,-110.718").append(LINE_SEP);
         StringBuilder results = new StringBuilder();
@@ -178,9 +171,9 @@ public class Comovers {
                 double ra = toDouble(values[columns.get("ra")]);
                 double dec = toDouble(values[columns.get("dec")]);
                 double pmra = toDouble(values[columns.get("pmra")]);
-                double pmdec = toDouble(values[columns.get("pmra")]);
+                double pmdec = toDouble(values[columns.get("pmdec")]);
 
-                String comoverQuery = createComoverQuery();
+                String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
                 comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));

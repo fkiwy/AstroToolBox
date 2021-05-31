@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -506,10 +507,13 @@ public class AdqlQueryTab {
 
             jobId = SettingsTab.getUserSetting(JOB_ID, "");
             if (!jobId.isEmpty()) {
-                String provider = SettingsTab.getUserSetting(ASYNC_TAP_PROVIDER, DEFAULT_TAP_PROVIDER.name());
-                tapProvider.setSelectedItem(TapProvider.valueOf(provider));
-                statusField.setText("Resuming ...");
-                startClock();
+                CompletableFuture.supplyAsync(() -> {
+                    String provider = SettingsTab.getUserSetting(ASYNC_TAP_PROVIDER, DEFAULT_TAP_PROVIDER.name());
+                    tapProvider.setSelectedItem(TapProvider.valueOf(provider));
+                    statusField.setText("Resuming ...");
+                    startClock();
+                    return null;
+                });
             }
 
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));

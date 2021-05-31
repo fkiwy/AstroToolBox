@@ -1,9 +1,10 @@
-package astro.tool.box.service;
+package astro.tool.box.run;
 
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.Color;
+import astro.tool.box.service.SpectralTypeLookupService;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Constants.*;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class Results {
+public class PlanePartyStats {
 
     private static final Map<String, Double> SPECTRAL_TYPES = new HashMap<>();
 
