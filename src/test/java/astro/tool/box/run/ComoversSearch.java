@@ -22,6 +22,66 @@ public class ComoversSearch {
 
     //@Ignore
     @Test
+    public void catwise() throws Exception {
+        int totalRead = 0;
+        int totalWritten = 0;
+        StringBuilder results = new StringBuilder();
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/CatWISE results.csv"))) {
+            String headerLine = fileScanner.nextLine();
+            results.append(headerLine).append(LINE_SEP);
+            String[] headers = CSVParser.parseLine(headerLine);
+            Map<String, Integer> columns = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                columns.put(headers[i], i);
+            }
+
+            while (fileScanner.hasNextLine()) {
+                totalRead++;
+                if (totalRead % 100 == 0) {
+                    System.out.println("read   =" + totalRead);
+                    System.out.println("written=" + totalWritten);
+                }
+                String bodyLine = fileScanner.nextLine();
+                String[] values = CSVParser.parseLine(bodyLine);
+                double ra = toDouble(values[columns.get("ra")]);
+                double dec = toDouble(values[columns.get("dec")]);
+                double pmra = toDouble(values[columns.get("pmra")]);
+                double pmdec = toDouble(values[columns.get("pmdec")]);
+
+                String comoverQuery = createComoverWdQuery();
+                comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
+                comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
+                comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
+                comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
+                String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
+                String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
+
+                try (Scanner responseScanner = new Scanner(response)) {
+                    responseScanner.nextLine();
+                    while (responseScanner.hasNextLine()) {
+                        String resultLine = responseScanner.nextLine();
+                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        double resultRa = toDouble(resultValues[1]);
+                        double resultDec = toDouble(resultValues[2]);
+                        double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
+                        if (distance > 1) {
+                            results.append(bodyLine).append(LINE_SEP);
+                            totalWritten++;
+                        }
+                    }
+                }
+            }
+        }
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results catwise.csv");
+        try (FileWriter writer = new FileWriter(resultFile)) {
+            writer.write(results.toString());
+        }
+        System.out.println("totalRead   =" + totalRead);
+        System.out.println("totalWritten=" + totalWritten);
+    }
+
+    @Ignore
+    @Test
     public void noirlab() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
@@ -82,7 +142,7 @@ public class ComoversSearch {
 
     @Ignore
     @Test
-    public void catwise() throws Exception {
+    public void classifier() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();

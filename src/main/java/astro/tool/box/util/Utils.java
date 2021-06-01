@@ -66,7 +66,7 @@ public class Utils {
         return String.join(" ", results).replaceAll(";", "");
     }
 
-    public static String removeFirstandLastChar(String str) {
+    public static String removeFirstAndLastCharacter(String str) {
         return str.substring(1, str.length() - 1);
     }
 

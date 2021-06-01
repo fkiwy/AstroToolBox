@@ -55,6 +55,7 @@ import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.ImageContainer;
 import astro.tool.box.module.InfoSheet;
+import astro.tool.box.module.ReferencesPanel;
 import astro.tool.box.module.TextPrompt;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
@@ -5267,14 +5268,14 @@ public class ImageViewerTab {
                 spectrum = ImageIO.read(stream);
             }
             if (spectrum != null) {
-                JFrame imageFrame = new JFrame();
-                imageFrame.setIconImage(getToolBoxImage());
-                imageFrame.setTitle("SDSS spectrum for object: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
-                imageFrame.add(new JLabel(new ImageIcon(spectrum)));
-                imageFrame.setSize(1200, 900);
-                imageFrame.setAlwaysOnTop(true);
-                imageFrame.setResizable(false);
-                imageFrame.setVisible(true);
+                JFrame spectrumFrame = new JFrame();
+                spectrumFrame.setIconImage(getToolBoxImage());
+                spectrumFrame.setTitle("SDSS spectrum for object: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
+                spectrumFrame.add(new JLabel(new ImageIcon(spectrum)));
+                spectrumFrame.setSize(1200, 900);
+                spectrumFrame.setAlwaysOnTop(true);
+                spectrumFrame.setResizable(false);
+                spectrumFrame.setVisible(true);
             }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
@@ -5680,28 +5681,43 @@ public class ImageViewerTab {
                 sedPanel.add(chartPanel);
                 sedPanel.add(commandPanel);
 
-                JFrame catalogFrame = new JFrame();
-                catalogFrame.setIconImage(getToolBoxImage());
-                catalogFrame.setTitle("SED");
-                catalogFrame.add(sedPanel);
-                catalogFrame.setSize(850, 750);
-                catalogFrame.setLocation(0, 0);
-                catalogFrame.setAlwaysOnTop(true);
-                catalogFrame.setResizable(false);
-                catalogFrame.setVisible(true);
+                JFrame sedFrame = new JFrame();
+                sedFrame.setIconImage(getToolBoxImage());
+                sedFrame.setTitle("SED");
+                sedFrame.add(sedPanel);
+                sedFrame.setSize(850, 750);
+                sedFrame.setLocation(0, 0);
+                sedFrame.setAlwaysOnTop(true);
+                sedFrame.setResizable(false);
+                sedFrame.setVisible(true);
             });
 
+            if (catalogEntry instanceof SimbadCatalogEntry) {
+                JButton referencesButton = new JButton("Object references");
+                buttonPanel.add(referencesButton);
+                referencesButton.addActionListener((ActionEvent evt) -> {
+                    JFrame referencesFrame = new JFrame();
+                    referencesFrame.setIconImage(getToolBoxImage());
+                    referencesFrame.setTitle("Object references");
+                    referencesFrame.add(new ReferencesPanel(catalogEntry, referencesFrame));
+                    referencesFrame.setSize(1200, 800);
+                    referencesFrame.setLocation(0, 0);
+                    referencesFrame.setAlwaysOnTop(true);
+                    referencesFrame.setResizable(false);
+                    referencesFrame.setVisible(true);
+                });
+            }
         }
 
-        JFrame catalogFrame = new JFrame();
-        catalogFrame.setIconImage(getToolBoxImage());
-        catalogFrame.setTitle("Object details");
-        catalogFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        catalogFrame.setSize(650, 650);
-        catalogFrame.setLocation(windowShift, windowShift);
-        catalogFrame.setAlwaysOnTop(true);
-        catalogFrame.setResizable(false);
-        catalogFrame.setVisible(true);
+        JFrame detailsFrame = new JFrame();
+        detailsFrame.setIconImage(getToolBoxImage());
+        detailsFrame.setTitle("Object details");
+        detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
+        detailsFrame.setSize(650, 650);
+        detailsFrame.setLocation(windowShift, windowShift);
+        detailsFrame.setAlwaysOnTop(true);
+        detailsFrame.setResizable(false);
+        detailsFrame.setVisible(true);
         windowShift += 10;
     }
 

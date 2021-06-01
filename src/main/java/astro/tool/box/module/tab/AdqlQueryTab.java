@@ -78,7 +78,7 @@ public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
-    private static final String IRSA_TABLES = "Available tables";
+    private static final String AVAILABLE_TABLES = "Available tables";
     private static final String JOB_ID = "jobId";
     private static final String ASYNC_TAP_PROVIDER = "asyncTapProvider";
     private static final TapProvider DEFAULT_TAP_PROVIDER = TapProvider.VIZIER;
@@ -454,7 +454,7 @@ public class AdqlQueryTab {
                     catalogTablePanel.setLayout(new BoxLayout(catalogTablePanel, BoxLayout.Y_AXIS));
 
                     catalogTableSorter = new TableRowSorter<>();
-                    catalogTablePanel.add(readQueryResult(catalogTableSorter, result, IRSA_TABLES));
+                    catalogTablePanel.add(readQueryResult(catalogTableSorter, result, AVAILABLE_TABLES));
 
                     JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                     catalogTablePanel.add(filterPanel);
@@ -564,7 +564,7 @@ public class AdqlQueryTab {
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         resultTable.setRowSorter(sorter);
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        if (IRSA_TABLES.equals(panelName)) {
+        if (AVAILABLE_TABLES.equals(panelName)) {
             resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
                 if (!e.getValueIsAdjusting()) {
                     int selectedRow = resultTable.getSelectedRow();

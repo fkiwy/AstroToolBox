@@ -77,24 +77,25 @@ public class ServiceProviderUtils {
     }
 
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
-        BufferedReader reader = new BufferedReader(new StringReader(response));
-        if (catalogEntry instanceof SdssCatalogEntry) {
-            reader.readLine();
-        }
-        String headerLine = reader.readLine();
-        String[] headers = CSVParser.parseLine(headerLine);
-        Map<String, Integer> columns = new HashMap<>();
-        for (int i = 0; i < headers.length; i++) {
-            columns.put(headers[i], i);
-        }
-        String line;
         List<CatalogEntry> entries = new ArrayList<>();
-        while ((line = reader.readLine()) != null) {
-            String[] values = CSVParser.parseLine(line);
-            for (int i = 0; i < values.length; i++) {
-                values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+        try (BufferedReader reader = new BufferedReader(new StringReader(response))) {
+            if (catalogEntry instanceof SdssCatalogEntry) {
+                reader.readLine();
             }
-            entries.add(catalogEntry.getInstance(columns, values));
+            String headerLine = reader.readLine();
+            String[] headers = CSVParser.parseLine(headerLine);
+            Map<String, Integer> columns = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                columns.put(headers[i], i);
+            }
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] values = CSVParser.parseLine(line);
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+                }
+                entries.add(catalogEntry.getInstance(columns, values));
+            }
         }
         return entries;
     }
