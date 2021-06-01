@@ -5685,7 +5685,7 @@ public class ImageViewerTab {
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(sedPanel);
-                sedFrame.setSize(850, 750);
+                sedFrame.setSize(900, 700);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(true);
                 sedFrame.setResizable(false);
@@ -6004,23 +6004,21 @@ public class ImageViewerTab {
         CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
         generator.addToolTipSeries(toolTips);
 
-        LogAxis xAxis = new LogAxis("λ [μm]");
+        LogAxis xAxis = new LogAxis("Wavelength (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("νF(ν) [W/m^2]");
+        LogAxis yAxis = new LogAxis("νF(ν) (W/m^2)");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(0.5));
         plot.setRangeAxis(yAxis);
 
-        Font axisTickFont = new Font("Tahoma", Font.PLAIN, 11);
-        xAxis.setTickLabelFont(axisTickFont);
-        yAxis.setTickLabelFont(axisTickFont);
-
-        Font axisLabelFont = new Font("Verdana", Font.PLAIN, 12);
-        xAxis.setLabelFont(axisLabelFont);
-        yAxis.setLabelFont(axisLabelFont);
+        Font chartFont = new Font("Tahoma", Font.PLAIN, 12);
+        xAxis.setTickLabelFont(chartFont);
+        yAxis.setTickLabelFont(chartFont);
+        xAxis.setLabelFont(chartFont);
+        yAxis.setLabelFont(chartFont);
 
         //XYSplineRenderer renderer = new XYSplineRenderer(100);
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -6038,9 +6036,10 @@ public class ImageViewerTab {
         plot.setDomainGridlinePaint(Color.BLACK);
 
         chart.getLegend().setFrame(BlockBorder.NONE);
+        chart.getLegend().setItemFont(chartFont);
 
-        Font chartTitleFont = new Font("Verdana", Font.BOLD, 16);
-        chart.getTitle().setFont(chartTitleFont);
+        Font titleFont = new Font("Tahoma", Font.BOLD, 16);
+        chart.getTitle().setFont(titleFont);
 
         return chart;
     }
