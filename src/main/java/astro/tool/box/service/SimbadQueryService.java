@@ -109,4 +109,28 @@ public class SimbadQueryService {
         return catalogs;
     }
 
+    public List<String[]> getObjectTypes(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select d.otype_shortname, d.otype_longname");
+        addRow(query, "from   otypes as t, otypedef as d, basic as b");
+        addRow(query, "where  t.oidref = b.oid");
+        addRow(query, "and    t.otype = d.otype");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        return executeQuery(query.toString());
+    }
+
+    private List<String[]> executeQuery(String query) throws IOException {
+        String queryUrl = getSimbadBaseUrl() + encodeQuery(query);
+        String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
+        List<String[]> references = new ArrayList();
+        try (Scanner scanner = new Scanner(response)) {
+            scanner.nextLine();
+            while (scanner.hasNextLine()) {
+                String[] reference = CSVParser.parseLine(scanner.nextLine());
+                references.add(reference);
+            }
+        }
+        return references;
+    }
+
 }

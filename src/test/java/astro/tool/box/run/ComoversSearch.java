@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class ComoversSearch {
 
-    @Ignore
+    //@Ignore
     @Test
     public void noirlabComovers() throws Exception {
         int totalRead = 0;
@@ -62,7 +62,7 @@ public class ComoversSearch {
                         String resultLine = responseScanner.nextLine();
                         String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
                         double resultRa = toDouble(resultValues[1]);
-                        double resultDec = toDouble(resultValues[2]);
+                        double resultDec = toDouble(resultValues[3]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
                         if (distance > 1) {
                             results.append(bodyLine).append(LINE_SEP);

@@ -1,6 +1,7 @@
 package astro.tool.box.service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -45,6 +46,14 @@ public class SimbadQueryTest {
         List<String> catalogs = simbadQueryService.getVizierCatalogs("2015PASA...32...10F");
         //catalogs.forEach(System.out::println);
         assertEquals(5, catalogs.size());
+    }
+
+    @Test
+    public void getObjectTypes() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> types = simbadQueryService.getObjectTypes("2MASS J13570965+5544496");
+        types.forEach(reference -> System.out.println(Arrays.toString(reference)));
+        assertEquals(3, types.size());
     }
 
 }
