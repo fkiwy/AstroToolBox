@@ -1,6 +1,7 @@
 package astro.tool.box.service;
 
 import astro.tool.box.util.CSVParser;
+import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Utils.*;
 import java.io.IOException;
@@ -87,6 +88,25 @@ public class SimbadQueryService {
             }
         }
         return authors;
+    }
+
+    public List<String> getVizierCatalogs(String bibcode) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select name");
+        addRow(query, "from   METAcat");
+        addRow(query, "where  bibcode = '" + bibcode + "'");
+        addRow(query, "order by name asc");
+        String queryUrl = VIZIER_TAP_URL + encodeQuery(query.toString());
+        String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
+        List<String> catalogs = new ArrayList();
+        try (Scanner scanner = new Scanner(response)) {
+            scanner.nextLine();
+            while (scanner.hasNextLine()) {
+                String catalog = removeFirstAndLastCharacter(scanner.nextLine());
+                catalogs.add(catalog);
+            }
+        }
+        return catalogs;
     }
 
 }

@@ -39,4 +39,12 @@ public class SimbadQueryTest {
         assertEquals(10, authors.size());
     }
 
+    @Test
+    public void getVizierCatalogs() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String> catalogs = simbadQueryService.getVizierCatalogs("2015PASA...32...10F");
+        //catalogs.forEach(System.out::println);
+        assertEquals(5, catalogs.size());
+    }
+
 }

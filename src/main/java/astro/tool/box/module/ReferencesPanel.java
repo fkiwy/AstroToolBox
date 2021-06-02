@@ -18,51 +18,54 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 
 public class ReferencesPanel extends JPanel {
-    
+
     final private SimbadQueryService simbadQueryService = new SimbadQueryService();
-    
+
     public ReferencesPanel(CatalogEntry catalogEntry, JFrame referencesFrame) {
         try {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
             add(container);
-            
+
             JPanel referencesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(referencesPanel);
-            
+
             JPanel detailsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(detailsPanel);
-            
+
             JPanel linksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(linksPanel);
-            
+
+            JPanel catalogsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            container.add(catalogsPanel);
+
             String mainIdentifier = catalogEntry.getSourceId();
 
             // Object identifiers
             List<String[]> identifiers = simbadQueryService.getObjectIdentifiers(mainIdentifier);
-            
+
             String[] columns = new String[]{"Identifier"};
             Object[][] rows = new Object[][]{};
-            
+
             JTable identifiersTable = new JTable(identifiers.toArray(rows), columns);
             alignResultColumns(identifiersTable, identifiers);
             resizeColumnWidth(identifiersTable, 1000);
             identifiersTable.setAutoCreateRowSorter(true);
             identifiersTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             identifiersTable.setTableHeader(null);
-            
+
             JScrollPane resultPanel = new JScrollPane(identifiersTable);
             resultPanel.setPreferredSize(new Dimension(300, 300));
             resultPanel.setBorder(ModuleHelper.createEtchedBorder("Object identifiers"));
-            
+
             referencesPanel.add(resultPanel);
 
             // Object references
             List<String[]> references = simbadQueryService.getObjectReferences(mainIdentifier);
-            
+
             columns = new String[]{"Year", "Journal", "Volume", "Title", "Bibcode", "Ref"};
             rows = new Object[][]{};
-            
+
             JTable referencesTable = new JTable(references.toArray(rows), columns);
             alignResultColumns(referencesTable, references);
             resizeColumnWidth(referencesTable, 1000);
@@ -73,65 +76,67 @@ public class ReferencesPanel extends JPanel {
                 if (!e.getValueIsAdjusting()) {
                     String bibRef = (String) referencesTable.getValueAt(referencesTable.getSelectedRow(), 5);
                     populateDetailsPanel(Integer.valueOf(bibRef), detailsPanel);
-                    
+
                     String bibCode = (String) referencesTable.getValueAt(referencesTable.getSelectedRow(), 4);
                     populateLinksPanel(bibCode, linksPanel);
-                    
+
+                    populateCatalogsPanel(bibCode, catalogsPanel);
+
                     referencesFrame.setVisible(true);
                 }
             });
-            
+
             resultPanel = new JScrollPane(referencesTable);
-            resultPanel.setPreferredSize(new Dimension(880, 300));
+            resultPanel.setPreferredSize(new Dimension(1500, 300));
             resultPanel.setBorder(ModuleHelper.createEtchedBorder("Object references"));
-            
+
             referencesPanel.add(resultPanel);
-            
+
         } catch (IOException ex) {
             showExceptionDialog(null, ex);
         }
     }
-    
+
     private void populateDetailsPanel(Integer bibRef, JPanel detailsPanel) {
         try {
             detailsPanel.removeAll();
 
             // Authors
             List<String[]> authors = simbadQueryService.getAuthors(bibRef);
-            
+
             String[] columns = new String[]{"Author"};
             Object[][] rows = new Object[][]{};
-            
+
             JTable authorsTable = new JTable(authors.toArray(rows), columns);
             alignResultColumns(authorsTable, authors);
             resizeColumnWidth(authorsTable, 1000);
             authorsTable.setAutoCreateRowSorter(true);
             authorsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             authorsTable.setTableHeader(null);
-            
+
             JScrollPane resultPanel = new JScrollPane(authorsTable);
             resultPanel.setPreferredSize(new Dimension(300, 300));
             resultPanel.setBorder(ModuleHelper.createEtchedBorder("Authors"));
-            
+
             detailsPanel.add(resultPanel);
 
             // Abstract
             String result = simbadQueryService.getAbstract(bibRef);
-            
+
             JTextArea textArea = new JTextArea(result);
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
-            
+
             resultPanel = new JScrollPane(textArea);
-            resultPanel.setPreferredSize(new Dimension(880, 300));
+            resultPanel.setPreferredSize(new Dimension(850, 300));
             resultPanel.setBorder(ModuleHelper.createEtchedBorder("Abstract"));
-            
+
             detailsPanel.add(resultPanel);
         } catch (IOException ex) {
             showExceptionDialog(null, ex);
         }
     }
-    
+
     private void populateLinksPanel(String bibCode, JPanel linksPanel) {
         linksPanel.removeAll();
         linksPanel.add(new JLabel("Download from"));
@@ -139,5 +144,24 @@ public class ReferencesPanel extends JPanel {
         linksPanel.add(new JLabel("or"));
         linksPanel.add(createHyperlink("Publisher", String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/PUB_PDF", bibCode)));
     }
-    
+
+    private void populateCatalogsPanel(String bibCode, JPanel catalogsPanel) {
+        try {
+            catalogsPanel.removeAll();
+
+            // VizieR catalogs
+            List<String> catalogs = simbadQueryService.getVizierCatalogs(bibCode);
+            if (catalogs.isEmpty()) {
+                return;
+            }
+
+            catalogsPanel.add(new JLabel("VizieR catalogs:"));
+            catalogs.forEach(catalog -> {
+                catalogsPanel.add(createHyperlink(catalog, String.format("http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=%s", catalog)));
+            });
+        } catch (IOException ex) {
+            showExceptionDialog(null, ex);
+        }
+    }
+
 }
