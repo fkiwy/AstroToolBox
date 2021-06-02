@@ -52,8 +52,16 @@ public class SimbadQueryTest {
     public void getObjectTypes() throws IOException {
         SimbadQueryService simbadQueryService = new SimbadQueryService();
         List<String[]> types = simbadQueryService.getObjectTypes("2MASS J13570965+5544496");
-        types.forEach(reference -> System.out.println(Arrays.toString(reference)));
+        //types.forEach(type -> System.out.println(Arrays.toString(type)));
         assertEquals(3, types.size());
+    }
+
+    @Test
+    public void getObjectFluxes() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> fluxes = simbadQueryService.getObjectFluxes("2MASS J13570965+5544496");
+        //fluxes.forEach(flux -> System.out.println(Arrays.toString(flux)));
+        assertEquals(7, fluxes.size());
     }
 
 }

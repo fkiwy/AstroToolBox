@@ -109,6 +109,16 @@ public class SimbadQueryService {
         return catalogs;
     }
 
+    public List<String[]> getObjectFluxes(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select f.filter, f.flux, f.flux_err, f.qual, i.description, i.unit, f.bibcode ");
+        addRow(query, "from   flux as f, filter as i, basic as b");
+        addRow(query, "where  f.oidref = b.oid");
+        addRow(query, "and    f.filter = i.filtername");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        return executeQuery(query.toString());
+    }
+
     public List<String[]> getObjectTypes(String mainIdentifier) throws IOException {
         StringBuilder query = new StringBuilder();
         addRow(query, "select d.otype_shortname, d.otype_longname");
