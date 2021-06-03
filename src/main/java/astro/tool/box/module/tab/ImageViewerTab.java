@@ -5699,7 +5699,7 @@ public class ImageViewerTab {
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Object references");
                     referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
-                    referencesFrame.setSize(1200, 800);
+                    referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
                     referencesFrame.setLocation(0, 0);
                     referencesFrame.setAlwaysOnTop(true);
                     referencesFrame.setResizable(true);

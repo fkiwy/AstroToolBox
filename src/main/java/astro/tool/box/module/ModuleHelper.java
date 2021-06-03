@@ -125,6 +125,9 @@ public class ModuleHelper {
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
 
+    public static int BASE_FRAME_WIDTH = 1275;
+    public static int BASE_FRAME_HEIGHT = 875;
+
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();

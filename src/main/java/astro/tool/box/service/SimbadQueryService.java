@@ -120,6 +120,7 @@ public class SimbadQueryService {
         return executeQuery(query.toString());
     }
 
+    /* This query is very slow !
     public List<String[]> getObjectTypes(String mainIdentifier) throws IOException {
         StringBuilder query = new StringBuilder();
         addRow(query, "select d.otype_shortname, d.otype_longname");
@@ -127,6 +128,30 @@ public class SimbadQueryService {
         addRow(query, "where  t.oidref = b.oid");
         addRow(query, "and    d.otype = t.otype");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        return executeQuery(query.toString());
+    }*/
+    public List<String[]> getObjectTypes(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select t.otypes");
+        addRow(query, "from   alltypes as t, basic as b");
+        addRow(query, "where  t.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        List<String[]> objectTypes = new ArrayList();
+        List<String[]> allTypes = executeQuery(query.toString());
+        if (!allTypes.isEmpty()) {
+            List<String> types = Stream.of(allTypes.get(0)[0].split("\\|")).distinct().map(String::trim).collect(Collectors.toList());
+            for (String type : types) {
+                objectTypes.addAll(getObjectType(type));
+            }
+        }
+        return objectTypes;
+    }
+
+    public List<String[]> getObjectType(String type) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select otype_shortname, otype_longname");
+        addRow(query, "from   otypedef");
+        addRow(query, "where  otype_shortname = '" + type + "'");
         return executeQuery(query.toString());
     }
 

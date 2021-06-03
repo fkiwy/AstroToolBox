@@ -7,7 +7,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BoxLayout;
@@ -55,7 +54,7 @@ public class ReferencesPanel extends JPanel {
                 String mainIdentifier = catalogEntry.getSourceId();
 
                 // Object types
-                List<String[]> results = Collections.EMPTY_LIST; //simbadQueryService.getObjectTypes(mainIdentifier);
+                List<String[]> results = simbadQueryService.getObjectTypes(mainIdentifier);
 
                 String[] columns = new String[]{"Object type", "Description"};
                 JScrollPane resultPanel = new JScrollPane(createResultTable(results, columns));
@@ -67,6 +66,7 @@ public class ReferencesPanel extends JPanel {
                 // Spectral types
                 results = simbadQueryService.getObjectSpectralTypes(mainIdentifier);
 
+                columns = new String[]{"Spectral type", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
                 resultPanel.setBorder(ModuleHelper.createEtchedBorder("Spectral types"));
@@ -106,7 +106,7 @@ public class ReferencesPanel extends JPanel {
                 // Proper motions
                 results = simbadQueryService.getObjectProperMotions(mainIdentifier);
 
-                columns = new String[]{"PM RA", "PM DE", "RA error", "DE error", "Coord. system", "Bibcode"};
+                columns = new String[]{"PM R.A.", "R.A. error", "PM DEC.", "DEC. error", "Coord. system", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
                 resultPanel.setBorder(ModuleHelper.createEtchedBorder("Proper motions"));
@@ -224,7 +224,7 @@ public class ReferencesPanel extends JPanel {
             textArea.setWrapStyleWord(true);
 
             resultPanel = new JScrollPane(textArea);
-            resultPanel.setPreferredSize(new Dimension(850, 200));
+            resultPanel.setPreferredSize(new Dimension(900, 200));
             resultPanel.setBorder(ModuleHelper.createEtchedBorder("Abstract"));
 
             detailsPanel.add(resultPanel);
