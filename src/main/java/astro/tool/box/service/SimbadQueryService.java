@@ -1,5 +1,6 @@
 package astro.tool.box.service;
 
+import static astro.tool.box.function.NumericFunctions.*;
 import astro.tool.box.util.CSVParser;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
@@ -122,9 +123,9 @@ public class SimbadQueryService {
     public List<String[]> getObjectTypes(String mainIdentifier) throws IOException {
         StringBuilder query = new StringBuilder();
         addRow(query, "select d.otype_shortname, d.otype_longname");
-        addRow(query, "from   otypes as t, otypedef as d, basic as b");
+        addRow(query, "from   otypedef as d, otypes as t, basic as b");
         addRow(query, "where  t.oidref = b.oid");
-        addRow(query, "and    t.otype = d.otype");
+        addRow(query, "and    d.otype = t.otype");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
         return executeQuery(query.toString());
     }
@@ -161,7 +162,7 @@ public class SimbadQueryService {
 
     public List<String[]> getObjectVelocities(String mainIdentifier) throws IOException {
         StringBuilder query = new StringBuilder();
-        addRow(query, "select v.velType, v.velValue, v.meanError, v.quality, v.nbmes, v.nature, v.qual, v.wdomain, v.resolution, v.d, v.obsdate, v.remarks, v.origin, v.bibcode");
+        addRow(query, "select v.velType, v.velValue, v.meanError, v.quality, v.nbmes, v.nature, v.qual, v.wdomain, v.resolution, v.obsdate, v.remarks, v.origin, v.bibcode");
         addRow(query, "from   mesVelocities as v, basic as b");
         addRow(query, "where  v.oidref = b.oid");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
@@ -181,7 +182,7 @@ public class SimbadQueryService {
 
     public List<String[]> getObjectSpectralTypes(String mainIdentifier) throws IOException {
         StringBuilder query = new StringBuilder();
-        addRow(query, "select s.dispsystem, s.mssnote, s.sptype, s.bibcode");
+        addRow(query, "select s.sptype, s.bibcode");
         addRow(query, "from   mesSpT as s, basic as b");
         addRow(query, "where  s.oidref = b.oid");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
@@ -191,7 +192,7 @@ public class SimbadQueryService {
 
     public List<String[]> getObjectParallaxes(String mainIdentifier) throws IOException {
         StringBuilder query = new StringBuilder();
-        addRow(query, "select p.plx, p.plx_err, p.obscode, p.bibcode");
+        addRow(query, "select p.plx, p.plx_err, p.bibcode");
         addRow(query, "from   mesPlx as p, basic as b");
         addRow(query, "where  p.oidref = b.oid");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
@@ -212,15 +213,20 @@ public class SimbadQueryService {
     private List<String[]> executeQuery(String query) throws IOException {
         String queryUrl = getSimbadBaseUrl() + encodeQuery(query);
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
-        List<String[]> references = new ArrayList();
+        List<String[]> results = new ArrayList();
         try (Scanner scanner = new Scanner(response)) {
             scanner.nextLine();
             while (scanner.hasNextLine()) {
-                String[] reference = CSVParser.parseLine(scanner.nextLine());
-                references.add(reference);
+                String[] values = CSVParser.parseLine(scanner.nextLine());
+                for (int i = 0; i < values.length; i++) {
+                    if (isDecimal(values[i])) {
+                        values[i] = roundTo3Dec(toDouble(values[i]));
+                    }
+                }
+                results.add(values);
             }
         }
-        return references;
+        return results;
     }
 
 }
