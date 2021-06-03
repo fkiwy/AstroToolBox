@@ -301,7 +301,7 @@ public class VizierCatalogsTab {
                 searchButton.getActionListeners()[0].actionPerformed(evt);
             });
             findField.addActionListener((ActionEvent evt) -> {
-                showInfoDialog(baseFrame, "Use the Find button, please!");
+                showWarnDialog(baseFrame, "Use the Find button, please!");
             });
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);

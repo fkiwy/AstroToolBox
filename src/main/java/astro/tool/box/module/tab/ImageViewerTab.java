@@ -5524,32 +5524,31 @@ public class ImageViewerTab {
 
         if (!simpleLayout) {
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
-            container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
-            if (catalogEntry instanceof AllWiseCatalogEntry) {
-                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
-                if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
-                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(AGN_WARNING, JColor.RED));
-                    container.add(messagePanel);
+            if (!mainSequenceResults.isEmpty()) {
+                container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
+                if (catalogEntry instanceof AllWiseCatalogEntry) {
+                    AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                    if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
+                        JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        messagePanel.add(createLabel(AGN_WARNING, JColor.RED));
+                        container.add(messagePanel);
+                    }
+                }
+                if (catalogEntry instanceof WhiteDwarf) {
+                    WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+                    if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
+                        JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        messagePanel.add(createLabel(WD_WARNING, JColor.RED));
+                        container.add(messagePanel);
+                    }
                 }
             }
-            if (catalogEntry instanceof WhiteDwarf) {
-                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    messagePanel.add(createLabel(WD_WARNING, JColor.RED));
-                    container.add(messagePanel);
-                }
-            }
-            if (mainSequenceResults.isEmpty()) {
-                JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                messagePanel.add(createLabel("No colors available / No match", JColor.RED));
-                container.add(messagePanel);
-            }
-
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
-            container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
-            if (brownDwarfsResults.isEmpty()) {
+            if (!brownDwarfsResults.isEmpty()) {
+                container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
+            }
+            if (mainSequenceResults.isEmpty() && brownDwarfsResults.isEmpty()) {
+                container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
                 JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 messagePanel.add(createLabel("No colors available / No match", JColor.RED));
                 container.add(messagePanel);
