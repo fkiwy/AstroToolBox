@@ -26,7 +26,7 @@ public class ComoversSearch {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2N.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2Z.csv"))) {
             String headerLine = fileScanner.nextLine();
             results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
@@ -72,7 +72,7 @@ public class ComoversSearch {
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results noirlab.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results NSC DR2 Z.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }

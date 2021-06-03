@@ -129,6 +129,86 @@ public class SimbadQueryService {
         return executeQuery(query.toString());
     }
 
+    public List<String[]> getObjectVariabilities(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select v.vartyp, v.lowVmax, v.vmax, v.r_vmax, v.magtyp, v.uppVmin, v.vmin, v.r_vmin, v.upperiod, v.period, v.r_period, v.epoch, v.r_epoch, v.raisingTime, v.r_raisingTime, v.bibcode");
+        addRow(query, "from   mesVar as v, basic as b");
+        addRow(query, "where  v.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectDistances(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select d.dist, d.qual, d.unit, d.minus_err, d.plus_err, d.method, d.bibcode");
+        addRow(query, "from   mesDistance as d, basic as b");
+        addRow(query, "where  d.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectProperMotions(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select p.pmra, p.pmra_err, p.pmde, p.pmde_err, p.coosystem, p.bibcode");
+        addRow(query, "from   mesPM as p, basic as b");
+        addRow(query, "where  p.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectVelocities(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select v.velType, v.velValue, v.meanError, v.quality, v.nbmes, v.nature, v.qual, v.wdomain, v.resolution, v.d, v.obsdate, v.remarks, v.origin, v.bibcode");
+        addRow(query, "from   mesVelocities as v, basic as b");
+        addRow(query, "where  v.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectRotations(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select r.upvsini, r.vsini, r.vsini_err, r.nbmes, r.qual, r.bibcode");
+        addRow(query, "from   mesRot as r, basic as b");
+        addRow(query, "where  r.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectSpectralTypes(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select s.dispsystem, s.mssnote, s.sptype, s.bibcode");
+        addRow(query, "from   mesSpT as s, basic as b");
+        addRow(query, "where  s.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectParallaxes(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select p.plx, p.plx_err, p.obscode, p.bibcode");
+        addRow(query, "from   mesPlx as p, basic as b");
+        addRow(query, "where  p.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
+    public List<String[]> getObjectMetallicities(String mainIdentifier) throws IOException {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "select m.teff, m.log_g, m.fe_h, m.flag, m.compstar, m.catno, m.bibcode");
+        addRow(query, "from   mesFe_H as m, basic as b");
+        addRow(query, "where  m.oidref = b.oid");
+        addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
+        addRow(query, "order by mespos asc");
+        return executeQuery(query.toString());
+    }
+
     private List<String[]> executeQuery(String query) throws IOException {
         String queryUrl = getSimbadBaseUrl() + encodeQuery(query);
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);

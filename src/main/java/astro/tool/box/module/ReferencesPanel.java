@@ -8,7 +8,7 @@ import java.awt.FlowLayout;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.BoxLayout;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -21,7 +21,7 @@ public class ReferencesPanel extends JPanel {
 
     final private SimbadQueryService simbadQueryService = new SimbadQueryService();
 
-    public ReferencesPanel(CatalogEntry catalogEntry, JFrame referencesFrame) {
+    public ReferencesPanel(CatalogEntry catalogEntry, JDialog referencesFrame) {
         try {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));

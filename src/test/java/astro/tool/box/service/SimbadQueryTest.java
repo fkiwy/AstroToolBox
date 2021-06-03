@@ -1,7 +1,6 @@
 package astro.tool.box.service;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -62,6 +61,70 @@ public class SimbadQueryTest {
         List<String[]> fluxes = simbadQueryService.getObjectFluxes("2MASS J13570965+5544496");
         //fluxes.forEach(flux -> System.out.println(Arrays.toString(flux)));
         assertEquals(7, fluxes.size());
+    }
+
+    @Test
+    public void getObjectVariabilities() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> variabilities = simbadQueryService.getObjectVariabilities("2MASS J13570965+5544496");
+        //variabilities.forEach(variability -> System.out.println(Arrays.toString(variability)));
+        assertEquals(0, variabilities.size());
+    }
+
+    @Test
+    public void getObjectDistances() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> distances = simbadQueryService.getObjectDistances("2MASS J13570965+5544496");
+        //distances.forEach(distance -> System.out.println(Arrays.toString(distance)));
+        assertEquals(2, distances.size());
+    }
+
+    @Test
+    public void getObjectProperMotions() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> properMotions = simbadQueryService.getObjectProperMotions("2MASS J13570965+5544496");
+        //properMotions.forEach(properMotion -> System.out.println(Arrays.toString(properMotion)));
+        assertEquals(1, properMotions.size());
+    }
+
+    @Test
+    public void getObjectVelocities() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> velocities = simbadQueryService.getObjectVelocities("2MASS J13570965+5544496");
+        //velocities.forEach(velocity -> System.out.println(Arrays.toString(velocity)));
+        assertEquals(0, velocities.size());
+    }
+
+    @Test
+    public void getObjectRotations() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> rotations = simbadQueryService.getObjectRotations("2MASS J13570965+5544496");
+        //rotations.forEach(rotation -> System.out.println(Arrays.toString(rotation)));
+        assertEquals(0, rotations.size());
+    }
+
+    @Test
+    public void getObjectSpectralTypes() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> spectralTypes = simbadQueryService.getObjectSpectralTypes("2MASS J13570965+5544496");
+        //spectralTypes.forEach(spectralType -> System.out.println(Arrays.toString(spectralType)));
+        assertEquals(2, spectralTypes.size());
+    }
+
+    @Test
+    public void getObjectParallaxes() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> parallaxes = simbadQueryService.getObjectParallaxes("2MASS J13570965+5544496");
+        //parallaxes.forEach(parallax -> System.out.println(Arrays.toString(parallax)));
+        assertEquals(1, parallaxes.size());
+    }
+
+    @Test
+    public void getObjectMetallicities() throws IOException {
+        SimbadQueryService simbadQueryService = new SimbadQueryService();
+        List<String[]> metallicities = simbadQueryService.getObjectMetallicities("2MASS J13570965+5544496");
+        //metallicities.forEach(metallicity -> System.out.println(Arrays.toString(metallicity)));
+        assertEquals(0, metallicities.size());
     }
 
 }

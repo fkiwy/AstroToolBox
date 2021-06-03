@@ -144,6 +144,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -4573,13 +4574,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("DSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4617,13 +4617,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("2MASS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4669,13 +4668,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("SDSS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4721,13 +4719,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Spitzer (SEIP) - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4769,13 +4766,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("AllWISE - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4804,13 +4800,12 @@ public class ImageViewerTab {
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Pan-STARRS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(6 * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4851,13 +4846,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("DECaLS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4909,13 +4903,12 @@ public class ImageViewerTab {
                 return;
             }
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -5012,12 +5005,11 @@ public class ImageViewerTab {
                 }
             });
 
-            JFrame imageFrame = new JFrame();
+            JDialog imageFrame = new JDialog(baseFrame);
             imageFrame.setIconImage(getToolBoxImage());
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(container);
             imageFrame.setSize(PANEL_WIDTH + 20, PANEL_HEIGHT + 50);
-            imageFrame.setAlwaysOnTop(true);
             imageFrame.setResizable(false);
 
             Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
@@ -5268,12 +5260,11 @@ public class ImageViewerTab {
                 spectrum = ImageIO.read(stream);
             }
             if (spectrum != null) {
-                JFrame spectrumFrame = new JFrame();
+                JDialog spectrumFrame = new JDialog(baseFrame);
                 spectrumFrame.setIconImage(getToolBoxImage());
                 spectrumFrame.setTitle("SDSS spectrum for object: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
                 spectrumFrame.add(new JLabel(new ImageIcon(spectrum)));
                 spectrumFrame.setSize(1200, 900);
-                spectrumFrame.setAlwaysOnTop(true);
                 spectrumFrame.setResizable(false);
                 spectrumFrame.setVisible(true);
             }
@@ -5680,13 +5671,12 @@ public class ImageViewerTab {
                 sedPanel.add(chartPanel);
                 sedPanel.add(commandPanel);
 
-                JFrame sedFrame = new JFrame();
+                JDialog sedFrame = new JDialog(baseFrame);
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(sedPanel);
                 sedFrame.setSize(900, 700);
                 sedFrame.setLocation(0, 0);
-                sedFrame.setAlwaysOnTop(true);
                 sedFrame.setResizable(false);
                 sedFrame.setVisible(true);
             });
@@ -5695,26 +5685,24 @@ public class ImageViewerTab {
                 JButton referencesButton = new JButton("Object references");
                 buttonPanel.add(referencesButton);
                 referencesButton.addActionListener((ActionEvent evt) -> {
-                    JFrame referencesFrame = new JFrame();
+                    JDialog referencesFrame = new JDialog(baseFrame);
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Object references");
                     referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
                     referencesFrame.setSize(1200, 800);
                     referencesFrame.setLocation(0, 0);
-                    referencesFrame.setAlwaysOnTop(true);
-                    referencesFrame.setResizable(true);
+                    referencesFrame.setResizable(false);
                     referencesFrame.setVisible(true);
                 });
             }
         }
 
-        JFrame detailsFrame = new JFrame();
+        JDialog detailsFrame = new JDialog(baseFrame);
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
         detailsFrame.setSize(650, 650);
         detailsFrame.setLocation(windowShift, windowShift);
-        detailsFrame.setAlwaysOnTop(true);
         detailsFrame.setResizable(false);
         detailsFrame.setVisible(true);
         windowShift += 10;
