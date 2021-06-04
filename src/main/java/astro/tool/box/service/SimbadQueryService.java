@@ -29,7 +29,7 @@ public class SimbadQueryService {
             scanner.nextLine();
             if (scanner.hasNext()) {
                 String identifiers = removeFirstAndLastCharacter(scanner.nextLine());
-                return Stream.of(identifiers.split("\\|")).map(identifier -> new String[]{identifier}).collect(Collectors.toList());
+                return Stream.of(identifiers.split("\\|")).sorted().map(identifier -> new String[]{identifier}).collect(Collectors.toList());
             }
         }
         return Collections.EMPTY_LIST;

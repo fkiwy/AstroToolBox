@@ -5697,7 +5697,10 @@ public class ImageViewerTab {
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
                     referencesFrame.setIconImage(getToolBoxImage());
-                    referencesFrame.setTitle("Object references and measurements");
+                    referencesFrame.setTitle("Measurements and references for "
+                            + catalogEntry.getSourceId() + " ("
+                            + roundTo7DecNZ(catalogEntry.getRa()) + " "
+                            + roundTo7DecNZ(catalogEntry.getDec()) + ")");
                     referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
                     referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
                     referencesFrame.setLocation(0, 0);
