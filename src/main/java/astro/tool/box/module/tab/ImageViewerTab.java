@@ -4579,7 +4579,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4623,7 +4623,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4675,7 +4675,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4727,7 +4727,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4775,7 +4775,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4810,7 +4810,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(6 * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4857,7 +4857,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -4915,7 +4915,7 @@ public class ImageViewerTab {
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
@@ -5017,7 +5017,7 @@ public class ImageViewerTab {
             imageFrame.setTitle("Time series - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(container);
             imageFrame.setSize(PANEL_WIDTH + 20, PANEL_HEIGHT + 50);
-            imageFrame.setAlwaysOnTop(true);
+            imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
 
             Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
@@ -5273,7 +5273,7 @@ public class ImageViewerTab {
                 spectrumFrame.setTitle("SDSS spectrum for object: " + roundTo2DecNZ(catalogEntry.getRa()) + " " + roundTo2DecNZ(catalogEntry.getDec()));
                 spectrumFrame.add(new JLabel(new ImageIcon(spectrum)));
                 spectrumFrame.setSize(1200, 900);
-                spectrumFrame.setAlwaysOnTop(true);
+                spectrumFrame.setAlwaysOnTop(false);
                 spectrumFrame.setResizable(false);
                 spectrumFrame.setVisible(true);
             }
@@ -5686,7 +5686,7 @@ public class ImageViewerTab {
                 sedFrame.add(sedPanel);
                 sedFrame.setSize(900, 700);
                 sedFrame.setLocation(0, 0);
-                sedFrame.setAlwaysOnTop(true);
+                sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(false);
                 sedFrame.setVisible(true);
             });
@@ -5697,11 +5697,11 @@ public class ImageViewerTab {
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
                     referencesFrame.setIconImage(getToolBoxImage());
-                    referencesFrame.setTitle("Object references");
+                    referencesFrame.setTitle("Object references and measurements");
                     referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
                     referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
                     referencesFrame.setLocation(0, 0);
-                    referencesFrame.setAlwaysOnTop(true);
+                    referencesFrame.setAlwaysOnTop(false);
                     referencesFrame.setResizable(true);
                     referencesFrame.setVisible(true);
                 });
@@ -5714,7 +5714,7 @@ public class ImageViewerTab {
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
         detailsFrame.setSize(650, 650);
         detailsFrame.setLocation(windowShift, windowShift);
-        detailsFrame.setAlwaysOnTop(true);
+        detailsFrame.setAlwaysOnTop(false);
         detailsFrame.setResizable(false);
         detailsFrame.setVisible(true);
         windowShift += 10;
