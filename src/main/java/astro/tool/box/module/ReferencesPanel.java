@@ -1,6 +1,7 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.service.SimbadQueryService;
@@ -11,8 +12,11 @@ import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BoxLayout;
@@ -51,6 +55,9 @@ public class ReferencesPanel extends JPanel {
 
                 JPanel detailsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 container.add(detailsPanel);
+
+                JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                container.add(searchPanel);
 
                 JPanel linksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 container.add(linksPanel);
@@ -161,10 +168,10 @@ public class ReferencesPanel extends JPanel {
                 measurementsPanel2.add(resultPanel);
 
                 // Object identifiers
-                results = simbadQueryService.getObjectIdentifiers(mainIdentifier);
+                List<String[]> identifiers = simbadQueryService.getObjectIdentifiers(mainIdentifier);
 
                 columns = new String[]{"Identifier"};
-                resultPanel = new JScrollPane(createResultTable(results, columns, 0));
+                resultPanel = new JScrollPane(createResultTable(identifiers, columns, 0));
                 resultPanel.setPreferredSize(new Dimension(300, 200));
                 resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Object identifiers")));
 
@@ -184,7 +191,7 @@ public class ReferencesPanel extends JPanel {
                             populateDetailsPanel(Integer.valueOf(bibRef), detailsPanel);
 
                             String bibCode = (String) resultTable.getValueAt(resultTable.getSelectedRow(), 4);
-                            populateLinksPanel(bibCode, linksPanel);
+                            populateLinksPanel(bibCode, linksPanel, identifiers);
 
                             populateCatalogsPanel(bibCode, catalogsPanel);
 
@@ -199,6 +206,21 @@ public class ReferencesPanel extends JPanel {
                 resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Object references")));
 
                 referencesPanel.add(resultPanel);
+
+                // Google search link
+                StringBuilder builder = new StringBuilder();
+                Iterator<String[]> iter = identifiers.iterator();
+                while (iter.hasNext()) {
+                    builder.append("\"").append(iter.next()[0]).append("\"");
+                    if (iter.hasNext()) {
+                        builder.append(" OR ");
+                    }
+                }
+                try {
+                    searchPanel.add(createHyperlink("Search in Google with object identifiers", "http://www.google.com/search?q=" + URLEncoder.encode(builder.toString(), ENCODING)));
+                } catch (UnsupportedEncodingException ex) {
+                    showExceptionDialog(null, ex);
+                }
 
                 referencesFrame.setVisible(true);
             } catch (IOException ex) {
@@ -240,7 +262,7 @@ public class ReferencesPanel extends JPanel {
         }
     }
 
-    private void populateLinksPanel(String bibCode, JPanel linksPanel) {
+    private void populateLinksPanel(String bibCode, JPanel linksPanel, List<String[]> identifiers) {
         linksPanel.removeAll();
         linksPanel.add(new JLabel("Download from"));
         linksPanel.add(createHyperlink("ArXiv", String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/EPRINT_PDF", bibCode)));
@@ -293,7 +315,7 @@ public class ReferencesPanel extends JPanel {
                     if (col == linkColumn - 1) {
                         String bibCode = (String) resultTable.getValueAt(row, col);
                         try {
-                            URI uri = new URI(String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/PUB_PDF", bibCode));
+                            URI uri = new URI(String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/EPRINT_PDF", bibCode));
                             Desktop.getDesktop().browse(uri);
                         } catch (IOException | URISyntaxException ex) {
                             showExceptionDialog(null, ex);

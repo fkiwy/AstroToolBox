@@ -1,11 +1,9 @@
 package astro.tool.box.util;
 
+import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.TapProvider;
-import static astro.tool.box.module.ModuleHelper.writeErrorLog;
-import static astro.tool.box.module.tab.SettingsTab.DEFAULT_TAP_PROVIDER;
-import static astro.tool.box.module.tab.SettingsTab.TAP_PROVIDER;
-import static astro.tool.box.module.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -48,7 +46,7 @@ public class Utils {
 
     public static String encodeQuery(String query) {
         try {
-            return URLEncoder.encode(omitQueryComments(query), "UTF-8");
+            return URLEncoder.encode(omitQueryComments(query), ENCODING);
         } catch (UnsupportedEncodingException ex) {
             writeErrorLog(ex);
             return query;
