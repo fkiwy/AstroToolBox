@@ -252,6 +252,10 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
+    public static String bold(String text) {
+        return html("<b>" + text + "</b>");
+    }
+
     public static String html(String text) {
         return "<html>" + text + "</html>";
     }
