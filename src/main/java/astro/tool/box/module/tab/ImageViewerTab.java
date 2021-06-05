@@ -116,6 +116,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
@@ -5712,6 +5713,7 @@ public class ImageViewerTab {
         }
 
         JFrame detailsFrame = new JFrame();
+        detailsFrame.addWindowListener(getChildWindowAdapter());
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
@@ -5721,6 +5723,20 @@ public class ImageViewerTab {
         detailsFrame.setResizable(false);
         detailsFrame.setVisible(true);
         windowShift += 10;
+    }
+
+    private WindowAdapter getChildWindowAdapter() {
+        return new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowOpened(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(false);
+            }
+        };
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
@@ -6009,11 +6025,13 @@ public class ImageViewerTab {
         LogAxis xAxis = new LogAxis("Wavelength (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
+        xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
         plot.setDomainAxis(xAxis);
 
         LogAxis yAxis = new LogAxis("νF(ν) (W/m^2)");
         yAxis.setAutoRangeMinimumSize(1E-18);
-        yAxis.setTickUnit(new NumberTickUnit(0.5));
+        yAxis.setTickUnit(new NumberTickUnit(1));
+        yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
         plot.setRangeAxis(yAxis);
 
         Font chartFont = new Font("Tahoma", Font.PLAIN, 12);

@@ -64,6 +64,7 @@ public class Application {
         baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
         baseFrame.setSize(new Dimension(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
+        baseFrame.setAlwaysOnTop(false);
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         baseFrame.add(tabbedPane);

@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class ComoversSearch {
 
-    //@Ignore
+    @Ignore
     @Test
     public void noirlabComovers() throws Exception {
         int totalRead = 0;
@@ -200,13 +200,13 @@ public class ComoversSearch {
         System.out.println("totalWritten=" + totalWritten);
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void classifier() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers//CW2020 BYW Classifier Part 1.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/CW2020 BYW Classifier Part 1.csv"))) {
             String headerLine = fileScanner.nextLine();
             results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
@@ -228,13 +228,13 @@ public class ComoversSearch {
                 double pmra = toDouble(values[columns.get("PMRA")]) * 1000;
                 double pmdec = toDouble(values[columns.get("PMDec")]) * 1000;
 
-                String comoverQuery = createComoverWdQuery();
+                String comoverQuery = createNoirlabComoverQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
                 comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
                 comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
-                String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
-                String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
+                String queryUrl = NOAO_TAP_URL + encodeQuery(comoverQuery);
+                String response = readResponse(establishHttpConnection(queryUrl), "NSC DR2");
 
                 try (Scanner responseScanner = new Scanner(response)) {
                     responseScanner.nextLine();
@@ -242,7 +242,7 @@ public class ComoversSearch {
                         String resultLine = responseScanner.nextLine();
                         String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
                         double resultRa = toDouble(resultValues[1]);
-                        double resultDec = toDouble(resultValues[2]);
+                        double resultDec = toDouble(resultValues[3]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
                         if (distance > 1) {
                             results.append(bodyLine).append(LINE_SEP);
@@ -252,7 +252,7 @@ public class ComoversSearch {
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results WD part 1.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results CW2020 BYW Classifier Part 1.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }

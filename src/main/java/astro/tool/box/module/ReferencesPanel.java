@@ -16,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BoxLayout;
@@ -207,17 +206,12 @@ public class ReferencesPanel extends JPanel {
 
                 referencesPanel.add(resultPanel);
 
-                // Google search link
-                StringBuilder builder = new StringBuilder();
-                Iterator<String[]> iter = identifiers.iterator();
-                while (iter.hasNext()) {
-                    builder.append("\"").append(iter.next()[0]).append("\"");
-                    if (iter.hasNext()) {
-                        builder.append(" OR ");
-                    }
-                }
+                // Google search links
+                searchPanel.add(new JLabel("Google search with object identifiers:"));
                 try {
-                    searchPanel.add(createHyperlink("Search in Google with object identifiers", "http://www.google.com/search?q=" + URLEncoder.encode(builder.toString(), ENCODING)));
+                    for (String[] identifier : identifiers) {
+                        searchPanel.add(createHyperlink(identifier[0], "http://www.google.com/search?q=" + URLEncoder.encode("\"" + identifier[0] + "\"", ENCODING)));
+                    }
                 } catch (UnsupportedEncodingException ex) {
                     showExceptionDialog(null, ex);
                 }
