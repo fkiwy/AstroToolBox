@@ -291,7 +291,8 @@ public class PhotometricClassifierTab {
                 String colorValue = roundTo3DecNZ(entry.getColorValue());
                 String matchedColor = colorKey + "=" + colorValue;
                 String spectralType = entry.getSpt();
-                addOccurrence(matchedColor + colorValue, spectralType.replace("V", ""), sptOccurrences);
+                spectralType = spectralType.replace("V", "");
+                addOccurrence(colorKey + colorValue + spectralType, spectralType, sptOccurrences);
                 spectralType += ": " + matchedColor + "; ";
                 spectralTypes.add(spectralType);
             });
