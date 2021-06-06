@@ -4,7 +4,6 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
@@ -100,6 +99,7 @@ public class InfoSheet {
     }
 
     public Boolean create(JFrame baseFrame) {
+        imageViewerTab.setWaitCursor(false);
         JTextField coordsField = imageViewerTab.getCoordsField();
         ActionListener actionListener = coordsField.getActionListeners()[0];
         coordsField.removeActionListener(actionListener);
@@ -111,7 +111,6 @@ public class InfoSheet {
         sizeField.setText(String.valueOf(size));
         sizeField.addActionListener(actionListener);
         try {
-            imageViewerTab.setWaitCursor(false);
             imageViewerTab.getZoomSlider().setValue(250);
             imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
 

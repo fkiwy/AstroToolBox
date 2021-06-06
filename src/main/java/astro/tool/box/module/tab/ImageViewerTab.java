@@ -98,6 +98,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -1797,10 +1798,7 @@ public class ImageViewerTab {
                     if (!hideMagnifier.isSelected()) {
                         rightPanel.removeAll();
                         rightPanel.repaint();
-                        rightPanel.add(new JLabel("WISE"));
-                        BufferedImage magnifiedWiseImage = wiseImage.getSubimage(upperLeftX, upperLeftY, width, height);
-                        magnifiedWiseImage = zoom(magnifiedWiseImage, 200);
-                        rightPanel.add(new JLabel(new ImageIcon(magnifiedWiseImage)));
+                        addMagnifiedImage("WISE", wiseImage, upperLeftX, upperLeftY, width, height);
                     }
 
                     // Display DECaLS images
@@ -1808,10 +1806,7 @@ public class ImageViewerTab {
                     if (processedDecalsImage != null) {
                         // Create and display magnified DECaLS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
-                            rightPanel.add(new JLabel("DECaLS"));
-                            BufferedImage magnifiedDecalsImage = processedDecalsImage.getSubimage(upperLeftX, upperLeftY, width, height);
-                            magnifiedDecalsImage = zoom(magnifiedDecalsImage, 200);
-                            rightPanel.add(new JLabel(new ImageIcon(magnifiedDecalsImage)));
+                            addMagnifiedImage("DECaLS", processedDecalsImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular DECaLS image
@@ -1826,10 +1821,7 @@ public class ImageViewerTab {
                     if (processedPs1Image != null) {
                         // Create and display magnified Pan-STARRS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
-                            rightPanel.add(new JLabel("Pan-STARRS"));
-                            BufferedImage magnifiedPs1Image = processedPs1Image.getSubimage(upperLeftX, upperLeftY, width, height);
-                            magnifiedPs1Image = zoom(magnifiedPs1Image, 200);
-                            rightPanel.add(new JLabel(new ImageIcon(magnifiedPs1Image)));
+                            addMagnifiedImage("Pan-STARRS", processedPs1Image, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular Pan-STARRS image
@@ -1843,10 +1835,7 @@ public class ImageViewerTab {
                     if (processedSdssImage != null) {
                         // Create and display magnified SDSS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
-                            rightPanel.add(new JLabel("SDSS"));
-                            BufferedImage magnifiedSdssImage = processedSdssImage.getSubimage(upperLeftX, upperLeftY, width, height);
-                            magnifiedSdssImage = zoom(magnifiedSdssImage, 200);
-                            rightPanel.add(new JLabel(new ImageIcon(magnifiedSdssImage)));
+                            addMagnifiedImage("SDSS", processedSdssImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular SDSS image
@@ -1860,10 +1849,7 @@ public class ImageViewerTab {
                     if (processedDssImage != null) {
                         // Create and display magnified DSS image
                         if (!hideMagnifier.isSelected() && !imageCutOff) {
-                            rightPanel.add(new JLabel("DSS"));
-                            BufferedImage magnifiedDssImage = processedDssImage.getSubimage(upperLeftX, upperLeftY, width, height);
-                            magnifiedDssImage = zoom(magnifiedDssImage, 200);
-                            rightPanel.add(new JLabel(new ImageIcon(magnifiedDssImage)));
+                            addMagnifiedImage("DSS", processedDssImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular DSS image
@@ -2400,6 +2386,17 @@ public class ImageViewerTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
+        }
+    }
+
+    private void addMagnifiedImage(String imageLabel, BufferedImage image, int upperLeftX, int upperLeftY, int width, int height) {
+        try {
+            rightPanel.add(new JLabel(imageLabel));
+            BufferedImage magnifiedDecalsImage = image.getSubimage(upperLeftX, upperLeftY, width, height);
+            magnifiedDecalsImage = zoom(magnifiedDecalsImage, 200);
+            rightPanel.add(new JLabel(new ImageIcon(magnifiedDecalsImage)));
+        } catch (RasterFormatException ex) {
+            writeErrorLog(ex);
         }
     }
 
@@ -5682,6 +5679,7 @@ public class ImageViewerTab {
                 sedPanel.add(commandPanel);
 
                 JFrame sedFrame = new JFrame();
+                sedFrame.addWindowListener(getChildWindowAdapter());
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(sedPanel);
@@ -5697,6 +5695,7 @@ public class ImageViewerTab {
                 buttonPanel.add(referencesButton);
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
+                    referencesFrame.addWindowListener(getChildWindowAdapter());
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Measurements and references for "
                             + catalogEntry.getSourceId() + " ("
@@ -5733,7 +5732,38 @@ public class ImageViewerTab {
             }
 
             @Override
+            public void windowDeactivated(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+                baseFrame.toFront();
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
             public void windowOpened(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
                 baseFrame.setFocusableWindowState(false);
             }
         };
