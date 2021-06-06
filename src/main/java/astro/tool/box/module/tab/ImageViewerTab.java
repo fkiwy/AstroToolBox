@@ -849,6 +849,8 @@ public class ImageViewerTab {
                     blurImages.setSelected(true);
                     invertColors.setSelected(true);
                     sensitivitySlider.setValue(70);
+                } else {
+                    sensitivitySlider.setValue(100);
                 }
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
                 setSubContrast(SUB_CONTRAST);
