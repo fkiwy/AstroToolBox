@@ -7,8 +7,6 @@ import java.util.Map;
 
 public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
 
-    public static final int NUMBER_OF_COLUMNS = 34;
-
     // Effective temperature
     private final int teff;
 

@@ -105,11 +105,11 @@ public class BatchResult {
     }
 
     public String[] getColumnValues() {
-        return getValues().split(",", 14);
+        return getValues().split(",", -1);
     }
 
     public String[] getColumnTitles() {
-        return getTitles().split(",", 14);
+        return getTitles().split(",", -1);
     }
 
     public String getValues() {

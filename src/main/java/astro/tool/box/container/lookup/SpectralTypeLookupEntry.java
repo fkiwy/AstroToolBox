@@ -7,8 +7,6 @@ import java.util.Map;
 
 public class SpectralTypeLookupEntry implements MainSequenceLookup {
 
-    public static final int NUMBER_OF_COLUMNS = 31;
-
     // Spectral type
     private final String spt;
 

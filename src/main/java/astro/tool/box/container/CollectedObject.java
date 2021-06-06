@@ -61,11 +61,11 @@ public class CollectedObject {
     }
 
     public String[] getColumnValues() {
-        return getValues().split(",", 11);
+        return getValues().split(",", -1);
     }
 
     public String[] getColumnTitles() {
-        return getTitles().split(",", 11);
+        return getTitles().split(",", -1);
     }
 
     public String getValues() {

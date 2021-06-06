@@ -476,14 +476,14 @@ public class ImageViewerTab {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             mainSequenceSpectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
@@ -5173,7 +5173,7 @@ public class ImageViewerTab {
                 return null;
             }
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                String[] columnValues = scanner.nextLine().split(",", -1);
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
@@ -6081,11 +6081,11 @@ public class ImageViewerTab {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
             String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap()) + ","
                     + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun());
-            spectralTypes.add(spectralType.split(",", 7));
+            spectralTypes.add(spectralType.split(",", -1));
         });
 
         String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
-        String[] columns = titles.split(",", 7);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
         alignResultColumns(spectralTypeTable, spectralTypes);
@@ -6113,11 +6113,11 @@ public class ImageViewerTab {
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
             String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-            spectralTypes.add(spectralType.split(",", 4));
+            spectralTypes.add(spectralType.split(",", -1));
         });
 
         String titles = "spt,matched color,nearest color,offset";
-        String[] columns = titles.split(",", 4);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
         alignResultColumns(spectralTypeTable, spectralTypes);

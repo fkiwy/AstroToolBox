@@ -195,13 +195,13 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(w1_w2_vg);
-        return columnValues.split(",", 13);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W2 (mag),qual. fact. W1,qual. fact. W2,coadd flags W1,coadd flags W2,info flags W1,info flags W2,W1-W2";
-        return columnTitles.split(",", 13);
+        return columnTitles.split(",", -1);
     }
 
     @Override

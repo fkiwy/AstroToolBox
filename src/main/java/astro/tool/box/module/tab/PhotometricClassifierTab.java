@@ -102,14 +102,14 @@ public class PhotometricClassifierTab {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             mainSequenceLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             brownDwarfsLookupService = new SpectralTypeLookupService(entries);
         }
@@ -401,7 +401,7 @@ public class PhotometricClassifierTab {
         });
 
         String titles = "occurrences,spectral type";
-        String[] columns = titles.split(",", 2);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(occurrences.toArray(rows), columns);
         JTable resultTable = new JTable(defaultTableModel);

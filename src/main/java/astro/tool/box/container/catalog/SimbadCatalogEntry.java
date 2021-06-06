@@ -253,13 +253,13 @@ public class SimbadCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + objectType + "," + spectralType + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo1Dec(radvel) + "," + roundTo6Dec(redshift) + "," + rvtype + "," + roundTo3Dec(Umag) + "," + roundTo3Dec(Bmag) + "," + roundTo3Dec(Vmag) + "," + roundTo3Dec(Rmag) + "," + roundTo3Dec(Imag) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(getB_V()) + "," + roundTo3Dec(getU_B()) + "," + roundTo3Dec(getV_R()) + "," + roundTo3Dec(getV_I()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return columnValues.split(",", 38);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,object type,spectral type,ra,dec,plx (mas),plx err,pmra (mas/yr),pmdec (mas/yr),rad vel (km/s),redshift,rv type,U (mag),B (mag),V (mag),R (mag),I (mag),G (mag),J (mag),H (mag),K (mag),u (mag),g (mag),r (mag),i (mag),z (mag),B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
-        return columnTitles.split(",", 38);
+        return columnTitles.split(",", -1);
     }
 
     @Override

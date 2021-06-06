@@ -236,13 +236,13 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return columnValues.split(",", 33);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,WD id,plx (mas),pmra (mas/yr),pmdec (mas/yr),G (mag),BP (mag),RP (mag),u (mag),g (mag),r (mag),i (mag),z (mag),teff H (K),teff He (K),logg H,logg He,mass H (Msun),mass He (Msun),SDSS id,probability of being a WD,dist (1/plx),tpm (mas/yr),Absolute G (mag),G-RP,BP-RP,u-g,g-r,r-i,i-z";
-        return columnTitles.split(",", 33);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -276,8 +276,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
+        colors.put(Color.M_RP, getAbsoluteRPmag());
+        colors.put(Color.M_BP, getAbsoluteBPmag());
         colors.put(Color.G_RP, getG_RP());
         colors.put(Color.BP_RP, getBP_RP());
+        colors.put(Color.BP_G, getBP_G());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
@@ -435,6 +438,14 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
+    public double getAbsoluteRPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(RPmag, plx);
+    }
+
+    public double getAbsoluteBPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
+    }
+
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
@@ -452,6 +463,14 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return BPmag - RPmag;
+        }
+    }
+
+    public double getBP_G() {
+        if (BPmag == 0 || Gmag == 0) {
+            return 0;
+        } else {
+            return BPmag - Gmag;
         }
     }
 

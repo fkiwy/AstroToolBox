@@ -60,7 +60,7 @@ public class ComoversSearch {
                     responseScanner.nextLine();
                     while (responseScanner.hasNextLine()) {
                         String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        String[] resultValues = resultLine.split(",", -1);
                         double resultRa = toDouble(resultValues[1]);
                         double resultDec = toDouble(resultValues[3]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
@@ -120,7 +120,7 @@ public class ComoversSearch {
                     responseScanner.nextLine();
                     while (responseScanner.hasNextLine()) {
                         String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        String[] resultValues = resultLine.split(",", -1);
                         double resultRa = toDouble(resultValues[1]);
                         double resultDec = toDouble(resultValues[2]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
@@ -180,7 +180,7 @@ public class ComoversSearch {
                     responseScanner.nextLine();
                     while (responseScanner.hasNextLine()) {
                         String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        String[] resultValues = resultLine.split(",", -1);
                         double resultRa = toDouble(resultValues[1]);
                         double resultDec = toDouble(resultValues[2]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
@@ -240,7 +240,7 @@ public class ComoversSearch {
                     responseScanner.nextLine();
                     while (responseScanner.hasNextLine()) {
                         String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        String[] resultValues = resultLine.split(",", -1);
                         double resultRa = toDouble(resultValues[1]);
                         double resultDec = toDouble(resultValues[3]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
@@ -305,7 +305,7 @@ public class ComoversSearch {
                     responseScanner.nextLine();
                     while (responseScanner.hasNextLine()) {
                         String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(SPLIT_CHAR, -1);
+                        String[] resultValues = resultLine.split(",", -1);
                         double resultRa = toDouble(resultValues[1]);
                         double resultDec = toDouble(resultValues[2]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);

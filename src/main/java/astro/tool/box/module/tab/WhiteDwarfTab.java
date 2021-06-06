@@ -57,14 +57,14 @@ public class WhiteDwarfTab {
         input = getClass().getResourceAsStream("/WhiteDwarfPureHLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, WhiteDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                return new WhiteDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             whiteDwarfPureHLookupService = new EffectiveTemperatureLookupService(entries);
         }
         input = getClass().getResourceAsStream("/WhiteDwarfPureHeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new WhiteDwarfLookupEntry(line.split(SPLIT_CHAR, WhiteDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                return new WhiteDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             whiteDwarfPureHeLookupService = new EffectiveTemperatureLookupService(entries);
         }
@@ -141,11 +141,11 @@ public class WhiteDwarfTab {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
             String resultValues = entry.getTeff() + "," + roundTo3Dec(entry.getMsun()) + "," + roundTo1Dec(entry.getLogG()) + "," + entry.getAge() + ","
                     + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-            resultRows.add(resultValues.split(",", 7));
+            resultRows.add(resultValues.split(",", -1));
         });
 
         String titles = "teff,mass (Msun),logg,age,matched color,nearest color,offset";
-        String[] columns = titles.split(",", 7);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(resultRows.toArray(rows), columns);
         JTable resultTable = new JTable(defaultTableModel);

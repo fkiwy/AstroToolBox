@@ -273,12 +273,12 @@ public class ObjectCollectionTab {
             for (int i = 1; i < columnCount; i++) {
                 valuesToAppend += ",";
             }
-            String[] newValues = valuesToAppend.split(SPLIT_CHAR, columnCount);
+            String[] newValues = valuesToAppend.split(",", -1);
 
             int rowNumber = 0;
             List<String[]> rows = new ArrayList<>();
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, columnNames.length);
+                String[] columnValues = scanner.nextLine().split(",", -1);
                 String[] values = concatArrays(new String[]{String.valueOf(++rowNumber)}, columnValues);
                 if (columnCount > 0) {
                     values = concatArrays(values, newValues);

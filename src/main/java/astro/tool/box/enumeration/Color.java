@@ -3,8 +3,11 @@ package astro.tool.box.enumeration;
 public enum Color {
 
     M_G("M_G"),
+    M_RP("M_RP"),
+    M_BP("M_BP"),
     G_RP("G-RP"),
     BP_RP("BP-RP"),
+    BP_G("BP-G"),
     U_B("U-B"),
     B_V("B-V"),
     V_R("V-R"),

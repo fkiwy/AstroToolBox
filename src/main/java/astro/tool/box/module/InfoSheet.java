@@ -86,14 +86,14 @@ public class InfoSheet {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             mainSequenceLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             brownDwarfsLookupService = new SpectralTypeLookupService(entries);
         }
@@ -402,7 +402,7 @@ public class InfoSheet {
             document.add(table);
 
             document.add(new Paragraph("(**) Uses colors from: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses colors from: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data and the thin disk scale height of early L types (A. Carnero Rosell)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses colors from: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data (A. Carnero Rosell) / Exploring the Age-dependent Properties of M and L Dwarfs Using Gaia and SDSS (R. Kiman)", SMALL_FONT));
 
             document.close();
 

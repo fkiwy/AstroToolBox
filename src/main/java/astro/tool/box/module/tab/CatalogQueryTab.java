@@ -111,7 +111,7 @@ public class CatalogQueryTab {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
@@ -464,11 +464,11 @@ public class CatalogQueryTab {
                 String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
                 String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap()) + ","
                         + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun());
-                spectralTypes.add(spectralType.split(",", 7));
+                spectralTypes.add(spectralType.split(",", -1));
             });
 
             String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
-            String[] columns = titles.split(",", 7);
+            String[] columns = titles.split(",", -1);
             Object[][] rows = new Object[][]{};
             JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
             alignResultColumns(spectralTypeTable, spectralTypes);

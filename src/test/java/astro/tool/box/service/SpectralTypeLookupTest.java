@@ -27,7 +27,7 @@ public class SpectralTypeLookupTest {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }

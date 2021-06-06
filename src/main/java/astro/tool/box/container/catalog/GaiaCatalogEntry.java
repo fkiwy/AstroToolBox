@@ -265,13 +265,13 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteD
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo2Dec(teff) + "," + roundTo2Dec(radsun) + "," + roundTo3Dec(lumsun) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
-        return columnValues.split(",", 26);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,rad vel (km/s),rad vel err,teff (K),radius (Rsun),luminosity (Lsun),dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
-        return columnTitles.split(",", 26);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -290,8 +290,11 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteD
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
-        colors.put(Color.BP_RP, BP_RP);
+        colors.put(Color.M_RP, getAbsoluteRPmag());
+        colors.put(Color.M_BP, getAbsoluteBPmag());
         colors.put(Color.G_RP, G_RP);
+        colors.put(Color.BP_RP, BP_RP);
+        colors.put(Color.BP_G, BP_G);
         return colors;
     }
 
@@ -436,6 +439,14 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteD
 
     public double getTotalVelocity() {
         return calculateTotalVelocity(radvel, getTansverseVelocity());
+    }
+
+    public double getAbsoluteRPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(RPmag, plx);
+    }
+
+    public double getAbsoluteBPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
     }
 
     @Override

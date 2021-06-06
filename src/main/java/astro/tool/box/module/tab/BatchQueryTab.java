@@ -330,7 +330,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                        return new SpectralTypeLookupEntry(line.split(",", -1));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -339,7 +339,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                        return new BrownDwarfLookupEntry(line.split(",", -1));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -369,7 +369,7 @@ public class BatchQueryTab {
                     isProcessing = false;
                     return future;
                 }
-                columns = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                columns = scanner.nextLine().split(",", -1);
                 String raValue = columns[raColumnIndex];
                 String decValue = columns[decColumnIndex];
                 if (!isNumeric(raValue) || !isNumeric(decValue)) {

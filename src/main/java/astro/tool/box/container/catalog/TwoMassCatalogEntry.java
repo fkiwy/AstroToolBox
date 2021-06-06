@@ -315,13 +315,13 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + xdate + "," + ph_qual + "," + rd_flg + "," + bl_flg + "," + cc_flg + "," + gal_contam + "," + mp_flg + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return columnValues.split(",", 20);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,observation date,ph. qual.,read flag,blend flag,cc flags,ext. flag,minor planet flag,J (mag),J err,H (mag),H err,K (mag),K err,J-H,H-K,J-K";
-        return columnTitles.split(",", 20);
+        return columnTitles.split(",", -1);
     }
 
     @Override

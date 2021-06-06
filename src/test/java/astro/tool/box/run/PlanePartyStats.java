@@ -143,7 +143,7 @@ public class PlanePartyStats {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, SpectralTypeLookupEntry.NUMBER_OF_COLUMNS));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
@@ -155,7 +155,7 @@ public class PlanePartyStats {
             results.append(line).append(",dist,tpm,vtan,spt").append(LINE_SEP);
             while (scanner.hasNextLine()) {
                 line = scanner.nextLine();
-                String[] values = line.split(SPLIT_CHAR, 22);
+                String[] values = line.split(",", -1);
                 double ra = toDouble(values[5]);
                 double dec = toDouble(values[6]);
                 if (ra == 0 && dec == 0) {

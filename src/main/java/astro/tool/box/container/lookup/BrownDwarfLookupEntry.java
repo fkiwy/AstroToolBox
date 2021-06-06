@@ -8,8 +8,6 @@ import java.util.Map;
 
 public class BrownDwarfLookupEntry implements MainSequenceLookup {
 
-    public static final int NUMBER_OF_COLUMNS = 36;
-
     // Spectral type
     private final String spt;
 
@@ -50,7 +48,12 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.z_Y_DES, toDouble(values[28]));
         colors.put(Color.i_z, toDouble(values[30]));
         colors.put(Color.z_Y, toDouble(values[31]));
-        colors.put(Color.M_G, toDouble(values[33]));
+        colors.put(Color.G_RP, toDouble(values[33]));
+        colors.put(Color.BP_RP, toDouble(values[34]));
+        colors.put(Color.BP_G, toDouble(values[35]));
+        colors.put(Color.M_G, toDouble(values[36]));
+        colors.put(Color.M_RP, toDouble(values[37]));
+        colors.put(Color.M_BP, toDouble(values[38]));
     }
 
     @Override

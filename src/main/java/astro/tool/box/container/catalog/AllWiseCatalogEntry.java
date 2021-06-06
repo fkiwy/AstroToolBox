@@ -353,13 +353,13 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err) + "," + roundTo3Dec(W3mag) + "," + roundTo3Dec(W3_err) + "," + roundTo3Dec(W4mag) + "," + roundTo3Dec(W4_err) + "," + roundTo1Dec(W1_snr) + "," + roundTo1Dec(W2_snr) + "," + roundTo1Dec(W3_snr) + "," + roundTo1Dec(W4_snr) + "," + roundTo0Dec(pmra) + "," + roundTo0Dec(pmra_err) + "," + roundTo0Dec(pmdec) + "," + roundTo0Dec(pmdec_err) + "," + cc_flags + "," + ext_flg + "," + var_flg + "," + ph_qual + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getW1_W2()) + "," + roundTo3Dec(getW2_W3()) + "," + roundTo3Dec(getJ_W2()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return columnValues.split(",", 36);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W1 err,W2 (mag),W2 err,W3 (mag),W3 err,W4 (mag),W4 err,W1 snr,W2 snr,W3 snr,W4 snr,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,cc flags,ext. flag,var. flag,ph. qual.,J (mag),J err,H (mag),H err,K (mag),K err,W1-W2,W2-W3,J-W2,J-H,H-K,J-K";
-        return columnTitles.split(",", 36);
+        return columnTitles.split(",", -1);
     }
 
     @Override

@@ -324,13 +324,13 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo2DecNZ(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + ndet + "," + roundTo3Dec(delta_mjd) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
-        return columnValues.split(",", 34);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,detections,delta mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
-        return columnTitles.split(",", 34);
+        return columnTitles.split(",", -1);
     }
 
     @Override

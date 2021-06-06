@@ -68,7 +68,7 @@ public class BrownDwarfTab {
         InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, BrownDwarfLookupEntry.NUMBER_OF_COLUMNS));
+                return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
@@ -177,11 +177,11 @@ public class BrownDwarfTab {
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
             String resultValues = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-            resultRows.add(resultValues.split(",", 4));
+            resultRows.add(resultValues.split(",", -1));
         });
 
         String titles = "spt,matched color,nearest color,offset";
-        String[] columns = titles.split(",", 4);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         JTable resultTable = new JTable(resultRows.toArray(rows), columns);
         alignResultColumns(resultTable, resultRows);
@@ -231,11 +231,11 @@ public class BrownDwarfTab {
         results.forEach(entry -> {
             String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
             String resutValues = roundTo3Dec(entry.getDistance()) + "," + matchedBand;
-            resultRows.add(resutValues.split(",", 2));
+            resultRows.add(resutValues.split(",", -1));
         });
 
         String titles = "distance (pc),matched bands";
-        String[] columns = titles.split(",", 2);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         JTable resultTable = new JTable(resultRows.toArray(rows), columns);
         alignResultColumns(resultTable, resultRows);

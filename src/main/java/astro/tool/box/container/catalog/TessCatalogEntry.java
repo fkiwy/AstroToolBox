@@ -474,7 +474,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
                 + roundTo3Dec(getParallacticDistance()) + ","
                 + roundTo3Dec(getTotalProperMotion()) + ","
                 + roundTo3Dec(getAbsoluteGmag());
-        return columnValues.split(",", 72);
+        return columnValues.split(",", -1);
     }
 
     @Override
@@ -551,7 +551,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
                 + "dist (1/plx),"
                 + "tpm (mas/yr),"
                 + "Absolute G (mag)";
-        return columnTitles.split(",", 72);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -606,8 +606,11 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
+        colors.put(Color.M_RP, getAbsoluteRPmag());
+        colors.put(Color.M_BP, getAbsoluteBPmag());
         colors.put(Color.G_RP, getG_RP());
         colors.put(Color.BP_RP, getBP_RP());
+        colors.put(Color.BP_G, getBP_G());
         colors.put(Color.B_V, getB_V());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
@@ -800,6 +803,14 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
+    public double getAbsoluteRPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(RPmag, plx);
+    }
+
+    public double getAbsoluteBPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
+    }
+
     @Override
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
@@ -819,6 +830,14 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
             return 0;
         } else {
             return BPmag - RPmag;
+        }
+    }
+
+    public double getBP_G() {
+        if (BPmag == 0 || Gmag == 0) {
+            return 0;
+        } else {
+            return BPmag - Gmag;
         }
     }
 
