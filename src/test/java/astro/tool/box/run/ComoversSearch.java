@@ -20,13 +20,13 @@ import org.junit.Test;
 
 public class ComoversSearch {
 
-    @Ignore
+    //@Ignore
     @Test
     public void noirlabComovers() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2Z.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Mdwarfs Part 1.csv"))) {
             String headerLine = fileScanner.nextLine();
             results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
@@ -72,7 +72,7 @@ public class ComoversSearch {
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results NSC DR2 Z.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results Mdwarfs Part 1.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
@@ -200,7 +200,7 @@ public class ComoversSearch {
         System.out.println("totalWritten=" + totalWritten);
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void classifier() throws Exception {
         int totalRead = 0;

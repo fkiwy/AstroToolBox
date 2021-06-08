@@ -473,14 +473,13 @@ public class ModuleHelper {
                     if (type == null) {
                         type = BasicDataType.NONE;
                     }
+                    if (type.equals(BasicDataType.ALPHA_NUMERIC)) {
+                        continue;
+                    }
                     if (isNumeric(columnValue)) {
-                        if (!type.equals(BasicDataType.ALPHA_NUMERIC)) {
-                            type = BasicDataType.NUMERIC;
-                        }
+                        type = BasicDataType.NUMERIC;
                     } else {
-                        if (type.equals(BasicDataType.NUMERIC)) {
-                            type = BasicDataType.ALPHA_NUMERIC;
-                        }
+                        type = BasicDataType.ALPHA_NUMERIC;
                     }
                     types.put(i, type);
                 }
