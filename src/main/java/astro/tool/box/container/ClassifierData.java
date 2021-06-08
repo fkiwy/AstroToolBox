@@ -10,17 +10,23 @@ public class ClassifierData {
 
     private final String spectralType;
 
+    private final String referenceColor;
+
+    private final String sourceId;
+
     private Double sptNum;
 
-    public ClassifierData(String spectralType) {
-        this("", "", "", spectralType);
+    public ClassifierData(String spectralType, String sourceId) {
+        this("", "", "", spectralType, "", sourceId);
     }
 
-    public ClassifierData(String catalog, String colorKey, String colorValue, String spectralType) {
+    public ClassifierData(String catalog, String colorKey, String colorValue, String spectralType, String referenceColor, String sourceId) {
         this.catalog = catalog;
         this.colorKey = colorKey;
         this.colorValue = colorValue;
         this.spectralType = spectralType;
+        this.referenceColor = referenceColor;
+        this.sourceId = sourceId;
     }
 
     public String getCatalog() {
@@ -37,6 +43,14 @@ public class ClassifierData {
 
     public String getSpectralType() {
         return spectralType;
+    }
+
+    public String getReferenceColor() {
+        return referenceColor;
+    }
+
+    public String getSourceId() {
+        return sourceId;
     }
 
     public Double getSptNum() {
