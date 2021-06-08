@@ -457,7 +457,7 @@ public class PhotometricClassifierTab {
             });
         });
 
-        String titles = "catalog,spectral type,color,value, reference color, source id";
+        String titles = "catalog,spectral type,color,value, reference value, source id";
         String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(occurrences.toArray(rows), columns);
