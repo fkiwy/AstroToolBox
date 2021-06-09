@@ -298,8 +298,8 @@ public class PhotometricClassifierTab {
             List<String> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
                 String colorKey = entry.getColorKey().val;
-                String colorValue = roundTo3DecNZ(entry.getColorValue());
-                String nearest = roundTo3DecNZ(entry.getNearest());
+                String colorValue = roundTo3Dec(entry.getColorValue());
+                String nearest = roundTo3Dec(entry.getNearest());
                 String matchedColor = colorKey + "=" + colorValue;
                 String spectralType = entry.getSpt();
                 spectralType = spectralType.replace("V", "");
