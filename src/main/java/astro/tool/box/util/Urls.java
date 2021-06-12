@@ -22,7 +22,7 @@ public class Urls {
         if (zoom < 2) {
             zoom = 2;
         }
-        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&band=3&speed=300&trimbright=98&linear=1&color=gray&mode=percent&coadd_mode=pre-post&zoom=" + zoom + "&border=0";
+        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&band=3&speed=200&trimbright=98&linear=1&color=gray&mode=percent&coadd_mode=window-1.0-year&zoom=" + zoom + "&border=0";
     }
 
     // FoV in degrees
