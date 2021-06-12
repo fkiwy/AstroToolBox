@@ -64,7 +64,7 @@ public class ComoversSearch {
                             double resultRa = toDouble(resultValues[1]);
                             double resultDec = toDouble(resultValues[2]);
                             double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
-                            if (distance > 1) {
+                            if (distance > 5) {
                                 results.append(bodyLine).append(LINE_SEP);
                                 totalWritten++;
                             }
@@ -420,7 +420,7 @@ public class ComoversSearch {
         addRow(query, "       ccf,");
         addRow(query, "       abf");
         addRow(query, "FROM   \"II/365/catwise\"");
-        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', [RA], [DE], 0.002777778))"); // 10 arcsec
+        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', [RA], [DE], 2 * 0.002777778))"); // 10 arcsec
         addRow(query, "AND   (pmRA  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
         addRow(query, "AND    pmDE BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
         return query.toString();

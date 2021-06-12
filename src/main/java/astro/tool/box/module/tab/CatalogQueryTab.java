@@ -364,7 +364,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(17, 2));
-        linkPanel.setPreferredSize(new Dimension(250, BOTTOM_PANEL_HEIGHT));
+        linkPanel.setPreferredSize(new Dimension(275, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(Color.LIGHT_GRAY, 3), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -405,8 +405,6 @@ public class CatalogQueryTab {
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel("Databases:"));
-        linkPanel.add(createHyperlink("IRSA Data Discovery", getDataDiscoveryUrl()));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("VizieR", getVizierUrl(degRA, degDE, degRadius)));
@@ -419,12 +417,17 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("CatWISE2020", getSpecificCatalogsUrl("II/365/catwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("unWISE", getSpecificCatalogsUrl("II/363/unwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia Distances", getSpecificCatalogsUrl("I/352/gedr3dis", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("VHS DR5", getSpecificCatalogsUrl("II/367/vhs_dr5", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia distances", getSpecificCatalogsUrl("I/352/gedr3dis", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia quasars & galaxies", getSpecificCatalogsUrl("VII/285/gdr2ext", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia Teff regression", getSpecificCatalogsUrl("J/AJ/158/93/table2", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia WD candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
+        
+        
+        
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
