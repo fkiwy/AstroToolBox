@@ -35,6 +35,9 @@ public class LookupResult {
     // Gap to nearest color
     private final double gap;
 
+    // Numeric spectral type
+    private Double sptNum;
+
     public LookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun, double logG, String age, double nearest, double gap) {
         this.colorKey = colorKey;
         this.colorValue = colorValue;
@@ -161,6 +164,14 @@ public class LookupResult {
 
     public double getGap() {
         return gap;
+    }
+
+    public Double getSptNum() {
+        return sptNum;
+    }
+
+    public void setSptNum(Double sptNum) {
+        this.sptNum = sptNum;
     }
 
 }
