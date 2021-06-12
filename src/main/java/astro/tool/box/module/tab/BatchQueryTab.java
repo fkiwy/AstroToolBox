@@ -280,7 +280,7 @@ public class BatchQueryTab {
                 bottomRow.add(catalog);
             }
 
-            echoPanel.add(new JLabel("Echo:"));
+            echoPanel.add(new JLabel("Status:"));
 
             echoField = new JTextField(90);
             echoPanel.add(echoField);
@@ -316,7 +316,7 @@ public class BatchQueryTab {
     private Future<AsynchResult> queryCatalogs() {
         toCancel = false;
         isProcessing = true;
-        echoField.setText("Batch query is running ...");
+        echoField.setText("Query is running ...");
         echoField.setBackground(JColor.LIGHT_BLUE.val);
         CompletableFuture<AsynchResult> future = new CompletableFuture();
         batchResults = new ArrayList<>();
@@ -363,7 +363,7 @@ public class BatchQueryTab {
             }
             while (scanner.hasNextLine()) {
                 if (toCancel) {
-                    echoField.setText("Query cancelled.");
+                    echoField.setText("Query cancelled!");
                     echoField.setBackground(JColor.LIGHT_YELLOW.val);
                     future.complete(AsynchResult.CANCELLED);
                     isProcessing = false;
@@ -447,7 +447,7 @@ public class BatchQueryTab {
 
         displayQueryResults();
 
-        echoField.setText("Query completed successfully.");
+        echoField.setText("Query completed successfully!");
         echoField.setBackground(JColor.LIGHT_GREEN.val);
         future.complete(AsynchResult.SUCCESS);
 
