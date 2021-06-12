@@ -11,6 +11,7 @@ import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.WhiteDwarf;
+import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
@@ -20,6 +21,7 @@ import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.ReferencesPanel;
+import astro.tool.box.module.SedPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
@@ -76,6 +78,7 @@ public class CatalogQueryTab {
     private final CatalogQueryFacade catalogQueryFacade;
 
     private final SpectralTypeLookupService spectralTypeLookupService;
+    private final List<SpectralTypeLookup> brownDwarfLookupEntries;
 
     private JPanel mainPanel;
     private JPanel topPanel;
@@ -116,6 +119,12 @@ public class CatalogQueryTab {
                 return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
+        }
+        input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
+        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+            brownDwarfLookupEntries = stream.skip(1).map(line -> {
+                return new BrownDwarfLookupEntry(line.split(",", -1));
+            }).collect(Collectors.toList());
         }
     }
 
@@ -490,7 +499,7 @@ public class CatalogQueryTab {
             container.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            container.setPreferredSize(new Dimension(550, BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(525, BOTTOM_PANEL_HEIGHT));
             container.add(new JScrollPane(spectralTypeTable));
 
             JPanel remarks = new JPanel(new GridLayout(0, 1));
@@ -543,6 +552,26 @@ public class CatalogQueryTab {
                 collectTimer.restart();
             });
 
+            if (catalogEntry instanceof SimbadCatalogEntry) {
+                JButton referencesButton = new JButton("Object references");
+                collectPanel.add(referencesButton);
+                referencesButton.addActionListener((ActionEvent evt) -> {
+                    JFrame referencesFrame = new JFrame();
+                    referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    referencesFrame.setIconImage(getToolBoxImage());
+                    referencesFrame.setTitle("Measurements and references for "
+                            + catalogEntry.getSourceId() + " ("
+                            + roundTo7DecNZ(catalogEntry.getRa()) + " "
+                            + roundTo7DecNZ(catalogEntry.getDec()) + ")");
+                    referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
+                    referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
+                    referencesFrame.setLocation(0, 0);
+                    referencesFrame.setAlwaysOnTop(false);
+                    referencesFrame.setResizable(true);
+                    referencesFrame.setVisible(true);
+                });
+            }
+
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             toolsPanel.add(buttonPanel);
 
@@ -585,25 +614,20 @@ public class CatalogQueryTab {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
             });
 
-            if (catalogEntry instanceof SimbadCatalogEntry) {
-                JButton referencesButton = new JButton("Object references");
-                buttonPanel.add(referencesButton);
-                referencesButton.addActionListener((ActionEvent evt) -> {
-                    JFrame referencesFrame = new JFrame();
-                    referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                    referencesFrame.setIconImage(getToolBoxImage());
-                    referencesFrame.setTitle("Measurements and references for "
-                            + catalogEntry.getSourceId() + " ("
-                            + roundTo7DecNZ(catalogEntry.getRa()) + " "
-                            + roundTo7DecNZ(catalogEntry.getDec()) + ")");
-                    referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
-                    referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
-                    referencesFrame.setLocation(0, 0);
-                    referencesFrame.setAlwaysOnTop(false);
-                    referencesFrame.setResizable(true);
-                    referencesFrame.setVisible(true);
-                });
-            }
+            JButton createSedButton = new JButton("Create SED");
+            buttonPanel.add(createSedButton);
+            createSedButton.addActionListener((ActionEvent evt) -> {
+                JFrame sedFrame = new JFrame();
+                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                sedFrame.setIconImage(getToolBoxImage());
+                sedFrame.setTitle("SED");
+                sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
+                sedFrame.setSize(900, 700);
+                sedFrame.setLocation(0, 0);
+                sedFrame.setAlwaysOnTop(false);
+                sedFrame.setResizable(false);
+                sedFrame.setVisible(true);
+            });
 
             bottomPanel.add(container);
         } catch (Exception ex) {
