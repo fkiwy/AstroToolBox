@@ -5614,7 +5614,7 @@ public class ImageViewerTab {
                 copyAllTimer.restart();
             });
 
-            JButton fillFormButton = new JButton("Fill out TYGO form");
+            JButton fillFormButton = new JButton("TYGO form");
             buttonPanel.add(fillFormButton);
             fillFormButton.addActionListener((ActionEvent evt) -> {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
@@ -5681,7 +5681,7 @@ public class ImageViewerTab {
                 sedPanel.add(commandPanel);
 
                 JFrame sedFrame = new JFrame();
-                sedFrame.addWindowListener(getChildWindowAdapter());
+                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(sedPanel);
@@ -5697,7 +5697,7 @@ public class ImageViewerTab {
                 buttonPanel.add(referencesButton);
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
-                    referencesFrame.addWindowListener(getChildWindowAdapter());
+                    referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Measurements and references for "
                             + catalogEntry.getSourceId() + " ("
@@ -5714,7 +5714,7 @@ public class ImageViewerTab {
         }
 
         JFrame detailsFrame = new JFrame();
-        detailsFrame.addWindowListener(getChildWindowAdapter());
+        detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
@@ -5724,51 +5724,6 @@ public class ImageViewerTab {
         detailsFrame.setResizable(false);
         detailsFrame.setVisible(true);
         windowShift += 10;
-    }
-
-    private WindowAdapter getChildWindowAdapter() {
-        return new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent evt) {
-                baseFrame.setFocusableWindowState(true);
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent e) {
-                baseFrame.setFocusableWindowState(true);
-            }
-
-            @Override
-            public void windowIconified(WindowEvent e) {
-                baseFrame.setFocusableWindowState(true);
-                baseFrame.toFront();
-            }
-
-            @Override
-            public void windowLostFocus(WindowEvent e) {
-                baseFrame.setFocusableWindowState(true);
-            }
-
-            @Override
-            public void windowOpened(WindowEvent evt) {
-                baseFrame.setFocusableWindowState(false);
-            }
-
-            @Override
-            public void windowActivated(WindowEvent e) {
-                baseFrame.setFocusableWindowState(false);
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-                baseFrame.setFocusableWindowState(false);
-            }
-
-            @Override
-            public void windowGainedFocus(WindowEvent e) {
-                baseFrame.setFocusableWindowState(false);
-            }
-        };
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {

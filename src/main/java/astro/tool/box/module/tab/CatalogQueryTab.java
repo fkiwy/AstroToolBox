@@ -9,6 +9,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -18,6 +19,7 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.module.ReferencesPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
@@ -409,7 +411,7 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("unWISE", getSpecificCatalogsUrl("II/363/unwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia Distances", getSpecificCatalogsUrl("I/347/gaia2dis", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia Distances", getSpecificCatalogsUrl("I/352/gedr3dis", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
@@ -488,7 +490,7 @@ public class CatalogQueryTab {
             container.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            container.setPreferredSize(new Dimension(500, BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(550, BOTTOM_PANEL_HEIGHT));
             container.add(new JScrollPane(spectralTypeTable));
 
             JPanel remarks = new JPanel(new GridLayout(0, 1));
@@ -581,8 +583,27 @@ public class CatalogQueryTab {
             buttonPanel.add(fillFormButton);
             fillFormButton.addActionListener((ActionEvent evt) -> {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
-
             });
+
+            if (catalogEntry instanceof SimbadCatalogEntry) {
+                JButton referencesButton = new JButton("Object references");
+                buttonPanel.add(referencesButton);
+                referencesButton.addActionListener((ActionEvent evt) -> {
+                    JFrame referencesFrame = new JFrame();
+                    referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    referencesFrame.setIconImage(getToolBoxImage());
+                    referencesFrame.setTitle("Measurements and references for "
+                            + catalogEntry.getSourceId() + " ("
+                            + roundTo7DecNZ(catalogEntry.getRa()) + " "
+                            + roundTo7DecNZ(catalogEntry.getDec()) + ")");
+                    referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
+                    referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
+                    referencesFrame.setLocation(0, 0);
+                    referencesFrame.setAlwaysOnTop(false);
+                    referencesFrame.setResizable(true);
+                    referencesFrame.setVisible(true);
+                });
+            }
 
             bottomPanel.add(container);
         } catch (Exception ex) {

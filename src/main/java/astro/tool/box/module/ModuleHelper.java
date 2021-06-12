@@ -52,6 +52,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -988,6 +990,51 @@ public class ModuleHelper {
 
         // Bind the redo action to ctl-Y
         textArea.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
+    }
+
+    public static WindowAdapter getChildWindowAdapter(JFrame baseFrame) {
+        return new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+                baseFrame.toFront();
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowOpened(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+        };
     }
 
 }

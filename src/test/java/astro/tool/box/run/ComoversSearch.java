@@ -1,15 +1,13 @@
 package astro.tool.box.run;
 
-import astro.tool.box.container.NumberPair;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import astro.tool.box.util.CSVParser;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceProviderUtils.establishHttpConnection;
-import static astro.tool.box.util.ServiceProviderUtils.readResponse;
-import static astro.tool.box.util.Utils.addRow;
-import static astro.tool.box.util.Utils.encodeQuery;
+import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.Utils.*;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.util.CSVParser;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;
@@ -22,11 +20,12 @@ public class ComoversSearch {
 
     //@Ignore
     @Test
-    public void noirlabComovers() throws Exception {
+    public void catWISEComovers() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
+        int exceptions = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Mdwarfs Part 1.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/CatWISE L dwarfs.csv"))) {
             String headerLine = fileScanner.nextLine();
             results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
@@ -37,47 +36,118 @@ public class ComoversSearch {
 
             while (fileScanner.hasNextLine()) {
                 totalRead++;
-                if (totalRead % 100 == 0) {
-                    System.out.println("read   =" + totalRead);
-                    System.out.println("written=" + totalWritten);
-                }
-                String bodyLine = fileScanner.nextLine();
-                String[] values = CSVParser.parseLine(bodyLine);
-                double ra = toDouble(values[columns.get("ra")]);
-                double dec = toDouble(values[columns.get("dec")]);
-                double pmra = toDouble(values[columns.get("pmra")]);
-                double pmdec = toDouble(values[columns.get("pmdec")]);
+                try {
+                    if (totalRead % 100 == 0) {
+                        System.out.println("read   =" + totalRead);
+                        System.out.println("written=" + totalWritten);
+                    }
+                    String bodyLine = fileScanner.nextLine();
+                    String[] values = CSVParser.parseLine(bodyLine);
+                    double ra = toDouble(values[columns.get("ra")]);
+                    double dec = toDouble(values[columns.get("dec")]);
+                    double pmra = toDouble(values[columns.get("pmra")]);
+                    double pmdec = toDouble(values[columns.get("pmdec")]);
 
-                String comoverQuery = createNoirlabComoverQuery();
-                comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
-                comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
-                comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
-                comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
-                String queryUrl = NOAO_TAP_URL + encodeQuery(comoverQuery);
-                String response = readResponse(establishHttpConnection(queryUrl), "NSC DR2");
+                    String comoverQuery = createCatWISEComoverQuery();
+                    comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
+                    comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
+                    comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
+                    comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
+                    String queryUrl = VIZIER_TAP_URL + encodeQuery(comoverQuery);
+                    String response = readResponse(establishHttpConnection(queryUrl), "CatWISE2020");
 
-                try (Scanner responseScanner = new Scanner(response)) {
-                    responseScanner.nextLine();
-                    while (responseScanner.hasNextLine()) {
-                        String resultLine = responseScanner.nextLine();
-                        String[] resultValues = resultLine.split(",", -1);
-                        double resultRa = toDouble(resultValues[1]);
-                        double resultDec = toDouble(resultValues[3]);
-                        double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
-                        if (distance > 1) {
-                            results.append(bodyLine).append(LINE_SEP);
-                            totalWritten++;
+                    try (Scanner responseScanner = new Scanner(response)) {
+                        responseScanner.nextLine();
+                        while (responseScanner.hasNextLine()) {
+                            String resultLine = responseScanner.nextLine();
+                            String[] resultValues = resultLine.split(",", -1);
+                            double resultRa = toDouble(resultValues[1]);
+                            double resultDec = toDouble(resultValues[2]);
+                            double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
+                            if (distance > 1) {
+                                results.append(bodyLine).append(LINE_SEP);
+                                totalWritten++;
+                            }
                         }
                     }
+                } catch (Exception ex) {
+                    exceptions++;
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results Mdwarfs Part 1.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results CatWISE L dwarfs.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
         System.out.println("totalRead   =" + totalRead);
         System.out.println("totalWritten=" + totalWritten);
+        System.out.println("exceptions   =" + exceptions);
+    }
+
+    //@Ignore
+    @Test
+    public void catWISEComoversWD() throws Exception {
+        int totalRead = 0;
+        int totalWritten = 0;
+        int exceptions = 0;
+        StringBuilder results = new StringBuilder();
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/CatWISE L dwarfs.csv"))) {
+            String headerLine = fileScanner.nextLine();
+            results.append(headerLine).append(LINE_SEP);
+            String[] headers = CSVParser.parseLine(headerLine);
+            Map<String, Integer> columns = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                columns.put(headers[i], i);
+            }
+
+            while (fileScanner.hasNextLine()) {
+                totalRead++;
+                try {
+                    if (totalRead % 100 == 0) {
+                        System.out.println("read   =" + totalRead);
+                        System.out.println("written=" + totalWritten);
+                    }
+                    String bodyLine = fileScanner.nextLine();
+                    String[] values = CSVParser.parseLine(bodyLine);
+                    double ra = toDouble(values[columns.get("ra")]);
+                    double dec = toDouble(values[columns.get("dec")]);
+                    double pmra = toDouble(values[columns.get("pmra")]) * 1000;
+                    double pmdec = toDouble(values[columns.get("pmdec")]) * 1000;
+
+                    String comoverQuery = createComoverWdQuery();
+                    comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
+                    comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
+                    comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
+                    comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
+                    String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
+                    String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
+
+                    try (Scanner responseScanner = new Scanner(response)) {
+                        responseScanner.nextLine();
+                        while (responseScanner.hasNextLine()) {
+                            String resultLine = responseScanner.nextLine();
+                            String[] resultValues = resultLine.split(",", -1);
+                            double resultRa = toDouble(resultValues[1]);
+                            double resultDec = toDouble(resultValues[2]);
+                            double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
+                            if (distance > 1) {
+                                results.append(bodyLine).append(LINE_SEP);
+                                totalWritten++;
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    exceptions++;
+                }
+            }
+        }
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/Results CatWISE L dwarfs WD.csv");
+        try (FileWriter writer = new FileWriter(resultFile)) {
+            writer.write(results.toString());
+        }
+        System.out.println("totalRead   =" + totalRead);
+        System.out.println("totalWritten=" + totalWritten);
+        System.out.println("exceptions   =" + exceptions);
     }
 
     @Ignore
@@ -111,8 +181,8 @@ public class ComoversSearch {
                 String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
-                comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
-                comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
+                comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
+                comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
                 String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
                 String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
 
@@ -171,8 +241,8 @@ public class ComoversSearch {
                 String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
-                comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
-                comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
+                comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
+                comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
                 String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
                 String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
 
@@ -231,8 +301,8 @@ public class ComoversSearch {
                 String comoverQuery = createNoirlabComoverQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
-                comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
-                comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
+                comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
+                comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
                 String queryUrl = NOAO_TAP_URL + encodeQuery(comoverQuery);
                 String response = readResponse(establishHttpConnection(queryUrl), "NSC DR2");
 
@@ -296,8 +366,8 @@ public class ComoversSearch {
                 String comoverQuery = createComoverWdQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
-                comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(pmra));
-                comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(pmdec));
+                comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
+                comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
                 String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
                 String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
 
@@ -323,6 +393,37 @@ public class ComoversSearch {
         }
         System.out.println("totalRead   =" + totalRead);
         System.out.println("totalWritten=" + totalWritten);
+    }
+
+    private String createCatWISEComoverQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT Name,");
+        addRow(query, "       RA_ICRS,");
+        addRow(query, "       DE_ICRS,");
+        addRow(query, "       W1mproPM,");
+        addRow(query, "       e_W1mproPM,");
+        addRow(query, "       W2mproPM,");
+        addRow(query, "       e_W2mproPM,");
+        addRow(query, "       snrW1pm,");
+        addRow(query, "       snrW2pm,");
+        addRow(query, "       MJD,");
+        addRow(query, "       RAPMdeg,");
+        addRow(query, "       DEPMdeg,");
+        addRow(query, "       pmRA,");
+        addRow(query, "       pmDE,");
+        addRow(query, "       e_pmRA,");
+        addRow(query, "       e_pmDE,");
+        addRow(query, "       plx1,");
+        addRow(query, "       e_plx1,");
+        addRow(query, "       plx2,");
+        addRow(query, "       e_plx2,");
+        addRow(query, "       ccf,");
+        addRow(query, "       abf");
+        addRow(query, "FROM   \"II/365/catwise\"");
+        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', [RA], [DE], 0.002777778))"); // 10 arcsec
+        addRow(query, "AND   (pmRA  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
+        addRow(query, "AND    pmDE BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
+        return query.toString();
     }
 
     private String createNoirlabComoverQuery() {
@@ -359,7 +460,6 @@ public class ComoversSearch {
         addRow(query, "AND    pmra <> 'NaN' AND pmdec <> 'NaN'");
         addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
         addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
-        //addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= 100");
         return query.toString();
     }
 
@@ -386,7 +486,6 @@ public class ComoversSearch {
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', [RA], [DE], 0.002777778))"); // 10 arcsec
         addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
         addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
-        //addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= 100");
         return query.toString();
     }
 
