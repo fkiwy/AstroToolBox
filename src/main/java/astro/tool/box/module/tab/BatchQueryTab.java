@@ -316,7 +316,7 @@ public class BatchQueryTab {
     private Future<AsynchResult> queryCatalogs() {
         toCancel = false;
         isProcessing = true;
-        echoField.setText("Batch query started ... is now being processed ...");
+        echoField.setText("Batch query is running ...");
         echoField.setBackground(JColor.LIGHT_BLUE.val);
         CompletableFuture<AsynchResult> future = new CompletableFuture();
         batchResults = new ArrayList<>();
