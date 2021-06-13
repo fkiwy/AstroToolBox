@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class ComoversSearch {
 
-    //@Ignore
+    @Ignore
     @Test
     public void catWISEComovers() throws Exception {
         int totalRead = 0;
@@ -84,7 +84,7 @@ public class ComoversSearch {
         System.out.println("exceptions   =" + exceptions);
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void catWISEComoversWD() throws Exception {
         int totalRead = 0;
@@ -210,13 +210,13 @@ public class ComoversSearch {
         System.out.println("totalWritten=" + totalWritten);
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void noirlab() throws Exception {
         int totalRead = 0;
         int totalWritten = 0;
         StringBuilder results = new StringBuilder();
-        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2N.csv"))) {
+        try (Scanner fileScanner = new Scanner(new File("C:/Users/wcq637/Documents/Private/BYW/NSC DR2/nscdr2N - complete survey with spt.csv"))) {
             String headerLine = fileScanner.nextLine();
             results.append(headerLine).append(LINE_SEP);
             String[] headers = CSVParser.parseLine(headerLine);
@@ -238,13 +238,13 @@ public class ComoversSearch {
                 double pmra = toDouble(values[columns.get("pmra")]);
                 double pmdec = toDouble(values[columns.get("pmdec")]);
 
-                String comoverQuery = createComoverWdQuery();
+                String comoverQuery = createNoirlabComoverQuery();
                 comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(ra));
                 comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(dec));
                 comoverQuery = comoverQuery.replace("[PMRA]", roundTo7DecNZ(pmra));
                 comoverQuery = comoverQuery.replace("[PMDE]", roundTo7DecNZ(pmdec));
-                String queryUrl = ESAC_TAP_URL + encodeQuery(comoverQuery);
-                String response = readResponse(establishHttpConnection(queryUrl), "Gaia eDR3");
+                String queryUrl = NOAO_TAP_URL + encodeQuery(comoverQuery);
+                String response = readResponse(establishHttpConnection(queryUrl), "NSC DR2");
 
                 try (Scanner responseScanner = new Scanner(response)) {
                     responseScanner.nextLine();
@@ -252,9 +252,9 @@ public class ComoversSearch {
                         String resultLine = responseScanner.nextLine();
                         String[] resultValues = resultLine.split(",", -1);
                         double resultRa = toDouble(resultValues[1]);
-                        double resultDec = toDouble(resultValues[2]);
+                        double resultDec = toDouble(resultValues[3]);
                         double distance = calculateAngularDistance(new NumberPair(ra, dec), new NumberPair(resultRa, resultDec), DEG_ARCSEC);
-                        if (distance > 1) {
+                        if (distance > 2) {
                             results.append(bodyLine).append(LINE_SEP);
                             totalWritten++;
                         }
@@ -262,7 +262,7 @@ public class ComoversSearch {
                 }
             }
         }
-        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results NSC DR2.csv");
+        File resultFile = new File("C:/Users/wcq637/Documents/Private/BYW/Co-movers/results nscdr2N - complete survey with spt.csv");
         try (FileWriter writer = new FileWriter(resultFile)) {
             writer.write(results.toString());
         }
@@ -456,10 +456,10 @@ public class ComoversSearch {
         addRow(query, "       vrmag,");
         addRow(query, "       vrerr");
         addRow(query, "FROM   nsc_dr2.object");
-        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, [RA], [DE], 0.002777778)"); // 10 arcsec
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, [RA], [DE], 3 * 0.002777778)"); // 10 arcsec
         addRow(query, "AND    pmra <> 'NaN' AND pmdec <> 'NaN'");
-        addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.3 AND [PMRA] + ABS([PMRA]) * 0.3");
-        addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.3 AND [PMDE] + ABS([PMDE]) * 0.3)");
+        addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.1 AND [PMRA] + ABS([PMRA]) * 0.1");
+        addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.1 AND [PMDE] + ABS([PMDE]) * 0.1)");
         return query.toString();
     }
 

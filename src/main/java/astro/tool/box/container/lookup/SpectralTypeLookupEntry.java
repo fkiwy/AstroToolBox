@@ -41,7 +41,7 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
         colors.put(Color.W1_W2, toDouble(values[21]));
         colors.put(Color.W1_W3, toDouble(values[22]));
         colors.put(Color.W1_W4, toDouble(values[23]));
-        colors.put(Color.g_r, toDouble(values[26]));
+        //colors.put(Color.g_r, toDouble(values[26]));
         colors.put(Color.i_z, toDouble(values[27]));
     }
 
