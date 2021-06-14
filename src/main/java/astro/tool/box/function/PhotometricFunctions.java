@@ -4,7 +4,6 @@ import astro.tool.box.container.StringPair;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.LookupResult;
-import astro.tool.box.container.lookup.MainSequenceLookup;
 import astro.tool.box.enumeration.Color;
 import static java.lang.Math.*;
 import java.util.ArrayList;
@@ -121,16 +120,11 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
-        double maxDeviation;
-        if (minEntry instanceof MainSequenceLookup) {
-            maxDeviation = 1.0;
-        } else {
-            maxDeviation = 0.2;
-        }
+        double offset = 0.2;
         double avgColorValue = (minColorValue + maxColorValue) / 2;
-        if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + maxDeviation) {
+        if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + offset) {
             return new LookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
-        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - maxDeviation) {
+        } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - offset) {
             return new LookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
         } else {
             return null;
