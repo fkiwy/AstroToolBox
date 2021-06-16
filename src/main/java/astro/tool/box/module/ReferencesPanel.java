@@ -58,9 +58,6 @@ public class ReferencesPanel extends JPanel {
                 JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 container.add(searchPanel);
 
-                JPanel linksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                container.add(linksPanel);
-
                 JPanel catalogsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 container.add(catalogsPanel);
 
@@ -190,8 +187,6 @@ public class ReferencesPanel extends JPanel {
                             populateDetailsPanel(Integer.valueOf(bibRef), detailsPanel);
 
                             String bibCode = (String) resultTable.getValueAt(resultTable.getSelectedRow(), 4);
-                            populateLinksPanel(bibCode, linksPanel, identifiers);
-
                             populateCatalogsPanel(bibCode, catalogsPanel);
 
                             referencesFrame.setVisible(true);
@@ -256,14 +251,6 @@ public class ReferencesPanel extends JPanel {
         }
     }
 
-    private void populateLinksPanel(String bibCode, JPanel linksPanel, List<String[]> identifiers) {
-        linksPanel.removeAll();
-        linksPanel.add(new JLabel("Download from"));
-        linksPanel.add(createHyperlink("ArXiv", String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/EPRINT_PDF", bibCode)));
-        linksPanel.add(new JLabel("or"));
-        linksPanel.add(createHyperlink("Publisher", String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/PUB_PDF", bibCode)));
-    }
-
     private void populateCatalogsPanel(String bibCode, JPanel catalogsPanel) {
         try {
             catalogsPanel.removeAll();
@@ -309,7 +296,7 @@ public class ReferencesPanel extends JPanel {
                     if (col == linkColumn - 1) {
                         String bibCode = (String) resultTable.getValueAt(row, col);
                         try {
-                            URI uri = new URI(String.format("https://ui.adsabs.harvard.edu/link_gateway/%s/EPRINT_PDF", bibCode));
+                            URI uri = new URI(String.format("https://ui.adsabs.harvard.edu/abs/%s", bibCode));
                             Desktop.getDesktop().browse(uri);
                         } catch (IOException | URISyntaxException ex) {
                             showExceptionDialog(null, ex);
