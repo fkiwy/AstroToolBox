@@ -46,8 +46,9 @@ public class Urls {
         return "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=" + degRA + "%20" + degDE + "&Radius=" + degRadius + "&Radius.unit=arcsec&coodisp1=d2&list.pmsel=on&list.plxsel=on&list.rvsel=on&list.bibsel=off&list.notesel=off&output.format=HTML";
     }
 
-    public static String getVizierUrl(double degRA, double degDE, double degRadius) {
-        return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.add=_r&-sort=_r";
+    public static String getVizierUrl(double degRA, double degDE, double degRadius, int maxRows, boolean allColumns) {
+        String outAll = allColumns ? "&-out.all" : "";
+        return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.max=" + maxRows + "&-out.add=_r&-sort=_r" + outAll;
     }
 
     public static String getSpecificCatalogsUrl(String catalogName, double degRA, double degDE, double degRadius) {

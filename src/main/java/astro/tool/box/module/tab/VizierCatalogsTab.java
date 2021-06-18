@@ -5,6 +5,7 @@ import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.NumberPair;
+import static astro.tool.box.util.Urls.getVizierUrl;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -58,6 +59,11 @@ public class VizierCatalogsTab {
     private double targetDec;
     private double searchRadius;
     private int numberOfRows;
+
+    private double prevTargetRa;
+    private double prevTargetDec;
+    private double prevSearchRadius;
+    private int prevNumberOfRows;
 
     private int position;
     private int matchesFound;
@@ -121,6 +127,8 @@ public class VizierCatalogsTab {
 
             JCheckBox allColumns = new JCheckBox("Include all columns");
 
+            JPanel vizierLinkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
             searchButton = new JButton("Search");
             firstRow.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
@@ -141,11 +149,6 @@ public class VizierCatalogsTab {
                         showErrorDialog(baseFrame, "Number of rows must not be empty!");
                         return;
                     }
-                    position = 0;
-                    matchesFound = 0;
-                    firstTable = true;
-                    titleAdded = false;
-                    catalogArea.setText(null);
                     List<String> errorMessages = new ArrayList<>();
                     try {
                         NumberPair coordinates = getCoordinates(coords);
@@ -188,6 +191,18 @@ public class VizierCatalogsTab {
                         numberOfRows = 0;
                         errorMessages.add("Invalid number of rows!");
                     }
+                    if (targetRa == prevTargetRa && targetDec == prevTargetDec && searchRadius == prevSearchRadius && numberOfRows == prevNumberOfRows) {
+                        return;
+                    }
+                    position = 0;
+                    matchesFound = 0;
+                    firstTable = true;
+                    titleAdded = false;
+                    catalogArea.setText(null);
+                    prevTargetRa = targetRa;
+                    prevTargetDec = targetDec;
+                    prevSearchRadius = searchRadius;
+                    prevNumberOfRows = numberOfRows;
                     if (!errorMessages.isEmpty()) {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
@@ -195,6 +210,7 @@ public class VizierCatalogsTab {
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 setWaitCursor();
+                                vizierLinkPanel.removeAll();
 
                                 String outAll = allColumns.isSelected() ? "&-out.all" : "";
                                 String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.add=_r&-out.form=mini%s";
@@ -226,6 +242,9 @@ public class VizierCatalogsTab {
                                     catalogArea.append(LINE_SEP_TEXT_AREA);
                                     catalogArea.append("==========> END");
                                 }
+
+                                JLabel vizierLink = createHyperlink("Open in web browser", getVizierUrl(targetRa, targetDec, searchRadius, numberOfRows, allColumns.isSelected()));
+                                vizierLinkPanel.add(vizierLink);
 
                                 baseFrame.setVisible(true);
                             } catch (IOException ex) {
@@ -294,10 +313,14 @@ public class VizierCatalogsTab {
                 }
             });
 
+            secondRow.add(vizierLinkPanel);
             coordsField.addActionListener((ActionEvent evt) -> {
                 searchButton.getActionListeners()[0].actionPerformed(evt);
             });
             radiusField.addActionListener((ActionEvent evt) -> {
+                searchButton.getActionListeners()[0].actionPerformed(evt);
+            });
+            rowsField.addActionListener((ActionEvent evt) -> {
                 searchButton.getActionListeners()[0].actionPerformed(evt);
             });
             findField.addActionListener((ActionEvent evt) -> {
