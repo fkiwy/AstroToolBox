@@ -106,6 +106,10 @@ public class ImageSeriesTab {
     private double targetDec;
     private int fieldOfView;
 
+    private double prevTargetRa;
+    private double prevTargetDec;
+    private int prevFieldOfView;
+
     public ImageSeriesTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
@@ -148,24 +152,6 @@ public class ImageSeriesTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    stopTimers();
-                    infraredTimeSeriesTimer = null;
-                    opticalTimeSeriesTimer = null;
-                    decalsTimeSeriesTimer = null;
-                    wiseTimeSeriesTimer = null;
-                    if (centerPanel.getComponentCount() > 0) {
-                        centerPanel.removeAll();
-                    }
-                    if (bottomPanel.getComponentCount() > 0) {
-                        bottomPanel.removeAll();
-                    }
-                    twoMassEntry = null;
-                    allWiseEntry = null;
-                    sdssEntry = null;
-                    panStarrsEntry = null;
-                    gaiaDR3Entry = null;
-                    catWiseEntry = null;
-                    noirlabEntry = null;
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -210,6 +196,30 @@ public class ImageSeriesTab {
                         fieldOfView = 0;
                         errorMessages.add("Invalid field of view!");
                     }
+                    if (targetRa == prevTargetRa && targetDec == prevTargetDec && fieldOfView == prevFieldOfView) {
+                        return;
+                    }
+                    infraredTimeSeriesTimer = null;
+                    opticalTimeSeriesTimer = null;
+                    decalsTimeSeriesTimer = null;
+                    wiseTimeSeriesTimer = null;
+                    if (centerPanel.getComponentCount() > 0) {
+                        centerPanel.removeAll();
+                    }
+                    if (bottomPanel.getComponentCount() > 0) {
+                        bottomPanel.removeAll();
+                    }
+                    twoMassEntry = null;
+                    allWiseEntry = null;
+                    sdssEntry = null;
+                    panStarrsEntry = null;
+                    gaiaDR3Entry = null;
+                    catWiseEntry = null;
+                    noirlabEntry = null;
+                    prevTargetRa = targetRa;
+                    prevTargetDec = targetDec;
+                    prevFieldOfView = fieldOfView;
+                    stopTimers();
                     if (!errorMessages.isEmpty()) {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);

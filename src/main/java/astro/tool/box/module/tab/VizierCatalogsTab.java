@@ -203,6 +203,7 @@ public class VizierCatalogsTab {
                     prevTargetDec = targetDec;
                     prevSearchRadius = searchRadius;
                     prevNumberOfRows = numberOfRows;
+                    vizierLinkPanel.removeAll();
                     if (!errorMessages.isEmpty()) {
                         String message = String.join(LINE_SEP, errorMessages);
                         showErrorDialog(baseFrame, message);
@@ -210,12 +211,12 @@ public class VizierCatalogsTab {
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 setWaitCursor();
-                                vizierLinkPanel.removeAll();
-
                                 String outAll = allColumns.isSelected() ? "&-out.all" : "";
                                 String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.add=_r&-out.form=mini%s";
                                 url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows, outAll);
 
+                                catalogArea.append(">>> START");
+                                catalogArea.append(LINE_SEP_TEXT_AREA + LINE_SEP_TEXT_AREA);
                                 HttpURLConnection connection = establishHttpConnection(url);
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                                     reader.lines().forEach(line -> {
@@ -239,9 +240,9 @@ public class VizierCatalogsTab {
                                             catalogArea.append(line + LINE_SEP_TEXT_AREA);
                                         }
                                     });
-                                    catalogArea.append(LINE_SEP_TEXT_AREA);
-                                    catalogArea.append("==========> END");
                                 }
+                                catalogArea.append(LINE_SEP_TEXT_AREA);
+                                catalogArea.append(">>> END");
 
                                 JLabel vizierLink = createHyperlink("Open in web browser", getVizierUrl(targetRa, targetDec, searchRadius, numberOfRows, allColumns.isSelected()));
                                 vizierLinkPanel.add(vizierLink);
