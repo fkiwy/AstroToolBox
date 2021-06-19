@@ -889,7 +889,7 @@ public class ImageSeriesTab {
                 displayPanel.removeAll();
                 Couple<String, BufferedImage> imageData = imageList.get(imageCounter.value());
                 displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
-                baseFrame.setVisible(true);
+                baseFrame.repaint();
                 imageCounter.add();
             });
             timer.start();
