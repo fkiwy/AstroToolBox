@@ -1839,7 +1839,7 @@ public class ImageViewerTab {
                         imagePanel.add(dssLabel);
                     }
 
-                    baseFrame.setVisible(true);
+                    baseFrame.repaint();
                     imageNumber++;
 
                     imageLabel.addMouseListener(new MouseListener() {
