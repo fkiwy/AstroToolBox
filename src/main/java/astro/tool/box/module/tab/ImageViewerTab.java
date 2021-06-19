@@ -666,10 +666,10 @@ public class ImageViewerTab {
             });
 
             JLabel sensitivityLabel = new JLabel("Sensitivity: 100%");
-            mainControlPanel.add(sensitivityLabel);
+            //mainControlPanel.add(sensitivityLabel);
 
             sensitivitySlider = new JSlider(0, 100, 100);
-            mainControlPanel.add(sensitivitySlider);
+            //mainControlPanel.add(sensitivitySlider);
             sensitivitySlider.addChangeListener((ChangeEvent e) -> {
                 int sliderValue = sensitivitySlider.getValue();
                 sensitivity = (100 - sliderValue) / 100.0;
@@ -799,7 +799,7 @@ public class ImageViewerTab {
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
             reduceSensitivity = new JCheckBox("Reduce sensitivity about 30%");
-            mainControlPanel.add(reduceSensitivity);
+            //mainControlPanel.add(reduceSensitivity);
             reduceSensitivity.addActionListener((ActionEvent evt) -> {
                 if (reduceSensitivity.isSelected()) {
                     blurImages.setSelected(true);
