@@ -752,19 +752,19 @@ public class ModuleHelper {
         if (gaiaEntry != null) {
             // GAIA DR2 pmRA + e_pmRA (mas/y)
             if (gaiaEntry.getPmra() != 0) {
-                params.append("&entry.905761395=").append(roundTo3DecNZ(gaiaEntry.getPmra())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmra_err()));
+                params.append("&entry.905761395=").append(roundTo3DecNZ(gaiaEntry.getPmra())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmraErr()));
             }
             // GAIA DR2 pmDE + e_pmDE
             if (gaiaEntry.getPmdec() != 0) {
-                params.append("&entry.965290776=").append(roundTo3DecNZ(gaiaEntry.getPmdec())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmdec_err()));
+                params.append("&entry.965290776=").append(roundTo3DecNZ(gaiaEntry.getPmdec())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmdecErr()));
             }
             // GAIA RV + e_RV
             if (gaiaEntry.getRadvel() != 0) {
-                params.append("&entry.702334724=").append(roundTo3DecNZ(gaiaEntry.getRadvel())).append(" ").append(roundTo3DecNZ(gaiaEntry.getRadvel_err()));
+                params.append("&entry.702334724=").append(roundTo3DecNZ(gaiaEntry.getRadvel())).append(" ").append(roundTo3DecNZ(gaiaEntry.getRadvelErr()));
             }
             // GAIA DR2 Parallax + e_
             if (gaiaEntry.getPlx() != 0) {
-                params.append("&entry.1383168065=").append(roundTo4DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo4DecNZ(gaiaEntry.getPlx_err()));
+                params.append("&entry.1383168065=").append(roundTo4DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo4DecNZ(gaiaEntry.getPlxErr()));
             }
             // GAIA ID
             params.append("&entry.1411207241=").append(gaiaEntry.getSourceId());

@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteDwarf {
+public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf {
 
     public static final String CATALOG_NAME = "Gaia eDR3";
 
@@ -413,15 +413,17 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Whi
     }
 
     // Needed to fill the TYGO form
-    public double getPlx_err() {
+    public double getPlxErr() {
         return plx_err;
     }
 
-    public double getPmra_err() {
+    @Override
+    public double getPmraErr() {
         return pmra_err;
     }
 
-    public double getPmdec_err() {
+    @Override
+    public double getPmdecErr() {
         return pmdec_err;
     }
 
@@ -429,7 +431,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Whi
         return radvel;
     }
 
-    public double getRadvel_err() {
+    public double getRadvelErr() {
         return radvel_err;
     }
     //

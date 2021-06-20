@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteDwarf {
+public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf {
 
     public static final String CATALOG_NAME = "Gaia DR2";
 
@@ -416,6 +416,16 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, WhiteD
     @Override
     public double getPmdec() {
         return pmdec;
+    }
+
+    @Override
+    public double getPmraErr() {
+        return pmra_err;
+    }
+
+    @Override
+    public double getPmdecErr() {
+        return pmdec_err;
     }
 
     @Override

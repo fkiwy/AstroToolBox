@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
+public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog {
 
     public static final String CATALOG_NAME = "NSC DR2";
 
@@ -481,6 +481,16 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery {
     @Override
     public double getPmdec() {
         return pmdec;
+    }
+
+    @Override
+    public double getPmraErr() {
+        return pmra_err;
+    }
+
+    @Override
+    public double getPmdecErr() {
+        return pmdec_err;
     }
 
     @Override

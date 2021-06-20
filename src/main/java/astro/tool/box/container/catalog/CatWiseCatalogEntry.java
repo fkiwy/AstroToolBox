@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Artifact {
+public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact {
 
     public static final String CATALOG_NAME = "CatWISE2020";
 
@@ -472,6 +472,16 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Art
     @Override
     public double getPmdec() {
         return pmdec;
+    }
+
+    @Override
+    public double getPmraErr() {
+        return pmra_err;
+    }
+
+    @Override
+    public double getPmdecErr() {
+        return pmdec_err;
     }
 
     @Override

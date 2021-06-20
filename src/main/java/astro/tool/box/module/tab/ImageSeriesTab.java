@@ -17,6 +17,7 @@ import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.container.catalog.ProperMotionCatalog;
 import astro.tool.box.container.catalog.SdssCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.TessCatalogEntry;
@@ -284,16 +285,16 @@ public class ImageSeriesTab {
                                             new NumberPair(twoMassEntry.getRa(), twoMassEntry.getDec()),
                                             new NumberPair(allWiseEntry.getRa_pm(), allWiseEntry.getDec_pm()),
                                             0, (int) days, DEG_MAS);
-                                    double pmRA = properMotions.getX();
-                                    double pmDE = properMotions.getY();
-                                    double tpm = calculateTotalProperMotion(pmRA, pmDE);
+                                    double pmRa = properMotions.getX();
+                                    double pmDec = properMotions.getY();
+                                    double tpm = calculateTotalProperMotion(pmRa, pmDec);
                                     resultRows.add(new String[]{
                                         "Calculated from " + TwoMassCatalogEntry.CATALOG_NAME + " and " + AllWiseCatalogEntry.CATALOG_NAME + " coordinates",
                                         twoMassEntry.getSourceId(),
                                         roundTo3DecLZ(twoMassEntry.getTargetDistance()),
                                         allWiseEntry.getSourceId(),
                                         roundTo3DecLZ(allWiseEntry.getTargetDistance()),
-                                        roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
+                                        roundTo3DecLZ(tpm), roundTo3DecLZ(pmRa), roundTo3DecLZ(pmDec), "N/A", "N/A"
                                     });
                                 }
                                 if (sdssEntry != null && panStarrsEntry != null) {
@@ -302,16 +303,16 @@ public class ImageSeriesTab {
                                             new NumberPair(sdssEntry.getRa(), sdssEntry.getDec()),
                                             new NumberPair(panStarrsEntry.getRa(), panStarrsEntry.getDec()),
                                             0, (int) days, DEG_MAS);
-                                    double pmRA = properMotions.getX();
-                                    double pmDE = properMotions.getY();
-                                    double tpm = calculateTotalProperMotion(pmRA, pmDE);
+                                    double pmRa = properMotions.getX();
+                                    double pmDec = properMotions.getY();
+                                    double tpm = calculateTotalProperMotion(pmRa, pmDec);
                                     resultRows.add(new String[]{
                                         "Calculated from " + SdssCatalogEntry.CATALOG_NAME + " and " + PanStarrsCatalogEntry.CATALOG_NAME + " coordinates",
                                         sdssEntry.getSourceId(),
                                         roundTo3DecLZ(sdssEntry.getTargetDistance()),
                                         panStarrsEntry.getSourceId(),
                                         roundTo3DecLZ(panStarrsEntry.getTargetDistance()),
-                                        roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
+                                        roundTo3DecLZ(tpm), roundTo3DecLZ(pmRa), roundTo3DecLZ(pmDec), "N/A", "N/A"
                                     });
                                 }
                                 addProperMotionEntry(gaiaDR3Entry, resultRows);
@@ -320,10 +321,9 @@ public class ImageSeriesTab {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist (arcsec)", "source 2", "dist (arcsec)", "pmRA (mas/yr)", "pmDE (mas/yr)", "tpm (mas/yr)"};
+                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist (arcsec)", "source 2", "dist (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
-                                    alignResultColumns(resultTable, resultRows);
                                     resultTable.setAutoCreateRowSorter(true);
                                     resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
                                     resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent event) -> {
@@ -350,6 +350,11 @@ public class ImageSeriesTab {
                                         }
                                     });
                                     TableColumnModel columnModel = resultTable.getColumnModel();
+                                    DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+                                    leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+                                    DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+                                    rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+                                    // Column width
                                     columnModel.getColumn(0).setPreferredWidth(325);
                                     columnModel.getColumn(1).setPreferredWidth(150);
                                     columnModel.getColumn(2).setPreferredWidth(100);
@@ -358,10 +363,19 @@ public class ImageSeriesTab {
                                     columnModel.getColumn(5).setPreferredWidth(100);
                                     columnModel.getColumn(6).setPreferredWidth(100);
                                     columnModel.getColumn(7).setPreferredWidth(100);
-                                    DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-                                    leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+                                    columnModel.getColumn(8).setPreferredWidth(100);
+                                    columnModel.getColumn(9).setPreferredWidth(100);
+                                    // Column alignment
+                                    columnModel.getColumn(0).setCellRenderer(leftRenderer);
                                     columnModel.getColumn(1).setCellRenderer(leftRenderer);
+                                    columnModel.getColumn(2).setCellRenderer(rightRenderer);
                                     columnModel.getColumn(3).setCellRenderer(leftRenderer);
+                                    columnModel.getColumn(4).setCellRenderer(rightRenderer);
+                                    columnModel.getColumn(5).setCellRenderer(rightRenderer);
+                                    columnModel.getColumn(6).setCellRenderer(rightRenderer);
+                                    columnModel.getColumn(7).setCellRenderer(rightRenderer);
+                                    columnModel.getColumn(8).setCellRenderer(rightRenderer);
+                                    columnModel.getColumn(9).setCellRenderer(rightRenderer);
                                     JPanel container = new JPanel();
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
@@ -447,17 +461,19 @@ public class ImageSeriesTab {
         fovField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
     }
 
-    private void addProperMotionEntry(CatalogEntry entry, List<String[]> resultRows) {
+    private void addProperMotionEntry(ProperMotionCatalog entry, List<String[]> resultRows) {
         if (entry != null) {
-            double pmRA = entry.getPmra();
-            double pmDE = entry.getPmdec();
             double tpm = entry.getTotalProperMotion();
+            double pmRa = entry.getPmra();
+            double pmDec = entry.getPmdec();
+            double pmRaErr = entry.getPmraErr();
+            double pmDecErr = entry.getPmdecErr();
             resultRows.add(new String[]{
                 entry.getCatalogName(),
                 entry.getSourceId(),
                 roundTo3DecLZ(entry.getTargetDistance()),
-                "N/A", "999",
-                roundTo3DecLZ(pmRA), roundTo3DecLZ(pmDE), roundTo3DecLZ(tpm)
+                "N/A", "N/A",
+                roundTo3DecLZ(tpm), roundTo3DecLZ(pmRa), roundTo3DecLZ(pmDec), roundTo3DecLZ(pmRaErr), roundTo3DecLZ(pmDecErr)
             });
         }
     }

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Artifact {
+public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact {
 
     public static final String CATALOG_NAME = "CatWISE2020 Reject Table";
 
@@ -410,6 +410,16 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Arti
     @Override
     public double getPmdec() {
         return pmdec;
+    }
+
+    @Override
+    public double getPmraErr() {
+        return pmra_err;
+    }
+
+    @Override
+    public double getPmdecErr() {
+        return pmdec_err;
     }
 
     @Override
