@@ -2742,7 +2742,7 @@ public class ImageViewerTab {
                     DefaultCaret caret = (DefaultCaret) downloadLog.getCaret();
                     caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
                     imagePanel.add(downloadLog);
-                    baseFrame.setVisible(true);
+                    baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
                 switch (wiseBand) {

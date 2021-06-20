@@ -321,7 +321,7 @@ public class ImageSeriesTab {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist (arcsec)", "source 2", "dist (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
+                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist. from target (arcsec)", "source 2", "dist. from target (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     resultTable.setAutoCreateRowSorter(true);
@@ -509,8 +509,8 @@ public class ImageSeriesTab {
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
-            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
@@ -537,8 +537,8 @@ public class ImageSeriesTab {
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
-            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
             baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
     }
 
