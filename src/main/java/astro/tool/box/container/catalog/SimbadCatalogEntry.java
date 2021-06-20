@@ -9,11 +9,10 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ABToVega;
+import astro.tool.box.enumeration.ABOffset;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.LookupTable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -117,13 +116,10 @@ public class SimbadCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
-    private LookupTable table;
+    private boolean toVega;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -213,49 +209,9 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SimbadCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", objectType=").append(objectType);
-        sb.append(", spectralType=").append(spectralType);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", plx=").append(plx);
-        sb.append(", plx_err=").append(plx_err);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", radvel=").append(radvel);
-        sb.append(", redshift=").append(redshift);
-        sb.append(", rvtype=").append(rvtype);
-        sb.append(", Umag=").append(Umag);
-        sb.append(", Bmag=").append(Bmag);
-        sb.append(", Vmag=").append(Vmag);
-        sb.append(", Rmag=").append(Rmag);
-        sb.append(", Imag=").append(Imag);
-        sb.append(", Gmag=").append(Gmag);
-        sb.append(", Jmag=").append(Jmag);
-        sb.append(", Hmag=").append(Hmag);
-        sb.append(", Kmag=").append(Kmag);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 17 * hash + Objects.hashCode(this.sourceId);
+        int hash = 5;
+        hash = 31 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -297,13 +253,13 @@ public class SimbadCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + objectType + "," + spectralType + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo1Dec(radvel) + "," + roundTo6Dec(redshift) + "," + rvtype + "," + roundTo3Dec(Umag) + "," + roundTo3Dec(Bmag) + "," + roundTo3Dec(Vmag) + "," + roundTo3Dec(Rmag) + "," + roundTo3Dec(Imag) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(getB_V()) + "," + roundTo3Dec(getU_B()) + "," + roundTo3Dec(getV_R()) + "," + roundTo3Dec(getV_I()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return columnValues.split(",", 38);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,object type,spectral type,ra,dec,plx (mas),plx err,pmra (mas/yr),pmdec (mas/yr),rad vel (km/s),redshift,rv type,U (mag),B (mag),V (mag),R (mag),I (mag),G (mag),J (mag),H (mag),K (mag),u (mag),g (mag),r (mag),i (mag),z (mag),B-V,U-B,V-R,V-I,J-H,H-K,J-K,u-g,g-r,r-i,i-z";
-        return columnTitles.split(",", 38);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -337,9 +293,6 @@ public class SimbadCatalogEntry implements CatalogEntry {
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.r, r_mag);
-        bands.put(Band.i, i_mag);
-        bands.put(Band.z, z_mag);
         bands.put(Band.J, Jmag);
         bands.put(Band.H, Hmag);
         bands.put(Band.K, Kmag);
@@ -348,7 +301,8 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
+        this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.U_B, getU_B());
         colors.put(Color.B_V, getB_V());
@@ -362,15 +316,9 @@ public class SimbadCatalogEntry implements CatalogEntry {
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
-        colors.put(Color.r_J, get_r_J());
         colors.put(Color.i_z, get_i_z());
         colors.put(Color.M_G, getAbsoluteGmag());
         return colors;
-    }
-
-    @Override
-    public void setLookupTable(LookupTable table) {
-        this.table = table;
     }
 
     @Override
@@ -454,16 +402,6 @@ public class SimbadCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -639,8 +577,8 @@ public class SimbadCatalogEntry implements CatalogEntry {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (u_mag - ABToVega.u.val) - (g_mag - ABToVega.g.val);
+            if (toVega) {
+                return (u_mag - ABOffset.u.val) - (g_mag - ABOffset.g.val);
             } else {
                 return u_mag - g_mag;
             }
@@ -651,8 +589,8 @@ public class SimbadCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (g_mag - ABToVega.g.val) - (r_mag - ABToVega.r.val);
+            if (toVega) {
+                return (g_mag - ABOffset.g.val) - (r_mag - ABOffset.r.val);
             } else {
                 return g_mag - r_mag;
             }
@@ -663,8 +601,8 @@ public class SimbadCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (r_mag - ABToVega.r.val) - (i_mag - ABToVega.i.val);
+            if (toVega) {
+                return (r_mag - ABOffset.r.val) - (i_mag - ABOffset.i.val);
             } else {
                 return r_mag - i_mag;
             }
@@ -675,19 +613,11 @@ public class SimbadCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (i_mag - ABToVega.i.val) - (z_mag - ABToVega.z.val);
+            if (toVega) {
+                return (i_mag - ABOffset.i.val) - (z_mag - ABOffset.z.val);
             } else {
                 return i_mag - z_mag;
             }
-        }
-    }
-
-    public double get_r_J() {
-        if (r_mag == 0 || Jmag == 0) {
-            return 0;
-        } else {
-            return r_mag - Jmag;
         }
     }
 

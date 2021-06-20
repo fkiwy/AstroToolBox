@@ -25,8 +25,8 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
     public SpectralTypeLookupEntry(String[] values) {
         spt = values[0];
         teff = toInteger(values[1]);
-        rsun = toDouble(values[28]);
-        msun = toDouble(values[29]);
+        rsun = toDouble(values[29]);
+        msun = toDouble(values[30]);
         colors = new HashMap<>();
         colors.put(Color.B_V, toDouble(values[7]));
         colors.put(Color.BP_RP, toDouble(values[10]));
@@ -41,8 +41,8 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
         colors.put(Color.W1_W2, toDouble(values[21]));
         colors.put(Color.W1_W3, toDouble(values[22]));
         colors.put(Color.W1_W4, toDouble(values[23]));
-        colors.put(Color.i_z, toDouble(values[26]));
-        colors.put(Color.z_Y, toDouble(values[27]));
+        //colors.put(Color.g_r, toDouble(values[26]));
+        colors.put(Color.i_z, toDouble(values[27]));
     }
 
     @Override

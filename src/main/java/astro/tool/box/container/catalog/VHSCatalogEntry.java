@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class VHSCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "VHS DR4";
+    public static final String CATALOG_NAME = "VHS DR5";
 
     // Unique identifier of this merged detection as assigned by merge algorithm
     private long sourceId;
@@ -85,9 +85,6 @@ public class VHSCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
@@ -150,47 +147,17 @@ public class VHSCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Ks (mag)", roundTo3DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("Ks err", roundTo3DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(getY_J()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(getJ_H()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("H-Ks", roundTo3DecNZ(getH_K()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-Ks", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H-Ks", roundTo3DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-Ks", roundTo3DecNZ(j_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("object type", TYPE_TABLE.get(objectType), Alignment.LEFT, getStringComparator(), true));
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("VHSCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", objectType=").append(objectType);
-        sb.append(", y_ap3=").append(y_ap3);
-        sb.append(", y_ap3_err=").append(y_ap3_err);
-        sb.append(", j_ap3=").append(j_ap3);
-        sb.append(", j_ap3_err=").append(j_ap3_err);
-        sb.append(", h_ap3=").append(h_ap3);
-        sb.append(", h_ap3_err=").append(h_ap3_err);
-        sb.append(", ks_ap3=").append(ks_ap3);
-        sb.append(", ks_ap3_err=").append(ks_ap3_err);
-        sb.append(", y_j_pnt=").append(y_j_pnt);
-        sb.append(", j_h_pnt=").append(j_h_pnt);
-        sb.append(", h_ks_pnt=").append(h_ks_pnt);
-        sb.append(", j_ks_pnt=").append(j_ks_pnt);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 41 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
@@ -226,12 +193,12 @@ public class VHSCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/359/vhs_dr4", "RAJ2000", "DEJ2000");
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/367/vhs_dr5", "RAJ2000", "DEJ2000");
     }
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(getY_J()) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K()) + "," + TYPE_TABLE.get(objectType);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(y_j_pnt) + "," + roundTo3Dec(j_h_pnt) + "," + roundTo3Dec(h_ks_pnt) + "," + roundTo3Dec(j_ks_pnt) + "," + TYPE_TABLE.get(objectType);
         return columnValues.split(",", 17);
     }
 
@@ -264,11 +231,11 @@ public class VHSCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.J_H, getJ_H());
-        colors.put(Color.H_K, getH_K());
-        colors.put(Color.J_K, getJ_K());
+        colors.put(Color.J_H, j_h_pnt);
+        colors.put(Color.H_K, h_ks_pnt);
+        colors.put(Color.J_K, j_ks_pnt);
         return colors;
     }
 
@@ -323,16 +290,6 @@ public class VHSCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -418,38 +375,6 @@ public class VHSCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
-    }
-
-    public double getY_J() {
-        if (y_ap3 == 0 || j_ap3 == 0) {
-            return 0;
-        } else {
-            return y_ap3 - j_ap3;
-        }
-    }
-
-    public double getJ_H() {
-        if (j_ap3 == 0 || h_ap3 == 0) {
-            return 0;
-        } else {
-            return j_ap3 - h_ap3;
-        }
-    }
-
-    public double getH_K() {
-        if (h_ap3 == 0 || ks_ap3 == 0) {
-            return 0;
-        } else {
-            return h_ap3 - ks_ap3;
-        }
-    }
-
-    public double getJ_K() {
-        if (j_ap3 == 0 || ks_ap3 == 0) {
-            return 0;
-        } else {
-            return j_ap3 - ks_ap3;
-        }
     }
 
 }

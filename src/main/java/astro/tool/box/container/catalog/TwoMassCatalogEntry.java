@@ -14,6 +14,7 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.TapProvider;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,9 +89,6 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     // Search radius
     private double searchRadius;
-
-    // Catalog number
-    private int catalogNumber;
 
     // Most likely spectral type
     private String spt;
@@ -269,39 +267,9 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("TwoMassCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", Jmag=").append(Jmag);
-        sb.append(", J_err=").append(J_err);
-        sb.append(", Hmag=").append(Hmag);
-        sb.append(", H_err=").append(H_err);
-        sb.append(", Kmag=").append(Kmag);
-        sb.append(", K_err=").append(K_err);
-        sb.append(", xdate=").append(xdate);
-        sb.append(", ph_qual=").append(ph_qual);
-        sb.append(", rd_flg=").append(rd_flg);
-        sb.append(", bl_flg=").append(bl_flg);
-        sb.append(", cc_flg=").append(cc_flg);
-        sb.append(", gal_contam=").append(gal_contam);
-        sb.append(", mp_flg=").append(mp_flg);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 3;
-        hash = 71 * hash + Objects.hashCode(this.sourceId);
+        hash = 53 * hash + Objects.hashCode(this.sourceId);
         return hash;
     }
 
@@ -347,13 +315,13 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + xdate + "," + ph_qual + "," + rd_flg + "," + bl_flg + "," + cc_flg + "," + gal_contam + "," + mp_flg + "," + roundTo3Dec(Jmag) + "," + roundTo3Dec(J_err) + "," + roundTo3Dec(Hmag) + "," + roundTo3Dec(H_err) + "," + roundTo3Dec(Kmag) + "," + roundTo3Dec(K_err) + "," + roundTo3Dec(getJ_H()) + "," + roundTo3Dec(getH_K()) + "," + roundTo3Dec(getJ_K());
-        return columnValues.split(",", 20);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,observation date,ph. qual.,read flag,blend flag,cc flags,ext. flag,minor planet flag,J (mag),J err,H (mag),H err,K (mag),K err,J-H,H-K,J-K";
-        return columnTitles.split(",", 20);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -379,7 +347,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.J_H, getJ_H());
         colors.put(Color.H_K, getH_K());
@@ -435,16 +403,6 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -532,6 +490,10 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         return 0;
     }
 
+    public LocalDateTime getObsDate() {
+        return LocalDateTime.parse(xdate + "T00:00:00");
+    }
+
     public double getJ_H() {
         if (Jmag == 0 || Hmag == 0) {
             return 0;
@@ -554,6 +516,18 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         } else {
             return Jmag - Kmag;
         }
+    }
+
+    public double getJmag() {
+        return Jmag;
+    }
+
+    public double getHmag() {
+        return Hmag;
+    }
+
+    public double getKmag() {
+        return Kmag;
     }
 
 }

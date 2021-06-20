@@ -105,9 +105,6 @@ public class SSOCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     private Map<String, Integer> columns;
@@ -188,45 +185,9 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SSOCatalogEntry{objectID=").append(objectID);
-        sb.append(", type=").append(type);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", pra=").append(pra);
-        sb.append(", pdec=").append(pdec);
-        sb.append(", ppm=").append(ppm);
-        sb.append(", theta=").append(theta);
-        sb.append(", rhelio=").append(rhelio);
-        sb.append(", amag=").append(amag);
-        sb.append(", vmag=").append(vmag);
-        sb.append(", perdist=").append(perdist);
-        sb.append(", ecc=").append(ecc);
-        sb.append(", incl=").append(incl);
-        sb.append(", pertime=").append(pertime);
-        sb.append(", mjd=").append(mjd);
-        sb.append(", dra=").append(dra);
-        sb.append(", ddec=").append(ddec);
-        sb.append(", W1mag=").append(W1mag);
-        sb.append(", W1_err=").append(W1_err);
-        sb.append(", W2mag=").append(W2mag);
-        sb.append(", W2_err=").append(W2_err);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 79 * hash + Objects.hashCode(this.objectID);
+        int hash = 3;
+        hash = 71 * hash + Objects.hashCode(this.objectID);
         return hash;
     }
 
@@ -288,7 +249,7 @@ public class SSOCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         return new LinkedHashMap<>();
     }
 
@@ -330,16 +291,6 @@ public class SSOCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override

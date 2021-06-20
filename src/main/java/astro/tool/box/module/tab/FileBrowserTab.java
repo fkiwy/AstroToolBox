@@ -309,12 +309,12 @@ public class FileBrowserTab {
             for (int i = 1; i < columnCount; i++) {
                 valuesToAppend += ",";
             }
-            String[] newValues = valuesToAppend.split(SPLIT_CHAR, columnCount);
+            String[] newValues = valuesToAppend.split(",", -1);
 
             int rowNumber = 0;
             List<String[]> rows = new ArrayList<>();
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                String[] columnValues = scanner.nextLine().split(",", -1);
                 String[] values = concatArrays(new String[]{String.valueOf(++rowNumber)}, columnValues);
                 if (columnCount > 0) {
                     values = concatArrays(values, newValues);
@@ -336,12 +336,7 @@ public class FileBrowserTab {
     private void displayQueryResults(String[] columnNames, List<String[]> rows) {
         Object[][] data = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
-        resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, rows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

@@ -54,21 +54,6 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GenericCatalogEntry{ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", catalogName=").append(catalogName);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
         return new GenericCatalogEntry();
     }
@@ -120,7 +105,7 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         return new LinkedHashMap<>();
     }
 
@@ -161,15 +146,6 @@ public class GenericCatalogEntry implements CatalogEntry {
 
     @Override
     public void setSearchRadius(double searchRadius) {
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return 0;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
     }
 
     @Override

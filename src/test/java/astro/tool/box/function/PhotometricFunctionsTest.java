@@ -29,4 +29,19 @@ public class PhotometricFunctionsTest {
         assertEquals(objectInfo.get(3).getS2(), "identified as likely RR Lyra (Hernitschek+ 2015ApJ...801...45H) PRRLyra>=0.60");
     }
 
+    @Test
+    public void convertMagnitudeToFlux() {
+        // F(ν) (Jy)
+        double flux = PhotometricFunctions.convertMagnitudeToFluxDensity(15, 666.7);
+        System.out.println(flux);
+
+        // νF(ν) (W/m^2)
+        flux = PhotometricFunctions.convertMagnitudeToFlux(15, 666.7, 2.159);
+        System.out.println(flux);
+
+        // F(λ) (W/m^2/μm)
+        flux = PhotometricFunctions.convertMagnitudeToFluxLambda(15, 666.7, 2.159);
+        System.out.println(flux);
+    }
+
 }

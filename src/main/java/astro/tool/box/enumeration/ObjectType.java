@@ -8,6 +8,7 @@ public enum ObjectType {
     VARIABLE_STAR("Variable star"),
     LOW_MASS_STAR("Low-mass star"),
     YSO("Young stellar object"),
+    RED_DWARF("Red dwarf"),
     BROWN_DWARF("Brown dwarf"),
     WHITE_DWARF("White dwarf"),
     MULTIPLE("Multiple system"),

@@ -57,36 +57,24 @@ public class LookupTab {
             JComboBox lookupTables = new JComboBox(LookupTable.values());
             filePanel.add(lookupTables);
             lookupTables.addActionListener((ActionEvent evt) -> {
-                String fileName;
-                String tableName;
+                String fileName = null;
+                String tableName = null;
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = "Main sequence lookup table (A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence ~ Eric Mamajek)";
+                        tableName = "Main sequence lookup table - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)";
                         break;
                     case BROWN_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
-                        tableName = "Brown dwarfs lookup table (Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey ~ William Best)";
+                        tableName = "Brown dwarfs lookup table - Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data (A. Carnero Rosell) / Exploring the Age-dependent Properties of M and L Dwarfs Using Gaia and SDSS (R. Kiman)";
                         break;
                     case WHITE_DWARFS_PURE_H:
                         fileName = "/WhiteDwarfPureHLookupTable.csv";
-                        tableName = "White dwarfs pure H lookup table (Gaia photometry for white dwarfs ~ J. M. Carrasco)";
+                        tableName = "White dwarfs pure H lookup table - Gaia photometry for white dwarfs (J. M. Carrasco)";
                         break;
                     case WHITE_DWARFS_PURE_HE:
                         fileName = "/WhiteDwarfPureHeLookupTable.csv";
-                        tableName = "White dwarfs pure He lookup table (Gaia photometry for white dwarfs ~ J. M. Carrasco)";
-                        break;
-                    case WHITE_DWARFS_DA:
-                        fileName = "/WhiteDwarfDALookupTable.csv";
-                        tableName = "White dwarfs DA lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs ~ Pierre Bergeron)";
-                        break;
-                    case WHITE_DWARFS_DB:
-                        fileName = "/WhiteDwarfDBLookupTable.csv";
-                        tableName = "White dwarfs DB lookup table (Synthetic Colors and Evolutionary Sequences of Hydrogen- and Helium-Atmosphere White Dwarfs ~ Pierre Bergeron)";
-                        break;
-                    default:
-                        fileName = "";
-                        tableName = "";
+                        tableName = "White dwarfs pure He lookup table - Gaia photometry for white dwarfs (J. M. Carrasco)";
                         break;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
@@ -108,7 +96,7 @@ public class LookupTab {
             int numberOfColumns = columnNames.length;
             List<String[]> rows = new ArrayList<>();
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                String[] columnValues = scanner.nextLine().split(",", -1);
                 rows.add(columnValues);
             }
             displayQueryResults(columnNames, rows, tableName);
@@ -120,12 +108,7 @@ public class LookupTab {
     private void displayQueryResults(String[] columnNames, List<String[]> rows, String tableName) {
         Object[][] data = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
-        resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, rows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

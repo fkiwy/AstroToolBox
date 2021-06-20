@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -47,7 +46,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
@@ -55,14 +53,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.UndoableEditEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.Document;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.http.NameValuePair;
@@ -84,7 +77,10 @@ public class AdqlQueryTab {
 
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
-    private static final String IRSA_TABLES = "Available tables";
+    private static final String AVAILABLE_TABLES = "Available tables";
+    private static final String JOB_ID = "jobId";
+    private static final String ASYNC_TAP_PROVIDER = "asyncTapProvider";
+    private static final TapProvider DEFAULT_TAP_PROVIDER = TapProvider.VIZIER;
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -236,23 +232,24 @@ public class AdqlQueryTab {
                 statusField.setBackground(getStatusColor(jobStatus).val);
                 queryResults = null;
                 jobId = null;
-                String encodedQuery = encodeQuery(query);
                 String response;
                 // Validate query
-                try {
-                    response = readResponse(establishHttpConnection(createValidatorUrl(encodedQuery)), "Query validator");
-                    if (!response.isEmpty()) {
-                        JSONObject obj = new JSONObject(response);
-                        String validation = obj.getString("validation");
-                        if (!validation.equals("ok")) {
-                            JSONArray arr = obj.getJSONArray("errors");
-                            String errorMessage = arr.getJSONObject(0).getString("message");
-                            showErrorDialog(baseFrame, errorMessage);
-                            initStatus();
-                            return;
+                if (!TapProvider.NOAO.equals(getTapProvider())) {
+                    try {
+                        response = readResponse(establishHttpConnection(createValidatorUrl(encodeQuery(query))), "Query validator");
+                        if (!response.isEmpty()) {
+                            JSONObject obj = new JSONObject(response);
+                            String validation = obj.getString("validation");
+                            if (!validation.equals("ok")) {
+                                JSONArray arr = obj.getJSONArray("errors");
+                                String errorMessage = arr.getJSONObject(0).getString("message");
+                                showErrorDialog(baseFrame, errorMessage);
+                                initStatus();
+                                return;
+                            }
                         }
+                    } catch (Exception ex) {
                     }
-                } catch (Exception ex) {
                 }
                 // Execute query
                 startClock();
@@ -270,7 +267,8 @@ public class AdqlQueryTab {
                             params = new ArrayList<>();
                             params.add(new BasicNameValuePair("PHASE", "RUN"));
                             response = doPost(createStatusUrl(jobId), params);
-                            SettingsTab.setUserSetting("jobId", jobId);
+                            SettingsTab.setUserSetting(JOB_ID, jobId);
+                            SettingsTab.setUserSetting(ASYNC_TAP_PROVIDER, getTapProvider().name());
                             SettingsTab.saveSettings();
                         } catch (Exception ex) {
                             stopClock();
@@ -351,12 +349,9 @@ public class AdqlQueryTab {
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
-                        showErrorDialog(baseFrame, "Processing error!");
                         String response = readResponse(establishHttpConnection(createErrorUrl(jobId)), QUERY_SERVICE);
                         String errorMessage = getErrorMessage(response);
-                        if (!errorMessage.isEmpty()) {
-                            showScrollableErrorDialog(baseFrame, errorMessage);
-                        }
+                        showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
                     }
@@ -402,7 +397,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("PHASE", "ABORT"));
                     doPost(createStatusUrl(jobId), params);
-                    SettingsTab.setUserSetting("jobId", "");
+                    SettingsTab.setUserSetting(JOB_ID, "");
                     SettingsTab.saveSettings();
                     showInfoDialog(baseFrame, "Query aborted!");
                 } catch (Exception ex) {
@@ -425,7 +420,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("ACTION", "DELETE"));
                     doPost(createDeleteUrl(jobId), params);
-                    SettingsTab.setUserSetting("jobId", "");
+                    SettingsTab.setUserSetting(JOB_ID, "");
                     SettingsTab.saveSettings();
                     showInfoDialog(baseFrame, "Query deleted!");
                 } catch (Exception ex) {
@@ -435,11 +430,24 @@ public class AdqlQueryTab {
 
             firstRow.add(message);
 
+            JButton resumeButton = new JButton("Resume query");
+            secondRow.add(resumeButton);
+            resumeButton.addActionListener((ActionEvent evt) -> {
+                jobId = SettingsTab.getUserSetting(JOB_ID, "");
+                if (!jobId.isEmpty()) {
+                    String provider = SettingsTab.getUserSetting(ASYNC_TAP_PROVIDER, DEFAULT_TAP_PROVIDER.name());
+                    tapProvider.setSelectedItem(TapProvider.valueOf(provider));
+                    statusField.setText("Resuming ...");
+                    statusField.setBackground(JColor.LIGHT_NAVY.val);
+                    startClock();
+                }
+            });
+
             secondRow.add(new JLabel("TAP provider:"));
 
             tapProvider = new JComboBox(TapProvider.values());
             secondRow.add(tapProvider);
-            tapProvider.setSelectedItem(TapProvider.VIZIER);
+            tapProvider.setSelectedItem(DEFAULT_TAP_PROVIDER);
 
             JButton browseButton = new JButton("Browse tables");
             secondRow.add(browseButton);
@@ -458,7 +466,7 @@ public class AdqlQueryTab {
                     catalogTablePanel.setLayout(new BoxLayout(catalogTablePanel, BoxLayout.Y_AXIS));
 
                     catalogTableSorter = new TableRowSorter<>();
-                    catalogTablePanel.add(readQueryResult(catalogTableSorter, result, IRSA_TABLES));
+                    catalogTablePanel.add(readQueryResult(catalogTableSorter, result, AVAILABLE_TABLES));
 
                     JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                     catalogTablePanel.add(filterPanel);
@@ -509,12 +517,6 @@ public class AdqlQueryTab {
                 }
             });
 
-            jobId = SettingsTab.getUserSetting("jobId", "");
-            if (!jobId.isEmpty()) {
-                statusField.setText("Resuming ...");
-                startClock();
-            }
-
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
@@ -556,20 +558,14 @@ public class AdqlQueryTab {
     private JScrollPane displayQueryResults(TableRowSorter<TableModel> sorter, String[] columnNames, List<String[]> rows, String panelName) {
         Object[][] data = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
-
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable, rows);
         addComparatorsToTableSorter(sorter, defaultTableModel, rows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         resultTable.setRowSorter(sorter);
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        if (IRSA_TABLES.equals(panelName)) {
+        if (AVAILABLE_TABLES.equals(panelName)) {
             resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
                 if (!e.getValueIsAdjusting()) {
                     int selectedRow = resultTable.getSelectedRow();
@@ -756,48 +752,6 @@ public class AdqlQueryTab {
             color = JColor.LIGHT_YELLOW;
         }
         return color;
-    }
-
-    private void addUndoManager(JTextArea textEditor) {
-        final UndoManager manger = new UndoManager();
-        Document document = textEditor.getDocument();
-
-        // Listen for undo and redo events
-        document.addUndoableEditListener((UndoableEditEvent evt) -> {
-            manger.addEdit(evt.getEdit());
-        });
-
-        // Create an undo action and add it to the text component
-        textEditor.getActionMap().put("Undo", new AbstractAction("Undo") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (manger.canUndo()) {
-                        manger.undo();
-                    }
-                } catch (CannotUndoException e) {
-                }
-            }
-        });
-
-        // Bind the undo action to ctl-Z
-        textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
-
-        // Create a redo action and add it to the text component
-        textEditor.getActionMap().put("Redo", new AbstractAction("Redo") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (manger.canRedo()) {
-                        manger.redo();
-                    }
-                } catch (CannotRedoException e) {
-                }
-            }
-        });
-
-        // Bind the redo action to ctl-Y
-        textEditor.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
     }
 
     private String parseXml(String xml, String tag) throws Exception {

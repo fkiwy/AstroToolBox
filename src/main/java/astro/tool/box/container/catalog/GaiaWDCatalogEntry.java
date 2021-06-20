@@ -9,6 +9,7 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.ABOffset;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -106,14 +107,10 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Total proper motion
-    private double tpm;
-
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
+
+    private boolean toVega;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -195,47 +192,9 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GaiaWDCatalogEntry{sourceId=").append(sourceId);
-        sb.append(", wdId=").append(wdId);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", plx=").append(plx);
-        sb.append(", pmra=").append(pmra);
-        sb.append(", pmdec=").append(pmdec);
-        sb.append(", Gmag=").append(Gmag);
-        sb.append(", BPmag=").append(BPmag);
-        sb.append(", RPmag=").append(RPmag);
-        sb.append(", sdssId=").append(sdssId);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", pwd=").append(pwd);
-        sb.append(", teffH=").append(teffH);
-        sb.append(", loggH=").append(loggH);
-        sb.append(", massH=").append(massH);
-        sb.append(", teffHe=").append(teffHe);
-        sb.append(", loggHe=").append(loggHe);
-        sb.append(", massHe=").append(massHe);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        int hash = 3;
+        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
@@ -277,13 +236,13 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
-        return columnValues.split(",", 33);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,WD id,plx (mas),pmra (mas/yr),pmdec (mas/yr),G (mag),BP (mag),RP (mag),u (mag),g (mag),r (mag),i (mag),z (mag),teff H (K),teff He (K),logg H,logg He,mass H (Msun),mass He (Msun),SDSS id,probability of being a WD,dist (1/plx),tpm (mas/yr),Absolute G (mag),G-RP,BP-RP,u-g,g-r,r-i,i-z";
-        return columnTitles.split(",", 33);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -307,15 +266,21 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public Map<Band, Double> getBands() {
-        return new LinkedHashMap<>();
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.G, Gmag);
+        return bands;
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
+        this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
+        colors.put(Color.M_RP, getAbsoluteRPmag());
+        colors.put(Color.M_BP, getAbsoluteBPmag());
         colors.put(Color.G_RP, getG_RP());
         colors.put(Color.BP_RP, getBP_RP());
+        colors.put(Color.BP_G, getBP_G());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
@@ -386,16 +351,6 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -483,6 +438,14 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return calculateTotalProperMotion(pmra, pmdec);
     }
 
+    public double getAbsoluteRPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(RPmag, plx);
+    }
+
+    public double getAbsoluteBPmag() {
+        return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
+    }
+
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
     }
@@ -503,11 +466,23 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         }
     }
 
+    public double getBP_G() {
+        if (BPmag == 0 || Gmag == 0) {
+            return 0;
+        } else {
+            return BPmag - Gmag;
+        }
+    }
+
     public double get_u_g() {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            return u_mag - g_mag;
+            if (toVega) {
+                return (u_mag - ABOffset.u.val) - (g_mag - ABOffset.g.val);
+            } else {
+                return u_mag - g_mag;
+            }
         }
     }
 
@@ -515,7 +490,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            return g_mag - r_mag;
+            if (toVega) {
+                return (g_mag - ABOffset.g.val) - (r_mag - ABOffset.r.val);
+            } else {
+                return g_mag - r_mag;
+            }
         }
     }
 
@@ -523,7 +502,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            return r_mag - i_mag;
+            if (toVega) {
+                return (r_mag - ABOffset.r.val) - (i_mag - ABOffset.i.val);
+            } else {
+                return r_mag - i_mag;
+            }
         }
     }
 
@@ -531,7 +514,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            return i_mag - z_mag;
+            if (toVega) {
+                return (i_mag - ABOffset.i.val) - (z_mag - ABOffset.z.val);
+            } else {
+                return i_mag - z_mag;
+            }
         }
     }
 

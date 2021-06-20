@@ -3,14 +3,12 @@ package astro.tool.box.module.tab;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
-import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
@@ -60,10 +58,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class BatchQueryTab {
 
@@ -80,7 +75,7 @@ public class BatchQueryTab {
     private JPanel centerPanel;
     private JTextField echoField;
     private JCheckBox includeColors;
-    private JComboBox<LookupTable> lookupTables;
+    private JComboBox lookupTables;
     private JProgressBar progressBar;
     private JButton cancelButton;
 
@@ -162,13 +157,10 @@ public class BatchQueryTab {
             JTextField radiusField = new JTextField("5", 3);
             centerRow.add(radiusField);
 
-            centerRow.add(new JLabel("Include colors:"));
-
-            includeColors = new JCheckBox();
-            includeColors.setName("includeColors");
+            includeColors = new JCheckBox("Include colors");
             centerRow.add(includeColors);
 
-            centerRow.add(new JLabel("Lookup table:"));
+            centerRow.add(new JLabel("-  Lookup table:"));
 
             lookupTables = new JComboBox(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.BROWN_DWARFS});
             centerRow.add(lookupTables);
@@ -288,7 +280,7 @@ public class BatchQueryTab {
                 bottomRow.add(catalog);
             }
 
-            echoPanel.add(new JLabel("Echo:"));
+            echoPanel.add(new JLabel("Status:"));
 
             echoField = new JTextField(90);
             echoPanel.add(echoField);
@@ -324,7 +316,7 @@ public class BatchQueryTab {
     private Future<AsynchResult> queryCatalogs() {
         toCancel = false;
         isProcessing = true;
-        echoField.setText("Batch query started ... is now being processed ...");
+        echoField.setText("Query is running ...");
         echoField.setBackground(JColor.LIGHT_BLUE.val);
         CompletableFuture<AsynchResult> future = new CompletableFuture();
         batchResults = new ArrayList<>();
@@ -338,7 +330,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                        return new SpectralTypeLookupEntry(line.split(",", -1));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -347,7 +339,7 @@ public class BatchQueryTab {
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                        return new BrownDwarfLookupEntry(line.split(",", -1));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
@@ -371,13 +363,13 @@ public class BatchQueryTab {
             }
             while (scanner.hasNextLine()) {
                 if (toCancel) {
-                    echoField.setText("Query cancelled.");
+                    echoField.setText("Query cancelled!");
                     echoField.setBackground(JColor.LIGHT_YELLOW.val);
                     future.complete(AsynchResult.CANCELLED);
                     isProcessing = false;
                     return future;
                 }
-                columns = scanner.nextLine().split(SPLIT_CHAR, numberOfColumns);
+                columns = scanner.nextLine().split(",", -1);
                 String raValue = columns[raColumnIndex];
                 String decValue = columns[decColumnIndex];
                 if (!isNumeric(raValue) || !isNumeric(decValue)) {
@@ -397,8 +389,7 @@ public class BatchQueryTab {
                     if (catalogEntry == null) {
                         continue;
                     }
-                    catalogEntry.setLookupTable(selectedTable);
-                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, includeColors.isSelected());
+                    List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, includeColors.isSelected());
                     if (catalogEntry instanceof SimbadCatalogEntry) {
                         SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                         StringBuilder simbadType = new StringBuilder();
@@ -415,14 +406,8 @@ public class BatchQueryTab {
                             spectralTypes.add(AGN_WARNING);
                         }
                     }
-                    if (catalogEntry instanceof GaiaCatalogEntry) {
-                        GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
-                        if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                            spectralTypes.add(WD_WARNING);
-                        }
-                    }
-                    if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                        GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+                    if (catalogEntry instanceof WhiteDwarf) {
+                        WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                         if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                             spectralTypes.add(WD_WARNING);
                         }
@@ -462,7 +447,7 @@ public class BatchQueryTab {
 
         displayQueryResults();
 
-        echoField.setText("Query completed successfully.");
+        echoField.setText("Query completed successfully!");
         echoField.setBackground(JColor.LIGHT_GREEN.val);
         future.complete(AsynchResult.SUCCESS);
 
@@ -500,12 +485,7 @@ public class BatchQueryTab {
         Object[] columns = result.getColumnTitles();
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
-        JTable resultTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(defaultTableModel);
         alignResultColumns(resultTable);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -535,48 +515,6 @@ public class BatchQueryTab {
                 BorderFactory.createEtchedBorder(), "Batch query results", TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(resultScrollPanel);
-    }
-
-    private void alignResultColumns(JTable table) {
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-        int i = 0;
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
-    }
-
-    private TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
-        int i = 0;
-        sorter.setComparator(i++, getIntegerComparator());
-        sorter.setComparator(i++, getIntegerComparator());
-        sorter.setComparator(i++, getStringComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getStringComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getDoubleComparator());
-        sorter.setComparator(i++, getStringComparator());
-        sorter.setComparator(i++, getStringComparator());
-        return sorter;
     }
 
     public JPanel getBottomRow() {

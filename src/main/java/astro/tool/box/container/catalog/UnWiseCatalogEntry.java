@@ -74,12 +74,6 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Total proper motion
-    private double tpm;
-
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
@@ -134,40 +128,13 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("coadd flags W2", String.valueOf(flags_unwise_w2), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W1", String.valueOf(flags_info_w1), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("info flags W2", String.valueOf(flags_info_w2), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(getW1_W2()), Alignment.RIGHT, getDoubleComparator(), true));
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("UnWiseCatalogEntry{unwise_objid=").append(unwise_objid);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", mag_w1_vg=").append(mag_w1_vg);
-        sb.append(", mag_w2_vg=").append(mag_w2_vg);
-        sb.append(", w1_w2_vg=").append(w1_w2_vg);
-        sb.append(", qf_w1=").append(qf_w1);
-        sb.append(", qf_w2=").append(qf_w2);
-        sb.append(", flags_unwise_w1=").append(flags_unwise_w1);
-        sb.append(", flags_unwise_w2=").append(flags_unwise_w2);
-        sb.append(", flags_info_w1=").append(flags_info_w1);
-        sb.append(", flags_info_w2=").append(flags_info_w2);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", tpm=").append(tpm);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
+        catalogElements.add(new CatalogElement("W1-W2", roundTo3DecNZ(w1_w2_vg), Alignment.RIGHT, getDoubleComparator(), true));
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 31 * hash + Objects.hashCode(this.unwise_objid);
+        hash = 13 * hash + Objects.hashCode(this.unwise_objid);
         return hash;
     }
 
@@ -227,14 +194,14 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(getW1_W2());
-        return columnValues.split(",", 13);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + unwise_objid + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo3Dec(mag_w1_vg) + "," + roundTo3Dec(mag_w2_vg) + "," + roundTo3DecLZ(qf_w1) + "," + roundTo3DecLZ(qf_w2) + "," + flags_unwise_w1 + "," + flags_unwise_w2 + "," + flags_info_w1 + "," + flags_info_w2 + "," + roundTo3Dec(w1_w2_vg);
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,ra,dec,W1 (mag),W2 (mag),qual. fact. W1,qual. fact. W2,coadd flags W1,coadd flags W2,info flags W1,info flags W2,W1-W2";
-        return columnTitles.split(",", 13);
+        return columnTitles.split(",", -1);
     }
 
     @Override
@@ -256,9 +223,9 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.W1_W2, getW1_W2());
+        colors.put(Color.W1_W2, w1_w2_vg);
         return colors;
     }
 
@@ -307,16 +274,6 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -402,14 +359,6 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
-    }
-
-    public double getW1_W2() {
-        if (mag_w1_vg == 0 || mag_w2_vg == 0) {
-            return 0;
-        } else {
-            return mag_w1_vg - mag_w2_vg;
-        }
     }
 
 }

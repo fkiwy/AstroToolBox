@@ -1,9 +1,10 @@
-package astro.tool.box.service;
+package astro.tool.box.run;
 
 import astro.tool.box.container.lookup.LookupResult;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.Color;
+import astro.tool.box.service.SpectralTypeLookupService;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Constants.*;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class Results {
+public class PlanePartyStats {
 
     private static final Map<String, Double> SPECTRAL_TYPES = new HashMap<>();
 
@@ -142,7 +143,7 @@ public class Results {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
@@ -154,7 +155,7 @@ public class Results {
             results.append(line).append(",dist,tpm,vtan,spt").append(LINE_SEP);
             while (scanner.hasNextLine()) {
                 line = scanner.nextLine();
-                String[] values = line.split(SPLIT_CHAR, 22);
+                String[] values = line.split(",", -1);
                 double ra = toDouble(values[5]);
                 double dec = toDouble(values[6]);
                 if (ra == 0 && dec == 0) {

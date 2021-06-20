@@ -9,16 +9,19 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
+import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.container.lookup.LookupResult;
-import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.FileType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.module.ReferencesPanel;
+import astro.tool.box.module.SedPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
@@ -36,13 +39,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -59,11 +62,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class CatalogQueryTab {
 
@@ -73,6 +73,12 @@ public class CatalogQueryTab {
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
+
+    private final Map<String, CatalogEntry> catalogInstances;
+    private final CatalogQueryFacade catalogQueryFacade;
+
+    private final SpectralTypeLookupService spectralTypeLookupService;
+    private final List<SpectralTypeLookup> brownDwarfLookupEntries;
 
     private JPanel mainPanel;
     private JPanel topPanel;
@@ -87,15 +93,8 @@ public class CatalogQueryTab {
     private JTextField wiseViewField;
     private JTextField finderChartField;
     private JTable collectionTable;
+    private JTable currentTable;
 
-    private final CatalogQueryFacade catalogQueryFacade;
-    private final SpectralTypeLookupService spectralTypeLookupService;
-
-    private final Map<String, CatalogEntry> catalogInstances;
-    private final Map<Integer, List<CatalogEntry>> catalogResults;
-
-    //private AllWiseCatalogEntry selectedAllWiseEntry;
-    //private CatWiseCatalogEntry selectedCatWiseEntry;
     private CatalogEntry selectedEntry;
 
     private boolean copyCoordsToClipboard;
@@ -107,19 +106,25 @@ public class CatalogQueryTab {
 
     private double targetRa;
     private double targetDec;
+    private double searchRadius;
 
     public CatalogQueryTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
-        catalogResults = new HashMap<>();
         catalogInstances = getCatalogInstances();
         catalogQueryFacade = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
+        }
+        input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
+        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+            brownDwarfLookupEntries = stream.skip(1).map(line -> {
+                return new BrownDwarfLookupEntry(line.split(",", -1));
+            }).collect(Collectors.toList());
         }
     }
 
@@ -171,7 +176,6 @@ public class CatalogQueryTab {
                         showErrorDialog(baseFrame, "Search radius must not be empty!");
                         return;
                     }
-                    double searchRadius;
                     List<String> errorMessages = new ArrayList<>();
                     try {
                         NumberPair coordinates = getCoordinates(coords);
@@ -200,7 +204,7 @@ public class CatalogQueryTab {
                             errorMessages.add("Radius must not be larger than 300 arcsec.");
                         }
                     } catch (Exception ex) {
-                        searchRadius = Double.valueOf(0);
+                        searchRadius = 0;
                         errorMessages.add("Invalid radius!");
                     }
                     List<String> selectedCatalogs = new ArrayList<>();
@@ -228,7 +232,6 @@ public class CatalogQueryTab {
                         removeAndRecreateBottomPanel();
 
                         int count = 0;
-                        int catalogNumber = 0;
                         StringBuilder resultsPerCatalog = new StringBuilder();
                         Iterator<String> iter = selectedCatalogs.listIterator();
                         while (iter.hasNext()) {
@@ -236,12 +239,8 @@ public class CatalogQueryTab {
                             catalogQuery.setRa(targetRa);
                             catalogQuery.setDec(targetDec);
                             catalogQuery.setSearchRadius(searchRadius);
-                            catalogQuery.setCatalogNumber(catalogNumber++);
                             int results = queryCatalog(catalogQuery);
                             count += results;
-                            if (results == 0 && catalogNumber > 0) {
-                                catalogNumber--;
-                            }
                             resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
                             if (iter.hasNext()) {
                                 resultsPerCatalog.append("; ");
@@ -285,7 +284,7 @@ public class CatalogQueryTab {
                     String coords = coordsField.getText();
                     if (!coords.isEmpty() && selectedEntry != null) {
                         removeAndRecreateBottomPanel();
-                        displayLinks(targetRa, targetDec, targetRa);
+                        displayLinks(targetRa, targetDec, searchRadius);
                         displayCatalogDetails(selectedEntry);
                         displaySpectralTypes(selectedEntry);
                     }
@@ -299,17 +298,13 @@ public class CatalogQueryTab {
     }
 
     private int queryCatalog(CatalogEntry catalogQuery) throws IOException {
-        //selectedAllWiseEntry = null;
-        //selectedCatWiseEntry = null;
         List<CatalogEntry> catalogEntries = catalogQueryFacade.getCatalogEntriesByCoords(catalogQuery);
         catalogEntries.forEach(catalogEntry -> {
             catalogEntry.setTargetRa(catalogQuery.getRa());
             catalogEntry.setTargetDec(catalogQuery.getDec());
-            catalogEntry.setCatalogNumber(catalogQuery.getCatalogNumber());
             catalogEntry.loadCatalogElements();
         });
         if (!catalogEntries.isEmpty()) {
-            catalogResults.put(catalogQuery.getCatalogNumber(), catalogEntries);
             displayCatalogResults(catalogEntries, catalogQuery.getSearchRadius());
         }
         return catalogEntries.size();
@@ -325,12 +320,7 @@ public class CatalogQueryTab {
         Object[] columns = catalogEntry.getColumnTitles();
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
-        JTable catalogTable = new JTable(defaultTableModel) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable catalogTable = new JTable(defaultTableModel);
         alignCatalogColumns(catalogTable, catalogEntry);
         catalogTable.setAutoCreateRowSorter(true);
         catalogTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -339,16 +329,13 @@ public class CatalogQueryTab {
         catalogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         catalogTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
-                Component[] components = centerPanel.getComponents();
-                for (int i = 0; i < components.length; i++) {
-                    if (i != catalogEntry.getCatalogNumber()) {
-                        Component component = components[i];
-                        if (component != null) {
-                            centerPanel.remove(component);
-                            displayCatalogResults(catalogResults.get(i), degRadius);
-                        }
+                if (currentTable != null && currentTable != catalogTable) {
+                    try {
+                        currentTable.clearSelection();
+                    } catch (Exception ex) {
                     }
                 }
+                currentTable = catalogTable;
                 String sourceId = (String) catalogTable.getValueAt(catalogTable.getSelectedRow(), 1);
                 CatalogEntry selected = catalogEntries.stream().filter(entry -> {
                     return entry.getSourceId().equals(sourceId);
@@ -361,7 +348,6 @@ public class CatalogQueryTab {
                     }
                     displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     displayCatalogDetails(selected);
-                    //displayProperMotions(selected);
                     displaySpectralTypes(selected);
                     baseFrame.setVisible(true);
                 }
@@ -373,12 +359,12 @@ public class CatalogQueryTab {
         catalogScrollPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
-        centerPanel.add(catalogScrollPanel, catalogEntry.getCatalogNumber());
+        centerPanel.add(catalogScrollPanel);
     }
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(17, 2));
-        linkPanel.setPreferredSize(new Dimension(250, BOTTOM_PANEL_HEIGHT));
+        linkPanel.setPreferredSize(new Dimension(275, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(Color.LIGHT_GRAY, 3), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -390,7 +376,7 @@ public class CatalogQueryTab {
         wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
         finderChartField = new JTextField(String.valueOf(finderChartFOV));
         if (degDE >= -31) {
-            linkPanel.add(createHyperlink("Pan-STARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV)));
+            linkPanel.add(createHyperlink("Pan-STARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV, FileType.STACK)));
             linkPanel.add(panstarrsField);
         }
         linkPanel.add(createHyperlink("Aladin Lite", getAladinLiteUrl(degRA, degDE, aladinLiteFOV)));
@@ -419,11 +405,9 @@ public class CatalogQueryTab {
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel("Databases:"));
-        linkPanel.add(createHyperlink("IRSA Data Discovery", getDataDiscoveryUrl()));
-        linkPanel.add(new JLabel());
         linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
         linkPanel.add(new JLabel());
-        linkPanel.add(createHyperlink("VizieR", getVizierUrl(degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("VizieR", getVizierUrl(degRA, degDE, degRadius, 50, false)));
 
         linkPanel.add(new JLabel());
         linkPanel.add(new JLabel());
@@ -433,21 +417,30 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("CatWISE2020", getSpecificCatalogsUrl("II/365/catwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("unWISE", getSpecificCatalogsUrl("II/363/unwise", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia Distances", getSpecificCatalogsUrl("I/347/gaia2dis", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia WD Candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("VHS DR5", getSpecificCatalogsUrl("II/367/vhs_dr5", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("VHS DR4", getSpecificCatalogsUrl("II/359/vhs_dr4", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia distances", getSpecificCatalogsUrl("I/352/gedr3dis", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia quasars & galaxies", getSpecificCatalogsUrl("VII/285/gdr2ext", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia Teff regression", getSpecificCatalogsUrl("J/AJ/158/93/table2", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia WD candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
 
         bottomPanel.add(linkPanel);
         bottomPanel.setComponentZOrder(linkPanel, 0);
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
-        int maxRows = 19;
+        List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
+
+        int size = catalogElements.size();
+        int rows = size / 2;
+        int remainder = size % 2;
+        rows += remainder;
+
+        int maxRows = rows > 19 ? rows : 19;
+
         JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
-        detailPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(selectedEntry.getCatalogColor(), 3),
                 selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)",
@@ -455,16 +448,11 @@ public class CatalogQueryTab {
                 TitledBorder.TOP
         ));
 
-        List<CatalogElement> catalogElements = selectedEntry.getCatalogElements();
         catalogElements.forEach(element -> {
             addLabelToPanel(element, detailPanel);
             addFieldToPanel(element, detailPanel);
         });
 
-        int size = catalogElements.size();
-        int rows = size / 2;
-        int remainder = size % 2;
-        rows += remainder;
         if (remainder == 1) {
             addEmptyCatalogElement(detailPanel);
         }
@@ -473,115 +461,79 @@ public class CatalogQueryTab {
             addEmptyCatalogElement(detailPanel);
         }
 
-        bottomPanel.add(detailPanel);
+        JScrollPane scrollPanel = new JScrollPane(detailPanel);
+        scrollPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
+        bottomPanel.add(scrollPanel);
     }
 
-    /*private void displayProperMotions(CatalogEntry selectedEntry) {
-        if (selectedEntry instanceof AllWiseCatalogEntry) {
-            selectedAllWiseEntry = (AllWiseCatalogEntry) selectedEntry;
-        } else if (selectedEntry instanceof CatWiseCatalogEntry) {
-            selectedCatWiseEntry = (CatWiseCatalogEntry) selectedEntry;
-        }
-        if (selectedAllWiseEntry != null && selectedCatWiseEntry != null) {
-            NumberPair properMotions = calculateProperMotions(
-                    new NumberPair(selectedAllWiseEntry.getRa_pm(), selectedAllWiseEntry.getDec_pm()),
-                    new NumberPair(selectedCatWiseEntry.getRa_pm(), selectedCatWiseEntry.getDec_pm()),
-                    55400,
-                    56700,
-                    DEG_MAS
-            );
-            System.out.println("Apparent motions: " + properMotions);
-        }
-    }*/
-    //
     private void displaySpectralTypes(CatalogEntry catalogEntry) {
         try {
-            catalogEntry.setLookupTable(LookupTable.MAIN_SEQUENCE);
-            List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors());
+            List<LookupResult> results = spectralTypeLookupService.lookup(catalogEntry.getColors(true));
 
             List<String[]> spectralTypes = new ArrayList<>();
             results.forEach(entry -> {
                 String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
-                String spectralType = entry.getSpt() + "," + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun())
-                        + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-                spectralTypes.add(spectralType.split(",", 7));
+                String spectralType = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap()) + ","
+                        + entry.getTeff() + "," + roundTo3Dec(entry.getRsun()) + "," + roundTo3Dec(entry.getMsun());
+                spectralTypes.add(spectralType.split(",", -1));
             });
 
-            String titles = "spt,teff,radius (Rsun),mass (Msun),matched color,nearest color,difference";
-            String[] columns = titles.split(",", 7);
+            String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
+            String[] columns = titles.split(",", -1);
             Object[][] rows = new Object[][]{};
-            JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return true;
-                }
-            };
+            JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
             alignResultColumns(spectralTypeTable, spectralTypes);
             spectralTypeTable.setAutoCreateRowSorter(true);
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             TableColumnModel columnModel = spectralTypeTable.getColumnModel();
             columnModel.getColumn(0).setPreferredWidth(50);
-            columnModel.getColumn(1).setPreferredWidth(50);
-            columnModel.getColumn(2).setPreferredWidth(55);
+            columnModel.getColumn(1).setPreferredWidth(100);
+            columnModel.getColumn(2).setPreferredWidth(75);
             columnModel.getColumn(3).setPreferredWidth(50);
-            columnModel.getColumn(4).setPreferredWidth(100);
-            columnModel.getColumn(5).setPreferredWidth(50);
-            columnModel.getColumn(6).setPreferredWidth(50);
+            columnModel.getColumn(4).setPreferredWidth(50);
+            columnModel.getColumn(5).setPreferredWidth(75);
+            columnModel.getColumn(6).setPreferredWidth(75);
 
-            JPanel spectralTypeInfo = new JPanel(new GridLayout(4, 1));
-            spectralTypeInfo.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type lookup", TitledBorder.LEFT, TitledBorder.TOP
+            JPanel container = new JPanel();
+            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+            container.setBorder(BorderFactory.createTitledBorder(
+                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            spectralTypeInfo.setPreferredSize(new Dimension(425, BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(525, BOTTOM_PANEL_HEIGHT));
+            container.add(new JScrollPane(spectralTypeTable));
 
-            JScrollPane spectralTypePanel = spectralTypes.isEmpty()
-                    ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                    : new JScrollPane(spectralTypeTable);
-            spectralTypeInfo.add(spectralTypePanel);
+            JPanel remarks = new JPanel(new GridLayout(0, 1));
+            remarks.setPreferredSize(new Dimension(remarks.getWidth(), 100));
+            container.add(remarks);
 
-            JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            spectralTypeInfo.add(remarks);
-
-            boolean warning = false;
+            if (spectralTypes.isEmpty()) {
+                remarks.add(createLabel("No colors available / No match", JColor.RED));
+            }
             if (catalogEntry instanceof AllWiseCatalogEntry) {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     remarks.add(createLabel(AGN_WARNING, JColor.RED));
-                    warning = true;
                 }
             }
-            if (catalogEntry instanceof GaiaCatalogEntry) {
-                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
+            if (catalogEntry instanceof WhiteDwarf) {
+                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     remarks.add(createLabel(WD_WARNING, JColor.RED));
-                    warning = true;
                 }
-            }
-            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    remarks.add(createLabel(WD_WARNING, JColor.RED));
-                    warning = true;
-                }
-            }
-            if (!warning) {
-                remarks.add(new JLabel("Note that for some colors, results may be contradictory, as they may fit"));
-                remarks.add(new JLabel("to early type as well to late type stars."));
-                remarks.add(new JLabel("The more colors match, the better the results, in general."));
-                remarks.add(new JLabel("Be aware that this feature only returns approximate results."));
             }
 
-            remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            spectralTypeInfo.add(remarks);
-            remarks.add(new JLabel("The feature uses Eric Mamajek's spectral type lookup table:"));
+            remarks.add(new JLabel("This feature uses Eric Mamajek's spectral type lookup table (version: 2021.03.02):"));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
             remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
-            remarks.add(new JLabel("Version in use: 2019.3.22"));
             remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
 
+            JPanel toolsPanel = new JPanel();
+            toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
+            toolsPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+            container.add(toolsPanel);
+
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            collectPanel.setBorder(BorderFactory.createEtchedBorder());
-            spectralTypeInfo.add(collectPanel);
+            toolsPanel.add(collectPanel);
 
             collectPanel.add(new JLabel("Object type:"));
 
@@ -600,8 +552,31 @@ public class CatalogQueryTab {
                 collectTimer.restart();
             });
 
+            if (catalogEntry instanceof SimbadCatalogEntry) {
+                JButton referencesButton = new JButton("Object references");
+                collectPanel.add(referencesButton);
+                referencesButton.addActionListener((ActionEvent evt) -> {
+                    JFrame referencesFrame = new JFrame();
+                    referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    referencesFrame.setIconImage(getToolBoxImage());
+                    referencesFrame.setTitle("Measurements and references for "
+                            + catalogEntry.getSourceId() + " ("
+                            + roundTo7DecNZ(catalogEntry.getRa()) + " "
+                            + roundTo7DecNZ(catalogEntry.getDec()) + ")");
+                    referencesFrame.add(new JScrollPane(new ReferencesPanel(catalogEntry, referencesFrame)));
+                    referencesFrame.setSize(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT);
+                    referencesFrame.setLocation(0, 0);
+                    referencesFrame.setAlwaysOnTop(false);
+                    referencesFrame.setResizable(true);
+                    referencesFrame.setVisible(true);
+                });
+            }
+
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            toolsPanel.add(buttonPanel);
+
             JButton copyCoordsButton = new JButton("Copy coords");
-            collectPanel.add(copyCoordsButton);
+            buttonPanel.add(copyCoordsButton);
             Timer copyCoordsTimer = new Timer(3000, (ActionEvent e) -> {
                 copyCoordsButton.setText("Copy coords");
             });
@@ -612,7 +587,7 @@ public class CatalogQueryTab {
             });
 
             JButton copyInfoButton = new JButton("Copy digest");
-            collectPanel.add(copyInfoButton);
+            buttonPanel.add(copyInfoButton);
             Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
                 copyInfoButton.setText("Copy digest");
             });
@@ -623,7 +598,7 @@ public class CatalogQueryTab {
             });
 
             JButton copyAllButton = new JButton("Copy all");
-            collectPanel.add(copyAllButton);
+            buttonPanel.add(copyAllButton);
             Timer copyAllTimer = new Timer(3000, (ActionEvent e) -> {
                 copyAllButton.setText("Copy all");
             });
@@ -634,13 +609,27 @@ public class CatalogQueryTab {
             });
 
             JButton fillFormButton = new JButton("TYGO form");
-            collectPanel.add(fillFormButton);
+            buttonPanel.add(fillFormButton);
             fillFormButton.addActionListener((ActionEvent evt) -> {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
-
             });
 
-            bottomPanel.add(spectralTypeInfo);
+            JButton createSedButton = new JButton("Create SED");
+            buttonPanel.add(createSedButton);
+            createSedButton.addActionListener((ActionEvent evt) -> {
+                JFrame sedFrame = new JFrame();
+                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                sedFrame.setIconImage(getToolBoxImage());
+                sedFrame.setTitle("SED");
+                sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
+                sedFrame.setSize(900, 700);
+                sedFrame.setLocation(0, 0);
+                sedFrame.setAlwaysOnTop(false);
+                sedFrame.setResizable(false);
+                sedFrame.setVisible(true);
+            });
+
+            bottomPanel.add(container);
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
@@ -650,7 +639,7 @@ public class CatalogQueryTab {
         if (centerPanel != null) {
             mainPanel.remove(centerPanel);
         }
-        centerPanel = new JPanel(new GridLayout(2, 3));
+        centerPanel = new JPanel(new GridLayout(2, 0));
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         centerPanel.setPreferredSize(new Dimension(centerPanel.getWidth(), 250));
     }
@@ -661,27 +650,6 @@ public class CatalogQueryTab {
         }
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         mainPanel.add(bottomPanel, BorderLayout.PAGE_END);
-    }
-
-    private void alignCatalogColumns(JTable table, CatalogEntry entry) {
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
-        List<CatalogElement> elements = entry.getCatalogElements();
-        for (int i = 0; i < elements.size(); i++) {
-            Alignment alignment = elements.get(i).getAlignment();
-            table.getColumnModel().getColumn(i).setCellRenderer(alignment.equals(Alignment.LEFT) ? leftRenderer : rightRenderer);
-        }
-    }
-
-    private TableRowSorter createCatalogTableSorter(DefaultTableModel defaultTableModel, CatalogEntry entry) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
-        List<CatalogElement> elements = entry.getCatalogElements();
-        for (int i = 0; i < elements.size(); i++) {
-            sorter.setComparator(i, elements.get(i).getComparator());
-        }
-        return sorter;
     }
 
     public JPanel getTopPanel() {
@@ -746,14 +714,6 @@ public class CatalogQueryTab {
 
     public void setFinderChartFOV(int finderChartFOV) {
         this.finderChartFOV = finderChartFOV;
-    }
-
-    public double getTargetRa() {
-        return targetRa;
-    }
-
-    public double getTargetDec() {
-        return targetDec;
     }
 
 }

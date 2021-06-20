@@ -13,8 +13,11 @@ import astro.tool.box.module.tab.FileBrowserTab;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.module.tab.LookupTab;
 import astro.tool.box.module.tab.ObjectCollectionTab;
+import astro.tool.box.module.tab.PhotometricClassifierTab;
 import astro.tool.box.module.tab.SettingsTab;
+import astro.tool.box.module.tab.ImageSeriesTab;
 import astro.tool.box.module.tab.ToolTab;
+import astro.tool.box.module.tab.VizierCatalogsTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
 import java.awt.Dimension;
@@ -59,7 +62,7 @@ public class Application {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
         baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
-        baseFrame.setSize(new Dimension(1255, 850));
+        baseFrame.setSize(new Dimension(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -76,6 +79,15 @@ public class Application {
 
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
+
+        ImageSeriesTab imageSeriesTab = new ImageSeriesTab(baseFrame, tabbedPane, imageViewerTab);
+        imageSeriesTab.init();
+
+        PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        photoClassTab.init();
+
+        VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
+        vizierCatalogsTab.init();
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
         adqlQueryTab.init();

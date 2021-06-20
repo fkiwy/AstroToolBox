@@ -10,17 +10,17 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
-import astro.tool.box.enumeration.ABToVega;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.LookupTable;
+import astro.tool.box.exception.NoExtinctionValuesException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
@@ -48,7 +48,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     private double decMeanErr;
 
     // Modified Julian Date of the mean epoch corresponding to raMean, decMean (equinox J2000)
-    private double epochMean;
+    private LocalDateTime epochMean;
 
     // Number of single epoch detections in all filters
     private int nDetections;
@@ -98,13 +98,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
-
-    private LookupTable table;
 
     private List<StringPair> qualityFlags;
 
@@ -132,7 +127,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         decMean = toDouble(values[columns.get("decMean")]);
         raMeanErr = toDouble(values[columns.get("raMeanErr")]);
         decMeanErr = toDouble(values[columns.get("decMeanErr")]);
-        epochMean = toDouble(values[columns.get("epochMean")]);
+        epochMean = convertMJDToDateTime(new BigDecimal(values[columns.get("epochMean")]));
         nDetections = toInteger(values[columns.get("nDetections")]);
         gMeanPSFMag = toDouble(values[columns.get("gMeanPSFMag")]);
         gMeanPSFMagErr = toDouble(values[columns.get("gMeanPSFMagErr")]);
@@ -162,7 +157,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec err", roundTo4DecNZ(decMeanErr), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("mean observ. time", convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("mean observ. time", epochMean.format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(nDetections), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(gMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g err", roundTo3DecNZ(gMeanPSFMagErr), Alignment.RIGHT, getDoubleComparator()));
@@ -190,43 +185,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("PanStarrsCatalogEntry{objID=").append(objID);
-        sb.append(", objName=").append(objName);
-        sb.append(", qualityFlag=").append(qualityFlag);
-        sb.append(", raMean=").append(raMean);
-        sb.append(", decMean=").append(decMean);
-        sb.append(", raMeanErr=").append(raMeanErr);
-        sb.append(", decMeanErr=").append(decMeanErr);
-        sb.append(", epochMean=").append(epochMean);
-        sb.append(", nDetections=").append(nDetections);
-        sb.append(", gMeanPSFMag=").append(gMeanPSFMag);
-        sb.append(", gMeanPSFMagErr=").append(gMeanPSFMagErr);
-        sb.append(", rMeanPSFMag=").append(rMeanPSFMag);
-        sb.append(", rMeanPSFMagErr=").append(rMeanPSFMagErr);
-        sb.append(", iMeanPSFMag=").append(iMeanPSFMag);
-        sb.append(", iMeanPSFMagErr=").append(iMeanPSFMagErr);
-        sb.append(", zMeanPSFMag=").append(zMeanPSFMag);
-        sb.append(", zMeanPSFMagErr=").append(zMeanPSFMagErr);
-        sb.append(", yMeanPSFMag=").append(yMeanPSFMag);
-        sb.append(", yMeanPSFMagErr=").append(yMeanPSFMagErr);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", qualityFlags=").append(qualityFlags);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
-        hash = 47 * hash + (int) (this.objID ^ (this.objID >>> 32));
+        hash = 79 * hash + (int) (this.objID ^ (this.objID >>> 32));
         return hash;
     }
 
@@ -267,30 +228,19 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(epochMean))).format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
-        return columnValues.split(",", 24);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + epochMean.format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
-        return columnTitles.split(",", 24);
+        return columnTitles.split(",", -1);
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        if (gMeanPSFMag != 0) {
-            gMeanPSFMag = gMeanPSFMag - extinctionsByBand.get(SDSS_G);
-        }
-        if (rMeanPSFMag != 0) {
-            rMeanPSFMag = rMeanPSFMag - extinctionsByBand.get(SDSS_R);
-        }
-        if (iMeanPSFMag != 0) {
-            iMeanPSFMag = iMeanPSFMag - extinctionsByBand.get(SDSS_I);
-        }
-        if (zMeanPSFMag != 0) {
-            zMeanPSFMag = zMeanPSFMag - extinctionsByBand.get(SDSS_Z);
-        }
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
+        throw new NoExtinctionValuesException();
     }
 
     @Override
@@ -305,19 +255,14 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.g_r, get_g_r());
-        colors.put(Color.r_i, get_r_i());
-        colors.put(Color.i_z, get_i_z());
-        colors.put(Color.i_y, get_i_y());
-        colors.put(Color.z_y, get_z_y());
+        colors.put(Color.g_r_PS1, get_g_r());
+        colors.put(Color.r_i_PS1, get_r_i());
+        colors.put(Color.i_z_PS1, get_i_z());
+        colors.put(Color.i_y_PS1, get_i_y());
+        colors.put(Color.z_y_PS1, get_z_y());
         return colors;
-    }
-
-    @Override
-    public void setLookupTable(LookupTable table) {
-        this.table = table;
     }
 
     @Override
@@ -374,16 +319,6 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -471,15 +406,15 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         return 0;
     }
 
+    public LocalDateTime getObsDate() {
+        return epochMean;
+    }
+
     public double get_g_r() {
         if (gMeanPSFMag == 0 || rMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (gMeanPSFMag - ABToVega.g.val) - (rMeanPSFMag - ABToVega.r.val);
-            } else {
-                return gMeanPSFMag - rMeanPSFMag;
-            }
+            return gMeanPSFMag - rMeanPSFMag;
         }
     }
 
@@ -487,11 +422,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (rMeanPSFMag == 0 || iMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (rMeanPSFMag - ABToVega.r.val) - (iMeanPSFMag - ABToVega.i.val);
-            } else {
-                return rMeanPSFMag - iMeanPSFMag;
-            }
+            return rMeanPSFMag - iMeanPSFMag;
         }
     }
 
@@ -499,11 +430,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (iMeanPSFMag == 0 || zMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (iMeanPSFMag - ABToVega.i.val) - (zMeanPSFMag - ABToVega.z.val);
-            } else {
-                return iMeanPSFMag - zMeanPSFMag;
-            }
+            return iMeanPSFMag - zMeanPSFMag;
         }
     }
 
@@ -511,11 +438,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (iMeanPSFMag == 0 || yMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (iMeanPSFMag - ABToVega.i.val) - (yMeanPSFMag - ABToVega.Y.val);
-            } else {
-                return iMeanPSFMag - yMeanPSFMag;
-            }
+            return iMeanPSFMag - yMeanPSFMag;
         }
     }
 
@@ -523,12 +446,28 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (zMeanPSFMag == 0 || yMeanPSFMag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (zMeanPSFMag - ABToVega.z.val) - (yMeanPSFMag - ABToVega.Y.val);
-            } else {
-                return zMeanPSFMag - yMeanPSFMag;
-            }
+            return zMeanPSFMag - yMeanPSFMag;
         }
+    }
+
+    public double get_g_mag() {
+        return gMeanPSFMag;
+    }
+
+    public double get_r_mag() {
+        return rMeanPSFMag;
+    }
+
+    public double get_i_mag() {
+        return iMeanPSFMag;
+    }
+
+    public double get_z_mag() {
+        return zMeanPSFMag;
+    }
+
+    public double get_y_mag() {
+        return yMeanPSFMag;
     }
 
 }

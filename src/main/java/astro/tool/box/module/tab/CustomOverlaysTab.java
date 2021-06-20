@@ -128,7 +128,7 @@ public class CustomOverlaysTab {
             chooseColorButton.setBackground(chosenColor);
         });
 
-        JComboBox<Shape> overlayShapes = new JComboBox(Shape.values());
+        JComboBox overlayShapes = new JComboBox(Shape.values());
         overlayRow.add(overlayShapes);
         Shape shape = customOverlay.getShape();
         overlayShapes.setSelectedItem(shape == null ? Shape.CIRCLE : shape);

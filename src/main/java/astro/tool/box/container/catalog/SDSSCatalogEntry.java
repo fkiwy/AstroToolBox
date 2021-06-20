@@ -9,12 +9,11 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ABToVega;
+import astro.tool.box.enumeration.ABOffset;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.LookupTable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -71,29 +70,29 @@ public class SDSSCatalogEntry implements CatalogEntry {
     // Magnitude in u band
     private double u_mag;
 
-    // Magnitude in g band
-    private double g_mag;
-
-    // Magnitude in r band
-    private double r_mag;
-
-    // Magnitude in i band
-    private double i_mag;
-
-    // Magnitude in z band
-    private double z_mag;
-
     // Error in u magnitude
     private double u_err;
+
+    // Magnitude in g band
+    private double g_mag;
 
     // Error in g magnitude
     private double g_err;
 
+    // Magnitude in r band
+    private double r_mag;
+
     // Error in r magnitude
     private double r_err;
 
+    // Magnitude in i band
+    private double i_mag;
+
     // Error in i magnitude
     private double i_err;
+
+    // Magnitude in z band
+    private double z_mag;
 
     // Error in z magnitude
     private double z_err;
@@ -113,13 +112,10 @@ public class SDSSCatalogEntry implements CatalogEntry {
     // Search radius
     private double searchRadius;
 
-    // Catalog number
-    private int catalogNumber;
-
     // Most likely spectral type
     private String spt;
 
-    private LookupTable table;
+    private boolean toVega;
 
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
@@ -148,14 +144,14 @@ public class SDSSCatalogEntry implements CatalogEntry {
         mjd = toInteger(values[columns.get("mjd")]);
         specObjID = new BigInteger(values[columns.get("specObjID")]);
         u_mag = toDouble(values[columns.get("u")]);
-        g_mag = toDouble(values[columns.get("g")]);
-        r_mag = toDouble(values[columns.get("r")]);
-        i_mag = toDouble(values[columns.get("i")]);
-        z_mag = toDouble(values[columns.get("z")]);
         u_err = toDouble(values[columns.get("Err_u")]);
+        g_mag = toDouble(values[columns.get("g")]);
         g_err = toDouble(values[columns.get("Err_g")]);
+        r_mag = toDouble(values[columns.get("r")]);
         r_err = toDouble(values[columns.get("Err_r")]);
+        i_mag = toDouble(values[columns.get("i")]);
         i_err = toDouble(values[columns.get("Err_i")]);
+        z_mag = toDouble(values[columns.get("z")]);
         z_err = toDouble(values[columns.get("Err_z")]);
     }
 
@@ -193,47 +189,9 @@ public class SDSSCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SDSSCatalogEntry{objID=").append(objID);
-        sb.append(", run=").append(run);
-        sb.append(", rerun=").append(rerun);
-        sb.append(", camcol=").append(camcol);
-        sb.append(", field=").append(field);
-        sb.append(", obj=").append(obj);
-        sb.append(", ra=").append(ra);
-        sb.append(", dec=").append(dec);
-        sb.append(", raErr=").append(raErr);
-        sb.append(", decErr=").append(decErr);
-        sb.append(", type=").append(type);
-        sb.append(", clean=").append(clean);
-        sb.append(", mjd=").append(mjd);
-        sb.append(", specObjID=").append(specObjID);
-        sb.append(", u_mag=").append(u_mag);
-        sb.append(", g_mag=").append(g_mag);
-        sb.append(", r_mag=").append(r_mag);
-        sb.append(", i_mag=").append(i_mag);
-        sb.append(", z_mag=").append(z_mag);
-        sb.append(", u_err=").append(u_err);
-        sb.append(", g_err=").append(g_err);
-        sb.append(", r_err=").append(r_err);
-        sb.append(", i_err=").append(i_err);
-        sb.append(", z_err=").append(z_err);
-        sb.append(", targetRa=").append(targetRa);
-        sb.append(", targetDec=").append(targetDec);
-        sb.append(", pixelRa=").append(pixelRa);
-        sb.append(", pixelDec=").append(pixelDec);
-        sb.append(", searchRadius=").append(searchRadius);
-        sb.append(", catalogNumber=").append(catalogNumber);
-        sb.append(", catalogElements=").append(catalogElements);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public int hashCode() {
         int hash = 5;
-        hash = 29 * hash + (int) (this.objID ^ (this.objID >>> 32));
+        hash = 67 * hash + (int) (this.objID ^ (this.objID >>> 32));
         return hash;
     }
 
@@ -305,27 +263,18 @@ public class SDSSCatalogEntry implements CatalogEntry {
 
     @Override
     public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.g, g_mag);
-        bands.put(Band.r, r_mag);
-        bands.put(Band.i, i_mag);
-        bands.put(Band.z, z_mag);
-        return bands;
+        return new LinkedHashMap<>();
     }
 
     @Override
-    public Map<Color, Double> getColors() {
+    public Map<Color, Double> getColors(boolean toVega) {
+        this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
         return colors;
-    }
-
-    @Override
-    public void setLookupTable(LookupTable table) {
-        this.table = table;
     }
 
     @Override
@@ -382,16 +331,6 @@ public class SDSSCatalogEntry implements CatalogEntry {
     @Override
     public void setSearchRadius(double searchRadius) {
         this.searchRadius = searchRadius;
-    }
-
-    @Override
-    public int getCatalogNumber() {
-        return catalogNumber;
-    }
-
-    @Override
-    public void setCatalogNumber(int catalogNumber) {
-        this.catalogNumber = catalogNumber;
     }
 
     @Override
@@ -487,8 +426,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (u_mag == 0 || g_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (u_mag - ABToVega.u.val) - (g_mag - ABToVega.g.val);
+            if (toVega) {
+                return (u_mag - ABOffset.u.val) - (g_mag - ABOffset.g.val);
             } else {
                 return u_mag - g_mag;
             }
@@ -499,8 +438,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (g_mag == 0 || r_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (g_mag - ABToVega.g.val) - (r_mag - ABToVega.r.val);
+            if (toVega) {
+                return (g_mag - ABOffset.g.val) - (r_mag - ABOffset.r.val);
             } else {
                 return g_mag - r_mag;
             }
@@ -511,8 +450,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (r_mag == 0 || i_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (r_mag - ABToVega.r.val) - (i_mag - ABToVega.i.val);
+            if (toVega) {
+                return (r_mag - ABOffset.r.val) - (i_mag - ABOffset.i.val);
             } else {
                 return r_mag - i_mag;
             }
@@ -523,8 +462,8 @@ public class SDSSCatalogEntry implements CatalogEntry {
         if (i_mag == 0 || z_mag == 0) {
             return 0;
         } else {
-            if (LookupTable.MAIN_SEQUENCE.equals(table)) {
-                return (i_mag - ABToVega.i.val) - (z_mag - ABToVega.z.val);
+            if (toVega) {
+                return (i_mag - ABOffset.i.val) - (z_mag - ABOffset.z.val);
             } else {
                 return i_mag - z_mag;
             }

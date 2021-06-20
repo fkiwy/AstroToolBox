@@ -6,8 +6,7 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
@@ -69,7 +68,7 @@ public class BrownDwarfTab {
         InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             spectralTypeLookupService = new SpectralTypeLookupService(entries);
             distanceLookupService = new DistanceLookupService(entries);
@@ -80,37 +79,33 @@ public class BrownDwarfTab {
     public void init() {
         try {
             JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Spectral type lookup for brown dwarfs", TitledBorder.LEFT, TitledBorder.TOP
-            ));
 
             JPanel containerPanel = new JPanel();
             containerPanel.setLayout(new BorderLayout());
-            containerPanel.setPreferredSize(new Dimension(500, 630));
             mainPanel.add(containerPanel);
 
-            JPanel extinctionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            extinctionPanel.setPreferredSize(new Dimension(500, 30));
-            containerPanel.add(extinctionPanel, BorderLayout.PAGE_START);
-
-            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction for bands u, g, r, i, z, J, H, K, W1 & W2");
-            extinctionPanel.add(dustExtinction);
-
-            JPanel spectralTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel spectralTypePanel = new JPanel();
             spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypePanel.setLayout(new BoxLayout(spectralTypePanel, BoxLayout.Y_AXIS));
-            spectralTypePanel.setPreferredSize(new Dimension(500, 300));
-            containerPanel.add(spectralTypePanel, BorderLayout.CENTER);
+            spectralTypePanel.setPreferredSize(new Dimension(500, 325));
+            containerPanel.add(spectralTypePanel, BorderLayout.PAGE_START);
 
-            JPanel distancePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel distancePanel = new JPanel();
             distancePanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Distance evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             distancePanel.setLayout(new BoxLayout(distancePanel, BoxLayout.Y_AXIS));
-            distancePanel.setPreferredSize(new Dimension(500, 300));
-            containerPanel.add(distancePanel, BorderLayout.PAGE_END);
+            distancePanel.setPreferredSize(new Dimension(500, 325));
+            containerPanel.add(distancePanel, BorderLayout.CENTER);
+
+            JPanel extinctionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            extinctionPanel.setPreferredSize(new Dimension(500, 50));
+            containerPanel.add(extinctionPanel, BorderLayout.PAGE_END);
+
+            dustExtinction = new JCheckBox("Consider Galactic dust reddening & extinction for bands u, g, r, i, z, J, H, K, W1 & W2");
+            extinctionPanel.add(dustExtinction);
 
             dustExtinction.addActionListener((ActionEvent evt) -> {
                 performLookup(spectralTypePanel, distancePanel);
@@ -139,7 +134,7 @@ public class BrownDwarfTab {
             spectralTypePanel.add(createLabel("No catalog entry selected in the " + CatalogQueryTab.TAB_NAME + " tab!", JColor.RED));
         } else {
             distancePanel.add(createLabel("No spectral type selected in the table above!", JColor.RED));
-            JPanel entryPanel = new JPanel(new GridLayout(2, 1));
+            JPanel entryPanel = new JPanel(new GridLayout(0, 1));
             spectralTypePanel.add(entryPanel);
             String catalogEntry = "for " + selectedEntry.getCatalogName() + ": source id = " + selectedEntry.getSourceId()
                     + " RA = " + roundTo7DecNZ(selectedEntry.getRa()) + " dec = " + roundTo7DecNZ(selectedEntry.getDec());
@@ -150,14 +145,8 @@ public class BrownDwarfTab {
                     entryPanel.add(createLabel(AGN_WARNING, JColor.RED));
                 }
             }
-            if (selectedEntry instanceof GaiaCatalogEntry) {
-                GaiaCatalogEntry entry = (GaiaCatalogEntry) selectedEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    entryPanel.add(createLabel(WD_WARNING, JColor.RED));
-                }
-            }
-            if (selectedEntry instanceof GaiaDR3CatalogEntry) {
-                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) selectedEntry;
+            if (selectedEntry instanceof WhiteDwarf) {
+                WhiteDwarf entry = (WhiteDwarf) selectedEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     entryPanel.add(createLabel(WD_WARNING, JColor.RED));
                 }
@@ -170,7 +159,7 @@ public class BrownDwarfTab {
                     try {
                         selectedEntry.applyExtinctionCorrection(extinctionsByBand);
                     } catch (NoExtinctionValuesException ex) {
-                        entryPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.DARK_BLUE));
+                        entryPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.RED));
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -178,8 +167,7 @@ public class BrownDwarfTab {
                     baseFrame.setCursor(Cursor.getDefaultCursor());
                 }
             }
-            selectedEntry.setLookupTable(LookupTable.BROWN_DWARFS);
-            List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors());
+            List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors(true));
             displaySpectralTypes(results, spectralTypePanel, distancePanel);
         }
     }
@@ -189,18 +177,13 @@ public class BrownDwarfTab {
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
             String resultValues = entry.getSpt() + "," + matchedColor + "," + roundTo3Dec(entry.getNearest()) + "," + roundTo3DecLZ(entry.getGap());
-            resultRows.add(resultValues.split(",", 4));
+            resultRows.add(resultValues.split(",", -1));
         });
 
-        String titles = "spt,matched color,nearest color,difference";
-        String[] columns = titles.split(",", 4);
+        String titles = "spt,matched color,nearest color,offset";
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
-        JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(resultRows.toArray(rows), columns);
         alignResultColumns(resultTable, resultRows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -227,20 +210,19 @@ public class BrownDwarfTab {
             }
         });
 
-        JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No colors available / No match", JColor.RED))
-                : new JScrollPane(resultTable);
-        scrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder()
-        ));
-        spectralTypePanel.add(scrollPanel);
+        spectralTypePanel.add(new JScrollPane(resultTable));
+        if (resultRows.isEmpty()) {
+            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            messagePanel.add(createLabel("No colors available / No match", JColor.RED));
+            spectralTypePanel.add(messagePanel);
+        }
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(100, 200));
+        remarks.setPreferredSize(new Dimension(500, 150));
         spectralTypePanel.add(remarks);
         remarks.add(new JLabel("Brown dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.BROWN_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        remarks.add(new JLabel("W1-W2, W2-W3, K-W1, J-K, g-r, r-i, i-z, i-y, z-y and M_G"));
+        remarks.add(new JLabel("W1-W2, K-W1, J-K, g-r, r-i, i-z, i-y, z-y, M_G"));
         baseFrame.setVisible(true);
     }
 
@@ -249,18 +231,13 @@ public class BrownDwarfTab {
         results.forEach(entry -> {
             String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
             String resutValues = roundTo3Dec(entry.getDistance()) + "," + matchedBand;
-            resultRows.add(resutValues.split(",", 2));
+            resultRows.add(resutValues.split(",", -1));
         });
 
         String titles = "distance (pc),matched bands";
-        String[] columns = titles.split(",", 2);
+        String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
-        JTable resultTable = new JTable(resultRows.toArray(rows), columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return true;
-            }
-        };
+        JTable resultTable = new JTable(resultRows.toArray(rows), columns);
         alignResultColumns(resultTable, resultRows);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -268,19 +245,18 @@ public class BrownDwarfTab {
         columnModel.getColumn(0).setPreferredWidth(100);
         columnModel.getColumn(1).setPreferredWidth(100);
 
-        JScrollPane scrollPanel = resultRows.isEmpty()
-                ? new JScrollPane(createLabel("No bands available / No match", JColor.RED))
-                : new JScrollPane(resultTable);
-        scrollPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder()
-        ));
-        distancePanel.add(scrollPanel);
+        distancePanel.add(new JScrollPane(resultTable));
+        if (resultRows.isEmpty()) {
+            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            messagePanel.add(createLabel("No bands available / No match", JColor.RED));
+            distancePanel.add(messagePanel);
+        }
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(100, 200));
+        remarks.setPreferredSize(new Dimension(500, 150));
         distancePanel.add(remarks);
         remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
-        remarks.add(new JLabel("if available: g, r, i, z, y, J, H, K, W1, W2, W3 and G"));
+        remarks.add(new JLabel("if available: W1, W2, W3, J, H, K, g, r, i, z, y, G, RP"));
         remarks.add(new JLabel("Absolute magnitudes are from the brown dwarfs lookup table."));
         baseFrame.setVisible(true);
     }

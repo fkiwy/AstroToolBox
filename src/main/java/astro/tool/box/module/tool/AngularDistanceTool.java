@@ -48,7 +48,7 @@ public class AngularDistanceTool {
             mainPanel.add(toCoordsField);
 
             mainPanel.add(new JLabel("Angular distance unit: ", JLabel.RIGHT));
-            JComboBox<Unit> resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
+            JComboBox resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
             mainPanel.add(resultUnits);
 
             mainPanel.add(new JLabel("Angular distance: ", JLabel.RIGHT));

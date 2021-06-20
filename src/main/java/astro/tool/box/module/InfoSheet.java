@@ -4,20 +4,16 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaCatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.Epoch;
-import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.facade.CatalogQueryFacade;
-import astro.tool.box.module.shape.Cross;
 import astro.tool.box.module.tab.ImageViewerTab;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -36,10 +32,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.Graphics;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -91,31 +85,32 @@ public class InfoSheet {
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new SpectralTypeLookupEntry(line.split(SPLIT_CHAR, 30));
+                return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             mainSequenceLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                return new BrownDwarfLookupEntry(line.split(SPLIT_CHAR, 28));
+                return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             brownDwarfsLookupService = new SpectralTypeLookupService(entries);
         }
     }
 
     public Boolean create(JFrame baseFrame) {
+        imageViewerTab.setWaitCursor(false);
+        JTextField coordsField = imageViewerTab.getCoordsField();
+        ActionListener actionListener = coordsField.getActionListeners()[0];
+        coordsField.removeActionListener(actionListener);
+        coordsField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
+        coordsField.addActionListener(actionListener);
+        JTextField sizeField = imageViewerTab.getSizeField();
+        actionListener = sizeField.getActionListeners()[0];
+        sizeField.removeActionListener(actionListener);
+        sizeField.setText(String.valueOf(size));
+        sizeField.addActionListener(actionListener);
         try {
-            JTextField coordsField = imageViewerTab.getCoordsField();
-            ActionListener actionListener = coordsField.getActionListeners()[0];
-            coordsField.removeActionListener(actionListener);
-            coordsField.setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
-            coordsField.addActionListener(actionListener);
-            JTextField sizeField = imageViewerTab.getSizeField();
-            actionListener = sizeField.getActionListeners()[0];
-            sizeField.removeActionListener(actionListener);
-            sizeField.setText(String.valueOf(size));
-            sizeField.addActionListener(actionListener);
             imageViewerTab.getZoomSlider().setValue(250);
             imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
 
@@ -233,6 +228,41 @@ public class InfoSheet {
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC1");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC2");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC3");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("IRAC4");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
+            if (bufferedImage != null) {
+                imageLabels.add("MIPS24");
+                bufferedImages.add(bufferedImage);
+            }
+            bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
+            if (bufferedImage != null) {
+                imageLabels.add("3-color");
+                bufferedImages.add(bufferedImage);
+            }
+
+            createPdfTable("Spitzer (SEIP)", imageLabels, bufferedImages, writer, document);
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (bufferedImage != null) {
                 imageLabels.add("W1");
@@ -336,8 +366,8 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimation (**)", mainHeader, LookupTable.MAIN_SEQUENCE));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type estimation (***)", null, LookupTable.BROWN_DWARFS));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (**)", mainHeader));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type evaluation (***)", null));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});
@@ -370,8 +400,8 @@ public class InfoSheet {
 
             document.add(table);
 
-            document.add(new Paragraph("(**) Uses Eric Mamajek's table: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses tables from this paper: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (https://iopscience.iop.org/article/10.3847/1538-4365/aa9982)", SMALL_FONT));
+            document.add(new Paragraph("(**) Uses colors from: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses colors from: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data (A. Carnero Rosell) / Exploring the Age-dependent Properties of M and L Dwarfs Using Gaia and SDSS (R. Kiman)", SMALL_FONT));
 
             document.close();
 
@@ -379,17 +409,19 @@ public class InfoSheet {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
+            imageViewerTab.setWaitCursor(true);
             baseFrame.setCursor(Cursor.getDefaultCursor());
+            coordsField.setCursor(Cursor.getDefaultCursor());
+            sizeField.setCursor(Cursor.getDefaultCursor());
         }
 
         return true;
     }
 
-    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader, LookupTable lookupTable) throws Exception {
+    private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, String header, String mainHeader) throws Exception {
         List<BatchResult> batchResults = new ArrayList<>();
         for (CatalogEntry catalogEntry : catalogEntries) {
-            catalogEntry.setLookupTable(lookupTable);
-            List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+            List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
             if (catalogEntry instanceof SimbadCatalogEntry) {
                 SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
                 StringBuilder simbadType = new StringBuilder();
@@ -406,14 +438,8 @@ public class InfoSheet {
                     spectralTypes.add(AGN_WARNING);
                 }
             }
-            if (catalogEntry instanceof GaiaCatalogEntry) {
-                GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
-                if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                    spectralTypes.add(WD_WARNING);
-                }
-            }
-            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+            if (catalogEntry instanceof WhiteDwarf) {
+                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     spectralTypes.add(WD_WARNING);
                 }
@@ -511,6 +537,7 @@ public class InfoSheet {
         PdfPTable table = new PdfPTable(numberOfCells);
         table.setTotalWidth(widths);
         table.setLockedWidth(true);
+        table.setKeepTogether(true);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
         PdfPCell tableHeader = new PdfPCell(new Phrase(header, LARGE_FONT));
@@ -528,11 +555,7 @@ public class InfoSheet {
         }
 
         for (BufferedImage bi : bufferedImages) {
-            double x = bi.getWidth() / 2;
-            double y = bi.getHeight() / 2;
-            Graphics g = bi.getGraphics();
-            Cross cross = new Cross(x, y, 30, Color.YELLOW);
-            cross.draw(g);
+            bi = drawCenterShape(bi);
             Image image = Image.getInstance(writer, bi, 1);
             PdfPCell cell = new PdfPCell(image, true);
             cell.setBorderWidth(0);

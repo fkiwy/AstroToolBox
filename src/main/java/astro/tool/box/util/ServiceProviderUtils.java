@@ -5,7 +5,7 @@ import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
+import astro.tool.box.container.catalog.SdssCatalogEntry;
 import astro.tool.box.module.tab.AdqlQueryTab;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,9 +26,12 @@ public class ServiceProviderUtils {
     private static final String SERVICE_NOT_AVAILABLE = "%s is currently not available!";
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
+        return getSimbadBaseUrl() + "SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,%27.%27%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+    }
+
+    public static String getSimbadBaseUrl() {
         boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
-        String simbadBaseUrl = useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
-        return simbadBaseUrl + "SELECT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,%27.%27%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";
+        return useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
     }
 
     public static String createVizieRUrl(double degRA, double degDE, double degRadius, String tableName, String raColName, String decColName) {
@@ -74,24 +77,25 @@ public class ServiceProviderUtils {
     }
 
     public static List<CatalogEntry> transformResponseToCatalogEntries(String response, CatalogEntry catalogEntry) throws IOException {
-        BufferedReader reader = new BufferedReader(new StringReader(response));
-        if (catalogEntry instanceof SDSSCatalogEntry) {
-            reader.readLine();
-        }
-        String headerLine = reader.readLine();
-        String[] headers = CSVParser.parseLine(headerLine);
-        Map<String, Integer> columns = new HashMap<>();
-        for (int i = 0; i < headers.length; i++) {
-            columns.put(headers[i], i);
-        }
-        String line;
         List<CatalogEntry> entries = new ArrayList<>();
-        while ((line = reader.readLine()) != null) {
-            String[] values = CSVParser.parseLine(line);
-            for (int i = 0; i < values.length; i++) {
-                values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+        try (BufferedReader reader = new BufferedReader(new StringReader(response))) {
+            if (catalogEntry instanceof SdssCatalogEntry) {
+                reader.readLine();
             }
-            entries.add(catalogEntry.getInstance(columns, values));
+            String headerLine = reader.readLine();
+            String[] headers = CSVParser.parseLine(headerLine);
+            Map<String, Integer> columns = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                columns.put(headers[i], i);
+            }
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] values = CSVParser.parseLine(line);
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+                }
+                entries.add(catalogEntry.getInstance(columns, values));
+            }
         }
         return entries;
     }

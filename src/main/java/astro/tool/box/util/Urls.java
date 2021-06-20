@@ -1,12 +1,13 @@
 package astro.tool.box.util;
 
+import astro.tool.box.enumeration.FileType;
 import static astro.tool.box.util.ConversionFactors.*;
 
 public class Urls {
 
     // FoV in arcsec
-    public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView) {
-        return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=stack&size=" + fieldOfView * 4 + "&output_size=256";
+    public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView, FileType fileType) {
+        return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=" + fileType.val + "&size=" + fieldOfView * 4 + "&output_size=256&autoscale=99.8";
     }
 
     // FoV in degrees
@@ -21,7 +22,7 @@ public class Urls {
         if (zoom < 2) {
             zoom = 2;
         }
-        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&band=3&speed=300&trimbright=98&linear=1&color=gray&mode=percent&coadd_mode=pre-post&zoom=" + zoom + "&border=0";
+        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&band=3&speed=200&trimbright=98&linear=1&color=gray&mode=percent&coadd_mode=window-1.0-year&zoom=" + zoom + "&border=0";
     }
 
     // FoV in degrees
@@ -33,6 +34,10 @@ public class Urls {
         return "http://legacysurvey.org/viewer?ra=" + degRA + "&dec=" + degDE + "&mark=" + degRA + "," + degDE + "&zoom=15&layer=" + layer;
     }
 
+    public static String getLegacySingleExposuresUrl(double degRA, double degDE, String layer) {
+        return "http://legacysurvey.org/viewer/exposures/?ra=" + degRA + "&dec=" + degDE + "&layer=" + layer;
+    }
+
     public static String getDataDiscoveryUrl() {
         return "https://irsa.ipac.caltech.edu/applications/Radar";
     }
@@ -41,8 +46,9 @@ public class Urls {
         return "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=" + degRA + "%20" + degDE + "&Radius=" + degRadius + "&Radius.unit=arcsec&coodisp1=d2&list.pmsel=on&list.plxsel=on&list.rvsel=on&list.bibsel=off&list.notesel=off&output.format=HTML";
     }
 
-    public static String getVizierUrl(double degRA, double degDE, double degRadius) {
-        return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.add=_r&-sort=_r";
+    public static String getVizierUrl(double degRA, double degDE, double degRadius, int maxRows, boolean allColumns) {
+        String outAll = allColumns ? "&-out.all" : "";
+        return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.max=" + maxRows + "&-out.add=_r&-sort=_r" + outAll;
     }
 
     public static String getSpecificCatalogsUrl(String catalogName, double degRA, double degDE, double degRadius) {

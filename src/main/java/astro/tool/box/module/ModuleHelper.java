@@ -9,6 +9,7 @@ import static astro.tool.box.util.ServiceProviderUtils.*;
 import static astro.tool.box.util.Urls.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.CollectedObject;
+import astro.tool.box.container.Couple;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
@@ -18,20 +19,26 @@ import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.container.catalog.SDSSCatalogEntry;
+import astro.tool.box.container.catalog.SdssCatalogEntry;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
+import astro.tool.box.container.catalog.TessCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.UnWiseCatalogEntry;
-import astro.tool.box.container.catalog.VHSCatalogEntry;
+import astro.tool.box.container.catalog.VhsCatalogEntry;
+import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.DistanceLookupResult;
 import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.function.AstrometricFunctions;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.module.shape.Circle;
+import astro.tool.box.module.shape.Drawable;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.FileTypeFilter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -42,8 +49,11 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -70,34 +80,43 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.UndoableEditEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.Document;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.3.4";
+    public static final String PGM_VERSION = "2.3.5";
     public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
     public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
 
@@ -108,9 +127,16 @@ public class ModuleHelper {
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
 
+    public static int BASE_FRAME_WIDTH = 1275;
+    public static int BASE_FRAME_HEIGHT = 875;
+
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();
+    }
+
+    public static ImageIcon getInfoIcon() {
+        return new ImageIcon(ModuleHelper.class.getResource("/icons/info.png"));
     }
 
     public static Map<String, CatalogEntry> getCatalogInstances() {
@@ -133,14 +159,16 @@ public class ModuleHelper {
         catalogInstances.put(noirlabCatalogEntry.getCatalogName(), noirlabCatalogEntry);
         PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
         catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
-        SDSSCatalogEntry sdssCatalogEntry = new SDSSCatalogEntry();
+        SdssCatalogEntry sdssCatalogEntry = new SdssCatalogEntry();
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
-        VHSCatalogEntry vhsCatalogEntry = new VHSCatalogEntry();
+        VhsCatalogEntry vhsCatalogEntry = new VhsCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
         GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
         TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
         catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
+        TessCatalogEntry tessCatalogEntry = new TessCatalogEntry();
+        catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
 
         return catalogInstances;
     }
@@ -189,6 +217,9 @@ public class ModuleHelper {
     }
 
     public static void showExceptionDialog(JFrame baseFrame, Exception error) {
+        if (error instanceof NullPointerException) {
+            return;
+        }
         writeErrorLog(error);
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(formatError(error)), "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -221,6 +252,10 @@ public class ModuleHelper {
     public static boolean showConfirmDialog(JFrame baseFrame, String message) {
         int option = JOptionPane.showConfirmDialog(baseFrame, message, "Confimation", JOptionPane.OK_CANCEL_OPTION);
         return option == JOptionPane.YES_OPTION;
+    }
+
+    public static String bold(String text) {
+        return html("<b>" + text + "</b>");
     }
 
     public static String html(String text) {
@@ -264,8 +299,12 @@ public class ModuleHelper {
     }
 
     public static Border createEmptyBorder(String boderTitle) {
+        return createEmptyBorder(boderTitle, null);
+    }
+
+    public static Border createEmptyBorder(String boderTitle, Color titleColor) {
         return BorderFactory.createTitledBorder(
-                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, null, titleColor
         );
     }
 
@@ -332,12 +371,12 @@ public class ModuleHelper {
         //    label.setOpaque(true);
         //    label.setBackground(JColor.WHITE.val);
         //}
-        if (element.isComputed()) {
-            label.setForeground(JColor.DARK_GREEN.val);
-        }
-        if (element.isFaulty()) {
-            label.setForeground(JColor.RED.val);
-        }
+        //if (element.isComputed()) {
+        //    label.setForeground(JColor.DARK_GREEN.val);
+        //}
+        //if (element.isFaulty()) {
+        //    label.setForeground(JColor.RED.val);
+        //}
         if (element.getToolTip() != null) {
             label.setToolTipText(html(element.getToolTip()));
         }
@@ -366,6 +405,27 @@ public class ModuleHelper {
             field.setToolTipText(html(element.getToolTip()));
         }
         panel.add(field);
+    }
+
+    public static void alignCatalogColumns(JTable table, CatalogEntry entry) {
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        List<CatalogElement> elements = entry.getCatalogElements();
+        for (int i = 0; i < elements.size(); i++) {
+            Alignment alignment = elements.get(i).getAlignment();
+            table.getColumnModel().getColumn(i).setCellRenderer(alignment.equals(Alignment.LEFT) ? leftRenderer : rightRenderer);
+        }
+    }
+
+    public static TableRowSorter createCatalogTableSorter(DefaultTableModel defaultTableModel, CatalogEntry entry) {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        List<CatalogElement> elements = entry.getCatalogElements();
+        for (int i = 0; i < elements.size(); i++) {
+            sorter.setComparator(i, elements.get(i).getComparator());
+        }
+        return sorter;
     }
 
     public static void alignResultColumns(JTable table, List<String[]> rows) {
@@ -415,14 +475,13 @@ public class ModuleHelper {
                     if (type == null) {
                         type = BasicDataType.NONE;
                     }
+                    if (type.equals(BasicDataType.ALPHA_NUMERIC)) {
+                        continue;
+                    }
                     if (isNumeric(columnValue)) {
-                        if (!type.equals(BasicDataType.ALPHA_NUMERIC)) {
-                            type = BasicDataType.NUMERIC;
-                        }
+                        type = BasicDataType.NUMERIC;
                     } else {
-                        if (type.equals(BasicDataType.NUMERIC)) {
-                            type = BasicDataType.ALPHA_NUMERIC;
-                        }
+                        type = BasicDataType.ALPHA_NUMERIC;
                     }
                     types.put(i, type);
                 }
@@ -432,6 +491,10 @@ public class ModuleHelper {
     }
 
     public static void resizeColumnWidth(JTable table) {
+        resizeColumnWidth(table, 300);
+    }
+
+    public static void resizeColumnWidth(JTable table, int maxColWidth) {
         TableColumnModel columnModel = table.getColumnModel();
         for (int column = 0; column < table.getColumnCount(); column++) {
             int width = 0; // Min width
@@ -440,8 +503,8 @@ public class ModuleHelper {
                 Component component = table.prepareRenderer(renderer, row, column);
                 width = Math.max(component.getPreferredSize().width + 1, width);
             }
-            if (width > 300) {
-                width = 300; // Max width
+            if (maxColWidth > 0 && width > maxColWidth) {
+                width = maxColWidth; // Max width
             }
             columnModel.getColumn(column).setPreferredWidth(width + 20);
         }
@@ -461,6 +524,48 @@ public class ModuleHelper {
         };
     }
 
+    public static void alignResultColumns(JTable table) {
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        int i = 0;
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(i++).setCellRenderer(leftRenderer);
+    }
+
+    public static TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        int i = 0;
+        sorter.setComparator(i++, getIntegerComparator());
+        sorter.setComparator(i++, getIntegerComparator());
+        sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getDoubleComparator());
+        sorter.setComparator(i++, getStringComparator());
+        sorter.setComparator(i++, getStringComparator());
+        return sorter;
+    }
+
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
         List<LookupResult> results = spectralTypeLookupService.lookup(colors);
         List<String> spectralTypes = new ArrayList<>();
@@ -478,7 +583,7 @@ public class ModuleHelper {
 
     public static void collectObject(String objectType, CatalogEntry catalogEntry, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
-        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(), spectralTypeLookupService, true);
+        List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
         if (catalogEntry instanceof SimbadCatalogEntry) {
             SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
             StringBuilder simbadType = new StringBuilder();
@@ -495,14 +600,8 @@ public class ModuleHelper {
                 spectralTypes.add(AGN_WARNING);
             }
         }
-        if (catalogEntry instanceof GaiaCatalogEntry) {
-            GaiaCatalogEntry entry = (GaiaCatalogEntry) catalogEntry;
-            if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
-                spectralTypes.add(WD_WARNING);
-            }
-        }
-        if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-            GaiaDR3CatalogEntry entry = (GaiaDR3CatalogEntry) catalogEntry;
+        if (catalogEntry instanceof WhiteDwarf) {
+            WhiteDwarf entry = (WhiteDwarf) catalogEntry;
             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                 spectralTypes.add(WD_WARNING);
             }
@@ -588,7 +687,7 @@ public class ModuleHelper {
         }
         toCopy.append(catalogEntry.getMagnitudes());
         toCopy.append(LINE_SEP);
-        Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors();
+        Map<astro.tool.box.enumeration.Color, Double> colors = catalogEntry.getColors(false);
         colors.entrySet().forEach(entry -> {
             double value = entry.getValue();
             if (value != 0) {
@@ -653,19 +752,19 @@ public class ModuleHelper {
         if (gaiaEntry != null) {
             // GAIA DR2 pmRA + e_pmRA (mas/y)
             if (gaiaEntry.getPmra() != 0) {
-                params.append("&entry.905761395=").append(roundTo3DecNZ(gaiaEntry.getPmra())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmra_err()));
+                params.append("&entry.905761395=").append(roundTo3DecNZ(gaiaEntry.getPmra())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmraErr()));
             }
             // GAIA DR2 pmDE + e_pmDE
             if (gaiaEntry.getPmdec() != 0) {
-                params.append("&entry.965290776=").append(roundTo3DecNZ(gaiaEntry.getPmdec())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmdec_err()));
+                params.append("&entry.965290776=").append(roundTo3DecNZ(gaiaEntry.getPmdec())).append(" ").append(roundTo3DecNZ(gaiaEntry.getPmdecErr()));
             }
             // GAIA RV + e_RV
             if (gaiaEntry.getRadvel() != 0) {
-                params.append("&entry.702334724=").append(roundTo3DecNZ(gaiaEntry.getRadvel())).append(" ").append(roundTo3DecNZ(gaiaEntry.getRadvel_err()));
+                params.append("&entry.702334724=").append(roundTo3DecNZ(gaiaEntry.getRadvel())).append(" ").append(roundTo3DecNZ(gaiaEntry.getRadvelErr()));
             }
             // GAIA DR2 Parallax + e_
             if (gaiaEntry.getPlx() != 0) {
-                params.append("&entry.1383168065=").append(roundTo4DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo4DecNZ(gaiaEntry.getPlx_err()));
+                params.append("&entry.1383168065=").append(roundTo4DecNZ(gaiaEntry.getPlx())).append(" ").append(roundTo4DecNZ(gaiaEntry.getPlxErr()));
             }
             // GAIA ID
             params.append("&entry.1411207241=").append(gaiaEntry.getSourceId());
@@ -729,7 +828,7 @@ public class ModuleHelper {
         return subjects;
     }
 
-    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) throws IOException {
+    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
         BufferedImage bi;
         String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=large&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
@@ -766,7 +865,7 @@ public class ModuleHelper {
         return fileNames;
     }
 
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) throws IOException {
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) {
         BufferedImage bi;
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames, targetRa, targetDec, size * 4, 256);
         try {
@@ -779,9 +878,13 @@ public class ModuleHelper {
         return bi;
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) throws IOException {
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) {
+        return retrieveDecalsImage(targetRa, targetDec, size, band, "ls-dr9");
+    }
+
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, String layer) {
         BufferedImage bi;
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=ls-dr9&size=%d&bands=%s", targetRa, targetDec, size * 4, band);
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=%s&size=%d&bands=%s", targetRa, targetDec, layer, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -791,6 +894,16 @@ public class ModuleHelper {
             bi = null;
         }
         return bi;
+    }
+
+    public static BufferedImage drawCenterShape(BufferedImage image) {
+        image = zoom(image, 200);
+        double x = image.getWidth() / 2;
+        double y = image.getHeight() / 2;
+        Graphics g = image.getGraphics();
+        Drawable drawable = new Circle(x, y, 20, Color.YELLOW);
+        drawable.draw(g);
+        return image;
     }
 
     public static String[] concatArrays(String[] arg1, String[] arg2) {
@@ -815,6 +928,113 @@ public class ModuleHelper {
         pw.print(LocalDateTime.now().toString() + " ");
         pw.println(message);
         return sw.toString();
+    }
+
+    public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, JPanel container) throws Exception {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+        int returnVal = fileChooser.showSaveDialog(container);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            file = new File(file.getPath() + ".gif");
+            BufferedImage[] imageSet = new BufferedImage[imageList.size()];
+            int i = 0;
+            for (Couple<String, BufferedImage> imageData : imageList) {
+                BufferedImage imageBuffer = imageData.getB();
+                imageSet[i++] = drawCenterShape(imageBuffer);
+            }
+            if (imageSet.length > 0) {
+                GifSequencer sequencer = new GifSequencer();
+                sequencer.generateFromBI(imageSet, file, 500 / 10, true);
+            }
+        }
+    }
+
+    public static void addUndoManager(JTextArea textArea) {
+        final UndoManager manger = new UndoManager();
+        Document document = textArea.getDocument();
+
+        // Listen for undo and redo events
+        document.addUndoableEditListener((UndoableEditEvent evt) -> {
+            manger.addEdit(evt.getEdit());
+        });
+
+        // Create an undo action and add it to the text component
+        textArea.getActionMap().put("Undo", new AbstractAction("Undo") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    if (manger.canUndo()) {
+                        manger.undo();
+                    }
+                } catch (CannotUndoException e) {
+                }
+            }
+        });
+
+        // Bind the undo action to ctl-Z
+        textArea.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
+
+        // Create a redo action and add it to the text component
+        textArea.getActionMap().put("Redo", new AbstractAction("Redo") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    if (manger.canRedo()) {
+                        manger.redo();
+                    }
+                } catch (CannotRedoException e) {
+                }
+            }
+        });
+
+        // Bind the redo action to ctl-Y
+        textArea.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
+    }
+
+    public static WindowAdapter getChildWindowAdapter(JFrame baseFrame) {
+        return new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+                baseFrame.toFront();
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                baseFrame.setFocusableWindowState(true);
+            }
+
+            @Override
+            public void windowOpened(WindowEvent evt) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                baseFrame.setFocusableWindowState(false);
+            }
+        };
     }
 
 }

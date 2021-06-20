@@ -54,7 +54,7 @@ public class SettingsTab {
     public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     public static final Properties USER_SETTINGS = new Properties();
     public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
-    public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.OS.name();
+    public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.Flat_Light.name();
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -111,6 +111,7 @@ public class SettingsTab {
     private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
     private static final String SDSS_IMAGES = "sdssImages";
+    private static final String DSS_IMAGES = "dssImages";
 
     private int numberOfEpochs;
     private WiseBand wiseBand;
@@ -124,6 +125,7 @@ public class SettingsTab {
     private boolean legacyImages;
     private boolean panstarrsImages;
     private boolean sdssImages;
+    private boolean dssImages;
 
     // Catalogs
     private static final String CATALOGS = "catalogs";
@@ -319,6 +321,7 @@ public class SettingsTab {
             legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
+            dssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(DSS_IMAGES, "true"));
 
             wiseBandsBox = imageViewerTab.getWiseBands();
             actionListener = wiseBandsBox.getActionListeners()[0];
@@ -362,6 +365,7 @@ public class SettingsTab {
             imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setSdssImages(sdssImages);
+            imageViewerTab.setDssImages(dssImages);
 
             imageViewerSettings.add(new JLabel("Number of epochs: ", JLabel.RIGHT));
             JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
@@ -402,12 +406,16 @@ public class SettingsTab {
             imageViewerSettings.add(downloadPanel);
             JCheckBox legacyImagesCheckBox = new JCheckBox("DECaLS", legacyImages);
             downloadPanel.add(legacyImagesCheckBox);
-            JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
-            downloadPanel.add(sdssImagesCheckBox);
+            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
+            downloadPanel.add(panstarrsImagesCheckBox);
 
             imageViewerSettings.add(new JLabel());
-            JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
-            imageViewerSettings.add(panstarrsImagesCheckBox);
+            downloadPanel = new JPanel(new GridLayout(1, 2));
+            imageViewerSettings.add(downloadPanel);
+            JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
+            downloadPanel.add(sdssImagesCheckBox);
+            JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
+            downloadPanel.add(dssImagesCheckBox);
 
             imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
             JCheckBox asynchDownloadsCheckBox = new JCheckBox();
@@ -499,6 +507,7 @@ public class SettingsTab {
                     legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
+                    dssImages = dssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
                     return;
@@ -587,6 +596,7 @@ public class SettingsTab {
                 imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setSdssImages(sdssImages);
+                imageViewerTab.setDssImages(dssImages);
 
                 USER_SETTINGS.setProperty(NUMBER_OF_EPOCHS, numberOfEpochsField.getText());
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
@@ -600,6 +610,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
+                USER_SETTINGS.setProperty(DSS_IMAGES, String.valueOf(dssImages));
 
                 // Catalogs
                 selectedCatalogs = new ArrayList<>();
