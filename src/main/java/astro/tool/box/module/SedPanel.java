@@ -77,7 +77,7 @@ public class SedPanel extends JPanel {
         sedFluxes = new HashMap();
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
-        overPlotSed = new JCheckBox("Overplot reference SEDs");
+        overPlotSed = new JCheckBox("Overplot automatic reference SEDs");
         overPlotSed.setSelected(true);
 
         XYSeriesCollection collection = createSed(catalogEntry, null, true);
@@ -93,7 +93,7 @@ public class SedPanel extends JPanel {
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        commandPanel.add(new JLabel("Reference SED for spectral type: ", JLabel.RIGHT));
+        commandPanel.add(new JLabel("Manually select reference SEDs: ", JLabel.RIGHT));
         JComboBox spectralTypes = new JComboBox(SpectralType.values());
         commandPanel.add(spectralTypes);
         spectralTypes.addActionListener((ActionEvent e) -> {
