@@ -4,7 +4,6 @@ import astro.tool.box.container.SedFluxes;
 import astro.tool.box.container.SedReferences;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
@@ -16,7 +15,6 @@ import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecSN;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
 import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFlux;
 import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxDensity;
 import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxLambda;
@@ -68,7 +66,7 @@ public class SedPanel extends JPanel {
     private final Map<Band, Double> sedPhotometry;
     private final Map<Band, String> sedCatalogs;
 
-    private final JCheckBox useAbsoluteMagnitude;
+    private final JCheckBox overPlotSed;
 
     public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
@@ -79,7 +77,8 @@ public class SedPanel extends JPanel {
         sedFluxes = new HashMap();
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
-        useAbsoluteMagnitude = new JCheckBox("Use absolute magnitude if available");
+        overPlotSed = new JCheckBox("Overplot reference SEDs");
+        overPlotSed.setSelected(true);
 
         XYSeriesCollection collection = createSed(catalogEntry, null, true);
         JFreeChart chart = createChart(collection);
@@ -99,7 +98,7 @@ public class SedPanel extends JPanel {
         commandPanel.add(spectralTypes);
         spectralTypes.addActionListener((ActionEvent e) -> {
             SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
-            createReferenceSed(selectedType.name(), collection);
+            createReferenceSed(selectedType.name(), collection, 0);
         });
 
         JButton removeButton = new JButton("Remove reference SEDs");
@@ -110,9 +109,11 @@ public class SedPanel extends JPanel {
             createSed(catalogEntry, collection, false);
         });
 
-        commandPanel.add(useAbsoluteMagnitude);
-        useAbsoluteMagnitude.addActionListener((ActionEvent e) -> {
-            createSed(catalogEntry, collection, false);
+        commandPanel.add(overPlotSed);
+        overPlotSed.addActionListener((ActionEvent e) -> {
+            spectralTypes.setSelectedItem(SpectralType.SELECT);
+            collection.removeAllSeries();
+            createSed(catalogEntry, collection, true);
         });
 
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
@@ -279,30 +280,6 @@ public class SedPanel extends JPanel {
             }
         }
 
-        if (useAbsoluteMagnitude.isSelected()) {
-            GaiaDR3CatalogEntry gaiaEntry;
-            if (catalogEntry instanceof GaiaDR3CatalogEntry) {
-                gaiaEntry = (GaiaDR3CatalogEntry) catalogEntry;
-            } else {
-                gaiaEntry = new GaiaDR3CatalogEntry();
-                gaiaEntry.setRa(catalogEntry.getRa());
-                gaiaEntry.setDec(catalogEntry.getDec());
-                gaiaEntry.setSearchRadius(5);
-                CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
-                if (retrievedEntry != null) {
-                    gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
-                }
-            }
-            if (!"0".equals(gaiaEntry.getSourceId())) {
-                double plx = gaiaEntry.getPlx();
-                if (plx >= 5) {
-                    Band.getSedBands().forEach(band -> {
-                        sedPhotometry.put(band, calculateAbsoluteMagnitudeFromParallax(sedPhotometry.get(band), plx));
-                    });
-                }
-            }
-        }
-
         Band.getSedBands().forEach(band -> {
             sedFluxes.put(band, new SedFluxes(
                     sedPhotometry.get(band),
@@ -351,46 +328,46 @@ public class SedPanel extends JPanel {
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
             if (totalMags >= 4) {
-                double median;
+                double medianDiffMag;
                 if (totalMags % 2 == 0) {
-                    median = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
+                    medianDiffMag = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
                 } else {
-                    median = diffMags.get((totalMags - 1) / 2);
+                    medianDiffMag = diffMags.get((totalMags - 1) / 2);
                 }
                 double offset = 0.2;
                 int selectedMags = 0;
                 for (Double diffMag : diffMags) {
-                    if (diffMag >= median - offset && diffMag <= median + offset) {
+                    if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
                         selectedMags++;
                     }
                 }
                 if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
-                    createReferenceSed(entry.getSpt(), collection);
+                    createReferenceSed(entry.getSpt(), collection, medianDiffMag);
                 }
             }
         }
     }
 
-    private void createReferenceSed(String spectralType, XYSeriesCollection collection) {
+    private void createReferenceSed(String spectralType, XYSeriesCollection collection, double medianDiffMag) {
         Map<Band, Double> magnitudes = provideReferenceMagnitudes(spectralType);
         if (magnitudes == null) {
             return;
         }
-
+        if (!overPlotSed.isSelected()) {
+            medianDiffMag = 0;
+        }
         XYSeries series = new XYSeries(spectralType);
-
-        series.add(0.481, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g), 3631, 0.481));
-        series.add(0.617, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r), 3631, 0.617));
-        series.add(0.752, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i), 3631, 0.752));
-        series.add(0.866, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z), 3631, 0.866));
-        series.add(0.962, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y), 3631, 0.962));
-        series.add(1.235, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J), 1594, 1.235));
-        series.add(1.662, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.H), 1024, 1.662));
-        series.add(2.159, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K), 666.7, 2.159));
-        series.add(3.4, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1), 309.54, 3.4));
-        series.add(4.6, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2), 171.79, 4.6));
-        series.add(12, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3), 31.676, 12));
-
+        series.add(0.481, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, 3631, 0.481));
+        series.add(0.617, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, 3631, 0.617));
+        series.add(0.752, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, 3631, 0.752));
+        series.add(0.866, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, 3631, 0.866));
+        series.add(0.962, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, 3631, 0.962));
+        series.add(1.235, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J) + medianDiffMag, 1594, 1.235));
+        series.add(1.662, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.H) + medianDiffMag, 1024, 1.662));
+        series.add(2.159, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K) + medianDiffMag, 666.7, 2.159));
+        series.add(3.4, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, 309.54, 3.4));
+        series.add(4.6, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, 171.79, 4.6));
+        series.add(12, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, 31.676, 12));
         try {
             collection.addSeries(series);
         } catch (IllegalArgumentException ex) {
