@@ -52,6 +52,7 @@ import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -66,7 +67,8 @@ public class SedPanel extends JPanel {
     private final Map<Band, Double> sedPhotometry;
     private final Map<Band, String> sedCatalogs;
 
-    private final JCheckBox overPlotSed;
+    private final JComboBox spectralTypes;
+    private final JCheckBox overplotTemplates;
 
     public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
@@ -77,8 +79,10 @@ public class SedPanel extends JPanel {
         sedFluxes = new HashMap();
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
-        overPlotSed = new JCheckBox("Overplot automatic reference SEDs");
-        overPlotSed.setSelected(true);
+
+        spectralTypes = new JComboBox(SpectralType.values());
+        overplotTemplates = new JCheckBox("Overplot templates");
+        overplotTemplates.setSelected(true);
 
         XYSeriesCollection collection = createSed(catalogEntry, null, true);
         JFreeChart chart = createChart(collection);
@@ -93,15 +97,13 @@ public class SedPanel extends JPanel {
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        commandPanel.add(new JLabel("Manually select reference SEDs: ", JLabel.RIGHT));
-        JComboBox spectralTypes = new JComboBox(SpectralType.values());
+        commandPanel.add(new JLabel("SED templates: ", JLabel.RIGHT));
         commandPanel.add(spectralTypes);
         spectralTypes.addActionListener((ActionEvent e) -> {
-            SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
-            createReferenceSed(selectedType.name(), collection, 0);
+            addReferenceSeds(sedPhotometry, collection);
         });
 
-        JButton removeButton = new JButton("Remove reference SEDs");
+        JButton removeButton = new JButton("Remove all templates");
         commandPanel.add(removeButton);
         removeButton.addActionListener((ActionEvent e) -> {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
@@ -109,8 +111,14 @@ public class SedPanel extends JPanel {
             createSed(catalogEntry, collection, false);
         });
 
-        commandPanel.add(overPlotSed);
-        overPlotSed.addActionListener((ActionEvent e) -> {
+        JButton addButton = new JButton("Make best fit");
+        commandPanel.add(addButton);
+        addButton.addActionListener((ActionEvent e) -> {
+            createSed(catalogEntry, collection, true);
+        });
+
+        commandPanel.add(overplotTemplates);
+        overplotTemplates.addActionListener((ActionEvent e) -> {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
@@ -292,6 +300,7 @@ public class SedPanel extends JPanel {
         XYSeries series = new XYSeries(seriesLabel.toString());
 
         Band.getSedBands().forEach(band -> {
+            //System.out.println("(" + sedReferences.get(band).getWavelenth() + "," + (sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux()) + ")");
             series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux());
         });
 
@@ -319,6 +328,11 @@ public class SedPanel extends JPanel {
         for (SpectralTypeLookup lookupEntry : brownDwarfLookupEntries) {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
             Map<Band, Double> bands = entry.getBands();
+            String spectralType = entry.getSpt();
+            if ("M0M1M2M3M4M5".contains(spectralType)) {
+                continue;
+            }
+
             List<Double> diffMags = new ArrayList();
             Band.getSedBands().forEach(band -> {
                 if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
@@ -327,23 +341,31 @@ public class SedPanel extends JPanel {
             });
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
-            if (totalMags >= 4) {
-                double medianDiffMag;
-                if (totalMags % 2 == 0) {
-                    medianDiffMag = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
-                } else {
-                    medianDiffMag = diffMags.get((totalMags - 1) / 2);
-                }
-                double offset = 0.2;
-                int selectedMags = 0;
-                for (Double diffMag : diffMags) {
-                    if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
-                        selectedMags++;
+
+            double medianDiffMag;
+            if (totalMags % 2 == 0) {
+                medianDiffMag = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
+            } else {
+                medianDiffMag = diffMags.get((totalMags - 1) / 2);
+            }
+
+            SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
+            if (selectedType.equals(SpectralType.SELECT)) {
+                if (totalMags >= 4) {
+                    double offset = 0.2;
+                    int selectedMags = 0;
+                    for (Double diffMag : diffMags) {
+                        if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
+                            selectedMags++;
+                        }
+                    }
+                    if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
+                        createReferenceSed(spectralType, collection, medianDiffMag);
                     }
                 }
-                if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
-                    createReferenceSed(entry.getSpt(), collection, medianDiffMag);
-                }
+            } else if (selectedType.equals(SpectralType.valueOf(spectralType))) {
+                createReferenceSed(spectralType, collection, medianDiffMag);
+                return;
             }
         }
     }
@@ -353,7 +375,7 @@ public class SedPanel extends JPanel {
         if (magnitudes == null) {
             return;
         }
-        if (!overPlotSed.isSelected()) {
+        if (!overplotTemplates.isSelected()) {
             medianDiffMag = 0;
         }
         XYSeries series = new XYSeries(spectralType);
@@ -368,6 +390,12 @@ public class SedPanel extends JPanel {
         series.add(3.4, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, 309.54, 3.4));
         series.add(4.6, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, 171.79, 4.6));
         series.add(12, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, 31.676, 12));
+
+        //for (Object item : series.getItems()) {
+        //    XYDataItem dataItem = (XYDataItem) item;
+        //    System.out.println("(" + dataItem.getXValue() + "," + dataItem.getYValue() + ")");
+        //}
+
         try {
             collection.addSeries(series);
         } catch (IllegalArgumentException ex) {
