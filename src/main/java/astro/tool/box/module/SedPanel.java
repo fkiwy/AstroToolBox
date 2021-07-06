@@ -1,5 +1,9 @@
 package astro.tool.box.module;
 
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.SedFluxes;
 import astro.tool.box.container.SedReferences;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
@@ -13,15 +17,6 @@ import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.facade.CatalogQueryFacade;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecSN;
-import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFlux;
-import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxDensity;
-import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxLambda;
-import static astro.tool.box.module.ModuleHelper.getInfoIcon;
-import static astro.tool.box.module.ModuleHelper.html;
-import static astro.tool.box.module.ModuleHelper.retrieveCatalogEntry;
-import static astro.tool.box.util.Constants.LINE_BREAK;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -52,7 +47,6 @@ import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -109,12 +103,6 @@ public class SedPanel extends JPanel {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, false);
-        });
-
-        JButton addButton = new JButton("Make best fit");
-        commandPanel.add(addButton);
-        addButton.addActionListener((ActionEvent e) -> {
-            createSed(catalogEntry, collection, true);
         });
 
         commandPanel.add(overplotTemplates);
@@ -395,7 +383,6 @@ public class SedPanel extends JPanel {
         //    XYDataItem dataItem = (XYDataItem) item;
         //    System.out.println("(" + dataItem.getXValue() + "," + dataItem.getYValue() + ")");
         //}
-
         try {
             collection.addSeries(series);
         } catch (IllegalArgumentException ex) {
