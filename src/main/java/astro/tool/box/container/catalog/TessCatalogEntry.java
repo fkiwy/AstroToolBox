@@ -296,7 +296,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("teff (K)", roundTo3DecNZ(teff), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("teff err", roundTo3DecNZ(teff_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("logg [cm/s2]", roundTo3DecNZ(logg), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("logg (cm/s2)", roundTo3DecNZ(logg), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("logg err", roundTo3DecNZ(logg_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("radius (Rsun)", roundTo3DecNZ(rad), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("radius err", roundTo3DecNZ(rad_err), Alignment.RIGHT, getDoubleComparator()));
@@ -491,7 +491,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
                 + "pmdec err,"
                 + "teff (K),"
                 + "teff err,"
-                + "logg [cm/s2],"
+                + "logg (cm/s2),"
                 + "logg err,"
                 + "radius (Rsun),"
                 + "radius err,"

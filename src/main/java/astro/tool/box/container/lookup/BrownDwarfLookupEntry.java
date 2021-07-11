@@ -31,8 +31,8 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         bands.put(Band.W1, toDouble(values[9]));
         bands.put(Band.W2, toDouble(values[10]));
         bands.put(Band.W3, toDouble(values[11]));
-        bands.put(Band.G, toDouble(values[33]));
-        bands.put(Band.RP, toDouble(values[34]));
+        bands.put(Band.G, toDouble(values[37]));
+        bands.put(Band.RP, toDouble(values[38]));
         colors = new HashMap<>();
         colors.put(Color.g_r_PS1, toDouble(values[12]));
         colors.put(Color.r_i_PS1, toDouble(values[13]));
@@ -45,15 +45,15 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.W1_W2, toDouble(values[20]));
         colors.put(Color.J_K, toDouble(values[25]));
         colors.put(Color.i_z_DES, toDouble(values[27]));
-        //colors.put(Color.z_Y_DES, toDouble(values[28]));
+        colors.put(Color.z_Y_DES, toDouble(values[28]));
         colors.put(Color.i_z, toDouble(values[30]));
         colors.put(Color.z_Y, toDouble(values[31]));
         colors.put(Color.G_RP, toDouble(values[33]));
         colors.put(Color.BP_RP, toDouble(values[34]));
         colors.put(Color.BP_G, toDouble(values[35]));
-        colors.put(Color.M_G, toDouble(values[36]));
-        colors.put(Color.M_RP, toDouble(values[37]));
-        colors.put(Color.M_BP, toDouble(values[38]));
+        colors.put(Color.M_BP, toDouble(values[36]));
+        colors.put(Color.M_G, toDouble(values[37]));
+        colors.put(Color.M_RP, toDouble(values[38]));
     }
 
     @Override
