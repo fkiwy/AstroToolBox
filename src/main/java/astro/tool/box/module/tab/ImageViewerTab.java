@@ -4035,6 +4035,7 @@ public class ImageViewerTab {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
             enhanceImage(fits, 1000);
+            fits.close();
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
             images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
             writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
