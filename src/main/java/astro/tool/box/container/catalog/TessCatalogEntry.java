@@ -296,14 +296,14 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("teff (K)", roundTo3DecNZ(teff), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("teff err", roundTo3DecNZ(teff_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("logg (cm/s2)", roundTo3DecNZ(logg), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("logg err", roundTo3DecNZ(logg_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("logg (cm/s2)", roundTo4DecNZ(logg), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("logg err", roundTo4DecNZ(logg_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("radius (Rsun)", roundTo3DecNZ(rad), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("radius err", roundTo3DecNZ(rad_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("mass (Msun)", roundTo3DecNZ(mass), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("mass err", roundTo3DecNZ(mass_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("luminosity (Lsun)", roundTo3DecNZ(lum), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("luminosity err", roundTo3DecNZ(lum_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("luminosity (Lsun)", roundTo5DecNZ(lum), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("luminosity err", roundTo5DecNZ(lum_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("distance (pc)", roundTo3DecNZ(dist), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("distance err", roundTo3DecNZ(dist_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator()));
@@ -414,14 +414,14 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
                 + roundTo3Dec(pmdec_err) + ","
                 + roundTo3Dec(teff) + ","
                 + roundTo3Dec(teff_err) + ","
-                + roundTo3Dec(logg) + ","
-                + roundTo3Dec(logg_err) + ","
+                + roundTo4Dec(logg) + ","
+                + roundTo4Dec(logg_err) + ","
                 + roundTo3Dec(rad) + ","
                 + roundTo3Dec(rad_err) + ","
                 + roundTo3Dec(mass) + ","
                 + roundTo3Dec(mass_err) + ","
-                + roundTo3Dec(lum) + ","
-                + roundTo3Dec(lum_err) + ","
+                + roundTo5Dec(lum) + ","
+                + roundTo5Dec(lum_err) + ","
                 + roundTo3Dec(dist) + ","
                 + roundTo3Dec(dist_err) + ","
                 + roundTo3Dec(Gmag) + ","

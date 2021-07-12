@@ -186,7 +186,8 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
     public static final double PIXEL_SCALE_DECAM = 0.27;
-    public static final int NUMBER_OF_EPOCHS = 7;
+    public static final int NUMBER_OF_EPOCHS = 8;
+    public static final int NUMBER_OF_UNWISE_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
@@ -842,6 +843,11 @@ public class ImageViewerTab {
                     decalsCutouts.setSelected(false);
                     pixelScale = PIXEL_SCALE_WISE;
                 }
+                if (unwiseCutouts.isSelected()) {
+                    resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+                } else {
+                    resetEpochSlider(NUMBER_OF_EPOCHS);
+                }
                 previousRa = 0;
                 previousDec = 0;
                 createFlipbook();
@@ -852,6 +858,7 @@ public class ImageViewerTab {
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 if (unwiseCutouts.isSelected()) {
                     unwiseCutouts.setSelected(false);
+                    resetEpochSlider(NUMBER_OF_EPOCHS);
                 }
                 if (decalsCutouts.isSelected()) {
                     pixelScale = PIXEL_SCALE_DECAM;
@@ -2434,6 +2441,16 @@ public class ImageViewerTab {
             count++;
         }
         return count > 0;
+    }
+
+    private void resetEpochSlider(int numberOfEpochs) {
+        epochLabel.setText(String.format(EPOCH_LABEL, numberOfEpochs));
+        ChangeListener changeListener = epochSlider.getChangeListeners()[0];
+        epochSlider.removeChangeListener(changeListener);
+        epochSlider.setMaximum(numberOfEpochs);
+        epochSlider.setValue(numberOfEpochs);
+        epochSlider.addChangeListener(changeListener);
+        selectedEpochs = numberOfEpochs;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
