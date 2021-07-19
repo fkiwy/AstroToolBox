@@ -434,6 +434,32 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (W1mag != 0) {
+            mags.append(roundTo3DecNZ(W1mag)).append(",").append(roundTo3DecNZ(W1_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (W2mag != 0) {
+            mags.append(roundTo3DecNZ(W2mag)).append(",").append(roundTo3DecNZ(W2_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (W3mag != 0) {
+            mags.append(roundTo3DecNZ(W3mag)).append(",").append(roundTo3DecNZ(W3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (W4mag != 0) {
+            mags.append(roundTo3DecNZ(W4mag)).append(",").append(roundTo3DecNZ(W4_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return sourceId;
     }

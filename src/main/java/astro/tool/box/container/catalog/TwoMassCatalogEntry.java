@@ -338,6 +338,27 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (Jmag != 0) {
+            mags.append(roundTo3DecNZ(Jmag)).append(",").append(roundTo3DecNZ(J_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (Hmag != 0) {
+            mags.append(roundTo3DecNZ(Hmag)).append(",").append(roundTo3DecNZ(H_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (Kmag != 0) {
+            mags.append(roundTo3DecNZ(Kmag)).append(",").append(roundTo3DecNZ(K_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.J, Jmag);

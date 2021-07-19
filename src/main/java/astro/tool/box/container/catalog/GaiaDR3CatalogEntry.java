@@ -67,6 +67,9 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     // G - RP colour
     private double G_RP;
 
+    // Renormalised unit weight error (RUWE)
+    private double ruwe;
+
     // Radial velocity
     private double radvel;
 
@@ -121,6 +124,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         BP_RP = toDouble(values[columns.get("bp_rp")]);
         BP_G = toDouble(values[columns.get("bp_g")]);
         G_RP = toDouble(values[columns.get("g_rp")]);
+        ruwe = toDouble(values[columns.get("ruwe")]);
         radvel = toDouble(values[columns.get("dr2_radial_velocity")]);
         radvel_err = toDouble(values[columns.get("dr2_radial_velocity_error")]);
     }
@@ -148,6 +152,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("BP-RP", roundTo3DecNZ(BP_RP), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP-G", roundTo3DecNZ(BP_G), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("G-RP", roundTo3DecNZ(G_RP), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("RUWE", roundTo3DecNZ(ruwe), Alignment.RIGHT, getDoubleComparator(), false));
         catalogElements.add(new CatalogElement("rad vel (km/s)", roundTo3DecNZ(radvel), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("rad vel err", roundTo3DecNZ(radvel_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getParallacticDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -221,6 +226,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         addRow(query, "       bp_rp,");
         addRow(query, "       bp_g,");
         addRow(query, "       g_rp,");
+        addRow(query, "       ruwe,");
         addRow(query, "       dr2_radial_velocity,");
         addRow(query, "       dr2_radial_velocity_error");
         addRow(query, "FROM   gaiaedr3.gaia_source");
@@ -242,7 +248,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(ruwe) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTansverseVelocity()) + "," + roundTo3Dec(getTotalVelocity());
         return columnValues.split(",", -1);
     }
 
@@ -288,6 +294,27 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         }
         if (RPmag != 0) {
             mags.append("RP=").append(roundTo3DecNZ(RPmag)).append(" ");
+        }
+        return mags.toString();
+    }
+
+    @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (Gmag != 0) {
+            mags.append(roundTo3DecNZ(Gmag)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (BPmag != 0) {
+            mags.append(roundTo3DecNZ(BPmag)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (RPmag != 0) {
+            mags.append(roundTo3DecNZ(RPmag)).append(",");
+        } else {
+            mags.append(",");
         }
         return mags.toString();
     }
@@ -435,6 +462,10 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         return radvel_err;
     }
     //
+
+    public double getRuwe() {
+        return ruwe;
+    }
 
     public double getTansverseVelocity() {
         return calculateTransverseVelocityFromParallax(pmra, pmdec, plx);

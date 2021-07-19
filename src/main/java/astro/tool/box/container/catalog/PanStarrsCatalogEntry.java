@@ -287,6 +287,37 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (gMeanPSFMag != 0) {
+            mags.append(roundTo3DecNZ(gMeanPSFMag)).append(",").append(roundTo3DecNZ(gMeanPSFMagErr)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (rMeanPSFMag != 0) {
+            mags.append(roundTo3DecNZ(rMeanPSFMag)).append(",").append(roundTo3DecNZ(rMeanPSFMagErr)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (iMeanPSFMag != 0) {
+            mags.append(roundTo3DecNZ(iMeanPSFMag)).append(",").append(roundTo3DecNZ(iMeanPSFMagErr)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (zMeanPSFMag != 0) {
+            mags.append(roundTo3DecNZ(zMeanPSFMag)).append(",").append(roundTo3DecNZ(zMeanPSFMagErr)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (yMeanPSFMag != 0) {
+            mags.append(roundTo3DecNZ(yMeanPSFMag)).append(",").append(roundTo3DecNZ(yMeanPSFMagErr)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return String.valueOf(objID);
     }

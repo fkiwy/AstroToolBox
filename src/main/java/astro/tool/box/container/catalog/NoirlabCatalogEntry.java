@@ -385,6 +385,42 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (u_mag != 0) {
+            mags.append(roundTo3DecNZ(u_mag)).append(",").append(roundTo3DecNZ(u_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (g_mag != 0) {
+            mags.append(roundTo3DecNZ(g_mag)).append(",").append(roundTo3DecNZ(g_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (r_mag != 0) {
+            mags.append(roundTo3DecNZ(r_mag)).append(",").append(roundTo3DecNZ(r_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (i_mag != 0) {
+            mags.append(roundTo3DecNZ(i_mag)).append(",").append(roundTo3DecNZ(i_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (z_mag != 0) {
+            mags.append(roundTo3DecNZ(z_mag)).append(",").append(roundTo3DecNZ(z_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (y_mag != 0) {
+            mags.append(roundTo3DecNZ(y_mag)).append(",").append(roundTo3DecNZ(y_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return String.valueOf(sourceId);
     }
