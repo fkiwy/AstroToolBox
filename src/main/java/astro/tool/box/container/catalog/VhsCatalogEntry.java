@@ -258,6 +258,32 @@ public class VhsCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (y_ap3 != 0) {
+            mags.append(roundTo3DecNZ(y_ap3)).append(",").append(roundTo3DecNZ(y_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (j_ap3 != 0) {
+            mags.append(roundTo3DecNZ(j_ap3)).append(",").append(roundTo3DecNZ(j_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (h_ap3 != 0) {
+            mags.append(roundTo3DecNZ(h_ap3)).append(",").append(roundTo3DecNZ(h_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (ks_ap3 != 0) {
+            mags.append(roundTo3DecNZ(ks_ap3)).append(",").append(roundTo3DecNZ(ks_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return String.valueOf(sourceId);
     }
