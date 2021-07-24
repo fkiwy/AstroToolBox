@@ -80,21 +80,21 @@ public class AngularSeperation {
             entry.setSearchRadius(1);
             NoirlabCatalogEntry secondaryNoirlab = (NoirlabCatalogEntry) retrieveCatalogEntry(entry, new CatalogQueryService(), null);
             double numberOfYears = primaryNoirlab.getMeanEpoch() - secondaryNoirlab.getMeanEpoch();
-            //System.out.println("==========> pair #" + ++pairNumber);
-            //System.out.println("mean epoch of primary       = " + primaryNoirlab.getMeanEpoch());
-            //System.out.println("mean epoch of secondary     = " + secondaryNoirlab.getMeanEpoch());
-            //System.out.println("difference                  = " + numberOfYears);
+            System.out.println("==========> pair #" + ++pairNumber);
+            System.out.println("mean epoch of primary       = " + primaryNoirlab.getMeanEpoch());
+            System.out.println("mean epoch of secondary     = " + secondaryNoirlab.getMeanEpoch());
+            System.out.println("difference                  = " + numberOfYears);
             NumberPair correctedPrimaryPosition = calculatePositionFromProperMotion(new NumberPair(primaryNoirlab.getRa(), primaryNoirlab.getDec()),
                     new NumberPair(-numberOfYears * primaryNoirlab.getPmra() / DEG_MAS, -numberOfYears * primaryNoirlab.getPmdec() / DEG_MAS)
             );
-            //double angularDistance = calculateAngularDistance(new NumberPair(primaryNoirlab.getRa(), primaryNoirlab.getDec()), new NumberPair(secondaryNoirlab.getRa(), secondaryNoirlab.getDec()), DEG_ARCSEC);
-            //double correctedAngularSeparation = calculateAngularDistance(correctedPrimaryPosition, new NumberPair(secondaryNoirlab.getRa(), secondaryNoirlab.getDec()), DEG_ARCSEC);
-            //System.out.println("angularDistance             = " + roundTo3DecNZ(angularDistance));
-            //System.out.println("correctedAngularSeparation  = " + roundTo3DecNZ(correctedAngularSeparation));
-            //double projectedPhysicalSeparation = correctedAngularSeparation * primaryGaia.getParallacticDistance();
-            //System.out.println("projectedPhysicalSeparation = " + roundTo3DecNZ(projectedPhysicalSeparation));
-            //System.out.println("pair #" + ++pairNumber + " " + roundTo3DecNZ(correctedAngularSeparation) + " " + roundTo3DecNZ(projectedPhysicalSeparation));
-            System.out.println("pair #" + ++pairNumber + " " + roundTo3DecNZ(primaryGaia.getRuwe()));
+            double angularDistance = calculateAngularDistance(new NumberPair(primaryNoirlab.getRa(), primaryNoirlab.getDec()), new NumberPair(secondaryNoirlab.getRa(), secondaryNoirlab.getDec()), DEG_ARCSEC);
+            double correctedAngularSeparation = calculateAngularDistance(correctedPrimaryPosition, new NumberPair(secondaryNoirlab.getRa(), secondaryNoirlab.getDec()), DEG_ARCSEC);
+            System.out.println("angularDistance             = " + roundTo3DecNZ(angularDistance));
+            System.out.println("correctedAngularSeparation  = " + roundTo3DecNZ(correctedAngularSeparation));
+            double projectedPhysicalSeparation = correctedAngularSeparation * primaryGaia.getParallacticDistance();
+            System.out.println("projectedPhysicalSeparation = " + roundTo3DecNZ(projectedPhysicalSeparation));
+            System.out.println("pair #" + pairNumber + " " + roundTo3DecNZ(correctedAngularSeparation) + " " + roundTo3DecNZ(projectedPhysicalSeparation));
+            //System.out.println("pair #" + pairNumber + " " + roundTo3DecNZ(primaryGaia.getRuwe()));
         }
     }
 
