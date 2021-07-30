@@ -1,7 +1,7 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.module.ModuleHelper.*;
+import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.GaiaCmd;
 import java.awt.Color;
@@ -103,7 +103,8 @@ public class CmdPanel extends JPanel {
         double xTarget = g_rp ? catalogEntry.getG_RP() : catalogEntry.getBP_RP();
         double yTarget = catalogEntry.getAbsoluteGmag();
         if (xTarget != 0 && yTarget != 0) {
-            XYSeries seriesTarget = new XYSeries(catalogEntry.getCatalogName() + " " + catalogEntry.getSourceId());
+            XYSeries seriesTarget = new XYSeries(catalogEntry.getCatalogName() + " " + catalogEntry.getSourceId()
+                    + ": G=" + roundTo3DecNZ(yTarget) + " " + (g_rp ? "G-RP" : "BP-RP") + "=" + roundTo3DecNZ(xTarget));
             seriesTarget.add(xTarget, yTarget);
             collection.addSeries(seriesTarget);
         }
@@ -171,7 +172,11 @@ public class CmdPanel extends JPanel {
     }
 
     private void loadCmdData() {
-        File objectCollectionFile = new File("C:/Users/wcq637/Documents/Private/BYW/Gaia CMD/Gaia Catalogue of Nearby Stars.csv");
+        String gaiaCmdPath = getUserSetting(GAIA_CMD_PATH);
+        if (gaiaCmdPath == null || gaiaCmdPath.isEmpty()) {
+            throw new RuntimeException("Specify file location of Gaia CMD data in the Settings tab.");
+        }
+        File objectCollectionFile = new File(gaiaCmdPath);
         try (Scanner scanner = new Scanner(objectCollectionFile)) {
             scanner.nextLine();
             CMD_DATA = new ArrayList();
@@ -183,7 +188,7 @@ public class CmdPanel extends JPanel {
                 CMD_DATA.add(new NumberTriplet(x, y, z));
             }
         } catch (FileNotFoundException ex) {
-            writeErrorLog(ex);
+            throw new RuntimeException(ex.getMessage());
         }
     }
 

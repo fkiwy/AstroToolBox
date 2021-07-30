@@ -5658,16 +5658,20 @@ public class ImageViewerTab {
                 JButton createCmdButton = new JButton("Create CMD");
                 buttonPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
-                    JFrame sedFrame = new JFrame();
-                    sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                    sedFrame.setIconImage(getToolBoxImage());
-                    sedFrame.setTitle("CMD");
-                    sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                    sedFrame.setSize(1050, 820);
-                    sedFrame.setLocation(0, 0);
-                    sedFrame.setAlwaysOnTop(false);
-                    sedFrame.setResizable(false);
-                    sedFrame.setVisible(true);
+                    try {
+                        JFrame sedFrame = new JFrame();
+                        sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                        sedFrame.setIconImage(getToolBoxImage());
+                        sedFrame.setTitle("CMD");
+                        sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
+                        sedFrame.setSize(1050, 820);
+                        sedFrame.setLocation(0, 0);
+                        sedFrame.setAlwaysOnTop(false);
+                        sedFrame.setResizable(false);
+                        sedFrame.setVisible(true);
+                    } catch (Exception ex) {
+                        showErrorDialog(baseFrame, ex.getMessage());
+                    }
                 });
             }
         }
