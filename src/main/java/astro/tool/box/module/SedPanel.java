@@ -24,7 +24,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import static java.lang.Math.abs;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -51,6 +50,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class SedPanel extends JPanel {
+
+    private static final String FONT_NAME = "Tahoma";
 
     private final List<SpectralTypeLookup> brownDwarfLookupEntries;
     private final CatalogQueryFacade catalogQueryFacade;
@@ -126,7 +127,6 @@ public class SedPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(chartPanel);
         add(commandPanel);
-
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
@@ -410,20 +410,21 @@ public class SedPanel extends JPanel {
         LogAxis xAxis = new LogAxis("Wavelength (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
-        xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
+        //xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("νF(ν) (W/m^2)");
+        LogAxis yAxis = new LogAxis("λF(λ) (W/m^2)");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(1));
-        yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
+        //yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
         plot.setRangeAxis(yAxis);
 
-        Font chartFont = new Font("Tahoma", Font.PLAIN, 12);
-        xAxis.setTickLabelFont(chartFont);
-        yAxis.setTickLabelFont(chartFont);
-        xAxis.setLabelFont(chartFont);
-        yAxis.setLabelFont(chartFont);
+        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        xAxis.setTickLabelFont(tickLabelFont);
+        yAxis.setTickLabelFont(tickLabelFont);
+        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 20);
+        xAxis.setLabelFont(labelFont);
+        yAxis.setLabelFont(labelFont);
 
         //XYSplineRenderer renderer = new XYSplineRenderer(100);
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -440,10 +441,11 @@ public class SedPanel extends JPanel {
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.BLACK);
 
+        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 16);
         chart.getLegend().setFrame(BlockBorder.NONE);
-        chart.getLegend().setItemFont(chartFont);
+        chart.getLegend().setItemFont(legendFont);
 
-        Font titleFont = new Font("Tahoma", Font.BOLD, 16);
+        Font titleFont = new Font(FONT_NAME, Font.BOLD, 24);
         chart.getTitle().setFont(titleFont);
 
         return chart;

@@ -21,6 +21,7 @@ import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
@@ -47,6 +48,7 @@ import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
+import astro.tool.box.module.CmdPanel;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.ImageContainer;
@@ -5645,12 +5647,29 @@ public class ImageViewerTab {
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
-                sedFrame.setSize(900, 700);
+                sedFrame.setSize(920, 720);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(false);
                 sedFrame.setVisible(true);
             });
+
+            if (catalogEntry instanceof GaiaCmd) {
+                JButton createCmdButton = new JButton("Create CMD");
+                buttonPanel.add(createCmdButton);
+                createCmdButton.addActionListener((ActionEvent evt) -> {
+                    JFrame sedFrame = new JFrame();
+                    sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    sedFrame.setIconImage(getToolBoxImage());
+                    sedFrame.setTitle("CMD");
+                    sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
+                    sedFrame.setSize(1050, 820);
+                    sedFrame.setLocation(0, 0);
+                    sedFrame.setAlwaysOnTop(false);
+                    sedFrame.setResizable(false);
+                    sedFrame.setVisible(true);
+                });
+            }
         }
 
         JFrame detailsFrame = new JFrame();
