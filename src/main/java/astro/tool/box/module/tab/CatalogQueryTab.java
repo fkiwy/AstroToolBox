@@ -9,6 +9,7 @@ import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.container.catalog.SimbadCatalogEntry;
 import astro.tool.box.container.catalog.WhiteDwarf;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
@@ -20,6 +21,7 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.module.CmdPanel;
 import astro.tool.box.module.ReferencesPanel;
 import astro.tool.box.module.SedPanel;
 import astro.tool.box.service.CatalogQueryService;
@@ -628,6 +630,27 @@ public class CatalogQueryTab {
                 sedFrame.setResizable(false);
                 sedFrame.setVisible(true);
             });
+
+            if (catalogEntry instanceof GaiaCmd) {
+                JButton createCmdButton = new JButton("Create CMD");
+                collectPanel.add(createCmdButton);
+                createCmdButton.addActionListener((ActionEvent evt) -> {
+                    try {
+                        JFrame sedFrame = new JFrame();
+                        sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                        sedFrame.setIconImage(getToolBoxImage());
+                        sedFrame.setTitle("CMD");
+                        sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
+                        sedFrame.setSize(900, 700);
+                        sedFrame.setLocation(0, 0);
+                        sedFrame.setAlwaysOnTop(false);
+                        sedFrame.setResizable(false);
+                        sedFrame.setVisible(true);
+                    } catch (Exception ex) {
+                        showErrorDialog(baseFrame, ex.getMessage());
+                    }
+                });
+            }
 
             bottomPanel.add(container);
         } catch (Exception ex) {
