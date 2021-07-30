@@ -65,7 +65,7 @@ public class CmdPanel extends JPanel {
 
         String info = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
-        JLabel infoLabel = new JLabel("-  Tooltip");
+        JLabel infoLabel = new JLabel("     Tooltip");
         infoLabel.setToolTipText(info);
         commandPanel.add(infoLabel);
 
