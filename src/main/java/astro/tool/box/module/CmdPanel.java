@@ -1,6 +1,7 @@
 package astro.tool.box.module;
 
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.GaiaCmd;
@@ -19,6 +20,7 @@ import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.jfree.chart.ChartFactory;
@@ -60,6 +62,16 @@ public class CmdPanel extends JPanel {
         ButtonGroup groupOne = new ButtonGroup();
         groupOne.add(g_rpButton);
         groupOne.add(bp_rpButton);
+
+        String info = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
+
+        JLabel infoLabel = new JLabel("-  Tooltip");
+        infoLabel.setToolTipText(info);
+        commandPanel.add(infoLabel);
+
+        JLabel toolTip = new JLabel(getInfoIcon());
+        toolTip.setToolTipText(html(info));
+        commandPanel.add(toolTip);
 
         loadCmdData();
 
@@ -157,8 +169,10 @@ public class CmdPanel extends JPanel {
         plot.setRenderer(1, renderer);
 
         plot.setBackgroundPaint(Color.WHITE);
-        plot.setRangeGridlinesVisible(false);
-        plot.setDomainGridlinesVisible(false);
+        plot.setRangeGridlinesVisible(true);
+        plot.setRangeGridlinePaint(Color.GRAY);
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(Color.GRAY);
         plot.getRangeAxis().setInverted(true);
 
         Font legendFont = new Font(FONT_NAME, Font.PLAIN, 16);

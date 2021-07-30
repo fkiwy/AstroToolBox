@@ -415,7 +415,7 @@ public class SedPanel extends JPanel {
 
         LogAxis yAxis = new LogAxis("λF(λ) (W/m^2)");
         yAxis.setAutoRangeMinimumSize(1E-18);
-        yAxis.setTickUnit(new NumberTickUnit(1));
+        yAxis.setTickUnit(new NumberTickUnit(0.5));
         //yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
         plot.setRangeAxis(yAxis);
 
@@ -434,12 +434,10 @@ public class SedPanel extends JPanel {
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);
-
         plot.setRangeGridlinesVisible(true);
-        plot.setRangeGridlinePaint(Color.BLACK);
-
+        plot.setRangeGridlinePaint(Color.GRAY);
         plot.setDomainGridlinesVisible(true);
-        plot.setDomainGridlinePaint(Color.BLACK);
+        plot.setDomainGridlinePaint(Color.GRAY);
 
         Font legendFont = new Font(FONT_NAME, Font.PLAIN, 16);
         chart.getLegend().setFrame(BlockBorder.NONE);
