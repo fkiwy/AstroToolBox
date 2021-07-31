@@ -3974,7 +3974,6 @@ public class ImageViewerTab {
                     InputStream bi = new BufferedInputStream(fi);
                     InputStream gzi = new GzipCompressorInputStream(bi);
                     ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
-
                 ArchiveEntry entry;
                 Map<Long, byte[]> entries = new HashMap();
                 while ((entry = ti.getNextEntry()) != null) {
@@ -4449,6 +4448,11 @@ public class ImageViewerTab {
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
+        if (unwiseCutouts.isSelected()) {
+            imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+        } else {
+            imageViewerTab.resetEpochSlider(NUMBER_OF_EPOCHS);
+        }
         if (decalsCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDecalsCutouts().setSelected(decalsCutouts.isSelected());

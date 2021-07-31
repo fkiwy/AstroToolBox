@@ -38,7 +38,7 @@ public class CmdPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
-    private static List<NumberTriplet> CMD_DATA;
+    private List<NumberTriplet> cmdData;
 
     public CmdPanel(GaiaCmd catalogEntry) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -99,7 +99,7 @@ public class CmdPanel extends JPanel {
     private XYSeriesCollection createCollection(boolean g_rp) {
         XYSeriesCollection collection = new XYSeriesCollection();
         XYSeries series = new XYSeries("");
-        CMD_DATA.forEach(triplet -> {
+        cmdData.forEach(triplet -> {
             double x = g_rp ? triplet.getY() : triplet.getZ();
             double y = triplet.getX();
             if (x != 0 && y != 0) {
@@ -193,13 +193,13 @@ public class CmdPanel extends JPanel {
         File objectCollectionFile = new File(gaiaCmdPath);
         try (Scanner scanner = new Scanner(objectCollectionFile)) {
             scanner.nextLine();
-            CMD_DATA = new ArrayList();
+            cmdData = new ArrayList();
             while (scanner.hasNextLine()) {
                 String[] columnValues = scanner.nextLine().split(",", -1);
                 double x = toDouble(columnValues[0]);
                 double y = toDouble(columnValues[1]);
                 double z = toDouble(columnValues[2]);
-                CMD_DATA.add(new NumberTriplet(x, y, z));
+                cmdData.add(new NumberTriplet(x, y, z));
             }
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex.getMessage());
