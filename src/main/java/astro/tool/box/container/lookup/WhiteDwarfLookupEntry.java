@@ -41,6 +41,8 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
         colors.put(Color.g_r_PS1, toDouble(values[24]));
         colors.put(Color.r_i_PS1, toDouble(values[25]));
         colors.put(Color.i_z_PS1, toDouble(values[26]));
+        colors.put(Color.g_r_DES, toDouble(values[24]));
+        colors.put(Color.r_i_DES, toDouble(values[25]));
         colors.put(Color.i_z_DES, toDouble(values[26]));
         //colors.put(Color.V_J, toDouble(values[27]));
         colors.put(Color.G_RP, toDouble(values[29]));

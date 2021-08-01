@@ -323,7 +323,7 @@ public class PhotometricClassifierTab {
                 AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     String spectralType = AGN_WARNING;
-                    addOccurrence(new ClassifierData(spectralType, sourceId), sptOccurrences, classifierList);
+                    addOccurrence(new ClassifierData(catalogName, spectralType, sourceId), sptOccurrences, classifierList);
                     spectralTypes.add(spectralType);
                 }
             }
@@ -331,7 +331,7 @@ public class PhotometricClassifierTab {
                 WhiteDwarf entry = (WhiteDwarf) catalogEntry;
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     String spectralType = WD_WARNING;
-                    addOccurrence(new ClassifierData(spectralType, sourceId), sptOccurrences, classifierList);
+                    addOccurrence(new ClassifierData(catalogName, spectralType, sourceId), sptOccurrences, classifierList);
                     spectralTypes.add(spectralType);
                 }
             }
