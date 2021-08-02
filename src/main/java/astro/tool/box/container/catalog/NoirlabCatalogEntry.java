@@ -192,9 +192,9 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dec err", roundTo7DecNZ(dec_err), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dec err (arcsec)", roundTo7DecNZ(dec_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
@@ -329,7 +329,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,detections,delta mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
+        String columnTitles = "dist (arcsec),source id,ra,ra err (arcsec),dec,dec err (arcsec),pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,detections,delta mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
         return columnTitles.split(",", -1);
     }
 

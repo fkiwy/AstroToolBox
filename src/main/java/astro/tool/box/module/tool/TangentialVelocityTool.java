@@ -14,12 +14,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-public class TransverseVelocityTool {
+public class TangentialVelocityTool {
 
     private final JFrame baseFrame;
     private final JPanel toolPanel;
 
-    public TransverseVelocityTool(JFrame baseFrame, JPanel toolPanel) {
+    public TangentialVelocityTool(JFrame baseFrame, JPanel toolPanel) {
         this.baseFrame = baseFrame;
         this.toolPanel = toolPanel;
     }
@@ -28,7 +28,7 @@ public class TransverseVelocityTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(6, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate tangential velocity", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Tangential velocity calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 175));
 

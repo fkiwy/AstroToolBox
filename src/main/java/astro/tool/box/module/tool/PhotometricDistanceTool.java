@@ -28,7 +28,7 @@ public class PhotometricDistanceTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(4, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate distance based on photometry", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Photometric distance calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 125));
 

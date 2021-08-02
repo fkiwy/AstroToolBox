@@ -154,9 +154,9 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTip_qualityFlag()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("ra err", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dec err", roundTo4DecNZ(decMeanErr), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dec err (arcsec)", roundTo4DecNZ(decMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("mean observ. time", epochMean.format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(nDetections), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(gMeanPSFMag), Alignment.RIGHT, getDoubleComparator()));
@@ -234,7 +234,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,object name,quality flag,ra,ra err,dec,dec err,mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
+        String columnTitles = "dist (arcsec),source id,object name,quality flag,ra,ra err (arcsec),dec,dec err (arcsec),mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
         return columnTitles.split(",", -1);
     }
 

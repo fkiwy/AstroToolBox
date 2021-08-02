@@ -28,7 +28,7 @@ public class AbsoluteMagnitudeTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(5, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate absolute magnitude", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Absolute magnitude calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 150));
 

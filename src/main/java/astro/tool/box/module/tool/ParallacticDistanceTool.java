@@ -14,12 +14,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-public class ParallaxDistanceTool {
+public class ParallacticDistanceTool {
 
     private final JFrame baseFrame;
     private final JPanel toolPanel;
 
-    public ParallaxDistanceTool(JFrame baseFrame, JPanel toolPanel) {
+    public ParallacticDistanceTool(JFrame baseFrame, JPanel toolPanel) {
         this.baseFrame = baseFrame;
         this.toolPanel = toolPanel;
     }
@@ -28,7 +28,7 @@ public class ParallaxDistanceTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(3, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate distance based on parallax", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Parallactic distance calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 100));
 
