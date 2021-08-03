@@ -283,6 +283,8 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.G, Gmag);
+        bands.put(Band.BP, BPmag);
+        bands.put(Band.RP, RPmag);
         return bands;
     }
 
@@ -290,8 +292,8 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
-        colors.put(Color.M_RP, getAbsoluteRPmag());
         colors.put(Color.M_BP, getAbsoluteBPmag());
+        colors.put(Color.M_RP, getAbsoluteRPmag());
         colors.put(Color.G_RP, G_RP);
         colors.put(Color.BP_RP, BP_RP);
         colors.put(Color.BP_G, BP_G);

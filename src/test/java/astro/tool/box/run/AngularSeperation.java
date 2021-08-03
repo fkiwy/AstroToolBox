@@ -90,6 +90,7 @@ public class AngularSeperation {
             double angularDistance = calculateAngularDistance(new NumberPair(primaryNoirlab.getRa(), primaryNoirlab.getDec()), new NumberPair(secondaryNoirlab.getRa(), secondaryNoirlab.getDec()), DEG_ARCSEC);
             double correctedAngularSeparation = calculateAngularDistance(correctedPrimaryPosition, new NumberPair(secondaryNoirlab.getRa(), secondaryNoirlab.getDec()), DEG_ARCSEC);
             System.out.println("angularDistance             = " + roundTo3DecNZ(angularDistance));
+            //System.out.println("correctedPrimaryPosition  = " + correctedPrimaryPosition);
             System.out.println("correctedAngularSeparation  = " + roundTo3DecNZ(correctedAngularSeparation));
             double projectedPhysicalSeparation = correctedAngularSeparation * primaryGaia.getParallacticDistance();
             System.out.println("projectedPhysicalSeparation = " + roundTo3DecNZ(projectedPhysicalSeparation));
