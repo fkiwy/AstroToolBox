@@ -139,18 +139,18 @@ public class VhsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo6DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo6DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Y (mag)", roundTo3DecNZ(y_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("Y err", roundTo3DecNZ(y_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J (mag)", roundTo3DecNZ(j_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(j_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("H (mag)", roundTo3DecNZ(h_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Ks (mag)", roundTo3DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("Ks err", roundTo3DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("H-Ks", roundTo3DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-Ks", roundTo3DecNZ(j_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Y (mag)", roundTo4DecNZ(y_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("Y err", roundTo4DecNZ(y_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J (mag)", roundTo4DecNZ(j_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("J err", roundTo4DecNZ(j_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H (mag)", roundTo4DecNZ(h_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("H err", roundTo4DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Ks (mag)", roundTo4DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("Ks err", roundTo4DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Y-J", roundTo4DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-H", roundTo4DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H-Ks", roundTo4DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-Ks", roundTo4DecNZ(j_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("object type", TYPE_TABLE.get(objectType), Alignment.LEFT, getStringComparator(), true));
     }
 
@@ -198,7 +198,7 @@ public class VhsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo3Dec(y_ap3) + "," + roundTo3Dec(y_ap3_err) + "," + roundTo3Dec(j_ap3) + "," + roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + "," + roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(y_j_pnt) + "," + roundTo3Dec(j_h_pnt) + "," + roundTo3Dec(h_ks_pnt) + "," + roundTo3Dec(j_ks_pnt) + "," + TYPE_TABLE.get(objectType);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + "," + roundTo6Dec(dec) + "," + roundTo4Dec(y_ap3) + "," + roundTo4Dec(y_ap3_err) + "," + roundTo4Dec(j_ap3) + "," + roundTo4Dec(j_ap3_err) + "," + roundTo4Dec(h_ap3) + "," + roundTo4Dec(h_ap3_err) + "," + roundTo4Dec(ks_ap3) + "," + roundTo4Dec(ks_ap3_err) + "," + roundTo4Dec(y_j_pnt) + "," + roundTo4Dec(j_h_pnt) + "," + roundTo4Dec(h_ks_pnt) + "," + roundTo4Dec(j_ks_pnt) + "," + TYPE_TABLE.get(objectType);
         return columnValues.split(",", -1);
     }
 
@@ -253,6 +253,32 @@ public class VhsCatalogEntry implements CatalogEntry {
         }
         if (ks_ap3 != 0) {
             mags.append("K=").append(roundTo3DecNZ(ks_ap3)).append(" ");
+        }
+        return mags.toString();
+    }
+
+    @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (y_ap3 != 0) {
+            mags.append(roundTo3DecNZ(y_ap3)).append(",").append(roundTo3DecNZ(y_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (j_ap3 != 0) {
+            mags.append(roundTo3DecNZ(j_ap3)).append(",").append(roundTo3DecNZ(j_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (h_ap3 != 0) {
+            mags.append(roundTo3DecNZ(h_ap3)).append(",").append(roundTo3DecNZ(h_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (ks_ap3 != 0) {
+            mags.append(roundTo3DecNZ(ks_ap3)).append(",").append(roundTo3DecNZ(ks_ap3_err)).append(",");
+        } else {
+            mags.append(",,");
         }
         return mags.toString();
     }

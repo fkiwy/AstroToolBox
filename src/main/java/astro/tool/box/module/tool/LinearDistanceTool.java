@@ -28,7 +28,7 @@ public class LinearDistanceTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(6, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate linear distance", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Linear distance calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 175));
 

@@ -1,6 +1,5 @@
 package astro.tool.box.module.tab;
 
-import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
@@ -89,7 +88,7 @@ public class BrownDwarfTab {
                     BorderFactory.createEtchedBorder(), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypePanel.setLayout(new BoxLayout(spectralTypePanel, BoxLayout.Y_AXIS));
-            spectralTypePanel.setPreferredSize(new Dimension(500, 325));
+            spectralTypePanel.setPreferredSize(new Dimension(500, 375));
             containerPanel.add(spectralTypePanel, BorderLayout.PAGE_START);
 
             JPanel distancePanel = new JPanel();
@@ -218,11 +217,13 @@ public class BrownDwarfTab {
         }
 
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        remarks.setPreferredSize(new Dimension(500, 150));
+        remarks.setPreferredSize(new Dimension(500, 200));
         spectralTypePanel.add(remarks);
         remarks.add(new JLabel("Brown dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.BROWN_DWARFS));
-        remarks.add(new JLabel("Lookup is performed with the following colors, if available:"));
-        remarks.add(new JLabel("W1-W2, K-W1, J-K, g-r, r-i, i-z, i-y, z-y, M_G"));
+        remarks.add(new JLabel("Lookup is performed with the following colors, if available, W1-W2, K-W1, J-K,"));
+        remarks.add(new JLabel("g-r, r-i, i-z, i-y, z-y, G-RP, BP-RP, BP-G, M_BP, M_G, M_RP and by using the relations"));
+        remarks.add(new JLabel("described in Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015),"));
+        remarks.add(new JLabel("Skrzypek et al. (2016) and Kiman et al. (2019)"));
         baseFrame.setVisible(true);
     }
 

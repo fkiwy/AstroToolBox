@@ -146,9 +146,9 @@ public class SdssCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(raErr), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo7DecNZ(raErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dec err", roundTo7DecNZ(decErr), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dec err (arcsec)", roundTo7DecNZ(decErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("object type", getSdssObjectType(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("photometry flag", getSdssPhotometryFlag(clean), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("observation date", mjd.format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
@@ -219,7 +219,7 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,ra err,dec,dec err,object type,photometry flag,observation date,spectrum pointer,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,u-g,g-r,r-i,i-z";
+        String columnTitles = "dist (arcsec),source id,ra,ra err (arcsec),dec,dec err (arcsec),object type,photometry flag,observation date,spectrum pointer,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,u-g,g-r,r-i,i-z";
         return columnTitles.split(",", -1);
     }
 
@@ -244,7 +244,12 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     @Override
     public Map<Band, Double> getBands() {
-        return new LinkedHashMap<>();
+        Map<Band, Double> bands = new LinkedHashMap<>();
+        bands.put(Band.g, g_mag);
+        bands.put(Band.r, r_mag);
+        bands.put(Band.i, i_mag);
+        bands.put(Band.z, z_mag);
+        return bands;
     }
 
     @Override
@@ -275,6 +280,37 @@ public class SdssCatalogEntry implements CatalogEntry {
         }
         if (z_mag != 0) {
             mags.append("z=").append(roundTo3DecNZ(z_mag)).append(" ");
+        }
+        return mags.toString();
+    }
+
+    @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (u_mag != 0) {
+            mags.append(roundTo3DecNZ(u_mag)).append(",").append(roundTo3DecNZ(u_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (g_mag != 0) {
+            mags.append(roundTo3DecNZ(g_mag)).append(",").append(roundTo3DecNZ(g_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (r_mag != 0) {
+            mags.append(roundTo3DecNZ(r_mag)).append(",").append(roundTo3DecNZ(r_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (i_mag != 0) {
+            mags.append(roundTo3DecNZ(i_mag)).append(",").append(roundTo3DecNZ(i_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (z_mag != 0) {
+            mags.append(roundTo3DecNZ(z_mag)).append(",").append(roundTo3DecNZ(z_err)).append(",");
+        } else {
+            mags.append(",,");
         }
         return mags.toString();
     }

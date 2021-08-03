@@ -242,6 +242,22 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (mag_w1_vg != 0) {
+            mags.append(roundTo3DecNZ(mag_w1_vg)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (mag_w2_vg != 0) {
+            mags.append(roundTo3DecNZ(mag_w2_vg)).append(",");
+        } else {
+            mags.append(",");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return unwise_objid;
     }

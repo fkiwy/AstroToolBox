@@ -32,7 +32,7 @@ public class PhotometricFunctionsTest {
     @Test
     public void convertMagnitudeToFlux() {
         // F(ν) (Jy)
-        double flux = PhotometricFunctions.convertMagnitudeToFluxDensity(15, 666.7);
+        double flux = PhotometricFunctions.convertMagnitudeToJanskys(15, 666.7);
         System.out.println(flux);
 
         // νF(ν) (W/m^2)
@@ -40,7 +40,7 @@ public class PhotometricFunctionsTest {
         System.out.println(flux);
 
         // F(λ) (W/m^2/μm)
-        flux = PhotometricFunctions.convertMagnitudeToFluxLambda(15, 666.7, 2.159);
+        flux = PhotometricFunctions.convertMagnitudeToFluxDensity(15, 666.7, 2.159);
         System.out.println(flux);
     }
 

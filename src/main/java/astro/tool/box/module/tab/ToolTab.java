@@ -2,10 +2,10 @@ package astro.tool.box.module.tab;
 
 import static astro.tool.box.module.ModuleHelper.*;
 import astro.tool.box.module.tool.TotalProperMotionTool;
-import astro.tool.box.module.tool.ParallaxDistanceTool;
+import astro.tool.box.module.tool.ParallacticDistanceTool;
 import astro.tool.box.module.tool.ProperMotionsTool;
 import astro.tool.box.module.tool.UnitConverterTool;
-import astro.tool.box.module.tool.TransverseVelocityTool;
+import astro.tool.box.module.tool.TangentialVelocityTool;
 import astro.tool.box.module.tool.AbsoluteMagnitudeTool;
 import astro.tool.box.module.tool.CoordsConverterTool;
 import astro.tool.box.module.tool.TotalVelocityTool;
@@ -38,8 +38,8 @@ public class ToolTab {
             angularDistanceTool.init();
             LinearDistanceTool linearDistanceTool = new LinearDistanceTool(baseFrame, toolPanel);
             linearDistanceTool.init();
-            ParallaxDistanceTool parallaxlDistanceTool = new ParallaxDistanceTool(baseFrame, toolPanel);
-            parallaxlDistanceTool.init();
+            ParallacticDistanceTool parallacticDistanceTool = new ParallacticDistanceTool(baseFrame, toolPanel);
+            parallacticDistanceTool.init();
             PhotometricDistanceTool photometricDistanceTool = new PhotometricDistanceTool(baseFrame, toolPanel);
             photometricDistanceTool.init();
             AbsoluteMagnitudeTool absoluteMagnitudeTool = new AbsoluteMagnitudeTool(baseFrame, toolPanel);
@@ -48,8 +48,8 @@ public class ToolTab {
             properMotionsTool.init();
             TotalProperMotionTool totalProperMotionTool = new TotalProperMotionTool(baseFrame, toolPanel);
             totalProperMotionTool.init();
-            TransverseVelocityTool transverseVelocityTool = new TransverseVelocityTool(baseFrame, toolPanel);
-            transverseVelocityTool.init();
+            TangentialVelocityTool tangentialVelocityTool = new TangentialVelocityTool(baseFrame, toolPanel);
+            tangentialVelocityTool.init();
             TotalVelocityTool totalVelocityTool = new TotalVelocityTool(baseFrame, toolPanel);
             totalVelocityTool.init();
             UnitConverterTool unitConverterTool = new UnitConverterTool(baseFrame, toolPanel);

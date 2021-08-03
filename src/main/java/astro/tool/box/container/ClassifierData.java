@@ -16,8 +16,8 @@ public class ClassifierData {
 
     private Double sptNum;
 
-    public ClassifierData(String spectralType, String sourceId) {
-        this("", "", "", spectralType, "", sourceId);
+    public ClassifierData(String catalog, String spectralType, String sourceId) {
+        this(catalog, "", "", spectralType, "", sourceId);
     }
 
     public ClassifierData(String catalog, String colorKey, String colorValue, String spectralType, String referenceColor, String sourceId) {

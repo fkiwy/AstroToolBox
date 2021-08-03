@@ -21,6 +21,7 @@ import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
+import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.container.catalog.GenericCatalogEntry;
@@ -47,6 +48,7 @@ import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
+import astro.tool.box.module.CmdPanel;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.ImageContainer;
@@ -186,7 +188,8 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
     public static final double PIXEL_SCALE_DECAM = 0.27;
-    public static final int NUMBER_OF_EPOCHS = 7;
+    public static final int NUMBER_OF_EPOCHS = 8;
+    public static final int NUMBER_OF_UNWISE_EPOCHS = 7;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
@@ -842,6 +845,11 @@ public class ImageViewerTab {
                     decalsCutouts.setSelected(false);
                     pixelScale = PIXEL_SCALE_WISE;
                 }
+                if (unwiseCutouts.isSelected()) {
+                    resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+                } else {
+                    resetEpochSlider(NUMBER_OF_EPOCHS);
+                }
                 previousRa = 0;
                 previousDec = 0;
                 createFlipbook();
@@ -852,6 +860,7 @@ public class ImageViewerTab {
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 if (unwiseCutouts.isSelected()) {
                     unwiseCutouts.setSelected(false);
+                    resetEpochSlider(NUMBER_OF_EPOCHS);
                 }
                 if (decalsCutouts.isSelected()) {
                     pixelScale = PIXEL_SCALE_DECAM;
@@ -2436,6 +2445,16 @@ public class ImageViewerTab {
         return count > 0;
     }
 
+    private void resetEpochSlider(int numberOfEpochs) {
+        epochLabel.setText(String.format(EPOCH_LABEL, numberOfEpochs));
+        ChangeListener changeListener = epochSlider.getChangeListeners()[0];
+        epochSlider.removeChangeListener(changeListener);
+        epochSlider.setMaximum(numberOfEpochs);
+        epochSlider.setValue(numberOfEpochs);
+        epochSlider.addChangeListener(changeListener);
+        selectedEpochs = numberOfEpochs;
+    }
+
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
         double anchorX = wiseImage.getWidth() / 2;
         double anchorY = wiseImage.getHeight() / 2;
@@ -3955,7 +3974,6 @@ public class ImageViewerTab {
                     InputStream bi = new BufferedInputStream(fi);
                     InputStream gzi = new GzipCompressorInputStream(bi);
                     ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
-
                 ArchiveEntry entry;
                 Map<Long, byte[]> entries = new HashMap();
                 while ((entry = ti.getNextEntry()) != null) {
@@ -4018,6 +4036,7 @@ public class ImageViewerTab {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
             enhanceImage(fits, 1000);
+            fits.close();
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
             images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
             writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
@@ -4429,6 +4448,11 @@ public class ImageViewerTab {
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
+        if (unwiseCutouts.isSelected()) {
+            imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+        } else {
+            imageViewerTab.resetEpochSlider(NUMBER_OF_EPOCHS);
+        }
         if (decalsCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDecalsCutouts().setSelected(decalsCutouts.isSelected());
@@ -5633,6 +5657,27 @@ public class ImageViewerTab {
                 sedFrame.setResizable(false);
                 sedFrame.setVisible(true);
             });
+
+            if (catalogEntry instanceof GaiaCmd) {
+                JButton createCmdButton = new JButton("Create CMD");
+                buttonPanel.add(createCmdButton);
+                createCmdButton.addActionListener((ActionEvent evt) -> {
+                    try {
+                        JFrame sedFrame = new JFrame();
+                        sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                        sedFrame.setIconImage(getToolBoxImage());
+                        sedFrame.setTitle("CMD");
+                        sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
+                        sedFrame.setSize(900, 700);
+                        sedFrame.setLocation(0, 0);
+                        sedFrame.setAlwaysOnTop(false);
+                        sedFrame.setResizable(false);
+                        sedFrame.setVisible(true);
+                    } catch (Exception ex) {
+                        showErrorDialog(baseFrame, ex.getMessage());
+                    }
+                });
+            }
         }
 
         JFrame detailsFrame = new JFrame();

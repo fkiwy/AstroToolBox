@@ -44,6 +44,10 @@ public interface CatalogEntry {
 
     String getMagnitudes();
 
+    default String getPhotometry() {
+        return null;
+    }
+
     String getSourceId();
 
     double getRa();

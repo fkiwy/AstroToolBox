@@ -32,7 +32,7 @@ public class ProperMotionsTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(7, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate proper motions", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Proper motions calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 200));
 

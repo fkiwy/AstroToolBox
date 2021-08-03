@@ -59,11 +59,13 @@ public class VizierCatalogsTab {
     private double targetDec;
     private double searchRadius;
     private int numberOfRows;
+    private boolean allColumns;
 
     private double prevTargetRa;
     private double prevTargetDec;
     private double prevSearchRadius;
     private int prevNumberOfRows;
+    private boolean prevAllColumns;
 
     private int position;
     private int matchesFound;
@@ -125,7 +127,7 @@ public class VizierCatalogsTab {
             firstRow.add(rowsField);
             rowsField.setText("50");
 
-            JCheckBox allColumns = new JCheckBox("Include all columns");
+            JCheckBox allColumnsCheckBox = new JCheckBox("Include all columns");
 
             JPanel vizierLinkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -191,7 +193,8 @@ public class VizierCatalogsTab {
                         numberOfRows = 0;
                         errorMessages.add("Invalid number of rows!");
                     }
-                    if (targetRa == prevTargetRa && targetDec == prevTargetDec && searchRadius == prevSearchRadius && numberOfRows == prevNumberOfRows) {
+                    allColumns = allColumnsCheckBox.isSelected();
+                    if (targetRa == prevTargetRa && targetDec == prevTargetDec && searchRadius == prevSearchRadius && numberOfRows == prevNumberOfRows && allColumns == prevAllColumns) {
                         return;
                     }
                     position = 0;
@@ -203,6 +206,7 @@ public class VizierCatalogsTab {
                     prevTargetDec = targetDec;
                     prevSearchRadius = searchRadius;
                     prevNumberOfRows = numberOfRows;
+                    prevAllColumns = allColumns;
                     vizierLinkPanel.removeAll();
                     if (!errorMessages.isEmpty()) {
                         String message = String.join(LINE_SEP, errorMessages);
@@ -211,7 +215,7 @@ public class VizierCatalogsTab {
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 setWaitCursor();
-                                String outAll = allColumns.isSelected() ? "&-out.all" : "";
+                                String outAll = allColumnsCheckBox.isSelected() ? "&-out.all" : "";
                                 String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.add=_r&-out.form=mini%s";
                                 url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows, outAll);
                                 HttpURLConnection connection = establishHttpConnection(url);
@@ -241,7 +245,7 @@ public class VizierCatalogsTab {
                                 catalogArea.append(LINE_SEP_TEXT_AREA);
                                 catalogArea.append("##### END #####");
 
-                                JLabel vizierLink = createHyperlink("Open in web browser", getVizierUrl(targetRa, targetDec, searchRadius, numberOfRows, allColumns.isSelected()));
+                                JLabel vizierLink = createHyperlink("Open in web browser", getVizierUrl(targetRa, targetDec, searchRadius, numberOfRows, allColumnsCheckBox.isSelected()));
                                 vizierLinkPanel.add(vizierLink);
 
                                 baseFrame.setVisible(true);
@@ -258,7 +262,7 @@ public class VizierCatalogsTab {
                 }
             });
 
-            firstRow.add(allColumns);
+            firstRow.add(allColumnsCheckBox);
 
             JLabel findLabel = new JLabel("Find in search results:");
             secondRow.add(findLabel);

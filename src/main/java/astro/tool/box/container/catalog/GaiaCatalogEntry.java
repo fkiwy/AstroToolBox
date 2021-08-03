@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf {
+public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
 
     public static final String CATALOG_NAME = "Gaia DR2";
 
@@ -283,6 +283,8 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.G, Gmag);
+        bands.put(Band.BP, BPmag);
+        bands.put(Band.RP, RPmag);
         return bands;
     }
 
@@ -290,8 +292,8 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.M_G, getAbsoluteGmag());
-        colors.put(Color.M_RP, getAbsoluteRPmag());
         colors.put(Color.M_BP, getAbsoluteBPmag());
+        colors.put(Color.M_RP, getAbsoluteRPmag());
         colors.put(Color.G_RP, G_RP);
         colors.put(Color.BP_RP, BP_RP);
         colors.put(Color.BP_G, BP_G);
@@ -467,6 +469,11 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     @Override
     public double getBP_RP() {
         return BP_RP;
+    }
+
+    @Override
+    public double getG_RP() {
+        return G_RP;
     }
 
 }

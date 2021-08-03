@@ -66,15 +66,15 @@ public class LookupTab {
                         break;
                     case BROWN_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
-                        tableName = "Brown dwarfs lookup table - Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data (A. Carnero Rosell) / Exploring the Age-dependent Properties of M and L Dwarfs Using Gaia and SDSS (R. Kiman)";
+                        tableName = "Brown dwarfs lookup table - Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)";
                         break;
                     case WHITE_DWARFS_PURE_H:
                         fileName = "/WhiteDwarfPureHLookupTable.csv";
-                        tableName = "White dwarfs pure H lookup table - Gaia photometry for white dwarfs (J. M. Carrasco)";
+                        tableName = "White dwarfs pure H lookup table - Gaia photometry for white dwarfs (Carrasco et al. 2014)";
                         break;
                     case WHITE_DWARFS_PURE_HE:
                         fileName = "/WhiteDwarfPureHeLookupTable.csv";
-                        tableName = "White dwarfs pure He lookup table - Gaia photometry for white dwarfs (J. M. Carrasco)";
+                        tableName = "White dwarfs pure He lookup table - Gaia photometry for white dwarfs (Carrasco et al. 2014)";
                         break;
                 }
                 removeAndRecreateCenterPanel(mainPanel);

@@ -31,6 +31,8 @@ public enum Color {
     i_z_PS1("i-z"),
     i_y_PS1("i-y"),
     z_y_PS1("z-y"),
+    g_r_DES("g-r"),
+    r_i_DES("r-i"),
     i_z_DES("i-z"),
     z_Y_DES("z-Y");
 

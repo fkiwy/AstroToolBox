@@ -28,7 +28,7 @@ public class TotalProperMotionTool {
         try {
             JPanel mainPanel = new JPanel(new GridLayout(4, 2));
             mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Calculate total proper motion", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Total proper motion calculator", TitledBorder.LEFT, TitledBorder.TOP
             ));
             mainPanel.setPreferredSize(new Dimension(375, 125));
 

@@ -70,6 +70,7 @@ public class SettingsTab {
     public static final String USE_PROXY = "useProxy";
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
     public static final String CUTOUT_SERVICE = "cutoutService";
+    public static final String GAIA_CMD_PATH = "gaiaCmdPath";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
@@ -79,6 +80,7 @@ public class SettingsTab {
     private boolean useProxy;
     private boolean useSimbadMirror;
     private String cutoutService;
+    private String gaiaCmdPath;
     private String objectCollectionPath;
 
     // Catalog search settings
@@ -179,6 +181,7 @@ public class SettingsTab {
                 cutoutService = CUTOUT_SERVICE_URL;
                 USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutService);
             }
+            gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
             globalSettings.add(new JLabel("Look & Feel: ", JLabel.RIGHT));
@@ -226,6 +229,10 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
+
+            globalSettings.add(new JLabel("File location of Gaia CMD data (*): ", JLabel.RIGHT));
+            JTextField gaiaCmdPathField = new JTextField(gaiaCmdPath);
+            globalSettings.add(gaiaCmdPathField);
 
             globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
@@ -470,6 +477,7 @@ public class SettingsTab {
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
                     cutoutService = cutoutServiceField.getText();
+                    gaiaCmdPath = gaiaCmdPathField.getText();
                     objectCollectionPath = collectionPathField.getText();
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
@@ -524,6 +532,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
                 USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
+                USER_SETTINGS.setProperty(GAIA_CMD_PATH, gaiaCmdPathField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings

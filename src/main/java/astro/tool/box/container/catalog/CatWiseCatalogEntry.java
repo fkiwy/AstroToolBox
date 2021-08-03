@@ -370,6 +370,22 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (W1mag != 0) {
+            mags.append(roundTo3DecNZ(W1mag)).append(",").append(roundTo3DecNZ(W1_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        if (W2mag != 0) {
+            mags.append(roundTo3DecNZ(W2mag)).append(",").append(roundTo3DecNZ(W2_err)).append(",");
+        } else {
+            mags.append(",,");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return sourceId;
     }

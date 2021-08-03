@@ -401,7 +401,7 @@ public class InfoSheet {
             document.add(table);
 
             document.add(new Paragraph("(**) Uses colors from: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses colors from: Photometry and Proper Motions of M, L, and T Dwarfs from the Pan-STARRS1 3π Survey (W. Best) / Photometric brown-dwarf classification I & II (N. Skrzypek) / Brown dwarf census with the Dark Energy Survey year 3 data (A. Carnero Rosell) / Exploring the Age-dependent Properties of M and L Dwarfs Using Gaia and SDSS (R. Kiman)", SMALL_FONT));
+            document.add(new Paragraph("(***) Uses colors from: Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
 
             document.close();
 
