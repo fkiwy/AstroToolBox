@@ -30,7 +30,7 @@ AstroToolBox is a Java tool set for the identification and classification of ast
 ![File Browser](images/File%20Browser.png)
 
 ### Custom Overlays
-![Custom Overlays](image/Custom%20Overlays.png)
+![Custom Overlays](images/Custom%20Overlays.png)
 
 ### Calculators & Converters
 ![Calculators & Converters](images/Calculators%20&%20Converters.png)
