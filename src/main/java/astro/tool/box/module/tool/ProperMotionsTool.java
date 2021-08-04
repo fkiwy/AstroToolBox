@@ -40,11 +40,11 @@ public class ProperMotionsTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates epoch 1 (deg): ", JLabel.RIGHT));
             JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates epoch 2 (deg): ", JLabel.RIGHT));
             JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 

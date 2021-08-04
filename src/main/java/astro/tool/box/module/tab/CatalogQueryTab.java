@@ -286,9 +286,9 @@ public class CatalogQueryTab {
                     String coords = coordsField.getText();
                     if (!coords.isEmpty() && selectedEntry != null) {
                         removeAndRecreateBottomPanel();
-                        displayLinks(targetRa, targetDec, searchRadius);
                         displayCatalogDetails(selectedEntry);
                         displaySpectralTypes(selectedEntry);
+                        displayLinks(targetRa, targetDec, searchRadius);
                     }
                 }
             });
@@ -348,9 +348,9 @@ public class CatalogQueryTab {
                     if (copyCoordsToClipboard) {
                         copyCoordsToClipboard(selected.getRa(), selected.getDec());
                     }
-                    displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     displayCatalogDetails(selected);
                     displaySpectralTypes(selected);
+                    displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     baseFrame.setVisible(true);
                 }
             }
@@ -366,7 +366,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(17, 2));
-        linkPanel.setPreferredSize(new Dimension(275, BOTTOM_PANEL_HEIGHT));
+        linkPanel.setPreferredSize(new Dimension(300, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(Color.LIGHT_GRAY, 3), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -429,7 +429,6 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("Gaia WD candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
 
         bottomPanel.add(linkPanel);
-        bottomPanel.setComponentZOrder(linkPanel, 0);
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
@@ -464,7 +463,8 @@ public class CatalogQueryTab {
         }
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
-        scrollPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
+        scrollPanel.setBorder(BorderFactory.createEmptyBorder());
+        scrollPanel.setPreferredSize(new Dimension(675, BOTTOM_PANEL_HEIGHT));
         bottomPanel.add(scrollPanel);
     }
 
