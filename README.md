@@ -12,7 +12,7 @@ AstroToolBox is a Java tool set for the identification and classification of ast
 ![SED](images/SED.png)
 
 ### Gaia Color-Magnitude Diagram
-![Gaia CMD](images/Gaia%20CMD.png)
+![CMD](images/CMD.png)
 
 ### Catalog search
 ![Catalog Search](images/Catalog%20Search.png)
