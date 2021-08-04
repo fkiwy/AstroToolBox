@@ -366,7 +366,7 @@ public class CatalogQueryTab {
 
     private void displayLinks(double degRA, double degDE, double degRadius) {
         JPanel linkPanel = new JPanel(new GridLayout(17, 2));
-        linkPanel.setPreferredSize(new Dimension(275, BOTTOM_PANEL_HEIGHT));
+        linkPanel.setPreferredSize(new Dimension(300, BOTTOM_PANEL_HEIGHT));
         linkPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(Color.LIGHT_GRAY, 3), "External resources", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -429,7 +429,6 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("Gaia WD candidates", getSpecificCatalogsUrl("J/MNRAS/482/4570/gaia2wd", degRA, degDE, degRadius)));
 
         bottomPanel.add(linkPanel);
-        //bottomPanel.setComponentZOrder(linkPanel, 0);
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
