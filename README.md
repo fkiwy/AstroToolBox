@@ -5,3 +5,8 @@ AstroToolBox is a Java tool set for the identification and classification of ast
 [Download latest version](releases/executables/AstroToolBox-2.3.6.jar)
 
 [View release notes](releases/release%20notes.md)
+
+## Screenshots
+
+### Catalog search
+![Catalog search](images/Catalog%20search.png)
