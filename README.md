@@ -6,7 +6,6 @@ AstroToolBox is a Java tool set for the identification and classification of ast
 
 [View release notes](releases/release%20notes.md)
 
-
 ## Screenshots
 
 ### Catalog search
