@@ -124,7 +124,7 @@ public class CmdPanel extends JPanel {
     }
 
     private JFreeChart createChart(XYSeriesCollection collection, XYSeriesCollection collectionTarget, boolean g_rp) {
-        JFreeChart chart = ChartFactory.createXYLineChart("Gaia color magnitude diagram", "", "", null);
+        JFreeChart chart = ChartFactory.createXYLineChart("Gaia Color-Magnitude Diagram", "", "", null);
         XYPlot plot = chart.getXYPlot();
         plot.setDataset(0, collectionTarget);
         plot.setDataset(1, collection);
@@ -136,7 +136,7 @@ public class CmdPanel extends JPanel {
 
         NumberAxis yAxis = new NumberAxis("Abs G (mag)");
         yAxis.setTickUnit(new NumberTickUnit(5));
-        yAxis.setRange(0, 20);
+        yAxis.setRange(0, 22);
         plot.setRangeAxis(yAxis);
 
         Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 16);
