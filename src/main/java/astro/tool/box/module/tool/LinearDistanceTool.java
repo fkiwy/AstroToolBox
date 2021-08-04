@@ -36,19 +36,19 @@ public class LinearDistanceTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("From coordinates (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates object 1 (deg): ", JLabel.RIGHT));
             JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(new JLabel("To coordinates (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates object 2 (deg): ", JLabel.RIGHT));
             JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 
-            mainPanel.add(new JLabel("From parallax (mas): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Parallax object 1 (mas): ", JLabel.RIGHT));
             JTextField fromParallaxField = new JTextField();
             mainPanel.add(fromParallaxField);
 
-            mainPanel.add(new JLabel("To parallax (mas): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Parallax object 2 (mas): ", JLabel.RIGHT));
             JTextField toParallaxField = new JTextField();
             mainPanel.add(toParallaxField);
 
