@@ -8,12 +8,6 @@ AstroToolBox is a Java tool set for the identification and classification of ast
 
 ## Screenshots
 
-### Spectral Energy Distribution
-![SED](images/SED.png)
-
-### Gaia Color-Magnitude Diagram
-![CMD](images/CMD.png)
-
 ### Catalog search
 ![Catalog Search](images/Catalog%20Search.png)
 
@@ -41,10 +35,14 @@ AstroToolBox is a Java tool set for the identification and classification of ast
 ### Calculators & Converters
 ![Calculators & Converters](images/Calculators%20&%20Converters.png)
 
-## License
-AstroToolBox is a Java tool set for the identification and classification of astronomical objects with a focus on very low-mass and ultra-cool dwarfs.
+### Spectral Energy Distribution
+![SED](images/SED.png)
 
-Copyright (C) 2021  Frank Kiwy
+### Gaia Color-Magnitude Diagram
+![CMD](images/CMD.png)
+
+## License
+AstroToolBox is a Java tool set for the identification and classification of astronomical objects. Copyright (C) 2021  Frank Kiwy
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
