@@ -350,4 +350,16 @@ public class AstrometricFunctions {
         return error > value * 0.5;
     }
 
+    /**
+     * Calculate chance alignment probability
+     *
+     * @param properMotionMatches
+     * @param seperation (arcsec)
+     * @return the chance alignment probability
+     */
+    public static double calculateChanceAlignmentProbability(int properMotionMatches, double seperation) {
+        // sky = 41252.96125 deg^2
+        return (properMotionMatches / 41252.96125) * pow(seperation / DEG_ARCSEC, 2) * Math.PI;
+    }
+
 }
