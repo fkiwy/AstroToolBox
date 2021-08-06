@@ -33,6 +33,9 @@
 ### Calculators & Converters
 ![Calculators & Converters](images/Calculators%20&%20Converters.png)
 
+### SIMBAD Measurements & References
+![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
+
 ### Spectral Energy Distribution
 ![SED](images/SED.png)
 
