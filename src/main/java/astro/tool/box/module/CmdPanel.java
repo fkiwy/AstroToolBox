@@ -136,7 +136,7 @@ public class CmdPanel extends JPanel {
 
         NumberAxis yAxis = new NumberAxis("Abs G (mag)");
         yAxis.setTickUnit(new NumberTickUnit(5));
-        yAxis.setRange(0, 22);
+        yAxis.setRange(-2, 22);
         plot.setRangeAxis(yAxis);
 
         Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 16);

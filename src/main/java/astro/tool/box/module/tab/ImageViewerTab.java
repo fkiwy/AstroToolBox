@@ -5651,7 +5651,7 @@ public class ImageViewerTab {
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
-                sedFrame.setSize(900, 700);
+                sedFrame.setSize(1000, 700);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(false);
@@ -5668,7 +5668,7 @@ public class ImageViewerTab {
                         sedFrame.setIconImage(getToolBoxImage());
                         sedFrame.setTitle("CMD");
                         sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                        sedFrame.setSize(900, 700);
+                        sedFrame.setSize(800, 700);
                         sedFrame.setLocation(0, 0);
                         sedFrame.setAlwaysOnTop(false);
                         sedFrame.setResizable(false);
