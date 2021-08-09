@@ -2,7 +2,7 @@
 
 [Download latest version](releases/executables/AstroToolBox-2.3.6.jar)
 
-[Download Gaia CMD data](releases/resources/Gaia%20CMD%20dat.zip)
+[Download Gaia CMD data](releases/resources/Gaia%20CMD%20data.zip)
 
 [View release notes](releases/release%20notes.md)
 
