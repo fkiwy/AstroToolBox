@@ -43,7 +43,7 @@
 ![CMD](images/CMD.png)
 
 ## License
-AstroToolBox is a Java tool set for the identification and classification of astronomical objects. Copyright (C) 2021  Frank Kiwy
+AstroToolBox is a Java tool set for the identification and classification of astronomical objects with a focus on very low-mass and ultra-cool dwarfs. Copyright (C) 2021  Frank Kiwy
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
