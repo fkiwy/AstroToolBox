@@ -243,16 +243,16 @@ public class VhsCatalogEntry implements CatalogEntry {
     public String getMagnitudes() {
         StringBuilder mags = new StringBuilder();
         if (y_ap3 != 0) {
-            mags.append("Y=").append(roundTo3DecNZ(y_ap3)).append(" ");
+            mags.append("Y=").append(roundTo4DecNZ(y_ap3)).append(" ");
         }
         if (j_ap3 != 0) {
-            mags.append("J=").append(roundTo3DecNZ(j_ap3)).append(" ");
+            mags.append("J=").append(roundTo4DecNZ(j_ap3)).append(" ");
         }
         if (h_ap3 != 0) {
-            mags.append("H=").append(roundTo3DecNZ(h_ap3)).append(" ");
+            mags.append("H=").append(roundTo4DecNZ(h_ap3)).append(" ");
         }
         if (ks_ap3 != 0) {
-            mags.append("K=").append(roundTo3DecNZ(ks_ap3)).append(" ");
+            mags.append("K=").append(roundTo4DecNZ(ks_ap3)).append(" ");
         }
         return mags.toString();
     }
@@ -261,22 +261,22 @@ public class VhsCatalogEntry implements CatalogEntry {
     public String getPhotometry() {
         StringBuilder mags = new StringBuilder();
         if (y_ap3 != 0) {
-            mags.append(roundTo3DecNZ(y_ap3)).append(",").append(roundTo3DecNZ(y_ap3_err)).append(",");
+            mags.append(roundTo4DecNZ(y_ap3)).append(",").append(roundTo4DecNZ(y_ap3_err)).append(",");
         } else {
             mags.append(",,");
         }
         if (j_ap3 != 0) {
-            mags.append(roundTo3DecNZ(j_ap3)).append(",").append(roundTo3DecNZ(j_ap3_err)).append(",");
+            mags.append(roundTo4DecNZ(j_ap3)).append(",").append(roundTo4DecNZ(j_ap3_err)).append(",");
         } else {
             mags.append(",,");
         }
         if (h_ap3 != 0) {
-            mags.append(roundTo3DecNZ(h_ap3)).append(",").append(roundTo3DecNZ(h_ap3_err)).append(",");
+            mags.append(roundTo4DecNZ(h_ap3)).append(",").append(roundTo4DecNZ(h_ap3_err)).append(",");
         } else {
             mags.append(",,");
         }
         if (ks_ap3 != 0) {
-            mags.append(roundTo3DecNZ(ks_ap3)).append(",").append(roundTo3DecNZ(ks_ap3_err)).append(",");
+            mags.append(roundTo4DecNZ(ks_ap3)).append(",").append(roundTo4DecNZ(ks_ap3_err)).append(",");
         } else {
             mags.append(",,");
         }
