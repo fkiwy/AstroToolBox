@@ -39,10 +39,10 @@
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
 ### Spectral Energy Distribution
-![SED](images/SED.png)
+![SED](images/SED%20new.png)
 
 ### Gaia Color-Magnitude Diagram
-![CMD](images/CMD.png)
+![CMD](images/CMD%20new.png)
 
 ## License
 AstroToolBox is a Java tool set for the identification and classification of astronomical objects with a focus on very low-mass and ultra-cool dwarfs. Copyright (C) 2021  Frank Kiwy
