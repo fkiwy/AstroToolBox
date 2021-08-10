@@ -14,7 +14,7 @@
 ### Image Viewer
 ![Image Viewer](images/Image%20Viewer%20new.png)
 
-##### WISE coadds (epochs 2010 & 2014-2020) plus AllWISE overlays (green circles)
+##### WISEA J085510.74-071442.5: WISE coadds (epochs 2010 & 2014-2020) plus AllWISE overlays (green circles)
 ![WISEA J085510.74-071442.5](images/WISEA%20J085510.74-071442.5%20new.gif)
 
 ### Image Series
