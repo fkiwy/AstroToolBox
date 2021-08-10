@@ -13,6 +13,7 @@
 
 ### Image Viewer
 ![Image Viewer](images/Image%20Viewer.png)
+![WISEA J085510.74-071442.5](images/WISEA%20J085510.74-071442.5.gif)
 
 ### Image Series
 ![Image Series](images/Image%20Series.png)
