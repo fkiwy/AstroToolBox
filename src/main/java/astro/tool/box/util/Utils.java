@@ -68,4 +68,18 @@ public class Utils {
         return str.substring(1, str.length() - 1);
     }
 
+    /**
+     * This method will add elements to an array and return the resulting array
+     *
+     * @param arr
+     * @param elements
+     * @return
+     */
+    public static Object[] addToArray(Object[] arr, Object... elements) {
+        Object[] tempArr = new Object[arr.length + elements.length];
+        System.arraycopy(arr, 0, tempArr, 0, arr.length);
+        System.arraycopy(elements, 0, tempArr, arr.length, elements.length);
+        return tempArr;
+    }
+
 }
