@@ -5,7 +5,7 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
-import astro.tool.box.container.BatchResult;
+import astro.tool.box.container.ClassificationResult;
 import astro.tool.box.container.ClassifierData;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.SpectralType;
@@ -21,6 +21,7 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
 import astro.tool.box.util.Utils;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -56,13 +57,15 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class PhotometricClassifierTab {
 
     private static final String TAB_NAME = "Photometric Classifier";
-    private static final int REMOVE_COLUMN_INDEX = 14;
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -154,7 +157,7 @@ public class PhotometricClassifierTab {
             topPanel.add(radiusField);
             radiusField.setText("5");
 
-            searchButton = new JButton("Search");
+            searchButton = new JButton("Create classification");
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
@@ -241,11 +244,11 @@ public class PhotometricClassifierTab {
                                     prevTargetRa = targetRa;
                                     prevTargetDec = targetDec;
                                     prevSearchRadius = searchRadius;
-                                    List<BatchResult> batchResults;
-                                    batchResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, null);
-                                    mainSequenceResultTable = displayQueryResults(batchResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
-                                    batchResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
-                                    brownDwarfsResultTable = displayQueryResults(batchResults, "Brown dwarfs spectral type evaluation", JColor.BROWN.val);
+                                    List<ClassificationResult> classificationResults;
+                                    classificationResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, null);
+                                    mainSequenceResultTable = displayQueryResults(classificationResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
+                                    classificationResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
+                                    brownDwarfsResultTable = displayQueryResults(classificationResults, "Brown dwarfs spectral type evaluation", JColor.BROWN.val);
                                 }
                                 displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
                                 displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
@@ -305,9 +308,8 @@ public class PhotometricClassifierTab {
         return null;
     }
 
-    private List<BatchResult> performSpectralTypeLookup(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, Map<String, Integer> sptOccurrences, List<ClassifierData> classifierList, JTable resultTable) throws Exception {
-        List<BatchResult> batchResults = new ArrayList<>();
-        int rowNumber = 1;
+    private List<ClassificationResult> performSpectralTypeLookup(SpectralTypeLookupService spectralTypeLookupService, List<CatalogEntry> catalogEntries, Map<String, Integer> sptOccurrences, List<ClassifierData> classifierList, JTable resultTable) throws Exception {
+        List<ClassificationResult> classificationResults = new ArrayList<>();
         for (CatalogEntry catalogEntry : catalogEntries) {
             String catalogName = catalogEntry.getCatalogName();
             String sourceId = catalogEntry.getSourceId();
@@ -352,8 +354,7 @@ public class PhotometricClassifierTab {
                     spectralTypes.add(spectralType);
                 }
             }
-            BatchResult batchResult = new BatchResult.Builder()
-                    .setRowNumber(rowNumber++)
+            ClassificationResult classificationResult = new ClassificationResult.Builder()
                     .setCatalogName(catalogEntry.getCatalogName())
                     .setTargetRa(targetRa)
                     .setTargetDec(targetDec)
@@ -366,20 +367,20 @@ public class PhotometricClassifierTab {
                     .setPmdec(catalogEntry.getPmdec())
                     .setMagnitudes(catalogEntry.getMagnitudes())
                     .setSpectralTypes(spectralTypes).build();
-            batchResults.add(batchResult);
+            classificationResults.add(classificationResult);
         }
-        return batchResults;
+        return classificationResults;
     }
 
-    private JTable displayQueryResults(List<BatchResult> batchResults, String title, Color borderColor) {
-        List<Object[]> list = new ArrayList<>();
-        batchResults.forEach(entry -> {
-            list.add(Utils.addToArray(entry.getColumnValues(), Boolean.FALSE));
+    private JTable displayQueryResults(List<ClassificationResult> classificationResults, String title, Color borderColor) {
+        List<Object[]> resultRows = new ArrayList<>();
+        classificationResults.forEach(entry -> {
+            resultRows.add(Utils.addToArray(new Boolean[]{Boolean.FALSE}, entry.getColumnValues()));
         });
-        BatchResult result = batchResults.get(0);
-        Object[] columns = Utils.addToArray(result.getColumnTitles(), "Remove from classification");
+        ClassificationResult result = classificationResults.get(0);
+        Object[] columns = Utils.addToArray(new String[]{"Remove from classification"}, result.getColumnTitles());
         Object[][] array = new Object[][]{};
-        Object[][] rows = list.toArray(array);
+        Object[][] rows = resultRows.toArray(array);
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows, columns);
         JTable resultTable = new JTable(defaultTableModel) {
             @Override
@@ -387,16 +388,14 @@ public class PhotometricClassifierTab {
                 return rows[0][columnIndex].getClass();
             }
         };
-        alignResultColumns(resultTable);
         resultTable.setAutoCreateRowSorter(true);
         resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        resultTable.setRowSorter(createResultTableSorter(defaultTableModel));
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
-                int rowNumber = Integer.parseInt((String) resultTable.getValueAt(resultTable.getSelectedRow(), 0));
-                BatchResult selected = batchResults.stream().filter(entry -> {
-                    return entry.getRowNumber() == rowNumber;
+                String sourceId = (String) resultTable.getValueAt(resultTable.getSelectedRow(), 7);
+                ClassificationResult selected = classificationResults.stream().filter(entry -> {
+                    return entry.getSourceId().equals(sourceId);
                 }).findFirst().get();
                 if (selected != null) {
                     String coords = roundTo7DecNZLZ(selected.getRa()) + " " + roundTo7DecNZLZ(selected.getDec());
@@ -412,7 +411,20 @@ public class PhotometricClassifierTab {
         resizeColumnWidth(resultTable, 300);
 
         TableColumnModel columnModel = resultTable.getColumnModel();
-        columnModel.getColumn(REMOVE_COLUMN_INDEX).setPreferredWidth(150);
+        columnModel.getColumn(0).setPreferredWidth(150);
+
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        columnModel.getColumn(4).setCellRenderer(rightRenderer);
+        columnModel.getColumn(8).setCellRenderer(rightRenderer);
+        columnModel.getColumn(9).setCellRenderer(rightRenderer);
+        columnModel.getColumn(10).setCellRenderer(rightRenderer);
+
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        sorter.setComparator(4, getDoubleComparator());
+        sorter.setComparator(8, getDoubleComparator());
+        sorter.setComparator(9, getDoubleComparator());
+        sorter.setComparator(10, getDoubleComparator());
 
         JScrollPane resultScrollPanel = new JScrollPane(resultTable);
         resultScrollPanel.setPreferredSize(new Dimension(resultScrollPanel.getWidth(), resultScrollPanel.getHeight()));
@@ -511,8 +523,8 @@ public class PhotometricClassifierTab {
     private void addOccurrence(ClassifierData classifierData, Map<String, Integer> sptOccurrences, List<ClassifierData> classifierList, JTable resultTable) {
         if (resultTable != null) {
             for (int i = 0; i < resultTable.getRowCount(); i++) {
-                String sourceId = (String) resultTable.getValueAt(i, 8);
-                Boolean remove = (Boolean) resultTable.getValueAt(i, REMOVE_COLUMN_INDEX);
+                String sourceId = (String) resultTable.getValueAt(i, 7);
+                Boolean remove = (Boolean) resultTable.getValueAt(i, 0);
                 if (classifierData.getSourceId().equals(sourceId.trim()) && remove) {
                     return;
                 }
