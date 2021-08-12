@@ -120,7 +120,7 @@ public class AstrometricFunctions {
         if (parallax < 1) {
             return 0;
         } else {
-            return 1 / (parallax / ARCSEC_MAS);
+            return ARCSEC_MAS / parallax;
         }
     }
 
