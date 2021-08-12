@@ -362,4 +362,30 @@ public class AstrometricFunctions {
         return (properMotionMatches / 41252.96125) * pow(seperation / DEG_ARCSEC, 2) * Math.PI;
     }
 
+    /**
+     * Calculate position angle between 2 stars
+     *
+     * @param fromCoords (deg)
+     * @param toCoords (deg)
+     * @return the position angle (deg)
+     */
+    public static double calculatePositionAngle(NumberPair fromCoords, NumberPair toCoords) {
+        double ra = toRadians(toCoords.getX());
+        double dec = toRadians(toCoords.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double denominator = cos(dec0) * tan(dec) - sin(dec0) * cos(ra - ra0);
+        double pa = atan(sin(ra - ra0) / denominator);
+        pa = toDegrees(pa);
+        return denominator < 0 ? pa + 180 : pa;
+    }
+
+    /*public static double calculateBearingAngle(NumberPair fromCoords, NumberPair toCoords) {
+        double ra = toRadians(toCoords.getX());
+        double dec = toRadians(toCoords.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double pa = atan2(cos(dec0) * sin(ra0 - ra), cos(dec) * sin(dec) - sin(dec) * cos(dec0) * cos(ra0 - ra));
+        return (toDegrees(pa) + 180) % 360;
+    }*/
 }
