@@ -377,7 +377,7 @@ public class AstrometricFunctions {
         double denominator = cos(dec0) * tan(dec) - sin(dec0) * cos(ra - ra0);
         double pa = atan(sin(ra - ra0) / denominator);
         pa = toDegrees(pa);
-        return denominator < 0 ? pa + 180 : pa;
+        return denominator < 0 ? pa + 180 : (pa < 0 ? pa + 360 : pa);
     }
 
     /*public static double calculateBearingAngle(NumberPair fromCoords, NumberPair toCoords) {
