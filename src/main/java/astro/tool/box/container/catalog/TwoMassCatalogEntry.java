@@ -123,7 +123,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
             gal_contam = toInteger(values[columns.get("gal_contam")]);
             mp_flg = toInteger(values[columns.get("mp_flg")]);
         } else {
-            sourceId = values[columns.get("2MASS")].trim();
+            sourceId = values[columns.get("2MASS")];
             ra = toDouble(values[columns.get("RAJ2000")]);
             dec = toDouble(values[columns.get("DEJ2000")]);
             Jmag = toDouble(values[columns.get("Jmag")]);

@@ -70,6 +70,7 @@ import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.CSVParser;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
@@ -5151,7 +5152,7 @@ public class ImageViewerTab {
             } else {
                 scanner = new Scanner(results);
             }
-            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+            String[] columnNames = CSVParser.parseLine(scanner.nextLine());
             StringBuilder errors = new StringBuilder();
             int numberOfColumns = columnNames.length;
             int lastColumnIndex = numberOfColumns - 1;
@@ -5174,7 +5175,7 @@ public class ImageViewerTab {
                 return null;
             }
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(",", -1);
+                String[] columnValues = CSVParser.parseLine(scanner.nextLine());
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
