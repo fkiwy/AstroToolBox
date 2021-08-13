@@ -12,10 +12,10 @@
 ![Catalog Search](images/Catalog%20Search.png)
 
 ### Image Viewer
-![Image Viewer](images/Image%20Viewer%20new.png)
+![Image Viewer](images/Image%20Viewer.png)
 
 ##### WISEA J085510.74-071442.5: WISE coadds (epochs 2010 & 2014-2020) plus AllWISE overlays (green circles)
-![WISEA J085510.74-071442.5](images/WISEA%20J085510.74-071442.5%20new.gif)
+![WISEA J085510.74-071442.5](images/WISEA%20J085510.74-071442.5.gif)
 
 ### Image Series
 ![Image Series](images/Image%20Series.png)
@@ -42,10 +42,10 @@
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
 ### Spectral Energy Distribution
-![SED](images/SED%20new.png)
+![SED](images/SED.png)
 
 ### Gaia Color-Magnitude Diagram
-![CMD](images/CMD%20new.png)
+![CMD](images/CMD.png)
 
 ## License
 AstroToolBox is a Java tool set for the identification and classification of astronomical objects with a focus on very low-mass and ultra-cool dwarfs. Copyright (C) 2021  Frank Kiwy
