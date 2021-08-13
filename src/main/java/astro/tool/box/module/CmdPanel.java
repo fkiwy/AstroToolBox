@@ -139,10 +139,10 @@ public class CmdPanel extends JPanel {
         yAxis.setRange(-2, 22);
         plot.setRangeAxis(yAxis);
 
-        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 14);
         xAxis.setTickLabelFont(tickLabelFont);
         yAxis.setTickLabelFont(tickLabelFont);
-        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 20);
+        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 14);
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
@@ -175,11 +175,11 @@ public class CmdPanel extends JPanel {
         plot.setDomainGridlinePaint(Color.GRAY);
         plot.getRangeAxis().setInverted(true);
 
-        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 14);
         chart.getLegend().setFrame(BlockBorder.NONE);
         chart.getLegend().setItemFont(legendFont);
 
-        Font titleFont = new Font(FONT_NAME, Font.BOLD, 24);
+        Font titleFont = new Font(FONT_NAME, Font.PLAIN, 20);
         chart.getTitle().setFont(titleFont);
 
         return chart;

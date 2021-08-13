@@ -414,16 +414,16 @@ public class SedPanel extends JPanel {
         //xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("λF(λ) (W/m^2)");
+        LogAxis yAxis = new LogAxis("λF(λ) (W/m²)");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(0.5));
         //yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
         plot.setRangeAxis(yAxis);
 
-        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 14);
         xAxis.setTickLabelFont(tickLabelFont);
         yAxis.setTickLabelFont(tickLabelFont);
-        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 20);
+        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 14);
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
@@ -440,11 +440,11 @@ public class SedPanel extends JPanel {
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.GRAY);
 
-        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 14);
         chart.getLegend().setFrame(BlockBorder.NONE);
         chart.getLegend().setItemFont(legendFont);
 
-        Font titleFont = new Font(FONT_NAME, Font.BOLD, 24);
+        Font titleFont = new Font(FONT_NAME, Font.PLAIN, 20);
         chart.getTitle().setFont(titleFont);
 
         return chart;
