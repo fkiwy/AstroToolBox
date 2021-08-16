@@ -1,5 +1,6 @@
 package astro.tool.box.module;
 
+import static astro.tool.box.module.Application.CMD_DATA;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
@@ -15,7 +16,6 @@ import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -37,8 +37,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class CmdPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
-
-    private List<NumberTriplet> cmdData;
 
     public CmdPanel(GaiaCmd catalogEntry) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -99,7 +97,7 @@ public class CmdPanel extends JPanel {
     private XYSeriesCollection createCollection(boolean g_rp) {
         XYSeriesCollection collection = new XYSeriesCollection();
         XYSeries series = new XYSeries("");
-        cmdData.forEach(triplet -> {
+        CMD_DATA.forEach(triplet -> {
             double x = g_rp ? triplet.getY() : triplet.getZ();
             double y = triplet.getX();
             if (x != 0 && y != 0) {
@@ -186,6 +184,9 @@ public class CmdPanel extends JPanel {
     }
 
     private void loadCmdData() {
+        if (CMD_DATA != null) {
+            return;
+        }
         String gaiaCmdPath = getUserSetting(GAIA_CMD_PATH);
         if (gaiaCmdPath == null || gaiaCmdPath.isEmpty()) {
             throw new RuntimeException("Specify file location of Gaia CMD data in the Settings tab.");
@@ -193,13 +194,13 @@ public class CmdPanel extends JPanel {
         File objectCollectionFile = new File(gaiaCmdPath);
         try (Scanner scanner = new Scanner(objectCollectionFile)) {
             scanner.nextLine();
-            cmdData = new ArrayList();
+            CMD_DATA = new ArrayList();
             while (scanner.hasNextLine()) {
                 String[] columnValues = scanner.nextLine().split(",", -1);
                 double x = toDouble(columnValues[0]);
                 double y = toDouble(columnValues[1]);
                 double z = toDouble(columnValues[2]);
-                cmdData.add(new NumberTriplet(x, y, z));
+                CMD_DATA.add(new NumberTriplet(x, y, z));
             }
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex.getMessage());
