@@ -598,6 +598,8 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         bands.put(Band.H, Hmag);
         bands.put(Band.K, Kmag);
         bands.put(Band.G, Gmag);
+        bands.put(Band.BP, BPmag);
+        bands.put(Band.RP, RPmag);
         return bands;
     }
 

@@ -268,6 +268,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
         bands.put(Band.G, Gmag);
+        bands.put(Band.BP, BPmag);
+        bands.put(Band.RP, RPmag);
         return bands;
     }
 
