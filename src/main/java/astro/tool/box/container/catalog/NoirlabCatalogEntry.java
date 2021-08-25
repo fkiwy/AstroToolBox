@@ -346,10 +346,10 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.g_r_DES, get_g_r());
-        colors.put(Color.r_i_DES, get_r_i());
-        colors.put(Color.i_z_DES, get_i_z());
-        colors.put(Color.z_Y_DES, get_z_y());
+        colors.put(Color.g_r_NSC, get_g_r());
+        colors.put(Color.r_i_NSC, get_r_i());
+        colors.put(Color.i_z_NSC, get_i_z());
+        colors.put(Color.z_Y_NSC, get_z_y());
         return colors;
     }
 

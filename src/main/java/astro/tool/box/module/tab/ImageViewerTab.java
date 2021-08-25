@@ -4108,7 +4108,13 @@ public class ImageViewerTab {
                         float red = processPixel(valuesW1[i][j], minValue, maxValue);
                         float blue = processPixel(valuesW2[i][j], minValue, maxValue);
                         float green = (red + blue) / 2;
-                        graphics.setColor(new Color(red, green, blue));
+                        Color color;
+                        if (invertColors.isSelected()) {
+                            color = new Color(blue, green, red);
+                        } else {
+                            color = new Color(red, green, blue);
+                        }
+                        graphics.setColor(color);
                         graphics.fillRect(j, i, 1, 1);
                     } catch (ArrayIndexOutOfBoundsException ex) {
                     }
