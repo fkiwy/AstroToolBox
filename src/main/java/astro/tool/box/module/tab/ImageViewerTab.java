@@ -816,8 +816,6 @@ public class ImageViewerTab {
                 }
             });
 
-            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
-
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
@@ -839,8 +837,9 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds (ASC=DESC)"));
+            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds <span color='red'>(*)</span> (ASC=DESC)"));
             mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.setToolTipText("No separate scan directions! Each image may contain data of previous epochs.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 if (decalsCutouts.isSelected()) {
                     decalsCutouts.setSelected(false);
@@ -856,8 +855,9 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            decalsCutouts = new JCheckBox(html("DECaLS cutouts (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
+            decalsCutouts = new JCheckBox(html("DECaLS cutouts <span color='red'>(*)</span> (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
             mainControlPanel.add(decalsCutouts);
+            decalsCutouts.setToolTipText("Not reliable for motion detection! Epochs can be to close together.");
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 if (unwiseCutouts.isSelected()) {
                     unwiseCutouts.setSelected(false);
@@ -872,6 +872,8 @@ public class ImageViewerTab {
                 previousDec = 0;
                 createFlipbook();
             });
+
+            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
             mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects:"));
 
