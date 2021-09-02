@@ -12,9 +12,12 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 public class AstrometricFunctions {
@@ -306,13 +309,13 @@ public class AstrometricFunctions {
     /**
      * Convert a modified Julian date to local date and time
      *
-     * @param modifiedJulianDate
+     * @param mjd
      * @return the local date and time (UTC)
      */
-    public static LocalDateTime convertMJDToDateTime(BigDecimal modifiedJulianDate) {
+    public static LocalDateTime convertMJDToDateTime(BigDecimal mjd) {
         Instant epoch = OffsetDateTime.of(1858, 11, 17, 0, 0, 0, 0, ZoneOffset.UTC).toInstant();
-        BigInteger days = modifiedJulianDate.toBigInteger();
-        BigDecimal fractionOfADay = modifiedJulianDate.subtract(new BigDecimal(days));
+        BigInteger days = mjd.toBigInteger();
+        BigDecimal fractionOfADay = mjd.subtract(new BigDecimal(days));
         BigDecimal decimalSeconds = new BigDecimal(TimeUnit.DAYS.toSeconds(1)).multiply(fractionOfADay);
         BigInteger integerSeconds = decimalSeconds.toBigInteger();
         BigInteger nanos = decimalSeconds.subtract(new BigDecimal(integerSeconds)).multiply(new BigDecimal(1_000_000_000L)).toBigInteger();
@@ -336,6 +339,28 @@ public class AstrometricFunctions {
         BigDecimal nanosInADay = new BigDecimal(TimeUnit.DAYS.toNanos(1));
         BigDecimal partialDay = partialDayInNanos.divide(nanosInADay, 9, RoundingMode.HALF_EVEN);
         return wholeDays.add(partialDay);
+    }
+
+    /**
+     * Convert modified Julian date to years
+     *
+     * @param mjd
+     * @return years
+     */
+    public static double convertMJDToYears(double mjd) {
+        LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).toLocalDate();
+        long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
+        return days / 365.2425;
+    }
+
+    /**
+     * Convert modified Julian date to calendar date
+     *
+     * @param mjd
+     * @return
+     */
+    public static LocalDate convertMJDToDate(double mjd) {
+        return convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).toLocalDate();
     }
 
     /**

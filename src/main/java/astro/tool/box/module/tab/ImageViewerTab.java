@@ -2709,6 +2709,7 @@ public class ImageViewerTab {
                         applyProperMotion(new CatWiseCatalogEntry());
                     }
                 }
+                /*
                 if (!unwiseCutouts.isSelected() && !decalsCutouts.isSelected()) {
                     try {
                         InputStream stream = getImageData(1, numberOfEpochs + 5);
@@ -2722,7 +2723,7 @@ public class ImageViewerTab {
                         } catch (FileNotFoundException ex2) {
                         }
                     }
-                }
+                }*/
             }
             previousSize = size;
             previousRa = targetRa;

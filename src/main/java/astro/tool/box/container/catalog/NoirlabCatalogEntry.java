@@ -14,9 +14,6 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -547,9 +544,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     public double getMeanEpoch() {
-        LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).toLocalDate();
-        long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
-        return days / 365.2425;
+        return convertMJDToYears(mean_mjd);
     }
 
     public int getNdet() {

@@ -979,4 +979,44 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         }
     }
 
+    public double getTeff() {
+        return teff;
+    }
+
+    public double getTeff_err() {
+        return teff_err;
+    }
+
+    public double getLogg() {
+        return logg;
+    }
+
+    public double getLogg_err() {
+        return logg_err;
+    }
+
+    public double getRad() {
+        return rad;
+    }
+
+    public double getRad_err() {
+        return rad_err;
+    }
+
+    public double getMass() {
+        return mass;
+    }
+
+    public double getMass_err() {
+        return mass_err;
+    }
+
+    public double getLum() {
+        return lum;
+    }
+
+    public double getLum_err() {
+        return lum_err;
+    }
+
 }
