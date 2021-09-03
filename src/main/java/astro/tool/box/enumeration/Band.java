@@ -21,7 +21,7 @@ public enum Band {
     BP("BP"),
     RP("RP");
 
-    private static final List<Band> SED_BANDS = Arrays.asList(g, r, i, z, y, J, H, K, W1, W2, W3, W4);
+    private static final List<Band> SED_BANDS = Arrays.asList(g, r, i, z, y, J, H, K, W1, W2, W3 /*, W4*/);
 
     public String val;
 

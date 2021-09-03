@@ -1,5 +1,6 @@
 package astro.tool.box.module;
 
+import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Version;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
@@ -25,6 +26,7 @@ import java.awt.GridLayout;
 import java.io.IOException;
 import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
+import java.util.List;
 import java.util.Scanner;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -46,6 +48,8 @@ public class Application {
     private ImageViewerTab imageViewerTab;
 
     private static boolean configLoaded = true;
+
+    public static List<NumberTriplet> CMD_DATA;
 
     public Application() {
         try {

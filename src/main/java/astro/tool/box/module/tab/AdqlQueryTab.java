@@ -650,8 +650,8 @@ public class AdqlQueryTab {
         addRow(query, "       lum_val AS Lum");
         addRow(query, "FROM   gaia_dr2_source");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', [RA], [DE], 1))");
-        addRow(query, "AND   (pmra  BETWEEN [PMRA] - ABS([PMRA]) * 0.1 AND [PMRA] + ABS([PMRA]) * 0.1");
-        addRow(query, "AND    pmdec BETWEEN [PMDE] - ABS([PMDE]) * 0.1 AND [PMDE] + ABS([PMDE]) * 0.1)");
+        addRow(query, "AND   (pmra  BETWEEN [PMRA] - 10 AND [PMRA] + 10");
+        addRow(query, "AND    pmdec BETWEEN [PMDE] - 10 AND [PMDE] + 10)");
         return query.toString();
     }
 

@@ -25,16 +25,15 @@ public enum Color {
     g_r("g-r"),
     r_i("r-i"),
     i_z("i-z"),
-    z_Y("z-Y"),
     g_r_PS1("g-r"),
     r_i_PS1("r-i"),
     i_z_PS1("i-z"),
     i_y_PS1("i-y"),
     z_y_PS1("z-y"),
-    g_r_DES("g-r"),
-    r_i_DES("r-i"),
-    i_z_DES("i-z"),
-    z_Y_DES("z-Y");
+    g_r_NSC("g-r"),
+    r_i_NSC("r-i"),
+    i_z_NSC("i-z"),
+    z_Y_NSC("z-Y");
 
     public String val;
 

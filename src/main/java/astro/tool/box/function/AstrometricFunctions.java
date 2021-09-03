@@ -12,9 +12,12 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 public class AstrometricFunctions {
@@ -120,7 +123,7 @@ public class AstrometricFunctions {
         if (parallax < 1) {
             return 0;
         } else {
-            return 1 / (parallax / ARCSEC_MAS);
+            return ARCSEC_MAS / parallax;
         }
     }
 
@@ -306,13 +309,13 @@ public class AstrometricFunctions {
     /**
      * Convert a modified Julian date to local date and time
      *
-     * @param modifiedJulianDate
+     * @param mjd
      * @return the local date and time (UTC)
      */
-    public static LocalDateTime convertMJDToDateTime(BigDecimal modifiedJulianDate) {
+    public static LocalDateTime convertMJDToDateTime(BigDecimal mjd) {
         Instant epoch = OffsetDateTime.of(1858, 11, 17, 0, 0, 0, 0, ZoneOffset.UTC).toInstant();
-        BigInteger days = modifiedJulianDate.toBigInteger();
-        BigDecimal fractionOfADay = modifiedJulianDate.subtract(new BigDecimal(days));
+        BigInteger days = mjd.toBigInteger();
+        BigDecimal fractionOfADay = mjd.subtract(new BigDecimal(days));
         BigDecimal decimalSeconds = new BigDecimal(TimeUnit.DAYS.toSeconds(1)).multiply(fractionOfADay);
         BigInteger integerSeconds = decimalSeconds.toBigInteger();
         BigInteger nanos = decimalSeconds.subtract(new BigDecimal(integerSeconds)).multiply(new BigDecimal(1_000_000_000L)).toBigInteger();
@@ -339,6 +342,28 @@ public class AstrometricFunctions {
     }
 
     /**
+     * Convert modified Julian date to years
+     *
+     * @param mjd
+     * @return years
+     */
+    public static double convertMJDToYears(double mjd) {
+        LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).toLocalDate();
+        long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
+        return days / 365.2425;
+    }
+
+    /**
+     * Convert modified Julian date to calendar date
+     *
+     * @param mjd
+     * @return
+     */
+    public static LocalDate convertMJDToDate(double mjd) {
+        return convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).toLocalDate();
+    }
+
+    /**
      * Verify if proper motion is faulty
      *
      * @param value
@@ -350,4 +375,42 @@ public class AstrometricFunctions {
         return error > value * 0.5;
     }
 
+    /**
+     * Calculate chance alignment probability
+     *
+     * @param properMotionMatches
+     * @param seperation (arcsec)
+     * @return the chance alignment probability
+     */
+    public static double calculateChanceAlignmentProbability(int properMotionMatches, double seperation) {
+        // sky = 41252.96125 deg^2
+        return (properMotionMatches / 41252.96125) * pow(seperation / DEG_ARCSEC, 2) * Math.PI;
+    }
+
+    /**
+     * Calculate position angle between 2 stars
+     *
+     * @param fromCoords (deg)
+     * @param toCoords (deg)
+     * @return the position angle (deg)
+     */
+    public static double calculatePositionAngle(NumberPair fromCoords, NumberPair toCoords) {
+        double ra = toRadians(toCoords.getX());
+        double dec = toRadians(toCoords.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double denominator = cos(dec0) * tan(dec) - sin(dec0) * cos(ra - ra0);
+        double pa = atan(sin(ra - ra0) / denominator);
+        pa = toDegrees(pa);
+        return denominator < 0 ? pa + 180 : (pa < 0 ? pa + 360 : pa);
+    }
+
+    /*public static double calculateBearingAngle(NumberPair fromCoords, NumberPair toCoords) {
+        double ra = toRadians(toCoords.getX());
+        double dec = toRadians(toCoords.getY());
+        double ra0 = toRadians(fromCoords.getX());
+        double dec0 = toRadians(fromCoords.getY());
+        double pa = atan2(cos(dec0) * sin(ra0 - ra), cos(dec) * sin(dec) - sin(dec) * cos(dec0) * cos(ra0 - ra));
+        return (toDegrees(pa) + 180) % 360;
+    }*/
 }

@@ -2,6 +2,7 @@ package astro.tool.box.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CSVParser {
 
@@ -64,6 +65,7 @@ public class CSVParser {
             }
         }
         result.add(curVal.toString());
+        result = result.stream().map(String::trim).collect(Collectors.toList());
         return result.toArray(new String[result.size()]);
     }
 

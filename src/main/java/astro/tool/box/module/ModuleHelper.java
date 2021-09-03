@@ -254,6 +254,10 @@ public class ModuleHelper {
         return option == JOptionPane.YES_OPTION;
     }
 
+    public static String red(String text) {
+        return html("<span style='color:red'>" + text + "</span>");
+    }
+
     public static String bold(String text) {
         return html("<b>" + text + "</b>");
     }

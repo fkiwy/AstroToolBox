@@ -14,9 +14,6 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -340,22 +337,16 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.g, g_mag);
-        bands.put(Band.r, r_mag);
-        bands.put(Band.i, i_mag);
-        bands.put(Band.z, z_mag);
-        bands.put(Band.y, y_mag);
-        return bands;
+        return new LinkedHashMap<>();
     }
 
     @Override
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.g_r_DES, get_g_r());
-        colors.put(Color.r_i_DES, get_r_i());
-        colors.put(Color.i_z_DES, get_i_z());
-        colors.put(Color.z_Y_DES, get_z_y());
+        colors.put(Color.g_r_NSC, get_g_r());
+        colors.put(Color.r_i_NSC, get_r_i());
+        colors.put(Color.i_z_NSC, get_i_z());
+        colors.put(Color.z_Y_NSC, get_z_y());
         return colors;
     }
 
@@ -553,9 +544,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     public double getMeanEpoch() {
-        LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).toLocalDate();
-        long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
-        return days / 365.2425;
+        return convertMJDToYears(mean_mjd);
     }
 
     public int getNdet() {

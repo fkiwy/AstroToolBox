@@ -244,12 +244,7 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     @Override
     public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.g, g_mag);
-        bands.put(Band.r, r_mag);
-        bands.put(Band.i, i_mag);
-        bands.put(Band.z, z_mag);
-        return bands;
+        return new LinkedHashMap<>();
     }
 
     @Override

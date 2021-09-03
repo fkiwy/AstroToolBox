@@ -70,6 +70,7 @@ import astro.tool.box.module.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.CSVParser;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
@@ -101,7 +102,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -182,7 +182,7 @@ public class ImageViewerTab {
     public static final String EPOCH_LABEL = "Number of epochs: %d";
     public static final String HIGH_SCALE_LABEL = "Contrast - high scale: %d";
     public static final String LOW_SCALE_LABEL = "Contrast - low scale: %d";
-    public static final String SUB_SCALE_LABEL = "Contrast - subtracted mode: %d";
+    public static final String PRE_SCALE_LABEL = "Contrast - preprocessing: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
@@ -196,7 +196,7 @@ public class ImageViewerTab {
     public static final int ROW_HEIGHT = 25;
     public static final int HIGH_CONTRAST = 0;
     public static final int LOW_CONTRAST = 50;
-    public static final int SUB_CONTRAST = 10;
+    public static final int PRE_CONTRAST = 10;
     public static final int EPOCH_GAP = 5;
     public static final int SPEED = 300;
     public static final int ZOOM = 500;
@@ -252,7 +252,7 @@ public class ImageViewerTab {
     private JLabel changeFovLabel;
     private JLabel highScaleLabel;
     private JLabel lowScaleLabel;
-    private JLabel subScaleLabel;
+    private JLabel preScaleLabel;
     private JLabel epochLabel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
@@ -321,7 +321,7 @@ public class ImageViewerTab {
     private JComboBox epochs;
     private JSlider highScaleSlider;
     private JSlider lowScaleSlider;
-    private JSlider subScaleSlider;
+    private JSlider preScaleSlider;
     private JSlider sensitivitySlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
@@ -379,11 +379,11 @@ public class ImageViewerTab {
 
     private int highContrast = HIGH_CONTRAST;
     private int lowContrast = LOW_CONTRAST;
-    private int subContrast = SUB_CONTRAST;
+    private int preContrast = PRE_CONTRAST;
 
     private int highContrastSaved = highContrast;
     private int lowContrastSaved = lowContrast;
-    private int subContrastSaved = subContrast;
+    private int preContrastSaved = preContrast;
 
     private double sensitivity;
 
@@ -590,17 +590,17 @@ public class ImageViewerTab {
                     autoContrast.setSelected(true);
                     optimizeContrast.setSelected(false);
                     blurImages.setSelected(true);
-                    subScaleLabel.setForeground(Color.RED);
-                    subScaleSlider.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.RED));
+                    preScaleLabel.setForeground(Color.RED);
+                    preScaleSlider.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.RED));
                     setContrast(LOW_CONTRAST, HIGH_CONTRAST);
-                    setSubContrast(subContrastSaved);
+                    setPreContrast(preContrastSaved);
                 } else if (Epoch.isSubtracted(previousEpoch)) {
                     optimizeContrast.setSelected(true);
                     blurImages.setSelected(false);
-                    subScaleLabel.setForeground(lowScaleLabel.getForeground());
-                    subScaleSlider.setBorder(BorderFactory.createEmptyBorder());
+                    preScaleLabel.setForeground(lowScaleLabel.getForeground());
+                    preScaleSlider.setBorder(BorderFactory.createEmptyBorder());
                     setContrast(lowContrastSaved, highContrastSaved);
-                    setSubContrast(SUB_CONTRAST);
+                    setPreContrast(PRE_CONTRAST);
                 }
                 createFlipbook();
             });
@@ -650,20 +650,20 @@ public class ImageViewerTab {
                 }
             });
 
-            subScaleLabel = new JLabel(String.format(SUB_SCALE_LABEL, subContrast));
-            mainControlPanel.add(subScaleLabel);
+            preScaleLabel = new JLabel(String.format(PRE_SCALE_LABEL, preContrast));
+            mainControlPanel.add(preScaleLabel);
 
-            subScaleSlider = new JSlider(1, 19, SUB_CONTRAST);
-            mainControlPanel.add(subScaleSlider);
-            subScaleSlider.addChangeListener((ChangeEvent e) -> {
-                subContrast = subScaleSlider.getValue();
-                subScaleLabel.setText(String.format(SUB_SCALE_LABEL, subContrast));
+            preScaleSlider = new JSlider(0, 100, PRE_CONTRAST);
+            mainControlPanel.add(preScaleSlider);
+            preScaleSlider.addChangeListener((ChangeEvent e) -> {
+                preContrast = preScaleSlider.getValue();
+                preScaleLabel.setText(String.format(PRE_SCALE_LABEL, preContrast));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
                 if (Epoch.isSubtracted(epoch)) {
-                    subContrastSaved = subContrast;
+                    preContrastSaved = preContrast;
                 }
                 processImages();
             });
@@ -741,7 +741,7 @@ public class ImageViewerTab {
             settingsPanel.add(autoContrast);
             autoContrast.addActionListener((ActionEvent evt) -> {
                 setContrast(lowContrastSaved, highContrastSaved);
-                setSubContrast(subContrastSaved);
+                setPreContrast(preContrastSaved);
                 createFlipbook();
             });
 
@@ -750,7 +750,7 @@ public class ImageViewerTab {
             keepContrast.addActionListener((ActionEvent evt) -> {
                 if (keepContrast.isSelected()) {
                     if (Epoch.isSubtracted(epoch)) {
-                        subContrastSaved = subContrast;
+                        preContrastSaved = preContrast;
                     } else {
                         highContrastSaved = highContrast;
                         lowContrastSaved = lowContrast;
@@ -815,8 +815,6 @@ public class ImageViewerTab {
                 }
             });
 
-            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
-
             JButton resetDefaultsButton = new JButton("Image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
@@ -834,12 +832,13 @@ public class ImageViewerTab {
                     sensitivitySlider.setValue(100);
                 }
                 setContrast(LOW_CONTRAST, HIGH_CONTRAST);
-                setSubContrast(SUB_CONTRAST);
+                setPreContrast(PRE_CONTRAST);
                 createFlipbook();
             });
 
-            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds (ASC=DESC)"));
+            unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds <span color='red'>(*)</span> (ASC=DESC)"));
             mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.setToolTipText("No separate scan directions! Each image may contain data of previous epochs.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 if (decalsCutouts.isSelected()) {
                     decalsCutouts.setSelected(false);
@@ -855,8 +854,9 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            decalsCutouts = new JCheckBox(html("DECaLS cutouts (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
+            decalsCutouts = new JCheckBox(html("DECaLS cutouts <span color='red'>(*)</span> (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
             mainControlPanel.add(decalsCutouts);
+            decalsCutouts.setToolTipText("Not reliable for motion detection! Epochs can be to close together.");
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 if (unwiseCutouts.isSelected()) {
                     unwiseCutouts.setSelected(false);
@@ -871,6 +871,8 @@ public class ImageViewerTab {
                 previousDec = 0;
                 createFlipbook();
             });
+
+            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
             mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects:"));
 
@@ -2711,12 +2713,12 @@ public class ImageViewerTab {
                         InputStream stream = getImageData(1, numberOfEpochs + 5);
                         stream.close();
                         moreImagesAvailable = true;
-                    } catch (FileNotFoundException ex) {
+                    } catch (IOException e) {
                         try {
                             InputStream stream = getImageData(1, numberOfEpochs);
                             stream.close();
                             oneMoreImageAvailable = true;
-                        } catch (FileNotFoundException ex2) {
+                        } catch (IOException ex) {
                         }
                     }
                 }
@@ -2784,7 +2786,7 @@ public class ImageViewerTab {
                 if (asyncDownloads) {
                     downloadLog.setCaretPosition(0);
                 }
-                if (images.isEmpty()) {
+                if (images.size() < 2) {
                     showInfoDialog(baseFrame, "No images found for the given coordinates.");
                     hasException = true;
                     return false;
@@ -3688,7 +3690,7 @@ public class ImageViewerTab {
                 Fits fits;
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
-                } catch (FileNotFoundException ex) {
+                } catch (IOException ex) {
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
@@ -3999,16 +4001,10 @@ public class ImageViewerTab {
 
     private void retrieveDecalsImages(int band, Map<String, ImageContainer> images) throws Exception {
         Counter requestedEpoch = new Counter();
-        boolean imageFound = downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr5", 2016);
-        if (imageFound) {
-            downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);/*
-        } else {
-            imageFound = downloadDecalsCutouts(requestedEpoch, band, images, "des-dr2", 2017);
-        }
-        if (imageFound) {*/
-            downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr8", 2019);
-            downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr9", 2020);
-        }
+        downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr5", 2016);
+        downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);
+        downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr8", 2019);
+        downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr9", 2020);
     }
 
     private boolean downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
@@ -4107,7 +4103,13 @@ public class ImageViewerTab {
                         float red = processPixel(valuesW1[i][j], minValue, maxValue);
                         float blue = processPixel(valuesW2[i][j], minValue, maxValue);
                         float green = (red + blue) / 2;
-                        graphics.setColor(new Color(red, green, blue));
+                        Color color;
+                        if (invertColors.isSelected()) {
+                            color = new Color(blue, green, red);
+                        } else {
+                            color = new Color(red, green, blue);
+                        }
+                        graphics.setColor(color);
                         graphics.fillRect(j, i, 1, 1);
                     } catch (ArrayIndexOutOfBoundsException ex) {
                     }
@@ -4271,7 +4273,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value, int minValue, int maxValue) {
-        float contrast = subContrast;
+        float contrast = preContrast;
         if (contrast > 9) {
             contrast -= 9;
         } else {
@@ -4318,22 +4320,22 @@ public class ImageViewerTab {
         highScaleSlider.setValue(highContrast = high);
     }
 
-    private void setSubContrast(int val) {
+    private void setPreContrast(int val) {
         if (Epoch.isSubtracted(epoch)) {
-            subContrastSaved = val;
+            preContrastSaved = val;
         }
-        subScaleSlider.setValue(subContrast = val);
+        preScaleSlider.setValue(preContrast = val);
     }
 
     private void initContrast() {
-        subContrastSaved = SUB_CONTRAST;
+        preContrastSaved = PRE_CONTRAST;
         lowContrastSaved = LOW_CONTRAST;
         highContrastSaved = HIGH_CONTRAST;
 
-        ChangeListener listener = subScaleSlider.getChangeListeners()[0];
-        subScaleSlider.removeChangeListener(listener);
-        subScaleSlider.setValue(subContrast = subContrastSaved);
-        subScaleSlider.addChangeListener(listener);
+        ChangeListener listener = preScaleSlider.getChangeListeners()[0];
+        preScaleSlider.removeChangeListener(listener);
+        preScaleSlider.setValue(preContrast = preContrastSaved);
+        preScaleSlider.addChangeListener(listener);
 
         listener = lowScaleSlider.getChangeListeners()[0];
         lowScaleSlider.removeChangeListener(listener);
@@ -4345,7 +4347,7 @@ public class ImageViewerTab {
         highScaleSlider.setValue(highContrast = highContrastSaved);
         highScaleSlider.addChangeListener(listener);
 
-        subScaleLabel.setText(String.format(SUB_SCALE_LABEL, subContrast));
+        preScaleLabel.setText(String.format(PRE_SCALE_LABEL, preContrast));
         lowScaleLabel.setText(String.format(LOW_SCALE_LABEL, lowContrast));
         highScaleLabel.setText(String.format(HIGH_SCALE_LABEL, highContrast));
     }
@@ -5151,7 +5153,7 @@ public class ImageViewerTab {
             } else {
                 scanner = new Scanner(results);
             }
-            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+            String[] columnNames = CSVParser.parseLine(scanner.nextLine());
             StringBuilder errors = new StringBuilder();
             int numberOfColumns = columnNames.length;
             int lastColumnIndex = numberOfColumns - 1;
@@ -5174,7 +5176,7 @@ public class ImageViewerTab {
                 return null;
             }
             while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(",", -1);
+                String[] columnValues = CSVParser.parseLine(scanner.nextLine());
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
@@ -5651,7 +5653,7 @@ public class ImageViewerTab {
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
-                sedFrame.setSize(900, 700);
+                sedFrame.setSize(800, 700);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(false);
@@ -5668,7 +5670,7 @@ public class ImageViewerTab {
                         sedFrame.setIconImage(getToolBoxImage());
                         sedFrame.setTitle("CMD");
                         sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                        sedFrame.setSize(900, 700);
+                        sedFrame.setSize(800, 700);
                         sedFrame.setLocation(0, 0);
                         sedFrame.setAlwaysOnTop(false);
                         sedFrame.setResizable(false);

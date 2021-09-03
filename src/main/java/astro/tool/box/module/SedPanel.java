@@ -188,15 +188,15 @@ public class SedPanel extends JPanel {
         sedCatalogs.put(Band.W1, AllWiseCatalogEntry.CATALOG_NAME);
         sedCatalogs.put(Band.W2, AllWiseCatalogEntry.CATALOG_NAME);
         sedCatalogs.put(Band.W3, AllWiseCatalogEntry.CATALOG_NAME);
-        sedCatalogs.put(Band.W4, AllWiseCatalogEntry.CATALOG_NAME);
+        //sedCatalogs.put(Band.W4, AllWiseCatalogEntry.CATALOG_NAME);
         sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
         sedReferences.put(Band.W2, new SedReferences(171.79, 4.6));
         sedReferences.put(Band.W3, new SedReferences(31.676, 12));
-        sedReferences.put(Band.W4, new SedReferences(8.3635, 22));
+        //sedReferences.put(Band.W4, new SedReferences(8.3635, 22));
         sedPhotometry.put(Band.W1, allWiseEntry.getW1mag());
         sedPhotometry.put(Band.W2, allWiseEntry.getW2mag());
         sedPhotometry.put(Band.W3, allWiseEntry.getW3mag());
-        sedPhotometry.put(Band.W4, allWiseEntry.getW4mag());
+        //sedPhotometry.put(Band.W4, allWiseEntry.getW4mag());
 
         // 2MASS
         sedCatalogs.put(Band.J, TwoMassCatalogEntry.CATALOG_NAME);
@@ -254,7 +254,8 @@ public class SedPanel extends JPanel {
                 sedPhotometry.put(Band.J, vhsEntry.getJmag());
                 sedPhotometry.put(Band.H, vhsEntry.getHmag());
                 sedPhotometry.put(Band.K, vhsEntry.getKmag());
-            } else {
+            }
+            /*else {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                 twoMassEntry.setRa(catalogEntry.getRa());
                 twoMassEntry.setDec(catalogEntry.getDec());
@@ -273,7 +274,7 @@ public class SedPanel extends JPanel {
                     sedPhotometry.put(Band.H, twoMassEntry.getHmag());
                     sedPhotometry.put(Band.K, twoMassEntry.getKmag());
                 }
-            }
+            }*/
         }
 
         Band.getSedBands().forEach(band -> {
@@ -413,16 +414,16 @@ public class SedPanel extends JPanel {
         //xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("λF(λ) (W/m^2)");
+        LogAxis yAxis = new LogAxis("λF(λ) (W/m²)");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(0.5));
         //yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
         plot.setRangeAxis(yAxis);
 
-        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 14);
         xAxis.setTickLabelFont(tickLabelFont);
         yAxis.setTickLabelFont(tickLabelFont);
-        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 20);
+        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 14);
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
@@ -439,11 +440,11 @@ public class SedPanel extends JPanel {
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.GRAY);
 
-        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 16);
+        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 14);
         chart.getLegend().setFrame(BlockBorder.NONE);
         chart.getLegend().setItemFont(legendFont);
 
-        Font titleFont = new Font(FONT_NAME, Font.BOLD, 24);
+        Font titleFont = new Font(FONT_NAME, Font.PLAIN, 20);
         chart.getTitle().setFont(titleFont);
 
         return chart;
