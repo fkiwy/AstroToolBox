@@ -177,10 +177,6 @@ public class SettingsTab {
                 useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
             }
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
-            if (cutoutService == null) {
-                cutoutService = CUTOUT_SERVICE_URL;
-                USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutService);
-            }
             gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
@@ -476,9 +472,6 @@ public class SettingsTab {
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
-                    cutoutService = cutoutServiceField.getText();
-                    gaiaCmdPath = gaiaCmdPathField.getText();
-                    objectCollectionPath = collectionPathField.getText();
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
                         if (proxyAddress.isEmpty()) {
@@ -712,7 +705,8 @@ public class SettingsTab {
     }
 
     public static String getUserSetting(String key, String defaultValue) {
-        return USER_SETTINGS.getProperty(key, defaultValue);
+        String property = USER_SETTINGS.getProperty(key);
+        return property == null || property.isEmpty() ? defaultValue : property;
     }
 
     public static List<String> getSelectedCatalogs(Map<String, CatalogEntry> catalogInstances) {

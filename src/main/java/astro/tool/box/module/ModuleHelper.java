@@ -714,7 +714,7 @@ public class ModuleHelper {
             });
         }
         if (brownDwarfsResults != null) {
-            toCopy.append(LINE_SEP).append("* Brown dwarfs only:");
+            toCopy.append(LINE_SEP).append("* M, L & T dwarfs only:");
             brownDwarfsResults.forEach(entry -> {
                 toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());

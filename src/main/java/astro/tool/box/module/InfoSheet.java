@@ -367,7 +367,7 @@ public class InfoSheet {
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
             document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (**)", mainHeader));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "Brown dwarfs spectral type evaluation (***)", null));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type evaluation (***)", null));
 
             PdfPTable table = new PdfPTable(3);
             table.setTotalWidth(new float[]{11, 40, 100});

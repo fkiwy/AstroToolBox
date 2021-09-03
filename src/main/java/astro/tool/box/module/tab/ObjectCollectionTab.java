@@ -337,7 +337,10 @@ public class ObjectCollectionTab {
 
         // Select previously selected row
         if (selectedRow >= 0) {
-            resultTable.setRowSelectionInterval(selectedRow, selectedRow);
+            try {
+                resultTable.setRowSelectionInterval(selectedRow, selectedRow);
+            } catch (IllegalArgumentException ex) {
+            }
         }
 
         imageViewerTab.setCollectionTable(resultTable);

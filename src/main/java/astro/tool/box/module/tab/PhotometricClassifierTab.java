@@ -248,13 +248,13 @@ public class PhotometricClassifierTab {
                                     classificationResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, null);
                                     mainSequenceResultTable = displayQueryResults(classificationResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
                                     classificationResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
-                                    brownDwarfsResultTable = displayQueryResults(classificationResults, "Brown dwarfs spectral type evaluation", JColor.BROWN.val);
+                                    brownDwarfsResultTable = displayQueryResults(classificationResults, "M, L & T dwarfs spectral type evaluation", JColor.BROWN.val);
                                 }
                                 displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
                                 displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
-                                displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: Brown dwarfs", JColor.BROWN.val);
+                                displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: M, L & T dwarfs", JColor.BROWN.val);
                                 displayClassifierData(classifierListMainSequence, "Colors used for classification: Main sequence", JColor.DARK_GREEN.val);
-                                displayClassifierData(classifierListBrownDwarfs, "Colors used for classification: Brown dwarfs", JColor.BROWN.val);
+                                displayClassifierData(classifierListBrownDwarfs, "Colors used for classification: M, L & T dwarfs", JColor.BROWN.val);
                                 if (!sptOccurrencesSimbad.isEmpty()) {
                                     displayClassification(sptOccurrencesSimbad, "SIMBAD object type", Color.LIGHT_GRAY);
                                 }
