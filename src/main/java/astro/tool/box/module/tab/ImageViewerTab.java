@@ -102,7 +102,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -2709,21 +2708,20 @@ public class ImageViewerTab {
                         applyProperMotion(new CatWiseCatalogEntry());
                     }
                 }
-                /*
                 if (!unwiseCutouts.isSelected() && !decalsCutouts.isSelected()) {
                     try {
                         InputStream stream = getImageData(1, numberOfEpochs + 5);
                         stream.close();
                         moreImagesAvailable = true;
-                    } catch (FileNotFoundException ex) {
+                    } catch (IOException e) {
                         try {
                             InputStream stream = getImageData(1, numberOfEpochs);
                             stream.close();
                             oneMoreImageAvailable = true;
-                        } catch (FileNotFoundException ex2) {
+                        } catch (IOException ex) {
                         }
                     }
-                }*/
+                }
             }
             previousSize = size;
             previousRa = targetRa;
@@ -3692,7 +3690,7 @@ public class ImageViewerTab {
                 Fits fits;
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
-                } catch (FileNotFoundException ex) {
+                } catch (IOException ex) {
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
