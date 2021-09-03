@@ -47,7 +47,7 @@ import javax.swing.table.TableColumnModel;
 
 public class BrownDwarfTab {
 
-    public static final String TAB_NAME = "Brown Dwarfs";
+    public static final String TAB_NAME = "M, L & T Dwarfs";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -219,7 +219,7 @@ public class BrownDwarfTab {
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(500, 200));
         spectralTypePanel.add(remarks);
-        remarks.add(new JLabel("Brown dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.BROWN_DWARFS));
+        remarks.add(new JLabel("M, L & T dwarfs lookup table is available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MLT_DWARFS));
         remarks.add(new JLabel("Lookup is performed with the following colors, if available, W1-W2, K-W1, J-K,"));
         remarks.add(new JLabel("g-r, r-i, i-z, i-y, z-y, G-RP, BP-RP, BP-G, M_BP, M_G, M_RP and by using the relations"));
         remarks.add(new JLabel("described in Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015),"));
@@ -258,7 +258,7 @@ public class BrownDwarfTab {
         distancePanel.add(remarks);
         remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
         remarks.add(new JLabel("if available: W1, W2, W3, J, H, K, g, r, i, z, y, G, RP"));
-        remarks.add(new JLabel("Absolute magnitudes are from the brown dwarfs lookup table."));
+        remarks.add(new JLabel("Absolute magnitudes are from the M, L & T dwarfs lookup table."));
         baseFrame.setVisible(true);
     }
 

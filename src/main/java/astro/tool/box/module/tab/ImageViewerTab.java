@@ -1152,7 +1152,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            showBrownDwarfsOnly = new JCheckBox("Show potential brown dwarfs only", overlays.isPotbd());
+            showBrownDwarfsOnly = new JCheckBox("Show potential M, L & T dwarfs only", overlays.isPotbd());
             overlaysControlPanel.add(showBrownDwarfsOnly);
             showBrownDwarfsOnly.addActionListener((ActionEvent evt) -> {
                 if (showBrownDwarfsOnly.isSelected() && !isCatalogOverlaySelected()) {
@@ -5751,7 +5751,7 @@ public class ImageViewerTab {
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Brown dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), "M, L & T dwarfs spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
