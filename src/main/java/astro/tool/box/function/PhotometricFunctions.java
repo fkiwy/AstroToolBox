@@ -4,7 +4,6 @@ import astro.tool.box.container.StringPair;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.container.lookup.LookupResult;
-import astro.tool.box.container.lookup.WhiteDwarfLookupEntry;
 import astro.tool.box.enumeration.Color;
 import static java.lang.Math.*;
 import java.util.ArrayList;
@@ -121,12 +120,7 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
-        double offset;
-        if (minEntry instanceof WhiteDwarfLookupEntry) {
-            offset = 0.01;
-        } else {
-            offset = 0.2;
-        }
+        double offset = 0.5;
         double avgColorValue = (minColorValue + maxColorValue) / 2;
         if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + offset) {
             return new LookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
@@ -158,7 +152,7 @@ public class PhotometricFunctions {
         if (logG != 0 && (logG < minEntry.getLogG() - logGError || logG > maxEntry.getLogG() + logGError)) {
             return null;
         }
-        double msunError = 0.2;
+        double msunError = 0.5;
         if (msun != 0 && (msun < minEntry.getMsun() - msunError || msun > maxEntry.getMsun() + msunError)) {
             return null;
         }

@@ -385,6 +385,8 @@ public class ImageViewerTab {
     private int lowContrastSaved = lowContrast;
     private int preContrastSaved = preContrast;
 
+    private int ioExceptionCount;
+
     private double sensitivity;
 
     private double targetRa;
@@ -2766,6 +2768,7 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
+                ioExceptionCount = 0;
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
@@ -3691,7 +3694,8 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    if (requestedEpochs.size() == 4) {
+                    ioExceptionCount++;
+                    if (requestedEpochs.size() == 4 && ioExceptionCount < NUMBER_OF_EPOCHS) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;

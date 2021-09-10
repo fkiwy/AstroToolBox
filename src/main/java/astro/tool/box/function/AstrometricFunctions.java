@@ -405,12 +405,17 @@ public class AstrometricFunctions {
         return denominator < 0 ? pa + 180 : (pa < 0 ? pa + 360 : pa);
     }
 
-    /*public static double calculateBearingAngle(NumberPair fromCoords, NumberPair toCoords) {
-        double ra = toRadians(toCoords.getX());
-        double dec = toRadians(toCoords.getY());
-        double ra0 = toRadians(fromCoords.getX());
-        double dec0 = toRadians(fromCoords.getY());
-        double pa = atan2(cos(dec0) * sin(ra0 - ra), cos(dec) * sin(dec) - sin(dec) * cos(dec0) * cos(ra0 - ra));
-        return (toDegrees(pa) + 180) % 360;
-    }*/
+    /**
+     * Calculate total proper motion error
+     *
+     * @param a (pmra)
+     * @param ae (pmra error)
+     * @param b (pmdec)
+     * @param be (pmdec error)
+     * @return the total proper motion error
+     */
+    public static double calculateTotalProperMotionError(double a, double ae, double b, double be) {
+        return sqrt(pow(((a * 2) / (2 * sqrt(a * a + b * b))) * ae, 2) + pow(((b * 2) / (2 * sqrt(a * a + b * b))) * be, 2));
+    }
+
 }
