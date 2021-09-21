@@ -384,12 +384,24 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     @Override
     public Map<Band, Double> getBands() {
         Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.W1, W1mag);
-        bands.put(Band.W2, W2mag);
-        bands.put(Band.W3, W3mag);
-        bands.put(Band.J, Jmag);
-        bands.put(Band.H, Hmag);
-        bands.put(Band.K, Kmag);
+        if (W1_err != 0) {
+            bands.put(Band.W1, W1mag);
+        }
+        if (W2_err != 0) {
+            bands.put(Band.W2, W2mag);
+        }
+        if (W3_err != 0) {
+            bands.put(Band.W3, W3mag);
+        }
+        if (J_err != 0) {
+            bands.put(Band.J, Jmag);
+        }
+        if (H_err != 0) {
+            bands.put(Band.H, Hmag);
+        }
+        if (K_err != 0) {
+            bands.put(Band.K, Kmag);
+        }
         return bands;
     }
 

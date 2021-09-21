@@ -22,9 +22,9 @@ public class Constants {
 
     public static final String VIZIER_TAP_URL = VIZIER_BASE_URL + TAP_URL_PARAMS;
 
-    public static final String SIMBAD_BASE_URL = "http://simbad.u-strasbg.fr/simbad/sim-tap" + TAP_URL_PARAMS;
+    public static final String SIMBAD_BASE_URL = "https://simbad.u-strasbg.fr/simbad/sim-tap" + TAP_URL_PARAMS;
 
-    public static final String SIMBAD_MIRROR_URL = "http://simbad.cfa.harvard.edu/simbad/sim-tap" + TAP_URL_PARAMS;
+    public static final String SIMBAD_MIRROR_URL = "https://simbad.cfa.harvard.edu/simbad/sim-tap" + TAP_URL_PARAMS;
 
     public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr2/mean.csv";
 

@@ -3382,9 +3382,11 @@ public class ImageViewerTab {
         if (drawCrosshairs.isSelected()) {
             for (int i = 0; i < crosshairs.size(); i++) {
                 NumberPair crosshair = crosshairs.get(i);
-                String label = String.valueOf(i + 1);
-                CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, shapeSize * zoom / 100, Color.RED, label);
-                drawable.draw(image.getGraphics());
+                //String label = String.valueOf(i + 1);
+                //CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom, shapeSize * zoom / 100, Color.RED, label);
+                //drawable.draw(image.getGraphics());
+                Circle circle = new Circle(crosshair.getX() * zoom, crosshair.getY() * zoom, shapeSize * zoom / 100, Color.RED);
+                circle.draw(image.getGraphics());
             }
         }
 

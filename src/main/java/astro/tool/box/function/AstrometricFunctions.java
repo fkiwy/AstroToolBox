@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 public class AstrometricFunctions {
 
+    public static double VELOCITY_C = 4.74;
+
     /**
      * Calculate angular distance between 2 stars
      *
@@ -167,7 +169,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromParallax(double pmRA, double pmDE, double parallax) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * calculateParallacticDistance(parallax);
+        return VELOCITY_C * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * calculateParallacticDistance(parallax);
     }
 
     /**
@@ -179,7 +181,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromDistance(double pmRA, double pmDE, double distance) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * distance;
+        return VELOCITY_C * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * distance;
     }
 
     /**
@@ -406,6 +408,17 @@ public class AstrometricFunctions {
     }
 
     /**
+     * Calculate distance error
+     *
+     * @param a (parallax)
+     * @param ae (parallax error)
+     * @return the distance error
+     */
+    public static double calculateDistanceError(double a, double ae) {
+        return sqrt(pow((1000 / (a * a)) * ae, 2));
+    }
+
+    /**
      * Calculate total proper motion error
      *
      * @param a (pmra)
@@ -416,6 +429,36 @@ public class AstrometricFunctions {
      */
     public static double calculateTotalProperMotionError(double a, double ae, double b, double be) {
         return sqrt(pow(((a * 2) / (2 * sqrt(a * a + b * b))) * ae, 2) + pow(((b * 2) / (2 * sqrt(a * a + b * b))) * be, 2));
+    }
+
+    /**
+     * Calculate tangential velocity error
+     *
+     * @param a (parallax)
+     * @param ae (parallax error)
+     * @param b (pmra)
+     * @param be (pmra error)
+     * @param c (pmdec)
+     * @param ce (pmdec error)
+     * @return the tangential velocity error
+     */
+    public static double calculateTangentialVelocityError(double a, double ae, double b, double be, double c, double ce) {
+        return sqrt(
+                pow(((VELOCITY_C / (a * a)) * sqrt(b * b + c * c)) * ae, 2)
+                + pow((((VELOCITY_C * 2) / a) / (2 * sqrt(b * b + c * c))) * b * be, 2)
+                + pow((((VELOCITY_C * 2) / a) / (2 * sqrt(b * b + c * c))) * c * ce, 2)
+        );
+    }
+
+    /**
+     * Calculate addition/subtraction error
+     *
+     * @param ae (error value)
+     * @param be (error Value)
+     * @return the addition/subtraction error
+     */
+    public static double calculateAddSubError(double ae, double be) {
+        return sqrt(ae * ae + be * be);
     }
 
 }
