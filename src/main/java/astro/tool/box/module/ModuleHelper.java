@@ -894,7 +894,7 @@ public class ModuleHelper {
         if (!band.isEmpty()) {
             band = "&bands=" + band;
         }
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=%s&size=%d%s", targetRa, targetDec, layer, size * 4, band);
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s", targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());

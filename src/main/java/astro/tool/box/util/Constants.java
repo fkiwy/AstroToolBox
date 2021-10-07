@@ -48,6 +48,8 @@ public class Constants {
 
     public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
 
+    public static final double PIXEL_SCALE_DECAM = 0.25;
+
     // Dust extinction bandpass keys
     public static final String SDSS_U = "SDSS u";
     public static final String SDSS_G = "SDSS g";

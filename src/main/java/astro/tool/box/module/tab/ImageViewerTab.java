@@ -187,9 +187,8 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
-    public static final double PIXEL_SCALE_DECAM = 0.27;
     public static final int NUMBER_OF_EPOCHS = 8;
-    public static final int NUMBER_OF_UNWISE_EPOCHS = 7;
+    public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
@@ -2593,7 +2592,7 @@ public class ImageViewerTab {
                 errorMessages.add("Invalid coordinates!");
             }
             try {
-                size = (int) round(toInteger(sizeField.getText()) / pixelScale);
+                size = (int) ceil(toInteger(sizeField.getText()) / pixelScale);
                 if (decalsCutouts.isSelected()) {
                     if (size > 1111) {
                         errorMessages.add("Field of view must not be larger than 300 arcsec.");
@@ -4030,8 +4029,8 @@ public class ImageViewerTab {
                 selectedBand = "";
                 break;
         }
-        String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=0.27&layer=%s&size=%d&bands=%s";
-        String imageUrl = String.format(baseUrl, targetRa, targetDec, survey, size, selectedBand);
+        String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
+        String imageUrl = String.format(baseUrl, targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
@@ -4479,7 +4478,11 @@ public class ImageViewerTab {
 
     private BufferedImage fetchDecalsImage(double targetRa, double targetDec, double size) {
         try {
-            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.25&layer=ls-dr9&size=%d&bands=grz", targetRa, targetDec, (int) round(size * pixelScale * 4));
+            int imageSize = (int) round(size * pixelScale * 4);
+            if (imageSize > 3000) {
+                return null;
+            }
+            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=ls-dr9&size=%d&bands=grz", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
