@@ -8,24 +8,38 @@ import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.util.CSVParser;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,7 +68,7 @@ public class CmdPanel extends JPanel {
 
     private JFreeChart chart;
 
-    public CmdPanel(GaiaCmd catalogEntry) {
+    public CmdPanel(GaiaCmd catalogEntry) throws IOException {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -85,6 +99,18 @@ public class CmdPanel extends JPanel {
 
         coolingSequencesHe = new JCheckBox("DB");
         commandPanel.add(coolingSequencesHe);
+
+        JButton searchButton = new JButton("Create PDF");
+        commandPanel.add(searchButton);
+        searchButton.addActionListener((ActionEvent e) -> {
+            try {
+                File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa()) + addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
+                createPDF(chart, tmpFile, 1000, 900);
+                Desktop.getDesktop().open(tmpFile);
+            } catch (Exception ex) {
+                Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
 
         String infoText = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
@@ -360,6 +386,21 @@ public class CmdPanel extends JPanel {
             }
         }
         return coolingSequence;
+    }
+
+    public void createPDF(JFreeChart chart, File tmpFile, int width, int height) throws Exception {
+        Rectangle pagesize = new Rectangle(width, height);
+        Document document = new Document(pagesize, 50, 50, 50, 50);
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
+        document.open();
+        PdfContentByte contentByte = writer.getDirectContent();
+        PdfTemplate template = contentByte.createTemplate(width, height);
+        Graphics2D graphics = new PdfGraphics2D(contentByte, width, height);
+        Rectangle2D rectangle = new Rectangle2D.Double(0, 0, width, height);
+        chart.draw(graphics, rectangle);
+        graphics.dispose();
+        contentByte.addTemplate(template, 0, 0);
+        document.close();
     }
 
 }
