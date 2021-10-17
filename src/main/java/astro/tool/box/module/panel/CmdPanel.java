@@ -43,6 +43,7 @@ import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -167,7 +168,7 @@ public class CmdPanel extends JPanel {
             public void mouseDragged(MouseEvent e) {
             }
         };
-        chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        chartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         chartPanel.setBackground(Color.WHITE);
         add(chartPanel, 0);
         revalidate();
@@ -217,6 +218,7 @@ public class CmdPanel extends JPanel {
 
     private void createChart(XYSeriesCollection targetCollection, XYSeriesCollection mainCollection) {
         chart = ChartFactory.createXYLineChart("Gaia Color-Magnitude Diagram", "", "", null);
+        chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
         plot.setDataset(0, targetCollection);
         plot.setDataset(1, mainCollection);
@@ -231,10 +233,10 @@ public class CmdPanel extends JPanel {
         yAxis.setRange(-2, 22);
         plot.setRangeAxis(yAxis);
 
-        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 14);
+        Font tickLabelFont = new Font(FONT_NAME, Font.PLAIN, 20);
         xAxis.setTickLabelFont(tickLabelFont);
         yAxis.setTickLabelFont(tickLabelFont);
-        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 14);
+        Font labelFont = new Font(FONT_NAME, Font.PLAIN, 20);
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
@@ -265,11 +267,11 @@ public class CmdPanel extends JPanel {
         plot.setDomainGridlinePaint(Color.GRAY);
         plot.getRangeAxis().setInverted(true);
 
-        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 14);
+        Font legendFont = new Font(FONT_NAME, Font.PLAIN, 20);
         chart.getLegend().setFrame(BlockBorder.NONE);
         chart.getLegend().setItemFont(legendFont);
 
-        Font titleFont = new Font(FONT_NAME, Font.PLAIN, 20);
+        Font titleFont = new Font(FONT_NAME, Font.PLAIN, 24);
         chart.getTitle().setFont(titleFont);
     }
 
