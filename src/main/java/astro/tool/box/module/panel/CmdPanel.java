@@ -1,9 +1,10 @@
 package astro.tool.box.module.panel;
 
-import static astro.tool.box.module.Application.CMD_DATA;
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.module.Application.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.module.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.util.CSVParser;
@@ -68,23 +69,32 @@ public class CmdPanel extends JPanel {
         groupOne.add(g_rpButton);
         groupOne.add(bp_rpButton);
 
-        commandPanel.add(new JLabel("     White dwarf cooling sequences:"));
-        
+        String coolingTracksText = "Montreal cooling tracks for white dwarfs with masses between 0.2 (top) and 1.3 (bottom) Msun in steps of 0.1 Msun " + LINE_BREAK
+                + "(red is pure H atmosphere or DA WDs, blue is pure He atmosphere or DB WDs)";
+
+        JLabel coolingTracksLabel = new JLabel("     White dwarf cooling sequences");
+        coolingTracksLabel.setToolTipText(html(coolingTracksText));
+        commandPanel.add(coolingTracksLabel);
+
+        JLabel coolingTracksToolTip = new JLabel(getInfoIcon());
+        coolingTracksToolTip.setToolTipText(html(coolingTracksText));
+        commandPanel.add(coolingTracksToolTip);
+
         coolingSequencesH = new JCheckBox("DA");
         commandPanel.add(coolingSequencesH);
 
         coolingSequencesHe = new JCheckBox("DB");
         commandPanel.add(coolingSequencesHe);
 
-        String info = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
+        String infoText = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
         JLabel infoLabel = new JLabel("     Tooltip");
-        infoLabel.setToolTipText(info);
+        infoLabel.setToolTipText(infoText);
         commandPanel.add(infoLabel);
 
-        JLabel toolTip = new JLabel(getInfoIcon());
-        toolTip.setToolTipText(html(info));
-        commandPanel.add(toolTip);
+        JLabel infoToolTip = new JLabel(getInfoIcon());
+        infoToolTip.setToolTipText(infoText);
+        commandPanel.add(infoToolTip);
 
         loadCmdData();
 
