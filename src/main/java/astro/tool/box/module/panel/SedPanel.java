@@ -19,16 +19,20 @@ import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.facade.CatalogQueryFacade;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -111,6 +115,18 @@ public class SedPanel extends JPanel {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+        });
+
+        JButton searchButton = new JButton("Create PDF");
+        commandPanel.add(searchButton);
+        searchButton.addActionListener((ActionEvent e) -> {
+            try {
+                File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa()) + addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
+                createPDF(chart, tmpFile, 800, 700);
+                Desktop.getDesktop().open(tmpFile);
+            } catch (Exception ex) {
+                Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
 
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK

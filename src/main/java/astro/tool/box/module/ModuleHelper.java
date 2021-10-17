@@ -39,12 +39,18 @@ import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -54,9 +60,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -110,6 +118,7 @@ import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import org.jfree.chart.JFreeChart;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -958,6 +967,21 @@ public class ModuleHelper {
                 sequencer.generateFromBI(imageSet, file, 500 / 10, true);
             }
         }
+    }
+
+    public static void createPDF(JFreeChart chart, File tmpFile, int width, int height) throws Exception {
+        Rectangle pagesize = new Rectangle(width, height);
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document(pagesize, 50, 50, 50, 50);
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
+        document.open();
+        PdfContentByte contentByte = writer.getDirectContent();
+        PdfTemplate template = contentByte.createTemplate(width, height);
+        Graphics2D graphics = new PdfGraphics2D(contentByte, width, height);
+        Rectangle2D rectangle = new Rectangle2D.Double(0, 0, width, height);
+        chart.draw(graphics, rectangle);
+        graphics.dispose();
+        contentByte.addTemplate(template, 0, 0);
+        document.close();
     }
 
     public static void addUndoManager(JTextArea textArea) {

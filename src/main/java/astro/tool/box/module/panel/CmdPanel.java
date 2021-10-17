@@ -8,25 +8,16 @@ import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.util.CSVParser;
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -386,21 +377,6 @@ public class CmdPanel extends JPanel {
             }
         }
         return coolingSequence;
-    }
-
-    public void createPDF(JFreeChart chart, File tmpFile, int width, int height) throws Exception {
-        Rectangle pagesize = new Rectangle(width, height);
-        Document document = new Document(pagesize, 50, 50, 50, 50);
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
-        document.open();
-        PdfContentByte contentByte = writer.getDirectContent();
-        PdfTemplate template = contentByte.createTemplate(width, height);
-        Graphics2D graphics = new PdfGraphics2D(contentByte, width, height);
-        Rectangle2D rectangle = new Rectangle2D.Double(0, 0, width, height);
-        chart.draw(graphics, rectangle);
-        graphics.dispose();
-        contentByte.addTemplate(template, 0, 0);
-        document.close();
     }
 
 }
