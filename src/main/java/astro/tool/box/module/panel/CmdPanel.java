@@ -68,10 +68,12 @@ public class CmdPanel extends JPanel {
         groupOne.add(g_rpButton);
         groupOne.add(bp_rpButton);
 
-        coolingSequencesH = new JCheckBox("Pure-H");
+        commandPanel.add(new JLabel("     Montreal cooling sequences:"));
+        
+        coolingSequencesH = new JCheckBox("WD DA");
         commandPanel.add(coolingSequencesH);
 
-        coolingSequencesHe = new JCheckBox("Pure-He");
+        coolingSequencesHe = new JCheckBox("WD DB");
         commandPanel.add(coolingSequencesHe);
 
         String info = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
