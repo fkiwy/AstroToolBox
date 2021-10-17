@@ -1,4 +1,4 @@
-package astro.tool.box.module;
+package astro.tool.box.module.panel;
 
 import static astro.tool.box.module.Application.CMD_DATA;
 import static astro.tool.box.function.NumericFunctions.*;
@@ -46,6 +46,7 @@ public class CmdPanel extends JPanel {
 
     private final JRadioButton g_rpButton;
     private final JCheckBox coolingSequencesH;
+    private final JCheckBox coolingSequencesHe;
 
     private final int min = 2;
     private final int max = 14;
@@ -70,6 +71,9 @@ public class CmdPanel extends JPanel {
         coolingSequencesH = new JCheckBox("Pure-H");
         commandPanel.add(coolingSequencesH);
 
+        coolingSequencesHe = new JCheckBox("Pure-He");
+        commandPanel.add(coolingSequencesHe);
+
         String info = "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
         JLabel infoLabel = new JLabel("     Tooltip");
@@ -82,39 +86,53 @@ public class CmdPanel extends JPanel {
 
         loadCmdData();
 
-        chart = createChartPanel(catalogEntry);
+        createChartPanel(catalogEntry);
 
         g_rpButton.addActionListener((ActionEvent e) -> {
             remove(0);
-            chart = createChartPanel(catalogEntry);
+            createChartPanel(catalogEntry);
             if (coolingSequencesH.isSelected()) {
-                addCoolingSequences(chart);
+                addCoolingSequencesH(chart);
+            }
+            if (coolingSequencesHe.isSelected()) {
+                addCoolingSequencesHe(chart);
             }
         });
 
         bp_rpButton.addActionListener((ActionEvent e) -> {
             remove(0);
-            chart = createChartPanel(catalogEntry);
+            createChartPanel(catalogEntry);
             if (coolingSequencesH.isSelected()) {
-                addCoolingSequences(chart);
+                addCoolingSequencesH(chart);
+            }
+            if (coolingSequencesHe.isSelected()) {
+                addCoolingSequencesHe(chart);
             }
         });
 
         coolingSequencesH.addActionListener((ActionEvent e) -> {
             if (coolingSequencesH.isSelected()) {
-                addCoolingSequences(chart);
+                addCoolingSequencesH(chart);
             } else {
-                removeCoolingSequences(chart);
+                removeCoolingSequencesH(chart);
+            }
+        });
+
+        coolingSequencesHe.addActionListener((ActionEvent e) -> {
+            if (coolingSequencesHe.isSelected()) {
+                addCoolingSequencesHe(chart);
+            } else {
+                removeCoolingSequencesHe(chart);
             }
         });
 
         add(commandPanel);
     }
 
-    private JFreeChart createChartPanel(GaiaCmd catalogEntry) {
+    private void createChartPanel(GaiaCmd catalogEntry) {
         XYSeriesCollection mainCollection = createMainCollection();
         XYSeriesCollection targetCollection = createTargetCollection(catalogEntry);
-        JFreeChart chart = createChart(targetCollection, mainCollection);
+        createChart(targetCollection, mainCollection);
         ChartPanel chartPanel = new ChartPanel(chart) {
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -125,7 +143,6 @@ public class CmdPanel extends JPanel {
         add(chartPanel, 0);
         revalidate();
         repaint();
-        return chart;
     }
 
     private XYSeriesCollection createMainCollection() {
@@ -169,8 +186,8 @@ public class CmdPanel extends JPanel {
         return collection;
     }
 
-    private JFreeChart createChart(XYSeriesCollection targetCollection, XYSeriesCollection mainCollection) {
-        JFreeChart chart = ChartFactory.createXYLineChart("Gaia Color-Magnitude Diagram", "", "", null);
+    private void createChart(XYSeriesCollection targetCollection, XYSeriesCollection mainCollection) {
+        chart = ChartFactory.createXYLineChart("Gaia Color-Magnitude Diagram", "", "", null);
         XYPlot plot = chart.getXYPlot();
         plot.setDataset(0, targetCollection);
         plot.setDataset(1, mainCollection);
@@ -225,16 +242,13 @@ public class CmdPanel extends JPanel {
 
         Font titleFont = new Font(FONT_NAME, Font.PLAIN, 20);
         chart.getTitle().setFont(titleFont);
-
-        return chart;
     }
 
-    private void addCoolingSequences(JFreeChart chart) {
+    private void addCoolingSequencesH(JFreeChart chart) {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
             String mass = roundTo1Dec((double) i / 10);
             plot.setDataset(i, createSequenceCollection(String.format("Mass %s H", mass)));
-            plot.setDataset(i + max - min, createSequenceCollection(String.format("Mass %s He", mass)));
         }
 
         double size = 0.2;
@@ -247,6 +261,22 @@ public class CmdPanel extends JPanel {
         sequenceRendererH.setSeriesVisibleInLegend(0, false);
         sequenceRendererH.setSeriesShape(0, shape);
 
+        for (int i = min; i < max; i++) {
+            plot.setRenderer(i, sequenceRendererH);
+        }
+    }
+
+    private void addCoolingSequencesHe(JFreeChart chart) {
+        XYPlot plot = chart.getXYPlot();
+        for (int i = min; i < max; i++) {
+            String mass = roundTo1Dec((double) i / 10);
+            plot.setDataset(i + max - min, createSequenceCollection(String.format("Mass %s He", mass)));
+        }
+
+        double size = 0.2;
+        double delta = size / 2.0;
+        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
+
         XYLineAndShapeRenderer sequenceRendererHe = new XYLineAndShapeRenderer();
         sequenceRendererHe.setSeriesPaint(0, Color.BLUE);
         sequenceRendererHe.setSeriesLinesVisible(0, true);
@@ -254,16 +284,21 @@ public class CmdPanel extends JPanel {
         sequenceRendererHe.setSeriesShape(0, shape);
 
         for (int i = min; i < max; i++) {
-            plot.setRenderer(i, sequenceRendererH);
             plot.setRenderer(i + max - min, sequenceRendererHe);
         }
     }
 
-    private void removeCoolingSequences(JFreeChart chart) {
+    private void removeCoolingSequencesH(JFreeChart chart) {
         XYSeriesCollection targetCollection;
         for (int i = min; i < max; i++) {
             targetCollection = (XYSeriesCollection) chart.getXYPlot().getDataset(i);
             targetCollection.removeAllSeries();
+        }
+    }
+
+    private void removeCoolingSequencesHe(JFreeChart chart) {
+        XYSeriesCollection targetCollection;
+        for (int i = min; i < max; i++) {
             targetCollection = (XYSeriesCollection) chart.getXYPlot().getDataset(i + max - min);
             targetCollection.removeAllSeries();
         }
@@ -309,7 +344,6 @@ public class CmdPanel extends JPanel {
                 double G = toDouble(values[columns.get("G3")]);
                 double BP = toDouble(values[columns.get("G3_BP")]);
                 double RP = toDouble(values[columns.get("G3_RP")]);
-                //System.out.println(G + " " + BP + " " + RP);
                 coolingSequence.add(new NumberTriplet(G, G - RP, BP - RP));
             }
         }
