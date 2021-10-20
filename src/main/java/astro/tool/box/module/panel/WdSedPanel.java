@@ -134,16 +134,19 @@ public class WdSedPanel extends JPanel {
             }
         });
 
+        commandPanel.add(new JLabel("This feature uses the"));
+        commandPanel.add(createHyperlink("Montreal cooling sequences.", "http://www.astro.umontreal.ca/~bergeron/CoolingModels"));
+
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                 + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
-
-        JLabel infoLabel = new JLabel("     Tooltip");
-        infoLabel.setToolTipText(html(info));
-        commandPanel.add(infoLabel);
 
         JLabel toolTip = new JLabel(getInfoIcon());
         toolTip.setToolTipText(html(info));
         commandPanel.add(toolTip);
+
+        JLabel infoLabel = new JLabel("Tooltip");
+        infoLabel.setToolTipText(html(info));
+        commandPanel.add(infoLabel);
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(chartPanel);
@@ -497,6 +500,7 @@ public class WdSedPanel extends JPanel {
                 String type = values[columns.get("Type")];
                 int teff = toInteger(values[columns.get("Teff")]);
                 double logG = toDouble(values[columns.get("log g")]);
+                double mass = toDouble(values[columns.get("M/Mo")]);
                 String age = values[columns.get("Age")];
                 double Gmag = toDouble(values[columns.get("G3")]);
                 double BPmag = toDouble(values[columns.get("G3_BP")]);
@@ -529,7 +533,7 @@ public class WdSedPanel extends JPanel {
                 bands.put(Band.W2, W2mag);
                 bands.put(Band.W3, W3mag);
                 bands.put(Band.W4, W4mag);
-                whiteDwarfEntries.add(new WhiteDwarfEntry(type, teff, logG, age, bands));
+                whiteDwarfEntries.add(new WhiteDwarfEntry(type, teff, logG, mass, age, bands));
             }
         }
     }

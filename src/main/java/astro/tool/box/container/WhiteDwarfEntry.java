@@ -11,22 +11,25 @@ public class WhiteDwarfEntry {
 
     private final double logG;
 
+    private final double mass;
+
     private final String age;
 
     private final Map<Band, Double> bands;
 
-    public WhiteDwarfEntry(String type, int teff, double logG, String age, Map<Band, Double> bands) {
+    public WhiteDwarfEntry(String type, int teff, double logG, double mass, String age, Map<Band, Double> bands) {
         this.type = type;
         this.teff = teff;
         this.logG = logG;
+        this.mass = mass;
         this.age = age;
         this.bands = bands;
     }
 
     public String getInfo() {
-        return type + " Teff=" + teff + " log g=" + logG + " Age=" + age;
+        return type + " Teff=" + teff + " log g=" + logG + " Mass=" + mass + " Age=" + age;
     }
-    
+
     public String getType() {
         return type;
     }
@@ -37,6 +40,10 @@ public class WhiteDwarfEntry {
 
     public double getLogG() {
         return logG;
+    }
+
+    public double getMass() {
+        return mass;
     }
 
     public String getAge() {
