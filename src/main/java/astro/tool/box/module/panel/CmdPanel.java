@@ -8,6 +8,7 @@ import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.util.CSVParser;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
@@ -262,9 +263,11 @@ public class CmdPanel extends JPanel {
 
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinesVisible(true);
-        plot.setRangeGridlinePaint(Color.GRAY);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+        plot.setRangeGridlineStroke(new BasicStroke());
         plot.setDomainGridlinesVisible(true);
-        plot.setDomainGridlinePaint(Color.GRAY);
+        plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
+        plot.setDomainGridlineStroke(new BasicStroke());
         plot.getRangeAxis().setInverted(true);
 
         Font legendFont = new Font(FONT_NAME, Font.PLAIN, 20);

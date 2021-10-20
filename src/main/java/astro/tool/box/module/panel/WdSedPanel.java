@@ -5,6 +5,7 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.SedFluxes;
+import astro.tool.box.container.WhiteDwarfEntry;
 import astro.tool.box.container.SedReferences;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
@@ -12,11 +13,9 @@ import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
 import astro.tool.box.container.catalog.VhsCatalogEntry;
-import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.container.lookup.SpectralTypeLookup;
 import astro.tool.box.enumeration.Band;
-import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.facade.CatalogQueryFacade;
+import astro.tool.box.util.CSVParser;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -25,22 +24,24 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.InputStream;
 import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -54,11 +55,11 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class SedPanel extends JPanel {
+public class WdSedPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
-    private final List<SpectralTypeLookup> brownDwarfLookupEntries;
+    List<WhiteDwarfEntry> whiteDwarfEntries;
     private final CatalogQueryFacade catalogQueryFacade;
     private final JFrame baseFrame;
 
@@ -67,11 +68,12 @@ public class SedPanel extends JPanel {
     private final Map<Band, Double> sedPhotometry;
     private final Map<Band, String> sedCatalogs;
 
-    private final JComboBox spectralTypes;
     private final JCheckBox overplotTemplates;
+    private final JTextField maxTemplateOffset;
 
-    public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
-        this.brownDwarfLookupEntries = brownDwarfLookupEntries;
+    public WdSedPanel(CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
+        createWhiteDwarfSedEntries();
+
         this.catalogQueryFacade = catalogQueryFacade;
         this.baseFrame = baseFrame;
 
@@ -80,7 +82,8 @@ public class SedPanel extends JPanel {
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
 
-        spectralTypes = new JComboBox(SpectralType.values());
+        maxTemplateOffset = new JTextField("0.05");
+
         overplotTemplates = new JCheckBox("Overplot templates");
         overplotTemplates.setSelected(true);
 
@@ -97,23 +100,22 @@ public class SedPanel extends JPanel {
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        commandPanel.add(new JLabel("SED templates: ", JLabel.RIGHT));
-        commandPanel.add(spectralTypes);
-        spectralTypes.addActionListener((ActionEvent e) -> {
-            addReferenceSeds(sedPhotometry, collection);
+        commandPanel.add(new JLabel("Maximum template offset"));
+        commandPanel.add(maxTemplateOffset);
+        maxTemplateOffset.addActionListener((ActionEvent e) -> {
+            collection.removeAllSeries();
+            createSed(catalogEntry, collection, true);
         });
 
         JButton removeButton = new JButton("Remove all templates");
         commandPanel.add(removeButton);
         removeButton.addActionListener((ActionEvent e) -> {
-            spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, false);
         });
 
         commandPanel.add(overplotTemplates);
         overplotTemplates.addActionListener((ActionEvent e) -> {
-            spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
         });
@@ -331,15 +333,19 @@ public class SedPanel extends JPanel {
     }
 
     private void addReferenceSeds(Map<Band, Double> sedPhotometry, XYSeriesCollection collection) {
-        for (SpectralTypeLookup lookupEntry : brownDwarfLookupEntries) {
-            BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
+        for (WhiteDwarfEntry entry : whiteDwarfEntries) {
             Map<Band, Double> bands = entry.getBands();
-            String spectralType = entry.getSpt();
-            if ("M0M1M2M3M4M5".contains(spectralType)) {
-                continue;
-            }
+            String spectralType = entry.getInfo();
 
             List<Double> diffMags = new ArrayList();
+
+            //
+            //
+            //
+            //
+            //
+            //
+            //Band.getWdSedBands().forEach(band -> {
             Band.getSedBands().forEach(band -> {
                 if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
                     diffMags.add(abs(sedPhotometry.get(band) - bands.get(band)));
@@ -355,23 +361,17 @@ public class SedPanel extends JPanel {
                 medianDiffMag = diffMags.get((totalMags - 1) / 2);
             }
 
-            SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
-            if (selectedType.equals(SpectralType.SELECT)) {
-                if (totalMags >= 4) {
-                    double offset = 0.2;
-                    int selectedMags = 0;
-                    for (Double diffMag : diffMags) {
-                        if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
-                            selectedMags++;
-                        }
-                    }
-                    if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
-                        createReferenceSed(spectralType, collection, medianDiffMag);
+            if (totalMags >= 4) {
+                double offset = toDouble(maxTemplateOffset.getText());
+                int selectedMags = 0;
+                for (Double diffMag : diffMags) {
+                    if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
+                        selectedMags++;
                     }
                 }
-            } else if (selectedType.equals(SpectralType.valueOf(spectralType))) {
-                createReferenceSed(spectralType, collection, medianDiffMag);
-                return;
+                if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
+                    createReferenceSed(spectralType, collection, medianDiffMag);
+                }
             }
         }
     }
@@ -472,13 +472,65 @@ public class SedPanel extends JPanel {
 
     private Map<Band, Double> provideReferenceMagnitudes(String spt) {
         Map<Band, Double> absoluteMagnitudes = null;
-        for (SpectralTypeLookup lookupEntry : brownDwarfLookupEntries) {
-            BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
-            if (entry.getSpt().equals(spt)) {
+        for (WhiteDwarfEntry entry : whiteDwarfEntries) {
+            if (entry.getInfo().equals(spt)) {
                 absoluteMagnitudes = entry.getBands();
             }
         }
         return absoluteMagnitudes;
+    }
+
+    public void createWhiteDwarfSedEntries() {
+        whiteDwarfEntries = new ArrayList();
+        InputStream input = getClass().getResourceAsStream("/WhiteDwarfLookupTable.csv");
+        try (Scanner fileScanner = new Scanner(input)) {
+            String headerLine = fileScanner.nextLine();
+            String[] headers = CSVParser.parseLine(headerLine);
+            Map<String, Integer> columns = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                columns.put(headers[i], i);
+            }
+            while (fileScanner.hasNextLine()) {
+                String bodyLine = fileScanner.nextLine();
+                String[] values = CSVParser.parseLine(bodyLine);
+                String type = values[columns.get("Type")];
+                int teff = toInteger(values[columns.get("Teff")]);
+                double logG = toDouble(values[columns.get("log g")]);
+                String age = values[columns.get("Age")];
+                double Gmag = toDouble(values[columns.get("G3")]);
+                double BPmag = toDouble(values[columns.get("G3_BP")]);
+                double RPmag = toDouble(values[columns.get("G3_RP")]);
+                double g_mag = toDouble(values[columns.get("PS1_g")]);
+                double r_mag = toDouble(values[columns.get("PS1_r")]);
+                double i_mag = toDouble(values[columns.get("PS1_i")]);
+                double z_mag = toDouble(values[columns.get("PS1_z")]);
+                double y_mag = toDouble(values[columns.get("PS1_y")]);
+                double Jmag = toDouble(values[columns.get("2MASS_J")]);
+                double Hmag = toDouble(values[columns.get("2MASS_H")]);
+                double Kmag = toDouble(values[columns.get("2MASS_Ks")]);
+                double W1mag = toDouble(values[columns.get("W1")]);
+                double W2mag = toDouble(values[columns.get("W2")]);
+                double W3mag = toDouble(values[columns.get("W3")]);
+                double W4mag = toDouble(values[columns.get("W4")]);
+                Map<Band, Double> bands = new HashMap();
+                bands.put(Band.G, Gmag);
+                bands.put(Band.BP, BPmag);
+                bands.put(Band.RP, RPmag);
+                bands.put(Band.g, g_mag);
+                bands.put(Band.r, r_mag);
+                bands.put(Band.i, i_mag);
+                bands.put(Band.z, z_mag);
+                bands.put(Band.y, y_mag);
+                bands.put(Band.J, Jmag);
+                bands.put(Band.H, Hmag);
+                bands.put(Band.K, Kmag);
+                bands.put(Band.W1, W1mag);
+                bands.put(Band.W2, W2mag);
+                bands.put(Band.W3, W3mag);
+                bands.put(Band.W4, W4mag);
+                whiteDwarfEntries.add(new WhiteDwarfEntry(type, teff, logG, age, bands));
+            }
+        }
     }
 
 }

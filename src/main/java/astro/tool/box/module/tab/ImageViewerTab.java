@@ -56,6 +56,7 @@ import astro.tool.box.module.InfoSheet;
 import astro.tool.box.module.panel.ReferencesPanel;
 import astro.tool.box.module.panel.SedPanel;
 import astro.tool.box.module.TextPrompt;
+import astro.tool.box.module.panel.WdSedPanel;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
@@ -5652,7 +5653,7 @@ public class ImageViewerTab {
 
             });
 
-            JButton createSedButton = new JButton("Create SED");
+            JButton createSedButton = new JButton("SED");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 JFrame sedFrame = new JFrame();
@@ -5667,8 +5668,23 @@ public class ImageViewerTab {
                 sedFrame.setVisible(true);
             });
 
+            JButton createWdSedButton = new JButton("WD SED");
+            buttonPanel.add(createWdSedButton);
+            createWdSedButton.addActionListener((ActionEvent evt) -> {
+                JFrame sedFrame = new JFrame();
+                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                sedFrame.setIconImage(getToolBoxImage());
+                sedFrame.setTitle("WD SED");
+                sedFrame.add(new WdSedPanel(catalogQueryFacade, catalogEntry, baseFrame));
+                sedFrame.setSize(1000, 900);
+                sedFrame.setLocation(0, 0);
+                sedFrame.setAlwaysOnTop(false);
+                sedFrame.setResizable(false);
+                sedFrame.setVisible(true);
+            });
+
             if (catalogEntry instanceof GaiaCmd) {
-                JButton createCmdButton = new JButton("Create CMD");
+                JButton createCmdButton = new JButton("CMD");
                 buttonPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
                     try {
