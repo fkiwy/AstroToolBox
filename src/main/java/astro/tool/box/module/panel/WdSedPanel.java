@@ -9,6 +9,7 @@ import astro.tool.box.container.WhiteDwarfEntry;
 import astro.tool.box.container.SedReferences;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.NoirlabCatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
@@ -149,16 +150,31 @@ public class WdSedPanel extends JPanel {
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        GaiaDR3CatalogEntry gaiaEntry;
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
+        /*
+        if (catalogEntry instanceof GaiaDR3CatalogEntry) {
+            gaiaEntry = (GaiaDR3CatalogEntry) catalogEntry;
+        } else {
+            gaiaEntry = new GaiaDR3CatalogEntry();
+            gaiaEntry.setRa(catalogEntry.getRa());
+            gaiaEntry.setDec(catalogEntry.getDec());
+            gaiaEntry.setSearchRadius(2);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
+            if (retrievedEntry != null) {
+                gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
+            }
+        }*/
+        //
         if (catalogEntry instanceof PanStarrsCatalogEntry) {
             panStarrsEntry = (PanStarrsCatalogEntry) catalogEntry;
         } else {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
             panStarrsEntry.setDec(catalogEntry.getDec());
-            panStarrsEntry.setSearchRadius(5);
+            panStarrsEntry.setSearchRadius(2);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
@@ -171,7 +187,7 @@ public class WdSedPanel extends JPanel {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());
             allWiseEntry.setDec(catalogEntry.getDec());
-            allWiseEntry.setSearchRadius(5);
+            allWiseEntry.setSearchRadius(2);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
@@ -186,6 +202,18 @@ public class WdSedPanel extends JPanel {
             seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId()).append(" ");
         }
 
+        // GAIA3
+        /*
+        sedCatalogs.put(Band.BP, gaiaEntry.getCatalogName());
+        sedCatalogs.put(Band.G, gaiaEntry.getCatalogName());
+        sedCatalogs.put(Band.RP, gaiaEntry.getCatalogName());
+        sedReferences.put(Band.BP, new SedReferences(3552.01, 0.504));
+        sedReferences.put(Band.G, new SedReferences(3228.75, 0.582));
+        sedReferences.put(Band.RP, new SedReferences(2554.95, 0.762));
+        sedPhotometry.put(Band.BP, gaiaEntry.getBPmag());
+        sedPhotometry.put(Band.G, gaiaEntry.getGmag());
+        sedPhotometry.put(Band.RP, gaiaEntry.getRPmag());*/
+        //
         // Pan-STARRS
         sedCatalogs.put(Band.g, panStarrsEntry.getCatalogName());
         sedCatalogs.put(Band.r, panStarrsEntry.getCatalogName());
@@ -232,7 +260,7 @@ public class WdSedPanel extends JPanel {
             NoirlabCatalogEntry noirlabEntry = new NoirlabCatalogEntry();
             noirlabEntry.setRa(catalogEntry.getRa());
             noirlabEntry.setDec(catalogEntry.getDec());
-            noirlabEntry.setSearchRadius(5);
+            noirlabEntry.setSearchRadius(2);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
@@ -259,7 +287,7 @@ public class WdSedPanel extends JPanel {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
             vhsEntry.setRa(catalogEntry.getRa());
             vhsEntry.setDec(catalogEntry.getDec());
-            vhsEntry.setSearchRadius(5);
+            vhsEntry.setSearchRadius(2);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 vhsEntry = (VhsCatalogEntry) retrievedEntry;
@@ -296,6 +324,7 @@ public class WdSedPanel extends JPanel {
             }*/
         }
 
+        //Band.getWdSedBands().forEach(band -> {
         Band.getSedBands().forEach(band -> {
             sedFluxes.put(band, new SedFluxes(
                     sedPhotometry.get(band),
@@ -307,6 +336,7 @@ public class WdSedPanel extends JPanel {
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
+        //Band.getWdSedBands().forEach(band -> {
         Band.getSedBands().forEach(band -> {
             //System.out.println("(" + sedReferences.get(band).getWavelenth() + "," + (sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux()) + ")");
             series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux());
@@ -338,13 +368,6 @@ public class WdSedPanel extends JPanel {
             String spectralType = entry.getInfo();
 
             List<Double> diffMags = new ArrayList();
-
-            //
-            //
-            //
-            //
-            //
-            //
             //Band.getWdSedBands().forEach(band -> {
             Band.getSedBands().forEach(band -> {
                 if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
@@ -386,8 +409,11 @@ public class WdSedPanel extends JPanel {
         }
         XYSeries series = new XYSeries(spectralType);
         series.add(0.481, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, 3631, 0.481));
+        //series.add(0.504, magnitudes.get(Band.BP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.BP) + medianDiffMag, 3552.01, 0.504));
+        //series.add(0.582, magnitudes.get(Band.G) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.G) + medianDiffMag, 3228.75, 0.582));
         series.add(0.617, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, 3631, 0.617));
         series.add(0.752, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, 3631, 0.752));
+        //series.add(0.762, magnitudes.get(Band.RP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.RP) + medianDiffMag, 2554.95, 0.762));
         series.add(0.866, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, 3631, 0.866));
         series.add(0.962, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, 3631, 0.962));
         series.add(1.235, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J) + medianDiffMag, 1594, 1.235));
@@ -414,6 +440,7 @@ public class WdSedPanel extends JPanel {
 
         List<String> toolTips = new ArrayList();
 
+        //Band.getWdSedBands().forEach(band -> {
         Band.getSedBands().forEach(band -> {
             toolTips.add(html(sedCatalogs.get(band) + " "
                     + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"

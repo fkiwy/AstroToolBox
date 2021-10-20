@@ -5,8 +5,8 @@ import java.util.List;
 
 public enum Band {
 
-    G("G"),
     BP("BP"),
+    G("G"),
     RP("RP"),
     g("g"),
     r("r"),
@@ -23,7 +23,7 @@ public enum Band {
 
     private static final List<Band> SED_BANDS = Arrays.asList(g, r, i, z, y, J, H, K, W1, W2, W3 /*, W4*/);
 
-    private static final List<Band> WD_SED_BANDS = Arrays.asList(G, BP, RP, g, r, i, z, y, J, H, K, W1, W2, W3 /*, W4*/);
+    private static final List<Band> WD_SED_BANDS = Arrays.asList(g, BP, G, r, i, RP, z, y, J, H, K, W1, W2, W3 /*, W4*/);
 
     public String val;
 
