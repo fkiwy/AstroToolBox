@@ -19,6 +19,7 @@ import astro.tool.box.util.CSVParser;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -69,6 +70,7 @@ public class WdSedPanel extends JPanel {
     private final Map<Band, String> sedCatalogs;
 
     private final JCheckBox overplotTemplates;
+    private final JTextField photSearchRadius;
     private final JTextField maxTemplateOffset;
 
     private boolean useGaiaPhotometry;
@@ -84,7 +86,8 @@ public class WdSedPanel extends JPanel {
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
 
-        maxTemplateOffset = new JTextField("0.05");
+        photSearchRadius = new JTextField("2", 3);
+        maxTemplateOffset = new JTextField("0.05", 3);
 
         overplotTemplates = new JCheckBox("Overplot templates");
         overplotTemplates.setSelected(true);
@@ -98,9 +101,19 @@ public class WdSedPanel extends JPanel {
             }
         };
         chartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        chartPanel.setPreferredSize(new Dimension(1000, 850));
         chartPanel.setBackground(Color.WHITE);
+        add(chartPanel);
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        add(commandPanel);
+
+        commandPanel.add(new JLabel("Photometry search radius"));
+        commandPanel.add(photSearchRadius);
+        photSearchRadius.addActionListener((ActionEvent e) -> {
+            collection.removeAllSeries();
+            createSed(catalogEntry, collection, true);
+        });
 
         commandPanel.add(new JLabel("Maximum template offset"));
         commandPanel.add(maxTemplateOffset);
@@ -134,9 +147,6 @@ public class WdSedPanel extends JPanel {
             }
         });
 
-        commandPanel.add(new JLabel("This feature uses the"));
-        commandPanel.add(createHyperlink("Montreal cooling sequences.", "http://www.astro.umontreal.ca/~bergeron/CoolingModels"));
-
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                 + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
@@ -148,12 +158,17 @@ public class WdSedPanel extends JPanel {
         infoLabel.setToolTipText(html(info));
         commandPanel.add(infoLabel);
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(chartPanel);
+        commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         add(commandPanel);
+
+        commandPanel.add(new JLabel("This feature uses the"));
+        commandPanel.add(createHyperlink("Montreal cooling sequences.", "http://www.astro.umontreal.ca/~bergeron/CoolingModels"));
+
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        double searchRadius = toDouble(photSearchRadius.getText());
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
@@ -163,7 +178,7 @@ public class WdSedPanel extends JPanel {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
             panStarrsEntry.setDec(catalogEntry.getDec());
-            panStarrsEntry.setSearchRadius(2);
+            panStarrsEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
@@ -176,7 +191,7 @@ public class WdSedPanel extends JPanel {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());
             allWiseEntry.setDec(catalogEntry.getDec());
-            allWiseEntry.setSearchRadius(2);
+            allWiseEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
@@ -238,7 +253,7 @@ public class WdSedPanel extends JPanel {
             GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
             gaiaEntry.setRa(catalogEntry.getRa());
             gaiaEntry.setDec(catalogEntry.getDec());
-            gaiaEntry.setSearchRadius(2);
+            gaiaEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
@@ -262,7 +277,7 @@ public class WdSedPanel extends JPanel {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
             vhsEntry.setRa(catalogEntry.getRa());
             vhsEntry.setDec(catalogEntry.getDec());
-            vhsEntry.setSearchRadius(2);
+            vhsEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 vhsEntry = (VhsCatalogEntry) retrievedEntry;
@@ -281,7 +296,7 @@ public class WdSedPanel extends JPanel {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                 twoMassEntry.setRa(catalogEntry.getRa());
                 twoMassEntry.setDec(catalogEntry.getDec());
-                twoMassEntry.setSearchRadius(10);
+                twoMassEntry.setSearchRadius(searchRadius);
                 retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryFacade, baseFrame);
                 if (retrievedEntry != null) {
                     twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;

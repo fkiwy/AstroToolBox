@@ -79,13 +79,13 @@ public class CmdPanel extends JPanel {
         String coolingTracksText = "Montreal cooling tracks for white dwarfs with masses between 0.2 (top) and 1.3 (bottom) Msun in steps of 0.1 Msun " + LINE_BREAK
                 + "(red is pure H atmosphere or DA WDs, blue is pure He atmosphere or DB WDs)";
 
-        JLabel coolingTracksLabel = new JLabel("     White dwarf cooling sequences");
-        coolingTracksLabel.setToolTipText(html(coolingTracksText));
-        commandPanel.add(coolingTracksLabel);
-
         JLabel coolingTracksToolTip = new JLabel(getInfoIcon());
         coolingTracksToolTip.setToolTipText(html(coolingTracksText));
         commandPanel.add(coolingTracksToolTip);
+
+        JLabel coolingTracksLabel = new JLabel("White dwarf cooling sequences");
+        coolingTracksLabel.setToolTipText(html(coolingTracksText));
+        commandPanel.add(coolingTracksLabel);
 
         coolingSequencesH = new JCheckBox("DA");
         commandPanel.add(coolingSequencesH);
@@ -98,7 +98,7 @@ public class CmdPanel extends JPanel {
         searchButton.addActionListener((ActionEvent e) -> {
             try {
                 File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa()) + addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
-                createPDF(chart, tmpFile, 1000, 900);
+                createPDF(chart, tmpFile, 800, 700);
                 Desktop.getDesktop().open(tmpFile);
             } catch (Exception ex) {
                 Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
