@@ -23,7 +23,7 @@ public enum Band {
 
     private static final List<Band> SED_BANDS = Arrays.asList(g, r, i, z, y, J, H, K, W1, W2, W3 /*, W4*/);
 
-    private static final List<Band> WD_SED_BANDS = Arrays.asList(g, BP, G, r, i, RP, z, y, J, H, K, W1, W2, W3 /*, W4*/);
+    private static final List<Band> WD_SED_BANDS = Arrays.asList(BP, G, RP, J, H, K, W1, W2, W3 /*, W4*/);
 
     public String val;
 
