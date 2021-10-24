@@ -308,6 +308,26 @@ public class AstrometricFunctions {
         );
     }
 
+    public static NumberPair convertToGalacticCoords(double raEquatorial, double decEquatorial) {
+        double ra = toRadians(raEquatorial);
+        double dec = toRadians(decEquatorial);
+
+        // From https://www.atnf.csiro.au/people/Tobias.Westmeier/tools_coords.php
+        //double ra0 = toRadians(192.8595);
+        //double dec0 = toRadians(27.1284);
+        //double glon0 = toRadians(122.932);
+        //
+        // From https://en.wikipedia.org/wiki/Astronomical_coordinate_systems
+        double ra0 = toRadians(192.85948);
+        double dec0 = toRadians(27.12825);
+        double glon0 = toRadians(122.93192);
+
+        double glon = glon0 - atan((cos(dec) * sin(ra - ra0)) / (sin(dec) * cos(dec0) - cos(dec) * sin(dec0) * cos(ra - ra0)));
+        double glat = asin(sin(dec) * sin(dec0) + cos(dec) * cos(dec0) * cos(ra - ra0));
+
+        return new NumberPair(toDegrees(glon), toDegrees(glat));
+    }
+
     /**
      * Convert a modified Julian date to local date and time
      *

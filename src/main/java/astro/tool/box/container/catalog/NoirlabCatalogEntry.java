@@ -105,6 +105,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     // Error in VR band
     private double vr_err;
 
+    // Galactic latitude
+    private double glat;
+
+    // Galactic longitude
+    private double glon;
+
     // Right ascension used for distance calculation
     private double targetRa;
 
@@ -165,6 +171,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         y_err = getFixedErr(toDouble(values[columns.get("yerr")]));
         vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
         vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
+        glat = toDouble(values[columns.get("glat")]);
+        glon = toDouble(values[columns.get("glon")]);
     }
 
     private String getFixedPM(String pm) {
@@ -297,7 +305,9 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         addRow(query, "       ymag,");
         addRow(query, "       yerr,");
         addRow(query, "       vrmag,");
-        addRow(query, "       vrerr");
+        addRow(query, "       vrerr,");
+        addRow(query, "       glat,");
+        addRow(query, "       glon");
         addRow(query, "FROM   nsc_dr2.object");
         addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
         return query.toString();
@@ -558,6 +568,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     public double getDelta_mjd() {
         return delta_mjd;
+    }
+
+    public double getGlat() {
+        return glat;
+    }
+
+    public double getGlon() {
+        return glon;
     }
 
     public double get_u_g() {
