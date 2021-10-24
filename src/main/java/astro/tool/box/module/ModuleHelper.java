@@ -209,6 +209,10 @@ public class ModuleHelper {
         return hyperlink;
     }
 
+    public static void showScrollableDialog(JFrame baseFrame, String title, String message) {
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(message), title, JOptionPane.PLAIN_MESSAGE);
+    }
+
     public static void showInfoDialog(JFrame baseFrame, String message) {
         JOptionPane.showMessageDialog(baseFrame, message, "Info", JOptionPane.INFORMATION_MESSAGE);
     }
@@ -254,7 +258,7 @@ public class ModuleHelper {
         textPane.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
-        scrollPane.setPreferredSize(new Dimension(700, 300));
+        scrollPane.setPreferredSize(new Dimension(700, 500));
         return scrollPane;
     }
 

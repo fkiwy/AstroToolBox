@@ -53,6 +53,7 @@ import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -74,6 +75,8 @@ public class SedPanel extends JPanel {
     private final JTextField photSearchRadius;
     private final JTextField maxTemplateOffset;
 
+    private StringBuilder sedDataPoints;
+
     public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
         this.catalogQueryFacade = catalogQueryFacade;
@@ -84,7 +87,7 @@ public class SedPanel extends JPanel {
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
 
-        photSearchRadius = new JTextField("2", 3);
+        photSearchRadius = new JTextField("5", 3);
         maxTemplateOffset = new JTextField("0.2", 3);
         spectralTypes = new JComboBox(SpectralType.values());
         overplotTemplates = new JCheckBox("Overplot templates");
@@ -158,6 +161,12 @@ public class SedPanel extends JPanel {
         commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         add(commandPanel);
 
+        JButton dataButton = new JButton("Get SED data points");
+        commandPanel.add(dataButton);
+        dataButton.addActionListener((ActionEvent e) -> {
+            showScrollableDialog(baseFrame, "SED data points", sedDataPoints.toString());
+        });
+
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                 + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
@@ -173,6 +182,7 @@ public class SedPanel extends JPanel {
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        sedDataPoints = new StringBuilder();
         double searchRadius = toDouble(photSearchRadius.getText());
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
@@ -331,8 +341,17 @@ public class SedPanel extends JPanel {
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
+        sedDataPoints.append(seriesLabel.toString()).append(LINE_SEP);
         Band.getSedBands().forEach(band -> {
-            //System.out.println("(" + sedReferences.get(band).getWavelenth() + "," + (sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux()) + ")");
+            if (sedPhotometry.get(band) != 0) {
+                sedDataPoints
+                        .append("(")
+                        .append(sedReferences.get(band).getWavelenth())
+                        .append(",")
+                        .append(sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux())
+                        .append(")")
+                        .append(LINE_SEP);
+            }
             series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux());
         });
 
@@ -427,10 +446,20 @@ public class SedPanel extends JPanel {
         series.add(4.6, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, 171.79, 4.6));
         series.add(12, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, 31.676, 12));
 
-        //for (Object item : series.getItems()) {
-        //    XYDataItem dataItem = (XYDataItem) item;
-        //    System.out.println("(" + dataItem.getXValue() + "," + dataItem.getYValue() + ")");
-        //}
+        sedDataPoints.append(spectralType).append(":").append(LINE_SEP);
+        for (Object item : series.getItems()) {
+            XYDataItem dataItem = (XYDataItem) item;
+            if (!Double.isNaN(dataItem.getYValue())) {
+                sedDataPoints
+                        .append("(")
+                        .append(dataItem.getXValue())
+                        .append(",")
+                        .append(dataItem.getYValue())
+                        .append(")")
+                        .append(LINE_SEP);
+            }
+        }
+
         try {
             collection.addSeries(series);
         } catch (IllegalArgumentException ex) {
