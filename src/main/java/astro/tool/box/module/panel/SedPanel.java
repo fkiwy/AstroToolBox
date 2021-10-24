@@ -20,6 +20,7 @@ import astro.tool.box.facade.CatalogQueryFacade;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -41,6 +42,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -69,6 +71,8 @@ public class SedPanel extends JPanel {
 
     private final JComboBox spectralTypes;
     private final JCheckBox overplotTemplates;
+    private final JTextField photSearchRadius;
+    private final JTextField maxTemplateOffset;
 
     public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
@@ -80,6 +84,8 @@ public class SedPanel extends JPanel {
         sedPhotometry = new HashMap();
         sedCatalogs = new HashMap();
 
+        photSearchRadius = new JTextField("2", 3);
+        maxTemplateOffset = new JTextField("0.2", 3);
         spectralTypes = new JComboBox(SpectralType.values());
         overplotTemplates = new JCheckBox("Overplot templates");
         overplotTemplates.setSelected(true);
@@ -93,9 +99,28 @@ public class SedPanel extends JPanel {
             }
         };
         chartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        chartPanel.setPreferredSize(new Dimension(1000, 850));
         chartPanel.setBackground(Color.WHITE);
+        add(chartPanel);
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        add(commandPanel);
+
+        commandPanel.add(new JLabel("Photometry search radius"));
+        commandPanel.add(photSearchRadius);
+        photSearchRadius.addActionListener((ActionEvent e) -> {
+            collection.removeAllSeries();
+            createSed(catalogEntry, collection, true);
+            XYPlot plot = chart.getXYPlot();
+            plot.getRenderer().setSeriesToolTipGenerator(0, addToolTips());
+        });
+
+        commandPanel.add(new JLabel("Maximum template offset"));
+        commandPanel.add(maxTemplateOffset);
+        maxTemplateOffset.addActionListener((ActionEvent e) -> {
+            collection.removeAllSeries();
+            createSed(catalogEntry, collection, true);
+        });
 
         commandPanel.add(new JLabel("SED templates: ", JLabel.RIGHT));
         commandPanel.add(spectralTypes);
@@ -130,23 +155,25 @@ public class SedPanel extends JPanel {
             }
         });
 
+        commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        add(commandPanel);
+
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                 + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
-
-        JLabel toolTip = new JLabel(getInfoIcon());
-        toolTip.setToolTipText(html(info));
-        commandPanel.add(toolTip);
 
         JLabel infoLabel = new JLabel("Tooltip");
         infoLabel.setToolTipText(html(info));
         commandPanel.add(infoLabel);
 
+        JLabel toolTip = new JLabel(getInfoIcon());
+        toolTip.setToolTipText(html(info));
+        commandPanel.add(toolTip);
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(chartPanel);
-        add(commandPanel);
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        double searchRadius = toDouble(photSearchRadius.getText());
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
@@ -156,7 +183,7 @@ public class SedPanel extends JPanel {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
             panStarrsEntry.setDec(catalogEntry.getDec());
-            panStarrsEntry.setSearchRadius(5);
+            panStarrsEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
@@ -169,7 +196,7 @@ public class SedPanel extends JPanel {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());
             allWiseEntry.setDec(catalogEntry.getDec());
-            allWiseEntry.setSearchRadius(5);
+            allWiseEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
@@ -230,7 +257,7 @@ public class SedPanel extends JPanel {
             NoirlabCatalogEntry noirlabEntry = new NoirlabCatalogEntry();
             noirlabEntry.setRa(catalogEntry.getRa());
             noirlabEntry.setDec(catalogEntry.getDec());
-            noirlabEntry.setSearchRadius(5);
+            noirlabEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
@@ -257,7 +284,7 @@ public class SedPanel extends JPanel {
             VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
             vhsEntry.setRa(catalogEntry.getRa());
             vhsEntry.setDec(catalogEntry.getDec());
-            vhsEntry.setSearchRadius(5);
+            vhsEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
                 vhsEntry = (VhsCatalogEntry) retrievedEntry;
@@ -271,12 +298,11 @@ public class SedPanel extends JPanel {
                 sedPhotometry.put(Band.J, vhsEntry.getJmag());
                 sedPhotometry.put(Band.H, vhsEntry.getHmag());
                 sedPhotometry.put(Band.K, vhsEntry.getKmag());
-            }
-            /*else {
+            } else {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                 twoMassEntry.setRa(catalogEntry.getRa());
                 twoMassEntry.setDec(catalogEntry.getDec());
-                twoMassEntry.setSearchRadius(10);
+                twoMassEntry.setSearchRadius(searchRadius);
                 retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryFacade, baseFrame);
                 if (retrievedEntry != null) {
                     twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
@@ -291,7 +317,7 @@ public class SedPanel extends JPanel {
                     sedPhotometry.put(Band.H, twoMassEntry.getHmag());
                     sedPhotometry.put(Band.K, twoMassEntry.getKmag());
                 }
-            }*/
+            }
         }
 
         Band.getSedBands().forEach(band -> {
@@ -345,6 +371,10 @@ public class SedPanel extends JPanel {
                     diffMags.add(abs(sedPhotometry.get(band) - bands.get(band)));
                 }
             });
+            if (diffMags.isEmpty()) {
+                showInfoDialog(null, "No photometry found for SED." + LINE_SEP + "Increasing the search radius may help.");
+                return;
+            }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
 
@@ -358,7 +388,7 @@ public class SedPanel extends JPanel {
             SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
             if (selectedType.equals(SpectralType.SELECT)) {
                 if (totalMags >= 4) {
-                    double offset = 0.2;
+                    double offset = toDouble(maxTemplateOffset.getText());
                     int selectedMags = 0;
                     for (Double diffMag : diffMags) {
                         if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
@@ -412,20 +442,6 @@ public class SedPanel extends JPanel {
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
 
-        List<String> toolTips = new ArrayList();
-
-        Band.getSedBands().forEach(band -> {
-            toolTips.add(html(sedCatalogs.get(band) + " "
-                    + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
-                    + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
-                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " Jy<br>"
-                    + "νF(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFlux()) + " W/m^2<br>"
-                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m^2/μm"));
-        });
-
-        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
-        generator.addToolTipSeries(toolTips);
-
         LogAxis xAxis = new LogAxis("Wavelength (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
@@ -449,7 +465,7 @@ public class SedPanel extends JPanel {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.BLACK);
         renderer.setSeriesStroke(0, new BasicStroke(2));
-        renderer.setSeriesToolTipGenerator(0, generator);
+        renderer.setSeriesToolTipGenerator(0, addToolTips());
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);
@@ -468,6 +484,21 @@ public class SedPanel extends JPanel {
         chart.getTitle().setFont(titleFont);
 
         return chart;
+    }
+
+    private CustomXYToolTipGenerator addToolTips() {
+        List<String> toolTips = new ArrayList();
+        Band.getSedBands().forEach(band -> {
+            toolTips.add(html(sedCatalogs.get(band) + " "
+                    + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
+                    + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
+                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " Jy<br>"
+                    + "νF(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFlux()) + " W/m^2<br>"
+                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m^2/μm"));
+        });
+        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
+        generator.addToolTipSeries(toolTips);
+        return generator;
     }
 
     private Map<Band, Double> provideReferenceMagnitudes(String spt) {

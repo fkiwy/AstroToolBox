@@ -88,7 +88,6 @@ public class WdSedPanel extends JPanel {
 
         photSearchRadius = new JTextField("2", 3);
         maxTemplateOffset = new JTextField("0.05", 3);
-
         overplotTemplates = new JCheckBox("Overplot templates");
         overplotTemplates.setSelected(true);
 
@@ -113,6 +112,8 @@ public class WdSedPanel extends JPanel {
         photSearchRadius.addActionListener((ActionEvent e) -> {
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+            XYPlot plot = chart.getXYPlot();
+            plot.getRenderer().setSeriesToolTipGenerator(0, addToolTips());
         });
 
         commandPanel.add(new JLabel("Maximum template offset"));
@@ -150,13 +151,13 @@ public class WdSedPanel extends JPanel {
         String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding filter and wavelength." + LINE_BREAK
                 + "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
 
-        JLabel toolTip = new JLabel(getInfoIcon());
-        toolTip.setToolTipText(html(info));
-        commandPanel.add(toolTip);
-
         JLabel infoLabel = new JLabel("Tooltip");
         infoLabel.setToolTipText(html(info));
         commandPanel.add(infoLabel);
+
+        JLabel toolTip = new JLabel(getInfoIcon());
+        toolTip.setToolTipText(html(info));
+        commandPanel.add(toolTip);
 
         commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         add(commandPanel);
@@ -248,14 +249,15 @@ public class WdSedPanel extends JPanel {
         sedPhotometry.put(Band.H, allWiseEntry.getHmag());
         sedPhotometry.put(Band.K, allWiseEntry.getKmag());
 
+        useGaiaPhotometry = false;
         if ("0".equals(panStarrsEntry.getSourceId())) {
-            useGaiaPhotometry = true;
             GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
             gaiaEntry.setRa(catalogEntry.getRa());
             gaiaEntry.setDec(catalogEntry.getDec());
             gaiaEntry.setSearchRadius(searchRadius);
             CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry != null) {
+                useGaiaPhotometry = true;
                 gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
                 seriesLabel.append(gaiaEntry.getCatalogName()).append(": ").append(gaiaEntry.getSourceId()).append(" ");
                 // Zero points and wavelengths are for GAIA3 (http://svo2.cab.inta-csic.es/svo/theory/fps/index.php?mode=browse&gname=GAIA&gname2=GAIA3)
@@ -269,8 +271,6 @@ public class WdSedPanel extends JPanel {
                 sedPhotometry.put(Band.G, gaiaEntry.getGmag());
                 sedPhotometry.put(Band.RP, gaiaEntry.getRPmag());
             }
-        } else {
-            useGaiaPhotometry = false;
         }
 
         if (sedPhotometry.get(Band.J) == 0 && sedPhotometry.get(Band.H) == 0 && sedPhotometry.get(Band.K) == 0) {
@@ -291,8 +291,7 @@ public class WdSedPanel extends JPanel {
                 sedPhotometry.put(Band.J, vhsEntry.getJmag());
                 sedPhotometry.put(Band.H, vhsEntry.getHmag());
                 sedPhotometry.put(Band.K, vhsEntry.getKmag());
-            }
-            /*else {
+            } else {
                 TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                 twoMassEntry.setRa(catalogEntry.getRa());
                 twoMassEntry.setDec(catalogEntry.getDec());
@@ -311,7 +310,7 @@ public class WdSedPanel extends JPanel {
                     sedPhotometry.put(Band.H, twoMassEntry.getHmag());
                     sedPhotometry.put(Band.K, twoMassEntry.getKmag());
                 }
-            }*/
+            }
         }
 
         List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
@@ -363,6 +362,10 @@ public class WdSedPanel extends JPanel {
                     diffMags.add(abs(sedPhotometry.get(band) - bands.get(band)));
                 }
             });
+            if (diffMags.isEmpty()) {
+                showInfoDialog(null, "No photometry found for SED." + LINE_SEP + "Increasing the search radius may help.");
+                return;
+            }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
 
@@ -430,21 +433,6 @@ public class WdSedPanel extends JPanel {
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
 
-        List<String> toolTips = new ArrayList();
-
-        List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
-        sedBands.forEach(band -> {
-            toolTips.add(html(sedCatalogs.get(band) + " "
-                    + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
-                    + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
-                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " Jy<br>"
-                    + "νF(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFlux()) + " W/m^2<br>"
-                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m^2/μm"));
-        });
-
-        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
-        generator.addToolTipSeries(toolTips);
-
         LogAxis xAxis = new LogAxis("Wavelength (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
@@ -468,7 +456,7 @@ public class WdSedPanel extends JPanel {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.BLACK);
         renderer.setSeriesStroke(0, new BasicStroke(2));
-        renderer.setSeriesToolTipGenerator(0, generator);
+        renderer.setSeriesToolTipGenerator(0, addToolTips());
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);
@@ -487,6 +475,22 @@ public class WdSedPanel extends JPanel {
         chart.getTitle().setFont(titleFont);
 
         return chart;
+    }
+
+    private CustomXYToolTipGenerator addToolTips() {
+        List<String> toolTips = new ArrayList();
+        List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
+        sedBands.forEach(band -> {
+            toolTips.add(html(sedCatalogs.get(band) + " "
+                    + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
+                    + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
+                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " Jy<br>"
+                    + "νF(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFlux()) + " W/m^2<br>"
+                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m^2/μm"));
+        });
+        CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
+        generator.addToolTipSeries(toolTips);
+        return generator;
     }
 
     private Map<Band, Double> provideReferenceMagnitudes(String spt) {
