@@ -9,7 +9,6 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -21,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
@@ -101,13 +101,25 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // Most likely spectral type
     private String spt;
 
-    private List<StringPair> qualityFlags;
-
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     private Map<String, Integer> columns;
 
     private String[] values;
+
+    private static final Map<Integer, String> QUALITY_FLAGS;
+
+    static {
+        QUALITY_FLAGS = new HashMap<>();
+        QUALITY_FLAGS.put(1, "extended in Pan-STARRS data");
+        QUALITY_FLAGS.put(2, "extended in external data (2MASS)");
+        QUALITY_FLAGS.put(4, "good-quality measurement in Pan-STARRS data");
+        QUALITY_FLAGS.put(8, "good-quality measurement in external data (2MASS)");
+        QUALITY_FLAGS.put(16, "good-quality object in the stack");
+        QUALITY_FLAGS.put(32, "the primary stack measurements are the best");
+        QUALITY_FLAGS.put(64, "suspect object in the stack (no more than 1 good measurement)");
+        QUALITY_FLAGS.put(128, "poor-quality stack object (no more than 1 good or suspect measurement)");
+    }
 
     public PanStarrsCatalogEntry() {
     }
@@ -139,7 +151,6 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         zMeanPSFMagErr = toDouble(values[columns.get("zMeanPSFMagErr")]);
         yMeanPSFMag = toDouble(values[columns.get("yMeanPSFMag")]);
         yMeanPSFMagErr = toDouble(values[columns.get("yMeanPSFMagErr")]);
-        qualityFlags = getPanStarrsQualityFlags(qualityFlag);
     }
 
     @Override
@@ -152,7 +163,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTip_qualityFlag()));
+        catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTipQualityFlag()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
@@ -175,10 +186,10 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_z_y()), Alignment.RIGHT, getDoubleComparator(), false, true));
     }
 
-    public String createToolTip_qualityFlag() {
+    public String createToolTipQualityFlag() {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Quality flag details:</b>");
-        qualityFlags.forEach((flag) -> {
+        getFlagLabels(qualityFlag, QUALITY_FLAGS).forEach((flag) -> {
             toolTip.append(LINE_BREAK).append(flag.getS1()).append(" = ").append(flag.getS2());
         });
         return toolTip.toString();

@@ -20,6 +20,7 @@ import astro.tool.box.container.catalog.Artifact;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.DesCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
@@ -245,6 +246,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> noirlabEntries;
     private List<CatalogEntry> noirlabTpmEntries;
     private List<CatalogEntry> tessEntries;
+    private List<CatalogEntry> desEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -282,6 +284,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaWDOverlay;
     private JCheckBox noirlabOverlay;
     private JCheckBox tessOverlay;
+    private JCheckBox desOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -1005,12 +1008,20 @@ public class ImageViewerTab {
             });
             overlayPanel.add(tessOverlay);
 
-            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlaysControlPanel.add(overlayPanel);
+            desOverlay = new JCheckBox(html("D<u>E</u>S DR1"), overlays.isDes());
+            desOverlay.setForeground(JColor.SAND.val);
+            desOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(desOverlay);
+            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlaysControlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -1187,6 +1198,7 @@ public class ImageViewerTab {
                 overlays.setGaiawd(gaiaWDOverlay.isSelected());
                 overlays.setTwomass(twoMassOverlay.isSelected());
                 overlays.setTess(tessOverlay.isSelected());
+                overlays.setDes(desOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
                 overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
@@ -2038,6 +2050,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(tessEntries, mouseX, mouseY, JColor.LILAC.val);
                                         count++;
                                     }
+                                    if (desOverlay.isSelected() && desEntries != null) {
+                                        showCatalogInfo(desEntries, mouseX, mouseY, JColor.SAND.val);
+                                        count++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         count++;
@@ -2297,6 +2313,13 @@ public class ImageViewerTab {
                     tessOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForAltE = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    desOverlay.setSelected(!desOverlay.isSelected());
+                    desOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
             Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2362,6 +2385,9 @@ public class ImageViewerTab {
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.ALT_MASK), "keyActionForAltT");
             aMap.put("keyActionForAltT", keyActionForAltT);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK), "keyActionForAltE");
+            aMap.put("keyActionForAltE", keyActionForAltE);
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
             aMap.put("keyActionForAltW", keyActionForAltW);
@@ -2432,6 +2458,9 @@ public class ImageViewerTab {
             count++;
         }
         if (tessOverlay.isSelected()) {
+            count++;
+        }
+        if (desOverlay.isSelected()) {
             count++;
         }
         if (gaiaProperMotion.isSelected()) {
@@ -3296,6 +3325,7 @@ public class ImageViewerTab {
         noirlabEntries = null;
         noirlabTpmEntries = null;
         tessEntries = null;
+        desEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -3574,6 +3604,18 @@ public class ImageViewerTab {
                 });
             } else {
                 drawOverlay(image, tessEntries, JColor.LILAC.val, Shape.CIRCLE);
+            }
+        }
+        if (desOverlay.isSelected()) {
+            if (desEntries == null) {
+                desEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    desEntries = fetchCatalogEntries(new DesCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, desEntries, JColor.SAND.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {
@@ -5920,6 +5962,10 @@ public class ImageViewerTab {
 
     public JCheckBox getTessOverlay() {
         return tessOverlay;
+    }
+
+    public JCheckBox getDesOverlay() {
+        return desOverlay;
     }
 
     public Timer getTimer() {

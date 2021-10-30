@@ -12,6 +12,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.DesCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
@@ -1056,6 +1057,9 @@ public class ImageSeriesTab {
             case TessCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getTessOverlay().setSelected(true);
                 break;
+            case DesCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getDesOverlay().setSelected(true);
+                break;
         }
     }
 
@@ -1073,6 +1077,7 @@ public class ImageSeriesTab {
         imageViewerTab.getGaiaWDOverlay().setSelected(false);
         imageViewerTab.getNoirlabOverlay().setSelected(false);
         imageViewerTab.getTessOverlay().setSelected(false);
+        imageViewerTab.getDesOverlay().setSelected(false);
     }
 
 }

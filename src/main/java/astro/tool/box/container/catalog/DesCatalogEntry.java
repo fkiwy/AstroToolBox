@@ -2,72 +2,68 @@ package astro.tool.box.container.catalog;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.Utils.*;
+import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog {
+public class DesCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "NSC DR2";
+    public static final String CATALOG_NAME = "DES DR1";
 
-    // Unique source identifier (unique within a particular Data Release)
+    // Identifier based on IAU format
     private String sourceId;
 
-    // Right ascension
+    // Right ascension (J2000)
     private double ra;
 
-    // Error in right ascension
-    private double ra_err;
-
-    // Declination
+    // Declination (J2000)
     private double dec;
 
-    // Error in declination
-    private double dec_err;
+    // Extended source flag for g-band (0=galaxy; 1=star)
+    private double g_ext;
 
-    // Galaxy-Star (0-1)
-    private double type;
+    // Extended source flag for r-band (0=galaxy; 1=star)
+    private double r_ext;
 
-    // Proper motion in right ascension direction
-    private double pmra;
+    // Extended source flag for i-band (0=galaxy; 1=star)
+    private double i_ext;
 
-    // Standard error of proper motion in right ascension direction
-    private double pmra_err;
+    // Extended source flag for z-band (0=galaxy; 1=star)
+    private double z_ext;
 
-    // Proper motion in declination direction
-    private double pmdec;
+    // Extended source flag for Y-band (0=galaxy; 1=star)
+    private double y_ext;
 
-    // Standard error of proper motion in declination direction
-    private double pmdec_err;
+    // Cautionary flag for g-band (<4=well behaved objects)
+    private int g_caut;
 
-    // Mean Modified Julian Date
-    private double mean_mjd;
+    // Cautionary flag for r-band (<4=well behaved objects)
+    private int r_caut;
 
-    // Number of detections in all bands
-    private int ndet;
+    // Cautionary flag for i-band (<4=well behaved objects)
+    private int i_caut;
 
-    // Range of Modified Julian Date
-    private double delta_mjd;
+    // Cautionary flag for z-band (<4=well behaved objects)
+    private int z_caut;
 
-    // Magnitude in u band
-    private double u_mag;
-
-    // Error in u magnitude
-    private double u_err;
+    // Cautionary flag for y-band (<4=well behaved objects)
+    private int y_caut;
 
     // Magnitude in g band
     private double g_mag;
@@ -99,12 +95,6 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     // Error in Y band
     private double y_err;
 
-    // Magnitude in VR band
-    private double vr_mag;
-
-    // Error in VR band
-    private double vr_err;
-
     // Galactic longitude
     private double glon;
 
@@ -126,9 +116,6 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     // Search radius
     private double searchRadius;
 
-    // Total proper motion
-    private double tpm;
-
     // Most likely spectral type
     private String spt;
 
@@ -138,58 +125,56 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     private String[] values;
 
-    public NoirlabCatalogEntry() {
+    private static final Map<Integer, String> CAUTIONARY_FLAGS;
+
+    static {
+        CAUTIONARY_FLAGS = new HashMap<>();
+        CAUTIONARY_FLAGS.put(1, "The object has neighbors, bright and close enough to significantly bias the photometry, or bad pixels (more than 10% of the integrated area affected).");
+        CAUTIONARY_FLAGS.put(2, "The object was originally blended with another one.");
+        CAUTIONARY_FLAGS.put(4, "At least one pixel of the object is saturated (or very close to).");
+        CAUTIONARY_FLAGS.put(8, "The object is truncated (too close to an image boundary).");
+        CAUTIONARY_FLAGS.put(16, "Object's aperture data are incomplete or corrupted.");
+        CAUTIONARY_FLAGS.put(32, "Object's isophotal data are incomplete or corrupted.");
+        CAUTIONARY_FLAGS.put(64, "A memory overflow occurred during deblending.");
+        CAUTIONARY_FLAGS.put(128, "A memory overflow occurred during extraction.");
     }
 
-    public NoirlabCatalogEntry(Map<String, Integer> columns, String[] values) {
+    public DesCatalogEntry() {
+    }
+
+    public DesCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("id")];
-        ra = toDouble(values[columns.get("ra")]);
-        ra_err = toDouble(values[columns.get("raerr")]);
-        dec = toDouble(values[columns.get("dec")]);
-        dec_err = toDouble(values[columns.get("decerr")]);
-        pmra = toDouble(getFixedPM(values[columns.get("pmra")]));
-        pmra_err = toDouble(getFixedPM(values[columns.get("pmraerr")]));
-        pmdec = toDouble(getFixedPM(values[columns.get("pmdec")]));
-        pmdec_err = toDouble(getFixedPM(values[columns.get("pmdecerr")]));
-        type = toDouble(values[columns.get("class_star")]);
-        mean_mjd = toDouble(values[columns.get("mjd")]);
-        ndet = toInteger(values[columns.get("ndet")]);
-        delta_mjd = toDouble(values[columns.get("deltamjd")]);
-        u_mag = getFixedMag(toDouble(values[columns.get("umag")]));
-        u_err = getFixedErr(toDouble(values[columns.get("uerr")]));
-        g_mag = getFixedMag(toDouble(values[columns.get("gmag")]));
-        g_err = getFixedErr(toDouble(values[columns.get("gerr")]));
-        r_mag = getFixedMag(toDouble(values[columns.get("rmag")]));
-        r_err = getFixedErr(toDouble(values[columns.get("rerr")]));
-        i_mag = getFixedMag(toDouble(values[columns.get("imag")]));
-        i_err = getFixedErr(toDouble(values[columns.get("ierr")]));
-        z_mag = getFixedMag(toDouble(values[columns.get("zmag")]));
-        z_err = getFixedErr(toDouble(values[columns.get("zerr")]));
-        y_mag = getFixedMag(toDouble(values[columns.get("ymag")]));
-        y_err = getFixedErr(toDouble(values[columns.get("yerr")]));
-        vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
-        vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
-        glon = toDouble(values[columns.get("glon")]);
-        glat = toDouble(values[columns.get("glat")]);
-    }
-
-    private String getFixedPM(String pm) {
-        return "NaN".equals(pm) ? "0" : pm;
-    }
-
-    private double getFixedMag(double mag) {
-        return mag > 99.9 ? 0 : mag;
-    }
-
-    private double getFixedErr(double err) {
-        return err > 9.9 ? 0 : err;
+        sourceId = values[columns.get("DES")];
+        ra = toDouble(values[columns.get("RAJ2000")]);
+        dec = toDouble(values[columns.get("DEJ2000")]);
+        g_ext = toDouble(values[columns.get("S/Gg")]);
+        r_ext = toDouble(values[columns.get("S/Gr")]);
+        i_ext = toDouble(values[columns.get("S/Gi")]);
+        z_ext = toDouble(values[columns.get("S/Gz")]);
+        y_ext = toDouble(values[columns.get("S/GY")]);
+        g_caut = toInteger(values[columns.get("gFlag")]);
+        r_caut = toInteger(values[columns.get("rFlag")]);
+        i_caut = toInteger(values[columns.get("iFlag")]);
+        z_caut = toInteger(values[columns.get("zFlag")]);
+        y_caut = toInteger(values[columns.get("YFlag")]);
+        g_mag = toDouble(values[columns.get("gmag")]);
+        g_err = toDouble(values[columns.get("e_gmag")]);
+        r_mag = toDouble(values[columns.get("rmag")]);
+        r_err = toDouble(values[columns.get("e_rmag")]);
+        i_mag = toDouble(values[columns.get("imag")]);
+        i_err = toDouble(values[columns.get("e_imag")]);
+        z_mag = toDouble(values[columns.get("zmag")]);
+        z_err = toDouble(values[columns.get("e_zmag")]);
+        y_mag = toDouble(values[columns.get("Ymag")]);
+        y_err = toDouble(values[columns.get("e_Ymag")]);
+        glon = toDouble(values[columns.get("GLON")]);
+        glat = toDouble(values[columns.get("GLAT")]);
     }
 
     @Override
     public CatalogEntry copy() {
-        return new NoirlabCatalogEntry(columns, values);
+        return new DesCatalogEntry(columns, values);
     }
 
     @Override
@@ -197,19 +182,17 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dec err (arcsec)", roundTo7DecNZ(dec_err), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
-        catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
-        catalogElements.add(new CatalogElement("Galaxy-Star (0-1)", roundTo2DecNZ(type), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("mean mjd", convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("detections", String.valueOf(ndet), Alignment.RIGHT, getIntegerComparator()));
-        catalogElements.add(new CatalogElement("delta mjd", roundTo3DecNZ(delta_mjd), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("u err", roundTo3DecNZ(u_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g Galaxy-Star (0-1)", roundTo2DecNZ(g_ext), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("r Galaxy-Star (0-1)", roundTo2DecNZ(r_ext), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("i Galaxy-Star (0-1)", roundTo2DecNZ(i_ext), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("z Galaxy-Star (0-1)", roundTo2DecNZ(z_ext), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Y Galaxy-Star (0-1)", roundTo2DecNZ(y_ext), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("g cautionary flag", String.valueOf(g_caut), Alignment.RIGHT, getIntegerComparator(), createToolTipCautionaryFlag(g_caut)));
+        catalogElements.add(new CatalogElement("r cautionary flag", String.valueOf(r_caut), Alignment.RIGHT, getIntegerComparator(), createToolTipCautionaryFlag(r_caut)));
+        catalogElements.add(new CatalogElement("i cautionary flag", String.valueOf(i_caut), Alignment.RIGHT, getIntegerComparator(), createToolTipCautionaryFlag(i_caut)));
+        catalogElements.add(new CatalogElement("z cautionary flag", String.valueOf(z_caut), Alignment.RIGHT, getIntegerComparator(), createToolTipCautionaryFlag(z_caut)));
+        catalogElements.add(new CatalogElement("Y cautionary flag", String.valueOf(y_caut), Alignment.RIGHT, getIntegerComparator(), createToolTipCautionaryFlag(y_caut)));
         catalogElements.add(new CatalogElement("g (mag)", roundTo3DecNZ(g_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("g err", roundTo3DecNZ(g_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("r (mag)", roundTo3DecNZ(r_mag), Alignment.RIGHT, getDoubleComparator()));
@@ -220,14 +203,24 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("z err", roundTo3DecNZ(z_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Y (mag)", roundTo3DecNZ(y_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("Y err", roundTo3DecNZ(y_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("VR (mag)", roundTo3DecNZ(vr_mag), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("VR err", roundTo3DecNZ(vr_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("u-g", roundTo3DecNZ(get_u_g()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("g-r", roundTo3DecNZ(get_g_r()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("r-i", roundTo3DecNZ(get_r_i()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("i-z", roundTo3DecNZ(get_i_z()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("z-Y", roundTo3DecNZ(get_z_y()), Alignment.RIGHT, getDoubleComparator(), false, true));
-        catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
+    }
+
+    public String createToolTipCautionaryFlag(Integer cautionaryFlag) {
+        StringBuilder toolTip = new StringBuilder();
+        toolTip.append("<b>Cautionary flag details:</b>");
+        List<StringPair> flagLabels = getFlagLabels(cautionaryFlag, CAUTIONARY_FLAGS);
+        if (flagLabels.isEmpty()) {
+            toolTip.append(LINE_BREAK).append("No warnings.");
+        } else {
+            flagLabels.forEach((flag) -> {
+                toolTip.append(LINE_BREAK).append(flag.getS1()).append(" = ").append(flag.getS2());
+            });
+        }
+        return toolTip.toString();
     }
 
     @Override
@@ -248,13 +241,13 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final NoirlabCatalogEntry other = (NoirlabCatalogEntry) obj;
+        final DesCatalogEntry other = (DesCatalogEntry) obj;
         return Objects.equals(this.sourceId, other.sourceId);
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new NoirlabCatalogEntry(columns, values);
+        return new DesCatalogEntry(columns, values);
     }
 
     @Override
@@ -264,79 +257,80 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.NAVY.val;
+        return JColor.SAND.val;
     }
 
     @Override
     public String getCatalogUrl() {
-        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
-    }
-
-    @Override
-    public String getProperMotionQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createProperMotionQuery());
-    }
-
-    private String createCatalogQuery() {
-        StringBuilder query = new StringBuilder();
-        addRow(query, "SELECT id,");
-        addRow(query, "       ra,");
-        addRow(query, "       raerr,");
-        addRow(query, "       dec,");
-        addRow(query, "       decerr,");
-        addRow(query, "       pmra,");
-        addRow(query, "       pmraerr,");
-        addRow(query, "       pmdec,");
-        addRow(query, "       pmdecerr,");
-        addRow(query, "       class_star,");
-        addRow(query, "       mjd,");
-        addRow(query, "       ndet,");
-        addRow(query, "       deltamjd,");
-        addRow(query, "       umag,");
-        addRow(query, "       uerr,");
-        addRow(query, "       gmag,");
-        addRow(query, "       gerr,");
-        addRow(query, "       rmag,");
-        addRow(query, "       rerr,");
-        addRow(query, "       imag,");
-        addRow(query, "       ierr,");
-        addRow(query, "       zmag,");
-        addRow(query, "       zerr,");
-        addRow(query, "       ymag,");
-        addRow(query, "       yerr,");
-        addRow(query, "       vrmag,");
-        addRow(query, "       vrerr,");
-        addRow(query, "       glat,");
-        addRow(query, "       glon");
-        addRow(query, "FROM   nsc_dr2.object");
-        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
-        return query.toString();
-    }
-
-    private String createProperMotionQuery() {
-        StringBuilder query = new StringBuilder();
-        addRow(query, createCatalogQuery());
-        addRow(query, "AND    ndet >= 5");
-        addRow(query, "AND    deltamjd >= 180");
-        addRow(query, "AND    pmra <> 'NaN' AND pmdec <> 'NaN'");
-        addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
-        return query.toString();
-    }
-
-    @Override
-    public void setTpm(double tpm) {
-        this.tpm = tpm;
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/357/des_dr1", "RAJ2000", "DEJ2000");
     }
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo2DecNZ(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + ndet + "," + roundTo3Dec(delta_mjd) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + sourceId + ","
+                + roundTo7Dec(ra) + ","
+                + roundTo7Dec(dec) + ","
+                + roundTo2Dec(g_ext) + ","
+                + roundTo2Dec(r_ext) + ","
+                + roundTo2Dec(i_ext) + ","
+                + roundTo2Dec(z_ext) + ","
+                + roundTo2Dec(y_ext) + ","
+                + g_caut + ","
+                + r_caut + ","
+                + i_caut + ","
+                + z_caut + ","
+                + y_caut + ","
+                + roundTo3Dec(g_mag) + ","
+                + roundTo3Dec(g_err) + ","
+                + roundTo3Dec(r_mag) + ","
+                + roundTo3Dec(r_err) + ","
+                + roundTo3Dec(i_mag) + ","
+                + roundTo3Dec(i_err) + ","
+                + roundTo3Dec(z_mag) + ","
+                + roundTo3Dec(z_err) + ","
+                + roundTo3Dec(y_mag) + ","
+                + roundTo3Dec(y_err) + ","
+                + roundTo3Dec(get_g_r()) + ","
+                + roundTo3Dec(get_r_i()) + ","
+                + roundTo3Dec(get_i_z()) + ","
+                + roundTo3Dec(get_z_y());
         return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,ra err (arcsec),dec,dec err (arcsec),pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,detections,delta mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
+        String columnTitles = "dist (arcsec),"
+                + "source id,"
+                + "ra,"
+                + "dec,"
+                + "g Galaxy-Star (0-1),"
+                + "r Galaxy-Star (0-1),"
+                + "i Galaxy-Star (0-1),"
+                + "z Galaxy-Star (0-1),"
+                + "Y Galaxy-Star (0-1),"
+                + "g cautionary flag,"
+                + "r cautionary flag,"
+                + "i cautionary flag,"
+                + "z cautionary flag,"
+                + "Y cautionary flag,"
+                + "u (mag),"
+                + "u err,"
+                + "g (mag),"
+                + "g err,"
+                + "r (mag),"
+                + "r err,"
+                + "i (mag),"
+                + "i err,"
+                + "z (mag),"
+                + "z err,"
+                + "Y (mag),"
+                + "Y err,"
+                + "u-g,"
+                + "g-r,"
+                + "r-i,"
+                + "i-z,"
+                + "z-Y";
         return columnTitles.split(",", -1);
     }
 
@@ -359,19 +353,16 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.g_r_NSC, get_g_r());
-        colors.put(Color.r_i_NSC, get_r_i());
-        colors.put(Color.i_z_NSC, get_i_z());
-        colors.put(Color.z_Y_NSC, get_z_y());
+        colors.put(Color.g_r_DES, get_g_r());
+        colors.put(Color.r_i_DES, get_r_i());
+        colors.put(Color.i_z_DES, get_i_z());
+        colors.put(Color.z_Y_DES, get_z_y());
         return colors;
     }
 
     @Override
     public String getMagnitudes() {
         StringBuilder mags = new StringBuilder();
-        if (u_mag != 0) {
-            mags.append("u=").append(roundTo3DecNZ(u_mag)).append(" ");
-        }
         if (g_mag != 0) {
             mags.append("g=").append(roundTo3DecNZ(g_mag)).append(" ");
         }
@@ -387,20 +378,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (y_mag != 0) {
             mags.append("y=").append(roundTo3DecNZ(y_mag)).append(" ");
         }
-        if (vr_mag != 0) {
-            mags.append("vr=").append(roundTo3DecNZ(vr_mag)).append(" ");
-        }
         return mags.toString();
     }
 
     @Override
     public String getPhotometry() {
         StringBuilder mags = new StringBuilder();
-        if (u_mag != 0) {
-            mags.append(roundTo3DecNZ(u_mag)).append(",").append(roundTo3DecNZ(u_err)).append(",");
-        } else {
-            mags.append(",,");
-        }
         if (g_mag != 0) {
             mags.append(roundTo3DecNZ(g_mag)).append(",").append(roundTo3DecNZ(g_err)).append(",");
         } else {
@@ -526,22 +509,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public double getPmra() {
-        return pmra;
+        return 0;
     }
 
     @Override
     public double getPmdec() {
-        return pmdec;
-    }
-
-    @Override
-    public double getPmraErr() {
-        return pmra_err;
-    }
-
-    @Override
-    public double getPmdecErr() {
-        return pmdec_err;
+        return 0;
     }
 
     @Override
@@ -556,19 +529,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public double getTotalProperMotion() {
-        return calculateTotalProperMotion(pmra, pmdec);
-    }
-
-    public double getMeanEpoch() {
-        return convertMJDToYears(mean_mjd);
-    }
-
-    public int getNdet() {
-        return ndet;
-    }
-
-    public double getDelta_mjd() {
-        return delta_mjd;
+        return 0;
     }
 
     public double getGlon() {
@@ -577,14 +538,6 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     public double getGlat() {
         return glat;
-    }
-
-    public double get_u_g() {
-        if (u_mag == 0 || g_mag == 0) {
-            return 0;
-        } else {
-            return u_mag - g_mag;
-        }
     }
 
     public double get_g_r() {

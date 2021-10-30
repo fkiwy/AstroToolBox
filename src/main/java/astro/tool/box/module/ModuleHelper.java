@@ -14,6 +14,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.DesCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
@@ -178,6 +179,8 @@ public class ModuleHelper {
         catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         TessCatalogEntry tessCatalogEntry = new TessCatalogEntry();
         catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
+        DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
+        catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
 
         return catalogInstances;
     }

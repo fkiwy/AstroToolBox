@@ -17,6 +17,7 @@ public class Overlays {
         GAIAWD,
         TWOMASS,
         TESS,
+        DES,
         SSO,
         PM_GAIA_DR2,
         PM_GAIA_DR3,
@@ -44,6 +45,7 @@ public class Overlays {
     private boolean gaiawd;
     private boolean twomass;
     private boolean tess;
+    private boolean des;
     private boolean sso;
     private boolean pmgaiadr2;
     private boolean pmgaiadr3;
@@ -99,6 +101,9 @@ public class Overlays {
         }
         if (tess) {
             overlays.append(ID.TESS).append(",");
+        }
+        if (des) {
+            overlays.append(ID.DES).append(",");
         }
         if (sso) {
             overlays.append(ID.SSO).append(",");
@@ -181,6 +186,9 @@ public class Overlays {
         }
         if (overlays.contains(ID.TESS.name())) {
             tess = true;
+        }
+        if (overlays.contains(ID.DES.name())) {
+            des = true;
         }
         if (overlays.contains(ID.SSO.name())) {
             sso = true;
@@ -327,6 +335,14 @@ public class Overlays {
 
     public void setTess(boolean tess) {
         this.tess = tess;
+    }
+
+    public boolean isDes() {
+        return des;
+    }
+
+    public void setDes(boolean des) {
+        this.des = des;
     }
 
     public boolean isSso() {
