@@ -2,7 +2,6 @@ package astro.tool.box.container.catalog;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
@@ -18,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +109,22 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     private String[] values;
 
+    private static final Map<Integer, String> OBJECT_TYPES;
+
+    static {
+        OBJECT_TYPES = new HashMap<>();
+        OBJECT_TYPES.put(0, "Unknown:");
+        OBJECT_TYPES.put(1, "Cosmic-ray track");
+        OBJECT_TYPES.put(2, "Defect");
+        OBJECT_TYPES.put(3, "Galaxy");
+        OBJECT_TYPES.put(4, "Ghost");
+        OBJECT_TYPES.put(5, "Known object");
+        OBJECT_TYPES.put(6, "Star");
+        OBJECT_TYPES.put(7, "Satellite/Asteroid/Meteor trail");
+        OBJECT_TYPES.put(8, "No objects in area");
+        OBJECT_TYPES.put(9, "Not a type");
+    }
+
     public SdssCatalogEntry() {
     }
 
@@ -149,7 +165,7 @@ public class SdssCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo7DecNZ(raErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec err (arcsec)", roundTo7DecNZ(decErr), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("object type", getSdssObjectType(type), Alignment.LEFT, getStringComparator(), true));
+        catalogElements.add(new CatalogElement("object type", OBJECT_TYPES.get(type), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("photometry flag", getSdssPhotometryFlag(clean), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("observation date", mjd.format(DATE_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("spectrum pointer", String.valueOf(specObjID), Alignment.LEFT, getStringComparator()));
@@ -213,7 +229,7 @@ public class SdssCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(raErr) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(decErr) + "," + getSdssObjectType(type) + "," + getSdssPhotometryFlag(clean) + "," + mjd.format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + roundTo7Dec(ra) + "," + roundTo7Dec(raErr) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(decErr) + "," + OBJECT_TYPES.get(type) + "," + getSdssPhotometryFlag(clean) + "," + mjd.format(DATE_FORMATTER) + "," + specObjID + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
         return columnValues.split(",", -1);
     }
 
@@ -433,6 +449,10 @@ public class SdssCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
+    }
+
+    public String getSdssPhotometryFlag(int flag) {
+        return flag == 1 ? "clean" : "unclean";
     }
 
     public LocalDateTime getObsDate() {
