@@ -274,13 +274,13 @@ public class SedPanel extends JPanel {
             CatalogEntry retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryFacade, baseFrame);
             if (retrievedEntry == null) {
                 CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
-                seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
                 catWiseEntry.setRa(catalogEntry.getRa());
                 catWiseEntry.setDec(catalogEntry.getDec());
                 catWiseEntry.setSearchRadius(searchRadius);
                 retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryFacade, baseFrame);
                 if (retrievedEntry != null) {
                     catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
+                    seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
                     sedCatalogs.put(Band.W1, CatWiseCatalogEntry.CATALOG_NAME);
                     sedCatalogs.put(Band.W2, CatWiseCatalogEntry.CATALOG_NAME);
                     sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
