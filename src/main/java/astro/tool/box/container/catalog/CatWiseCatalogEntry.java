@@ -545,4 +545,12 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         }
     }
 
+    public double getW1mag() {
+        return W1mag;
+    }
+
+    public double getW2mag() {
+        return W2mag;
+    }
+
 }

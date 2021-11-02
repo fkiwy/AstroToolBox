@@ -8,10 +8,12 @@ import astro.tool.box.container.SedFluxes;
 import astro.tool.box.container.WhiteDwarfEntry;
 import astro.tool.box.container.SedReferences;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
+import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.container.catalog.TwoMassCatalogEntry;
+import astro.tool.box.container.catalog.UnWiseCatalogEntry;
 import astro.tool.box.container.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.facade.CatalogQueryFacade;
@@ -257,6 +259,40 @@ public class WdSedPanel extends JPanel {
         sedPhotometry.put(Band.J, allWiseEntry.getJmag());
         sedPhotometry.put(Band.H, allWiseEntry.getHmag());
         sedPhotometry.put(Band.K, allWiseEntry.getKmag());
+
+        if (allWiseEntry.getSourceId() == null) {
+            UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
+            unWiseEntry.setRa(catalogEntry.getRa());
+            unWiseEntry.setDec(catalogEntry.getDec());
+            unWiseEntry.setSearchRadius(searchRadius);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryFacade, baseFrame);
+            if (retrievedEntry == null) {
+                CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
+                seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
+                catWiseEntry.setRa(catalogEntry.getRa());
+                catWiseEntry.setDec(catalogEntry.getDec());
+                catWiseEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryFacade, baseFrame);
+                if (retrievedEntry != null) {
+                    catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
+                    sedCatalogs.put(Band.W1, CatWiseCatalogEntry.CATALOG_NAME);
+                    sedCatalogs.put(Band.W2, CatWiseCatalogEntry.CATALOG_NAME);
+                    sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
+                    sedReferences.put(Band.W2, new SedReferences(171.79, 4.6));
+                    sedPhotometry.put(Band.W1, catWiseEntry.getW1mag());
+                    sedPhotometry.put(Band.W2, catWiseEntry.getW2mag());
+                }
+            } else {
+                unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
+                seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId()).append(" ");
+                sedCatalogs.put(Band.W1, UnWiseCatalogEntry.CATALOG_NAME);
+                sedCatalogs.put(Band.W2, UnWiseCatalogEntry.CATALOG_NAME);
+                sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
+                sedReferences.put(Band.W2, new SedReferences(171.79, 4.6));
+                sedPhotometry.put(Band.W1, unWiseEntry.getW1mag());
+                sedPhotometry.put(Band.W2, unWiseEntry.getW2mag());
+            }
+        }
 
         useGaiaPhotometry = false;
         if ("0".equals(panStarrsEntry.getSourceId())) {

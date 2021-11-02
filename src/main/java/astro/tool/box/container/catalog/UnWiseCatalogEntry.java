@@ -377,4 +377,12 @@ public class UnWiseCatalogEntry implements CatalogEntry {
         return 0;
     }
 
+    public double getW1mag() {
+        return mag_w1_vg;
+    }
+
+    public double getW2mag() {
+        return mag_w2_vg;
+    }
+
 }
