@@ -68,27 +68,21 @@ public class SedPanel extends JPanel {
     private final CatalogQueryFacade catalogQueryFacade;
     private final JFrame baseFrame;
 
-    private final Map<Band, SedReferences> sedReferences;
-    private final Map<Band, SedFluxes> sedFluxes;
-    private final Map<Band, Double> sedPhotometry;
-    private final Map<Band, String> sedCatalogs;
-
     private final JComboBox spectralTypes;
     private final JCheckBox overplotTemplates;
     private final JTextField photSearchRadius;
     private final JTextField maxTemplateOffset;
 
+    private Map<Band, SedReferences> sedReferences;
+    private Map<Band, SedFluxes> sedFluxes;
+    private Map<Band, Double> sedPhotometry;
+    private Map<Band, String> sedCatalogs;
     private StringBuilder sedDataPoints;
 
     public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
         this.catalogQueryFacade = catalogQueryFacade;
         this.baseFrame = baseFrame;
-
-        sedReferences = new HashMap();
-        sedFluxes = new HashMap();
-        sedPhotometry = new HashMap();
-        sedCatalogs = new HashMap();
 
         photSearchRadius = new JTextField("5", 3);
         maxTemplateOffset = new JTextField("0.2", 3);
@@ -185,7 +179,12 @@ public class SedPanel extends JPanel {
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        sedReferences = new HashMap();
+        sedFluxes = new HashMap();
+        sedPhotometry = new HashMap();
+        sedCatalogs = new HashMap();
         sedDataPoints = new StringBuilder();
+
         double searchRadius = toDouble(photSearchRadius.getText());
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;

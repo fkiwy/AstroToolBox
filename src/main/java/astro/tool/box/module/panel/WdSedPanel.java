@@ -63,32 +63,28 @@ public class WdSedPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
-    List<WhiteDwarfEntry> whiteDwarfEntries;
+    private final List<WhiteDwarfEntry> whiteDwarfEntries;
     private final CatalogQueryFacade catalogQueryFacade;
     private final JFrame baseFrame;
-
-    private final Map<Band, SedReferences> sedReferences;
-    private final Map<Band, SedFluxes> sedFluxes;
-    private final Map<Band, Double> sedPhotometry;
-    private final Map<Band, String> sedCatalogs;
 
     private final JCheckBox overplotTemplates;
     private final JTextField photSearchRadius;
     private final JTextField maxTemplateOffset;
 
+    private Map<Band, SedReferences> sedReferences;
+    private Map<Band, SedFluxes> sedFluxes;
+    private Map<Band, Double> sedPhotometry;
+    private Map<Band, String> sedCatalogs;
     private StringBuilder sedDataPoints;
+
     private boolean useGaiaPhotometry;
 
     public WdSedPanel(CatalogQueryFacade catalogQueryFacade, CatalogEntry catalogEntry, JFrame baseFrame) {
+        whiteDwarfEntries = new ArrayList();
         createWhiteDwarfSedEntries();
 
         this.catalogQueryFacade = catalogQueryFacade;
         this.baseFrame = baseFrame;
-
-        sedReferences = new HashMap();
-        sedFluxes = new HashMap();
-        sedPhotometry = new HashMap();
-        sedCatalogs = new HashMap();
 
         photSearchRadius = new JTextField("5", 3);
         maxTemplateOffset = new JTextField("0.05", 3);
@@ -179,7 +175,12 @@ public class WdSedPanel extends JPanel {
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        sedReferences = new HashMap();
+        sedFluxes = new HashMap();
+        sedPhotometry = new HashMap();
+        sedCatalogs = new HashMap();
         sedDataPoints = new StringBuilder();
+
         double searchRadius = toDouble(photSearchRadius.getText());
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
@@ -371,7 +372,7 @@ public class WdSedPanel extends JPanel {
         XYSeries series = new XYSeries(seriesLabel.toString());
 
         sedDataPoints.append(seriesLabel.toString()).append(LINE_SEP);
-        Band.getSedBands().forEach(band -> {
+        sedBands.forEach(band -> {
             if (sedPhotometry.get(band) != 0) {
                 sedDataPoints
                         .append("(")
@@ -568,7 +569,6 @@ public class WdSedPanel extends JPanel {
     }
 
     public void createWhiteDwarfSedEntries() {
-        whiteDwarfEntries = new ArrayList();
         InputStream input = getClass().getResourceAsStream("/WhiteDwarfLookupTable.csv");
         try (Scanner fileScanner = new Scanner(input)) {
             String headerLine = fileScanner.nextLine();
