@@ -428,6 +428,17 @@ public class AstrometricFunctions {
     }
 
     /**
+     * Calculate parallax error
+     *
+     * @param a (distance)
+     * @param ae (distance error)
+     * @return the parallax error
+     */
+    public static double calculateParallaxError(double a, double ae) {
+        return sqrt(pow((1000 / (a * a)) * ae, 2));
+    }
+
+    /**
      * Calculate distance error
      *
      * @param a (parallax)
