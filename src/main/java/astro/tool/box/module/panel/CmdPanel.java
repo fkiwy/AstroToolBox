@@ -56,8 +56,8 @@ public class CmdPanel extends JPanel {
     private final JCheckBox coolingSequencesH;
     private final JCheckBox coolingSequencesHe;
 
-    private final int min = 2;
-    private final int max = 14;
+    private final int min = 12;
+    private final int max = 24;
 
     private JFreeChart chart;
 
@@ -190,20 +190,6 @@ public class CmdPanel extends JPanel {
         return collection;
     }
 
-    private XYSeriesCollection createSequenceCollection(String sequenceName) {
-        XYSeriesCollection collection = new XYSeriesCollection();
-        XYSeries series = new XYSeries(sequenceName, false);
-        loadCoolingSequence(sequenceName).forEach(triplet -> {
-            double x = g_rpButton.isSelected() ? triplet.getY() : triplet.getZ();
-            double y = triplet.getX();
-            if (x != 0 && y != 0) {
-                series.add(x, y);
-            }
-        });
-        collection.addSeries(series);
-        return collection;
-    }
-
     private XYSeriesCollection createTargetCollection(GaiaCmd catalogEntry) {
         XYSeriesCollection collection = new XYSeriesCollection();
         double xTarget = g_rpButton.isSelected() ? catalogEntry.getG_RP() : catalogEntry.getBP_RP();
@@ -217,12 +203,51 @@ public class CmdPanel extends JPanel {
         return collection;
     }
 
+    private XYSeriesCollection createSpectralTypeCollection(String fileName) {
+        XYSeriesCollection collection = new XYSeriesCollection();
+        XYSeries series = new XYSeries(fileName, false);
+        loadSpectralType(fileName).forEach(triplet -> {
+            double x = g_rpButton.isSelected() ? triplet.getY() : triplet.getZ();
+            double y = triplet.getX();
+            if (x != 0 && y != 0) {
+                series.add(x, y);
+            }
+        });
+        collection.addSeries(series);
+        return collection;
+    }
+
+    private XYSeriesCollection createCoolingSequenceCollection(String fileName) {
+        XYSeriesCollection collection = new XYSeriesCollection();
+        XYSeries series = new XYSeries(fileName, false);
+        loadCoolingSequence(fileName).forEach(triplet -> {
+            double x = g_rpButton.isSelected() ? triplet.getY() : triplet.getZ();
+            double y = triplet.getX();
+            if (x != 0 && y != 0) {
+                series.add(x, y);
+            }
+        });
+        collection.addSeries(series);
+        return collection;
+    }
+
     private void createChart(XYSeriesCollection targetCollection, XYSeriesCollection mainCollection) {
         chart = ChartFactory.createXYLineChart("Gaia Color-Magnitude Diagram", "", "", null);
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
-        plot.setDataset(0, targetCollection);
-        plot.setDataset(1, mainCollection);
+
+        plot.setDataset(0, createSpectralTypeCollection("M0"));
+        plot.setDataset(1, createSpectralTypeCollection("M1"));
+        plot.setDataset(2, createSpectralTypeCollection("M2"));
+        plot.setDataset(3, createSpectralTypeCollection("M3"));
+        plot.setDataset(4, createSpectralTypeCollection("M4"));
+        plot.setDataset(5, createSpectralTypeCollection("M5"));
+        plot.setDataset(6, createSpectralTypeCollection("M6"));
+        plot.setDataset(7, createSpectralTypeCollection("M7"));
+        plot.setDataset(8, createSpectralTypeCollection("M8"));
+        plot.setDataset(9, createSpectralTypeCollection("M9"));
+        plot.setDataset(10, targetCollection);
+        plot.setDataset(11, mainCollection);
 
         NumberAxis xAxis = new NumberAxis(g_rpButton.isSelected() ? "G-RP" : "BP-RP");
         xAxis.setTickUnit(new NumberTickUnit(0.5));
@@ -249,17 +274,28 @@ public class CmdPanel extends JPanel {
         targetRenderer.setSeriesLinesVisible(0, false);
         targetRenderer.setSeriesVisibleInLegend(0, true);
         targetRenderer.setSeriesShape(0, shape);
-        plot.setRenderer(0, targetRenderer);
 
-        size = 0.2;
+        size = 0.5;
         delta = size / 2.0;
         shape = new Ellipse2D.Double(-delta, -delta, size, size);
         XYLineAndShapeRenderer mainRenderer = new XYLineAndShapeRenderer();
-        mainRenderer.setSeriesPaint(0, Color.BLACK);
+        mainRenderer.setSeriesPaint(0, Color.GRAY);
         mainRenderer.setSeriesLinesVisible(0, false);
         mainRenderer.setSeriesVisibleInLegend(0, false);
         mainRenderer.setSeriesShape(0, shape);
-        plot.setRenderer(1, mainRenderer);
+
+        plot.setRenderer(0, getSpectralTypeRenderer(new Color(68, 1, 84)));
+        plot.setRenderer(1, getSpectralTypeRenderer(new Color(72, 40, 120)));
+        plot.setRenderer(2, getSpectralTypeRenderer(new Color(62, 73, 137)));
+        plot.setRenderer(3, getSpectralTypeRenderer(new Color(49, 104, 142)));
+        plot.setRenderer(4, getSpectralTypeRenderer(new Color(38, 130, 142)));
+        plot.setRenderer(5, getSpectralTypeRenderer(new Color(31, 158, 137)));
+        plot.setRenderer(6, getSpectralTypeRenderer(new Color(53, 183, 121)));
+        plot.setRenderer(7, getSpectralTypeRenderer(new Color(110, 206, 88)));
+        plot.setRenderer(8, getSpectralTypeRenderer(new Color(181, 222, 43)));
+        plot.setRenderer(9, getSpectralTypeRenderer(new Color(253, 231, 37)));
+        plot.setRenderer(10, targetRenderer);
+        plot.setRenderer(11, mainRenderer);
 
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinesVisible(true);
@@ -276,13 +312,30 @@ public class CmdPanel extends JPanel {
 
         Font titleFont = new Font(FONT_NAME, Font.PLAIN, 24);
         chart.getTitle().setFont(titleFont);
+
+    }
+
+    private XYLineAndShapeRenderer getSpectralTypeRenderer(Color color) {
+        double size = 1.5;
+        double delta = size / 2.0;
+        Shape seriesShape = new Ellipse2D.Double(-delta, -delta, size, size);
+        size = 10.0;
+        delta = size / 2.0;
+        Shape legendShape = new Ellipse2D.Double(-delta, -delta, size, size);
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setSeriesPaint(0, color);
+        renderer.setSeriesLinesVisible(0, false);
+        renderer.setSeriesVisibleInLegend(0, true);
+        renderer.setSeriesShape(0, seriesShape);
+        renderer.setLegendShape(0, legendShape);
+        return renderer;
     }
 
     private void addCoolingSequencesH(JFreeChart chart) {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
-            String mass = roundTo1Dec((double) i / 10);
-            plot.setDataset(i, createSequenceCollection(String.format("Mass %s H", mass)));
+            String mass = roundTo1Dec((double) (i - 10) / 10);
+            plot.setDataset(i, createCoolingSequenceCollection(String.format("Mass %s H", mass)));
         }
 
         double size = 0.2;
@@ -303,8 +356,8 @@ public class CmdPanel extends JPanel {
     private void addCoolingSequencesHe(JFreeChart chart) {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
-            String mass = roundTo1Dec((double) i / 10);
-            plot.setDataset(i + max - min, createSequenceCollection(String.format("Mass %s He", mass)));
+            String mass = roundTo1Dec((double) (i - 10) / 10);
+            plot.setDataset(i + max - min, createCoolingSequenceCollection(String.format("Mass %s He", mass)));
         }
 
         double size = 0.2;
@@ -362,9 +415,31 @@ public class CmdPanel extends JPanel {
         }
     }
 
-    private List<NumberTriplet> loadCoolingSequence(String sequenceName) {
+    private List<NumberTriplet> loadSpectralType(String fileName) {
+        List<NumberTriplet> spectralType = new ArrayList();
+        InputStream input = getClass().getResourceAsStream("/spectralTypes/" + fileName + ".csv");
+        try (Scanner fileScanner = new Scanner(input)) {
+            String headerLine = fileScanner.nextLine();
+            String[] headers = CSVParser.parseLine(headerLine);
+            Map<String, Integer> columns = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                columns.put(headers[i], i);
+            }
+            while (fileScanner.hasNextLine()) {
+                String bodyLine = fileScanner.nextLine();
+                String[] values = CSVParser.parseLine(bodyLine);
+                double G = toDouble(values[columns.get("M_G")]);
+                //double BP_RP = toDouble(values[columns.get("BP-RP")]);
+                double G_RP = toDouble(values[columns.get("G-RP")]);
+                spectralType.add(new NumberTriplet(G, G_RP, /*BP_RP*/ 0));
+            }
+        }
+        return spectralType;
+    }
+
+    private List<NumberTriplet> loadCoolingSequence(String fileName) {
         List<NumberTriplet> coolingSequence = new ArrayList();
-        InputStream input = getClass().getResourceAsStream("/sequences/" + sequenceName + ".csv");
+        InputStream input = getClass().getResourceAsStream("/coolingSequences/" + fileName + ".csv");
         try (Scanner fileScanner = new Scanner(input)) {
             String headerLine = fileScanner.nextLine();
             String[] headers = CSVParser.parseLine(headerLine);
