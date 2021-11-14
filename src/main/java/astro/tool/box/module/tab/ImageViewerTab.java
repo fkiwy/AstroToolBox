@@ -658,7 +658,7 @@ public class ImageViewerTab {
             preScaleLabel = new JLabel(String.format(PRE_SCALE_LABEL, preContrast));
             mainControlPanel.add(preScaleLabel);
 
-            preScaleSlider = new JSlider(0, 100, PRE_CONTRAST);
+            preScaleSlider = new JSlider(1, 100, PRE_CONTRAST);
             mainControlPanel.add(preScaleSlider);
             preScaleSlider.addChangeListener((ChangeEvent e) -> {
                 preContrast = preScaleSlider.getValue();
@@ -4270,7 +4270,7 @@ public class ImageViewerTab {
         }
     }
 
-    public float[][] blur(float[][] values) {
+    private float[][] blur(float[][] values) {
         float[][] blurredValues = new float[naxis2][naxis1];
         for (int i = 0; i < naxis2; ++i) {
             for (int j = 0; j < naxis1; ++j) {
@@ -4319,13 +4319,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value, int minValue, int maxValue) {
-        float contrast = preContrast;
-        if (contrast > 9) {
-            contrast -= 9;
-        } else {
-            contrast = contrast / 10;
-        }
-        value *= contrast;
+        value *= preContrast * 0.1;
         value = normalize(value, minValue, maxValue);
         value = stretch(value);
         value = contrast(value);
