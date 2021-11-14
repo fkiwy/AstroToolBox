@@ -56,8 +56,8 @@ public class CmdPanel extends JPanel {
     private final JCheckBox coolingSequencesH;
     private final JCheckBox coolingSequencesHe;
 
-    private final int min = 12;
-    private final int max = 24;
+    private final int min = 2;
+    private final int max = 14;
 
     private JFreeChart chart;
 
@@ -236,18 +236,18 @@ public class CmdPanel extends JPanel {
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
 
-        plot.setDataset(0, createSpectralTypeCollection("M0"));
-        plot.setDataset(1, createSpectralTypeCollection("M1"));
-        plot.setDataset(2, createSpectralTypeCollection("M2"));
-        plot.setDataset(3, createSpectralTypeCollection("M3"));
-        plot.setDataset(4, createSpectralTypeCollection("M4"));
-        plot.setDataset(5, createSpectralTypeCollection("M5"));
-        plot.setDataset(6, createSpectralTypeCollection("M6"));
-        plot.setDataset(7, createSpectralTypeCollection("M7"));
-        plot.setDataset(8, createSpectralTypeCollection("M8"));
-        plot.setDataset(9, createSpectralTypeCollection("M9"));
-        plot.setDataset(10, targetCollection);
-        plot.setDataset(11, mainCollection);
+        plot.setDataset(30, createSpectralTypeCollection("M0"));
+        plot.setDataset(31, createSpectralTypeCollection("M1"));
+        plot.setDataset(32, createSpectralTypeCollection("M2"));
+        plot.setDataset(33, createSpectralTypeCollection("M3"));
+        plot.setDataset(34, createSpectralTypeCollection("M4"));
+        plot.setDataset(35, createSpectralTypeCollection("M5"));
+        plot.setDataset(36, createSpectralTypeCollection("M6"));
+        plot.setDataset(37, createSpectralTypeCollection("M7"));
+        plot.setDataset(38, createSpectralTypeCollection("M8"));
+        plot.setDataset(39, createSpectralTypeCollection("M9"));
+        plot.setDataset(40, targetCollection);
+        plot.setDataset(41, mainCollection);
 
         NumberAxis xAxis = new NumberAxis(g_rpButton.isSelected() ? "G-RP" : "BP-RP");
         xAxis.setTickUnit(new NumberTickUnit(0.5));
@@ -284,18 +284,18 @@ public class CmdPanel extends JPanel {
         mainRenderer.setSeriesVisibleInLegend(0, false);
         mainRenderer.setSeriesShape(0, shape);
 
-        plot.setRenderer(0, getSpectralTypeRenderer(new Color(68, 1, 84)));
-        plot.setRenderer(1, getSpectralTypeRenderer(new Color(72, 40, 120)));
-        plot.setRenderer(2, getSpectralTypeRenderer(new Color(62, 73, 137)));
-        plot.setRenderer(3, getSpectralTypeRenderer(new Color(49, 104, 142)));
-        plot.setRenderer(4, getSpectralTypeRenderer(new Color(38, 130, 142)));
-        plot.setRenderer(5, getSpectralTypeRenderer(new Color(31, 158, 137)));
-        plot.setRenderer(6, getSpectralTypeRenderer(new Color(53, 183, 121)));
-        plot.setRenderer(7, getSpectralTypeRenderer(new Color(110, 206, 88)));
-        plot.setRenderer(8, getSpectralTypeRenderer(new Color(181, 222, 43)));
-        plot.setRenderer(9, getSpectralTypeRenderer(new Color(253, 231, 37)));
-        plot.setRenderer(10, targetRenderer);
-        plot.setRenderer(11, mainRenderer);
+        plot.setRenderer(30, getSpectralTypeRenderer(new Color(68, 1, 84)));
+        plot.setRenderer(31, getSpectralTypeRenderer(new Color(72, 40, 120)));
+        plot.setRenderer(32, getSpectralTypeRenderer(new Color(62, 73, 137)));
+        plot.setRenderer(33, getSpectralTypeRenderer(new Color(49, 104, 142)));
+        plot.setRenderer(34, getSpectralTypeRenderer(new Color(38, 130, 142)));
+        plot.setRenderer(35, getSpectralTypeRenderer(new Color(31, 158, 137)));
+        plot.setRenderer(36, getSpectralTypeRenderer(new Color(53, 183, 121)));
+        plot.setRenderer(37, getSpectralTypeRenderer(new Color(110, 206, 88)));
+        plot.setRenderer(38, getSpectralTypeRenderer(new Color(181, 222, 43)));
+        plot.setRenderer(39, getSpectralTypeRenderer(new Color(253, 231, 37)));
+        plot.setRenderer(40, targetRenderer);
+        plot.setRenderer(41, mainRenderer);
 
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinesVisible(true);
@@ -334,7 +334,7 @@ public class CmdPanel extends JPanel {
     private void addCoolingSequencesH(JFreeChart chart) {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
-            String mass = roundTo1Dec((double) (i - 10) / 10);
+            String mass = roundTo1Dec((double) i / 10);
             plot.setDataset(i, createCoolingSequenceCollection(String.format("Mass %s H", mass)));
         }
 
@@ -356,7 +356,7 @@ public class CmdPanel extends JPanel {
     private void addCoolingSequencesHe(JFreeChart chart) {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
-            String mass = roundTo1Dec((double) (i - 10) / 10);
+            String mass = roundTo1Dec((double) i / 10);
             plot.setDataset(i + max - min, createCoolingSequenceCollection(String.format("Mass %s He", mass)));
         }
 
