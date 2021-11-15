@@ -39,6 +39,8 @@ import javax.swing.JRadioButton;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.block.BlockBorder;
@@ -60,6 +62,23 @@ public class CmdPanel extends JPanel {
     private final int max = 14;
 
     private JFreeChart chart;
+
+    private static List<Color> COLORS = new ArrayList();
+
+    static {
+        COLORS.add(new Color(68, 1, 84));
+        COLORS.add(new Color(72, 40, 120));
+        COLORS.add(new Color(62, 73, 137));
+        COLORS.add(new Color(49, 104, 142));
+        COLORS.add(new Color(38, 130, 142));
+        COLORS.add(new Color(31, 158, 137));
+        COLORS.add(new Color(53, 183, 121));
+        COLORS.add(new Color(110, 206, 88));
+        COLORS.add(new Color(181, 222, 43));
+        COLORS.add(new Color(253, 231, 37));
+    }
+
+    private String targetLabel;
 
     public CmdPanel(GaiaCmd catalogEntry) throws IOException {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -195,8 +214,9 @@ public class CmdPanel extends JPanel {
         double xTarget = g_rpButton.isSelected() ? catalogEntry.getG_RP() : catalogEntry.getBP_RP();
         double yTarget = catalogEntry.getAbsoluteGmag();
         if (xTarget != 0 && yTarget != 0) {
-            XYSeries seriesTarget = new XYSeries(catalogEntry.getCatalogName() + " " + catalogEntry.getSourceId()
-                    + ": G=" + roundTo3DecNZ(yTarget) + " " + (g_rpButton.isSelected() ? "G-RP" : "BP-RP") + "=" + roundTo3DecNZ(xTarget));
+            targetLabel = catalogEntry.getCatalogName() + " " + catalogEntry.getSourceId()
+                    + ": G=" + roundTo3DecNZ(yTarget) + " " + (g_rpButton.isSelected() ? "G-RP" : "BP-RP") + "=" + roundTo3DecNZ(xTarget);
+            XYSeries seriesTarget = new XYSeries(targetLabel);
             seriesTarget.add(xTarget, yTarget);
             collection.addSeries(seriesTarget);
         }
@@ -236,17 +256,10 @@ public class CmdPanel extends JPanel {
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
 
-        plot.setDataset(30, createSpectralTypeCollection("M0"));
-        plot.setDataset(31, createSpectralTypeCollection("M1"));
-        plot.setDataset(32, createSpectralTypeCollection("M2"));
-        plot.setDataset(33, createSpectralTypeCollection("M3"));
-        plot.setDataset(34, createSpectralTypeCollection("M4"));
-        plot.setDataset(35, createSpectralTypeCollection("M5"));
-        plot.setDataset(36, createSpectralTypeCollection("M6"));
-        plot.setDataset(37, createSpectralTypeCollection("M7"));
-        plot.setDataset(38, createSpectralTypeCollection("M8"));
-        plot.setDataset(39, createSpectralTypeCollection("M9"));
-        plot.setDataset(40, targetCollection);
+        plot.setDataset(30, targetCollection);
+        for (int i = 0, j = 31; i < 10; i++) {
+            plot.setDataset(j++, createSpectralTypeCollection("M" + i));
+        }
         plot.setDataset(41, mainCollection);
 
         NumberAxis xAxis = new NumberAxis(g_rpButton.isSelected() ? "G-RP" : "BP-RP");
@@ -284,18 +297,22 @@ public class CmdPanel extends JPanel {
         mainRenderer.setSeriesVisibleInLegend(0, false);
         mainRenderer.setSeriesShape(0, shape);
 
-        plot.setRenderer(30, getSpectralTypeRenderer(new Color(68, 1, 84)));
-        plot.setRenderer(31, getSpectralTypeRenderer(new Color(72, 40, 120)));
-        plot.setRenderer(32, getSpectralTypeRenderer(new Color(62, 73, 137)));
-        plot.setRenderer(33, getSpectralTypeRenderer(new Color(49, 104, 142)));
-        plot.setRenderer(34, getSpectralTypeRenderer(new Color(38, 130, 142)));
-        plot.setRenderer(35, getSpectralTypeRenderer(new Color(31, 158, 137)));
-        plot.setRenderer(36, getSpectralTypeRenderer(new Color(53, 183, 121)));
-        plot.setRenderer(37, getSpectralTypeRenderer(new Color(110, 206, 88)));
-        plot.setRenderer(38, getSpectralTypeRenderer(new Color(181, 222, 43)));
-        plot.setRenderer(39, getSpectralTypeRenderer(new Color(253, 231, 37)));
-        plot.setRenderer(40, targetRenderer);
+        plot.setRenderer(30, targetRenderer);
+        int j = 31;
+        for (Color color : COLORS) {
+            plot.setRenderer(j++, getSpectralTypeRenderer(color));
+        }
         plot.setRenderer(41, mainRenderer);
+
+        LegendItemCollection itemCollection = new LegendItemCollection();
+        int i = 0;
+        for (Color color : COLORS) {
+            itemCollection.add(new LegendItem("M" + i++, color));
+        }
+        if (targetLabel != null) {
+            itemCollection.add(new LegendItem(targetLabel, Color.RED));
+        }
+        plot.setFixedLegendItems(itemCollection);
 
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinesVisible(true);
@@ -319,15 +336,15 @@ public class CmdPanel extends JPanel {
         double size = 1.5;
         double delta = size / 2.0;
         Shape seriesShape = new Ellipse2D.Double(-delta, -delta, size, size);
-        size = 10.0;
-        delta = size / 2.0;
-        Shape legendShape = new Ellipse2D.Double(-delta, -delta, size, size);
+        //size = 10.0;
+        //delta = size / 2.0;
+        //Shape legendShape = new Ellipse2D.Double(-delta, -delta, size, size);
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, color);
         renderer.setSeriesLinesVisible(0, false);
-        renderer.setSeriesVisibleInLegend(0, true);
+        renderer.setSeriesVisibleInLegend(0, false); // Replaced by custom legend due to badly sorted legend items
         renderer.setSeriesShape(0, seriesShape);
-        renderer.setLegendShape(0, legendShape);
+        //renderer.setLegendShape(0, legendShape);
         return renderer;
     }
 
@@ -429,9 +446,9 @@ public class CmdPanel extends JPanel {
                 String bodyLine = fileScanner.nextLine();
                 String[] values = CSVParser.parseLine(bodyLine);
                 double G = toDouble(values[columns.get("M_G")]);
-                //double BP_RP = toDouble(values[columns.get("BP-RP")]);
                 double G_RP = toDouble(values[columns.get("G-RP")]);
-                spectralType.add(new NumberTriplet(G, G_RP, /*BP_RP*/ 0));
+                double BP_RP = toDouble(values[columns.get("BP-RP")]);
+                spectralType.add(new NumberTriplet(G, G_RP, BP_RP));
             }
         }
         return spectralType;
