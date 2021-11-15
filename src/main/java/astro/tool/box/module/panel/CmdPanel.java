@@ -281,21 +281,21 @@ public class CmdPanel extends JPanel {
 
         double size = 10.0;
         double delta = size / 2.0;
-        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
+        Shape targetShape = new Ellipse2D.Double(-delta, -delta, size, size);
         XYLineAndShapeRenderer targetRenderer = new XYLineAndShapeRenderer();
         targetRenderer.setSeriesPaint(0, Color.RED);
         targetRenderer.setSeriesLinesVisible(0, false);
         targetRenderer.setSeriesVisibleInLegend(0, true);
-        targetRenderer.setSeriesShape(0, shape);
+        targetRenderer.setSeriesShape(0, targetShape);
 
         size = 0.5;
         delta = size / 2.0;
-        shape = new Ellipse2D.Double(-delta, -delta, size, size);
+        Shape mainShape = new Ellipse2D.Double(-delta, -delta, size, size);
         XYLineAndShapeRenderer mainRenderer = new XYLineAndShapeRenderer();
         mainRenderer.setSeriesPaint(0, Color.GRAY);
         mainRenderer.setSeriesLinesVisible(0, false);
         mainRenderer.setSeriesVisibleInLegend(0, false);
-        mainRenderer.setSeriesShape(0, shape);
+        mainRenderer.setSeriesShape(0, mainShape);
 
         plot.setRenderer(30, targetRenderer);
         int j = 31;
@@ -307,10 +307,14 @@ public class CmdPanel extends JPanel {
         LegendItemCollection itemCollection = new LegendItemCollection();
         int i = 0;
         for (Color color : COLORS) {
-            itemCollection.add(new LegendItem("M" + i++, color));
+            LegendItem item = new LegendItem("M" + i++, color);
+            item.setShape(targetShape);
+            itemCollection.add(item);
         }
         if (targetLabel != null) {
-            itemCollection.add(new LegendItem(targetLabel, Color.RED));
+            LegendItem item = new LegendItem(targetLabel, Color.RED);
+            item.setShape(targetShape);
+            itemCollection.add(item);
         }
         plot.setFixedLegendItems(itemCollection);
 
