@@ -1,6 +1,7 @@
 package astro.tool.box.container.catalog;
 
 import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -100,7 +101,7 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
+    public Map<Band, NumberPair> getBands() {
         return new LinkedHashMap<>();
     }
 

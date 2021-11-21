@@ -17,25 +17,30 @@ public class DistanceLookupResult {
     // Distance
     private final double distance;
 
-    public DistanceLookupResult(Band colorKey, double colorValue, String spt, double distance) {
-        this.bandKey = colorKey;
-        this.bandValue = colorValue;
+    // Distance error
+    private final double distanceError;
+
+    public DistanceLookupResult(Band bandKey, double bandValue, String spt, double distance, double distanceError) {
+        this.bandKey = bandKey;
+        this.bandValue = bandValue;
         this.spt = spt;
         this.distance = distance;
+        this.distanceError = distanceError;
     }
 
     @Override
     public String toString() {
-        return "DistanceLookupResult{" + "bandKey=" + bandKey + ", bandValue=" + bandValue + ", spt=" + spt + ", distance=" + distance + '}';
+        return "DistanceLookupResult{" + "bandKey=" + bandKey + ", bandValue=" + bandValue + ", spt=" + spt + ", distance=" + distance + ", distanceError=" + distanceError + '}';
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 17 * hash + Objects.hashCode(this.bandKey);
-        hash = 17 * hash + (int) (Double.doubleToLongBits(this.bandValue) ^ (Double.doubleToLongBits(this.bandValue) >>> 32));
-        hash = 17 * hash + Objects.hashCode(this.spt);
-        hash = 17 * hash + (int) (Double.doubleToLongBits(this.distance) ^ (Double.doubleToLongBits(this.distance) >>> 32));
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.bandKey);
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.bandValue) ^ (Double.doubleToLongBits(this.bandValue) >>> 32));
+        hash = 47 * hash + Objects.hashCode(this.spt);
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.distance) ^ (Double.doubleToLongBits(this.distance) >>> 32));
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.distanceError) ^ (Double.doubleToLongBits(this.distanceError) >>> 32));
         return hash;
     }
 
@@ -55,6 +60,9 @@ public class DistanceLookupResult {
             return false;
         }
         if (Double.doubleToLongBits(this.distance) != Double.doubleToLongBits(other.distance)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.distanceError) != Double.doubleToLongBits(other.distanceError)) {
             return false;
         }
         if (!Objects.equals(this.spt, other.spt)) {
@@ -77,6 +85,10 @@ public class DistanceLookupResult {
 
     public double getDistance() {
         return distance;
+    }
+
+    public double getDistanceError() {
+        return distanceError;
     }
 
 }

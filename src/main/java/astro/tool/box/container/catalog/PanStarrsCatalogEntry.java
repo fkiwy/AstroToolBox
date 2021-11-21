@@ -255,13 +255,13 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.g, gMeanPSFMag);
-        bands.put(Band.r, rMeanPSFMag);
-        bands.put(Band.i, iMeanPSFMag);
-        bands.put(Band.z, zMeanPSFMag);
-        bands.put(Band.y, yMeanPSFMag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.g, new NumberPair(gMeanPSFMag, gMeanPSFMagErr));
+        bands.put(Band.r, new NumberPair(rMeanPSFMag, rMeanPSFMagErr));
+        bands.put(Band.i, new NumberPair(iMeanPSFMag, iMeanPSFMagErr));
+        bands.put(Band.z, new NumberPair(zMeanPSFMag, zMeanPSFMagErr));
+        bands.put(Band.y, new NumberPair(yMeanPSFMag, yMeanPSFMagErr));
         return bands;
     }
 

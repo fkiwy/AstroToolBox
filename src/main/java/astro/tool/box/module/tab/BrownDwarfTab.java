@@ -231,7 +231,7 @@ public class BrownDwarfTab {
         List<String[]> resultRows = new ArrayList<>();
         results.forEach(entry -> {
             String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
-            String resutValues = roundTo3Dec(entry.getDistance()) + "," + matchedBand;
+            String resutValues = roundTo3Dec(entry.getDistance()) + "±" + roundTo3Dec(entry.getDistanceError()) + "," + matchedBand;
             resultRows.add(resutValues.split(",", -1));
         });
 

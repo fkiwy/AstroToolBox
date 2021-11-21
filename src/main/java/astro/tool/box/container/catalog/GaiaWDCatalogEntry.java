@@ -289,11 +289,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.G, Gmag);
-        bands.put(Band.BP, BPmag);
-        bands.put(Band.RP, RPmag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.G, new NumberPair(Gmag, 0));
+        bands.put(Band.BP, new NumberPair(BPmag, 0));
+        bands.put(Band.RP, new NumberPair(RPmag, 0));
         return bands;
     }
 

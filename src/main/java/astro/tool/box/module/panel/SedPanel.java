@@ -439,7 +439,7 @@ public class SedPanel extends JPanel {
     private void addReferenceSeds(Map<Band, Double> sedPhotometry, XYSeriesCollection collection) {
         for (SpectralTypeLookup lookupEntry : brownDwarfLookupEntries) {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
-            Map<Band, Double> bands = entry.getBands();
+            Map<Band, Double> bands = entry.getMagnitudes();
             String spectralType = entry.getSpt();
             if ("M0M1M2M3M4M5".contains(spectralType)) {
                 continue;
@@ -596,7 +596,7 @@ public class SedPanel extends JPanel {
         for (SpectralTypeLookup lookupEntry : brownDwarfLookupEntries) {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
             if (entry.getSpt().equals(spt)) {
-                absoluteMagnitudes = entry.getBands();
+                absoluteMagnitudes = entry.getMagnitudes();
             }
         }
         return absoluteMagnitudes;

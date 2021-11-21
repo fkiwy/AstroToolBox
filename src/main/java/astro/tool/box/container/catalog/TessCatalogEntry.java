@@ -589,29 +589,29 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
         if (W1_err != 0) {
-            bands.put(Band.W1, W1mag);
+            bands.put(Band.W1, new NumberPair(W1mag, W1_err));
         }
         if (W2_err != 0) {
-            bands.put(Band.W2, W2mag);
+            bands.put(Band.W2, new NumberPair(W2mag, W2_err));
         }
         if (W3_err != 0) {
-            bands.put(Band.W3, W3mag);
+            bands.put(Band.W3, new NumberPair(W3mag, W3_err));
         }
         if (J_err != 0) {
-            bands.put(Band.J, Jmag);
+            bands.put(Band.J, new NumberPair(Jmag, J_err));
         }
         if (H_err != 0) {
-            bands.put(Band.H, Hmag);
+            bands.put(Band.H, new NumberPair(Hmag, H_err));
         }
         if (K_err != 0) {
-            bands.put(Band.K, Kmag);
+            bands.put(Band.K, new NumberPair(Kmag, K_err));
         }
-        bands.put(Band.G, Gmag);
-        bands.put(Band.BP, BPmag);
-        bands.put(Band.RP, RPmag);
+        bands.put(Band.G, new NumberPair(Gmag, 0));
+        bands.put(Band.BP, new NumberPair(BPmag, 0));
+        bands.put(Band.RP, new NumberPair(RPmag, 0));
         return bands;
     }
 

@@ -81,14 +81,13 @@ public class PhotometricFunctions {
     }
 
     /**
-     * Calculate distance from apparent and absolute magnitudes using distance
-     * modulus
+     * Calculate photometric distance modulus
      *
      * @param apparent
      * @param absolute
-     * @return the distance in parsecs
+     * @return the photometric distance in parsecs
      */
-    public static double calculateDistanceFromMagnitudes(double apparent, double absolute) {
+    public static double calculatePhotometricDistance(double apparent, double absolute) {
         return pow(10, (apparent - absolute + 5) / 5);
     }
 
@@ -198,6 +197,22 @@ public class PhotometricFunctions {
      */
     public static double convertMagnitudeToFluxDensity(double magnitude, double zeroPointFlux, double wavelength) {
         return convertMagnitudeToFlux(magnitude, zeroPointFlux, wavelength) / wavelength;
+    }
+
+    /**
+     * Calculate photometric distance error
+     *
+     * @param a (apparent magnitude)
+     * @param ae (apparent magnitude error)
+     * @param b (absolute magnitude)
+     * @param be (absolute magnitude error)
+     * @return the photometric distance error
+     */
+    public static double calculatePhotometricDistanceError(double a, double ae, double b, double be) {
+        return sqrt(
+                pow(((log(10) * pow(10, ((a - b + 5) / 5))) / 5) * ae, 2)
+                + pow(((pow(10, ((a - b + 5) / 5)) * -1) / 5) * log(10) * be, 2)
+        );
     }
 
 }
