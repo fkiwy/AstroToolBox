@@ -1,5 +1,15 @@
 ## Release notes
 
+### AstroToolBox v2.3.7
+- Added NEO7 unWISE coadds to the Image Viewer
+- Added the Montreal cooling sequences for white dwarfs to the Gaia CMD
+- Added a button to create a PDF of the SED and CMD charts
+- Added white dwarf SED panel
+- Added a bouton to the SED panel to show the chart data points
+- Added CatWISE, unWISE and DES DR1 photometry to the SED feature
+- Added DES DR1 catalog
+- Added spectral types M0-M9 to the CMD panel
+
 ### AstroToolBox v2.3.6
 - Fixed a bug in the Coordinates converter tool (decimal to sexagesimal conversion)
 - Added colors for M0-M5 spectral types to the Brown dwarf lookup table
