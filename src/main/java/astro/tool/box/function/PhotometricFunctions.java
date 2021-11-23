@@ -215,4 +215,15 @@ public class PhotometricFunctions {
         );
     }
 
+    /**
+     * Calculate mean photometric distance error
+     *
+     * @param ae (min. photometric distance error)
+     * @param be (max. photometric distance error
+     * @return the mean photometric distance error
+     */
+    public static double calculateMeanPhotometricDistanceError(double ae, double be) {
+        return sqrt(pow(0.5 * ae, 2) + pow(0.5 * be, 2));
+    }
+
 }

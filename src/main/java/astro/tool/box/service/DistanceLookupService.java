@@ -44,10 +44,18 @@ public class DistanceLookupService {
             if (absoluteMagnitude == 0) {
                 continue;
             }
+            double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
             double apparentMagnitudeError = entry.getValue().getY();
             double absoluteMagnitudeError = absoluteMagnitudesErrors.get(entry.getKey());
-            double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
-            double distanceError = calculatePhotometricDistanceError(apparentMagnitude, apparentMagnitudeError, absoluteMagnitude, absoluteMagnitudeError);
+            //if (absoluteMagnitudeError == 0) {
+            //    absoluteMagnitudeError = absoluteMagnitude * 0.03;
+            //}
+            double distanceError;
+            if (absoluteMagnitudeError == 0) {
+                distanceError = 0;
+            } else {
+                distanceError = calculatePhotometricDistanceError(apparentMagnitude, apparentMagnitudeError, absoluteMagnitude, absoluteMagnitudeError);
+            }
             results.add(new DistanceLookupResult(entry.getKey(), apparentMagnitude, spt, distance, distanceError));
         }
         return results;

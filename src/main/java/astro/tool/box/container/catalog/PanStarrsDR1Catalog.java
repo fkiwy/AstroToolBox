@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
-public class PanStarrsCatalogEntry implements CatalogEntry {
+public class PanStarrsDR1Catalog implements CatalogEntry {
 
     public static final String CATALOG_NAME = "Pan-STARRS";
 
@@ -118,10 +118,10 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         QUALITY_FLAGS.put(128, "poor-quality stack object (no more than 1 good or suspect measurement)");
     }
 
-    public PanStarrsCatalogEntry() {
+    public PanStarrsDR1Catalog() {
     }
 
-    public PanStarrsCatalogEntry(Map<String, Integer> columns, String[] values) {
+    public PanStarrsDR1Catalog(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
         objID = toLong(values[columns.get("objID")]);
@@ -146,7 +146,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public CatalogEntry copy() {
-        return new PanStarrsCatalogEntry(columns, values);
+        return new PanStarrsDR1Catalog(columns, values);
     }
 
     @Override
@@ -203,13 +203,13 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final PanStarrsCatalogEntry other = (PanStarrsCatalogEntry) obj;
+        final PanStarrsDR1Catalog other = (PanStarrsDR1Catalog) obj;
         return this.objID == other.objID;
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new PanStarrsCatalogEntry(columns, values);
+        return new PanStarrsDR1Catalog(columns, values);
     }
 
     @Override
