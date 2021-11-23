@@ -222,11 +222,11 @@ public class VhsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.J, j_ap3);
-        bands.put(Band.H, h_ap3);
-        bands.put(Band.K, ks_ap3);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.J, new NumberPair(j_ap3, j_ap3_err));
+        bands.put(Band.H, new NumberPair(h_ap3, h_ap3_err));
+        bands.put(Band.K, new NumberPair(ks_ap3, ks_ap3_err));
         return bands;
     }
 

@@ -244,7 +244,7 @@ public class SsoCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
+    public Map<Band, NumberPair> getBands() {
         return new LinkedHashMap<>();
     }
 

@@ -21,9 +21,10 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.facade.CatalogQueryFacade;
-import astro.tool.box.module.CmdPanel;
-import astro.tool.box.module.ReferencesPanel;
-import astro.tool.box.module.SedPanel;
+import astro.tool.box.module.panel.CmdPanel;
+import astro.tool.box.module.panel.ReferencesPanel;
+import astro.tool.box.module.panel.SedPanel;
+import astro.tool.box.module.panel.WdSedPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import java.awt.BorderLayout;
@@ -501,7 +502,7 @@ public class CatalogQueryTab {
             container.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            container.setPreferredSize(new Dimension(525, BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(540, BOTTOM_PANEL_HEIGHT));
             container.add(new JScrollPane(spectralTypeTable));
 
             JPanel remarks = new JPanel(new GridLayout(0, 1));
@@ -616,15 +617,30 @@ public class CatalogQueryTab {
                 fillTygoForm(catalogEntry, catalogQueryFacade, baseFrame);
             });
 
-            JButton createSedButton = new JButton("Create SED");
-            buttonPanel.add(createSedButton);
+            JButton createSedButton = new JButton("SED");
+            collectPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
-                sedFrame.setSize(800, 700);
+                sedFrame.setSize(1000, 900);
+                sedFrame.setLocation(0, 0);
+                sedFrame.setAlwaysOnTop(false);
+                sedFrame.setResizable(false);
+                sedFrame.setVisible(true);
+            });
+
+            JButton createWdSedButton = new JButton("WD SED");
+            collectPanel.add(createWdSedButton);
+            createWdSedButton.addActionListener((ActionEvent evt) -> {
+                JFrame sedFrame = new JFrame();
+                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                sedFrame.setIconImage(getToolBoxImage());
+                sedFrame.setTitle("WD SED");
+                sedFrame.add(new WdSedPanel(catalogQueryFacade, catalogEntry, baseFrame));
+                sedFrame.setSize(1000, 900);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(false);
@@ -632,8 +648,8 @@ public class CatalogQueryTab {
             });
 
             if (catalogEntry instanceof GaiaCmd) {
-                JButton createCmdButton = new JButton("Create CMD");
-                collectPanel.add(createCmdButton);
+                JButton createCmdButton = new JButton("CMD");
+                buttonPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
                     try {
                         JFrame sedFrame = new JFrame();
@@ -641,7 +657,7 @@ public class CatalogQueryTab {
                         sedFrame.setIconImage(getToolBoxImage());
                         sedFrame.setTitle("CMD");
                         sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                        sedFrame.setSize(800, 700);
+                        sedFrame.setSize(1000, 900);
                         sedFrame.setLocation(0, 0);
                         sedFrame.setAlwaysOnTop(false);
                         sedFrame.setResizable(false);

@@ -215,10 +215,10 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.W1, mag_w1_vg);
-        bands.put(Band.W2, mag_w2_vg);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, new NumberPair(mag_w1_vg, 0));
+        bands.put(Band.W2, new NumberPair(mag_w2_vg, 0));
         return bands;
     }
 
@@ -375,6 +375,14 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     @Override
     public double getTotalProperMotion() {
         return 0;
+    }
+
+    public double getW1mag() {
+        return mag_w1_vg;
+    }
+
+    public double getW2mag() {
+        return mag_w2_vg;
     }
 
 }

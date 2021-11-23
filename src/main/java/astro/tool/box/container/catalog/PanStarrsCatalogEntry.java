@@ -9,7 +9,6 @@ import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ServiceProviderUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
@@ -21,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
@@ -28,9 +28,6 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     // Unique object identifier
     private long objID;
-
-    // IAU name for this object
-    private String objName;
 
     // Subset of objInfoFlag denoting whether this object is real or a likely false positive
     private int qualityFlag;
@@ -101,13 +98,25 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     // Most likely spectral type
     private String spt;
 
-    private List<StringPair> qualityFlags;
-
     private final List<CatalogElement> catalogElements = new ArrayList<>();
 
     private Map<String, Integer> columns;
 
     private String[] values;
+
+    private static final Map<Integer, String> QUALITY_FLAGS;
+
+    static {
+        QUALITY_FLAGS = new HashMap<>();
+        QUALITY_FLAGS.put(1, "extended in Pan-STARRS data");
+        QUALITY_FLAGS.put(2, "extended in external data (2MASS)");
+        QUALITY_FLAGS.put(4, "good-quality measurement in Pan-STARRS data");
+        QUALITY_FLAGS.put(8, "good-quality measurement in external data (2MASS)");
+        QUALITY_FLAGS.put(16, "good-quality object in the stack");
+        QUALITY_FLAGS.put(32, "the primary stack measurements are the best");
+        QUALITY_FLAGS.put(64, "suspect object in the stack (no more than 1 good measurement)");
+        QUALITY_FLAGS.put(128, "poor-quality stack object (no more than 1 good or suspect measurement)");
+    }
 
     public PanStarrsCatalogEntry() {
     }
@@ -115,31 +124,24 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     public PanStarrsCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i].equals("-999.0")) {
-                values[i] = "0";
-            }
-        }
-        objName = values[columns.get("objName")];
         objID = toLong(values[columns.get("objID")]);
-        qualityFlag = toInteger(values[columns.get("qualityFlag")]);
-        raMean = toDouble(values[columns.get("raMean")]);
-        decMean = toDouble(values[columns.get("decMean")]);
-        raMeanErr = toDouble(values[columns.get("raMeanErr")]);
-        decMeanErr = toDouble(values[columns.get("decMeanErr")]);
-        epochMean = convertMJDToDateTime(new BigDecimal(values[columns.get("epochMean")]));
-        nDetections = toInteger(values[columns.get("nDetections")]);
-        gMeanPSFMag = toDouble(values[columns.get("gMeanPSFMag")]);
-        gMeanPSFMagErr = toDouble(values[columns.get("gMeanPSFMagErr")]);
-        rMeanPSFMag = toDouble(values[columns.get("rMeanPSFMag")]);
-        rMeanPSFMagErr = toDouble(values[columns.get("rMeanPSFMagErr")]);
-        iMeanPSFMag = toDouble(values[columns.get("iMeanPSFMag")]);
-        iMeanPSFMagErr = toDouble(values[columns.get("iMeanPSFMagErr")]);
-        zMeanPSFMag = toDouble(values[columns.get("zMeanPSFMag")]);
-        zMeanPSFMagErr = toDouble(values[columns.get("zMeanPSFMagErr")]);
-        yMeanPSFMag = toDouble(values[columns.get("yMeanPSFMag")]);
-        yMeanPSFMagErr = toDouble(values[columns.get("yMeanPSFMagErr")]);
-        qualityFlags = getPanStarrsQualityFlags(qualityFlag);
+        qualityFlag = toInteger(values[columns.get("Qual")]);
+        raMean = toDouble(values[columns.get("RAJ2000")]);
+        decMean = toDouble(values[columns.get("DEJ2000")]);
+        raMeanErr = toDouble(values[columns.get("e_RAJ2000")]);
+        decMeanErr = toDouble(values[columns.get("e_DEJ2000")]);
+        epochMean = convertMJDToDateTime(new BigDecimal(values[columns.get("Epoch")]));
+        nDetections = toInteger(values[columns.get("Nd")]);
+        gMeanPSFMag = toDouble(values[columns.get("gmag")]);
+        gMeanPSFMagErr = toDouble(values[columns.get("e_gmag")]);
+        rMeanPSFMag = toDouble(values[columns.get("rmag")]);
+        rMeanPSFMagErr = toDouble(values[columns.get("e_rmag")]);
+        iMeanPSFMag = toDouble(values[columns.get("imag")]);
+        iMeanPSFMagErr = toDouble(values[columns.get("e_imag")]);
+        zMeanPSFMag = toDouble(values[columns.get("zmag")]);
+        zMeanPSFMagErr = toDouble(values[columns.get("e_zmag")]);
+        yMeanPSFMag = toDouble(values[columns.get("ymag")]);
+        yMeanPSFMagErr = toDouble(values[columns.get("e_ymag")]);
     }
 
     @Override
@@ -151,8 +153,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(objID), Alignment.LEFT, getLongComparator()));
-        catalogElements.add(new CatalogElement("object name", objName, Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTip_qualityFlag()));
+        catalogElements.add(new CatalogElement("quality flag sum", String.valueOf(qualityFlag), Alignment.RIGHT, getIntegerComparator(), createToolTipQualityFlag()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(raMean), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo4DecNZ(raMeanErr), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(decMean), Alignment.LEFT, getDoubleComparator()));
@@ -175,10 +176,10 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("z-y", roundTo3DecNZ(get_z_y()), Alignment.RIGHT, getDoubleComparator(), false, true));
     }
 
-    public String createToolTip_qualityFlag() {
+    public String createToolTipQualityFlag() {
         StringBuilder toolTip = new StringBuilder();
         toolTip.append("<b>Quality flag details:</b>");
-        qualityFlags.forEach((flag) -> {
+        getFlagLabels(qualityFlag, QUALITY_FLAGS).forEach((flag) -> {
             toolTip.append(LINE_BREAK).append(flag.getS1()).append(" = ").append(flag.getS2());
         });
         return toolTip.toString();
@@ -223,18 +224,18 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createPanStarrsUrl(raMean, decMean, searchRadius / DEG_ARCSEC);
+        return createVizieRUrl(raMean, decMean, searchRadius / DEG_ARCSEC, "II/349/ps1", "RAJ2000", "DEJ2000");
     }
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + objName + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + epochMean.format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objID + "," + qualityFlag + "," + roundTo7Dec(raMean) + "," + roundTo4Dec(raMeanErr) + "," + roundTo7Dec(decMean) + "," + roundTo4Dec(decMeanErr) + "," + epochMean.format(DATE_TIME_FORMATTER) + "," + nDetections + "," + roundTo3Dec(gMeanPSFMag) + "," + roundTo3Dec(gMeanPSFMagErr) + "," + roundTo3Dec(rMeanPSFMag) + "," + roundTo3Dec(rMeanPSFMagErr) + "," + roundTo3Dec(iMeanPSFMag) + "," + roundTo3Dec(iMeanPSFMagErr) + "," + roundTo3Dec(zMeanPSFMag) + "," + roundTo3Dec(zMeanPSFMagErr) + "," + roundTo3Dec(yMeanPSFMag) + "," + roundTo3Dec(yMeanPSFMagErr) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y());
         return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,object name,quality flag,ra,ra err (arcsec),dec,dec err (arcsec),mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
+        String columnTitles = "dist (arcsec),source id,quality flag,ra,ra err (arcsec),dec,dec err (arcsec),mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
         return columnTitles.split(",", -1);
     }
 
@@ -244,13 +245,13 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.g, gMeanPSFMag);
-        bands.put(Band.r, rMeanPSFMag);
-        bands.put(Band.i, iMeanPSFMag);
-        bands.put(Band.z, zMeanPSFMag);
-        bands.put(Band.y, yMeanPSFMag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.g, new NumberPair(gMeanPSFMag, gMeanPSFMagErr));
+        bands.put(Band.r, new NumberPair(rMeanPSFMag, rMeanPSFMagErr));
+        bands.put(Band.i, new NumberPair(iMeanPSFMag, iMeanPSFMagErr));
+        bands.put(Band.z, new NumberPair(zMeanPSFMag, zMeanPSFMagErr));
+        bands.put(Band.y, new NumberPair(yMeanPSFMag, yMeanPSFMagErr));
         return bands;
     }
 

@@ -291,12 +291,12 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.J, Jmag);
-        bands.put(Band.H, Hmag);
-        bands.put(Band.K, Kmag);
-        bands.put(Band.G, Gmag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.J, new NumberPair(Jmag, 0));
+        bands.put(Band.H, new NumberPair(Hmag, 0));
+        bands.put(Band.K, new NumberPair(Kmag, 0));
+        bands.put(Band.G, new NumberPair(Gmag, 0));
         return bands;
     }
 

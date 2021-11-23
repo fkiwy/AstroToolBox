@@ -11,29 +11,32 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
     // Spectral type
     private final String spt;
 
-    // Bands
-    private final Map<Band, Double> bands;
+    // Absolute magnitudes
+    private final Map<Band, Double> magnitudes;
+
+    // Errors on absolute magnitudes
+    private final Map<Band, Double> errors;
 
     // Colors
     private final Map<Color, Double> colors;
 
     public BrownDwarfLookupEntry(String[] values) {
         spt = values[0];
-        bands = new HashMap<>();
-        bands.put(Band.g, toDouble(values[1]));
-        bands.put(Band.r, toDouble(values[2]));
-        bands.put(Band.i, toDouble(values[3]));
-        bands.put(Band.z, toDouble(values[4]));
-        bands.put(Band.y, toDouble(values[5]));
-        bands.put(Band.J, toDouble(values[6]));
-        bands.put(Band.H, toDouble(values[7]));
-        bands.put(Band.K, toDouble(values[8]));
-        bands.put(Band.W1, toDouble(values[9]));
-        bands.put(Band.W2, toDouble(values[10]));
-        bands.put(Band.W3, toDouble(values[11]));
-        bands.put(Band.BP, toDouble(values[36]));
-        bands.put(Band.G, toDouble(values[37]));
-        bands.put(Band.RP, toDouble(values[38]));
+        magnitudes = new HashMap<>();
+        magnitudes.put(Band.g, toDouble(values[1]));
+        magnitudes.put(Band.r, toDouble(values[2]));
+        magnitudes.put(Band.i, toDouble(values[3]));
+        magnitudes.put(Band.z, toDouble(values[4]));
+        magnitudes.put(Band.y, toDouble(values[5]));
+        magnitudes.put(Band.J, toDouble(values[6]));
+        magnitudes.put(Band.H, toDouble(values[7]));
+        magnitudes.put(Band.K, toDouble(values[8]));
+        magnitudes.put(Band.W1, toDouble(values[9]));
+        magnitudes.put(Band.W2, toDouble(values[10]));
+        magnitudes.put(Band.W3, toDouble(values[11]));
+        magnitudes.put(Band.BP, toDouble(values[36]));
+        magnitudes.put(Band.G, toDouble(values[37]));
+        magnitudes.put(Band.RP, toDouble(values[38]));
         colors = new HashMap<>();
         colors.put(Color.g_r_PS1, toDouble(values[12]));
         colors.put(Color.r_i_PS1, toDouble(values[13]));
@@ -47,6 +50,8 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.J_K, toDouble(values[25]));
         colors.put(Color.i_z_NSC, toDouble(values[27]));
         //colors.put(Color.z_Y_NSC, toDouble(values[28]));
+        colors.put(Color.i_z_DES, toDouble(values[27]));
+        //colors.put(Color.z_Y_DES, toDouble(values[28]));
         colors.put(Color.i_z, toDouble(values[30]));
         colors.put(Color.G_RP, toDouble(values[33]));
         colors.put(Color.BP_RP, toDouble(values[34]));
@@ -54,11 +59,26 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.M_BP, toDouble(values[36]));
         colors.put(Color.M_G, toDouble(values[37]));
         colors.put(Color.M_RP, toDouble(values[38]));
+        errors = new HashMap<>();
+        errors.put(Band.g, toDouble(values[39]));
+        errors.put(Band.r, toDouble(values[40]));
+        errors.put(Band.i, toDouble(values[41]));
+        errors.put(Band.z, toDouble(values[42]));
+        errors.put(Band.y, toDouble(values[43]));
+        errors.put(Band.J, toDouble(values[44]));
+        errors.put(Band.H, toDouble(values[45]));
+        errors.put(Band.K, toDouble(values[46]));
+        errors.put(Band.W1, toDouble(values[47]));
+        errors.put(Band.W2, toDouble(values[48]));
+        errors.put(Band.W3, toDouble(values[49]));
+        errors.put(Band.BP, toDouble(values[50]));
+        errors.put(Band.G, toDouble(values[51]));
+        errors.put(Band.RP, toDouble(values[52]));
     }
 
     @Override
     public String toString() {
-        return "BrownDwarfLookupEntry{" + "spt=" + spt + ", bands=" + bands + ", colors=" + colors + '}';
+        return "BrownDwarfLookupEntry{" + "spt=" + spt + ", bands=" + magnitudes + ", errors=" + errors + ", colors=" + colors + '}';
     }
 
     @Override
@@ -91,8 +111,12 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         return "";
     }
 
-    public Map<Band, Double> getBands() {
-        return bands;
+    public Map<Band, Double> getMagnitudes() {
+        return magnitudes;
+    }
+
+    public Map<Band, Double> getErrors() {
+        return errors;
     }
 
     @Override

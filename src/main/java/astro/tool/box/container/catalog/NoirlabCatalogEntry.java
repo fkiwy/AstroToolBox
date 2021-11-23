@@ -105,6 +105,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     // Error in VR band
     private double vr_err;
 
+    // Galactic longitude
+    private double glon;
+
+    // Galactic latitude
+    private double glat;
+
     // Right ascension used for distance calculation
     private double targetRa;
 
@@ -165,6 +171,8 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         y_err = getFixedErr(toDouble(values[columns.get("yerr")]));
         vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
         vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
+        glon = toDouble(values[columns.get("glon")]);
+        glat = toDouble(values[columns.get("glat")]);
     }
 
     private String getFixedPM(String pm) {
@@ -297,7 +305,9 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         addRow(query, "       ymag,");
         addRow(query, "       yerr,");
         addRow(query, "       vrmag,");
-        addRow(query, "       vrerr");
+        addRow(query, "       vrerr,");
+        addRow(query, "       glat,");
+        addRow(query, "       glon");
         addRow(query, "FROM   nsc_dr2.object");
         addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
         return query.toString();
@@ -336,8 +346,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        return new LinkedHashMap<>();
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.g, new NumberPair(g_mag, g_err));
+        bands.put(Band.r, new NumberPair(r_mag, r_err));
+        bands.put(Band.i, new NumberPair(i_mag, i_err));
+        bands.put(Band.z, new NumberPair(z_mag, z_err));
+        //bands.put(Band.y, new NumberPair(y_mag, y_err));
+        return bands;
     }
 
     @Override
@@ -553,6 +569,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     public double getDelta_mjd() {
         return delta_mjd;
+    }
+
+    public double getGlon() {
+        return glon;
+    }
+
+    public double getGlat() {
+        return glat;
     }
 
     public double get_u_g() {

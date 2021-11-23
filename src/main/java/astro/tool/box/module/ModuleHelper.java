@@ -14,6 +14,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.DesCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.container.catalog.GaiaWDCatalogEntry;
@@ -39,12 +40,18 @@ import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -54,9 +61,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -110,13 +119,14 @@ import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import org.jfree.chart.JFreeChart;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.3.6";
+    public static final String PGM_VERSION = "2.3.7";
     public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
     public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
 
@@ -169,6 +179,8 @@ public class ModuleHelper {
         catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         TessCatalogEntry tessCatalogEntry = new TessCatalogEntry();
         catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
+        DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
+        catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
 
         return catalogInstances;
     }
@@ -198,6 +210,10 @@ public class ModuleHelper {
             }
         });
         return hyperlink;
+    }
+
+    public static void showScrollableDialog(JFrame baseFrame, String title, String message) {
+        JOptionPane.showMessageDialog(baseFrame, createMessagePanel(message), title, JOptionPane.PLAIN_MESSAGE);
     }
 
     public static void showInfoDialog(JFrame baseFrame, String message) {
@@ -245,7 +261,7 @@ public class ModuleHelper {
         textPane.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
-        scrollPane.setPreferredSize(new Dimension(700, 300));
+        scrollPane.setPreferredSize(new Dimension(700, 500));
         return scrollPane;
     }
 
@@ -888,7 +904,13 @@ public class ModuleHelper {
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, String layer) {
         BufferedImage bi;
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.27&layer=%s&size=%d&bands=%s", targetRa, targetDec, layer, size * 4, band);
+        if (band == null) {
+            band = "";
+        }
+        if (!band.isEmpty()) {
+            band = "&bands=" + band;
+        }
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s", targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -952,6 +974,21 @@ public class ModuleHelper {
                 sequencer.generateFromBI(imageSet, file, 500 / 10, true);
             }
         }
+    }
+
+    public static void createPDF(JFreeChart chart, File tmpFile, int width, int height) throws Exception {
+        Rectangle pagesize = new Rectangle(width, height);
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document(pagesize, 50, 50, 50, 50);
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
+        document.open();
+        PdfContentByte contentByte = writer.getDirectContent();
+        PdfTemplate template = contentByte.createTemplate(width, height);
+        Graphics2D graphics = new PdfGraphics2D(contentByte, width, height);
+        Rectangle2D rectangle = new Rectangle2D.Double(0, 0, width, height);
+        chart.draw(graphics, rectangle);
+        graphics.dispose();
+        contentByte.addTemplate(template, 0, 0);
+        document.close();
     }
 
     public static void addUndoManager(JTextArea textArea) {

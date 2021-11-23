@@ -1,5 +1,6 @@
 package astro.tool.box.service;
 
+import astro.tool.box.container.NumberPair;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.container.lookup.DistanceLookupResult;
@@ -17,23 +18,25 @@ public class DistanceLookupService {
         this.entries = entries;
     }
 
-    public List<DistanceLookupResult> lookup(String spt, Map<Band, Double> apparentMagnitudes) {
+    public List<DistanceLookupResult> lookup(String spt, Map<Band, NumberPair> apparentMagnitudes) {
         List<DistanceLookupResult> results = new ArrayList<>();
         if (spt == null || apparentMagnitudes.isEmpty()) {
             return results;
         }
         Map<Band, Double> absoluteMagnitudes = null;
+        Map<Band, Double> absoluteMagnitudesErrors = null;
         for (SpectralTypeLookup lookupEntry : entries) {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
             if (entry.getSpt().equals(spt)) {
-                absoluteMagnitudes = entry.getBands();
+                absoluteMagnitudes = entry.getMagnitudes();
+                absoluteMagnitudesErrors = entry.getErrors();
             }
         }
         if (absoluteMagnitudes == null) {
             return results;
         }
-        for (Map.Entry<Band, Double> entry : apparentMagnitudes.entrySet()) {
-            double apparentMagnitude = entry.getValue();
+        for (Map.Entry<Band, NumberPair> entry : apparentMagnitudes.entrySet()) {
+            double apparentMagnitude = entry.getValue().getX();
             if (apparentMagnitude == 0) {
                 continue;
             }
@@ -41,8 +44,19 @@ public class DistanceLookupService {
             if (absoluteMagnitude == 0) {
                 continue;
             }
-            double distance = calculateDistanceFromMagnitudes(apparentMagnitude, absoluteMagnitude);
-            results.add(new DistanceLookupResult(entry.getKey(), entry.getValue(), spt, distance));
+            double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
+            double apparentMagnitudeError = entry.getValue().getY();
+            double absoluteMagnitudeError = absoluteMagnitudesErrors.get(entry.getKey());
+            //if (absoluteMagnitudeError == 0) {
+            //    absoluteMagnitudeError = absoluteMagnitude * 0.03;
+            //}
+            double distanceError;
+            if (absoluteMagnitudeError == 0) {
+                distanceError = 0;
+            } else {
+                distanceError = calculatePhotometricDistanceError(apparentMagnitude, apparentMagnitudeError, absoluteMagnitude, absoluteMagnitudeError);
+            }
+            results.add(new DistanceLookupResult(entry.getKey(), apparentMagnitude, spt, distance, distanceError));
         }
         return results;
     }

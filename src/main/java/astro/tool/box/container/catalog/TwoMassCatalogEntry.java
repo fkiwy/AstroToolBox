@@ -338,11 +338,17 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.J, Jmag);
-        bands.put(Band.H, Hmag);
-        bands.put(Band.K, Kmag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        if (J_err != 0) {
+            bands.put(Band.J, new NumberPair(Jmag, J_err));
+        }
+        if (H_err != 0) {
+            bands.put(Band.H, new NumberPair(Hmag, H_err));
+        }
+        if (K_err != 0) {
+            bands.put(Band.K, new NumberPair(Kmag, K_err));
+        }
         return bands;
     }
 

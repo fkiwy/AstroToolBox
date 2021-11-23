@@ -2,11 +2,11 @@ package astro.tool.box.container;
 
 public class NumberTriplet {
 
-    private final double x;
+    private double x;
 
-    private final double y;
+    private double y;
 
-    private final double z;
+    private double z;
 
     public NumberTriplet(double x, double y, double z) {
         this.x = x;
@@ -59,6 +59,18 @@ public class NumberTriplet {
 
     public double getZ() {
         return z;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
     }
 
 }

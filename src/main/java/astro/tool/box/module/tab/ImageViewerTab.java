@@ -20,6 +20,7 @@ import astro.tool.box.container.catalog.Artifact;
 import astro.tool.box.container.catalog.CatWiseCatalogEntry;
 import astro.tool.box.container.catalog.CatWiseRejectEntry;
 import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.container.catalog.DesCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCatalogEntry;
 import astro.tool.box.container.catalog.GaiaCmd;
 import astro.tool.box.container.catalog.GaiaDR3CatalogEntry;
@@ -48,14 +49,15 @@ import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.facade.CatalogQueryFacade;
 import astro.tool.box.module.Application;
-import astro.tool.box.module.CmdPanel;
+import astro.tool.box.module.panel.CmdPanel;
 import astro.tool.box.module.FlipbookComponent;
 import astro.tool.box.module.GifSequencer;
 import astro.tool.box.module.ImageContainer;
 import astro.tool.box.module.InfoSheet;
-import astro.tool.box.module.ReferencesPanel;
-import astro.tool.box.module.SedPanel;
+import astro.tool.box.module.panel.ReferencesPanel;
+import astro.tool.box.module.panel.SedPanel;
 import astro.tool.box.module.TextPrompt;
+import astro.tool.box.module.panel.WdSedPanel;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
 import astro.tool.box.module.shape.Cross;
@@ -187,9 +189,8 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
-    public static final double PIXEL_SCALE_DECAM = 0.27;
     public static final int NUMBER_OF_EPOCHS = 8;
-    public static final int NUMBER_OF_UNWISE_EPOCHS = 7;
+    public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
@@ -245,6 +246,7 @@ public class ImageViewerTab {
     private List<CatalogEntry> noirlabEntries;
     private List<CatalogEntry> noirlabTpmEntries;
     private List<CatalogEntry> tessEntries;
+    private List<CatalogEntry> desEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -282,6 +284,7 @@ public class ImageViewerTab {
     private JCheckBox gaiaWDOverlay;
     private JCheckBox noirlabOverlay;
     private JCheckBox tessOverlay;
+    private JCheckBox desOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -384,6 +387,8 @@ public class ImageViewerTab {
     private int highContrastSaved = highContrast;
     private int lowContrastSaved = lowContrast;
     private int preContrastSaved = preContrast;
+
+    private int ioExceptionCount;
 
     private double sensitivity;
 
@@ -653,7 +658,7 @@ public class ImageViewerTab {
             preScaleLabel = new JLabel(String.format(PRE_SCALE_LABEL, preContrast));
             mainControlPanel.add(preScaleLabel);
 
-            preScaleSlider = new JSlider(0, 100, PRE_CONTRAST);
+            preScaleSlider = new JSlider(1, 100, PRE_CONTRAST);
             mainControlPanel.add(preScaleSlider);
             preScaleSlider.addChangeListener((ChangeEvent e) -> {
                 preContrast = preScaleSlider.getValue();
@@ -1003,12 +1008,20 @@ public class ImageViewerTab {
             });
             overlayPanel.add(tessOverlay);
 
-            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlaysControlPanel.add(overlayPanel);
+            desOverlay = new JCheckBox(html("D<u>E</u>S DR1"), overlays.isDes());
+            desOverlay.setForeground(JColor.SAND.val);
+            desOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(desOverlay);
+            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlaysControlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -1185,6 +1198,7 @@ public class ImageViewerTab {
                 overlays.setGaiawd(gaiaWDOverlay.isSelected());
                 overlays.setTwomass(twoMassOverlay.isSelected());
                 overlays.setTess(tessOverlay.isSelected());
+                overlays.setDes(desOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
                 overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
@@ -2036,6 +2050,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(tessEntries, mouseX, mouseY, JColor.LILAC.val);
                                         count++;
                                     }
+                                    if (desOverlay.isSelected() && desEntries != null) {
+                                        showCatalogInfo(desEntries, mouseX, mouseY, JColor.SAND.val);
+                                        count++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         count++;
@@ -2295,6 +2313,13 @@ public class ImageViewerTab {
                     tessOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForAltE = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    desOverlay.setSelected(!desOverlay.isSelected());
+                    desOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
             Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2360,6 +2385,9 @@ public class ImageViewerTab {
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.ALT_MASK), "keyActionForAltT");
             aMap.put("keyActionForAltT", keyActionForAltT);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK), "keyActionForAltE");
+            aMap.put("keyActionForAltE", keyActionForAltE);
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
             aMap.put("keyActionForAltW", keyActionForAltW);
@@ -2430,6 +2458,9 @@ public class ImageViewerTab {
             count++;
         }
         if (tessOverlay.isSelected()) {
+            count++;
+        }
+        if (desOverlay.isSelected()) {
             count++;
         }
         if (gaiaProperMotion.isSelected()) {
@@ -2591,7 +2622,7 @@ public class ImageViewerTab {
                 errorMessages.add("Invalid coordinates!");
             }
             try {
-                size = (int) round(toInteger(sizeField.getText()) / pixelScale);
+                size = (int) ceil(toInteger(sizeField.getText()) / pixelScale);
                 if (decalsCutouts.isSelected()) {
                     if (size > 1111) {
                         errorMessages.add("Field of view must not be larger than 300 arcsec.");
@@ -2766,6 +2797,7 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
+                ioExceptionCount = 0;
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
@@ -3293,6 +3325,7 @@ public class ImageViewerTab {
         noirlabEntries = null;
         noirlabTpmEntries = null;
         tessEntries = null;
+        desEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -3573,6 +3606,18 @@ public class ImageViewerTab {
                 drawOverlay(image, tessEntries, JColor.LILAC.val, Shape.CIRCLE);
             }
         }
+        if (desOverlay.isSelected()) {
+            if (desEntries == null) {
+                desEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    desEntries = fetchCatalogEntries(new DesCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, desEntries, JColor.SAND.val, Shape.CIRCLE);
+            }
+        }
         if (ssoOverlay.isSelected()) {
             if (ssoEntries == null) {
                 ssoEntries = Collections.emptyList();
@@ -3691,7 +3736,8 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    if (requestedEpochs.size() == 4) {
+                    ioExceptionCount++;
+                    if (requestedEpochs.size() == 4 && ioExceptionCount < NUMBER_OF_EPOCHS) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -4026,8 +4072,8 @@ public class ImageViewerTab {
                 selectedBand = "";
                 break;
         }
-        String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=0.27&layer=%s&size=%d&bands=%s";
-        String imageUrl = String.format(baseUrl, targetRa, targetDec, survey, size, selectedBand);
+        String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
+        String imageUrl = String.format(baseUrl, targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
@@ -4224,7 +4270,7 @@ public class ImageViewerTab {
         }
     }
 
-    public float[][] blur(float[][] values) {
+    private float[][] blur(float[][] values) {
         float[][] blurredValues = new float[naxis2][naxis1];
         for (int i = 0; i < naxis2; ++i) {
             for (int j = 0; j < naxis1; ++j) {
@@ -4273,13 +4319,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value, int minValue, int maxValue) {
-        float contrast = preContrast;
-        if (contrast > 9) {
-            contrast -= 9;
-        } else {
-            contrast = contrast / 10;
-        }
-        value *= contrast;
+        value *= preContrast * 0.1;
         value = normalize(value, minValue, maxValue);
         value = stretch(value);
         value = contrast(value);
@@ -4475,7 +4515,11 @@ public class ImageViewerTab {
 
     private BufferedImage fetchDecalsImage(double targetRa, double targetDec, double size) {
         try {
-            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=0.25&layer=ls-dr9&size=%d&bands=grz", targetRa, targetDec, (int) round(size * pixelScale * 4));
+            int imageSize = (int) round(size * pixelScale * 4);
+            if (imageSize > 3000) {
+                return null;
+            }
+            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=ls-dr9&size=%d&bands=grz", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
@@ -5645,7 +5689,7 @@ public class ImageViewerTab {
 
             });
 
-            JButton createSedButton = new JButton("Create SED");
+            JButton createSedButton = new JButton("SED");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 JFrame sedFrame = new JFrame();
@@ -5653,7 +5697,22 @@ public class ImageViewerTab {
                 sedFrame.setIconImage(getToolBoxImage());
                 sedFrame.setTitle("SED");
                 sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryFacade, catalogEntry, baseFrame));
-                sedFrame.setSize(800, 700);
+                sedFrame.setSize(1000, 900);
+                sedFrame.setLocation(0, 0);
+                sedFrame.setAlwaysOnTop(false);
+                sedFrame.setResizable(false);
+                sedFrame.setVisible(true);
+            });
+
+            JButton createWdSedButton = new JButton("WD SED");
+            buttonPanel.add(createWdSedButton);
+            createWdSedButton.addActionListener((ActionEvent evt) -> {
+                JFrame sedFrame = new JFrame();
+                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+                sedFrame.setIconImage(getToolBoxImage());
+                sedFrame.setTitle("WD SED");
+                sedFrame.add(new WdSedPanel(catalogQueryFacade, catalogEntry, baseFrame));
+                sedFrame.setSize(1000, 900);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(false);
@@ -5661,7 +5720,7 @@ public class ImageViewerTab {
             });
 
             if (catalogEntry instanceof GaiaCmd) {
-                JButton createCmdButton = new JButton("Create CMD");
+                JButton createCmdButton = new JButton("CMD");
                 buttonPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
                     try {
@@ -5670,7 +5729,7 @@ public class ImageViewerTab {
                         sedFrame.setIconImage(getToolBoxImage());
                         sedFrame.setTitle("CMD");
                         sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                        sedFrame.setSize(800, 700);
+                        sedFrame.setSize(1000, 900);
                         sedFrame.setLocation(0, 0);
                         sedFrame.setAlwaysOnTop(false);
                         sedFrame.setResizable(false);
@@ -5897,6 +5956,10 @@ public class ImageViewerTab {
 
     public JCheckBox getTessOverlay() {
         return tessOverlay;
+    }
+
+    public JCheckBox getDesOverlay() {
+        return desOverlay;
     }
 
     public Timer getTimer() {

@@ -92,6 +92,24 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     // Stellar mass resulting from the adopted mass-radius relation
     private double massHe;
 
+    // Uncertainty on teff H
+    private double teffH_err;
+
+    // Uncertainty on log g H
+    private double loggH_err;
+
+    // Uncertainty on mass H
+    private double massH_err;
+
+    // Uncertainty on teff He
+    private double teffHe_err;
+
+    // Uncertainty on log g He
+    private double loggHe_err;
+
+    // Uncertainty on mass He
+    private double massHe_err;
+
     // Right ascension used for distance calculation
     private double targetRa;
 
@@ -147,6 +165,12 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         teffHe = toDouble(values[columns.get("TeffHe")]);
         loggHe = toDouble(values[columns.get("loggHe")]);
         massHe = toDouble(values[columns.get("MassHe")]);
+        teffH_err = toDouble(values[columns.get("e_TeffH")]);
+        loggH_err = toDouble(values[columns.get("e_loggH")]);
+        massH_err = toDouble(values[columns.get("e_MassH")]);
+        teffHe_err = toDouble(values[columns.get("e_TeffHe")]);
+        loggHe_err = toDouble(values[columns.get("e_loggHe")]);
+        massHe_err = toDouble(values[columns.get("e_MassHe")]);
     }
 
     @Override
@@ -265,11 +289,11 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.G, Gmag);
-        bands.put(Band.BP, BPmag);
-        bands.put(Band.RP, RPmag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.G, new NumberPair(Gmag, 0));
+        bands.put(Band.BP, new NumberPair(BPmag, 0));
+        bands.put(Band.RP, new NumberPair(RPmag, 0));
         return bands;
     }
 
@@ -524,12 +548,12 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         }
     }
 
-    public double getTeffH() {
-        return teffH;
+    public double getPwd() {
+        return pwd;
     }
 
-    public double getTeffHe() {
-        return teffHe;
+    public double getTeffH() {
+        return teffH;
     }
 
     public double getLoggH() {
@@ -540,12 +564,40 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         return massH;
     }
 
+    public double getTeffHe() {
+        return teffHe;
+    }
+
     public double getLoggHe() {
         return loggHe;
     }
 
     public double getMassHe() {
         return massHe;
+    }
+
+    public double getTeffH_err() {
+        return teffH_err;
+    }
+
+    public double getLoggH_err() {
+        return loggH_err;
+    }
+
+    public double getMassH_err() {
+        return massH_err;
+    }
+
+    public double getTeffHe_err() {
+        return teffHe_err;
+    }
+
+    public double getLoggHe_err() {
+        return loggHe_err;
+    }
+
+    public double getMassHe_err() {
+        return massHe_err;
     }
 
 }

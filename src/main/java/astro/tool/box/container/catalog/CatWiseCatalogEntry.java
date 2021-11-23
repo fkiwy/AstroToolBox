@@ -343,10 +343,10 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public Map<Band, Double> getBands() {
-        Map<Band, Double> bands = new LinkedHashMap<>();
-        bands.put(Band.W1, W1mag);
-        bands.put(Band.W2, W2mag);
+    public Map<Band, NumberPair> getBands() {
+        Map<Band, NumberPair> bands = new LinkedHashMap<>();
+        bands.put(Band.W1, new NumberPair(W1mag, W1_err));
+        bands.put(Band.W2, new NumberPair(W2mag, W2_err));
         return bands;
     }
 
@@ -543,6 +543,14 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         } else {
             return W1mag - W2mag;
         }
+    }
+
+    public double getW1mag() {
+        return W1mag;
+    }
+
+    public double getW2mag() {
+        return W2mag;
     }
 
 }

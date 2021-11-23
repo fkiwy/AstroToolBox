@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 public class AstrometricFunctions {
 
+    public static double VELOCITY_C = 4.74;
+
     /**
      * Calculate angular distance between 2 stars
      *
@@ -167,7 +169,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromParallax(double pmRA, double pmDE, double parallax) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * calculateParallacticDistance(parallax);
+        return VELOCITY_C * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * calculateParallacticDistance(parallax);
     }
 
     /**
@@ -179,7 +181,7 @@ public class AstrometricFunctions {
      * @return the transverse velocity (km/s)
      */
     public static double calculateTransverseVelocityFromDistance(double pmRA, double pmDE, double distance) {
-        return 4.74 * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * distance;
+        return VELOCITY_C * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * distance;
     }
 
     /**
@@ -306,6 +308,26 @@ public class AstrometricFunctions {
         );
     }
 
+    public static NumberPair convertToGalacticCoords(double raEquatorial, double decEquatorial) {
+        double ra = toRadians(raEquatorial);
+        double dec = toRadians(decEquatorial);
+
+        // From https://www.atnf.csiro.au/people/Tobias.Westmeier/tools_coords.php
+        //double ra0 = toRadians(192.8595);
+        //double dec0 = toRadians(27.1284);
+        //double glon0 = toRadians(122.932);
+        //
+        // From https://en.wikipedia.org/wiki/Astronomical_coordinate_systems
+        double ra0 = toRadians(192.85948);
+        double dec0 = toRadians(27.12825);
+        double glon0 = toRadians(122.93192);
+
+        double glon = glon0 - atan((cos(dec) * sin(ra - ra0)) / (sin(dec) * cos(dec0) - cos(dec) * sin(dec0) * cos(ra - ra0)));
+        double glat = asin(sin(dec) * sin(dec0) + cos(dec) * cos(dec0) * cos(ra - ra0));
+
+        return new NumberPair(toDegrees(glon), toDegrees(glat));
+    }
+
     /**
      * Convert a modified Julian date to local date and time
      *
@@ -405,12 +427,69 @@ public class AstrometricFunctions {
         return denominator < 0 ? pa + 180 : (pa < 0 ? pa + 360 : pa);
     }
 
-    /*public static double calculateBearingAngle(NumberPair fromCoords, NumberPair toCoords) {
-        double ra = toRadians(toCoords.getX());
-        double dec = toRadians(toCoords.getY());
-        double ra0 = toRadians(fromCoords.getX());
-        double dec0 = toRadians(fromCoords.getY());
-        double pa = atan2(cos(dec0) * sin(ra0 - ra), cos(dec) * sin(dec) - sin(dec) * cos(dec0) * cos(ra0 - ra));
-        return (toDegrees(pa) + 180) % 360;
-    }*/
+    /**
+     * Calculate parallax error
+     *
+     * @param a (distance)
+     * @param ae (distance error)
+     * @return the parallax error
+     */
+    public static double calculateParallaxError(double a, double ae) {
+        return sqrt(pow((1000 / (a * a)) * ae, 2));
+    }
+
+    /**
+     * Calculate distance error
+     *
+     * @param a (parallax)
+     * @param ae (parallax error)
+     * @return the distance error
+     */
+    public static double calculateDistanceError(double a, double ae) {
+        return sqrt(pow((1000 / (a * a)) * ae, 2));
+    }
+
+    /**
+     * Calculate total proper motion error
+     *
+     * @param a (pmra)
+     * @param ae (pmra error)
+     * @param b (pmdec)
+     * @param be (pmdec error)
+     * @return the total proper motion error
+     */
+    public static double calculateTotalProperMotionError(double a, double ae, double b, double be) {
+        return sqrt(pow(((a * 2) / (2 * sqrt(a * a + b * b))) * ae, 2) + pow(((b * 2) / (2 * sqrt(a * a + b * b))) * be, 2));
+    }
+
+    /**
+     * Calculate tangential velocity error
+     *
+     * @param a (parallax)
+     * @param ae (parallax error)
+     * @param b (pmra)
+     * @param be (pmra error)
+     * @param c (pmdec)
+     * @param ce (pmdec error)
+     * @return the tangential velocity error
+     */
+    public static double calculateTangentialVelocityError(double a, double ae, double b, double be, double c, double ce) {
+        return sqrt(
+                pow(((VELOCITY_C / (a * a)) * sqrt(b * b + c * c)) * ae, 2)
+                + pow((((VELOCITY_C * 2) / a) / (2 * sqrt(b * b + c * c))) * b * be, 2)
+                + pow((((VELOCITY_C * 2) / a) / (2 * sqrt(b * b + c * c))) * c * ce, 2)
+        );
+    }
+
+    /**
+     * Calculate addition/subtraction error
+     *
+     * @param ae (error value)
+     * @param be (error Value)
+     * @return the addition/subtraction error
+     */
+    public static double calculateAddSubError(double ae, double be) {
+        return sqrt(ae * ae + be * be);
+    }
+
 }

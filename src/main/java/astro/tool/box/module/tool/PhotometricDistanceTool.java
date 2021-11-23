@@ -53,7 +53,7 @@ public class PhotometricDistanceTool {
             JButton calculateButton = new JButton("Calculate");
             calculateButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double distance = calculateDistanceFromMagnitudes(
+                    double distance = calculatePhotometricDistance(
                             toDouble(apparentMagnitudeField.getText()),
                             toDouble(absoluteMagnitudeField.getText())
                     );
