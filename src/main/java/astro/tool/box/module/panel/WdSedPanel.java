@@ -35,8 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -144,7 +142,7 @@ public class WdSedPanel extends JPanel {
                 createPDF(chart, tmpFile, 800, 700);
                 Desktop.getDesktop().open(tmpFile);
             } catch (Exception ex) {
-                Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
+                writeErrorLog(ex);
             }
         });
 

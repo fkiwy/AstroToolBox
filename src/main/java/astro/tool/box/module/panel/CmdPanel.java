@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -63,7 +61,7 @@ public class CmdPanel extends JPanel {
 
     private JFreeChart chart;
 
-    private static List<Color> COLORS = new ArrayList();
+    private static final List<Color> COLORS = new ArrayList();
 
     static {
         COLORS.add(new Color(68, 1, 84));
@@ -120,7 +118,7 @@ public class CmdPanel extends JPanel {
                 createPDF(chart, tmpFile, 800, 700);
                 Desktop.getDesktop().open(tmpFile);
             } catch (Exception ex) {
-                Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
+                writeErrorLog(ex);
             }
         });
 
