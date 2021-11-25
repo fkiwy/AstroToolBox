@@ -6,43 +6,49 @@
 
 [View release notes](releases/release%20notes.md)
 
-## Screenshots
+# Screenshots
 
-### Catalog search
+## Catalog search
 ![Catalog Search](images/Catalog%20Search.png)
 
-### Image Viewer
+## Image Viewer
 ![Image Viewer](images/Image%20Viewer.png)
 
-##### WISEA J085510.74-071442.5: WISE coadds (epochs 2010 & 2014-2020) plus AllWISE overlays (green circles)
+### WISEA J085510.74-071442.5: WISE coadds (epochs 2010 & 2014-2020) plus AllWISE overlays (green circles)
 ![WISEA J085510.74-071442.5](images/WISEA%20J085510.74-071442.5.gif)
 
-### Image Series
+## Image Series
 ![Image Series](images/Image%20Series.png)
 
-### Photometric Classifier
+## Photometric Classifier
 ![Photometric Classifier](images/Photometric%20Classifier.png)
 
-### ADQL Query
+## ADQL Query
 ![ADQL Query](images/ADQL%20Query.png)
 
-### Batch Query
+## Batch Query
 ![Batch Query](images/Batch%20Query.png)
 
-### File Browser
+## File Browser
 ![File Browser](images/File%20Browser.png)
 
-### Custom Overlays
+## Custom Overlays
 ![Custom Overlays](images/Custom%20Overlays.png)
 
-### Calculators & Converters
+## Calculators & Converters
 ![Calculators & Converters](images/Calculators%20&%20Converters.png)
 
-### SIMBAD Measurements & References
+## SIMBAD Measurements & References
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
-### Spectral Energy Distribution
+## Spectral Energy Distribution for low mass stars
 ![SED](images/SED.png)
 
-### Gaia Color-Magnitude Diagram
+## Spectral Energy Distribution for white dwarfs
+![SED](images/WD%20SED.png)
+
+## Spectral Energy Distribution for white dwarfs with overplotted models
+![SED](images/WD%20SED%20overplotted.png)
+
+## Gaia Color-Magnitude Diagram
 ![CMD](images/CMD.png)
