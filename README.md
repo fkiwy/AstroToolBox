@@ -41,13 +41,13 @@
 ### SIMBAD Measurements & References
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
-### Spectral Energy Distribution for low-mass and ultra-cool dwarfs
+### SED fitting for low-mass and ultra-cool dwarfs
 ![SED](images/SED.png)
 
-### Spectral Energy Distribution for white dwarfs
+### SED fitting for white dwarfs
 ![SED](images/WD%20SED.png)
 
-### Spectral Energy Distribution for white dwarfs with overplotted models
+### SED fitting for white dwarfs with overplotted models
 ![SED](images/WD%20SED%20overplotted.png)
 
 ### Gaia Color-Magnitude Diagram with overplotted M0-M9 spectral types
