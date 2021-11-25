@@ -50,5 +50,8 @@
 ### Spectral Energy Distribution for white dwarfs with overplotted models
 ![SED](images/WD%20SED%20overplotted.png)
 
-### Gaia Color-Magnitude Diagram
+### Gaia Color-Magnitude Diagram with overplotted M0-M9 spectral types
 ![CMD](images/Gaia%20CMD.png)
+
+### Gaia Color-Magnitude Diagram with overplotted Montreal Cooling Sequences 
+![CMD](images/Gaia%20CMD%20WD.png)
