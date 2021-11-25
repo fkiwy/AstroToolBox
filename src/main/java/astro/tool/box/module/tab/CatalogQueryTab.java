@@ -628,7 +628,7 @@ public class CatalogQueryTab {
                 sedFrame.setSize(1000, 900);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(false);
+                sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
             });
 
@@ -643,7 +643,7 @@ public class CatalogQueryTab {
                 sedFrame.setSize(1000, 900);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(false);
+                sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
             });
 
@@ -660,7 +660,7 @@ public class CatalogQueryTab {
                         sedFrame.setSize(1000, 900);
                         sedFrame.setLocation(0, 0);
                         sedFrame.setAlwaysOnTop(false);
-                        sedFrame.setResizable(false);
+                        sedFrame.setResizable(true);
                         sedFrame.setVisible(true);
                     } catch (Exception ex) {
                         showErrorDialog(baseFrame, ex.getMessage());

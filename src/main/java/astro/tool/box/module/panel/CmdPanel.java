@@ -286,7 +286,7 @@ public class CmdPanel extends JPanel {
         targetRenderer.setSeriesVisibleInLegend(0, true);
         targetRenderer.setSeriesShape(0, targetShape);
 
-        size = 0.5;
+        size = 1.0;
         delta = size / 2.0;
         Shape mainShape = new Ellipse2D.Double(-delta, -delta, size, size);
         XYLineAndShapeRenderer mainRenderer = new XYLineAndShapeRenderer();
@@ -335,7 +335,7 @@ public class CmdPanel extends JPanel {
     }
 
     private XYLineAndShapeRenderer getSpectralTypeRenderer(Color color) {
-        double size = 1.5;
+        double size = 1.0;
         double delta = size / 2.0;
         Shape seriesShape = new Ellipse2D.Double(-delta, -delta, size, size);
         //size = 10.0;
@@ -357,15 +357,11 @@ public class CmdPanel extends JPanel {
             plot.setDataset(i, createCoolingSequenceCollection(String.format("Mass %s H", mass)));
         }
 
-        double size = 0.2;
-        double delta = size / 2.0;
-        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
-
         XYLineAndShapeRenderer sequenceRendererH = new XYLineAndShapeRenderer();
         sequenceRendererH.setSeriesPaint(0, Color.RED);
         sequenceRendererH.setSeriesLinesVisible(0, true);
+        sequenceRendererH.setSeriesShapesVisible(0, false);
         sequenceRendererH.setSeriesVisibleInLegend(0, false);
-        sequenceRendererH.setSeriesShape(0, shape);
 
         for (int i = min; i < max; i++) {
             plot.setRenderer(i, sequenceRendererH);
@@ -379,15 +375,11 @@ public class CmdPanel extends JPanel {
             plot.setDataset(i + max - min, createCoolingSequenceCollection(String.format("Mass %s He", mass)));
         }
 
-        double size = 0.2;
-        double delta = size / 2.0;
-        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
-
         XYLineAndShapeRenderer sequenceRendererHe = new XYLineAndShapeRenderer();
         sequenceRendererHe.setSeriesPaint(0, Color.BLUE);
         sequenceRendererHe.setSeriesLinesVisible(0, true);
+        sequenceRendererHe.setSeriesShapesVisible(0, false);
         sequenceRendererHe.setSeriesVisibleInLegend(0, false);
-        sequenceRendererHe.setSeriesShape(0, shape);
 
         for (int i = min; i < max; i++) {
             plot.setRenderer(i + max - min, sequenceRendererHe);

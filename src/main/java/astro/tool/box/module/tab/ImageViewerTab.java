@@ -5700,7 +5700,7 @@ public class ImageViewerTab {
                 sedFrame.setSize(1000, 900);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(false);
+                sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
             });
 
@@ -5715,7 +5715,7 @@ public class ImageViewerTab {
                 sedFrame.setSize(1000, 900);
                 sedFrame.setLocation(0, 0);
                 sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(false);
+                sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
             });
 
@@ -5732,7 +5732,7 @@ public class ImageViewerTab {
                         sedFrame.setSize(1000, 900);
                         sedFrame.setLocation(0, 0);
                         sedFrame.setAlwaysOnTop(false);
-                        sedFrame.setResizable(false);
+                        sedFrame.setResizable(true);
                         sedFrame.setVisible(true);
                     } catch (Exception ex) {
                         showErrorDialog(baseFrame, ex.getMessage());
@@ -5749,7 +5749,7 @@ public class ImageViewerTab {
         detailsFrame.setSize(650, 650);
         detailsFrame.setLocation(windowShift, windowShift);
         detailsFrame.setAlwaysOnTop(false);
-        detailsFrame.setResizable(false);
+        detailsFrame.setResizable(true);
         detailsFrame.setVisible(true);
         windowShift += 10;
     }
