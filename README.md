@@ -51,4 +51,4 @@
 ![SED](images/WD%20SED%20overplotted.png)
 
 ### Gaia Color-Magnitude Diagram
-![CMD](images/CMD.png)
+![CMD](images/Gaia%20CMD.png)
