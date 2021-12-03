@@ -14,7 +14,7 @@ import java.util.Map;
 public class PhotometricFunctions {
 
     /**
-     * Look up spectral type
+     * Evaluate spectral type
      *
      * @param colorKey
      * @param colorValue
@@ -44,16 +44,38 @@ public class PhotometricFunctions {
         }
         double avgColorValue = (minColorValue + maxColorValue) / 2;
         if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + offset) {
-            return new LookupResult(colorKey, colorValue, minEntry.getSpt(), minEntry.getTeff(), minEntry.getRsun(), minEntry.getMsun(), minEntry.getLogG(), minEntry.getAge(), minColorValue, abs(colorValue - minColorValue));
+            return new LookupResult(
+                    colorKey,
+                    colorValue,
+                    minEntry.getSpt(),
+                    minEntry.getTeff(),
+                    minEntry.getRsun(),
+                    minEntry.getMsun(),
+                    minEntry.getLogG(),
+                    minEntry.getAge(),
+                    minColorValue,
+                    abs(colorValue - minColorValue)
+            );
         } else if (colorValue >= avgColorValue && colorValue <= maxColorValue && colorValue >= maxColorValue - offset) {
-            return new LookupResult(colorKey, colorValue, maxEntry.getSpt(), maxEntry.getTeff(), maxEntry.getRsun(), maxEntry.getMsun(), maxEntry.getLogG(), maxEntry.getAge(), maxColorValue, abs(colorValue - maxColorValue));
+            return new LookupResult(
+                    colorKey,
+                    colorValue,
+                    maxEntry.getSpt(),
+                    maxEntry.getTeff(),
+                    maxEntry.getRsun(),
+                    maxEntry.getMsun(),
+                    maxEntry.getLogG(),
+                    maxEntry.getAge(),
+                    maxColorValue,
+                    abs(colorValue - maxColorValue)
+            );
         } else {
             return null;
         }
     }
 
     /**
-     * Look up temperature
+     * Evaluate temperature
      *
      * @param colorKey
      * @param colorValue
