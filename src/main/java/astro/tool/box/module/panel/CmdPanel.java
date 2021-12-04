@@ -29,8 +29,10 @@ import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -83,11 +85,22 @@ public class CmdPanel extends JPanel {
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
+        JButton showImageButton = new JButton("Show reference CMD");
+        showImageButton.addActionListener((ActionEvent e) -> {
+            displayReferenceCmd();
+        });
+
         g_rpButton = new JRadioButton("G-RP", true);
         commandPanel.add(g_rpButton);
+        g_rpButton.addActionListener((ActionEvent e) -> {
+            commandPanel.remove(showImageButton);
+        });
 
         JRadioButton bp_rpButton = new JRadioButton("BP-RP", false);
         commandPanel.add(bp_rpButton);
+        bp_rpButton.addActionListener((ActionEvent e) -> {
+            commandPanel.add(showImageButton);
+        });
 
         ButtonGroup groupOne = new ButtonGroup();
         groupOne.add(g_rpButton);
@@ -175,6 +188,19 @@ public class CmdPanel extends JPanel {
         });
 
         add(commandPanel);
+    }
+
+    private void displayReferenceCmd() {
+        ImageIcon icon = new ImageIcon(getClass().getResource("/images/Gaia CMD BP-RP.png"));
+        JFrame sedFrame = new JFrame();
+        sedFrame.setIconImage(getToolBoxImage());
+        sedFrame.setTitle("Gaia CMD G vs. BP-RP");
+        sedFrame.add(new JLabel(icon));
+        sedFrame.setSize(icon.getIconWidth() + 20, icon.getIconHeight());
+        sedFrame.setLocation(0, 0);
+        sedFrame.setAlwaysOnTop(false);
+        sedFrame.setResizable(true);
+        sedFrame.setVisible(true);
     }
 
     private void createChartPanel(GaiaCmd catalogEntry) {
