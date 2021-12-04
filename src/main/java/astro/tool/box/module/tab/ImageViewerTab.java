@@ -843,7 +843,7 @@ public class ImageViewerTab {
 
             unwiseCutouts = new JCheckBox(html("<span color='red'>un</span>WISE coadds <span color='red'>(*)</span> (ASC=DESC)"));
             mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("No separate scan directions! Each image may contain data of previous epochs.");
+            unwiseCutouts.setToolTipText("No separate scan directions. High proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 if (decalsCutouts.isSelected()) {
                     decalsCutouts.setSelected(false);
@@ -861,7 +861,7 @@ public class ImageViewerTab {
 
             decalsCutouts = new JCheckBox(html("DECaLS cutouts <span color='red'>(*)</span> (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
             mainControlPanel.add(decalsCutouts);
-            decalsCutouts.setToolTipText("Not reliable for motion detection! Epochs can be to close together.");
+            decalsCutouts.setToolTipText("Not reliable for motion detection. Epochs can be to close together.");
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 if (unwiseCutouts.isSelected()) {
                     unwiseCutouts.setSelected(false);

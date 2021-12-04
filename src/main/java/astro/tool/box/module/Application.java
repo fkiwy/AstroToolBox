@@ -21,18 +21,21 @@ import astro.tool.box.module.tab.ToolTab;
 import astro.tool.box.module.tab.VizierCatalogsTab;
 import astro.tool.box.module.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.io.IOException;
 import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
 import java.util.List;
 import java.util.Scanner;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.ToolTipManager;
 
 public class Application {
@@ -47,7 +50,7 @@ public class Application {
 
     private ImageViewerTab imageViewerTab;
 
-    private static boolean configLoaded = true;
+    private static boolean versionLoaded;
 
     public static List<NumberTriplet> CMD_DATA;
 
@@ -120,38 +123,35 @@ public class Application {
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);
 
-        if (!configLoaded) {
+        if (!versionLoaded) {
             try {
-                String response = readResponse(establishHttpConnection(CONFIG_FILE_URL), PGM_NAME + " config file");
+                String response = readResponse(establishHttpConnection(RELEASES_URL + "versions.txt"), PGM_NAME + " version file");
                 if (!response.isEmpty()) {
-                    Scanner scanner = new Scanner(response);
                     String currentVersion = PGM_VERSION;
-                    String latestVersion = "";
+                    String latestVersion = "Not available!";
                     LocalDate referenceDate = LocalDate.now().minusMonths(1);
-                    LocalDate releaseDate = referenceDate;
-                    String fileId = "";
-                    String notesId = "";
+                    LocalDate releaseDate = LocalDate.MIN;
+                    String versionMessage = "";
+                    Scanner scanner = new Scanner(response);
                     while (scanner.hasNextLine()) {
-                        String[] values = CSVParser.parseLine(scanner.next());
+                        String[] values = CSVParser.parseLine(scanner.nextLine());
                         Version version = new Version(
                                 values[0],
                                 Boolean.valueOf(values[1]),
                                 Integer.valueOf(values[2]),
                                 Integer.valueOf(values[3]),
                                 Integer.valueOf(values[4]),
-                                values[5],
-                                values[6]
+                                values[5]
                         );
                         if (version.isLatest()) {
                             latestVersion = version.getNumber();
                             releaseDate = version.getDate();
-                            fileId = version.getFileId();
-                            notesId = version.getNotesId();
+                            versionMessage = version.getMessage();
                         }
                     }
                     if (!currentVersion.equals(latestVersion)) {
                         long remainingDays = DAYS.between(referenceDate, releaseDate);
-                        showVersionPanel(baseFrame, fileId, notesId, currentVersion, latestVersion, remainingDays);
+                        showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays, versionMessage);
                         if (referenceDate.isAfter(releaseDate)) {
                             System.exit(0);
                         }
@@ -160,21 +160,39 @@ public class Application {
             } catch (IOException ex) {
                 showExceptionDialog(baseFrame, ex);
             } finally {
-                configLoaded = true;
+                versionLoaded = true;
             }
         }
     }
 
-    private void showVersionPanel(JFrame baseFrame, String fileId, String notesId, String currentVersion, String latestVersion, long remainingDays) {
-        JPanel panel = new JPanel(new GridLayout(8, 1));
-        panel.add(new JLabel("There's a new " + PGM_NAME + " version available!"));
-        panel.add(createHyperlink("> Download new version", DOWNLOAD_URL + fileId));
-        panel.add(createHyperlink("> Check release notes", DOWNLOAD_URL + notesId));
-        panel.add(new JLabel("Please always use the latest version of this tool!"));
-        panel.add(new JLabel("Previous versions may contain bugs and/or may no longer work properly."));
-        panel.add(new JLabel("Latest version: " + latestVersion));
-        panel.add(new JLabel("Current version: " + currentVersion + (remainingDays < 1 ? " has expired!" : " will expire in " + remainingDays + " days.")));
-        JOptionPane.showMessageDialog(baseFrame, panel, "Version info", JOptionPane.INFORMATION_MESSAGE);
+    private void showVersionPanel(JFrame baseFrame, String currentVersion, String latestVersion, long remainingDays, String versionMessage) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.add(new JLabel("There's a new " + PGM_NAME + " version available!"));
+        container.add(createHyperlink("> Download new version", RELEASES_URL + String.format("executables/AstroToolBox-%s.jar", latestVersion)));
+        container.add(createHyperlink("> Check release notes", RELEASES_URL + "release%20notes.md"));
+        container.add(new JLabel("Please make sure to always use the latest version of this tool!"));
+        container.add(new JLabel("Previous versions may contain bugs and/or may no longer work properly."));
+        container.add(new JLabel("Latest version: " + latestVersion));
+        String versionText = "Current version: " + currentVersion;
+        JLabel versionLabel = new JLabel();
+        if (remainingDays < 1) {
+            versionLabel.setText(versionText + " has expired!");
+            versionLabel.setForeground(Color.RED);
+        } else {
+            versionLabel.setText(versionText + " will expire in " + remainingDays + " days.");
+        }
+        container.add(versionLabel);
+        if (!versionMessage.isEmpty()) {
+            JTextPane textPane = new JTextPane();
+            textPane.setText(versionMessage);
+            textPane.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textPane);
+            scrollPane.setBorder(createEtchedBorder("Info"));
+            scrollPane.setPreferredSize(new Dimension(300, 100));
+            container.add(scrollPane);
+        }
+        JOptionPane.showMessageDialog(baseFrame, container, "Version info", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void setDefaultCloseOperation(int defaultCloseOperation) {

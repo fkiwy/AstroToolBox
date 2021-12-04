@@ -10,28 +10,13 @@ public class Version {
 
     private final LocalDate date;
 
-    private final String fileId;
+    private final String message;
 
-    private final String notesId;
-
-    public Version(String number, boolean latest, int year, int month, int day, String fileId, String notesId) {
+    public Version(String number, boolean latest, int year, int month, int day, String message) {
         this.number = number;
         this.latest = latest;
-        this.date = LocalDate.of(year, month, day);
-        this.fileId = fileId;
-        this.notesId = notesId;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Version{number=").append(number);
-        sb.append(", latest=").append(latest);
-        sb.append(", date=").append(date);
-        sb.append(", fileId=").append(fileId);
-        sb.append(", notesId=").append(notesId);
-        sb.append('}');
-        return sb.toString();
+        this.date = LocalDate.of(year, month, day);;
+        this.message = message;
     }
 
     public String getNumber() {
@@ -46,12 +31,8 @@ public class Version {
         return date;
     }
 
-    public String getFileId() {
-        return fileId;
-    }
-
-    public String getNotesId() {
-        return notesId;
+    public String getMessage() {
+        return message;
     }
 
 }

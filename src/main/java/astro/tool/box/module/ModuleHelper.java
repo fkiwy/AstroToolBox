@@ -127,8 +127,7 @@ public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
     public static final String PGM_VERSION = "2.3.8";
-    public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
-    public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
+    public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
