@@ -1,3 +1,2 @@
-version,latest,year,month,day,message
 2.3.7,false,2021,11,1,""
 2.3.8,true,2021,12,1,"This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message. This is a test message."
