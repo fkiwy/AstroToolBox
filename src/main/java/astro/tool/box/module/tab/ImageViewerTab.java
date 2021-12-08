@@ -5621,7 +5621,7 @@ public class ImageViewerTab {
             });
             collectButton.addActionListener((ActionEvent evt) -> {
                 String selectedObjectType = (String) objectTypes.getSelectedItem();
-                collectObject(selectedObjectType, catalogEntry, baseFrame, mainSequenceSpectralTypeLookupService, collectionTable);
+                collectObject(selectedObjectType, catalogEntry, baseFrame, brownDwarfsSpectralTypeLookupService, collectionTable);
                 collectButton.setText("Added!");
                 collectTimer.restart();
             });
