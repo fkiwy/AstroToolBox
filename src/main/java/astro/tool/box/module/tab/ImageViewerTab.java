@@ -4064,8 +4064,11 @@ public class ImageViewerTab {
                 lowerBound = q1 - 5 * iqr * fov;
                 upperBound = q3 + 5 * iqr * fov;
             } else {
-                lowerBound = data.get(0);
+                double minVal = data.get(0);
+                double maxVal = data.get(data.size() - 1);
+                lowerBound = minVal;
                 upperBound = q3 + 10 * iqr * fov;
+                upperBound = upperBound > maxVal ? maxVal : upperBound;
             }
         } else {
             double numScale = Double.valueOf(scale);
