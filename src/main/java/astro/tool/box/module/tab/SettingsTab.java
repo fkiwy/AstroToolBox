@@ -370,7 +370,7 @@ public class SettingsTab {
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
 
-            imageViewerSettings.add(new JLabel("Number of epochs: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Survey years: ", JLabel.RIGHT));
             JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
             imageViewerSettings.add(numberOfEpochsField);
 
