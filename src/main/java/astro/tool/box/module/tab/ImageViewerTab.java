@@ -184,7 +184,7 @@ public class ImageViewerTab {
     public static final String EPOCH_LABEL = "Survey years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
-    public static final String AUTO_SCALE = "AUTO";
+    public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
     public static final int NUMBER_OF_EPOCHS = 8;
@@ -312,7 +312,7 @@ public class ImageViewerTab {
     private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
-    private JComboBox scales;
+    private JComboBox ranges;
     private JSlider minValSlider;
     private JSlider maxValSlider;
     private JSlider speedSlider;
@@ -352,7 +352,7 @@ public class ImageViewerTab {
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
-    private String scale = AUTO_SCALE;
+    private String range = AUTO_RANGE;
     private double pixelScale = PIXEL_SCALE_WISE;
     //private double rotationAngle;
     private int fieldOfView = 30;
@@ -584,13 +584,13 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Scale (%):"));
+            mainControlPanel.add(new JLabel("Min-Max range (%):"));
 
-            scales = new JComboBox(new Object[]{AUTO_SCALE, "100", "99.5", "99", "98", "97", "96", "95", "92.5", "90"});
-            mainControlPanel.add(scales);
-            scales.setSelectedItem(scale);
-            scales.addActionListener((ActionEvent evt) -> {
-                scale = (String) scales.getSelectedItem();
+            ranges = new JComboBox(new Object[]{AUTO_RANGE, "100", "99.5", "99", "98", "97", "96", "95", "92.5", "90"});
+            mainControlPanel.add(ranges);
+            ranges.setSelectedItem(range);
+            ranges.addActionListener((ActionEvent evt) -> {
+                range = (String) ranges.getSelectedItem();
                 createFlipbook();
             });
 
@@ -724,7 +724,7 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                scales.setSelectedItem(AUTO_SCALE);
+                ranges.setSelectedItem(AUTO_RANGE);
                 createFlipbook();
             });
 
@@ -2731,19 +2731,19 @@ public class ImageViewerTab {
                         flipbook[i] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                     }
                     break;
-                case ASCENDING_SCAN_DIR:
+                case ASC_SCAN_DIR:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 0; i < epochCount; i += 2) {
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, i > 0 ? i + EPOCH_GAP : i);
                     }
                     break;
-                case DESCENDING_SCAN_DIR:
+                case DESC_SCAN_DIR:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 1; i < epochCount; i += 2) {
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                     }
                     break;
-                case SEPARATE_SCAN_DIR:
+                case ASC_DESC_SCAN_DIR:
                     flipbook = new FlipbookComponent[epochCount];
                     int k = 0;
                     for (int i = 0; i < epochCount; i += 2) {
@@ -2755,7 +2755,7 @@ public class ImageViewerTab {
                         k++;
                     }
                     break;
-                case SEPARATE_SCAN_DIR_SUBTRACTED:
+                case ASC_DESC_SUBTRACTED:
                     flipbook = new FlipbookComponent[epochCount - 4];
                     k = 0;
                     for (int i = 2; i < epochCount - 2; i += 2) {
@@ -4054,7 +4054,7 @@ public class ImageViewerTab {
         }
         double lowerBound;
         double upperBound;
-        if (AUTO_SCALE.equals(scale)) {
+        if (AUTO_RANGE.equals(range)) {
             double q1 = determineMedian(data1);
             double q3 = determineMedian(data2);
             double iqr = q3 - q1;
@@ -4071,16 +4071,16 @@ public class ImageViewerTab {
                 upperBound = upperBound > maxVal ? maxVal : upperBound;
             }
         } else {
-            double numScale = Double.valueOf(scale);
+            double percent = Double.valueOf(range);
             if (Epoch.isSubtracted(epoch)) {
                 Collections.sort(data1, Comparator.reverseOrder());
                 int size1 = data1.size() - 1;
-                lowerBound = data1.get((int) (size1 * numScale / 100));
+                lowerBound = data1.get((int) (size1 * percent / 100));
             } else {
                 lowerBound = data.get(0);
             }
             int size2 = data2.size() - 1;
-            upperBound = data2.get((int) (size2 * numScale / 100));
+            upperBound = data2.get((int) (size2 * percent / 100));
         }
         return new NumberPair(lowerBound, upperBound);
     }
