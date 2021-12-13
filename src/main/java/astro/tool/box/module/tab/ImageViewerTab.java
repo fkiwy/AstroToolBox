@@ -2731,19 +2731,19 @@ public class ImageViewerTab {
                         flipbook[i] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                     }
                     break;
-                case ASC_SCAN_DIR:
+                case ASCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 0; i < epochCount; i += 2) {
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, i > 0 ? i + EPOCH_GAP : i);
                     }
                     break;
-                case DESC_SCAN_DIR:
+                case DESCENDING:
                     flipbook = new FlipbookComponent[epochCount / 2];
                     for (int i = 1; i < epochCount; i += 2) {
                         flipbook[i / 2] = new FlipbookComponent(wiseBand.val, i, i > 1 ? i + EPOCH_GAP : i);
                     }
                     break;
-                case ASC_DESC_SCAN_DIR:
+                case ASCENDING_DESCENDING:
                     flipbook = new FlipbookComponent[epochCount];
                     int k = 0;
                     for (int i = 0; i < epochCount; i += 2) {
@@ -2755,7 +2755,7 @@ public class ImageViewerTab {
                         k++;
                     }
                     break;
-                case ASC_DESC_SUBTRACTED:
+                case ASCENDING_DESCENDING_SUBTRACTED:
                     flipbook = new FlipbookComponent[epochCount - 4];
                     k = 0;
                     for (int i = 2; i < epochCount - 2; i += 2) {
