@@ -873,7 +873,7 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
-            gaiaWDOverlay = new JCheckBox(html("Gaia DR2 <u>W</u>D"), overlays.isGaiawd());
+            gaiaWDOverlay = new JCheckBox(html("Gaia eDR3 <u>W</u>D"), overlays.isGaiawd());
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
             gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();

@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class GaiaWDCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Gaia DR2 WD";
+    public static final String CATALOG_NAME = "Gaia eDR3 WD";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -142,8 +142,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     public GaiaWDCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = toLong(values[columns.get("Source")]);
-        wdId = values[columns.get("WD")];
+        sourceId = toLong(values[columns.get("GaiaEDR3")]);
+        wdId = values[columns.get("WDJname")];
         ra = toDouble(values[columns.get("RA_ICRS")]);
         dec = toDouble(values[columns.get("DE_ICRS")]);
         plx = toDouble(values[columns.get("Plx")]);
@@ -152,7 +152,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         Gmag = toDouble(values[columns.get("Gmag")]);
         BPmag = toDouble(values[columns.get("BPmag")]);
         RPmag = toDouble(values[columns.get("RPmag")]);
-        sdssId = values[columns.get("SDSS")];
+        sdssId = values[columns.get("SDSS12")];
         u_mag = toDouble(values[columns.get("umag")]);
         g_mag = toDouble(values[columns.get("gmag")]);
         r_mag = toDouble(values[columns.get("rmag")]);
@@ -254,7 +254,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/MNRAS/482/4570/gaia2wd", "RA_ICRS", "DE_ICRS");
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/MNRAS/508/3877/maincat", "RA_ICRS", "DE_ICRS");
     }
 
     @Override
