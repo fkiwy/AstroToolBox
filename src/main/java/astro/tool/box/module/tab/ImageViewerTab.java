@@ -3421,7 +3421,9 @@ public class ImageViewerTab {
                     if (requestedEpoch % 2 > 0) {
                         ImageContainer container = images.get(band + "_" + (requestedEpoch - 1));
                         if (container != null) {
-                            images.put(imageKey, new ImageContainer(requestedEpoch, container.getDate().plusMonths(6), container.getImage()));
+                            LocalDateTime imageDate = container.getDate().plusMonths(6);
+                            images.put(imageKey, new ImageContainer(requestedEpoch, imageDate, container.getImage()));
+                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate.format(DATE_FORMATTER) + " > downloaded");
                             continue;
                         }
                     }
@@ -3746,12 +3748,12 @@ public class ImageViewerTab {
         downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr9", 2020);
     }
 
-    private boolean downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
+    private void downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
         String imageKey = band + "_" + requestedEpoch.value();
         ImageContainer container = images.get(imageKey);
         if (container != null) {
             writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
-            return true;
+            return;
         }
         String selectedBand;
         switch (band) {
@@ -3770,7 +3772,7 @@ public class ImageViewerTab {
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
-            enhanceImage(fits, 1000);
+            enhanceImage(fits, 500);
             fits.close();
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
             images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
@@ -3781,9 +3783,7 @@ public class ImageViewerTab {
             images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
             writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
             requestedEpoch.add();
-            return true;
         } catch (IOException | FitsException ex) {
-            return false;
         }
     }
 
