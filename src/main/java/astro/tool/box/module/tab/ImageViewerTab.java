@@ -299,7 +299,6 @@ public class ImageViewerTab {
     private JCheckBox staticTimeSeries;
     private JCheckBox animatedTimeSeries;
     private JCheckBox createDataSheet;
-    private JCheckBox skipBadImages;
     private JCheckBox skipSingleNodes;
     private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
@@ -1591,18 +1590,6 @@ public class ImageViewerTab {
             });
 
             advancedControlPanel.add(createHeaderBox("Advanced controls:"));
-
-            skipBadImages = new JCheckBox("Skip bad quality images", true);
-            advancedControlPanel.add(skipBadImages);
-            skipBadImages.addActionListener((ActionEvent evt) -> {
-                if (!skipBadImages.isSelected()) {
-                    showWarnDialog(baseFrame, "Unchecking this may decrease image quality and lead to poorer motion detection!");
-                }
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
 
             skipSingleNodes = new JCheckBox("Skip single nodes", true);
             advancedControlPanel.add(skipSingleNodes);
@@ -3462,8 +3449,6 @@ public class ImageViewerTab {
                     }
                 }
                 Header header = hdu.getHeader();
-                double xAxis = header.getDoubleValue("NAXIS1");
-                double yAxis = header.getDoubleValue("NAXIS2");
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate;
                 if (unwiseCutouts.isSelected()) {
@@ -3473,37 +3458,7 @@ public class ImageViewerTab {
                 } else {
                     obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 }
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                // Skip images with too many zero values
-                if (yAxis > 0) {
-                    xAxis = values[0].length;
-                }
-                int zeroValues = 0;
-                for (int j = 0; j < yAxis; j++) {
-                    for (int k = 0; k < xAxis; k++) {
-                        try {
-                            if (values[j][k] == 0) {
-                                zeroValues++;
-                            }
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
                 String imageDate = obsDate.format(DATE_FORMATTER);
-                if (skipBadImages.isSelected()) {
-                    double maxAllowed = xAxis * yAxis / 20;
-                    if (zeroValues > maxAllowed) {
-                        if (requestedEpochs.size() == 4) {
-                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
-                            downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                            return;
-                        } else {
-                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
-                            continue;
-                        }
-                    }
-                }
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
                 writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
             }
@@ -3637,7 +3592,6 @@ public class ImageViewerTab {
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
         if (requestedEpoch == selectedEpochs) {
-            skipBadImages.setSelected(false);
             skipSingleNodes.setSelected(false);
             return this.requestedEpochs;
         }
@@ -3670,7 +3624,11 @@ public class ImageViewerTab {
             for (int i = 0; i < naxis2; i++) {
                 for (int j = 0; j < naxis1; j++) {
                     try {
-                        addedValues[i][j] = values1[i][j] + values2[i][j];
+                        float value1 = values1[i][j];
+                        float value2 = values2[i][j];
+                        value1 = value1 == 0 ? value2 : value1;
+                        value2 = value2 == 0 ? value1 : value2;
+                        addedValues[i][j] = value1 + value2;
                     } catch (ArrayIndexOutOfBoundsException ex) {
                     }
                 }
@@ -3876,7 +3834,11 @@ public class ImageViewerTab {
         for (int i = 0; i < naxis2; i++) {
             for (int j = 0; j < naxis1; j++) {
                 try {
-                    addedValues[i][j] = values1[i][j] + values2[i][j];
+                    float value1 = values1[i][j];
+                    float value2 = values2[i][j];
+                    value1 = value1 == 0 ? value2 : value1;
+                    value2 = value2 == 0 ? value1 : value2;
+                    addedValues[i][j] = value1 + value2;
                 } catch (ArrayIndexOutOfBoundsException ex) {
                 }
             }
