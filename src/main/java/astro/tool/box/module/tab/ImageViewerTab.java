@@ -3421,7 +3421,7 @@ public class ImageViewerTab {
                     if (requestedEpoch % 2 > 0) {
                         ImageContainer container = images.get(band + "_" + (requestedEpoch - 1));
                         if (container != null) {
-                            addImage(band, requestedEpoch, container.getImage());
+                            images.put(imageKey, new ImageContainer(requestedEpoch, container.getDate().plusMonths(6), container.getImage()));
                             continue;
                         }
                     }
@@ -3463,7 +3463,14 @@ public class ImageViewerTab {
                 double xAxis = header.getDoubleValue("NAXIS1");
                 double yAxis = header.getDoubleValue("NAXIS2");
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
-                LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+                LocalDateTime obsDate;
+                if (unwiseCutouts.isSelected()) {
+                    int wiseEpoch = requestedEpoch / 2;
+                    int year = wiseEpoch == 0 ? 2010 : 2013 + wiseEpoch;
+                    obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
+                } else {
+                    obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+                }
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] values = (float[][]) imageData.getData();
                 // Skip images with too many zero values
@@ -3481,17 +3488,7 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                String imageDate;
-                if (unwiseCutouts.isSelected()) {
-                    int wiseEpoch = requestedEpoch / 2;
-                    if (wiseEpoch == 0) {
-                        imageDate = "2010";
-                    } else {
-                        imageDate = String.valueOf(2013 + wiseEpoch);
-                    }
-                } else {
-                    imageDate = obsDate.format(DATE_FORMATTER);
-                }
+                String imageDate = obsDate.format(DATE_FORMATTER);
                 if (skipBadImages.isSelected()) {
                     double maxAllowed = xAxis * yAxis / 20;
                     if (zeroValues > maxAllowed) {
@@ -3507,13 +3504,9 @@ public class ImageViewerTab {
                 }
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
                 writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
-                if (unwiseCutouts.isSelected()) {
-                    extractHeaderInfo(fits);
-                    addImage(band, requestedEpoch, fits);
-                }
             }
         }
-        if (images.isEmpty() || unwiseCutouts.isSelected()) {
+        if (images.isEmpty()) {
             return;
         }
         writeLogEntry("Grouping ...");
