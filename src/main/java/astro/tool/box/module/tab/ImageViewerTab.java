@@ -3417,10 +3417,20 @@ public class ImageViewerTab {
             for (int i = 0; i < requestedEpochs.size(); i++) {
                 int requestedEpoch = requestedEpochs.get(i);
                 String imageKey = band + "_" + requestedEpoch;
-                ImageContainer container = images.get(imageKey);
-                if (container != null) {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
-                    continue;
+                if (unwiseCutouts.isSelected()) {
+                    if (requestedEpoch % 2 > 0) {
+                        ImageContainer container = images.get(band + "_" + (requestedEpoch - 1));
+                        if (container != null) {
+                            addImage(band, requestedEpoch, container.getImage());
+                            continue;
+                        }
+                    }
+                } else {
+                    ImageContainer container = images.get(imageKey);
+                    if (container != null) {
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+                        continue;
+                    }
                 }
                 Fits fits;
                 try {

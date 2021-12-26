@@ -15,7 +15,7 @@ public class MiscFunctions {
         pMass *= 1.989E+30; // Convert from solar mass to kilogram
         sMass *= 1.989E+30; // Convert from solar mass to kilogram
         separation *= 1.49598E+11; // Convert from AU to meter
-        separation *= 1.26; // To account for a distribution of the eccentricities of the binary orbits, we multiply the physical separation by 1.26 and use this value to compute the binding energy.
+        separation *= 1.26; // To account for inclination angle and eccentricity of the binary orbits
         double eBin = -G * pMass * sMass / separation;
         return eBin * 1E7; // Convert from Joule to erg
     }
