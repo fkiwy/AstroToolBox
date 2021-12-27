@@ -56,7 +56,6 @@ import astro.tool.box.module.ImageContainer;
 import astro.tool.box.module.InfoSheet;
 import astro.tool.box.module.panel.ReferencesPanel;
 import astro.tool.box.module.panel.SedPanel;
-import astro.tool.box.module.TextPrompt;
 import astro.tool.box.module.panel.WdSedPanel;
 import astro.tool.box.module.shape.Arrow;
 import astro.tool.box.module.shape.Circle;
@@ -299,16 +298,7 @@ public class ImageViewerTab {
     private JCheckBox staticTimeSeries;
     private JCheckBox animatedTimeSeries;
     private JCheckBox createDataSheet;
-    private JCheckBox skipSingleNodes;
-    private JCheckBox hideMagnifier;
     private JCheckBox drawCrosshairs;
-    private JCheckBox checkProperMotion;
-    private JCheckBox useAboveCoords;
-    private JCheckBox useGaiaPM;
-    private JCheckBox useGaiaDR3PM;
-    private JCheckBox useNoirlabPM;
-    private JCheckBox useCatwisePM;
-    private JCheckBox transposeProperMotion;
     private JComboBox wiseBands;
     private JComboBox epochs;
     private JComboBox ranges;
@@ -321,9 +311,6 @@ public class ImageViewerTab {
     private JTextField sizeField;
     private JTextField properMotionField;
     private JTextField differentSizeField;
-    private JTextField checkObjectCoordsField;
-    private JTextField checkObjectMotionField;
-    private JTextField transposeMotionField;
     private JTextArea crosshairCoords;
     private JTextArea downloadLog;
     private JRadioButton showCatalogsButton;
@@ -347,13 +334,11 @@ public class ImageViewerTab {
     private List<NumberPair> crosshairs;
     private FlipbookComponent[] flipbook;
     private ImageViewerTab imageViewer;
-    private CatalogEntry pmCatalogEntry;
 
     private WiseBand wiseBand = WISE_BAND;
     private Epoch epoch = EPOCH;
     private String range = AUTO_RANGE;
     private double pixelScale = PIXEL_SCALE_WISE;
-    //private double rotationAngle;
     private int fieldOfView = 30;
     private int shapeSize = 5;
     private int imageNumber;
@@ -370,8 +355,6 @@ public class ImageViewerTab {
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
-
-    private int ioExceptionCount;
 
     private double targetRa;
     private double targetDec;
@@ -400,7 +383,6 @@ public class ImageViewerTab {
     private boolean allEpochsW1Loaded;
     private boolean allEpochsW2Loaded;
     private boolean moreImagesAvailable;
-    private boolean oneMoreImageAvailable;
     private boolean flipbookComplete;
     private boolean reloadImages;
     private boolean imageCutOff;
@@ -772,6 +754,26 @@ public class ImageViewerTab {
 
             zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(zooniversePanel2);
+
+            drawCrosshairs = createHeaderBox(html("Draw crosshairs: <span color='red'>(*)</span>"));
+            mainControlPanel.add(drawCrosshairs);
+            drawCrosshairs.setToolTipText(html(""
+                    + "Tick the check box!" + LINE_BREAK
+                    + "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
+                    + "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
+                    + "Wheel-click the crosshair center to delete it." + LINE_BREAK
+                    + "The crosshair's coordinates appear in the text box below.")
+            );
+            drawCrosshairs.addActionListener((ActionEvent evt) -> {
+                if (!drawCrosshairs.isSelected()) {
+                    crosshairs.clear();
+                    crosshairCoords.setText("");
+                }
+            });
+
+            crosshairCoords = new JTextArea();
+            mainControlPanel.add(new JScrollPane(crosshairCoords));
+            crosshairCoords.setBackground(new JLabel().getBackground());
 
             //======================
             // Tab: Catalog overlays
@@ -1419,202 +1421,6 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            //=======================
-            // Tab: Advanced controls
-            //=======================
-            JPanel advancedControlPanel = new JPanel(new GridLayout(rows, 1));
-            advancedControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
-            advancedControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-            JScrollPane advancedScrollPanel = new JScrollPane(advancedControlPanel);
-            advancedScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
-            advancedScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-            controlTabs.add("Tools", advancedScrollPanel);
-
-            /*==================================================================
-            whitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            controlPanelAdvanced.add(whitePanel);
-            whitePanel.setBackground(Color.WHITE);
-
-            JLabel overlayLabel = new JLabel(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
-            whitePanel.add(overlayLabel);
-
-            JSlider overlaySlider = new JSlider(-50, 50, 0);
-            controlPanelAdvanced.add(overlaySlider);
-            overlaySlider.setBackground(Color.WHITE);
-            overlaySlider.addChangeListener((ChangeEvent e) -> {
-                rotationAngle = overlaySlider.getValue();
-                rotationAngle /= 10;
-                overlayLabel.setText(String.format("Correct overlay rotation by: %s°", roundTo1DecLZ(rotationAngle)));
-                processImages();
-            });
-            ==================================================================*/
-            drawCrosshairs = createHeaderBox(html("Draw crosshairs: <span color='red'>(*)</span>"));
-            advancedControlPanel.add(drawCrosshairs);
-            drawCrosshairs.setToolTipText(html(""
-                    + "Tick the check box!" + LINE_BREAK
-                    + "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
-                    + "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
-                    + "Wheel-click the crosshair center to delete it." + LINE_BREAK
-                    + "The crosshair's coordinates appear in the text box below.")
-            );
-            drawCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (!drawCrosshairs.isSelected()) {
-                    crosshairs.clear();
-                    crosshairCoords.setText("");
-                }
-            });
-
-            crosshairCoords = new JTextArea();
-            advancedControlPanel.add(new JScrollPane(crosshairCoords));
-            crosshairCoords.setBackground(new JLabel().getBackground());
-
-            checkProperMotion = createHeaderBox("Check proper motion:");
-            advancedControlPanel.add(checkProperMotion);
-            checkProperMotion.addActionListener((ActionEvent evt) -> {
-                displayMotionChecker();
-            });
-
-            checkObjectCoordsField = new JTextField();
-            advancedControlPanel.add(checkObjectCoordsField);
-            TextPrompt checkObjectCoordsPrompt = new TextPrompt("RA & Dec of object to check");
-            checkObjectCoordsPrompt.applyTo(checkObjectCoordsField);
-            checkObjectCoordsField.addActionListener((ActionEvent evt) -> {
-                useAboveCoords.setSelected(false);
-                displayMotionChecker();
-            });
-
-            useAboveCoords = new JCheckBox("Or use target coordinates");
-            advancedControlPanel.add(useAboveCoords);
-            useAboveCoords.addActionListener((ActionEvent evt) -> {
-                if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
-                    checkObjectCoordsField.setText(coordsField.getText());
-                }
-            });
-
-            checkObjectMotionField = new JTextField();
-            advancedControlPanel.add(checkObjectMotionField);
-            TextPrompt checkObjectMotionPrompt = new TextPrompt("pmRA & pmDec of object to check");
-            checkObjectMotionPrompt.applyTo(checkObjectMotionField);
-            checkObjectMotionField.addActionListener((ActionEvent evt) -> {
-                useGaiaPM.setSelected(false);
-                useGaiaDR3PM.setSelected(false);
-                useCatwisePM.setSelected(false);
-                useNoirlabPM.setSelected(false);
-                displayMotionChecker();
-            });
-
-            JLabel pmLabel = new JLabel("  Or use proper motions from:");
-            advancedControlPanel.add(pmLabel);
-
-            JPanel checkerPanel = new JPanel(new GridLayout(1, 2));
-            advancedControlPanel.add(checkerPanel);
-
-            useGaiaPM = new JCheckBox(GaiaCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useGaiaPM);
-
-            useGaiaDR3PM = new JCheckBox(GaiaDR3CatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useGaiaDR3PM);
-
-            checkerPanel = new JPanel(new GridLayout(1, 2));
-            advancedControlPanel.add(checkerPanel);
-
-            useNoirlabPM = new JCheckBox(NoirlabCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useNoirlabPM);
-
-            useCatwisePM = new JCheckBox(CatWiseCatalogEntry.CATALOG_NAME);
-            checkerPanel.add(useCatwisePM);
-
-            useGaiaPM.addActionListener((ActionEvent evt) -> {
-                if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaDR3PM.setSelected(false);
-                    useCatwisePM.setSelected(false);
-                    useNoirlabPM.setSelected(false);
-                    applyProperMotion(new GaiaCatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            useGaiaDR3PM.addActionListener((ActionEvent evt) -> {
-                if (useGaiaDR3PM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaPM.setSelected(false);
-                    useCatwisePM.setSelected(false);
-                    useNoirlabPM.setSelected(false);
-                    applyProperMotion(new GaiaDR3CatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            useNoirlabPM.addActionListener((ActionEvent evt) -> {
-                if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaPM.setSelected(false);
-                    useGaiaDR3PM.setSelected(false);
-                    useCatwisePM.setSelected(false);
-                    applyProperMotion(new NoirlabCatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            useCatwisePM.addActionListener((ActionEvent evt) -> {
-                if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                    useGaiaPM.setSelected(false);
-                    useGaiaDR3PM.setSelected(false);
-                    useNoirlabPM.setSelected(false);
-                    applyProperMotion(new CatWiseCatalogEntry());
-                }
-                displayMotionChecker();
-            });
-
-            transposeProperMotion = createHeaderBox("Transpose proper motion:");
-            advancedControlPanel.add(transposeProperMotion);
-            transposeProperMotion.addActionListener((ActionEvent evt) -> {
-                if (!transposeMotionField.getText().isEmpty()) {
-                    imagesW1.clear();
-                    imagesW2.clear();
-                    reloadImages = true;
-                    createFlipbook();
-                }
-            });
-
-            transposeMotionField = new JTextField();
-            advancedControlPanel.add(transposeMotionField);
-            TextPrompt transposeMotionPrompt = new TextPrompt("pmRA & pmDec to transpose");
-            transposeMotionPrompt.applyTo(transposeMotionField);
-            transposeMotionField.addActionListener((ActionEvent evt) -> {
-                if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-                    imagesW1.clear();
-                    imagesW2.clear();
-                    reloadImages = true;
-                    createFlipbook();
-                }
-            });
-
-            advancedControlPanel.add(createHeaderBox("Advanced controls:"));
-
-            skipSingleNodes = new JCheckBox("Skip single nodes", true);
-            advancedControlPanel.add(skipSingleNodes);
-            skipSingleNodes.addActionListener((ActionEvent evt) -> {
-                if (!skipSingleNodes.isSelected()) {
-                    showWarnDialog(baseFrame, "Unchecking this may affect image ordering and lead to poorer motion detection, especially in subtracted modes!");
-                }
-                imagesW1.clear();
-                imagesW2.clear();
-                reloadImages = true;
-                createFlipbook();
-            });
-
-            hideMagnifier = new JCheckBox("Hide magnifier panel");
-            advancedControlPanel.add(hideMagnifier);
-            hideMagnifier.addActionListener((ActionEvent evt) -> {
-                if (hideMagnifier.isSelected()) {
-                    rightScrollPanel.setVisible(false);
-                } else {
-                    rightScrollPanel.setVisible(true);
-                }
-            });
-
-            advancedControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
-
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
                     if (flipbook == null) {
@@ -1668,17 +1474,15 @@ public class ImageViewerTab {
                     }
 
                     // Create and display magnified WISE image
-                    if (!hideMagnifier.isSelected()) {
-                        rightPanel.removeAll();
-                        rightPanel.repaint();
-                        addMagnifiedImage("WISE", wiseImage, upperLeftX, upperLeftY, width, height);
-                    }
+                    rightPanel.removeAll();
+                    rightPanel.repaint();
+                    addMagnifiedImage("WISE", wiseImage, upperLeftX, upperLeftY, width, height);
 
                     // Display DECaLS images
                     JLabel decalsLabel = null;
                     if (processedDecalsImage != null) {
                         // Create and display magnified DECaLS image
-                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                        if (!imageCutOff) {
                             addMagnifiedImage("DECaLS", processedDecalsImage, upperLeftX, upperLeftY, width, height);
                         }
 
@@ -1693,7 +1497,7 @@ public class ImageViewerTab {
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
                         // Create and display magnified Pan-STARRS image
-                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                        if (!imageCutOff) {
                             addMagnifiedImage("Pan-STARRS", processedPs1Image, upperLeftX, upperLeftY, width, height);
                         }
 
@@ -1707,7 +1511,7 @@ public class ImageViewerTab {
                     // Display SDSS images
                     if (processedSdssImage != null) {
                         // Create and display magnified SDSS image
-                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                        if (!imageCutOff) {
                             addMagnifiedImage("SDSS", processedSdssImage, upperLeftX, upperLeftY, width, height);
                         }
 
@@ -1721,7 +1525,7 @@ public class ImageViewerTab {
                     // Display DSS images
                     if (processedDssImage != null) {
                         // Create and display magnified DSS image
-                        if (!hideMagnifier.isSelected() && !imageCutOff) {
+                        if (!imageCutOff) {
                             addMagnifiedImage("DSS", processedDssImage, upperLeftX, upperLeftY, width, height);
                         }
 
@@ -1986,7 +1790,7 @@ public class ImageViewerTab {
 
                     imageLabel.addMouseWheelListener((MouseWheelEvent evt) -> {
                         int notches = evt.getWheelRotation();
-                        if (checkProperMotion.isSelected() || markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
+                        if (markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
                             if (notches < 0) {
                                 shapeSize++;
                             } else if (shapeSize > 0) {
@@ -2424,27 +2228,6 @@ public class ImageViewerTab {
         return value * zoom / size;
     }
 
-    /*==========================================================================
-    private NumberPair rotatePoint(double cx, double cy, double angle, NumberPair p) {
-        double s = sin(toRadians(angle));
-        double c = cos(toRadians(angle));
-        double x = p.getX();
-        double y = p.getY();
-
-        // translate point back to origin
-        x -= cx;
-        y -= cy;
-
-        // rotate point
-        double px = x * c - y * s;
-        double py = x * s + y * c;
-
-        // translate point back
-        x = px + cx;
-        y = py + cy;
-        return new NumberPair(x, y);
-    }
-    ==========================================================================*/
     public void createFlipbook() {
         if (asyncDownloads) {
             CompletableFuture.supplyAsync(() -> assembleFlipbook());
@@ -2520,7 +2303,6 @@ public class ImageViewerTab {
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
                 moreImagesAvailable = false;
-                oneMoreImageAvailable = false;
                 flipbookComplete = false;
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
@@ -2534,7 +2316,6 @@ public class ImageViewerTab {
                 epochCountW1 = 0;
                 epochCountW2 = 0;
                 imageCutOff = false;
-                pmCatalogEntry = null;
                 initCatalogEntries();
                 decalsImage = null;
                 processedDecalsImage = null;
@@ -2586,35 +2367,12 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                if (checkProperMotion.isSelected()) {
-                    if (useAboveCoords.isSelected() && !coordsField.getText().isEmpty()) {
-                        checkObjectCoordsField.setText(coordsField.getText());
-                    }
-                    if (useGaiaPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                        applyProperMotion(new GaiaCatalogEntry());
-                    }
-                    if (useGaiaDR3PM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                        applyProperMotion(new GaiaDR3CatalogEntry());
-                    }
-                    if (useNoirlabPM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                        applyProperMotion(new NoirlabCatalogEntry());
-                    }
-                    if (useCatwisePM.isSelected() && !checkObjectCoordsField.getText().isEmpty()) {
-                        applyProperMotion(new CatWiseCatalogEntry());
-                    }
-                }
                 if (!unwiseCutouts.isSelected() && !decalsCutouts.isSelected()) {
                     try {
-                        InputStream stream = getImageData(1, numberOfEpochs + 5);
+                        InputStream stream = getImageData(1, numberOfEpochs + 1);
                         stream.close();
                         moreImagesAvailable = true;
                     } catch (IOException e) {
-                        try {
-                            InputStream stream = getImageData(1, numberOfEpochs);
-                            stream.close();
-                            oneMoreImageAvailable = true;
-                        } catch (IOException ex) {
-                        }
                     }
                 }
             }
@@ -2624,25 +2382,25 @@ public class ImageViewerTab {
             imageNumber = 0;
 
             if (loadImages || reloadImages) {
-                int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
+                int totalEpochs = selectedEpochs * 2;
                 if (unwiseCutouts.isSelected()) {
                     epochCount = totalEpochs;
                 }
                 requestedEpochs = new ArrayList<>();
-                if (Epoch.isFirstLast(epoch) && !moreImagesAvailable) {
-                    if (reloadImages) {
-                        imagesW1.clear();
-                        imagesW2.clear();
+                if (moreImagesAvailable) {
+                    for (int i = 0; i < 100; i++) {
+                        requestedEpochs.add(i);
                     }
-                    requestedEpochs.add(0);
-                    requestedEpochs.add(1);
-                    requestedEpochs.add(totalEpochs - 2);
-                    requestedEpochs.add(totalEpochs - 1);
                 } else {
-                    if (moreImagesAvailable) {
-                        for (int i = 0; i < 100; i++) {
-                            requestedEpochs.add(i);
+                    if (Epoch.isFirstLast(epoch)) {
+                        if (reloadImages) {
+                            imagesW1.clear();
+                            imagesW2.clear();
                         }
+                        requestedEpochs.add(0);
+                        requestedEpochs.add(1);
+                        requestedEpochs.add(totalEpochs - 2);
+                        requestedEpochs.add(totalEpochs - 1);
                     } else {
                         for (int i = 0; i < totalEpochs; i++) {
                             requestedEpochs.add(i);
@@ -2661,7 +2419,6 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
-                ioExceptionCount = 0;
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
@@ -2913,42 +2670,6 @@ public class ImageViewerTab {
         return new NumberPair(minVal, maxVal);
     }
 
-    private NumberPair getEpochCoordinates(int totalEpochs) {
-        if (!checkProperMotion.isSelected() || checkObjectCoordsField.getText().isEmpty() || checkObjectMotionField.getText().isEmpty()) {
-            return new NumberPair(0, 0);
-        }
-
-        NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
-        double ra = objectCoords.getX();
-        double dec = objectCoords.getY();
-
-        NumberPair objectMotion = getCoordinates(checkObjectMotionField.getText());
-        double pmRa = objectMotion.getX();
-        double pmDec = objectMotion.getY();
-
-        double numberOfYears = 0;
-        if (pmCatalogEntry != null) {
-            ra = pmCatalogEntry.getRa();
-            dec = pmCatalogEntry.getDec();
-            if (useGaiaPM.isSelected()) {
-                numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
-            }
-            if (useGaiaDR3PM.isSelected()) {
-                numberOfYears = GAIADR3_ALLWISE_EPOCH_DIFF;
-            }
-            if (useNoirlabPM.isSelected()) {
-                numberOfYears = ((NoirlabCatalogEntry) pmCatalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
-            }
-            if (useCatwisePM.isSelected()) {
-                ra = ((CatWiseCatalogEntry) pmCatalogEntry).getRa_pm();
-                dec = ((CatWiseCatalogEntry) pmCatalogEntry).getDec_pm();
-                numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
-            }
-        }
-
-        return getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
-    }
-
     private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
         NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
         double fromRa = fromCoords.getX();
@@ -3064,16 +2785,8 @@ public class ImageViewerTab {
 
     private BufferedImage addCrosshairs(BufferedImage image, FlipbookComponent component) {
         // Copy the picture to draw shapes in real time
-        if (checkProperMotion.isSelected() || markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
+        if (markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
             image = copy(image);
-        }
-
-        // Draw a circle around the object to check if proper motions are consistent
-        if (checkProperMotion.isSelected()) {
-            NumberPair epochCoordinates = getEpochCoordinates(component.getTotalEpochs());
-            NumberPair position = toPixelCoordinates(epochCoordinates.getX(), epochCoordinates.getY());
-            Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 200, Color.RED);
-            circle.draw(image.getGraphics());
         }
 
         // Mark target coordinates
@@ -3417,7 +3130,7 @@ public class ImageViewerTab {
                 } else {
                     ImageContainer container = images.get(imageKey);
                     if (container != null) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > downloaded");
                         continue;
                     }
                 }
@@ -3425,8 +3138,7 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    ioExceptionCount++;
-                    if (requestedEpochs.size() == 4 && ioExceptionCount < NUMBER_OF_EPOCHS) {
+                    if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -3440,11 +3152,11 @@ public class ImageViewerTab {
                     fits.close();
                 } catch (FitsException ex) {
                     if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unable to read, looking for surrogates");
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
                     } else {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unable to read");
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable");
                         continue;
                     }
                 }
@@ -3482,7 +3194,6 @@ public class ImageViewerTab {
         int node2 = 0;
         boolean nodeChange = false;
         for (ImageContainer container : sortedList) {
-            containerSaved = container;
             date = container.getDate();
             int year = date.getYear();
             int month = date.getMonthValue();
@@ -3511,17 +3222,9 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (skipSingleNodes.isSelected() && (node1 == 0 || node2 == 0)) {
-                    if (requestedEpochs.size() == 4) {
-                        images.clear();
-                        int requestedEpoch = container.getEpoch();
-                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node), looking for surrogates");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                        return;
-                    } else {
-                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
-                        groupedList.remove(groupedList.size() - 1);
-                    }
+                if (!Epoch.isFirstLast(epoch) && (node1 == 0 || node2 == 0)) {
+                    writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
+                    groupedList.remove(groupedList.size() - 1);
                 }
                 node1 = 0;
                 node2 = 0;
@@ -3537,16 +3240,8 @@ public class ImageViewerTab {
             prevNode = node;
             writeLogEntry("year " + year + " | node " + node);
         }
-        if (skipSingleNodes.isSelected() && (node1 == 0 || node2 == 0)) {
-            if (requestedEpochs.size() == 4) {
-                images.clear();
-                int requestedEpoch = containerSaved.getEpoch();
-                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node), looking for surrogates");
-                downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                return;
-            } else {
-                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
-            }
+        if (!Epoch.isFirstLast(epoch) && (node1 == 0 || node2 == 0)) {
+            writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
         } else {
             groupedList.add(group);
         }
@@ -3559,10 +3254,10 @@ public class ImageViewerTab {
             int month = time.getMonthValue();
             Fits fits = container.getImage();
             extractHeaderInfo(fits);
-            for (int i = 1; i < imageGroup.size(); i++) {
+            int groupSize = imageGroup.size();
+            for (int i = 1; i < groupSize; i++) {
                 fits = stackImages(fits, imageGroup.get(i).getImage());
             }
-            int groupSize = imageGroup.size();
             addImage(band, epochCount, groupSize > 1 ? takeAverage(fits, groupSize) : fits);
             writeLogEntry("band " + band + " | image " + epochCount + " | year " + year + " | month " + month);
             epochCount++;
@@ -3592,7 +3287,6 @@ public class ImageViewerTab {
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
         if (requestedEpoch == selectedEpochs) {
-            skipSingleNodes.setSelected(false);
             return this.requestedEpochs;
         }
         List<Integer> alternativeEpochs = new ArrayList<>();
@@ -3643,25 +3337,6 @@ public class ImageViewerTab {
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        double ra;
-        double dec;
-        if (transposeProperMotion.isSelected() && !transposeMotionField.getText().isEmpty()) {
-            NumberPair properMotion = getCoordinates(transposeMotionField.getText());
-            double pmRa = properMotion.getX();
-            double pmDec = properMotion.getY();
-            int totalEpochs;
-            if (epoch > 1) {
-                totalEpochs = epoch + numberOfEpochs / 2;
-            } else {
-                totalEpochs = epoch;
-            }
-            NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
-            ra = coords.getX();
-            dec = coords.getY();
-        } else {
-            ra = targetRa;
-            dec = targetDec;
-        }
         if (unwiseCutouts.isSelected()) {
             epoch /= 2;
             String unwiseEpoch;
@@ -3670,7 +3345,7 @@ public class ImageViewerTab {
             } else {
                 unwiseEpoch = "neo" + epoch;
             }
-            String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, ra, dec, size, band);
+            String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, targetRa, targetDec, size, band);
             try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
                     InputStream bi = new BufferedInputStream(fi);
                     InputStream gzi = new GzipCompressorInputStream(bi);
@@ -3688,7 +3363,7 @@ public class ImageViewerTab {
                 return new ByteArrayInputStream(entries.get(largest));
             }
         } else {
-            String imageUrl = createImageUrl(ra, dec, size, band, epoch);
+            String imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             return connection.getInputStream();
         }
@@ -3730,7 +3405,7 @@ public class ImageViewerTab {
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
-            enhanceImage(fits, 500);
+            enhanceImage(fits, 1000);
             fits.close();
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
             images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
@@ -4024,15 +3699,15 @@ public class ImageViewerTab {
             double q3 = determineMedian(data2);
             double iqr = q3 - q1;
             double fov = toDouble(sizeField.getText());
-            fov = fov > 1000 ? fov / 1000 : 1;
+            double scale = fov / 1000 + 1;
             if (Epoch.isSubtracted(epoch)) {
-                lowerBound = q1 - 5 * iqr * fov;
-                upperBound = q3 + 5 * iqr * fov;
+                lowerBound = q1 - 5 * iqr * scale;
+                upperBound = q3 + 5 * iqr * scale;
             } else {
                 double minVal = data.get(0);
                 double maxVal = data.get(data.size() - 1);
                 lowerBound = minVal;
-                upperBound = q3 + 10 * iqr * fov;
+                upperBound = q3 + 10 * iqr * scale;
                 upperBound = upperBound > maxVal ? maxVal : upperBound;
             }
         } else {
@@ -5412,26 +5087,6 @@ public class ImageViewerTab {
         ));
 
         return spectralTypePanel;
-    }
-
-    private void displayMotionChecker() {
-        if (checkProperMotion.isSelected() && !checkObjectCoordsField.getText().isEmpty() && !checkObjectMotionField.getText().isEmpty()) {
-            createFlipbook();
-        }
-    }
-
-    private void applyProperMotion(CatalogEntry catalogEntry) {
-        NumberPair objectCoords = getCoordinates(checkObjectCoordsField.getText());
-        catalogEntry.setRa(objectCoords.getX());
-        catalogEntry.setDec(objectCoords.getY());
-        catalogEntry.setSearchRadius(5);
-        pmCatalogEntry = retrieveCatalogEntry(catalogEntry, catalogQueryFacade, baseFrame);
-        if (pmCatalogEntry == null) {
-            showInfoDialog(baseFrame, NO_OBJECT_FOUND);
-            checkObjectMotionField.setText(null);
-        } else {
-            checkObjectMotionField.setText(roundTo3DecNZ(pmCatalogEntry.getPmra()) + " " + roundTo3DecNZ(pmCatalogEntry.getPmdec()));
-        }
     }
 
     private double getFovDiagonal() {
