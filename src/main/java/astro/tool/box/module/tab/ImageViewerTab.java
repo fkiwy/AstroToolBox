@@ -3699,7 +3699,7 @@ public class ImageViewerTab {
             double q3 = determineMedian(data2);
             double iqr = q3 - q1;
             double fov = toDouble(sizeField.getText());
-            double scale = fov / 1000 + 1;
+            double scale = fov > 1000 ? fov / 1000 : 1;
             if (Epoch.isSubtracted(epoch)) {
                 lowerBound = q1 - 5 * iqr * scale;
                 upperBound = q3 + 5 * iqr * scale;
