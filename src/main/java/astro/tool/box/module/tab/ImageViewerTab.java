@@ -3141,12 +3141,16 @@ public class ImageViewerTab {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
                     exceptionCount++;
-                    if (requestedEpochs.size() == 4 && exceptionCount < 5) {
+                    if (exceptionCount > 10) {
+                        break;
+                    }
+                    if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
                     } else {
-                        break;
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found");
+                        continue;
                     }
                 }
                 ImageHDU hdu;
@@ -3154,6 +3158,10 @@ public class ImageViewerTab {
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
                 } catch (FitsException ex) {
+                    exceptionCount++;
+                    if (exceptionCount > 10) {
+                        break;
+                    }
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
@@ -3420,18 +3428,7 @@ public class ImageViewerTab {
             writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > downloaded");
             return;
         }
-        String selectedBand;
-        switch (band) {
-            case 1:
-                selectedBand = "r";
-                break;
-            case 2:
-                selectedBand = "z";
-                break;
-            default:
-                selectedBand = "";
-                break;
-        }
+        String selectedBand = band == 1 ? "r" : "z";
         String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
         String imageUrl = String.format(baseUrl, targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
         try {
