@@ -3385,7 +3385,7 @@ public class ImageViewerTab {
         String imageKey = band + "_" + requestedEpoch.value();
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > downloaded");
             return;
         }
         String selectedBand;
