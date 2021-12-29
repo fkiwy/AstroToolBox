@@ -756,26 +756,6 @@ public class ImageViewerTab {
             zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(zooniversePanel2);
 
-            drawCrosshairs = createHeaderBox(html("Draw crosshairs: <span color='red'>(*)</span>"));
-            mainControlPanel.add(drawCrosshairs);
-            drawCrosshairs.setToolTipText(html(""
-                    + "Tick the check box!" + LINE_BREAK
-                    + "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
-                    + "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
-                    + "Wheel-click the crosshair center to delete it." + LINE_BREAK
-                    + "The crosshair's coordinates appear in the text box below.")
-            );
-            drawCrosshairs.addActionListener((ActionEvent evt) -> {
-                if (!drawCrosshairs.isSelected()) {
-                    crosshairs.clear();
-                    crosshairCoords.setText("");
-                }
-            });
-
-            crosshairCoords = new JTextArea();
-            mainControlPanel.add(new JScrollPane(crosshairCoords));
-            crosshairCoords.setBackground(new JLabel().getBackground());
-
             //======================
             // Tab: Catalog overlays
             //======================
@@ -1254,6 +1234,28 @@ public class ImageViewerTab {
             differentSizePanel.add(new JLabel("Enter FoV (arcsec):"));
             differentSizeField = new JTextField(String.valueOf(DIFFERENT_SIZE));
             differentSizePanel.add(differentSizeField);
+
+            mouseControlPanel.add(new JLabel());
+
+            drawCrosshairs = createHeaderBox(html("Draw crosshairs: <span color='red'>(*)</span>"));
+            mouseControlPanel.add(drawCrosshairs);
+            drawCrosshairs.setToolTipText(html(""
+                    + "Tick the check box!" + LINE_BREAK
+                    + "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
+                    + "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
+                    + "Wheel-click the crosshair's center to delete it." + LINE_BREAK
+                    + "The crosshair's coordinates appear in the text box below.")
+            );
+            drawCrosshairs.addActionListener((ActionEvent evt) -> {
+                if (!drawCrosshairs.isSelected()) {
+                    crosshairs.clear();
+                    crosshairCoords.setText("");
+                }
+            });
+
+            crosshairCoords = new JTextArea();
+            mouseControlPanel.add(new JScrollPane(crosshairCoords));
+            crosshairCoords.setBackground(new JLabel().getBackground());
 
             //=====================
             // Tab: Player controls
