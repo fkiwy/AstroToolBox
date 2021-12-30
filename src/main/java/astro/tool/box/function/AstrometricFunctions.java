@@ -161,41 +161,41 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Calculate transverse velocity from parallax
+     * Calculate tangential velocity from parallax
      *
      * @param pmRA (mas/yr)
      * @param pmDE (mas/yr
      * @param parallax (mas)
-     * @return the transverse velocity (km/s)
+     * @return the tangential velocity (km/s)
      */
-    public static double calculateTransverseVelocityFromParallax(double pmRA, double pmDE, double parallax) {
+    public static double calculateTangentialVelocityFromParallax(double pmRA, double pmDE, double parallax) {
         return VELOCITY_C * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * calculateParallacticDistance(parallax);
     }
 
     /**
-     * Calculate transverse velocity from distance
+     * Calculate tangential velocity from distance
      *
      * @param pmRA (mas/yr)
      * @param pmDE (mas/yr
      * @param distance (pc)
-     * @return the transverse velocity (km/s)
+     * @return the tangential velocity (km/s)
      */
-    public static double calculateTransverseVelocityFromDistance(double pmRA, double pmDE, double distance) {
+    public static double calculateTangentialVelocityFromDistance(double pmRA, double pmDE, double distance) {
         return VELOCITY_C * (calculateTotalProperMotion(pmRA, pmDE) / ARCSEC_MAS) * distance;
     }
 
     /**
      * Calculate total velocity
      *
-     * @param transverseVelocity (km/s)
+     * @param tangentialVelocity (km/s)
      * @param radialVelocity (km/s)
      * @return the total velocity (km/s)
      */
-    public static double calculateTotalVelocity(double transverseVelocity, double radialVelocity) {
-        if (transverseVelocity == 0 || radialVelocity == 0) {
+    public static double calculateTotalVelocity(double tangentialVelocity, double radialVelocity) {
+        if (tangentialVelocity == 0 || radialVelocity == 0) {
             return 0;
         } else {
-            return sqrt(transverseVelocity * transverseVelocity + radialVelocity * radialVelocity);
+            return sqrt(tangentialVelocity * tangentialVelocity + radialVelocity * radialVelocity);
         }
     }
 
@@ -445,7 +445,7 @@ public class AstrometricFunctions {
      * @param ae (parallax error)
      * @return the distance error
      */
-    public static double calculateDistanceError(double a, double ae) {
+    public static double calculateParallacticDistanceError(double a, double ae) {
         return sqrt(pow((1000 / (a * a)) * ae, 2));
     }
 
@@ -459,7 +459,10 @@ public class AstrometricFunctions {
      * @return the total proper motion error
      */
     public static double calculateTotalProperMotionError(double a, double ae, double b, double be) {
-        return sqrt(pow(((a * 2) / (2 * sqrt(a * a + b * b))) * ae, 2) + pow(((b * 2) / (2 * sqrt(a * a + b * b))) * be, 2));
+        return sqrt(
+                pow(((a * 2) / (2 * sqrt(a * a + b * b))) * ae, 2)
+                + pow(((b * 2) / (2 * sqrt(a * a + b * b))) * be, 2)
+        );
     }
 
     /**

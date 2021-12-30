@@ -469,7 +469,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     public double getTansverseVelocity() {
-        return calculateTransverseVelocityFromParallax(pmra, pmdec, plx);
+        return calculateTangentialVelocityFromParallax(pmra, pmdec, plx);
     }
 
     public double getTotalVelocity() {
