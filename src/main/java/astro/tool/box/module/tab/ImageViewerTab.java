@@ -345,7 +345,6 @@ public class ImageViewerTab {
     private int imageCount;
     private int windowShift;
     private int quadrantCount;
-    private int exceptionCount;
     private int epochCount;
     private int epochCountW1;
     private int epochCountW2;
@@ -2422,7 +2421,6 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
-                exceptionCount = 0;
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
@@ -3114,6 +3112,10 @@ public class ImageViewerTab {
     }
 
     private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
+        if (requestedEpochs == null) {
+            writeLogEntry("No images found for band " + band + ".");
+            return;
+        }
         writeLogEntry("Downloading ...");
         if (decalsCutouts.isSelected()) {
             retrieveDecalsImages(band, images);
@@ -3125,9 +3127,9 @@ public class ImageViewerTab {
                     if (requestedEpoch % 2 > 0) {
                         ImageContainer container = images.get(band + "_" + (requestedEpoch - 1));
                         if (container != null) {
-                            LocalDateTime imageDate = container.getDate().plusMonths(6);
-                            images.put(imageKey, new ImageContainer(requestedEpoch, imageDate, container.getImage()));
-                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate.format(DATE_FORMATTER) + " > downloaded");
+                            LocalDateTime obsDate = container.getDate().plusMonths(6);
+                            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, container.getImage()));
+                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
                             continue;
                         }
                     }
@@ -3142,10 +3144,6 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    exceptionCount++;
-                    if (exceptionCount > 10) {
-                        break;
-                    }
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
@@ -3160,10 +3158,6 @@ public class ImageViewerTab {
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
                 } catch (FitsException ex) {
-                    exceptionCount++;
-                    if (exceptionCount > 10) {
-                        break;
-                    }
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
@@ -3183,38 +3177,8 @@ public class ImageViewerTab {
                 } else {
                     obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 }
-                String imageDate = obsDate.format(DATE_FORMATTER);
-                double xAxis = header.getDoubleValue("NAXIS1");
-                double yAxis = header.getDoubleValue("NAXIS2");
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                if (yAxis > 0) {
-                    xAxis = values[0].length;
-                }
-                int zeroValues = 0;
-                for (int j = 0; j < yAxis; j++) {
-                    for (int k = 0; k < xAxis; k++) {
-                        try {
-                            if (values[j][k] == 0) {
-                                zeroValues++;
-                            }
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                double maxAllowed = xAxis * yAxis / 20;
-                if (zeroValues > maxAllowed) {
-                    if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality), looking for surrogates");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                        return;
-                    } else {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > skipped (bad image quality)");
-                        continue;
-                    }
-                }
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + imageDate + " > downloaded");
+                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
             }
         }
         if (images.isEmpty()) {
@@ -3329,7 +3293,7 @@ public class ImageViewerTab {
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
         if (requestedEpoch == selectedEpochs) {
-            return this.requestedEpochs;
+            return null;
         }
         List<Integer> alternativeEpochs = new ArrayList<>();
         if (requestedEpoch < selectedEpochs) {
