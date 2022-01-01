@@ -152,7 +152,7 @@ public class Application {
                     if (!currentVersion.equals(latestVersion)) {
                         long remainingDays = DAYS.between(referenceDate, releaseDate);
                         showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays, versionMessage);
-                        if (referenceDate.isAfter(releaseDate)) {
+                        if (referenceDate.isEqual(releaseDate) || referenceDate.isAfter(releaseDate)) {
                             System.exit(0);
                         }
                     }
