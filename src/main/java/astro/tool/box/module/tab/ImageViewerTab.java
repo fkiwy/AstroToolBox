@@ -179,7 +179,6 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String FITS_DIR = USER_HOME + "/.fits";
     public static final String EPOCH_LABEL = "Survey years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
@@ -3149,8 +3148,7 @@ public class ImageViewerTab {
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
                     } else {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found");
-                        continue;
+                        break;
                     }
                 }
                 ImageHDU hdu;
