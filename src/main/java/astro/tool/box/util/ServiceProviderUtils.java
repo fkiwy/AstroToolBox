@@ -89,12 +89,16 @@ public class ServiceProviderUtils {
                 columns.put(headers[i], i);
             }
             String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = CSVParser.parseLine(line);
-                for (int i = 0; i < values.length; i++) {
-                    values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+            try {
+                while ((line = reader.readLine()) != null) {
+                    String[] values = CSVParser.parseLine(line);
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = values[i].replace(SPLIT_CHAR, SPLIT_CHAR_REPLACEMENT);
+                    }
+                    entries.add(catalogEntry.getInstance(columns, values));
                 }
-                entries.add(catalogEntry.getInstance(columns, values));
+            } catch (Exception ex) {
+                throw new RuntimeException(response);
             }
         }
         return entries;

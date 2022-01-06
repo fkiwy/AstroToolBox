@@ -394,10 +394,10 @@ public class ImageViewerTab {
     private boolean dssImages;
     private boolean waitCursor = true;
 
-    public static final List<String> BROWN_DWARFS = new ArrayList<>();
+    public static final List<String> MLTY_DWARFS = new ArrayList<>();
 
     static {
-        for (int i = 5; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             add("M", i);
         }
         for (int i = 0; i < 10; i++) {
@@ -412,10 +412,10 @@ public class ImageViewerTab {
     }
 
     static void add(String spt, int i) {
-        BROWN_DWARFS.add(spt + i);
-        BROWN_DWARFS.add(spt + i + ".5");
-        BROWN_DWARFS.add(spt + i + "V");
-        BROWN_DWARFS.add(spt + i + ".5V");
+        MLTY_DWARFS.add(spt + i);
+        MLTY_DWARFS.add(spt + i + ".5");
+        MLTY_DWARFS.add(spt + i + "V");
+        MLTY_DWARFS.add(spt + i + ".5V");
     }
 
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
@@ -4394,10 +4394,10 @@ public class ImageViewerTab {
             return resultEntries;
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+            throw new RuntimeException(ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }
-        return null;
     }
 
     private List<CatalogEntry> fetchTpmCatalogEntries(ProperMotionQuery catalogQuery) {
@@ -4428,11 +4428,11 @@ public class ImageViewerTab {
             return resultEntries;
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+            throw new RuntimeException(ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
             properMotionField.setCursor(Cursor.getDefaultCursor());
         }
-        return null;
     }
 
     private Object fetchGenericCatalogEntries(CustomOverlay customOverlay) {
@@ -4542,7 +4542,7 @@ public class ImageViewerTab {
     }
 
     private boolean isBrownDwarf(CatalogEntry catalogEntry) {
-        return BROWN_DWARFS.contains(catalogEntry.getSpt());
+        return MLTY_DWARFS.contains(catalogEntry.getSpt());
     }
 
     private void drawSpectrumOverlay(BufferedImage image, List<CatalogEntry> catalogEntries) {

@@ -232,9 +232,6 @@ public class ModuleHelper {
     }
 
     public static void showExceptionDialog(JFrame baseFrame, Exception error) {
-        if (error instanceof NullPointerException) {
-            return;
-        }
         writeErrorLog(error);
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(formatError(error)), "Error", JOptionPane.ERROR_MESSAGE);
     }

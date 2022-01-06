@@ -12,7 +12,7 @@ public class Constants {
 
     public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
-    public static final String NOAO_BASE_URL = "http://datalab.noirlab.edu/tap";
+    public static final String NOAO_BASE_URL = "https://datalab.noirlab.edu/tap";
 
     public static final String NOAO_TAP_URL = NOAO_BASE_URL + TAP_URL_PARAMS;
 
