@@ -279,11 +279,16 @@ public class ModuleHelper {
     }
 
     public static JLabel createHeaderLabel(String text) {
+        return createHeaderLabel(text, JLabel.LEFT);
+    }
+
+    public static JLabel createHeaderLabel(String text, int alignment) {
         JLabel header = new JLabel(text);
         header.setBorder(new EmptyBorder(0, 5, 0, 0));
         header.setBackground(Color.GRAY.brighter());
         header.setForeground(Color.BLACK);
         header.setOpaque(true);
+        header.setHorizontalAlignment(alignment);
         return header;
     }
 

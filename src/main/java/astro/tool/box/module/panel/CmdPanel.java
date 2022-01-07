@@ -102,9 +102,9 @@ public class CmdPanel extends JPanel {
             commandPanel.add(showImageButton);
         });
 
-        ButtonGroup groupOne = new ButtonGroup();
-        groupOne.add(g_rpButton);
-        groupOne.add(bp_rpButton);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(g_rpButton);
+        buttonGroup.add(bp_rpButton);
 
         String coolingTracksText = "Montreal cooling tracks for white dwarfs with masses between 0.2 (top) and 1.3 (bottom) Msun in steps of 0.1 Msun " + LINE_BREAK
                 + "(red is pure H atmosphere or DA WDs, blue is pure He atmosphere or DB WDs)";

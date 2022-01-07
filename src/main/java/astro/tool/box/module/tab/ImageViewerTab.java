@@ -179,7 +179,7 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String EPOCH_LABEL = "Survey years: %d";
+    public static final String EPOCH_LABEL = "Survey epochs: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final String AUTO_RANGE = "AUTO";
@@ -251,8 +251,9 @@ public class ImageViewerTab {
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JScrollPane rightScrollPanel;
-    private JCheckBox unwiseCutouts;
-    private JCheckBox decalsCutouts;
+    private JRadioButton unwiseCutouts;
+    private JRadioButton decalsCutouts;
+    private JRadioButton showCatalogsButton;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -312,7 +313,6 @@ public class ImageViewerTab {
     private JTextField differentSizeField;
     private JTextArea crosshairCoords;
     private JTextArea downloadLog;
-    private JRadioButton showCatalogsButton;
     private JTable collectionTable;
     private Timer timer;
 
@@ -696,7 +696,7 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
-            JButton resetDefaultsButton = new JButton("Image processing defaults");
+            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 if (Epoch.isSubtracted(epoch)) {
@@ -708,41 +708,46 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            unwiseCutouts = new JCheckBox(html("unWISE coadds <span color='red'>(*)</span> (ASC=DESC)"));
-            mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("unWISE coadds are from http://unwise.me. \nNo separate scan directions. High proper motion objects may look smeared.");
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                if (decalsCutouts.isSelected()) {
-                    decalsCutouts.setSelected(false);
-                    pixelScale = PIXEL_SCALE_WISE;
-                }
-                if (unwiseCutouts.isSelected()) {
-                    resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
-                } else {
-                    resetEpochSlider(NUMBER_OF_EPOCHS);
-                }
+            mainControlPanel.add(new JLabel());
+
+            mainControlPanel.add(createHeaderLabel("Cutout service:"));
+
+            JRadioButton wiseviewCutouts = new JRadioButton(html("WiseView <span color='red'>(*)</span>"), true);
+            mainControlPanel.add(wiseviewCutouts);
+            wiseviewCutouts.setToolTipText("WiseView cutouts are from http://byw.tools/wiseview");
+            wiseviewCutouts.addActionListener((ActionEvent evt) -> {
+                resetEpochSlider(NUMBER_OF_EPOCHS);
+                pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
                 createFlipbook();
             });
 
-            decalsCutouts = new JCheckBox(html("DECaLS cutouts <span color='red'>(*)</span> (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
-            mainControlPanel.add(decalsCutouts);
-            decalsCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org. \nNot reliable for motion detection. Epochs can be to close together.");
-            decalsCutouts.addActionListener((ActionEvent evt) -> {
-                if (unwiseCutouts.isSelected()) {
-                    unwiseCutouts.setSelected(false);
-                    resetEpochSlider(NUMBER_OF_EPOCHS);
-                }
-                if (decalsCutouts.isSelected()) {
-                    pixelScale = PIXEL_SCALE_DECAM;
-                } else {
-                    pixelScale = PIXEL_SCALE_WISE;
-                }
+            unwiseCutouts = new JRadioButton(html("unWISE cutouts <span color='red'>(*)</span> (ASC=DESC)"));
+            mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.setToolTipText("unWISE cutouts are from http://unwise.me \nNo separate scan directions. High proper motion objects may look smeared.");
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
+                resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+                pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
                 createFlipbook();
             });
+
+            decalsCutouts = new JRadioButton(html("DECaLS cutouts <span color='red'>(*)</span> (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
+            mainControlPanel.add(decalsCutouts);
+            decalsCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together.");
+            decalsCutouts.addActionListener((ActionEvent evt) -> {
+                pixelScale = PIXEL_SCALE_DECAM;
+                previousRa = 0;
+                previousDec = 0;
+                createFlipbook();
+            });
+
+            ButtonGroup cutoutGroup = new ButtonGroup();
+            cutoutGroup.add(wiseviewCutouts);
+            cutoutGroup.add(unwiseCutouts);
+            cutoutGroup.add(decalsCutouts);
 
             mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
 
@@ -1110,9 +1115,9 @@ public class ImageViewerTab {
             JRadioButton recenterImagesButton = new JRadioButton("Recenter images on object", false);
             mouseControlPanel.add(recenterImagesButton);
 
-            ButtonGroup groupOne = new ButtonGroup();
-            groupOne.add(showCatalogsButton);
-            groupOne.add(recenterImagesButton);
+            ButtonGroup buttonGroup = new ButtonGroup();
+            buttonGroup.add(showCatalogsButton);
+            buttonGroup.add(recenterImagesButton);
 
             mouseControlPanel.add(createHeaderLabel("Mouse wheel click:"));
 
@@ -1267,7 +1272,9 @@ public class ImageViewerTab {
             playerScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Player", playerScrollPanel);
 
-            playerControlPanel.add(createHeaderLabel("Player controls:"));
+            playerControlPanel.add(createHeaderLabel("Image player controls", JLabel.CENTER));
+
+            playerControlPanel.add(new JLabel());
 
             JPanel playerControls = new JPanel(new GridLayout(1, 2));
             playerControlPanel.add(playerControls);
@@ -1307,65 +1314,7 @@ public class ImageViewerTab {
                 timer.start();
             });
 
-            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
-            playerControlPanel.add(rotateButton);
-            rotateButton.addActionListener((ActionEvent evt) -> {
-                quadrantCount++;
-                if (quadrantCount > 3) {
-                    quadrantCount = 0;
-                }
-                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
-                processImages();
-            });
-
-            JPanel saveControls = new JPanel(new GridLayout(1, 2));
-            playerControlPanel.add(saveControls);
-
-            JButton saveAsPngButton = new JButton("Save as PNG");
-            saveControls.add(saveAsPngButton);
-            saveAsPngButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
-                    int returnVal = fileChooser.showSaveDialog(playerControlPanel);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".png");
-                        ImageIO.write(wiseImage, "png", file);
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
-            JButton saveAsGifButton = new JButton("Save as GIF");
-            saveControls.add(saveAsGifButton);
-            saveAsGifButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
-                    int returnVal = fileChooser.showSaveDialog(playerControlPanel);
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        File file = fileChooser.getSelectedFile();
-                        file = new File(file.getPath() + ".gif");
-                        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
-                        int i = 0;
-                        for (FlipbookComponent component : flipbook) {
-                            imageSet[i++] = addCrosshairs(processImage(component), component);
-                        }
-                        if (imageSet.length > 0) {
-                            GifSequencer sequencer = new GifSequencer();
-                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
-                        }
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
-
             playerControlPanel.add(new JLabel());
-
-            playerControlPanel.add(createHeaderLabel("Navigation buttons:"));
 
             JButton moveUpButton = new JButton("Move up");
             playerControlPanel.add(moveUpButton);
@@ -1420,6 +1369,66 @@ public class ImageViewerTab {
                 }
                 coordsField.setText(roundTo7DecNZLZ(targetRa) + " " + roundTo7DecNZLZ(newDec));
                 createFlipbook();
+            });
+
+            playerControlPanel.add(new JLabel());
+
+            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            playerControlPanel.add(rotateButton);
+            rotateButton.addActionListener((ActionEvent evt) -> {
+                quadrantCount++;
+                if (quadrantCount > 3) {
+                    quadrantCount = 0;
+                }
+                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+                processImages();
+            });
+
+            playerControlPanel.add(new JLabel());
+
+            JPanel saveControls = new JPanel(new GridLayout(1, 2));
+            playerControlPanel.add(saveControls);
+
+            JButton saveAsPngButton = new JButton("Save as PNG");
+            saveControls.add(saveAsPngButton);
+            saveAsPngButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".png", ".png files"));
+                    int returnVal = fileChooser.showSaveDialog(playerControlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".png");
+                        ImageIO.write(wiseImage, "png", file);
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            JButton saveAsGifButton = new JButton("Save as GIF");
+            saveControls.add(saveAsGifButton);
+            saveAsGifButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
+                    int returnVal = fileChooser.showSaveDialog(playerControlPanel);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        file = new File(file.getPath() + ".gif");
+                        BufferedImage[] imageSet = new BufferedImage[flipbook.length];
+                        int i = 0;
+                        for (FlipbookComponent component : flipbook) {
+                            imageSet[i++] = addCrosshairs(processImage(component), component);
+                        }
+                        if (imageSet.length > 0) {
+                            GifSequencer sequencer = new GifSequencer();
+                            sequencer.generateFromBI(imageSet, file, speed / 10, true);
+                        }
+                    }
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
             });
 
             timer = new Timer(speed, (ActionEvent e) -> {
@@ -3758,15 +3767,12 @@ public class ImageViewerTab {
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
         if (unwiseCutouts.isSelected()) {
             imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
-        } else {
-            imageViewerTab.resetEpochSlider(NUMBER_OF_EPOCHS);
+            imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
+            imageViewerTab.getUnwiseCutouts().setSelected(true);
         }
         if (decalsCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
-            imageViewerTab.getDecalsCutouts().setSelected(decalsCutouts.isSelected());
-        } else {
-            imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
-            imageViewerTab.getUnwiseCutouts().setSelected(unwiseCutouts.isSelected());
+            imageViewerTab.getDecalsCutouts().setSelected(true);
         }
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.setQuadrantCount(quadrantCount);
@@ -5144,11 +5150,11 @@ public class ImageViewerTab {
         return epochLabel;
     }
 
-    public JCheckBox getUnwiseCutouts() {
+    public JRadioButton getUnwiseCutouts() {
         return unwiseCutouts;
     }
 
-    public JCheckBox getDecalsCutouts() {
+    public JRadioButton getDecalsCutouts() {
         return decalsCutouts;
     }
 
