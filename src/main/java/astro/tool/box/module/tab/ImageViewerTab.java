@@ -183,6 +183,7 @@ public class ImageViewerTab {
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final String AUTO_RANGE = "AUTO";
+    public static final String DECAM_RANGE = "99.5";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
     public static final int NUMBER_OF_EPOCHS = 8;
@@ -198,7 +199,7 @@ public class ImageViewerTab {
     public static final int DIFFERENT_SIZE = 100;
     public static final int PROPER_MOTION = 100;
     public static final String OVERLAYS_KEY = "overlays";
-    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" <span color='red'>(*)</span>";
+    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
     public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
 
     //Reference epochs:
@@ -566,7 +567,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Min/Max pixel values:"));
 
-            ranges = new JComboBox(new Object[]{AUTO_RANGE, "100", "99.5", "99", "98", "97", "96", "95", "92.5", "90"});
+            ranges = new JComboBox(new Object[]{AUTO_RANGE, "100", "99.9", "99.8", "99.7", "99.6", "99.5", "99", "98", "97", "96", "95", "90"});
             mainControlPanel.add(ranges);
             ranges.setSelectedItem(range);
             ranges.addActionListener((ActionEvent evt) -> {
@@ -692,7 +693,7 @@ public class ImageViewerTab {
             markTarget = new JCheckBox("Mark target");
             settingsPanel.add(markTarget);
 
-            showCrosshairs = new JCheckBox(html("Crosshairs <span color='red'>(*)</span>"));
+            showCrosshairs = new JCheckBox(html("Crosshairs (*)"));
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
@@ -704,15 +705,18 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                ranges.setSelectedItem(AUTO_RANGE);
-                createFlipbook();
+                if (decalsCutouts.isSelected()) {
+                    ranges.setSelectedItem(DECAM_RANGE);
+                } else {
+                    ranges.setSelectedItem(AUTO_RANGE);
+                }
             });
 
             mainControlPanel.add(new JLabel());
 
             mainControlPanel.add(createHeaderLabel("Cutout service:"));
 
-            JRadioButton wiseviewCutouts = new JRadioButton(html("WiseView <span color='red'>(*)</span>"), true);
+            JRadioButton wiseviewCutouts = new JRadioButton(html("WiseView (*)"), true);
             mainControlPanel.add(wiseviewCutouts);
             wiseviewCutouts.setToolTipText("WiseView cutouts are from http://byw.tools/wiseview");
             wiseviewCutouts.addActionListener((ActionEvent evt) -> {
@@ -720,28 +724,29 @@ public class ImageViewerTab {
                 pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
-                createFlipbook();
+                ranges.setSelectedItem(AUTO_RANGE);
+
             });
 
-            unwiseCutouts = new JRadioButton(html("unWISE cutouts <span color='red'>(*)</span> (ASC=DESC)"));
+            unwiseCutouts = new JRadioButton(html("unWISE coadds (*)"));
             mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("unWISE cutouts are from http://unwise.me \nNo separate scan directions. High proper motion objects may look smeared.");
+            unwiseCutouts.setToolTipText("unWISE coadds are from http://unwise.me \nNo separate scan directions. High proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
-                createFlipbook();
+                ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            decalsCutouts = new JRadioButton(html("DECaLS cutouts <span color='red'>(*)</span> (W1=<span color='red'><b>r</b></span>, W2=<span color='red'><b>z</b></span>)"));
+            decalsCutouts = new JRadioButton(html("DESI Legacy Surveys (*)"));
             mainControlPanel.add(decalsCutouts);
-            decalsCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together.");
+            decalsCutouts.setToolTipText("DESI cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together. \nW1 represents the r-band, W2 the z-band.");
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
                 previousDec = 0;
-                createFlipbook();
+                ranges.setSelectedItem(DECAM_RANGE);
             });
 
             ButtonGroup cutoutGroup = new ButtonGroup();
@@ -749,7 +754,7 @@ public class ImageViewerTab {
             cutoutGroup.add(unwiseCutouts);
             cutoutGroup.add(decalsCutouts);
 
-            mainControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
+            mainControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
 
             mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects:"));
 
@@ -771,7 +776,7 @@ public class ImageViewerTab {
             overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Overlays", overlaysScrollPanel);
 
-            JLabel catalogOverlaysLabel = createHeaderLabel(html("Catalog overlays: <span color='red'>(*)</span>"));
+            JLabel catalogOverlaysLabel = createHeaderLabel(html("Catalog overlays: (*)"));
             overlaysControlPanel.add(catalogOverlaysLabel);
             catalogOverlaysLabel.setToolTipText("Shortcuts: Alt+[underscored letter]");
 
@@ -933,7 +938,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel pmOverlaysLabel = createHeaderLabel(html("Proper motion vectors: <span color='red'>(*)</span>"));
+            JLabel pmOverlaysLabel = createHeaderLabel(html("Proper motion vectors: (*)"));
             overlaysControlPanel.add(pmOverlaysLabel);
             pmOverlaysLabel.setToolTipText("Shortcuts: Ctrl+Alt+[underscored letter]");
 
@@ -986,7 +991,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts: <span color='red'>(*)</span>"));
+            JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts: (*)"));
             overlaysControlPanel.add(artifactsLabel);
             artifactsLabel.setToolTipText(html(""
                     + "Small shapes represent affected sources." + LINE_BREAK
@@ -1023,7 +1028,7 @@ public class ImageViewerTab {
             });
             artifactPanel.add(spikeOverlay);
 
-            JLabel featuresLabel = createHeaderLabel(html("Experimental features: <span color='red'>(*)</span>"));
+            JLabel featuresLabel = createHeaderLabel(html("Experimental features: (*)"));
             overlaysControlPanel.add(featuresLabel);
             featuresLabel.setToolTipText("Spectral type estimates are based on single colors and may not be accurate!");
 
@@ -1052,7 +1057,7 @@ public class ImageViewerTab {
                 saveOverlaysMessage.setText("");
             });
 
-            JButton saveButton = new JButton(html("Save selected overlays <span color='red'>(*)</span>"));
+            JButton saveButton = new JButton(html("Save selected overlays (*)"));
             overlaysControlPanel.add(saveButton);
             saveButton.setToolTipText("Custom overlays not included!");
             saveButton.addActionListener((ActionEvent evt) -> {
@@ -1091,7 +1096,7 @@ public class ImageViewerTab {
                 }
             });
 
-            overlaysControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
+            overlaysControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
 
             overlaysControlPanel.add(saveOverlaysMessage);
 
@@ -1226,8 +1231,6 @@ public class ImageViewerTab {
             mouseControlPanel.add(changeFovLabel);
             changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view");
 
-            mouseControlPanel.add(new JLabel(html("<span color='red'>(*)</span> Shows a tooltip when hovered")));
-
             mouseControlPanel.add(createHeaderLabel("Mouse right click:"));
 
             mouseControlPanel.add(new JLabel("Show object in a different field of view"));
@@ -1240,7 +1243,7 @@ public class ImageViewerTab {
 
             mouseControlPanel.add(new JLabel());
 
-            drawCrosshairs = createHeaderBox(html("Draw crosshairs: <span color='red'>(*)</span>"));
+            drawCrosshairs = createHeaderBox(html("Draw crosshairs: (*)"));
             mouseControlPanel.add(drawCrosshairs);
             drawCrosshairs.setToolTipText(html(""
                     + "Tick the check box!" + LINE_BREAK
@@ -1259,6 +1262,8 @@ public class ImageViewerTab {
             crosshairCoords = new JTextArea();
             mouseControlPanel.add(new JScrollPane(crosshairCoords));
             crosshairCoords.setBackground(new JLabel().getBackground());
+
+            mouseControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
 
             //=====================
             // Tab: Player controls
@@ -3714,7 +3719,7 @@ public class ImageViewerTab {
             }
         } else {
             double percent = Double.valueOf(range);
-            if (Epoch.isSubtracted(epoch)) {
+            if (Epoch.isSubtracted(epoch) || decalsCutouts.isSelected()) {
                 Collections.sort(data1, Comparator.reverseOrder());
                 int size1 = data1.size() - 1;
                 lowerBound = data1.get((int) (size1 * percent / 100));
@@ -3771,6 +3776,7 @@ public class ImageViewerTab {
             imageViewerTab.getUnwiseCutouts().setSelected(true);
         }
         if (decalsCutouts.isSelected()) {
+            imageViewerTab.getRanges().setSelectedItem(DECAM_RANGE);
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDecalsCutouts().setSelected(true);
         }
@@ -5148,6 +5154,10 @@ public class ImageViewerTab {
 
     public JLabel getEpochLabel() {
         return epochLabel;
+    }
+
+    public JComboBox getRanges() {
+        return ranges;
     }
 
     public JRadioButton getUnwiseCutouts() {
