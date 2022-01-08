@@ -474,7 +474,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 50;
+            int rows = 33;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -739,9 +739,9 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            decalsCutouts = new JRadioButton(html("DESI Legacy Surveys (*)"));
+            decalsCutouts = new JRadioButton(html("DECam Legacy Survey (*)"));
             mainControlPanel.add(decalsCutouts);
-            decalsCutouts.setToolTipText("DESI cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together. \nW1 represents the r-band, W2 the z-band.");
+            decalsCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together. \nW1 represents the r-band, W2 the z-band.");
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
