@@ -222,7 +222,7 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
-            globalSettings.add(new JLabel("Cutout service URL: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
 
