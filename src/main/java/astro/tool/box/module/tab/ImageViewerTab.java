@@ -112,7 +112,6 @@ import static java.lang.Math.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
@@ -188,6 +187,7 @@ public class ImageViewerTab {
     public static final double PIXEL_SCALE_WISE = 2.75;
     public static final int NUMBER_OF_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
+    public static final int NUMBER_OF_DECALS_EPOCHS = 4;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
@@ -503,7 +503,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Bands:"));
+            mainControlPanel.add(new JLabel("Band:"));
 
             wiseBands = new JComboBox(WiseBand.values());
             mainControlPanel.add(wiseBands);
@@ -538,7 +538,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Epochs:"));
+            mainControlPanel.add(new JLabel("Epoch:"));
 
             epochs = new JComboBox(Epoch.values());
             mainControlPanel.add(epochs);
@@ -565,7 +565,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Min/Max pixel values:"));
+            mainControlPanel.add(new JLabel("Pixel value range:"));
 
             ranges = new JComboBox(new Object[]{AUTO_RANGE, "100", "99.9", "99.8", "99.7", "99.6", "99.5", "99", "98", "97", "96", "95", "90"});
             mainControlPanel.add(ranges);
@@ -3136,21 +3136,20 @@ public class ImageViewerTab {
             for (int i = 0; i < requestedEpochs.size(); i++) {
                 int requestedEpoch = requestedEpochs.get(i);
                 String imageKey = band + "_" + requestedEpoch;
+                ImageContainer container = images.get(imageKey);
+                if (container != null) {
+                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+                    continue;
+                }
                 if (unwiseCutouts.isSelected()) {
                     if (requestedEpoch % 2 > 0) {
-                        ImageContainer container = images.get(band + "_" + (requestedEpoch - 1));
+                        container = images.get(band + "_" + (requestedEpoch - 1));
                         if (container != null) {
                             LocalDateTime obsDate = container.getDate().plusMonths(6);
                             images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, container.getImage()));
                             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
                             continue;
                         }
-                    }
-                } else {
-                    ImageContainer container = images.get(imageKey);
-                    if (container != null) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > downloaded");
-                        continue;
                     }
                 }
                 Fits fits;
@@ -3381,21 +3380,21 @@ public class ImageViewerTab {
                 return new ByteArrayInputStream(entries.get(largest));
             }
         } else {
-            String imageUrl = createImageUrl(targetRa, targetDec, size, band, epoch);
+            String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             return connection.getInputStream();
         }
     }
 
-    private String createImageUrl(double targetRa, double targetDec, int size, int band, int epoch) throws MalformedURLException {
-        return getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
-    }
-
     private void retrieveDecalsImages(int band, Map<String, ImageContainer> images) throws Exception {
         Counter requestedEpoch = new Counter();
         downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr5", 2016);
-        downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);
-        downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr8", 2019);
+        if (Epoch.isFirstLast(epoch)) {
+            requestedEpoch.add(NUMBER_OF_DECALS_EPOCHS);
+        } else {
+            downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);
+            downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr8", 2019);
+        }
         downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr9", 2020);
     }
 
@@ -3403,7 +3402,10 @@ public class ImageViewerTab {
         String imageKey = band + "_" + requestedEpoch.value();
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
+            requestedEpoch.add();
+            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
+            requestedEpoch.add();
             return;
         }
         String selectedBand = band == 1 ? "r" : "z";
