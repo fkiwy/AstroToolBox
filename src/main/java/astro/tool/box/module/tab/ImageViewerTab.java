@@ -565,9 +565,30 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Pixel value range:"));
-
-            ranges = new JComboBox(new Object[]{AUTO_RANGE, "100", "99.9", "99.8", "99.7", "99.6", "99.5", "99", "98", "97", "96", "95", "90"});
+            mainControlPanel.add(new JLabel("Pixel value range (%):"));
+            ranges = new JComboBox(new Object[]{
+                AUTO_RANGE,
+                "100",
+                "99.9",
+                "99.8",
+                "99.7",
+                "99.6",
+                "99.5",
+                "99.4",
+                "99.3",
+                "99.2",
+                "99.1",
+                "99",
+                "98",
+                "97",
+                "96",
+                "95",
+                "94",
+                "93",
+                "92",
+                "91",
+                "90"
+            });
             mainControlPanel.add(ranges);
             ranges.setSelectedItem(range);
             ranges.addActionListener((ActionEvent evt) -> {
