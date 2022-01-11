@@ -246,8 +246,6 @@ public class ImageViewerTab {
     private JPanel imagePanel;
     private JPanel rightPanel;
     private JLabel changeFovLabel;
-    private JLabel minValLabel;
-    private JLabel maxValLabel;
     private JLabel epochLabel;
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
@@ -566,6 +564,7 @@ public class ImageViewerTab {
             });
 
             mainControlPanel.add(new JLabel("Pixel value range (%):"));
+
             ranges = new JComboBox(new Object[]{
                 AUTO_RANGE,
                 "100",
@@ -596,8 +595,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            minValLabel = new JLabel("Brightness:");
-            mainControlPanel.add(minValLabel);
+            mainControlPanel.add(new JLabel("Brightness:"));
 
             minValSlider = new JSlider();
             mainControlPanel.add(minValSlider);
@@ -610,8 +608,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            maxValLabel = new JLabel("Contrast:");
-            mainControlPanel.add(maxValLabel);
+            mainControlPanel.add(new JLabel("Contrast:"));
 
             maxValSlider = new JSlider();
             mainControlPanel.add(maxValSlider);
