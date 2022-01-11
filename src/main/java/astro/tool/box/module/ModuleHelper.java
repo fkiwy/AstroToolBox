@@ -126,9 +126,8 @@ import org.json.JSONObject;
 public class ModuleHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.3.7";
-    public static final String CONFIG_FILE_URL = "https://drive.google.com/uc?export=download&id=1RYT_nJA7oO6HgoFkLpq0CWqspXCgcp3I";
-    public static final String DOWNLOAD_URL = "https://drive.google.com/file/d/";
+    public static final String PGM_VERSION = "2.4.0";
+    public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
@@ -233,9 +232,6 @@ public class ModuleHelper {
     }
 
     public static void showExceptionDialog(JFrame baseFrame, Exception error) {
-        if (error instanceof NullPointerException) {
-            return;
-        }
         writeErrorLog(error);
         JOptionPane.showMessageDialog(baseFrame, createMessagePanel(formatError(error)), "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -283,11 +279,16 @@ public class ModuleHelper {
     }
 
     public static JLabel createHeaderLabel(String text) {
+        return createHeaderLabel(text, JLabel.LEFT);
+    }
+
+    public static JLabel createHeaderLabel(String text, int alignment) {
         JLabel header = new JLabel(text);
         header.setBorder(new EmptyBorder(0, 5, 0, 0));
         header.setBackground(Color.GRAY.brighter());
         header.setForeground(Color.BLACK);
         header.setOpaque(true);
+        header.setHorizontalAlignment(alignment);
         return header;
     }
 

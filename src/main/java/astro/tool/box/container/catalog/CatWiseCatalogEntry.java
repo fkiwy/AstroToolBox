@@ -310,7 +310,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "       abf");
             addRow(query, "FROM   \"II/365/catwise\"");
             addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-            addRow(query, "AND   (SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm / ARCSEC_MAS + ")");
+            addRow(query, "AND    POWER(pmRA / e_pmRA, 2) + POWER(pmDE / e_pmDE, 2) > 27");
+            addRow(query, "AND    SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm / ARCSEC_MAS);
         }
         return encodeQuery(query.toString());
     }

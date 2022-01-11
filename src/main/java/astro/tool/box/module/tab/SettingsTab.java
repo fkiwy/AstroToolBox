@@ -197,9 +197,9 @@ public class SettingsTab {
             JRadioButton vizierButton = new JRadioButton("VizieR", tapProvider.equals(TapProvider.VIZIER));
             radioPanel.add(vizierButton);
 
-            ButtonGroup tapProviderGroup = new ButtonGroup();
-            tapProviderGroup.add(irsaButton);
-            tapProviderGroup.add(vizierButton);
+            ButtonGroup buttonGroup = new ButtonGroup();
+            buttonGroup.add(irsaButton);
+            buttonGroup.add(vizierButton);
 
             globalSettings.add(new JLabel("(*) AllWISE, CatWISE, 2MASS ", JLabel.RIGHT));
             globalSettings.add(new JLabel("and Gaia DR2", JLabel.LEFT));
@@ -222,7 +222,7 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
-            globalSettings.add(new JLabel("Cutout service URL: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
 
@@ -370,7 +370,7 @@ public class SettingsTab {
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
 
-            imageViewerSettings.add(new JLabel("Number of epochs: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Survey epochs: ", JLabel.RIGHT));
             JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
             imageViewerSettings.add(numberOfEpochsField);
 

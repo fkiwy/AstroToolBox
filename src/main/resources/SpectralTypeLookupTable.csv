@@ -1,4 +1,4 @@
-SpT,Teff,logT,logL,Mbol,BCv,Mv,B-V,Bt-Vt,G-V,Bp-Rp,G-Rp,M_G,b-y,U-B,V-Rc,V-Ic,V-Ks,J-H,H-Ks,Ks-W1,W1-W2,W1-W3,W1-W4,M_J,M_Ks,g-r,i-z,z-Y,R_Rsun,Msun
+SpT,Teff,logT,logL,Mbol,BCv,Mv,B-V,Bt-Vt,G-V,Bp-Rp,G-Rp,M_G,b-y,U-B,V-Rc,V-Ic,V-Ks,J-H,H-Ks,Ks-W1,W1-W2,W1-W3,W1-W4,M_J,M_Ks,g-r,i-z,z-Y,Rsun,Msun
 O3V,44900,4.652,5.820,-9.810,-4.010,-5.800,-0.330,,,,,,,-1.175,,,,,,,,,,,,,,,13.430,
 O4V,42900,4.632,5.650,-9.390,-3.890,-5.500,-0.326,,,,,,,-1.160,,,,,,,,,,,,,,,12.130,
 O5V,41400,4.617,5.540,-9.110,-3.760,-5.350,-0.323,,,,,,-0.133,-1.150,,,,,,,,,,,,-0.620,,,11.450,

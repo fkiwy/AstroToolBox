@@ -2,11 +2,26 @@ package astro.tool.box.function;
 
 import static java.lang.Math.*;
 import java.util.Arrays;
+import java.util.List;
 
 public class StatisticFunctions {
 
     /**
-     * Calculate mean of a set of values
+     * Determine the median of a set of values
+     *
+     * @param values
+     * @return the median
+     */
+    public static double determineMedian(List<Double> values) {
+        if (values.size() % 2 == 0) {
+            return (values.get(values.size() / 2) + values.get(values.size() / 2 - 1)) / 2;
+        } else {
+            return values.get(values.size() / 2);
+        }
+    }
+
+    /**
+     * Calculate the mean of a set of values
      *
      * @param values
      * @return the mean
@@ -16,7 +31,7 @@ public class StatisticFunctions {
     }
 
     /**
-     * Calculate standard deviation of a population
+     * Calculate the standard deviation of a population
      *
      * @param values
      * @return the standard deviation of a population
@@ -28,7 +43,7 @@ public class StatisticFunctions {
     }
 
     /**
-     * Calculate standard error of the mean
+     * Calculate the standard error of the mean
      *
      * @param values
      * @return the standard error of the mean

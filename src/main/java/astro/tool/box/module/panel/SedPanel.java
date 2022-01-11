@@ -2,6 +2,7 @@ package astro.tool.box.module.panel;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.function.StatisticFunctions.*;
 import static astro.tool.box.module.ModuleHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.SedFluxes;
@@ -35,8 +36,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -151,7 +150,7 @@ public class SedPanel extends JPanel {
                 createPDF(chart, tmpFile, 800, 700);
                 Desktop.getDesktop().open(tmpFile);
             } catch (Exception ex) {
-                Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
+                writeErrorLog(ex);
             }
         });
 
@@ -457,13 +456,7 @@ public class SedPanel extends JPanel {
             }
             diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
-
-            double medianDiffMag;
-            if (totalMags % 2 == 0) {
-                medianDiffMag = (diffMags.get(totalMags / 2 - 1) + diffMags.get(totalMags / 2)) / 2;
-            } else {
-                medianDiffMag = diffMags.get((totalMags - 1) / 2);
-            }
+            double medianDiffMag = determineMedian(diffMags);
 
             SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
             if (selectedType.equals(SpectralType.SELECT)) {

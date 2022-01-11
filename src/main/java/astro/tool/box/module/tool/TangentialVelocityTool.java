@@ -61,23 +61,23 @@ public class TangentialVelocityTool {
             JButton calculateButton = new JButton("Calculate");
             calculateButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double transverseVelocity;
+                    double tangentialVelocity;
                     double parallax = toDouble(parallaxField.getText());
                     double distance = toDouble(distanceField.getText());
                     if (distance == 0) {
-                        transverseVelocity = calculateTransverseVelocityFromParallax(
+                        tangentialVelocity = calculateTangentialVelocityFromParallax(
                                 toDouble(pmraField.getText()),
                                 toDouble(pmdecField.getText()),
                                 parallax
                         );
                     } else {
-                        transverseVelocity = calculateTransverseVelocityFromDistance(
+                        tangentialVelocity = calculateTangentialVelocityFromDistance(
                                 toDouble(pmraField.getText()),
                                 toDouble(pmdecField.getText()),
                                 distance
                         );
                     }
-                    resultField.setText(roundTo3DecNZ(transverseVelocity));
+                    resultField.setText(roundTo3DecNZ(tangentialVelocity));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }

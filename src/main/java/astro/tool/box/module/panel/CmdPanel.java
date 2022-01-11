@@ -26,13 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -63,7 +63,7 @@ public class CmdPanel extends JPanel {
 
     private JFreeChart chart;
 
-    private static List<Color> COLORS = new ArrayList();
+    private static final List<Color> COLORS = new ArrayList();
 
     static {
         COLORS.add(new Color(68, 1, 84));
@@ -85,15 +85,26 @@ public class CmdPanel extends JPanel {
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
+        JButton showImageButton = new JButton("Show reference CMD");
+        showImageButton.addActionListener((ActionEvent e) -> {
+            displayReferenceCmd();
+        });
+
         g_rpButton = new JRadioButton("G-RP", true);
         commandPanel.add(g_rpButton);
+        g_rpButton.addActionListener((ActionEvent e) -> {
+            commandPanel.remove(showImageButton);
+        });
 
         JRadioButton bp_rpButton = new JRadioButton("BP-RP", false);
         commandPanel.add(bp_rpButton);
+        bp_rpButton.addActionListener((ActionEvent e) -> {
+            commandPanel.add(showImageButton);
+        });
 
-        ButtonGroup groupOne = new ButtonGroup();
-        groupOne.add(g_rpButton);
-        groupOne.add(bp_rpButton);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(g_rpButton);
+        buttonGroup.add(bp_rpButton);
 
         String coolingTracksText = "Montreal cooling tracks for white dwarfs with masses between 0.2 (top) and 1.3 (bottom) Msun in steps of 0.1 Msun " + LINE_BREAK
                 + "(red is pure H atmosphere or DA WDs, blue is pure He atmosphere or DB WDs)";
@@ -120,7 +131,7 @@ public class CmdPanel extends JPanel {
                 createPDF(chart, tmpFile, 800, 700);
                 Desktop.getDesktop().open(tmpFile);
             } catch (Exception ex) {
-                Logger.getLogger(CmdPanel.class.getName()).log(Level.SEVERE, null, ex);
+                writeErrorLog(ex);
             }
         });
 
@@ -177,6 +188,19 @@ public class CmdPanel extends JPanel {
         });
 
         add(commandPanel);
+    }
+
+    private void displayReferenceCmd() {
+        ImageIcon icon = new ImageIcon(getClass().getResource("/images/Gaia CMD BP-RP.png"));
+        JFrame sedFrame = new JFrame();
+        sedFrame.setIconImage(getToolBoxImage());
+        sedFrame.setTitle("Gaia CMD G vs. BP-RP");
+        sedFrame.add(new JLabel(icon));
+        sedFrame.setSize(icon.getIconWidth() + 20, icon.getIconHeight());
+        sedFrame.setLocation(0, 0);
+        sedFrame.setAlwaysOnTop(false);
+        sedFrame.setResizable(true);
+        sedFrame.setVisible(true);
     }
 
     private void createChartPanel(GaiaCmd catalogEntry) {
@@ -288,7 +312,7 @@ public class CmdPanel extends JPanel {
         targetRenderer.setSeriesVisibleInLegend(0, true);
         targetRenderer.setSeriesShape(0, targetShape);
 
-        size = 0.5;
+        size = 1.0;
         delta = size / 2.0;
         Shape mainShape = new Ellipse2D.Double(-delta, -delta, size, size);
         XYLineAndShapeRenderer mainRenderer = new XYLineAndShapeRenderer();
@@ -337,7 +361,7 @@ public class CmdPanel extends JPanel {
     }
 
     private XYLineAndShapeRenderer getSpectralTypeRenderer(Color color) {
-        double size = 1.5;
+        double size = 1.0;
         double delta = size / 2.0;
         Shape seriesShape = new Ellipse2D.Double(-delta, -delta, size, size);
         //size = 10.0;
@@ -359,15 +383,11 @@ public class CmdPanel extends JPanel {
             plot.setDataset(i, createCoolingSequenceCollection(String.format("Mass %s H", mass)));
         }
 
-        double size = 0.2;
-        double delta = size / 2.0;
-        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
-
         XYLineAndShapeRenderer sequenceRendererH = new XYLineAndShapeRenderer();
         sequenceRendererH.setSeriesPaint(0, Color.RED);
         sequenceRendererH.setSeriesLinesVisible(0, true);
+        sequenceRendererH.setSeriesShapesVisible(0, false);
         sequenceRendererH.setSeriesVisibleInLegend(0, false);
-        sequenceRendererH.setSeriesShape(0, shape);
 
         for (int i = min; i < max; i++) {
             plot.setRenderer(i, sequenceRendererH);
@@ -381,15 +401,11 @@ public class CmdPanel extends JPanel {
             plot.setDataset(i + max - min, createCoolingSequenceCollection(String.format("Mass %s He", mass)));
         }
 
-        double size = 0.2;
-        double delta = size / 2.0;
-        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
-
         XYLineAndShapeRenderer sequenceRendererHe = new XYLineAndShapeRenderer();
         sequenceRendererHe.setSeriesPaint(0, Color.BLUE);
         sequenceRendererHe.setSeriesLinesVisible(0, true);
+        sequenceRendererHe.setSeriesShapesVisible(0, false);
         sequenceRendererHe.setSeriesVisibleInLegend(0, false);
-        sequenceRendererHe.setSeriesShape(0, shape);
 
         for (int i = min; i < max; i++) {
             plot.setRenderer(i + max - min, sequenceRendererHe);

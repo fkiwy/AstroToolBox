@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class GaiaWDCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Gaia DR2 WD";
+    public static final String CATALOG_NAME = "Gaia eDR3 WD";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -142,8 +142,8 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     public GaiaWDCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = toLong(values[columns.get("Source")]);
-        wdId = values[columns.get("WD")];
+        sourceId = toLong(values[columns.get("GaiaEDR3")]);
+        wdId = values[columns.get("WDJname")];
         ra = toDouble(values[columns.get("RA_ICRS")]);
         dec = toDouble(values[columns.get("DE_ICRS")]);
         plx = toDouble(values[columns.get("Plx")]);
@@ -152,7 +152,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         Gmag = toDouble(values[columns.get("Gmag")]);
         BPmag = toDouble(values[columns.get("BPmag")]);
         RPmag = toDouble(values[columns.get("RPmag")]);
-        sdssId = values[columns.get("SDSS")];
+        sdssId = values[columns.get("SDSS12")];
         u_mag = toDouble(values[columns.get("umag")]);
         g_mag = toDouble(values[columns.get("gmag")]);
         r_mag = toDouble(values[columns.get("rmag")]);
@@ -197,11 +197,17 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("i (mag)", roundTo3DecNZ(i_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("z (mag)", roundTo3DecNZ(z_mag), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("teff H (K)", roundTo3DecNZ(teffH), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("teff H err", roundTo3DecNZ(teffH_err), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("teff He (K)", roundTo3DecNZ(teffHe), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("teff He err", roundTo3DecNZ(teffHe_err), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("logg H", roundTo3DecNZ(loggH), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("logg H err", roundTo3DecNZ(loggH_err), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("logg He", roundTo3DecNZ(loggHe), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("logg He err", roundTo3DecNZ(loggHe_err), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("mass H (Msun)", roundTo3DecNZ(massH), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("mass H err", roundTo3DecNZ(massH_err), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("mass He (Msun)", roundTo3DecNZ(massHe), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("mass He err", roundTo3DecNZ(massHe_err), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("SDSS id", sdssId, Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("probability of being a WD", roundTo3DecNZ(pwd), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getParallacticDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -254,18 +260,94 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/MNRAS/482/4570/gaia2wd", "RA_ICRS", "DE_ICRS");
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/MNRAS/508/3877/maincat", "RA_ICRS", "DE_ICRS");
     }
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + wdId + "," + roundTo4Dec(plx) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(teffH) + "," + roundTo3Dec(teffHe) + "," + roundTo3Dec(loggH) + "," + roundTo3Dec(loggHe) + "," + roundTo3Dec(massH) + "," + roundTo3Dec(massHe) + "," + sdssId + "," + roundTo3Dec(pwd) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getG_RP()) + "," + roundTo3Dec(getBP_RP()) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + sourceId + ","
+                + roundTo7Dec(ra) + ","
+                + roundTo7Dec(dec) + ","
+                + wdId + ","
+                + roundTo4Dec(plx) + ","
+                + roundTo3Dec(pmra) + ","
+                + roundTo3Dec(pmdec) + ","
+                + roundTo3Dec(Gmag) + ","
+                + roundTo3Dec(BPmag) + ","
+                + roundTo3Dec(RPmag) + ","
+                + roundTo3Dec(u_mag) + ","
+                + roundTo3Dec(g_mag) + ","
+                + roundTo3Dec(r_mag) + ","
+                + roundTo3Dec(i_mag) + ","
+                + roundTo3Dec(z_mag) + ","
+                + roundTo3Dec(teffH) + ","
+                + roundTo3Dec(teffH_err) + ","
+                + roundTo3Dec(teffHe) + ","
+                + roundTo3Dec(teffHe_err) + ","
+                + roundTo3Dec(loggH) + ","
+                + roundTo3Dec(loggH_err) + ","
+                + roundTo3Dec(loggHe) + ","
+                + roundTo3Dec(loggHe_err) + ","
+                + roundTo3Dec(massH) + ","
+                + roundTo3Dec(massH_err) + ","
+                + roundTo3Dec(massHe) + ","
+                + roundTo3Dec(massHe_err) + ","
+                + sdssId + ","
+                + roundTo3Dec(pwd) + ","
+                + roundTo3Dec(getParallacticDistance()) + ","
+                + roundTo3Dec(getTotalProperMotion()) + ","
+                + roundTo3Dec(getAbsoluteGmag()) + ","
+                + roundTo3Dec(getG_RP()) + ","
+                + roundTo3Dec(getBP_RP()) + ","
+                + roundTo3Dec(get_u_g()) + ","
+                + roundTo3Dec(get_g_r()) + ","
+                + roundTo3Dec(get_r_i()) + ","
+                + roundTo3Dec(get_i_z());
         return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,dec,WD id,plx (mas),pmra (mas/yr),pmdec (mas/yr),G (mag),BP (mag),RP (mag),u (mag),g (mag),r (mag),i (mag),z (mag),teff H (K),teff He (K),logg H,logg He,mass H (Msun),mass He (Msun),SDSS id,probability of being a WD,dist (1/plx),tpm (mas/yr),Absolute G (mag),G-RP,BP-RP,u-g,g-r,r-i,i-z";
+        String columnTitles = "dist (arcsec),"
+                + "source id,"
+                + "ra,"
+                + "dec,"
+                + "WD id,"
+                + "plx (mas),"
+                + "pmra (mas/yr),"
+                + "pmdec (mas/yr),"
+                + "G (mag),"
+                + "BP (mag),"
+                + "RP (mag),"
+                + "u (mag),"
+                + "g (mag),"
+                + "r (mag),"
+                + "i (mag),"
+                + "z (mag),"
+                + "teff H (K),"
+                + "teff H err,"
+                + "teff He (K),"
+                + "teff He err,"
+                + "logg H,"
+                + "logg H err,"
+                + "logg He,"
+                + "logg He err,"
+                + "mass H (Msun),"
+                + "mass H err,"
+                + "mass He (Msun),"
+                + "mass He err,"
+                + "SDSS id,"
+                + "probability of being a WD,"
+                + "dist (1/plx),"
+                + "tpm (mas/yr),"
+                + "Absolute G (mag),"
+                + "G-RP,"
+                + "BP-RP,"
+                + "u-g,"
+                + "g-r,"
+                + "r-i,"
+                + "i-z";
         return columnTitles.split(",", -1);
     }
 
