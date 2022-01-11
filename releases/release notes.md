@@ -1,5 +1,17 @@
 ## Release notes
 
+### AstroToolBox v2.4.0
+- Changed the NSC DR2 catalog base URL from http://datalab.noao.edu to https://datalab.noirlab.edu
+- Converted cutout service checkboxes to radio buttons
+- Removed a bunch of obsolete features from the Image Viewer
+- Changed the way unWISE and DECaLS images are downloaded and processed
+- Added errors for Teff, log g and mass to the Gaia eDR3 WD catalog
+- Upgraded from Gaia DR2 WD to Gaia eDR3 WD catalog
+- Changed contrast settings and sliders
+- Added a version info panel that will be displayed at startup if there's a new ATB version available
+- Added a reference Gaia CMD G vs.BP-RP image to the Gaia CMD panel
+- Reverted Pan-STARRS catalog access back to MAST
+
 ### AstroToolBox v2.3.7
 - Added NEO7 unWISE coadds to the Image Viewer
 - Added the Montreal cooling sequences for white dwarfs to the Gaia CMD
