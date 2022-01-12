@@ -263,12 +263,12 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "SELECT source_name,");
             addRow(query, "       ra,");
             addRow(query, "       dec,");
-            addRow(query, "       w1mpro,");
-            addRow(query, "       w1sigmpro,");
-            addRow(query, "       w2mpro,");
-            addRow(query, "       w2sigmpro,");
-            addRow(query, "       w1snr,");
-            addRow(query, "       w2snr,");
+            addRow(query, "       w1mpro_pm,");
+            addRow(query, "       w1sigmpro_pm,");
+            addRow(query, "       w2mpro_pm,");
+            addRow(query, "       w2sigmpro_pm,");
+            addRow(query, "       w1snr_pm,");
+            addRow(query, "       w2snr_pm,");
             addRow(query, "       meanobsmjd,");
             addRow(query, "       ra_pm,");
             addRow(query, "       dec_pm,");
@@ -284,7 +284,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "       ab_flags");
             addRow(query, "FROM   catwise_2020");
             addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-            addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
+            addRow(query, "AND   (POWER(pmra / sigpmra, 2) + POWER(pmdec / sigpmdec, 2) > 27");
+            addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
         } else {
             addRow(query, "SELECT Name,");
             addRow(query, "       RA_ICRS,");
