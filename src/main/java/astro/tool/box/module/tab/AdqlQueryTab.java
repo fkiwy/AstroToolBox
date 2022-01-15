@@ -782,8 +782,8 @@ public class AdqlQueryTab {
         HttpGet get = new HttpGet(url);
         try (CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(get)) {
-            writeMessageLog(get.getURI().toString());
-            writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+            //writeMessageLog(get.getURI().toString());
+            //writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             return EntityUtils.toString(response.getEntity());
         }
     }
