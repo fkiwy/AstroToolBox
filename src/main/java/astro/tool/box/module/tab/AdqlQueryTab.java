@@ -61,6 +61,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -345,7 +346,7 @@ public class AdqlQueryTab {
                     } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
-                        queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)), QUERY_SERVICE);
+                        queryResults = doGet(createResultUrl(jobId));
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
@@ -772,6 +773,16 @@ public class AdqlQueryTab {
                 CloseableHttpResponse response = httpClient.execute(post)) {
             writeMessageLog(post.getURI().toString());
             writeMessageLog(params.toString());
+            writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+            return EntityUtils.toString(response.getEntity());
+        }
+    }
+
+    private String doGet(String url) throws UnsupportedEncodingException, IOException {
+        HttpGet get = new HttpGet(url);
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+                CloseableHttpResponse response = httpClient.execute(get)) {
+            writeMessageLog(get.getURI().toString());
             writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             return EntityUtils.toString(response.getEntity());
         }
