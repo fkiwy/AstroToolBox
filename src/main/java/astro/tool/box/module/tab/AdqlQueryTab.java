@@ -305,7 +305,7 @@ public class AdqlQueryTab {
                     return;
                 }
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
+                    jobStatus = doGet(createStatusUrl(jobId));
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.ERROR.toString()) || jobStatus.equals(JobStatus.ABORTED.toString()) || jobStatus.equals(JobStatus.COMPLETED.toString())) {
@@ -336,7 +336,7 @@ public class AdqlQueryTab {
                 fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
+                    jobStatus = doGet(createStatusUrl(jobId));
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.PENDING.toString())) {
@@ -350,7 +350,7 @@ public class AdqlQueryTab {
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
-                        String response = readResponse(establishHttpConnection(createErrorUrl(jobId)), QUERY_SERVICE);
+                        String response = doGet(createErrorUrl(jobId));
                         String errorMessage = getErrorMessage(response);
                         showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
