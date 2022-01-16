@@ -284,8 +284,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "       ab_flags");
             addRow(query, "FROM   catwise_2020");
             addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-            addRow(query, "AND   (POWER(pmra / sigpmra, 2) + POWER(pmdec / sigpmdec, 2) > 27");
-            addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
+            addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm / ARCSEC_MAS + ")");
         } else {
             addRow(query, "SELECT Name,");
             addRow(query, "       RA_ICRS,");
@@ -311,7 +310,6 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "       abf");
             addRow(query, "FROM   \"II/365/catwise\"");
             addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-            addRow(query, "AND    POWER(pmRA / e_pmRA, 2) + POWER(pmDE / e_pmDE, 2) > 27");
             addRow(query, "AND    SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm / ARCSEC_MAS);
         }
         return encodeQuery(query.toString());

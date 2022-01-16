@@ -182,12 +182,10 @@ public class ImageViewerTab {
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final String AUTO_RANGE = "AUTO";
-    public static final String DECAM_RANGE = "99.5";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final double PIXEL_SCALE_WISE = 2.75;
     public static final int NUMBER_OF_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int NUMBER_OF_DECALS_EPOCHS = 4;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 270;
     public static final int PANEL_WIDTH = 230;
@@ -250,6 +248,7 @@ public class ImageViewerTab {
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JScrollPane rightScrollPanel;
+    private JRadioButton wiseviewCutouts;
     private JRadioButton unwiseCutouts;
     private JRadioButton decalsCutouts;
     private JRadioButton showCatalogsButton;
@@ -723,18 +722,14 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                if (decalsCutouts.isSelected()) {
-                    ranges.setSelectedItem(DECAM_RANGE);
-                } else {
-                    ranges.setSelectedItem(AUTO_RANGE);
-                }
+                ranges.setSelectedItem(AUTO_RANGE);
             });
 
             mainControlPanel.add(new JLabel());
 
             mainControlPanel.add(createHeaderLabel("Cutout service:"));
 
-            JRadioButton wiseviewCutouts = new JRadioButton(html("WiseView (*)"), true);
+            wiseviewCutouts = new JRadioButton(html("WiseView (*)"), true);
             mainControlPanel.add(wiseviewCutouts);
             wiseviewCutouts.setToolTipText("WiseView cutouts are from http://byw.tools/wiseview");
             wiseviewCutouts.addActionListener((ActionEvent evt) -> {
@@ -743,7 +738,6 @@ public class ImageViewerTab {
                 previousRa = 0;
                 previousDec = 0;
                 ranges.setSelectedItem(AUTO_RANGE);
-
             });
 
             unwiseCutouts = new JRadioButton(html("unWISE coadds (*)"));
@@ -764,7 +758,7 @@ public class ImageViewerTab {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
                 previousDec = 0;
-                ranges.setSelectedItem(DECAM_RANGE);
+                ranges.setSelectedItem(AUTO_RANGE);
             });
 
             ButtonGroup cutoutGroup = new ButtonGroup();
@@ -2400,7 +2394,7 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                if (!unwiseCutouts.isSelected() && !decalsCutouts.isSelected()) {
+                if (wiseviewCutouts.isSelected()) {
                     try {
                         InputStream stream = getImageData(1, numberOfEpochs + 1);
                         stream.close();
@@ -3317,7 +3311,7 @@ public class ImageViewerTab {
         if (asyncDownloads) {
             downloadLog.append(log + LINE_SEP_TEXT_AREA);
         }
-        //System.out.println(log);
+        System.out.println(log);
     }
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
@@ -3405,26 +3399,23 @@ public class ImageViewerTab {
     }
 
     private void retrieveDecalsImages(int band, Map<String, ImageContainer> images) throws Exception {
-        Counter requestedEpoch = new Counter();
-        downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr5", 2016);
-        if (Epoch.isFirstLast(epoch)) {
-            requestedEpoch.add(NUMBER_OF_DECALS_EPOCHS);
-        } else {
-            downloadDecalsCutouts(requestedEpoch, band, images, "decals-dr7", 2018);
-            downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr8", 2019);
+        boolean firstEpochDownloaded = downloadDecalsCutouts(0, band, images, "decals-dr5", 2016);
+        if (!firstEpochDownloaded || !Epoch.isFirstLast(epoch)) {
+            downloadDecalsCutouts(2, band, images, "decals-dr7", 2018);
+            downloadDecalsCutouts(4, band, images, "ls-dr8", 2019);
         }
-        downloadDecalsCutouts(requestedEpoch, band, images, "ls-dr9", 2020);
+        downloadDecalsCutouts(6, band, images, "ls-dr9", 2020);
     }
 
-    private void downloadDecalsCutouts(Counter requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
-        String imageKey = band + "_" + requestedEpoch.value();
+    private boolean downloadDecalsCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
+        String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
-            requestedEpoch.add();
-            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " > already downloaded");
-            requestedEpoch.add();
-            return;
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+            requestedEpoch++;
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+            requestedEpoch++;
+            return true;
         }
         String selectedBand = band == 1 ? "r" : "z";
         String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
@@ -3435,15 +3426,17 @@ public class ImageViewerTab {
             enhanceImage(fits, 1000);
             fits.close();
             LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
-            images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
-            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
-            requestedEpoch.add();
-            imageKey = band + "_" + requestedEpoch.value();
+            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " > downloaded");
+            requestedEpoch++;
+            imageKey = band + "_" + requestedEpoch;
             obsDate = LocalDateTime.of(year, Month.SEPTEMBER, 1, 0, 0);
-            images.put(imageKey, new ImageContainer(requestedEpoch.value(), obsDate, fits));
-            writeLogEntry("band " + band + " | image " + requestedEpoch.value() + " | " + survey + " > downloaded");
-            requestedEpoch.add();
+            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " > downloaded");
+            requestedEpoch++;
+            return true;
         } catch (IOException | FitsException ex) {
+            return false;
         }
     }
 
@@ -3733,7 +3726,8 @@ public class ImageViewerTab {
             } else {
                 double minVal = data.get(0);
                 double maxVal = data.get(data.size() - 1);
-                lowerBound = minVal;
+                lowerBound = q1 - iqr * scale;
+                lowerBound = minVal < -1000 ? lowerBound : minVal;
                 upperBound = q3 + 10 * iqr * scale;
                 upperBound = upperBound > maxVal ? maxVal : upperBound;
             }
@@ -3796,7 +3790,6 @@ public class ImageViewerTab {
             imageViewerTab.getUnwiseCutouts().setSelected(true);
         }
         if (decalsCutouts.isSelected()) {
-            imageViewerTab.getRanges().setSelectedItem(DECAM_RANGE);
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDecalsCutouts().setSelected(true);
         }
@@ -5174,10 +5167,6 @@ public class ImageViewerTab {
 
     public JLabel getEpochLabel() {
         return epochLabel;
-    }
-
-    public JComboBox getRanges() {
-        return ranges;
     }
 
     public JRadioButton getUnwiseCutouts() {
