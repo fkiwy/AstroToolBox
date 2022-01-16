@@ -3311,7 +3311,7 @@ public class ImageViewerTab {
         if (asyncDownloads) {
             downloadLog.append(log + LINE_SEP_TEXT_AREA);
         }
-        System.out.println(log);
+        //System.out.println(log);
     }
 
     private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
