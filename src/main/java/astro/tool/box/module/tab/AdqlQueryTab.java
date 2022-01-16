@@ -61,6 +61,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -304,7 +305,7 @@ public class AdqlQueryTab {
                     return;
                 }
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
+                    jobStatus = doGet(createStatusUrl(jobId));
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.ERROR.toString()) || jobStatus.equals(JobStatus.ABORTED.toString()) || jobStatus.equals(JobStatus.COMPLETED.toString())) {
@@ -335,7 +336,7 @@ public class AdqlQueryTab {
                 fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
-                    jobStatus = readResponse(establishHttpConnection(createStatusUrl(jobId)), QUERY_SERVICE);
+                    jobStatus = doGet(createStatusUrl(jobId));
                     statusField.setText(jobStatus);
                     statusField.setBackground(getStatusColor(jobStatus).val);
                     if (jobStatus.equals(JobStatus.PENDING.toString())) {
@@ -345,11 +346,11 @@ public class AdqlQueryTab {
                     } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
-                        queryResults = readResponse(establishHttpConnection(createResultUrl(jobId)), QUERY_SERVICE);
+                        queryResults = doGet(createResultUrl(jobId));
                         centerPanel.add(readQueryResult(new TableRowSorter<>(), queryResults, "Query results"));
                         baseFrame.setVisible(true);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
-                        String response = readResponse(establishHttpConnection(createErrorUrl(jobId)), QUERY_SERVICE);
+                        String response = doGet(createErrorUrl(jobId));
                         String errorMessage = getErrorMessage(response);
                         showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
@@ -773,6 +774,16 @@ public class AdqlQueryTab {
             writeMessageLog(post.getURI().toString());
             writeMessageLog(params.toString());
             writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
+            return EntityUtils.toString(response.getEntity());
+        }
+    }
+
+    private String doGet(String url) throws UnsupportedEncodingException, IOException {
+        HttpGet get = new HttpGet(url);
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+                CloseableHttpResponse response = httpClient.execute(get)) {
+            //writeMessageLog(get.getURI().toString());
+            //writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             return EntityUtils.toString(response.getEntity());
         }
     }

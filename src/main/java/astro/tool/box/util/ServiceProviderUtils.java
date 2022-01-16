@@ -98,7 +98,7 @@ public class ServiceProviderUtils {
                     entries.add(catalogEntry.getInstance(columns, values));
                 }
             } catch (Exception ex) {
-                throw new RuntimeException(response);
+                throw new RuntimeException(response, ex);
             }
         }
         return entries;

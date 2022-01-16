@@ -263,12 +263,12 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "SELECT source_name,");
             addRow(query, "       ra,");
             addRow(query, "       dec,");
-            addRow(query, "       w1mpro,");
-            addRow(query, "       w1sigmpro,");
-            addRow(query, "       w2mpro,");
-            addRow(query, "       w2sigmpro,");
-            addRow(query, "       w1snr,");
-            addRow(query, "       w2snr,");
+            addRow(query, "       w1mpro_pm,");
+            addRow(query, "       w1sigmpro_pm,");
+            addRow(query, "       w2mpro_pm,");
+            addRow(query, "       w2sigmpro_pm,");
+            addRow(query, "       w1snr_pm,");
+            addRow(query, "       w2snr_pm,");
             addRow(query, "       meanobsmjd,");
             addRow(query, "       ra_pm,");
             addRow(query, "       dec_pm,");
@@ -310,7 +310,6 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             addRow(query, "       abf");
             addRow(query, "FROM   \"II/365/catwise\"");
             addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', RA_ICRS, DE_ICRS), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-            addRow(query, "AND    POWER(pmRA / e_pmRA, 2) + POWER(pmDE / e_pmDE, 2) > 27");
             addRow(query, "AND    SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm / ARCSEC_MAS);
         }
         return encodeQuery(query.toString());
