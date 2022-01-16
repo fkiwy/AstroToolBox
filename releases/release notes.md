@@ -1,5 +1,10 @@
 ## Release notes
 
+### AstroToolBox v2.4.1
+- Fixed a bug in the DECaLS images download
+- Implemented a HttpGet to fetch the results from an async ADQL query
+- Fixed a bug in the IRSA proper motion query of the CatWISE2020 catalog
+
 ### AstroToolBox v2.4.0
 - Changed the NSC DR2 catalog base URL from http://datalab.noao.edu to https://datalab.noirlab.edu
 - Converted cutout service checkboxes to radio buttons
