@@ -41,7 +41,7 @@
 ### SIMBAD Measurements & References
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
-### SED fitting for low-mass and ultra-cool dwarfs
+### SED fitting for ultra-cool dwarfs
 ![SED](images/SED.png)
 
 ### SED fitting for white dwarfs
