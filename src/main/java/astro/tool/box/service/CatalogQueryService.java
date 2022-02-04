@@ -1,20 +1,17 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.util.ServiceProviderUtils.*;
-import astro.tool.box.container.catalog.CatalogEntry;
-import astro.tool.box.container.catalog.ProperMotionQuery;
-import astro.tool.box.facade.CatalogQueryFacade;
+import static astro.tool.box.util.ServiceHelper.*;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.ProperMotionQuery;
 import java.io.IOException;
 import java.util.List;
 
-public class CatalogQueryService implements CatalogQueryFacade {
+public class CatalogQueryService {
 
-    @Override
     public List<CatalogEntry> getCatalogEntriesByCoords(CatalogEntry catalogEntry) throws IOException {
         return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getCatalogUrl()), catalogEntry.getCatalogName()), catalogEntry);
     }
 
-    @Override
     public List<CatalogEntry> getCatalogEntriesByCoordsAndTpm(ProperMotionQuery catalogEntry) throws IOException {
         return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getProperMotionQueryUrl()), catalogEntry.getCatalogName()), catalogEntry);
     }

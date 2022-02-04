@@ -1,10 +1,10 @@
 package astro.tool.box.service;
 
 import static astro.tool.box.function.PhotometricFunctions.*;
-import astro.tool.box.container.lookup.SpectralTypeLookup;
-import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.util.Utils;
+import astro.tool.box.util.MiscUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -29,7 +29,7 @@ public class SpectralTypeLookupService {
                 Double colorValue = color.getValue();
                 LookupResult result = evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
                 if (result != null) {
-                    Double sptNum = Utils.SPECTRAL_TYPES.get(result.getSpt().replace("V", ""));
+                    Double sptNum = MiscUtils.SPECTRAL_TYPES.get(result.getSpt().replace("V", ""));
                     result.setSptNum(sptNum);
                     results.add(result);
                 }
