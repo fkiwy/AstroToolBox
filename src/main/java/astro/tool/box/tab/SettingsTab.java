@@ -68,7 +68,6 @@ public class SettingsTab {
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
-    public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
     public static final String CUTOUT_SERVICE = "cutoutService";
     public static final String GAIA_CMD_PATH = "gaiaCmdPath";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
@@ -78,7 +77,6 @@ public class SettingsTab {
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
-    private boolean useSimbadMirror;
     private String cutoutService;
     private String gaiaCmdPath;
     private String objectCollectionPath;
@@ -169,13 +167,6 @@ public class SettingsTab {
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
             useProxy = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_PROXY, "false"));
-            String simbadMirrorProperty = USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR);
-            if (simbadMirrorProperty == null) {
-                useSimbadMirror = true;
-                USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
-            } else {
-                useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
-            }
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
             gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
@@ -216,11 +207,6 @@ public class SettingsTab {
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
             globalSettings.add(useProxyCheckBox);
-
-            globalSettings.add(new JLabel("Use SIMBAD mirror: ", JLabel.RIGHT));
-            JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
-            useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
-            globalSettings.add(useSimbadMirrorCheckBox);
 
             globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
@@ -471,7 +457,6 @@ public class SettingsTab {
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
-                    useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
                         if (proxyAddress.isEmpty()) {
@@ -523,7 +508,6 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
-                USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
                 USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
                 USER_SETTINGS.setProperty(GAIA_CMD_PATH, gaiaCmdPathField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());

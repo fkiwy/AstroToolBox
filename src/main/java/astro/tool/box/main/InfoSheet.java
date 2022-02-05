@@ -57,10 +57,6 @@ public class InfoSheet {
     private static final Font LARGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.BLACK);
     private static final Font MEDIUM_FONT = FontFactory.getFont(FontFactory.HELVETICA, 7.5f, BaseColor.BLACK);
     private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.BLACK);
-    private static final Font SMALL_BOLD_FONT = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 6, BaseColor.BLACK);
-    private static final Font SMALL_GREEN_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.GREEN.darker());
-    private static final Font SMALL_ORANGE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.ORANGE.darker());
-    private static final Font SMALL_RED_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.RED.darker());
     private static final Font SMALL_WHITE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.WHITE);
 
     private final double targetRa;
@@ -340,14 +336,18 @@ public class InfoSheet {
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
-            for (FlipbookComponent component : imageViewerTab.getFlipbook()) {
+            FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
+            int length = flipbook.length;
+            length = length < 7 ? length : 7;
+            for (int i = 0; i < length; i++) {
+                FlipbookComponent component = flipbook[i];
                 imageLabels.add(component.getTitle());
                 bufferedImages.add(imageViewerTab.processImage(component));
             }
 
             createPdfTable("NeoWISE", imageLabels, bufferedImages, writer, document);
 
-            int searchRadius = size / 3;
+            int searchRadius = 10;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
             List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
             for (CatalogEntry catalogEntry : catalogInstances.values()) {
@@ -365,42 +365,11 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (**)", mainHeader));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type evaluation (***)", null));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (*)", mainHeader));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type evaluation (**)", null));
 
-            PdfPTable table = new PdfPTable(3);
-            table.setTotalWidth(new float[]{11, 40, 100});
-            table.setLockedWidth(true);
-            table.setSpacingBefore(10);
-            table.setKeepTogether(true);
-            table.setHorizontalAlignment(Element.ALIGN_LEFT);
-
-            table.addCell(createTableCell("(*)", SMALL_FONT));
-            table.addCell(createTableCell("Match probability", SMALL_BOLD_FONT));
-            table.addCell(createTableCell("Constraint", SMALL_BOLD_FONT));
-
-            PdfPCell cell = new PdfPCell();
-            cell.setBackgroundColor(BaseColor.GREEN.darker());
-            table.addCell(cell);
-            table.addCell(createTableCell("High", SMALL_FONT));
-            table.addCell(createTableCell("0 <= target distance < 3", SMALL_FONT));
-
-            cell = new PdfPCell();
-            cell.setBackgroundColor(BaseColor.ORANGE.darker());
-            table.addCell(cell);
-            table.addCell(createTableCell("Medium", SMALL_FONT));
-            table.addCell(createTableCell("3 <= target distance < 6", SMALL_FONT));
-
-            cell = new PdfPCell();
-            cell.setBackgroundColor(BaseColor.RED.darker());
-            table.addCell(cell);
-            table.addCell(createTableCell("Low", SMALL_FONT));
-            table.addCell(createTableCell("6 <= target distance", SMALL_FONT));
-
-            document.add(table);
-
-            document.add(new Paragraph("(**) Uses colors from: A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)", SMALL_FONT));
-            document.add(new Paragraph("(***) Uses colors from: Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
+            document.add(new Paragraph("(*) Uses the relations from \"A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence\" by Eric Mamajek", SMALL_FONT));
+            document.add(new Paragraph("(**) Uses the relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
 
             document.close();
 
@@ -497,17 +466,8 @@ public class InfoSheet {
 
         for (int i = 0; i < batchResults.size(); i++) {
             BatchResult batchResult = batchResults.get(i);
-            Font font;
-            double targetDistance = batchResult.getTargetDistance();
-            if (targetDistance < 3) {
-                font = SMALL_GREEN_FONT;
-            } else if (targetDistance >= 3 && targetDistance < 6) {
-                font = SMALL_ORANGE_FONT;
-            } else {
-                font = SMALL_RED_FONT;
-            }
             addCell(table, batchResult.getCatalogName(), Element.ALIGN_LEFT, i, SMALL_FONT);
-            addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i, font);
+            addCell(table, roundTo3Dec(batchResult.getTargetDistance()), Element.ALIGN_RIGHT, i, SMALL_FONT);
             addCell(table, roundTo6DecNZ(batchResult.getRa()), Element.ALIGN_LEFT, i, SMALL_FONT);
             addCell(table, roundTo6DecNZ(batchResult.getDec()), Element.ALIGN_LEFT, i, SMALL_FONT);
             addCell(table, batchResult.getSourceId(), Element.ALIGN_LEFT, i, SMALL_FONT);
@@ -570,7 +530,7 @@ public class InfoSheet {
         cell.setHorizontalAlignment(alignment);
         cell.setBackgroundColor(BaseColor.DARK_GRAY);
         cell.setBorderColor(BaseColor.WHITE);
-        cell.setBorderWidth(0.5f);
+        cell.setBorderWidth(0);
         cell.setPadding(2);
         table.addCell(cell);
     }
@@ -580,18 +540,9 @@ public class InfoSheet {
         cell.setHorizontalAlignment(alignment);
         cell.setBackgroundColor(rowIndex % 2 == 0 ? BaseColor.WHITE : BaseColor.LIGHT_GRAY);
         cell.setBorderColor(BaseColor.WHITE);
-        cell.setBorderWidth(0.5f);
-        cell.setPadding(2);
-        table.addCell(cell);
-    }
-
-    private PdfPCell createTableCell(String text, Font font) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, font));
-        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
         cell.setBorderWidth(0);
         cell.setPadding(2);
-        cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
-        return cell;
+        table.addCell(cell);
     }
 
     private List<CatalogEntry> performQuery(CatalogEntry catalogQuery) throws IOException {

@@ -23,7 +23,7 @@ public class SimbadQueryService {
         addRow(query, "from   ids as i, basic as b");
         addRow(query, "where  i.oidref = b.oid");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
-        String queryUrl = getSimbadBaseUrl() + encodeQuery(query.toString());
+        String queryUrl = SIMBAD_BASE_URL + encodeQuery(query.toString());
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
         try (Scanner scanner = new Scanner(response)) {
             scanner.nextLine();
@@ -43,7 +43,7 @@ public class SimbadQueryService {
         addRow(query, "and    h.oidref = b.oid");
         addRow(query, "and    b.main_id = '" + mainIdentifier + "'");
         addRow(query, "order by bibcode desc");
-        String queryUrl = getSimbadBaseUrl() + encodeQuery(query.toString());
+        String queryUrl = SIMBAD_BASE_URL + encodeQuery(query.toString());
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
         List<String[]> references = new ArrayList();
         try (Scanner scanner = new Scanner(response)) {
@@ -61,7 +61,7 @@ public class SimbadQueryService {
         addRow(query, "select abstract");
         addRow(query, "from   ref");
         addRow(query, "where  oidbib = " + bibRef);
-        String queryUrl = getSimbadBaseUrl() + encodeQuery(query.toString());
+        String queryUrl = SIMBAD_BASE_URL + encodeQuery(query.toString());
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
         try (Scanner scanner = new Scanner(response)) {
             scanner.nextLine();
@@ -78,7 +78,7 @@ public class SimbadQueryService {
         addRow(query, "from   author");
         addRow(query, "where  oidbibref = " + bibRef);
         addRow(query, "order by pos asc");
-        String queryUrl = getSimbadBaseUrl() + encodeQuery(query.toString());
+        String queryUrl = SIMBAD_BASE_URL + encodeQuery(query.toString());
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
         List<String[]> authors = new ArrayList();
         try (Scanner scanner = new Scanner(response)) {
@@ -236,7 +236,7 @@ public class SimbadQueryService {
     }
 
     private List<String[]> executeQuery(String query) throws IOException {
-        String queryUrl = getSimbadBaseUrl() + encodeQuery(query);
+        String queryUrl = SIMBAD_BASE_URL + encodeQuery(query);
         String response = readResponse(establishHttpConnection(queryUrl), SERVICE_PROVIDER);
         List<String[]> results = new ArrayList();
         try (Scanner scanner = new Scanner(response)) {
