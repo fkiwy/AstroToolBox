@@ -2,9 +2,9 @@ package astro.tool.box.service;
 
 import astro.tool.box.container.NumberPair;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import astro.tool.box.container.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.container.lookup.DistanceLookupResult;
-import astro.tool.box.container.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.DistanceLookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.enumeration.Band;
 import java.util.ArrayList;
 import java.util.List;

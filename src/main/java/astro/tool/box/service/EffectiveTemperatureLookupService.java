@@ -1,8 +1,8 @@
 package astro.tool.box.service;
 
 import static astro.tool.box.function.PhotometricFunctions.*;
-import astro.tool.box.container.lookup.SpectralTypeLookup;
-import astro.tool.box.container.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.Color;
 import java.util.ArrayList;
 import java.util.List;

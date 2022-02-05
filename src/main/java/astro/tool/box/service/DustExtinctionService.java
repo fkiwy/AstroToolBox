@@ -2,7 +2,7 @@ package astro.tool.box.service;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceHelper.*;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;

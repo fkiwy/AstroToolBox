@@ -1,6 +1,6 @@
 package astro.tool.box.container;
 
-import astro.tool.box.container.catalog.CatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Shape;
 import java.awt.Color;
 import java.io.File;

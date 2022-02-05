@@ -2,9 +2,9 @@ package astro.tool.box.function;
 
 import astro.tool.box.container.StringPair;
 import static astro.tool.box.function.AstrometricFunctions.*;
-import astro.tool.box.container.lookup.SpectralTypeLookup;
-import astro.tool.box.container.lookup.LookupResult;
-import astro.tool.box.container.lookup.WhiteDwarfLookupEntry;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.WhiteDwarfLookupEntry;
 import astro.tool.box.enumeration.Color;
 import static java.lang.Math.*;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.util.ServiceProviderUtils.*;
+import static astro.tool.box.util.ServiceHelper.*;
 import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
