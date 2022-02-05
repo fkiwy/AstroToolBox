@@ -368,8 +368,8 @@ public class InfoSheet {
             document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (*)", mainHeader));
             document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type evaluation (**)", null));
 
-            document.add(new Paragraph("(*) Uses the relations from \"A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence\" by Eric Mamajek", SMALL_FONT));
-            document.add(new Paragraph("(**) Uses the relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
+            document.add(new Paragraph("(*) Uses the color - spectral type relations from Eric Mamajek's Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", SMALL_FONT));
+            document.add(new Paragraph("(**) Uses the color - spectral type relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
 
             document.close();
 
@@ -454,7 +454,7 @@ public class InfoSheet {
         table.addCell(tableHeader);
 
         addHeaderCell(table, "Catalog", Element.ALIGN_LEFT);
-        addHeaderCell(table, "Target dist. (*)", Element.ALIGN_RIGHT);
+        addHeaderCell(table, "Target dist. (\")", Element.ALIGN_RIGHT);
         addHeaderCell(table, "RA", Element.ALIGN_LEFT);
         addHeaderCell(table, "dec", Element.ALIGN_LEFT);
         addHeaderCell(table, "Source id", Element.ALIGN_LEFT);
