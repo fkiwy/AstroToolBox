@@ -177,7 +177,10 @@ public class SettingsTab {
             themes.setSelectedItem(lookAndFeel);
             globalSettings.add(themes);
 
-            globalSettings.add(new JLabel("TAP provider for catalogs (*): ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("TAP provider for AllWISE, ", JLabel.RIGHT));
+            globalSettings.add(new JLabel());
+
+            globalSettings.add(new JLabel("CatWISE, 2MASS and Gaia DR2: ", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
@@ -191,9 +194,6 @@ public class SettingsTab {
             ButtonGroup buttonGroup = new ButtonGroup();
             buttonGroup.add(irsaButton);
             buttonGroup.add(vizierButton);
-
-            globalSettings.add(new JLabel("(*) AllWISE, CatWISE, 2MASS ", JLabel.RIGHT));
-            globalSettings.add(new JLabel("and Gaia DR2", JLabel.LEFT));
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
@@ -390,6 +390,11 @@ public class SettingsTab {
             JTextField properMotionField = new JTextField(String.valueOf(properMotion));
             imageViewerSettings.add(properMotionField);
 
+            imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
+            JCheckBox asynchDownloadsCheckBox = new JCheckBox();
+            asynchDownloadsCheckBox.setSelected(asyncDownloads);
+            imageViewerSettings.add(asynchDownloadsCheckBox);
+
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
@@ -405,11 +410,6 @@ public class SettingsTab {
             downloadPanel.add(sdssImagesCheckBox);
             JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
             downloadPanel.add(dssImagesCheckBox);
-
-            imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
-            JCheckBox asynchDownloadsCheckBox = new JCheckBox();
-            asynchDownloadsCheckBox.setSelected(asyncDownloads);
-            imageViewerSettings.add(asynchDownloadsCheckBox);
 
             containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.CENTER);
