@@ -2531,43 +2531,43 @@ public class ImageViewerTab {
                     for (int i = 2; i < epochCount - 2; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = getImage(WiseBand.W1.val, 0);
-                            addImage(WiseBand.W1.val, 800 + i, fits);
+                            addImage(WiseBand.W1.val, 600 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = getImage(WiseBand.W2.val, 0);
-                            addImage(WiseBand.W2.val, 800 + i, fits);
+                            addImage(WiseBand.W2.val, 600 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = addImages(WiseBand.W1.val, i, WiseBand.W1.val, i + 2);
-                            addImage(WiseBand.W1.val, 900 + i, takeAverage(fits, 2));
+                            addImage(WiseBand.W1.val, 700 + i, takeAverage(fits, 2));
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 2);
-                            addImage(WiseBand.W2.val, 900 + i, takeAverage(fits, 2));
+                            addImage(WiseBand.W2.val, 700 + i, takeAverage(fits, 2));
                         }
-                        differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 900 + i, true, i > 2 ? i + EPOCH_GAP + 2 : i - 2);
+                        differenceImaging(600 + i, 700 + i);
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 700 + i, true, i > 2 ? i + EPOCH_GAP + 2 : i - 2);
                         k++;
                     }
                     for (int i = 3; i < epochCount - 2; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = getImage(WiseBand.W1.val, 1);
-                            addImage(WiseBand.W1.val, 800 + i, fits);
+                            addImage(WiseBand.W1.val, 600 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = getImage(WiseBand.W2.val, 1);
-                            addImage(WiseBand.W2.val, 800 + i, fits);
+                            addImage(WiseBand.W2.val, 600 + i, fits);
                         }
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = addImages(WiseBand.W1.val, i, WiseBand.W1.val, i + 2);
-                            addImage(WiseBand.W1.val, 900 + i, takeAverage(fits, 2));
+                            addImage(WiseBand.W1.val, 700 + i, takeAverage(fits, 2));
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 2);
-                            addImage(WiseBand.W2.val, 900 + i, takeAverage(fits, 2));
+                            addImage(WiseBand.W2.val, 700 + i, takeAverage(fits, 2));
                         }
-                        differenceImaging(800 + i, 900 + i);
-                        flipbook[k] = new FlipbookComponent(wiseBand.val, 800 + i, true, i > 3 ? i + EPOCH_GAP + 2 : i - 2);
+                        differenceImaging(600 + i, 700 + i);
+                        flipbook[k] = new FlipbookComponent(wiseBand.val, 600 + i, true, i > 3 ? i + EPOCH_GAP + 2 : i - 2);
                         k++;
                     }
                     break;
@@ -2576,13 +2576,13 @@ public class ImageViewerTab {
                     for (int i = 0; i < epochCount; i += 2) {
                         if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = addImages(WiseBand.W1.val, i, WiseBand.W1.val, i + 1);
-                            addImage(WiseBand.W1.val, 101 + (i / 2), takeAverage(fits, 2));
+                            addImage(WiseBand.W1.val, 501 + (i / 2), takeAverage(fits, 2));
                         }
                         if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                             fits = addImages(WiseBand.W2.val, i, WiseBand.W2.val, i + 1);
-                            addImage(WiseBand.W2.val, 101 + (i / 2), takeAverage(fits, 2));
+                            addImage(WiseBand.W2.val, 501 + (i / 2), takeAverage(fits, 2));
                         }
-                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 101 + (i / 2), true, i > 1 ? i + EPOCH_GAP + 1 : i);
+                        flipbook[i / 2] = new FlipbookComponent(wiseBand.val, 501 + (i / 2), true, i > 1 ? i + EPOCH_GAP + 1 : i);
                     }
                     break;
                 case FIRST_LAST:
@@ -2614,22 +2614,22 @@ public class ImageViewerTab {
                     flipbook = new FlipbookComponent[2];
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                         fits = addImages(WiseBand.W1.val, 0, WiseBand.W1.val, epochCount - 2);
-                        addImage(WiseBand.W1.val, 400, takeAverage(fits, 2));
+                        addImage(WiseBand.W1.val, 300, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                         fits = addImages(WiseBand.W2.val, 0, WiseBand.W2.val, epochCount - 2);
-                        addImage(WiseBand.W2.val, 400, takeAverage(fits, 2));
+                        addImage(WiseBand.W2.val, 300, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W1) || wiseBand.equals(WiseBand.W1W2)) {
                         fits = addImages(WiseBand.W1.val, 1, WiseBand.W1.val, epochCount - 1);
-                        addImage(WiseBand.W1.val, 500, takeAverage(fits, 2));
+                        addImage(WiseBand.W1.val, 400, takeAverage(fits, 2));
                     }
                     if (wiseBand.equals(WiseBand.W2) || wiseBand.equals(WiseBand.W1W2)) {
                         fits = addImages(WiseBand.W2.val, 1, WiseBand.W2.val, epochCount - 1);
-                        addImage(WiseBand.W2.val, 500, takeAverage(fits, 2));
+                        addImage(WiseBand.W2.val, 400, takeAverage(fits, 2));
                     }
-                    flipbook[0] = new FlipbookComponent(wiseBand.val, 400, true, 0);
-                    flipbook[1] = new FlipbookComponent(wiseBand.val, 500, true, selectedEpochs * 2 + EPOCH_GAP - 1);
+                    flipbook[0] = new FlipbookComponent(wiseBand.val, 300, true, 0);
+                    flipbook[1] = new FlipbookComponent(wiseBand.val, 400, true, selectedEpochs * 2 + EPOCH_GAP - 1);
                     break;
             }
 

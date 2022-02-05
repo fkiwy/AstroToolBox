@@ -345,7 +345,7 @@ public class InfoSheet {
                 bufferedImages.add(imageViewerTab.processImage(component));
             }
 
-            createPdfTable("NeoWISE", imageLabels, bufferedImages, writer, document);
+            createPdfTable("WISE 2010 & 2014-2019", imageLabels, bufferedImages, writer, document);
 
             int searchRadius = 10;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
