@@ -30,7 +30,7 @@
                                 <manifest>
                                     <addClasspath>true</addClasspath>
                                     <classpathPrefix>lib/</classpathPrefix>
-                                    <mainClass>astro.tool.box.module.Run</mainClass>
+                                    <mainClass>astro.tool.box.main.Run</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
