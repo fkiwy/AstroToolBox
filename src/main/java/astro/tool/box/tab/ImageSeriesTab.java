@@ -30,6 +30,8 @@ import astro.tool.box.enumeration.FileType;
 import astro.tool.box.main.FlipbookComponent;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.Counter;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -37,17 +39,25 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import static java.lang.Math.sqrt;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -247,6 +257,8 @@ public class ImageSeriesTab {
                                 displaySdssImages(targetRa, targetDec, fieldOfView);
                                 displaySpitzerImages(targetRa, targetDec, fieldOfView);
                                 displayAllwiseImages(targetRa, targetDec, fieldOfView);
+                                displayUkidssImages(targetRa, targetDec, fieldOfView);
+                                displayVhsImages(targetRa, targetDec, fieldOfView);
                                 displayPs1Images(targetRa, targetDec, fieldOfView);
                                 displayDecalsImages(targetRa, targetDec, fieldOfView);
                                 displayTimeSeries(targetRa, targetDec, fieldOfView);
@@ -643,6 +655,147 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
+    }
+
+    private void displayUkidssImages(double targetRa, double targetDec, int size) throws Exception {
+        if (targetDec < -5) {
+            return;
+        }
+        double imageSize = size / 60f;
+        SortedMap<String, String> downloadLinks = new TreeMap<>();
+        String[] bands = new String[]{"2", "3", "4", "5"};
+        for (String band : bands) {
+            String imageUrl = String.format("http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=stack", targetRa, targetDec, band, imageSize, imageSize);
+            String response = readResponse(establishHttpConnection(imageUrl), "UKIDSS");
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("href")) {
+                        String[] parts = line.split("href=\"");
+                        parts = parts[1].split("\"");
+                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
+                        break;
+                    }
+                }
+            }
+        }
+        if (downloadLinks.isEmpty()) {
+            return;
+        }
+
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bandPanel.setBorder(createEmptyBorder("UKIDSSDR11PLUS"));
+
+        for (Entry<String, String> entry : downloadLinks.entrySet()) {
+            String band = entry.getKey();
+            String downloadLink = entry.getValue();
+            switch (band) {
+                case "2":
+                    band = "Y";
+                    break;
+                case "3":
+                    band = "J";
+                    break;
+                case "4":
+                    band = "H";
+                    break;
+                case "5":
+                    band = "Ks";
+                    break;
+                default:
+                    band = "?";
+                    break;
+            }
+            try {
+                HttpURLConnection connection = establishHttpConnection(downloadLink);
+                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                BufferedImage image = ImageIO.read(stream);
+                if (image != null) {
+                    bandPanel.add(buildImagePanel(flip(image), band));
+                }
+            } catch (IOException ex) {
+            }
+        }
+
+        if (bandPanel.getComponentCount() > 0) {
+            centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+        }
+    }
+
+    private void displayVhsImages(double targetRa, double targetDec, int size) throws Exception {
+        if (targetDec > 5) {
+            return;
+        }
+        double imageSize = size / 60f;
+        SortedMap<String, String> downloadLinks = new TreeMap<>();
+        String[] bands = new String[]{"2", "3", "4", "5"};
+        for (String band : bands) {
+            String imageUrl = String.format("http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=tilestack", targetRa, targetDec, band, imageSize, imageSize);
+            String response = readResponse(establishHttpConnection(imageUrl), "VISTA VHS");
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("href")) {
+                        String[] parts = line.split("href=\"");
+                        parts = parts[1].split("\"");
+                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
+                        break;
+                    }
+                }
+            }
+        }
+        if (downloadLinks.isEmpty()) {
+            return;
+        }
+
+        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bandPanel.setBorder(createEmptyBorder("VISTA VHS DR6"));
+
+        for (Entry<String, String> entry : downloadLinks.entrySet()) {
+            String band = entry.getKey();
+            String downloadLink = entry.getValue();
+            switch (band) {
+                case "2":
+                    band = "Y";
+                    break;
+                case "3":
+                    band = "J";
+                    break;
+                case "4":
+                    band = "H";
+                    break;
+                case "5":
+                    band = "Ks";
+                    break;
+                default:
+                    band = "?";
+                    break;
+            }
+            try {
+                HttpURLConnection connection = establishHttpConnection(downloadLink);
+                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                BufferedImage image = ImageIO.read(stream);
+                if (image != null) {
+                    bandPanel.add(buildImagePanel(flip(image), band));
+                }
+            } catch (IOException ex) {
+            }
+        }
+
+        if (bandPanel.getComponentCount() > 0) {
+            centerPanel.add(bandPanel);
+            baseFrame.setVisible(true);
+            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+        }
+    }
+
+    private BufferedImage flip(BufferedImage image) {
+        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+        tx.translate(0, -image.getHeight(null));
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(image, null);
     }
 
     private void displayPs1Images(double targetRa, double targetDec, int size) throws Exception {
