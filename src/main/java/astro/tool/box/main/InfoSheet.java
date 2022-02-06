@@ -333,7 +333,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable(DESI_LS_LABEL, imageLabels, bufferedImages, writer, document);
+            createPdfTable("DESI LS", imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();

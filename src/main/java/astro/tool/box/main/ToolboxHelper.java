@@ -910,8 +910,8 @@ public class ToolboxHelper {
         return image;
     }
 
-    public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, int size, String surveyUrl, String surveyLabel) throws Exception {
-        double imageSize = size / 60f;
+    public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
+        double imageSize = size / 22f;
         Map<String, String> downloadLinks = new LinkedHashMap<>();
         String[] bands = new String[]{"2", "3", "4", "5"};
         for (String band : bands) {
@@ -940,7 +940,11 @@ public class ToolboxHelper {
                 HttpURLConnection connection = establishHttpConnection(downloadLink);
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
                 BufferedImage image = ImageIO.read(stream);
-                images.put(band, flipImage(image));
+                if (surveyLabel.equals("UKIDSS")) {
+                    image = rotateImage(image, 1);
+                }
+                image = flipImage(image);
+                images.put(band, image);
             } catch (IOException ex) {
             }
         });
@@ -949,10 +953,10 @@ public class ToolboxHelper {
         BufferedImage i3 = images.get("J");
         if (i1 != null && i2 != null && i3 != null) {
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
-            images.put("K-H-J", flipImage(colorImage));
+            images.put("K-H-J", colorImage);
         } else if (i1 != null && i3 != null) {
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-            images.put("K-J", flipImage(colorImage));
+            images.put("K-J", colorImage);
         }
         return images;
     }
@@ -1007,6 +1011,15 @@ public class ToolboxHelper {
         AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
         tx.translate(0, -image.getHeight(null));
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(image, null);
+    }
+
+    public static BufferedImage rotateImage(BufferedImage image, int numberOfQuadrants) {
+        if (numberOfQuadrants == 0) {
+            return image;
+        }
+        AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(image, null);
     }
 

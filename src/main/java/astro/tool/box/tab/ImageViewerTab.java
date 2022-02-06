@@ -315,10 +315,14 @@ public class ImageViewerTab {
     private BufferedImage wiseImage;
     private BufferedImage decalsImage;
     private BufferedImage ps1Image;
+    private BufferedImage ukidssImage;
+    private BufferedImage vhsImage;
     private BufferedImage sdssImage;
     private BufferedImage dssImage;
     private BufferedImage processedDecalsImage;
     private BufferedImage processedPs1Image;
+    private BufferedImage processedUkidssImage;
+    private BufferedImage processedVhsImage;
     private BufferedImage processedSdssImage;
     private BufferedImage processedDssImage;
     private Map<String, ImageContainer> imagesW1 = new HashMap<>();
@@ -386,6 +390,8 @@ public class ImageViewerTab {
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
+    private boolean ukidssImages;
+    private boolean vhsImages;
     private boolean sdssImages;
     private boolean dssImages;
     private boolean waitCursor = true;
@@ -749,9 +755,9 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            decalsCutouts = new JRadioButton(html("DECam Legacy Survey (*)"));
+            decalsCutouts = new JRadioButton(html("DESI Legacy Survey (*)"));
             mainControlPanel.add(decalsCutouts);
-            decalsCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together. \nW1 represents the r-band, W2 the z-band.");
+            decalsCutouts.setToolTipText("DESI LS cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together. \nW1 represents the r-band, W2 the z-band.");
             decalsCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
@@ -1174,7 +1180,7 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            decalsImages = new JCheckBox("DECaLS g, r & z bands", false);
+            decalsImages = new JCheckBox("DESI LS g, r & z bands", false);
             mouseControlPanel.add(decalsImages);
             decalsImages.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
@@ -1508,11 +1514,11 @@ public class ImageViewerTab {
                     if (processedDecalsImage != null) {
                         // Create and display magnified DECaLS image
                         if (!imageCutOff) {
-                            addMagnifiedImage(DESI_LS_LABEL, processedDecalsImage, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage("DESI LS", processedDecalsImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular DECaLS image
-                        imagePanel.add(new JLabel(" DECaLS"));
+                        imagePanel.add(new JLabel(" DESI LS"));
                         decalsLabel = new JLabel(new ImageIcon(processedDecalsImage));
                         decalsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(decalsLabel);
@@ -1531,6 +1537,36 @@ public class ImageViewerTab {
                         ps1Label = new JLabel(new ImageIcon(processedPs1Image));
                         ps1Label.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(ps1Label);
+                    }
+
+                    // Display UKIDSS images
+                    JLabel ukidssLabel = null;
+                    if (processedUkidssImage != null) {
+                        // Create and display magnified UKIDSS image
+                        if (!imageCutOff) {
+                            addMagnifiedImage("UKIDSS", processedUkidssImage, upperLeftX, upperLeftY, width, height);
+                        }
+
+                        // Display regular UKIDSS image
+                        imagePanel.add(new JLabel(" UKIDSS"));
+                        ukidssLabel = new JLabel(new ImageIcon(processedUkidssImage));
+                        ukidssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+                        imagePanel.add(ukidssLabel);
+                    }
+
+                    // Display VHS images
+                    JLabel vhsLabel = null;
+                    if (processedVhsImage != null) {
+                        // Create and display magnified VHS image
+                        if (!imageCutOff) {
+                            addMagnifiedImage("VHS", processedVhsImage, upperLeftX, upperLeftY, width, height);
+                        }
+
+                        // Display regular VHS image
+                        imagePanel.add(new JLabel(" VHS"));
+                        vhsLabel = new JLabel(new ImageIcon(processedVhsImage));
+                        vhsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+                        imagePanel.add(vhsLabel);
                     }
 
                     // Display SDSS images
@@ -2360,6 +2396,24 @@ public class ImageViewerTab {
                         return null;
                     });
                 }
+                ukidssImage = null;
+                processedUkidssImage = null;
+                if (ukidssImages) {
+                    CompletableFuture.supplyAsync(() -> {
+                        ukidssImage = fetchUkidssImage(targetRa, targetDec, size);
+                        processedUkidssImage = zoom(rotate(ukidssImage, quadrantCount), zoom);
+                        return null;
+                    });
+                }
+                vhsImage = null;
+                processedVhsImage = null;
+                if (vhsImages) {
+                    CompletableFuture.supplyAsync(() -> {
+                        vhsImage = fetchVhsImage(targetRa, targetDec, size);
+                        processedVhsImage = zoom(rotate(vhsImage, quadrantCount), zoom);
+                        return null;
+                    });
+                }
                 sdssImage = null;
                 processedSdssImage = null;
                 if (sdssImages) {
@@ -2714,6 +2768,12 @@ public class ImageViewerTab {
         if (ps1Image != null) {
             processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
         }
+        if (ukidssImage != null) {
+            processedUkidssImage = zoom(rotate(ukidssImage, quadrantCount), zoom);
+        }
+        if (vhsImage != null) {
+            processedVhsImage = zoom(rotate(vhsImage, quadrantCount), zoom);
+        }
         if (sdssImage != null) {
             processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
         }
@@ -2771,12 +2831,22 @@ public class ImageViewerTab {
         }
         if (decalsImage != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(decalsImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder(DESI_LS_LABEL));
+            pane.setBorder(createEtchedBorder("DESI LS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("Pan-STARRS"));
+            grid.add(pane);
+        }
+        if (ukidssImage != null) {
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ukidssImage, quadrantCount), zoom))));
+            pane.setBorder(createEtchedBorder("UKIDSS"));
+            grid.add(pane);
+        }
+        if (vhsImage != null) {
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(vhsImage, quadrantCount), zoom))));
+            pane.setBorder(createEtchedBorder("VHS"));
             grid.add(pane);
         }
         if (sdssImage != null) {
@@ -3851,6 +3921,40 @@ public class ImageViewerTab {
         }
     }
 
+    private BufferedImage fetchUkidssImage(double targetRa, double targetDec, double size) {
+        try {
+            if (targetDec < -5) {
+                return null;
+            }
+            String surveyLabel = "UKIDSS";
+            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, surveyLabel);
+            BufferedImage nirImage = nirImages.get("K-H-J");
+            if (nirImage == null) {
+                nirImage = nirImages.get("K-J");
+            }
+            return nirImage;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private BufferedImage fetchVhsImage(double targetRa, double targetDec, double size) {
+        try {
+            if (targetDec > 5) {
+                return null;
+            }
+            String surveyLabel = "VHS";
+            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, surveyLabel);
+            BufferedImage nirImage = nirImages.get("K-H-J");
+            if (nirImage == null) {
+                nirImage = nirImages.get("K-J");
+            }
+            return nirImage;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     private BufferedImage fetchSdssImage(double targetRa, double targetDec, double size) {
         try {
             int resolution = 1024;
@@ -4190,7 +4294,7 @@ public class ImageViewerTab {
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("DECaLS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.setTitle("DESI LS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
@@ -4238,7 +4342,7 @@ public class ImageViewerTab {
             image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
                 image = convertToGray(image);
-                bandPanel.add(buildImagePanel(image, "DECaLS - z"));
+                bandPanel.add(buildImagePanel(image, "DESI LS - z"));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4309,7 +4413,7 @@ public class ImageViewerTab {
                 image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
                     image = convertToGray(image);
-                    imageList.add(new Couple("DECaLS - z", image));
+                    imageList.add(new Couple("DESI LS - z", image));
                 }
             }
 
@@ -5294,6 +5398,14 @@ public class ImageViewerTab {
 
     public void setPanstarrsImages(boolean panstarrsImages) {
         this.panstarrsImages = panstarrsImages;
+    }
+
+    public void setUkidssImages(boolean ukidssImages) {
+        this.ukidssImages = ukidssImages;
+    }
+
+    public void setVhsImages(boolean vhsImages) {
+        this.vhsImages = vhsImages;
     }
 
     public void setLegacyImages(boolean legacyImages) {

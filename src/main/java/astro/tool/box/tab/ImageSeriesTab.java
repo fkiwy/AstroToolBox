@@ -103,7 +103,7 @@ public class ImageSeriesTab {
     private NoirlabCatalogEntry noirlabEntry;
 
     private BufferedImage ukidssImage;
-    private BufferedImage vistaImage;
+    private BufferedImage vhsImage;
 
     private double targetRa;
     private double targetDec;
@@ -220,7 +220,7 @@ public class ImageSeriesTab {
                     catWiseEntry = null;
                     noirlabEntry = null;
                     ukidssImage = null;
-                    vistaImage = null;
+                    vhsImage = null;
                     prevTargetRa = targetRa;
                     prevTargetDec = targetDec;
                     prevFieldOfView = fieldOfView;
@@ -655,7 +655,7 @@ public class ImageSeriesTab {
         if (targetDec < -5) {
             return;
         }
-        String surveyLabel = "UKIDSS DR11 PLUS";
+        String surveyLabel = "UKIDSS";
         Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, surveyLabel);
         if (images.isEmpty()) {
             return;
@@ -684,7 +684,7 @@ public class ImageSeriesTab {
         if (targetDec > 5) {
             return;
         }
-        String surveyLabel = "VISTA VHS DR6";
+        String surveyLabel = "VHS";
         Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, surveyLabel);
         if (images.isEmpty()) {
             return;
@@ -698,7 +698,7 @@ public class ImageSeriesTab {
             BufferedImage image = entry.getValue();
             bandPanel.add(buildImagePanel(image, band));
             if (band.equals("K")) {
-                vistaImage = image;
+                vhsImage = image;
             }
         });
 
@@ -737,7 +737,7 @@ public class ImageSeriesTab {
 
     private void displayDecalsImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder(DESI_LS_LABEL));
+        bandPanel.setBorder(createEmptyBorder("DESI LS"));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
@@ -819,14 +819,14 @@ public class ImageSeriesTab {
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, DESI_LS_LABEL));
-            opticalImageList.add(new Couple(DESI_LS_LABEL, image));
+            bandPanel.add(buildImagePanel(image, "DESI LS"));
+            opticalImageList.add(new Couple("DESI LS", image));
         }
         if (ukidssImage != null) {
             infraredImageList.add(new Couple("UKIDSS - K", ukidssImage));
         }
-        if (vistaImage != null) {
-            infraredImageList.add(new Couple("VHS - K", vistaImage));
+        if (vhsImage != null) {
+            infraredImageList.add(new Couple("VHS - K", vhsImage));
         }
         infraredTimeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, infraredImageList, infraredTimeSeriesTimer);

@@ -110,6 +110,8 @@ public class SettingsTab {
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
     private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
+    private static final String UKIDSS_IMAGES = "ukidssImages";
+    private static final String VHS_IMAGES = "vhsImages";
     private static final String SDSS_IMAGES = "sdssImages";
     private static final String DSS_IMAGES = "dssImages";
 
@@ -124,6 +126,8 @@ public class SettingsTab {
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
+    private boolean ukidssImages;
+    private boolean vhsImages;
     private boolean sdssImages;
     private boolean dssImages;
 
@@ -154,7 +158,7 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(11, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(12, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -224,7 +228,7 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(11, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(12, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -291,7 +295,7 @@ public class SettingsTab {
             catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(12, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -309,6 +313,8 @@ public class SettingsTab {
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
             legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
+            ukidssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(UKIDSS_IMAGES, "true"));
+            vhsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(VHS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
             dssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(DSS_IMAGES, "true"));
 
@@ -353,6 +359,8 @@ public class SettingsTab {
             imageViewerTab.setAsyncDownloads(asyncDownloads);
             imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
+            imageViewerTab.setUkidssImages(ukidssImages);
+            imageViewerTab.setVhsImages(vhsImages);
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
 
@@ -398,10 +406,18 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
-            JCheckBox legacyImagesCheckBox = new JCheckBox(DESI_LS_LABEL, legacyImages);
+            JCheckBox legacyImagesCheckBox = new JCheckBox("DESI LS", legacyImages);
             downloadPanel.add(legacyImagesCheckBox);
             JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
             downloadPanel.add(panstarrsImagesCheckBox);
+
+            imageViewerSettings.add(new JLabel());
+            downloadPanel = new JPanel(new GridLayout(1, 2));
+            imageViewerSettings.add(downloadPanel);
+            JCheckBox ukidssImagesCheckBox = new JCheckBox("UKIDSS", ukidssImages);
+            downloadPanel.add(ukidssImagesCheckBox);
+            JCheckBox vhsImagesCheckBox = new JCheckBox("VHS", vhsImages);
+            downloadPanel.add(vhsImagesCheckBox);
 
             imageViewerSettings.add(new JLabel());
             downloadPanel = new JPanel(new GridLayout(1, 2));
@@ -492,6 +508,8 @@ public class SettingsTab {
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
                     legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
+                    ukidssImages = ukidssImagesCheckBox.isSelected();
+                    vhsImages = vhsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                     dssImages = dssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
@@ -581,6 +599,8 @@ public class SettingsTab {
                 imageViewerTab.setAsyncDownloads(asyncDownloads);
                 imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
+                imageViewerTab.setUkidssImages(ukidssImages);
+                imageViewerTab.setVhsImages(vhsImages);
                 imageViewerTab.setSdssImages(sdssImages);
                 imageViewerTab.setDssImages(dssImages);
 
@@ -595,6 +615,8 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
                 USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
+                USER_SETTINGS.setProperty(UKIDSS_IMAGES, String.valueOf(ukidssImages));
+                USER_SETTINGS.setProperty(VHS_IMAGES, String.valueOf(vhsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
                 USER_SETTINGS.setProperty(DSS_IMAGES, String.valueOf(dssImages));
 
