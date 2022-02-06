@@ -687,25 +687,8 @@ public class ImageSeriesTab {
         bandPanel.setBorder(createEmptyBorder("UKIDSS DR11 PLUS"));
 
         for (Entry<String, String> entry : downloadLinks.entrySet()) {
-            String band = entry.getKey();
+            String band = getBand(entry.getKey());
             String downloadLink = entry.getValue();
-            switch (band) {
-                case "2":
-                    band = "Y";
-                    break;
-                case "3":
-                    band = "J";
-                    break;
-                case "4":
-                    band = "H";
-                    break;
-                case "5":
-                    band = "Ks";
-                    break;
-                default:
-                    band = "?";
-                    break;
-            }
             try {
                 HttpURLConnection connection = establishHttpConnection(downloadLink);
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -754,25 +737,8 @@ public class ImageSeriesTab {
         bandPanel.setBorder(createEmptyBorder("VISTA VHS DR6"));
 
         for (Entry<String, String> entry : downloadLinks.entrySet()) {
-            String band = entry.getKey();
+            String band = getBand(entry.getKey());
             String downloadLink = entry.getValue();
-            switch (band) {
-                case "2":
-                    band = "Y";
-                    break;
-                case "3":
-                    band = "J";
-                    break;
-                case "4":
-                    band = "H";
-                    break;
-                case "5":
-                    band = "Ks";
-                    break;
-                default:
-                    band = "?";
-                    break;
-            }
             try {
                 HttpURLConnection connection = establishHttpConnection(downloadLink);
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -788,6 +754,21 @@ public class ImageSeriesTab {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+        }
+    }
+
+    private String getBand(String filterId) {
+        switch (filterId) {
+            case "2":
+                return "Y";
+            case "3":
+                return "J";
+            case "4":
+                return "H";
+            case "5":
+                return "Ks";
+            default:
+                return "?";
         }
     }
 
