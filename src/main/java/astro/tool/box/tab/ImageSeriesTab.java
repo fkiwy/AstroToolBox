@@ -246,9 +246,18 @@ public class ImageSeriesTab {
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 setWaitCursor();
-                               
+                                displayDssImages(targetRa, targetDec, fieldOfView);
+                                display2MassImages(targetRa, targetDec, fieldOfView);
+                                displaySdssImages(targetRa, targetDec, fieldOfView);
+                                displaySpitzerImages(targetRa, targetDec, fieldOfView);
+                                displayAllwiseImages(targetRa, targetDec, fieldOfView);
+                                displayUkidssImages(targetRa, targetDec, fieldOfView);
+                                displayVhsImages(targetRa, targetDec, fieldOfView);
+                                displayPs1Images(targetRa, targetDec, fieldOfView);
                                 displayDecalsImages(targetRa, targetDec, fieldOfView);
-                              
+                                displayTimeSeries(targetRa, targetDec, fieldOfView);
+                                displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
+                                displayWiseTimeSeries();
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
                                 showExceptionDialog(baseFrame, ex);
