@@ -40,6 +40,10 @@ public class Constants {
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
+    public static final String CURRENT_DESI_DR = "ls-dr9";
+    
+    public static final String DESI_LS_LABEL = "DESI LS DR9";
+
     public static final String LINE_BREAK = "<br/>";
 
     public static final String LINE_SEP = System.lineSeparator();

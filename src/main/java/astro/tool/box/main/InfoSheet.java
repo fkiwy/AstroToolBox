@@ -5,6 +5,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
@@ -332,7 +333,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("DECaLS", imageLabels, bufferedImages, writer, document);
+            createPdfTable(DESI_LS_LABEL, imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -345,7 +346,7 @@ public class InfoSheet {
                 bufferedImages.add(imageViewerTab.processImage(component));
             }
 
-            createPdfTable("WISE 2010 & 2014-2019", imageLabels, bufferedImages, writer, document);
+            createPdfTable("AllWISE & NeoWISE", imageLabels, bufferedImages, writer, document);
 
             int searchRadius = 10;
             List<CatalogEntry> catalogEntries = new ArrayList<>();

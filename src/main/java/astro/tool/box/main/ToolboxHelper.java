@@ -948,7 +948,7 @@ public class ToolboxHelper {
     }
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert) {
-        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, "ls-dr9");
+        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, CURRENT_DESI_DR);
     }
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {

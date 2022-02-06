@@ -1508,7 +1508,7 @@ public class ImageViewerTab {
                     if (processedDecalsImage != null) {
                         // Create and display magnified DECaLS image
                         if (!imageCutOff) {
-                            addMagnifiedImage("DECaLS", processedDecalsImage, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage(DESI_LS_LABEL, processedDecalsImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular DECaLS image
@@ -1865,7 +1865,7 @@ public class ImageViewerTab {
                             @Override
                             public void mousePressed(MouseEvent evt) {
                                 try {
-                                    Desktop.getDesktop().browse(new URI(getLegacySkyViewerUrl(targetRa, targetDec, "ls-dr9")));
+                                    Desktop.getDesktop().browse(new URI(getLegacySkyViewerUrl(targetRa, targetDec, CURRENT_DESI_DR)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2771,7 +2771,7 @@ public class ImageViewerTab {
         }
         if (decalsImage != null) {
             JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(decalsImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("DECaLS"));
+            pane.setBorder(createEtchedBorder(DESI_LS_LABEL));
             grid.add(pane);
         }
         if (ps1Image != null) {
@@ -3808,7 +3808,7 @@ public class ImageViewerTab {
             if (imageSize > 3000) {
                 return null;
             }
-            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=ls-dr9&size=%d&bands=grz", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize);
+            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=grz&layer=%s", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, CURRENT_DESI_DR);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {

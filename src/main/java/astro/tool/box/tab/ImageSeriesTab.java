@@ -738,7 +738,7 @@ public class ImageSeriesTab {
 
     private void displayDecalsImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DECaLS"));
+        bandPanel.setBorder(createEmptyBorder(DESI_LS_LABEL));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
@@ -761,7 +761,7 @@ public class ImageSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, "ls-dr9"), "Single exposures"));
+            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, CURRENT_DESI_DR), "Single exposures"));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -820,8 +820,8 @@ public class ImageSeriesTab {
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS"));
-            opticalImageList.add(new Couple("DECaLS", image));
+            bandPanel.add(buildImagePanel(image, DESI_LS_LABEL));
+            opticalImageList.add(new Couple(DESI_LS_LABEL, image));
         }
         if (ukidssImage != null) {
             infraredImageList.add(new Couple("UKIDSS - K", ukidssImage));
@@ -871,7 +871,7 @@ public class ImageSeriesTab {
 
     private void displayDecalsTimeSeries(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DECaLS time series", Color.RED));
+        bandPanel.setBorder(createEmptyBorder("DESI LS time series", Color.RED));
 
         List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
 
