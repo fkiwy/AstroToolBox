@@ -900,6 +900,7 @@ public class ToolboxHelper {
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             image = ImageIO.read(stream);
             if (invert) {
+                image = brightenImage(image, 2, 20);
                 image = invertImage(image);
             }
             image = zoom(image, 256);
@@ -1009,8 +1010,8 @@ public class ToolboxHelper {
         return op.filter(image, null);
     }
 
-    public static BufferedImage brightenImage(BufferedImage image, float brightenFactor) {
-        RescaleOp op = new RescaleOp(brightenFactor, 0, null);
+    public static BufferedImage brightenImage(BufferedImage image, float scaleFactor, float offset) {
+        RescaleOp op = new RescaleOp(scaleFactor, offset, null);
         return op.filter(image, image);
     }
 
