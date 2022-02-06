@@ -50,6 +50,7 @@ import java.net.HttpURLConnection;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -515,7 +516,7 @@ public class ImageSeriesTab {
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "dss2IR-dss1Red-dss1Blue"));
+            bandPanel.add(buildImagePanel(image, "IR-Red-Blue"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -686,6 +687,8 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("UKIDSS DR11 PLUS"));
 
+        Map<String, BufferedImage> images = new HashMap();
+
         for (Entry<String, String> entry : downloadLinks.entrySet()) {
             String band = getBand(entry.getKey());
             String downloadLink = entry.getValue();
@@ -694,10 +697,30 @@ public class ImageSeriesTab {
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
                 BufferedImage image = ImageIO.read(stream);
                 if (image != null) {
+                    if (!band.equals("Y")) {
+                        images.put(band, image);
+                    }
                     bandPanel.add(buildImagePanel(flip(image), band));
                 }
             } catch (IOException ex) {
             }
+        }
+
+        if (images.size() == 2) {
+            BufferedImage i1 = images.get("K");
+            if (i1 != null) {
+                BufferedImage i2 = images.get("J");
+                if (i2 != null) {
+                    BufferedImage colorImage = createColorImageFrom2Images(invertImage(i1), invertImage(i2));
+                    bandPanel.add(buildImagePanel(flip(colorImage), "K-J"));
+                }
+            }
+        } else if (images.size() == 3) {
+            BufferedImage i1 = images.get("K");
+            BufferedImage i2 = images.get("H");
+            BufferedImage i3 = images.get("J");
+            BufferedImage colorImage = createColorImageFrom3Images(invertImage(i1), invertImage(i2), invertImage(i3));
+            bandPanel.add(buildImagePanel(flip(colorImage), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -736,6 +759,8 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("VISTA VHS DR6"));
 
+        Map<String, BufferedImage> images = new HashMap();
+
         for (Entry<String, String> entry : downloadLinks.entrySet()) {
             String band = getBand(entry.getKey());
             String downloadLink = entry.getValue();
@@ -744,10 +769,30 @@ public class ImageSeriesTab {
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
                 BufferedImage image = ImageIO.read(stream);
                 if (image != null) {
+                    if (!band.equals("Y")) {
+                        images.put(band, image);
+                    }
                     bandPanel.add(buildImagePanel(flip(image), band));
                 }
             } catch (IOException ex) {
             }
+        }
+
+        if (images.size() == 2) {
+            BufferedImage i1 = images.get("K");
+            if (i1 != null) {
+                BufferedImage i2 = images.get("J");
+                if (i2 != null) {
+                    BufferedImage colorImage = createColorImageFrom2Images(invertImage(i1), invertImage(i2));
+                    bandPanel.add(buildImagePanel(flip(colorImage), "K-J"));
+                }
+            }
+        } else if (images.size() == 3) {
+            BufferedImage i1 = images.get("K");
+            BufferedImage i2 = images.get("H");
+            BufferedImage i3 = images.get("J");
+            BufferedImage colorImage = createColorImageFrom3Images(invertImage(i1), invertImage(i2), invertImage(i3));
+            bandPanel.add(buildImagePanel(flip(colorImage), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -766,10 +811,61 @@ public class ImageSeriesTab {
             case "4":
                 return "H";
             case "5":
-                return "Ks";
+                return "K";
             default:
                 return "?";
         }
+    }
+
+    private BufferedImage createColorImageFrom2Images(BufferedImage i1, BufferedImage i2) {
+        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < colorImage.getWidth(); x++) {
+            for (int y = 0; y < colorImage.getHeight(); y++) {
+                try {
+                    int rgb1 = i1.getRGB(x, y);
+                    int rgb2 = i2.getRGB(x, y);
+                    Color c1 = new Color(rgb1, true);
+                    Color c2 = new Color(rgb2, true);
+                    Color color = new Color(c1.getRed(), (c1.getRed() + c2.getRed()) / 2, c2.getRed());
+                    colorImage.setRGB(x, y, color.getRGB());
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+        return colorImage;
+    }
+
+    private BufferedImage createColorImageFrom3Images(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
+        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < colorImage.getWidth(); x++) {
+            for (int y = 0; y < colorImage.getHeight(); y++) {
+                try {
+                    int rgb1 = i1.getRGB(x, y);
+                    int rgb2 = i2.getRGB(x, y);
+                    int rgb3 = i3.getRGB(x, y);
+                    Color c1 = new Color(rgb1, true);
+                    Color c2 = new Color(rgb2, true);
+                    Color c3 = new Color(rgb3, true);
+                    Color color = new Color(c1.getRed(), c2.getRed(), c3.getRed());
+                    colorImage.setRGB(x, y, color.getRGB());
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+        return colorImage;
+    }
+
+    private BufferedImage invertImage(BufferedImage image) {
+        BufferedImage invertedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                int rgb = image.getRGB(x, y);
+                Color c = new Color(rgb, true);
+                c = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
+                invertedImage.setRGB(x, y, c.getRGB());
+            }
+        }
+        return invertedImage;
     }
 
     private BufferedImage flip(BufferedImage image) {
