@@ -1,7 +1,7 @@
 package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import astro.tool.box.container.NumberPair;

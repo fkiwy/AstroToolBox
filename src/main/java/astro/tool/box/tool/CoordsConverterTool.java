@@ -1,7 +1,7 @@
 package astro.tool.box.tool;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.CoordsSystem;

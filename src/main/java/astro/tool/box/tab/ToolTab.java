@@ -1,6 +1,6 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import astro.tool.box.tool.TotalProperMotionTool;
 import astro.tool.box.tool.ParallacticDistanceTool;
 import astro.tool.box.tool.ProperMotionsTool;

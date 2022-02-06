@@ -1,8 +1,9 @@
 package astro.tool.box.main;
 
+import astro.tool.box.container.FlipbookComponent;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.catalog.AllWiseCatalogEntry;

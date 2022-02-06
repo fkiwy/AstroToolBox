@@ -3,7 +3,7 @@ package astro.tool.box.tab;
 import astro.tool.box.container.Couple;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
@@ -27,7 +27,7 @@ import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.FileType;
-import astro.tool.box.main.FlipbookComponent;
+import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.Counter;
 import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
@@ -886,11 +886,11 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Pan-STARRS"));
 
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size), "r"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size), "i"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size), "z"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
+        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size)), "g"));
+        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size)), "r"));
+        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size)), "i"));
+        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size)), "z"));
+        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size)), "y"));
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
 
         if (bandPanel.getComponentCount() > 0) {
@@ -907,17 +907,17 @@ public class ImageSeriesTab {
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
         if (image != null) {
-            image = convertToGray(image);
+            image = invertImage(convertToGray(image));
             bandPanel.add(buildImagePanel(image, "g"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "r");
         if (image != null) {
-            image = convertToGray(image);
+            image = invertImage(convertToGray(image));
             bandPanel.add(buildImagePanel(image, "r"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z");
         if (image != null) {
-            image = convertToGray(image);
+            image = invertImage(convertToGray(image));
             bandPanel.add(buildImagePanel(image, "z"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz");

@@ -2,7 +2,7 @@ package astro.tool.box.util;
 
 import astro.tool.box.exception.ADQLException;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.SdssCatalogEntry;

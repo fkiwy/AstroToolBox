@@ -123,7 +123,7 @@ import org.jfree.chart.JFreeChart;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class ModuleHelper {
+public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
     public static final String PGM_VERSION = "2.4.1";
@@ -140,12 +140,12 @@ public class ModuleHelper {
     public static int BASE_FRAME_HEIGHT = 875;
 
     public static Image getToolBoxImage() {
-        ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
+        ImageIcon icon = new ImageIcon(ToolboxHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();
     }
 
     public static ImageIcon getInfoIcon() {
-        return new ImageIcon(ModuleHelper.class.getResource("/icons/info.png"));
+        return new ImageIcon(ToolboxHelper.class.getResource("/icons/info.png"));
     }
 
     public static Map<String, CatalogEntry> getCatalogInstances() {

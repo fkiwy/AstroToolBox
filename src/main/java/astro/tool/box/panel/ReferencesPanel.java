@@ -1,10 +1,10 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.main.ModuleHelper;
+import astro.tool.box.main.ToolboxHelper;
 import astro.tool.box.service.SimbadQueryService;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -70,7 +70,7 @@ public class ReferencesPanel extends JPanel {
                 String[] columns = new String[]{"Object type", "Description"};
                 JScrollPane resultPanel = new JScrollPane(createResultTable(results, columns, 0));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Object types")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object types")));
 
                 measurementsPanel.add(resultPanel);
 
@@ -80,7 +80,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Spectral type", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Spectral types")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Spectral types")));
 
                 measurementsPanel.add(resultPanel);
 
@@ -90,7 +90,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Parallax", "Error", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Parallaxes")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Parallaxes")));
 
                 measurementsPanel.add(resultPanel);
 
@@ -100,7 +100,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Distance", "Quality", "Unit", "Minus error", "Plus error", "Method", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Distances")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Distances")));
 
                 measurementsPanel.add(resultPanel);
 
@@ -110,7 +110,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Type", "Velocity", "Error", "Quality", "Number of meas.", "Nature of meas.", "Quality", "Wavelength", "Resolution", "Obs. date", "Remarks", "Origin", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Velocities")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Velocities")));
 
                 measurementsPanel.add(resultPanel);
 
@@ -120,7 +120,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"PM R.A.", "R.A. error", "PM DEC.", "DEC. error", "Coord. system", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Proper motions")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Proper motions")));
 
                 measurementsPanel2.add(resultPanel);
 
@@ -130,7 +130,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Filter", "Flux", "Error", "Quality", "Description", "Unit", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Fluxes")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Fluxes")));
 
                 measurementsPanel2.add(resultPanel);
 
@@ -140,7 +140,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Type", "Upper limit flag", "Max. brightness", "Uncertainty flag", "Magnitude type", "Lower limit flag", "Min. brightness", "Uncertainty flag", "Lower limit flag period", "Period", "Uncertainty flag period", "Epoch", "Uncertainty epoch", "Raising time", "Uncertainty raising time", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Variabilities")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Variabilities")));
 
                 measurementsPanel2.add(resultPanel);
 
@@ -150,7 +150,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Upper value Vsini", "Vsini", "Error", "Number of meas.", "Quality", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Rotations")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Rotations")));
 
                 measurementsPanel2.add(resultPanel);
 
@@ -160,7 +160,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Teff", "Log g", "Fe H", "Fe H flag", "Comparison star", "Star in the Cayrel et al.", "Bibcode"};
                 resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
                 resultPanel.setPreferredSize(new Dimension(300, 150));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Metallicities")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Metallicities")));
 
                 measurementsPanel2.add(resultPanel);
 
@@ -170,7 +170,7 @@ public class ReferencesPanel extends JPanel {
                 columns = new String[]{"Identifier"};
                 resultPanel = new JScrollPane(createResultTable(identifiers, columns, 0));
                 resultPanel.setPreferredSize(new Dimension(300, 200));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Object identifiers")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object identifiers")));
 
                 referencesPanel.add(resultPanel);
 
@@ -198,7 +198,7 @@ public class ReferencesPanel extends JPanel {
 
                 resultPanel = new JScrollPane(component);
                 resultPanel.setPreferredSize(new Dimension(1500, 200));
-                resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Object references")));
+                resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object references")));
 
                 referencesPanel.add(resultPanel);
 
@@ -231,7 +231,7 @@ public class ReferencesPanel extends JPanel {
             String[] columns = new String[]{"Author"};
             JScrollPane resultPanel = new JScrollPane(createResultTable(results, columns, 0));
             resultPanel.setPreferredSize(new Dimension(300, 200));
-            resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Authors")));
+            resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Authors")));
 
             detailsPanel.add(resultPanel);
 
@@ -244,7 +244,7 @@ public class ReferencesPanel extends JPanel {
 
             resultPanel = new JScrollPane(textArea);
             resultPanel.setPreferredSize(new Dimension(900, 200));
-            resultPanel.setBorder(ModuleHelper.createEtchedBorder(bold("Abstract")));
+            resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Abstract")));
 
             detailsPanel.add(resultPanel);
         } catch (IOException ex) {
