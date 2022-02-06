@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -665,14 +664,14 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder(surveyLabel));
 
-        for (Entry<String, BufferedImage> entry : images.entrySet()) {
+        images.entrySet().forEach(entry -> {
             String band = entry.getKey();
             BufferedImage image = entry.getValue();
             bandPanel.add(buildImagePanel(image, band));
             if (band.equals("K")) {
                 ukidssImage = image;
             }
-        }
+        });
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
@@ -694,14 +693,14 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder(surveyLabel));
 
-        for (Entry<String, BufferedImage> entry : images.entrySet()) {
+        images.entrySet().forEach(entry -> {
             String band = entry.getKey();
             BufferedImage image = entry.getValue();
             bandPanel.add(buildImagePanel(image, band));
             if (band.equals("K")) {
-                ukidssImage = image;
+                vistaImage = image;
             }
-        }
+        });
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
