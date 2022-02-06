@@ -3827,19 +3827,19 @@ public class ImageViewerTab {
             String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-                int j = 0;
+                int fileName = 0;
                 for (int i = 0; i < columnNames.length; i++) {
                     if (columnNames[i].equals("filename")) {
-                        j = i;
+                        fileName = i;
                         break;
                     }
                 }
                 while (scanner.hasNextLine()) {
                     String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                    fileNames.add(columnValues[j]);
+                    fileNames.add(columnValues[fileName]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&asinh=false", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {

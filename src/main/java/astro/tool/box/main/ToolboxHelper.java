@@ -87,7 +87,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -816,6 +815,162 @@ public class ToolboxHelper {
         return null;
     }
 
+    public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
+        List<JLabel> subjects = new ArrayList<>();
+        try {
+            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
+            String response = readResponse(establishHttpConnection(url), "Zooniverse");
+            if (!response.isEmpty()) {
+                JSONObject obj = new JSONObject(response);
+                JSONArray ids = obj.getJSONArray("ids");
+                for (Object id : ids) {
+                    subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+                }
+            }
+        } catch (Exception ex) {
+        }
+        return subjects;
+    }
+
+    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
+        BufferedImage bi;
+        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+        } catch (IOException ex) {
+            bi = null;
+        }
+        return bi;
+    }
+
+    public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
+        Map<String, String> fileNames = new LinkedHashMap<>();
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+        String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
+        try (Scanner scanner = new Scanner(response)) {
+            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+            int filter = 0;
+            int fileName = 0;
+            for (int i = 0; i < columnNames.length; i++) {
+                if (columnNames[i].equals("filter")) {
+                    filter = i;
+                }
+                if (columnNames[i].equals("filename")) {
+                    fileName = i;
+                }
+            }
+            while (scanner.hasNextLine()) {
+                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                fileNames.put(columnValues[filter], columnValues[fileName]);
+            }
+        }
+        return fileNames;
+    }
+
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size, boolean invert) {
+        BufferedImage bi;
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+        } catch (IOException ex) {
+            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+        }
+        return bi;
+    }
+
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert) {
+        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, CURRENT_DESI_DR);
+    }
+
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
+        BufferedImage image;
+        if (band == null) {
+            band = "";
+        }
+        if (!band.isEmpty()) {
+            band = "&bands=" + band;
+        }
+        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s", targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            image = ImageIO.read(stream);
+            if (invert) {
+                image = invertImage(image);
+            }
+            image = zoom(image, 256);
+        } catch (IOException ex) {
+            image = null;
+        }
+        return image;
+    }
+
+    public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, int size, String surveyUrl, String surveyLabel) throws Exception {
+        double imageSize = size / 60f;
+        Map<String, String> downloadLinks = new LinkedHashMap<>();
+        String[] bands = new String[]{"2", "3", "4", "5"};
+        for (String band : bands) {
+            String imageUrl = String.format(surveyUrl, targetRa, targetDec, band, imageSize, imageSize);
+            String response = readResponse(establishHttpConnection(imageUrl), surveyLabel);
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("href")) {
+                        String[] parts = line.split("href=\"");
+                        parts = parts[1].split("\"");
+                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
+                        break;
+                    }
+                }
+            }
+        }
+        Map<String, BufferedImage> images = new LinkedHashMap<>();
+        if (downloadLinks.isEmpty()) {
+            return images;
+        }
+        downloadLinks.entrySet().forEach(entry -> {
+            String band = getBand(entry.getKey());
+            String downloadLink = entry.getValue();
+            try {
+                HttpURLConnection connection = establishHttpConnection(downloadLink);
+                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                BufferedImage image = ImageIO.read(stream);
+                images.put(band, flipImage(image));
+            } catch (IOException ex) {
+            }
+        });
+        BufferedImage i1 = images.get("K");
+        BufferedImage i2 = images.get("H");
+        BufferedImage i3 = images.get("J");
+        if (i1 != null && i2 != null && i3 != null) {
+            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
+            images.put("K-H-J", flipImage(colorImage));
+        } else if (i1 != null && i3 != null) {
+            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
+            images.put("K-J", flipImage(colorImage));
+        }
+        return images;
+    }
+
+    private static String getBand(String filterId) {
+        switch (filterId) {
+            case "2":
+                return "Y";
+            case "3":
+                return "J";
+            case "4":
+                return "H";
+            case "5":
+                return "K";
+            default:
+                return "?";
+        }
+    }
+
     public static BufferedImage zoom(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
         Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
@@ -895,162 +1050,6 @@ public class ToolboxHelper {
             }
         }
         return colorImage;
-    }
-
-    public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
-        BufferedImage bi;
-        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-        } catch (IOException ex) {
-            bi = null;
-        }
-        return bi;
-    }
-
-    public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
-        Map<String, String> fileNames = new TreeMap<>();
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
-        String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
-        try (Scanner scanner = new Scanner(response)) {
-            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-            int filter = 0;
-            int fileName = 0;
-            for (int i = 0; i < columnNames.length; i++) {
-                if (columnNames[i].equals("filter")) {
-                    filter = i;
-                }
-                if (columnNames[i].equals("filename")) {
-                    fileName = i;
-                }
-            }
-            while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                fileNames.put(columnValues[filter], columnValues[fileName]);
-            }
-        }
-        return fileNames;
-    }
-
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size, boolean invert) {
-        BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&asinh=false&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-        } catch (IOException ex) {
-            bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
-        }
-        return bi;
-    }
-
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert) {
-        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, CURRENT_DESI_DR);
-    }
-
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
-        BufferedImage image;
-        if (band == null) {
-            band = "";
-        }
-        if (!band.isEmpty()) {
-            band = "&bands=" + band;
-        }
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s", targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            image = ImageIO.read(stream);
-            if (invert) {
-                image = invertImage(image);
-            }
-            image = zoom(image, 256);
-        } catch (IOException ex) {
-            image = null;
-        }
-        return image;
-    }
-
-    public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, int size, String surveyUrl, String surveyLabel) throws Exception {
-        double imageSize = size / 60f;
-        Map<String, String> downloadLinks = new TreeMap<>();
-        String[] bands = new String[]{"2", "3", "4", "5"};
-        for (String band : bands) {
-            String imageUrl = String.format(surveyUrl, targetRa, targetDec, band, imageSize, imageSize);
-            String response = readResponse(establishHttpConnection(imageUrl), surveyLabel);
-            try (Scanner scanner = new Scanner(response)) {
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (line.contains("href")) {
-                        String[] parts = line.split("href=\"");
-                        parts = parts[1].split("\"");
-                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
-                        break;
-                    }
-                }
-            }
-        }
-        Map<String, BufferedImage> images = new TreeMap<>();
-        if (downloadLinks.isEmpty()) {
-            return images;
-        }
-        downloadLinks.entrySet().forEach(entry -> {
-            String band = getBand(entry.getKey());
-            String downloadLink = entry.getValue();
-            try {
-                HttpURLConnection connection = establishHttpConnection(downloadLink);
-                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-                BufferedImage image = ImageIO.read(stream);
-                images.put(band, flipImage(image));
-            } catch (IOException ex) {
-            }
-        });
-        BufferedImage i1 = images.get("K");
-        BufferedImage i2 = images.get("H");
-        BufferedImage i3 = images.get("J");
-        if (i1 != null && i2 != null && i3 != null) {
-            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
-            images.put("K-H-J", flipImage(colorImage));
-        } else if (i1 != null && i3 != null) {
-            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-            images.put("K-J", flipImage(colorImage));
-        }
-        return images;
-    }
-
-    private static String getBand(String filterId) {
-        switch (filterId) {
-            case "2":
-                return "Y";
-            case "3":
-                return "J";
-            case "4":
-                return "H";
-            case "5":
-                return "K";
-            default:
-                return "?";
-        }
-    }
-
-    public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
-        List<JLabel> subjects = new ArrayList<>();
-        try {
-            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
-            String response = readResponse(establishHttpConnection(url), "Zooniverse");
-            if (!response.isEmpty()) {
-                JSONObject obj = new JSONObject(response);
-                JSONArray ids = obj.getJSONArray("ids");
-                for (Object id : ids) {
-                    subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
-                }
-            }
-        } catch (Exception ex) {
-        }
-        return subjects;
     }
 
     public static BufferedImage drawCenterShape(BufferedImage image) {
