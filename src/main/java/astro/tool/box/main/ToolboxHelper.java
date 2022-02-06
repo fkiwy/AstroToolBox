@@ -61,8 +61,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -832,21 +835,67 @@ public class ToolboxHelper {
         return grayImage;
     }
 
-    public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
-        List<JLabel> subjects = new ArrayList<>();
-        try {
-            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
-            String response = readResponse(establishHttpConnection(url), "Zooniverse");
-            if (!response.isEmpty()) {
-                JSONObject obj = new JSONObject(response);
-                JSONArray ids = obj.getJSONArray("ids");
-                for (Object id : ids) {
-                    subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+    public static BufferedImage invertImage(BufferedImage image) {
+        BufferedImage invertedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                int rgb = image.getRGB(x, y);
+                Color c = new Color(rgb, true);
+                c = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
+                invertedImage.setRGB(x, y, c.getRGB());
+            }
+        }
+        return invertedImage;
+    }
+
+    public static BufferedImage flipImage(BufferedImage image) {
+        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+        tx.translate(0, -image.getHeight(null));
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(image, null);
+    }
+
+    public static BufferedImage brightenImage(BufferedImage image, float brightenFactor) {
+        RescaleOp op = new RescaleOp(brightenFactor, 0, null);
+        return op.filter(image, image);
+    }
+
+    public static BufferedImage createColorImageFrom2Images(BufferedImage i1, BufferedImage i2) {
+        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < colorImage.getWidth(); x++) {
+            for (int y = 0; y < colorImage.getHeight(); y++) {
+                try {
+                    int rgb1 = i1.getRGB(x, y);
+                    int rgb2 = i2.getRGB(x, y);
+                    Color c1 = new Color(rgb1, true);
+                    Color c2 = new Color(rgb2, true);
+                    Color color = new Color(c1.getRed(), (c1.getRed() + c2.getRed()) / 2, c2.getRed());
+                    colorImage.setRGB(x, y, color.getRGB());
+                } catch (ArrayIndexOutOfBoundsException ex) {
                 }
             }
-        } catch (Exception ex) {
         }
-        return subjects;
+        return colorImage;
+    }
+
+    public static BufferedImage createColorImageFrom3Images(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
+        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < colorImage.getWidth(); x++) {
+            for (int y = 0; y < colorImage.getHeight(); y++) {
+                try {
+                    int rgb1 = i1.getRGB(x, y);
+                    int rgb2 = i2.getRGB(x, y);
+                    int rgb3 = i3.getRGB(x, y);
+                    Color c1 = new Color(rgb1, true);
+                    Color c2 = new Color(rgb2, true);
+                    Color c3 = new Color(rgb3, true);
+                    Color color = new Color(c1.getRed(), c2.getRed(), c3.getRed());
+                    colorImage.setRGB(x, y, color.getRGB());
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+        return colorImage;
     }
 
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
@@ -886,9 +935,9 @@ public class ToolboxHelper {
         return fileNames;
     }
 
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) {
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size, boolean invert) {
         BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames, targetRa, targetDec, size * 4, 256);
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&asinh=false&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -899,12 +948,12 @@ public class ToolboxHelper {
         return bi;
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) {
-        return retrieveDecalsImage(targetRa, targetDec, size, band, "ls-dr9");
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert) {
+        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, "ls-dr9");
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, String layer) {
-        BufferedImage bi;
+    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
+        BufferedImage image;
         if (band == null) {
             band = "";
         }
@@ -915,12 +964,32 @@ public class ToolboxHelper {
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-            bi = zoom(bi, 256);
+            image = ImageIO.read(stream);
+            if (invert) {
+                image = invertImage(image);
+            }
+            image = zoom(image, 256);
         } catch (IOException ex) {
-            bi = null;
+            image = null;
         }
-        return bi;
+        return image;
+    }
+
+    public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
+        List<JLabel> subjects = new ArrayList<>();
+        try {
+            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
+            String response = readResponse(establishHttpConnection(url), "Zooniverse");
+            if (!response.isEmpty()) {
+                JSONObject obj = new JSONObject(response);
+                JSONArray ids = obj.getJSONArray("ids");
+                for (Object id : ids) {
+                    subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+                }
+            }
+        } catch (Exception ex) {
+        }
+        return subjects;
     }
 
     public static BufferedImage drawCenterShape(BufferedImage image) {

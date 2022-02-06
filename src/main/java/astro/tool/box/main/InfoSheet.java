@@ -292,42 +292,42 @@ public class InfoSheet {
                 imageLabels = new ArrayList<>();
                 bufferedImages = new ArrayList<>();
                 imageLabels.add("g");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size));
+                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true));
                 imageLabels.add("r");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size));
+                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true));
                 imageLabels.add("i");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size));
+                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true));
                 imageLabels.add("z");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size));
+                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true));
                 imageLabels.add("y");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size));
+                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true));
                 imageLabels.add("y-i-g");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size));
+                bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false));
 
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
             }
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g");
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
                 imageLabels.add("g");
                 bufferedImage = convertToGray(bufferedImage);
                 bufferedImages.add(bufferedImage);
             }
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r");
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
                 imageLabels.add("r");
                 bufferedImage = convertToGray(bufferedImage);
                 bufferedImages.add(bufferedImage);
             }
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
                 imageLabels.add("z");
                 bufferedImage = convertToGray(bufferedImage);
                 bufferedImages.add(bufferedImage);
             }
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz");
+            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
                 imageLabels.add("g-r-z");
                 bufferedImages.add(bufferedImage);

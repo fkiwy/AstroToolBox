@@ -3840,7 +3840,7 @@ public class ImageViewerTab {
                     fileNames.add(columnValues[j]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
+            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&asinh=false", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
@@ -4135,12 +4135,12 @@ public class ImageViewerTab {
 
             // Fetch images for Pan-STARRS filters
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size), "r"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size), "i"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size), "z"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), "g"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), "r"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), "i"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), "z"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), "y"));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), "y-i-g"));
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -4164,22 +4164,22 @@ public class ImageViewerTab {
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
-            BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
+            BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
             if (image != null) {
                 image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "g"));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "r");
+            image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
             if (image != null) {
                 image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "r"));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
                 image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "z"));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "grz");
+            image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, "g-r-z"));
             }
@@ -4233,10 +4233,10 @@ public class ImageViewerTab {
             }
             SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
-                image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
+                image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
                 bandPanel.add(buildImagePanel(image, "PS1 - z"));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+            image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
                 image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "DECaLS - z"));
@@ -4302,12 +4302,12 @@ public class ImageViewerTab {
             if (ps1Images.isSelected()) {
                 SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
                 if (!imageInfos.isEmpty()) {
-                    image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size);
+                    image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
                     imageList.add(new Couple("PS1 - z", image));
                 }
             }
             if (decalsImages.isSelected()) {
-                image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+                image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
                     image = convertToGray(image);
                     imageList.add(new Couple("DECaLS - z", image));

@@ -39,8 +39,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -700,7 +698,7 @@ public class ImageSeriesTab {
                     if (!band.equals("Y")) {
                         images.put(band, image);
                     }
-                    bandPanel.add(buildImagePanel(flip(image), band));
+                    bandPanel.add(buildImagePanel(flipImage(image), band));
                 }
             } catch (IOException ex) {
             }
@@ -712,7 +710,7 @@ public class ImageSeriesTab {
                 BufferedImage i2 = images.get("J");
                 if (i2 != null) {
                     BufferedImage colorImage = createColorImageFrom2Images(invertImage(i1), invertImage(i2));
-                    bandPanel.add(buildImagePanel(flip(colorImage), "K-J"));
+                    bandPanel.add(buildImagePanel(flipImage(colorImage), "K-J"));
                 }
             }
         } else if (images.size() == 3) {
@@ -720,7 +718,7 @@ public class ImageSeriesTab {
             BufferedImage i2 = images.get("H");
             BufferedImage i3 = images.get("J");
             BufferedImage colorImage = createColorImageFrom3Images(invertImage(i1), invertImage(i2), invertImage(i3));
-            bandPanel.add(buildImagePanel(flip(colorImage), "K-H-J"));
+            bandPanel.add(buildImagePanel(flipImage(colorImage), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -772,7 +770,7 @@ public class ImageSeriesTab {
                     if (!band.equals("Y")) {
                         images.put(band, image);
                     }
-                    bandPanel.add(buildImagePanel(flip(image), band));
+                    bandPanel.add(buildImagePanel(flipImage(image), band));
                 }
             } catch (IOException ex) {
             }
@@ -784,7 +782,7 @@ public class ImageSeriesTab {
                 BufferedImage i2 = images.get("J");
                 if (i2 != null) {
                     BufferedImage colorImage = createColorImageFrom2Images(invertImage(i1), invertImage(i2));
-                    bandPanel.add(buildImagePanel(flip(colorImage), "K-J"));
+                    bandPanel.add(buildImagePanel(flipImage(colorImage), "K-J"));
                 }
             }
         } else if (images.size() == 3) {
@@ -792,7 +790,7 @@ public class ImageSeriesTab {
             BufferedImage i2 = images.get("H");
             BufferedImage i3 = images.get("J");
             BufferedImage colorImage = createColorImageFrom3Images(invertImage(i1), invertImage(i2), invertImage(i3));
-            bandPanel.add(buildImagePanel(flip(colorImage), "K-H-J"));
+            bandPanel.add(buildImagePanel(flipImage(colorImage), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -817,64 +815,6 @@ public class ImageSeriesTab {
         }
     }
 
-    private BufferedImage createColorImageFrom2Images(BufferedImage i1, BufferedImage i2) {
-        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < colorImage.getWidth(); x++) {
-            for (int y = 0; y < colorImage.getHeight(); y++) {
-                try {
-                    int rgb1 = i1.getRGB(x, y);
-                    int rgb2 = i2.getRGB(x, y);
-                    Color c1 = new Color(rgb1, true);
-                    Color c2 = new Color(rgb2, true);
-                    Color color = new Color(c1.getRed(), (c1.getRed() + c2.getRed()) / 2, c2.getRed());
-                    colorImage.setRGB(x, y, color.getRGB());
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                }
-            }
-        }
-        return colorImage;
-    }
-
-    private BufferedImage createColorImageFrom3Images(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
-        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < colorImage.getWidth(); x++) {
-            for (int y = 0; y < colorImage.getHeight(); y++) {
-                try {
-                    int rgb1 = i1.getRGB(x, y);
-                    int rgb2 = i2.getRGB(x, y);
-                    int rgb3 = i3.getRGB(x, y);
-                    Color c1 = new Color(rgb1, true);
-                    Color c2 = new Color(rgb2, true);
-                    Color c3 = new Color(rgb3, true);
-                    Color color = new Color(c1.getRed(), c2.getRed(), c3.getRed());
-                    colorImage.setRGB(x, y, color.getRGB());
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                }
-            }
-        }
-        return colorImage;
-    }
-
-    private BufferedImage invertImage(BufferedImage image) {
-        BufferedImage invertedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < image.getWidth(); x++) {
-            for (int y = 0; y < image.getHeight(); y++) {
-                int rgb = image.getRGB(x, y);
-                Color c = new Color(rgb, true);
-                c = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
-                invertedImage.setRGB(x, y, c.getRGB());
-            }
-        }
-        return invertedImage;
-    }
-
-    private BufferedImage flip(BufferedImage image) {
-        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-        tx.translate(0, -image.getHeight(null));
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        return op.filter(image, null);
-    }
-
     private void displayPs1Images(double targetRa, double targetDec, int size) throws Exception {
         // Fetch file names for Pan-STARRS filters
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
@@ -886,12 +826,12 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("Pan-STARRS"));
 
-        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size)), "g"));
-        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size)), "r"));
-        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size)), "i"));
-        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size)), "z"));
-        bandPanel.add(buildImagePanel(invertImage(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size)), "y"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), "g"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), "r"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), "i"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), "z"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), "y"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), "y-i-g"));
 
         if (bandPanel.getComponentCount() > 0) {
             bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP), "WARP images"));
@@ -905,22 +845,22 @@ public class ImageSeriesTab {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bandPanel.setBorder(createEmptyBorder("DECaLS"));
 
-        BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
+        BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
             image = invertImage(convertToGray(image));
             bandPanel.add(buildImagePanel(image, "g"));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "r");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
         if (image != null) {
             image = invertImage(convertToGray(image));
             bandPanel.add(buildImagePanel(image, "r"));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "z");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
         if (image != null) {
             image = invertImage(convertToGray(image));
             bandPanel.add(buildImagePanel(image, "z"));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "g-r-z"));
         }
@@ -979,11 +919,11 @@ public class ImageSeriesTab {
         }
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
-            image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size);
+            image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
             bandPanel.add(buildImagePanel(image, "Pan-STARRS"));
             opticalImageList.add(new Couple("Pan-STARRS", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "g-r-z");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DECaLS"));
             opticalImageList.add(new Couple("DECaLS", image));
@@ -1035,22 +975,22 @@ public class ImageSeriesTab {
 
         List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
 
-        BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr5");
+        BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "decals-dr5");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
             imageList.add(new Couple("DECaLS DR5", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr7");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "decals-dr7");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
             imageList.add(new Couple("DECaLS DR7", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr8");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "ls-dr8");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "LS DR8"));
             imageList.add(new Couple("LS DR8", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr9");
+        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "ls-dr9");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "LS DR9"));
             imageList.add(new Couple("LS DR9", image));
