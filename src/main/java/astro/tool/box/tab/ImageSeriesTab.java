@@ -684,7 +684,7 @@ public class ImageSeriesTab {
         }
 
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("UKIDSSDR11PLUS"));
+        bandPanel.setBorder(createEmptyBorder("UKIDSS DR11 PLUS"));
 
         for (Entry<String, String> entry : downloadLinks.entrySet()) {
             String band = entry.getKey();
