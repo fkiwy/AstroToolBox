@@ -124,7 +124,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.SortedMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -4128,7 +4127,7 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             // Fetch file names for Pan-STARRS filters
-            SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+            Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (imageInfos.isEmpty()) {
                 return;
             }
@@ -4231,7 +4230,7 @@ public class ImageViewerTab {
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, "WISE - W2"));
             }
-            SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+            Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
                 image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
                 bandPanel.add(buildImagePanel(image, "PS1 - z"));
@@ -4300,7 +4299,7 @@ public class ImageViewerTab {
                 }
             }
             if (ps1Images.isSelected()) {
-                SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+                Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
                 if (!imageInfos.isEmpty()) {
                     image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
                     imageList.add(new Couple("PS1 - z", image));

@@ -10,6 +10,10 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=stack";
+
+    public static final String VHS_SURVEY_URL = "http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=tilestack";
+
     public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
     public static final String NOAO_BASE_URL = "https://datalab.noirlab.edu/tap";

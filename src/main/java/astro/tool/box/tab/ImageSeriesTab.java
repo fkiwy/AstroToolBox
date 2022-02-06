@@ -30,8 +30,6 @@ import astro.tool.box.enumeration.FileType;
 import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.Counter;
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
-import static astro.tool.box.util.ServiceHelper.readResponse;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -40,23 +38,16 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import static java.lang.Math.sqrt;
 import java.math.BigDecimal;
-import java.net.HttpURLConnection;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -665,68 +656,22 @@ public class ImageSeriesTab {
         if (targetDec < -5) {
             return;
         }
-        double imageSize = size / 60f;
-        SortedMap<String, String> downloadLinks = new TreeMap<>();
-        String[] bands = new String[]{"2", "3", "4", "5"};
-        for (String band : bands) {
-            String imageUrl = String.format("http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=stack", targetRa, targetDec, band, imageSize, imageSize);
-            String response = readResponse(establishHttpConnection(imageUrl), "UKIDSS");
-            try (Scanner scanner = new Scanner(response)) {
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (line.contains("href")) {
-                        String[] parts = line.split("href=\"");
-                        parts = parts[1].split("\"");
-                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
-                        break;
-                    }
-                }
-            }
-        }
-        if (downloadLinks.isEmpty()) {
+        String surveyLabel = "UKIDSS DR11 PLUS";
+        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, surveyLabel);
+        if (images.isEmpty()) {
             return;
         }
 
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("UKIDSS DR11 PLUS"));
+        bandPanel.setBorder(createEmptyBorder(surveyLabel));
 
-        Map<String, BufferedImage> images = new HashMap();
-
-        for (Entry<String, String> entry : downloadLinks.entrySet()) {
-            String band = getBand(entry.getKey());
-            String downloadLink = entry.getValue();
-            try {
-                HttpURLConnection connection = establishHttpConnection(downloadLink);
-                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-                BufferedImage image = ImageIO.read(stream);
-                if (image != null) {
-                    if (!band.equals("Y")) {
-                        images.put(band, image);
-                    }
-                    if (band.equals("K")) {
-                        ukidssImage = image;
-                    }
-                    bandPanel.add(buildImagePanel(flipImage(image), band));
-                }
-            } catch (IOException ex) {
+        for (Entry<String, BufferedImage> entry : images.entrySet()) {
+            String band = entry.getKey();
+            BufferedImage image = entry.getValue();
+            bandPanel.add(buildImagePanel(image, band));
+            if (band.equals("K")) {
+                ukidssImage = image;
             }
-        }
-
-        if (images.size() == 2) {
-            BufferedImage i1 = images.get("K");
-            if (i1 != null) {
-                BufferedImage i2 = images.get("J");
-                if (i2 != null) {
-                    BufferedImage colorImage = createColorImageFrom2Images(i1, i2);
-                    bandPanel.add(buildImagePanel(flipImage(invertImage(colorImage)), "K-J"));
-                }
-            }
-        } else if (images.size() == 3) {
-            BufferedImage i1 = images.get("K");
-            BufferedImage i2 = images.get("H");
-            BufferedImage i3 = images.get("J");
-            BufferedImage colorImage = createColorImageFrom3Images(i1, i2, i3);
-            bandPanel.add(buildImagePanel(flipImage(invertImage(colorImage)), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -740,68 +685,22 @@ public class ImageSeriesTab {
         if (targetDec > 5) {
             return;
         }
-        double imageSize = size / 60f;
-        SortedMap<String, String> downloadLinks = new TreeMap<>();
-        String[] bands = new String[]{"2", "3", "4", "5"};
-        for (String band : bands) {
-            String imageUrl = String.format("http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=tilestack", targetRa, targetDec, band, imageSize, imageSize);
-            String response = readResponse(establishHttpConnection(imageUrl), "VISTA VHS");
-            try (Scanner scanner = new Scanner(response)) {
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (line.contains("href")) {
-                        String[] parts = line.split("href=\"");
-                        parts = parts[1].split("\"");
-                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
-                        break;
-                    }
-                }
-            }
-        }
-        if (downloadLinks.isEmpty()) {
+        String surveyLabel = "VISTA VHS DR6";
+        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, surveyLabel);
+        if (images.isEmpty()) {
             return;
         }
 
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("VISTA VHS DR6"));
+        bandPanel.setBorder(createEmptyBorder(surveyLabel));
 
-        Map<String, BufferedImage> images = new HashMap();
-
-        for (Entry<String, String> entry : downloadLinks.entrySet()) {
-            String band = getBand(entry.getKey());
-            String downloadLink = entry.getValue();
-            try {
-                HttpURLConnection connection = establishHttpConnection(downloadLink);
-                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-                BufferedImage image = ImageIO.read(stream);
-                if (image != null) {
-                    if (!band.equals("Y")) {
-                        images.put(band, image);
-                    }
-                    if (band.equals("K")) {
-                        vistaImage = image;
-                    }
-                    bandPanel.add(buildImagePanel(flipImage(image), band));
-                }
-            } catch (IOException ex) {
+        for (Entry<String, BufferedImage> entry : images.entrySet()) {
+            String band = entry.getKey();
+            BufferedImage image = entry.getValue();
+            bandPanel.add(buildImagePanel(image, band));
+            if (band.equals("K")) {
+                ukidssImage = image;
             }
-        }
-
-        if (images.size() == 2) {
-            BufferedImage i1 = images.get("K");
-            if (i1 != null) {
-                BufferedImage i2 = images.get("J");
-                if (i2 != null) {
-                    BufferedImage colorImage = createColorImageFrom2Images(invertImage(i1), invertImage(i2));
-                    bandPanel.add(buildImagePanel(flipImage(colorImage), "K-J"));
-                }
-            }
-        } else if (images.size() == 3) {
-            BufferedImage i1 = images.get("K");
-            BufferedImage i2 = images.get("H");
-            BufferedImage i3 = images.get("J");
-            BufferedImage colorImage = createColorImageFrom3Images(invertImage(i1), invertImage(i2), invertImage(i3));
-            bandPanel.add(buildImagePanel(flipImage(colorImage), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -811,24 +710,9 @@ public class ImageSeriesTab {
         }
     }
 
-    private String getBand(String filterId) {
-        switch (filterId) {
-            case "2":
-                return "Y";
-            case "3":
-                return "J";
-            case "4":
-                return "H";
-            case "5":
-                return "K";
-            default:
-                return "?";
-        }
-    }
-
     private void displayPs1Images(double targetRa, double targetDec, int size) throws Exception {
         // Fetch file names for Pan-STARRS filters
-        SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+        Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (imageInfos.isEmpty()) {
             return;
         }
@@ -928,7 +812,7 @@ public class ImageSeriesTab {
                 //infraredImageList.add(new Couple("WISE - W2", image));
             }
         }
-        SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+        Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
             bandPanel.add(buildImagePanel(image, "Pan-STARRS"));

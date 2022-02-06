@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.JFrame;
@@ -287,7 +286,7 @@ public class InfoSheet {
 
             createPdfTable("AllWISE", imageLabels, bufferedImages, writer, document);
 
-            SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+            Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
                 imageLabels = new ArrayList<>();
                 bufferedImages = new ArrayList<>();

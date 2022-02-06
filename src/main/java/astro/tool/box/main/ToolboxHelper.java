@@ -87,7 +87,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -860,7 +859,7 @@ public class ToolboxHelper {
         return op.filter(image, image);
     }
 
-    public static BufferedImage createColorImageFrom2Images(BufferedImage i1, BufferedImage i2) {
+    public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2) {
         BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < colorImage.getWidth(); x++) {
             for (int y = 0; y < colorImage.getHeight(); y++) {
@@ -878,7 +877,7 @@ public class ToolboxHelper {
         return colorImage;
     }
 
-    public static BufferedImage createColorImageFrom3Images(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
+    public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
         BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < colorImage.getWidth(); x++) {
             for (int y = 0; y < colorImage.getHeight(); y++) {
@@ -911,8 +910,8 @@ public class ToolboxHelper {
         return bi;
     }
 
-    public static SortedMap<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
-        SortedMap<String, String> fileNames = new TreeMap<>();
+    public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
+        Map<String, String> fileNames = new TreeMap<>();
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
         String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
         try (Scanner scanner = new Scanner(response)) {
@@ -973,6 +972,68 @@ public class ToolboxHelper {
             image = null;
         }
         return image;
+    }
+
+    public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, int size, String surveyUrl, String surveyLabel) throws Exception {
+        double imageSize = size / 60f;
+        Map<String, String> downloadLinks = new TreeMap<>();
+        String[] bands = new String[]{"2", "3", "4", "5"};
+        for (String band : bands) {
+            String imageUrl = String.format(surveyUrl, targetRa, targetDec, band, imageSize, imageSize);
+            String response = readResponse(establishHttpConnection(imageUrl), surveyLabel);
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("href")) {
+                        String[] parts = line.split("href=\"");
+                        parts = parts[1].split("\"");
+                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
+                        break;
+                    }
+                }
+            }
+        }
+        Map<String, BufferedImage> images = new TreeMap<>();
+        if (downloadLinks.isEmpty()) {
+            return images;
+        }
+        downloadLinks.entrySet().forEach(entry -> {
+            String band = getBand(entry.getKey());
+            String downloadLink = entry.getValue();
+            try {
+                HttpURLConnection connection = establishHttpConnection(downloadLink);
+                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                BufferedImage image = ImageIO.read(stream);
+                images.put(band, flipImage(image));
+            } catch (IOException ex) {
+            }
+        });
+        BufferedImage i1 = images.get("K");
+        BufferedImage i2 = images.get("H");
+        BufferedImage i3 = images.get("J");
+        if (i1 != null && i2 != null && i3 != null) {
+            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
+            images.put("K-H-J", flipImage(colorImage));
+        } else if (i1 != null && i3 != null) {
+            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
+            images.put("K-J", flipImage(colorImage));
+        }
+        return images;
+    }
+
+    private static String getBand(String filterId) {
+        switch (filterId) {
+            case "2":
+                return "Y";
+            case "3":
+                return "J";
+            case "4":
+                return "H";
+            case "5":
+                return "K";
+            default:
+                return "?";
+        }
     }
 
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
