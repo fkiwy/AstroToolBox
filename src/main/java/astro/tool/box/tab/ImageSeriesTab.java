@@ -709,16 +709,16 @@ public class ImageSeriesTab {
             if (i1 != null) {
                 BufferedImage i2 = images.get("J");
                 if (i2 != null) {
-                    BufferedImage colorImage = createColorImageFrom2Images(invertImage(i1), invertImage(i2));
-                    bandPanel.add(buildImagePanel(flipImage(colorImage), "K-J"));
+                    BufferedImage colorImage = createColorImageFrom2Images(i1, i2);
+                    bandPanel.add(buildImagePanel(flipImage(invertImage(colorImage)), "K-J"));
                 }
             }
         } else if (images.size() == 3) {
             BufferedImage i1 = images.get("K");
             BufferedImage i2 = images.get("H");
             BufferedImage i3 = images.get("J");
-            BufferedImage colorImage = createColorImageFrom3Images(invertImage(i1), invertImage(i2), invertImage(i3));
-            bandPanel.add(buildImagePanel(flipImage(colorImage), "K-H-J"));
+            BufferedImage colorImage = createColorImageFrom3Images(i1, i2, i3);
+            bandPanel.add(buildImagePanel(flipImage(invertImage(colorImage)), "K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -847,17 +847,17 @@ public class ImageSeriesTab {
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
-            image = invertImage(convertToGray(image));
+            image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "g"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
         if (image != null) {
-            image = invertImage(convertToGray(image));
+            image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "r"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
         if (image != null) {
-            image = invertImage(convertToGray(image));
+            image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "z"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
