@@ -112,6 +112,9 @@ public class ImageSeriesTab {
     private CatWiseCatalogEntry catWiseEntry;
     private NoirlabCatalogEntry noirlabEntry;
 
+    private BufferedImage ukidssImage;
+    private BufferedImage vistaImage;
+
     private double targetRa;
     private double targetDec;
     private int fieldOfView;
@@ -226,6 +229,8 @@ public class ImageSeriesTab {
                     gaiaDR3Entry = null;
                     catWiseEntry = null;
                     noirlabEntry = null;
+                    ukidssImage = null;
+                    vistaImage = null;
                     prevTargetRa = targetRa;
                     prevTargetDec = targetDec;
                     prevFieldOfView = fieldOfView;
@@ -698,6 +703,9 @@ public class ImageSeriesTab {
                     if (!band.equals("Y")) {
                         images.put(band, image);
                     }
+                    if (band.equals("K")) {
+                        ukidssImage = image;
+                    }
                     bandPanel.add(buildImagePanel(flipImage(image), band));
                 }
             } catch (IOException ex) {
@@ -769,6 +777,9 @@ public class ImageSeriesTab {
                 if (image != null) {
                     if (!band.equals("Y")) {
                         images.put(band, image);
+                    }
+                    if (band.equals("K")) {
+                        vistaImage = image;
                     }
                     bandPanel.add(buildImagePanel(flipImage(image), band));
                 }
@@ -914,7 +925,7 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(image, "AllWISE"));
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
-                infraredImageList.add(new Couple("WISE - W2", image));
+                //infraredImageList.add(new Couple("WISE - W2", image));
             }
         }
         SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
@@ -928,7 +939,12 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(image, "DECaLS"));
             opticalImageList.add(new Couple("DECaLS", image));
         }
-
+        if (ukidssImage != null) {
+            infraredImageList.add(new Couple("UKIDSS - K", ukidssImage));
+        }
+        if (vistaImage != null) {
+            infraredImageList.add(new Couple("VHS - K", vistaImage));
+        }
         infraredTimeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, infraredImageList, infraredTimeSeriesTimer);
 
