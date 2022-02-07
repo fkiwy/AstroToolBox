@@ -4242,17 +4242,14 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
             if (image != null) {
-                image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "g"));
             }
             image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
             if (image != null) {
-                image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "r"));
             }
             image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "z"));
             }
             image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
@@ -4314,7 +4311,6 @@ public class ImageViewerTab {
             }
             image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                image = convertToGray(image);
                 bandPanel.add(buildImagePanel(image, "DESI LS - z"));
             }
 
@@ -4385,7 +4381,6 @@ public class ImageViewerTab {
             if (decalsImages.isSelected()) {
                 image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
-                    image = convertToGray(image);
                     imageList.add(new Couple("DESI LS - z", image));
                 }
             }

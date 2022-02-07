@@ -5,7 +5,6 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
@@ -312,19 +311,16 @@ public class InfoSheet {
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
                 imageLabels.add("g");
-                bufferedImage = convertToGray(bufferedImage);
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
                 imageLabels.add("r");
-                bufferedImage = convertToGray(bufferedImage);
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
                 imageLabels.add("z");
-                bufferedImage = convertToGray(bufferedImage);
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);

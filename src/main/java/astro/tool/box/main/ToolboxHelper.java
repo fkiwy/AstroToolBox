@@ -67,7 +67,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -903,7 +902,7 @@ public class ToolboxHelper {
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
             image = ImageIO.read(stream);
             if (invert) {
-                image = brightenImage(image, 2, 20);
+                image = convertToGray(image);
                 image = invertImage(image);
             }
             image = zoomImage(image, 256);
@@ -1047,11 +1046,6 @@ public class ToolboxHelper {
         AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(image, null);
-    }
-
-    public static BufferedImage brightenImage(BufferedImage image, float scaleFactor, float offset) {
-        RescaleOp op = new RescaleOp(scaleFactor, offset, null);
-        return op.filter(image, image);
     }
 
     public static BufferedImage convertToGray(BufferedImage colorImage) {

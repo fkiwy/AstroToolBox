@@ -741,17 +741,14 @@ public class ImageSeriesTab {
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
-            image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "g"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
         if (image != null) {
-            image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "r"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
         if (image != null) {
-            image = convertToGray(image);
             bandPanel.add(buildImagePanel(image, "z"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
