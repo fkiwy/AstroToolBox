@@ -3959,27 +3959,27 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "poss1_blue"));
+                bandPanel.add(buildImagePanel(image, "DSS1 B"));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "poss1_red"));
+                bandPanel.add(buildImagePanel(image, "DSS1 R"));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "poss2ukstu_blue"));
+                bandPanel.add(buildImagePanel(image, "DSS2 B"));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "poss2ukstu_red"));
+                bandPanel.add(buildImagePanel(image, "DSS2 R"));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "poss2ukstu_ir"));
+                bandPanel.add(buildImagePanel(image, "DSS IR"));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "dss2IR-dss1Red-dss1Blue"));
+                bandPanel.add(buildImagePanel(image, "DSS IR-R-B"));
             }
 
             int componentCount = bandPanel.getComponentCount();

@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -485,31 +484,30 @@ public class ImageSeriesTab {
 
     private void displayDssImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DSS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss1_blue"));
+            bandPanel.add(buildImagePanel(image, "DSS1 B"));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss1_red"));
+            bandPanel.add(buildImagePanel(image, "DSS1 R"));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss2ukstu_blue"));
+            bandPanel.add(buildImagePanel(image, "DSS2 B"));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss2ukstu_red"));
+            bandPanel.add(buildImagePanel(image, "DSS2 R"));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss2ukstu_ir"));
+            bandPanel.add(buildImagePanel(image, "DSS2 IR"));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IR-Red-Blue"));
+            bandPanel.add(buildImagePanel(image, "DSS IR-R-B"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -521,23 +519,22 @@ public class ImageSeriesTab {
 
     private void display2MassImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("2MASS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "J"));
+            bandPanel.add(buildImagePanel(image, "2MASS J"));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "H"));
+            bandPanel.add(buildImagePanel(image, "2MASS H"));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "K"));
+            bandPanel.add(buildImagePanel(image, "2MASS K"));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "K-H-J"));
+            bandPanel.add(buildImagePanel(image, "2MASS K-H-J"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -549,31 +546,30 @@ public class ImageSeriesTab {
 
     private void displaySdssImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("SDSS"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "u"));
+            bandPanel.add(buildImagePanel(image, "SDSS u"));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "g"));
+            bandPanel.add(buildImagePanel(image, "SDSS g"));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "r"));
+            bandPanel.add(buildImagePanel(image, "SDSS r"));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "i"));
+            bandPanel.add(buildImagePanel(image, "SDSS i"));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "z"));
+            bandPanel.add(buildImagePanel(image, "SDSS z"));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "z-g-u"));
+            bandPanel.add(buildImagePanel(image, "SDSS z-g-u"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -585,7 +581,6 @@ public class ImageSeriesTab {
 
     private void displaySpitzerImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("Spitzer (SEIP)"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
         if (image != null) {
@@ -609,7 +604,7 @@ public class ImageSeriesTab {
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "3-color"));
+            bandPanel.add(buildImagePanel(image, "IRAC color"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -621,27 +616,26 @@ public class ImageSeriesTab {
 
     private void displayAllwiseImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("AllWISE"));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W1"));
+            bandPanel.add(buildImagePanel(image, "WISE W1"));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W2"));
+            bandPanel.add(buildImagePanel(image, "WISE W2"));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W3"));
+            bandPanel.add(buildImagePanel(image, "WISE W3"));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W4"));
+            bandPanel.add(buildImagePanel(image, "WISE W4"));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W4-W2-W1"));
+            bandPanel.add(buildImagePanel(image, "WISE W4-W2-W1"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -662,12 +656,11 @@ public class ImageSeriesTab {
         }
 
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder(surveyLabel));
 
         images.entrySet().forEach(entry -> {
             String band = entry.getKey();
             BufferedImage image = entry.getValue();
-            bandPanel.add(buildImagePanel(image, band));
+            bandPanel.add(buildImagePanel(image, surveyLabel + " " + band));
             if (band.equals("K")) {
                 ukidssImage = image;
             }
@@ -691,12 +684,11 @@ public class ImageSeriesTab {
         }
 
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder(surveyLabel));
 
         images.entrySet().forEach(entry -> {
             String band = entry.getKey();
             BufferedImage image = entry.getValue();
-            bandPanel.add(buildImagePanel(image, band));
+            bandPanel.add(buildImagePanel(image, surveyLabel + " " + band));
             if (band.equals("K")) {
                 vhsImage = image;
             }
@@ -718,14 +710,13 @@ public class ImageSeriesTab {
 
         // Fetch images for Pan-STARRS filters
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("Pan-STARRS"));
 
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), "g"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), "r"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), "i"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), "z"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), "y"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), "y-i-g"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), "PS1 g"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), "PS1 r"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), "PS1 i"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), "PS1 z"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), "PS1 y"));
+        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), "PS1 y-i-g"));
 
         if (bandPanel.getComponentCount() > 0) {
             bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP), "WARP images"));
@@ -737,23 +728,22 @@ public class ImageSeriesTab {
 
     private void displayDecalsImages(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DESI LS"));
 
         BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "g"));
+            bandPanel.add(buildImagePanel(image, "DESI LS g"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "r"));
+            bandPanel.add(buildImagePanel(image, "DESI LS r"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "z"));
+            bandPanel.add(buildImagePanel(image, "DESI LS z"));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "g-r-z"));
+            bandPanel.add(buildImagePanel(image, "DESI LS g-r-z"));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -766,7 +756,6 @@ public class ImageSeriesTab {
 
     private void displayTimeSeries(double targetRa, double targetDec, int size) throws Exception {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("Cross survey time series", Color.RED));
 
         List<Couple<String, BufferedImage>> infraredImageList = new ArrayList<>();
         List<Couple<String, BufferedImage>> opticalImageList = new ArrayList<>();
@@ -867,7 +856,6 @@ public class ImageSeriesTab {
 
     private void displayDecalsTimeSeries(double targetRa, double targetDec, int size) {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DESI LS time series", Color.RED));
 
         List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
 
@@ -883,12 +871,12 @@ public class ImageSeriesTab {
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "ls-dr8");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "LS DR8"));
+            bandPanel.add(buildImagePanel(image, "DESI LS DR8"));
             imageList.add(new Couple("LS DR8", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "ls-dr9");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "LS DR9"));
+            bandPanel.add(buildImagePanel(image, "DESI LS DR9"));
             imageList.add(new Couple("LS DR9", image));
         }
 
@@ -899,7 +887,7 @@ public class ImageSeriesTab {
             JPanel buttonPanel = buildButtonPanel("Save as GIF");
             bandPanel.add(buttonPanel);
 
-            JButton saveButton = new JButton("DECaLS series");
+            JButton saveButton = new JButton("DESI LS series");
             buttonPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 try {
@@ -924,7 +912,6 @@ public class ImageSeriesTab {
         }
 
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
 
         List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
 
@@ -977,10 +964,10 @@ public class ImageSeriesTab {
         }
     }
 
-    private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
+    private JPanel buildImagePanel(BufferedImage image, String imageLabel) {
+        JLabel label = addTextToImage(image, imageLabel);
         JPanel panel = new JPanel();
-        panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(new JLabel(new ImageIcon(drawCenterShape(image))));
+        panel.add(label);
         return panel;
     }
 
