@@ -27,6 +27,7 @@ import astro.tool.box.catalog.TwoMassCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.component.TranslucentLabel;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.LookupResult;
@@ -94,6 +95,7 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -1126,6 +1128,18 @@ public class ToolboxHelper {
         pw.print(LocalDateTime.now().toString() + " ");
         pw.println(message);
         return sw.toString();
+    }
+
+    public static JLabel addTextToImage(BufferedImage image, String text) {
+        JLabel background = new JLabel(new ImageIcon(drawCenterShape(image)));
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+        JLabel label = new TranslucentLabel(text);
+        label.setFont(label.getFont().deriveFont(10f));
+        label.setBackground(new Color(255, 255, 255, 200));
+        label.setBorder(new EmptyBorder(2, 5, 2, 5));
+        label.setForeground(Color.BLACK);
+        background.add(label);
+        return background;
     }
 
     public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, JPanel container) throws Exception {
