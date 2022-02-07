@@ -88,6 +88,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -152,7 +153,7 @@ public class ToolboxHelper {
     }
 
     public static Map<String, CatalogEntry> getCatalogInstances() {
-        Map<String, CatalogEntry> catalogInstances = new LinkedHashMap<>();
+        Map<String, CatalogEntry> catalogInstances = new LinkedHashMap();
 
         // Plug in catalogs here
         SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
@@ -444,7 +445,7 @@ public class ToolboxHelper {
     }
 
     public static TableRowSorter createCatalogTableSorter(DefaultTableModel defaultTableModel, CatalogEntry entry) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        TableRowSorter<TableModel> sorter = new TableRowSorter(defaultTableModel);
         List<CatalogElement> elements = entry.getCatalogElements();
         for (int i = 0; i < elements.size(); i++) {
             sorter.setComparator(i, elements.get(i).getComparator());
@@ -470,7 +471,7 @@ public class ToolboxHelper {
     }
 
     public static TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel, List<String[]> rows) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>();
+        TableRowSorter<TableModel> sorter = new TableRowSorter();
         addComparatorsToTableSorter(sorter, defaultTableModel, rows);
         return sorter;
     }
@@ -490,7 +491,7 @@ public class ToolboxHelper {
     }
 
     private static Map<Integer, BasicDataType> determineBasicTypes(List<String[]> rows) {
-        Map<Integer, BasicDataType> types = new HashMap<>();
+        Map<Integer, BasicDataType> types = new HashMap();
         rows.forEach((row) -> {
             for (int i = 0; i < row.length; i++) {
                 String columnValue = row[i];
@@ -571,7 +572,7 @@ public class ToolboxHelper {
     }
 
     public static TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        TableRowSorter<TableModel> sorter = new TableRowSorter(defaultTableModel);
         int i = 0;
         sorter.setComparator(i++, getIntegerComparator());
         sorter.setComparator(i++, getIntegerComparator());
@@ -592,7 +593,7 @@ public class ToolboxHelper {
 
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
         List<LookupResult> results = spectralTypeLookupService.lookup(colors);
-        List<String> spectralTypes = new ArrayList<>();
+        List<String> spectralTypes = new ArrayList();
         results.forEach(entry -> {
             String spectralType = entry.getSpt();
             if (includeColors) {
@@ -818,7 +819,7 @@ public class ToolboxHelper {
     }
 
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
-        List<JLabel> subjects = new ArrayList<>();
+        List<JLabel> subjects = new ArrayList();
         try {
             String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
             String response = readResponse(establishHttpConnection(url), "Zooniverse");
@@ -848,7 +849,7 @@ public class ToolboxHelper {
     }
 
     public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
-        Map<String, String> fileNames = new LinkedHashMap<>();
+        Map<String, String> fileNames = new LinkedHashMap();
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
         String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
         try (Scanner scanner = new Scanner(response)) {
@@ -914,7 +915,7 @@ public class ToolboxHelper {
 
     public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
         String imageSize = roundTo2DecNZ(size * PIXEL_SCALE_WISE / 60f);
-        Map<String, String> downloadLinks = new LinkedHashMap<>();
+        Map<String, String> downloadLinks = new LinkedHashMap();
         String[] bands = new String[]{"2", "3", "4", "5"};
         for (String band : bands) {
             String imageUrl = String.format(surveyUrl, targetRa, targetDec, band, imageSize, imageSize);
@@ -931,17 +932,24 @@ public class ToolboxHelper {
                 }
             }
         }
-        Map<String, BufferedImage> images = new LinkedHashMap<>();
+        Map<String, BufferedImage> images = new LinkedHashMap();
         if (downloadLinks.isEmpty()) {
             return images;
         }
-        downloadLinks.entrySet().forEach(entry -> {
+        for (Entry<String, String> entry : downloadLinks.entrySet()) {
             String band = getBand(entry.getKey());
             String downloadLink = entry.getValue();
             try {
                 HttpURLConnection connection = establishHttpConnection(downloadLink);
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
                 BufferedImage image = ImageIO.read(stream);
+                int width = image.getWidth();
+                int height = image.getHeight();
+                int offset = 2;
+                System.out.println("width=" + width + " height=" + height);
+                if (width > height + offset || width < height - offset) {
+                    return new LinkedHashMap();
+                }
                 if (surveyLabel.equals("UKIDSS")) {
                     image = rotateImage(image, 1);
                 }
@@ -949,7 +957,7 @@ public class ToolboxHelper {
                 images.put(band, image);
             } catch (IOException ex) {
             }
-        });
+        }
         BufferedImage i1 = images.get("K");
         BufferedImage i2 = images.get("H");
         BufferedImage i3 = images.get("J");

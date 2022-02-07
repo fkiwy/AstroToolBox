@@ -61,7 +61,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class BatchQueryTab {
 
-    public static final String TAB_NAME = "Batch Query";
+    public static final String TAB_NAME = "Batch Search";
     private static final int MAX_SEARCH_RADIUS = 10;
     private static final int MAX_INPUT_ROWS = 50000;
 
