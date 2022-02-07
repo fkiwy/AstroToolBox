@@ -181,8 +181,8 @@ public class ImageViewerTab {
     public static final int NUMBER_OF_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
-    public static final int PANEL_HEIGHT = 270;
-    public static final int PANEL_WIDTH = 230;
+    public static final int PANEL_HEIGHT = 250;
+    public static final int PANEL_WIDTH = 200;
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 5;
     public static final int SPEED = 300;
