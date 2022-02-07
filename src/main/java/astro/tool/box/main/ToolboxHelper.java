@@ -27,6 +27,7 @@ import astro.tool.box.catalog.TwoMassCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.container.NirImage;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.Alignment;
@@ -88,7 +89,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -915,32 +915,37 @@ public class ToolboxHelper {
 
     public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
         String imageSize = roundTo2DecNZ(size * PIXEL_SCALE_WISE / 60f);
-        Map<String, String> downloadLinks = new LinkedHashMap();
-        String[] bands = new String[]{"2", "3", "4", "5"};
-        for (String band : bands) {
-            String imageUrl = String.format(surveyUrl, targetRa, targetDec, band, imageSize, imageSize);
-            String response = readResponse(establishHttpConnection(imageUrl), surveyLabel);
+        List<NirImage> nirImages = new ArrayList();
+        String[] filterIds = new String[]{"2", "3", "4", "5"};
+        for (String filterId : filterIds) {
+            String downloadUrl = String.format(surveyUrl, targetRa, targetDec, filterId, imageSize, imageSize);
+            String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
             try (Scanner scanner = new Scanner(response)) {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.contains("href")) {
                         String[] parts = line.split("href=\"");
                         parts = parts[1].split("\"");
-                        downloadLinks.put(band, parts[0].replace("getImage", "getJImage"));
+                        String imageUrl = parts[0].replace("getImage", "getJImage");
+                        parts = line.split("extNo=");
+                        parts = parts[1].split("&");
+                        String extNo = parts[0];
+                        nirImages.add(new NirImage(filterId, extNo, imageUrl));
                         break;
                     }
                 }
             }
         }
         Map<String, BufferedImage> images = new LinkedHashMap();
-        if (downloadLinks.isEmpty()) {
+        if (nirImages.isEmpty()) {
             return images;
         }
-        for (Entry<String, String> entry : downloadLinks.entrySet()) {
-            String band = getBand(entry.getKey());
-            String downloadLink = entry.getValue();
+        for (NirImage nirImage : nirImages) {
+            String band = getBand(nirImage.getFilderId());
+            String extNo = nirImage.getExtNo();
+            String imageUrl = nirImage.getImageUrl();
             try {
-                HttpURLConnection connection = establishHttpConnection(downloadLink);
+                HttpURLConnection connection = establishHttpConnection(imageUrl);
                 BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
                 BufferedImage image = ImageIO.read(stream);
                 int width = image.getWidth();
@@ -951,8 +956,20 @@ public class ToolboxHelper {
                     return new LinkedHashMap();
                 }
                 if (surveyLabel.equals("UKIDSS")) {
-                    image = rotateImage(image, 1);
+                    // Rotate image
+                    switch (extNo) {
+                        case "1":
+                            image = rotateImage(image, 1);
+                            break;
+                        case "2":
+                            // No rotation necessary
+                            break;
+                        case "3":
+                            image = rotateImage(image, 3);
+                            break;
+                    }
                 }
+                // Flip image
                 image = flipImage(image);
                 images.put(band, image);
             } catch (IOException ex) {
@@ -1084,7 +1101,7 @@ public class ToolboxHelper {
     }
 
     public static BufferedImage drawCenterShape(BufferedImage image) {
-        image = zoomImage(image, 150);
+        image = zoomImage(image, 200);
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
