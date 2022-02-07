@@ -914,7 +914,7 @@ public class ToolboxHelper {
     }
 
     public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
-        String imageSize = roundTo2DecNZ(size * PIXEL_SCALE_WISE / 60f);
+        String imageSize = roundTo2DecNZ(size / 60f);
         List<NirImage> nirImages = new ArrayList();
         String[] filterIds = new String[]{"2", "3", "4", "5"};
         for (String filterId : filterIds) {
@@ -1101,7 +1101,7 @@ public class ToolboxHelper {
     }
 
     public static BufferedImage drawCenterShape(BufferedImage image) {
-        image = zoomImage(image, 200);
+        image = zoomImage(image, 175);
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();

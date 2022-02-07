@@ -3900,7 +3900,7 @@ public class ImageViewerTab {
                 return null;
             }
             String surveyLabel = "UKIDSS";
-            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, surveyLabel);
+            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, surveyLabel);
             BufferedImage nirImage = nirImages.get("K-H-J");
             if (nirImage == null) {
                 nirImage = nirImages.get("K-J");
@@ -3917,7 +3917,7 @@ public class ImageViewerTab {
                 return null;
             }
             String surveyLabel = "VHS";
-            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, surveyLabel);
+            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, surveyLabel);
             BufferedImage nirImage = nirImages.get("K-H-J");
             if (nirImage == null) {
                 nirImage = nirImages.get("K-J");
