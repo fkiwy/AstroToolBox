@@ -93,7 +93,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.RasterFormatException;
@@ -2144,7 +2143,7 @@ public class ImageViewerTab {
         try {
             rightPanel.add(new JLabel(imageLabel));
             BufferedImage magnifiedDecalsImage = image.getSubimage(upperLeftX, upperLeftY, width, height);
-            magnifiedDecalsImage = zoom(magnifiedDecalsImage, 200);
+            magnifiedDecalsImage = zoomImage(magnifiedDecalsImage, 200);
             rightPanel.add(new JLabel(new ImageIcon(magnifiedDecalsImage)));
         } catch (RasterFormatException ex) {
             writeErrorLog(ex);
@@ -2382,7 +2381,7 @@ public class ImageViewerTab {
                 if (legacyImages) {
                     CompletableFuture.supplyAsync(() -> {
                         decalsImage = fetchDecalsImage(targetRa, targetDec, size);
-                        processedDecalsImage = zoom(rotate(decalsImage, quadrantCount), zoom);
+                        processedDecalsImage = zoomImage(rotateImage(decalsImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2391,7 +2390,7 @@ public class ImageViewerTab {
                 if (panstarrsImages) {
                     CompletableFuture.supplyAsync(() -> {
                         ps1Image = fetchPs1Image(targetRa, targetDec, size);
-                        processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
+                        processedPs1Image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2400,7 +2399,7 @@ public class ImageViewerTab {
                 if (ukidssImages) {
                     CompletableFuture.supplyAsync(() -> {
                         ukidssImage = fetchUkidssImage(targetRa, targetDec, size);
-                        processedUkidssImage = zoom(rotate(ukidssImage, quadrantCount), zoom);
+                        processedUkidssImage = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2409,7 +2408,7 @@ public class ImageViewerTab {
                 if (vhsImages) {
                     CompletableFuture.supplyAsync(() -> {
                         vhsImage = fetchVhsImage(targetRa, targetDec, size);
-                        processedVhsImage = zoom(rotate(vhsImage, quadrantCount), zoom);
+                        processedVhsImage = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2418,7 +2417,7 @@ public class ImageViewerTab {
                 if (sdssImages) {
                     CompletableFuture.supplyAsync(() -> {
                         sdssImage = fetchSdssImage(targetRa, targetDec, size);
-                        processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
+                        processedSdssImage = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2427,7 +2426,7 @@ public class ImageViewerTab {
                 if (dssImages) {
                     CompletableFuture.supplyAsync(() -> {
                         dssImage = fetchDssImage(targetRa, targetDec, size);
-                        processedDssImage = zoom(rotate(dssImage, quadrantCount), zoom);
+                        processedDssImage = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2762,22 +2761,22 @@ public class ImageViewerTab {
 
     private void processImages() {
         if (decalsImage != null) {
-            processedDecalsImage = zoom(rotate(decalsImage, quadrantCount), zoom);
+            processedDecalsImage = zoomImage(rotateImage(decalsImage, quadrantCount), zoom);
         }
         if (ps1Image != null) {
-            processedPs1Image = zoom(rotate(ps1Image, quadrantCount), zoom);
+            processedPs1Image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
         }
         if (ukidssImage != null) {
-            processedUkidssImage = zoom(rotate(ukidssImage, quadrantCount), zoom);
+            processedUkidssImage = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
         }
         if (vhsImage != null) {
-            processedVhsImage = zoom(rotate(vhsImage, quadrantCount), zoom);
+            processedVhsImage = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
         }
         if (sdssImage != null) {
-            processedSdssImage = zoom(rotate(sdssImage, quadrantCount), zoom);
+            processedSdssImage = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
         }
         if (dssImage != null) {
-            processedDssImage = zoom(rotate(dssImage, quadrantCount), zoom);
+            processedDssImage = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
         }
         if (flipbook == null || !flipbookComplete) {
             return;
@@ -2829,32 +2828,32 @@ public class ImageViewerTab {
             grid.add(scrollPanel);
         }
         if (decalsImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(decalsImage, quadrantCount), zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(decalsImage, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("DESI LS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ps1Image, quadrantCount), zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(ps1Image, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("Pan-STARRS"));
             grid.add(pane);
         }
         if (ukidssImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(ukidssImage, quadrantCount), zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(ukidssImage, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("UKIDSS"));
             grid.add(pane);
         }
         if (vhsImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(vhsImage, quadrantCount), zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(vhsImage, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("VHS"));
             grid.add(pane);
         }
         if (sdssImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(sdssImage, quadrantCount), zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(sdssImage, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("SDSS"));
             grid.add(pane);
         }
         if (dssImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoom(rotate(dssImage, quadrantCount), zoom))));
+            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(dssImage, quadrantCount), zoom))));
             pane.setBorder(createEtchedBorder("DSS"));
             grid.add(pane);
         }
@@ -2871,8 +2870,8 @@ public class ImageViewerTab {
         } else {
             image = createImage(component.getBand(), component.getEpoch());
         }
-        image = zoom(image, zoom);
-        image = flip(image);
+        image = zoomImage(image, zoom);
+        image = flipImage(image);
         addOverlaysAndPMVectors(image, component.getTotalEpochs());
         return image;
     }
@@ -2903,7 +2902,7 @@ public class ImageViewerTab {
         }
 
         // Rotate image by the given number of quadrants
-        image = rotate(image, quadrantCount);
+        image = rotateImage(image, quadrantCount);
 
         // Show crosshairs with coordinates
         if (showCrosshairs.isSelected()) {
@@ -3709,22 +3708,6 @@ public class ImageViewerTab {
         WritableRaster raster = bufferImage.copyData(null);
         boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
-    }
-
-    private BufferedImage flip(BufferedImage image) {
-        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-        tx.translate(0, -image.getHeight(null));
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        return op.filter(image, null);
-    }
-
-    private BufferedImage rotate(BufferedImage image, int numberOfQuadrants) {
-        if (numberOfQuadrants == 0) {
-            return image;
-        }
-        AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(image, null);
     }
 
     private Fits getImage(int band, int epoch) {

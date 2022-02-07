@@ -903,7 +903,7 @@ public class ToolboxHelper {
                 image = brightenImage(image, 2, 20);
                 image = invertImage(image);
             }
-            image = zoom(image, 256);
+            image = zoomImage(image, 256);
         } catch (IOException ex) {
             image = null;
         }
@@ -912,7 +912,6 @@ public class ToolboxHelper {
 
     public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
         String imageSize = roundTo2DecNZ(size * PIXEL_SCALE_WISE / 60f);
-        System.out.println("imageSize=" + imageSize);
         Map<String, String> downloadLinks = new LinkedHashMap<>();
         String[] bands = new String[]{"2", "3", "4", "5"};
         for (String band : bands) {
@@ -977,7 +976,7 @@ public class ToolboxHelper {
         }
     }
 
-    public static BufferedImage zoom(BufferedImage image, int zoom) {
+    public static BufferedImage zoomImage(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
         Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
         BufferedImage zoomedImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
@@ -985,14 +984,6 @@ public class ToolboxHelper {
         graphics.drawImage(scaledImage, 0, 0, null);
         graphics.dispose();
         return zoomedImage;
-    }
-
-    public static BufferedImage convertToGray(BufferedImage colorImage) {
-        BufferedImage grayImage = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        Graphics graphics = grayImage.getGraphics();
-        graphics.drawImage(colorImage, 0, 0, null);
-        graphics.dispose();
-        return grayImage;
     }
 
     public static BufferedImage invertImage(BufferedImage image) {
@@ -1027,6 +1018,14 @@ public class ToolboxHelper {
     public static BufferedImage brightenImage(BufferedImage image, float scaleFactor, float offset) {
         RescaleOp op = new RescaleOp(scaleFactor, offset, null);
         return op.filter(image, image);
+    }
+
+    public static BufferedImage convertToGray(BufferedImage colorImage) {
+        BufferedImage grayImage = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics graphics = grayImage.getGraphics();
+        graphics.drawImage(colorImage, 0, 0, null);
+        graphics.dispose();
+        return grayImage;
     }
 
     public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2) {
@@ -1068,11 +1067,11 @@ public class ToolboxHelper {
     }
 
     public static BufferedImage drawCenterShape(BufferedImage image) {
-        image = zoom(image, 200);
+        image = zoomImage(image, 150);
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
-        Drawable drawable = new Circle(x, y, 20, Color.YELLOW);
+        Drawable drawable = new Circle(x, y, 30, Color.YELLOW);
         drawable.draw(g);
         return image;
     }
