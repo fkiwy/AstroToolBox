@@ -10,9 +10,9 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=stack";
+    public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
 
-    public static final String VHS_SURVEY_URL = "http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%f&ysize=%f&obsType=object&frameType=tilestack";
+    public static final String VHS_SURVEY_URL = "http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=tilestack";
 
     public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
@@ -53,6 +53,8 @@ public class Constants {
     public static final String SPLIT_CHAR_REPLACEMENT = ";";
 
     public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
+
+    public static final double PIXEL_SCALE_WISE = 2.75;
 
     public static final double PIXEL_SCALE_DECAM = 0.25;
 

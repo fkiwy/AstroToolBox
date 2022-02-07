@@ -181,7 +181,6 @@ public class ImageViewerTab {
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final double PIXEL_SCALE_WISE = 2.75;
     public static final int NUMBER_OF_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;

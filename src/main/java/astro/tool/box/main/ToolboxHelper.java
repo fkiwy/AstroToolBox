@@ -911,7 +911,8 @@ public class ToolboxHelper {
     }
 
     public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
-        double imageSize = size / 22f;
+        String imageSize = roundTo2DecNZ(size * PIXEL_SCALE_WISE / 60f);
+        System.out.println("imageSize=" + imageSize);
         Map<String, String> downloadLinks = new LinkedHashMap<>();
         String[] bands = new String[]{"2", "3", "4", "5"};
         for (String band : bands) {
