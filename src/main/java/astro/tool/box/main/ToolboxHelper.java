@@ -65,7 +65,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.RescaleOp;
+import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -974,6 +976,13 @@ public class ToolboxHelper {
             default:
                 return "?";
         }
+    }
+
+    public static BufferedImage copyImage(BufferedImage bufferImage) {
+        ColorModel colorModel = bufferImage.getColorModel();
+        WritableRaster raster = bufferImage.copyData(null);
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
     }
 
     public static BufferedImage zoomImage(BufferedImage image, int zoom) {

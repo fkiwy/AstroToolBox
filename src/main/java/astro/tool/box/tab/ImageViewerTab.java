@@ -94,9 +94,7 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.RasterFormatException;
-import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -2879,7 +2877,7 @@ public class ImageViewerTab {
     private BufferedImage addCrosshairs(BufferedImage image, FlipbookComponent component) {
         // Copy the picture to draw shapes in real time
         if (markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
-            image = copy(image);
+            image = copyImage(image);
         }
 
         // Mark target coordinates
@@ -3701,13 +3699,6 @@ public class ImageViewerTab {
             }
         }
         return blurredValues;
-    }
-
-    private BufferedImage copy(BufferedImage bufferImage) {
-        ColorModel colorModel = bufferImage.getColorModel();
-        WritableRaster raster = bufferImage.copyData(null);
-        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
-        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
     }
 
     private Fits getImage(int band, int epoch) {
