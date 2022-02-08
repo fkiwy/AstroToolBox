@@ -46,18 +46,6 @@ public class FlipbookComponent {
         this.totalEpochs = totalEpochs;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("FlipbookComponent{band=").append(band);
-        sb.append(", epoch=").append(epoch);
-        sb.append(", epochCount=").append(epochCount);
-        sb.append(", isMerged=").append(isMerged);
-        sb.append(", firstEpoch=").append(firstEpoch);
-        sb.append('}');
-        return sb.toString();
-    }
-
     public String getTitle() {
         String titleBand;
         if (band == 12) {
@@ -71,44 +59,44 @@ public class FlipbookComponent {
             switch (epoch) {
                 case 100:
                     firstEpoch = true;
-                    titleEpoch = "1";
+                    titleEpoch = "AllWISE";
                     titleNode = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 200:
-                    titleEpoch = "" + epochCount;
+                    titleEpoch = "NEO" + (epochCount - 1);
                     titleNode = ASC_NODE + "+" + DESC_NODE;
                     break;
                 case 300:
                     firstEpoch = true;
-                    titleEpoch = "1+" + epochCount;
+                    titleEpoch = "AllWISE+NEO" + (epochCount - 1);
                     titleNode = ASC_NODE;
                     break;
                 case 400:
-                    titleEpoch = "1+" + epochCount;
+                    titleEpoch = "AllWISE+NEO" + (epochCount - 1);
                     titleNode = DESC_NODE;
                     break;
                 default:
                     if (epoch > 500 && epoch < 600) {
                         firstEpoch = epoch == 501;
-                        titleEpoch = String.valueOf(epoch - 500);
+                        titleEpoch = firstEpoch ? "AllWISE" : "NEO" + (epoch - 500 - 1);
                         titleNode = ASC_NODE + "+" + DESC_NODE;
                     } else if (epoch > 600 && epoch < 700) {
                         firstEpoch = epoch == 603;
-                        titleEpoch = String.valueOf((epoch - 600) / 2);
+                        titleEpoch = firstEpoch ? "AllWISE" : "NEO" + ((epoch - 600) / 2 - 1);
                         titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
                     } else if (epoch > 700 && epoch < 800) {
                         firstEpoch = epoch == 702;
-                        titleEpoch = String.valueOf((epoch - 700) / 2);
+                        titleEpoch = firstEpoch ? "AllWISE" : "NEO" + ((epoch - 700) / 2 - 1);
                         titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
                     }
                     break;
             }
         } else {
             firstEpoch = epoch == 0 || epoch == 1;
-            titleEpoch = String.valueOf((epoch / 2) + 1);
+            titleEpoch = firstEpoch ? "AllWISE" : "NEO" + (epoch / 2);
             titleNode = epoch % 2 == 0 ? ASC_NODE : DESC_NODE;
         }
-        return titleBand + "   Epoch=" + titleEpoch + "   " + titleNode;
+        return titleBand + "  " + titleNode + "  " + titleEpoch;
     }
 
     public int getBand() {

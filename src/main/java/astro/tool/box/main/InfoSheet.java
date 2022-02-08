@@ -164,7 +164,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("DSS", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -189,7 +189,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("2MASS", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -224,7 +224,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("SDSS", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -259,7 +259,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("Spitzer (SEIP)", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -289,7 +289,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("AllWISE", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             if (targetDec > -5) {
                 imageLabels = new ArrayList<>();
@@ -304,7 +304,7 @@ public class InfoSheet {
                             bufferedImages.add(bufferedImage);
                         }
                     }
-                    createPdfTable(UKIDSS_LABEL, imageLabels, bufferedImages, writer, document);
+                    createPdfTable(imageLabels, bufferedImages, writer, document);
                 }
             }
 
@@ -321,7 +321,7 @@ public class InfoSheet {
                             bufferedImages.add(bufferedImage);
                         }
                     }
-                    createPdfTable(VHS_LABEL, imageLabels, bufferedImages, writer, document);
+                    createPdfTable(imageLabels, bufferedImages, writer, document);
                 }
             }
 
@@ -342,7 +342,7 @@ public class InfoSheet {
                 imageLabels.add("PS1 y-i-g");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false));
 
-                createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
+                createPdfTable(imageLabels, bufferedImages, writer, document);
             }
 
             imageLabels = new ArrayList<>();
@@ -368,7 +368,7 @@ public class InfoSheet {
                 bufferedImages.add(bufferedImage);
             }
 
-            createPdfTable("DESI LS", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
@@ -381,7 +381,7 @@ public class InfoSheet {
                 bufferedImages.add(imageViewerTab.processImage(component));
             }
 
-            createPdfTable("AllWISE & NeoWISE", imageLabels, bufferedImages, writer, document);
+            createPdfTable(imageLabels, bufferedImages, writer, document);
 
             int searchRadius = 10;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
@@ -401,11 +401,12 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimates (*)", mainHeader));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type estimates (**)", null));
 
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimates (*)", mainHeader));
             document.add(new Paragraph("(*) Uses the color - spectral type relations from Eric Mamajek's Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", SMALL_FONT));
-            document.add(new Paragraph("(**) Uses the color - spectral type relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
+
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type estimates (*)", null));
+            document.add(new Paragraph("(*) Uses the color - spectral type relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
 
             document.close();
 
@@ -466,7 +467,7 @@ public class InfoSheet {
 
         int numberOfCols = 10;
         PdfPTable table = new PdfPTable(numberOfCols);
-        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 35, 35, 100, 100});
+        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 35, 35, 200, 200});
         table.setLockedWidth(true);
         table.setSpacingBefore(10);
         table.setKeepTogether(true);
@@ -517,7 +518,7 @@ public class InfoSheet {
         return table;
     }
 
-    private void createPdfTable(String header, List<String> imageLabels, List<BufferedImage> bufferedImages, PdfWriter writer, Document document) throws Exception {
+    private void createPdfTable(List<String> imageLabels, List<BufferedImage> bufferedImages, PdfWriter writer, Document document) throws Exception {
         int numberOfCells = imageLabels.size();
 
         if (numberOfCells == 0) {
@@ -534,12 +535,6 @@ public class InfoSheet {
         table.setLockedWidth(true);
         table.setKeepTogether(true);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
-
-        PdfPCell tableHeader = new PdfPCell(new Phrase(header, LARGE_FONT));
-        tableHeader.setHorizontalAlignment(Element.ALIGN_LEFT);
-        tableHeader.setColspan(numberOfCells);
-        tableHeader.setBorderWidth(0);
-        table.addCell(tableHeader);
 
         for (int i = 0; i < bufferedImages.size(); i++) {
             String label = imageLabels.get(i);
