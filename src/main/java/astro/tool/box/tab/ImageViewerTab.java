@@ -280,13 +280,15 @@ public class ImageViewerTab {
     private JCheckBox showBrownDwarfsOnly;
     private JCheckBox displaySpectralTypes;
     private JCheckBox useCustomOverlays;
-    private JCheckBox allSkyImages;
-    private JCheckBox twoMassImages;
-    private JCheckBox sloanImages;
-    private JCheckBox spitzerImages;
-    private JCheckBox allwiseImages;
-    private JCheckBox ps1Images;
-    private JCheckBox decalsImages;
+    private JCheckBox dssImageSeries;
+    private JCheckBox twoMassImageSeries;
+    private JCheckBox sdssImageSeries;
+    private JCheckBox spitzerImageSeries;
+    private JCheckBox allwiseImageSeries;
+    private JCheckBox ukidssImageSeries;
+    private JCheckBox vhsImageSeries;
+    private JCheckBox panstarrsImageSeries;
+    private JCheckBox legacyImageSeries;
     private JCheckBox staticTimeSeries;
     private JCheckBox animatedTimeSeries;
     private JCheckBox createDataSheet;
@@ -1140,45 +1142,57 @@ public class ImageViewerTab {
 
             mouseControlPanel.add(new JLabel("Select images to display:"));
 
-            allSkyImages = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
-            mouseControlPanel.add(allSkyImages);
-            allSkyImages.addActionListener((ActionEvent evt) -> {
+            dssImageSeries = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
+            mouseControlPanel.add(dssImageSeries);
+            dssImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            twoMassImages = new JCheckBox("2MASS J, H & K bands", false);
-            mouseControlPanel.add(twoMassImages);
-            twoMassImages.addActionListener((ActionEvent evt) -> {
+            twoMassImageSeries = new JCheckBox("2MASS J, H & K bands", false);
+            mouseControlPanel.add(twoMassImageSeries);
+            twoMassImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            sloanImages = new JCheckBox("SDSS u, g, r, i & z bands", false);
-            mouseControlPanel.add(sloanImages);
-            sloanImages.addActionListener((ActionEvent evt) -> {
+            sdssImageSeries = new JCheckBox("SDSS u, g, r, i & z bands", false);
+            mouseControlPanel.add(sdssImageSeries);
+            sdssImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            spitzerImages = new JCheckBox("Spitzer CH1, CH2, CH3, CH4, MIPS24", false);
-            mouseControlPanel.add(spitzerImages);
-            spitzerImages.addActionListener((ActionEvent evt) -> {
+            spitzerImageSeries = new JCheckBox("Spitzer CH1, CH2, CH3, CH4, MIPS24", false);
+            mouseControlPanel.add(spitzerImageSeries);
+            spitzerImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            allwiseImages = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
-            mouseControlPanel.add(allwiseImages);
-            allwiseImages.addActionListener((ActionEvent evt) -> {
+            allwiseImageSeries = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
+            mouseControlPanel.add(allwiseImageSeries);
+            allwiseImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            ps1Images = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
-            mouseControlPanel.add(ps1Images);
-            ps1Images.addActionListener((ActionEvent evt) -> {
+            ukidssImageSeries = new JCheckBox("UKIDSS Y, J, H & K bands", false);
+            mouseControlPanel.add(ukidssImageSeries);
+            ukidssImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
-            decalsImages = new JCheckBox("DESI LS g, r & z bands", false);
-            mouseControlPanel.add(decalsImages);
-            decalsImages.addActionListener((ActionEvent evt) -> {
+            vhsImageSeries = new JCheckBox("VHS Y, J, H & K bands", false);
+            mouseControlPanel.add(vhsImageSeries);
+            vhsImageSeries.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            panstarrsImageSeries = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
+            mouseControlPanel.add(panstarrsImageSeries);
+            panstarrsImageSeries.addActionListener((ActionEvent evt) -> {
+                createDataSheet.setSelected(false);
+            });
+
+            legacyImageSeries = new JCheckBox("DESI LS g, r & z bands", false);
+            mouseControlPanel.add(legacyImageSeries);
+            legacyImageSeries.addActionListener((ActionEvent evt) -> {
                 createDataSheet.setSelected(false);
             });
 
@@ -1186,13 +1200,15 @@ public class ImageViewerTab {
             mouseControlPanel.add(staticTimeSeries);
             staticTimeSeries.addActionListener((ActionEvent evt) -> {
                 if (staticTimeSeries.isSelected() || animatedTimeSeries.isSelected()) {
-                    allSkyImages.setSelected(false);
-                    twoMassImages.setSelected(false);
-                    sloanImages.setSelected(false);
-                    spitzerImages.setSelected(false);
-                    allwiseImages.setSelected(false);
-                    ps1Images.setSelected(false);
-                    decalsImages.setSelected(false);
+                    dssImageSeries.setSelected(false);
+                    twoMassImageSeries.setSelected(false);
+                    sdssImageSeries.setSelected(false);
+                    spitzerImageSeries.setSelected(false);
+                    allwiseImageSeries.setSelected(false);
+                    ukidssImageSeries.setSelected(false);
+                    vhsImageSeries.setSelected(false);
+                    panstarrsImageSeries.setSelected(false);
+                    legacyImageSeries.setSelected(false);
                     animatedTimeSeries.setSelected(false);
                 }
                 createDataSheet.setSelected(false);
@@ -1202,22 +1218,24 @@ public class ImageViewerTab {
             mouseControlPanel.add(animatedTimeSeries);
             animatedTimeSeries.addActionListener((ActionEvent evt) -> {
                 if (animatedTimeSeries.isSelected()) {
-                    allSkyImages.setSelected(true);
-                    twoMassImages.setSelected(true);
-                    sloanImages.setSelected(true);
-                    spitzerImages.setSelected(true);
-                    allwiseImages.setSelected(true);
-                    ps1Images.setSelected(true);
-                    decalsImages.setSelected(true);
+                    dssImageSeries.setSelected(true);
+                    twoMassImageSeries.setSelected(true);
+                    sdssImageSeries.setSelected(true);
+                    spitzerImageSeries.setSelected(true);
+                    allwiseImageSeries.setSelected(true);
+                    panstarrsImageSeries.setSelected(true);
+                    legacyImageSeries.setSelected(true);
                     staticTimeSeries.setSelected(false);
                 } else {
-                    allSkyImages.setSelected(false);
-                    twoMassImages.setSelected(false);
-                    sloanImages.setSelected(false);
-                    spitzerImages.setSelected(false);
-                    allwiseImages.setSelected(false);
-                    ps1Images.setSelected(false);
-                    decalsImages.setSelected(false);
+                    dssImageSeries.setSelected(false);
+                    twoMassImageSeries.setSelected(false);
+                    sdssImageSeries.setSelected(false);
+                    spitzerImageSeries.setSelected(false);
+                    allwiseImageSeries.setSelected(false);
+                    ukidssImageSeries.setSelected(false);
+                    vhsImageSeries.setSelected(false);
+                    panstarrsImageSeries.setSelected(false);
+                    legacyImageSeries.setSelected(false);
                 }
                 createDataSheet.setSelected(false);
             });
@@ -1227,13 +1245,15 @@ public class ImageViewerTab {
             createDataSheet.addActionListener((ActionEvent evt) -> {
                 if (createDataSheet.isSelected()) {
                     setImageViewer(this);
-                    allSkyImages.setSelected(false);
-                    twoMassImages.setSelected(false);
-                    sloanImages.setSelected(false);
-                    spitzerImages.setSelected(false);
-                    allwiseImages.setSelected(false);
-                    ps1Images.setSelected(false);
-                    decalsImages.setSelected(false);
+                    dssImageSeries.setSelected(false);
+                    twoMassImageSeries.setSelected(false);
+                    sdssImageSeries.setSelected(false);
+                    spitzerImageSeries.setSelected(false);
+                    allwiseImageSeries.setSelected(false);
+                    ukidssImageSeries.setSelected(false);
+                    vhsImageSeries.setSelected(false);
+                    panstarrsImageSeries.setSelected(false);
+                    legacyImageSeries.setSelected(false);
                     staticTimeSeries.setSelected(false);
                     animatedTimeSeries.setSelected(false);
                 }
@@ -1535,21 +1555,6 @@ public class ImageViewerTab {
                         imagePanel.add(ps1Label);
                     }
 
-                    // Display UKIDSS images
-                    JLabel ukidssLabel = null;
-                    if (processedUkidssImage != null) {
-                        // Create and display magnified UKIDSS image
-                        if (!imageCutOff) {
-                            addMagnifiedImage("UKIDSS", processedUkidssImage, upperLeftX, upperLeftY, width, height);
-                        }
-
-                        // Display regular UKIDSS image
-                        imagePanel.add(new JLabel(" UKIDSS"));
-                        ukidssLabel = new JLabel(new ImageIcon(processedUkidssImage));
-                        ukidssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(ukidssLabel);
-                    }
-
                     // Display VHS images
                     JLabel vhsLabel = null;
                     if (processedVhsImage != null) {
@@ -1563,6 +1568,21 @@ public class ImageViewerTab {
                         vhsLabel = new JLabel(new ImageIcon(processedVhsImage));
                         vhsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(vhsLabel);
+                    }
+
+                    // Display UKIDSS images
+                    JLabel ukidssLabel = null;
+                    if (processedUkidssImage != null) {
+                        // Create and display magnified UKIDSS image
+                        if (!imageCutOff) {
+                            addMagnifiedImage("UKIDSS", processedUkidssImage, upperLeftX, upperLeftY, width, height);
+                        }
+
+                        // Display regular UKIDSS image
+                        imagePanel.add(new JLabel(" UKIDSS"));
+                        ukidssLabel = new JLabel(new ImageIcon(processedUkidssImage));
+                        ukidssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+                        imagePanel.add(ukidssLabel);
                     }
 
                     // Display SDSS images
@@ -1658,25 +1678,28 @@ public class ImageViewerTab {
                                         } else {
                                             CompletableFuture.supplyAsync(() -> {
                                                 int numberOfPanels = 0;
-                                                if (allSkyImages.isSelected()) {
+                                                if (dssImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
-                                                if (twoMassImages.isSelected()) {
+                                                if (twoMassImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
-                                                if (sloanImages.isSelected()) {
+                                                if (sdssImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
-                                                if (spitzerImages.isSelected()) {
+                                                if (spitzerImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
-                                                if (allwiseImages.isSelected()) {
+                                                if (allwiseImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
-                                                if (ps1Images.isSelected()) {
+                                                if (ukidssImageSeries.isSelected() || vhsImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
-                                                if (decalsImages.isSelected()) {
+                                                if (panstarrsImageSeries.isSelected()) {
+                                                    numberOfPanels++;
+                                                }
+                                                if (legacyImageSeries.isSelected()) {
                                                     numberOfPanels++;
                                                 }
                                                 if (staticTimeSeries.isSelected()) {
@@ -1692,25 +1715,31 @@ public class ImageViewerTab {
                                                     verticalSpacing = PANEL_HEIGHT;
                                                 }
                                                 Counter counter = new Counter(verticalSpacing);
-                                                if (allSkyImages.isSelected()) {
+                                                if (dssImageSeries.isSelected()) {
                                                     displayDssImages(newRa, newDec, fieldOfView, counter);
                                                 }
-                                                if (twoMassImages.isSelected()) {
+                                                if (twoMassImageSeries.isSelected()) {
                                                     display2MassImages(newRa, newDec, fieldOfView, counter);
                                                 }
-                                                if (sloanImages.isSelected()) {
+                                                if (sdssImageSeries.isSelected()) {
                                                     displaySdssImages(newRa, newDec, fieldOfView, counter);
                                                 }
-                                                if (spitzerImages.isSelected()) {
+                                                if (spitzerImageSeries.isSelected()) {
                                                     displaySpitzerImages(newRa, newDec, fieldOfView, counter);
                                                 }
-                                                if (allwiseImages.isSelected()) {
+                                                if (allwiseImageSeries.isSelected()) {
                                                     displayAllwiseImages(newRa, newDec, fieldOfView, counter);
                                                 }
-                                                if (ps1Images.isSelected()) {
+                                                if (ukidssImageSeries.isSelected()) {
+                                                    displayUkidssImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (vhsImageSeries.isSelected()) {
+                                                    displayVhsImages(newRa, newDec, fieldOfView, counter);
+                                                }
+                                                if (panstarrsImageSeries.isSelected()) {
                                                     displayPs1Images(newRa, newDec, fieldOfView, counter);
                                                 }
-                                                if (decalsImages.isSelected()) {
+                                                if (legacyImageSeries.isSelected()) {
                                                     displayDecalsImages(targetRa, targetDec, fieldOfView, counter);
                                                 }
                                                 if (staticTimeSeries.isSelected()) {
@@ -4200,6 +4229,80 @@ public class ImageViewerTab {
         }
     }
 
+    private void displayUkidssImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            if (targetDec < -5) {
+                return;
+            }
+            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+            if (nirImages.isEmpty()) {
+                return;
+            }
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
+            nirImages.entrySet().forEach(entry -> {
+                String band = entry.getKey();
+                BufferedImage image = entry.getValue();
+                bandPanel.add(buildImagePanel(image, UKIDSS_LABEL + " " + band));
+            });
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle(UKIDSS_LABEL + " - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.value());
+            imageFrame.setAlwaysOnTop(false);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void displayVhsImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            if (targetDec > 5) {
+                return;
+            }
+            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+            if (nirImages.isEmpty()) {
+                return;
+            }
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
+            nirImages.entrySet().forEach(entry -> {
+                String band = entry.getKey();
+                BufferedImage image = entry.getValue();
+                bandPanel.add(buildImagePanel(image, VHS_LABEL + " " + band));
+            });
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle(VHS_LABEL + " - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.value());
+            imageFrame.setAlwaysOnTop(false);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void displayPs1Images(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -4341,44 +4444,44 @@ public class ImageViewerTab {
         try {
             BufferedImage image;
             List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
-            if (allSkyImages.isSelected()) {
+            if (dssImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("DSS2 - IR", image));
                 }
             }
-            if (twoMassImages.isSelected()) {
+            if (twoMassImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("2MASS - K", image));
                 }
             }
-            if (sloanImages.isSelected()) {
+            if (sdssImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("SDSS - z", image));
                 }
             }
-            if (spitzerImages.isSelected()) {
+            if (spitzerImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("Spitzer - CH4", image));
                 }
             }
-            if (allwiseImages.isSelected()) {
+            if (allwiseImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
                 if (image != null) {
                     imageList.add(new Couple("WISE - W2", image));
                 }
             }
-            if (ps1Images.isSelected()) {
+            if (panstarrsImageSeries.isSelected()) {
                 Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
                 if (!imageInfos.isEmpty()) {
                     image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
                     imageList.add(new Couple("PS1 - z", image));
                 }
             }
-            if (decalsImages.isSelected()) {
+            if (legacyImageSeries.isSelected()) {
                 image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
                     imageList.add(new Couple("DESI LS - z", image));

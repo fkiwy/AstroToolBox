@@ -138,6 +138,8 @@ public class ToolboxHelper {
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
+    public static final String UKIDSS_LABEL = "UKIDSS";
+    public static final String VHS_LABEL = "VHS";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -957,7 +959,7 @@ public class ToolboxHelper {
                 if (width > height + offset || width < height - offset) {
                     return new LinkedHashMap();
                 }
-                if (surveyLabel.equals("UKIDSS")) {
+                if (surveyLabel.equals(UKIDSS_LABEL)) {
                     // Rotate image
                     switch (extNo) {
                         case "1":

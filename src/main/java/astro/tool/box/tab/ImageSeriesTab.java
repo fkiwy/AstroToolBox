@@ -1,6 +1,5 @@
 package astro.tool.box.tab;
 
-import astro.tool.box.container.Couple;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
@@ -8,6 +7,7 @@ import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ExternalResources.*;
+import astro.tool.box.container.Couple;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseCatalogEntry;
@@ -31,7 +31,6 @@ import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.Counter;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -649,23 +648,19 @@ public class ImageSeriesTab {
         if (targetDec < -5) {
             return;
         }
-        String surveyLabel = "UKIDSS";
-        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, surveyLabel);
+        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
         if (images.isEmpty()) {
             return;
         }
-
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
         images.entrySet().forEach(entry -> {
             String band = entry.getKey();
             BufferedImage image = entry.getValue();
-            bandPanel.add(buildImagePanel(image, surveyLabel + " " + band));
+            bandPanel.add(buildImagePanel(image, UKIDSS_LABEL + " " + band));
             if (band.equals("K")) {
                 ukidssImage = image;
             }
         });
-
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
@@ -677,23 +672,19 @@ public class ImageSeriesTab {
         if (targetDec > 5) {
             return;
         }
-        String surveyLabel = "VHS";
-        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, surveyLabel);
+        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
         if (images.isEmpty()) {
             return;
         }
-
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
         images.entrySet().forEach(entry -> {
             String band = entry.getKey();
             BufferedImage image = entry.getValue();
-            bandPanel.add(buildImagePanel(image, surveyLabel + " " + band));
+            bandPanel.add(buildImagePanel(image, VHS_LABEL + " " + band));
             if (band.equals("K")) {
                 vhsImage = image;
             }
         });
-
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
