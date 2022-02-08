@@ -4451,32 +4451,32 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "DSS2 - IR"));
+                bandPanel.add(buildImagePanel(image, "DSS2 IR"));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "2MASS - K"));
+                bandPanel.add(buildImagePanel(image, "2MASS K"));
             }
             image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "SDSS - z"));
+                bandPanel.add(buildImagePanel(image, "SDSS z"));
             }
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "Spitzer - CH2"));
+                bandPanel.add(buildImagePanel(image, "IRAC2"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "WISE - W2"));
+                bandPanel.add(buildImagePanel(image, "WISE W2"));
             }
             Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
                 image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
-                bandPanel.add(buildImagePanel(image, "PS1 - z"));
+                bandPanel.add(buildImagePanel(image, "PS1 z"));
             }
             image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "DESI LS - z"));
+                bandPanel.add(buildImagePanel(image, "DESI LS z"));
             }
 
             int componentCount = bandPanel.getComponentCount();

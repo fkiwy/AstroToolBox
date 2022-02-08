@@ -11,6 +11,7 @@ import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.container.Couple;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
@@ -131,6 +132,8 @@ public class InfoSheet {
 
             document.add(new Paragraph(" "));
 
+            List<Couple<String, BufferedImage>> timeSeries = new ArrayList<>();
+
             List<String> imageLabels = new ArrayList<>();
             List<BufferedImage> bufferedImages = new ArrayList<>();
             BufferedImage bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
@@ -157,6 +160,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("DSS IR");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("DSS IR", bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
             if (bufferedImage != null) {
@@ -182,6 +186,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("2MASS K");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("2MASS K", bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (bufferedImage != null) {
@@ -217,6 +222,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("SDSS z");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("SDSS z", bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
             if (bufferedImage != null) {
@@ -237,6 +243,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("IRAC2");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("IRAC2", bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
             if (bufferedImage != null) {
@@ -272,6 +279,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("WISE W2");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("WISE W2", bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (bufferedImage != null) {
@@ -336,7 +344,8 @@ public class InfoSheet {
                 imageLabels.add("PS1 i");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true));
                 imageLabels.add("PS1 z");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true));
+                bufferedImages.add(bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true));
+                timeSeries.add(new Couple("PS1 z", bufferedImage));
                 imageLabels.add("PS1 y");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true));
                 imageLabels.add("PS1 y-i-g");
@@ -361,11 +370,21 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("DESI LS z");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("DESI LS z", bufferedImage));
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
                 imageLabels.add("DESI LS g-r-z");
                 bufferedImages.add(bufferedImage);
+            }
+
+            createPdfTable(imageLabels, bufferedImages, writer, document);
+
+            imageLabels = new ArrayList<>();
+            bufferedImages = new ArrayList<>();
+            for (Couple<String, BufferedImage> couple : timeSeries) {
+                imageLabels.add(couple.getA());
+                bufferedImages.add(couple.getB());
             }
 
             createPdfTable(imageLabels, bufferedImages, writer, document);

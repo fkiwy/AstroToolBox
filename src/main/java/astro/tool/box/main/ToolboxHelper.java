@@ -1141,7 +1141,7 @@ public class ToolboxHelper {
         JLabel label = new TranslucentLabel(text);
         label.setFont(label.getFont().deriveFont(10f));
         label.setBackground(new Color(255, 255, 255, 200));
-        label.setBorder(new EmptyBorder(2, 5, 2, 5));
+        label.setBorder(new EmptyBorder(0, 3, 0, 3));
         label.setForeground(Color.BLACK);
         background.add(label);
         return background;

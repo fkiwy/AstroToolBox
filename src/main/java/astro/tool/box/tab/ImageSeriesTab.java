@@ -748,15 +748,15 @@ public class ImageSeriesTab {
     private void displayTimeSeries(double targetRa, double targetDec, int size) throws Exception {
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        List<Couple<String, BufferedImage>> infraredImageList = new ArrayList<>();
-        List<Couple<String, BufferedImage>> opticalImageList = new ArrayList<>();
+        List<Couple<String, BufferedImage>> infraredImages = new ArrayList<>();
+        List<Couple<String, BufferedImage>> opticalImages = new ArrayList<>();
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DSS"));
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (image != null) {
-                infraredImageList.add(new Couple("DSS2 - IR", image));
+                infraredImages.add(new Couple("DSS2 IR", image));
             }
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
@@ -764,20 +764,20 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(image, "2MASS"));
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (image != null) {
-                infraredImageList.add(new Couple("2MASS - K", image));
+                infraredImages.add(new Couple("2MASS K", image));
             }
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "SDSS"));
-            opticalImageList.add(new Couple("SDSS", image));
+            opticalImages.add(new Couple("SDSS", image));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "Spitzer"));
+            bandPanel.add(buildImagePanel(image, "IRAC color"));
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
             if (image != null) {
-                infraredImageList.add(new Couple("Spitzer - CH2", image));
+                infraredImages.add(new Couple("IRAC2", image));
             }
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
@@ -792,46 +792,46 @@ public class ImageSeriesTab {
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
             bandPanel.add(buildImagePanel(image, "PS1"));
-            opticalImageList.add(new Couple("PS1", image));
+            opticalImages.add(new Couple("PS1", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DESI LS"));
-            opticalImageList.add(new Couple("DESI LS", image));
+            opticalImages.add(new Couple("DESI LS", image));
         }
         if (ukidssImage != null) {
-            infraredImageList.add(new Couple("UKIDSS - K", ukidssImage));
+            infraredImages.add(new Couple("UKIDSS - K", ukidssImage));
         }
         if (vhsImage != null) {
-            infraredImageList.add(new Couple("VHS - K", vhsImage));
+            infraredImages.add(new Couple("VHS - K", vhsImage));
         }
         infraredTimeSeriesTimer = new Timer(500, null);
-        createTimeSeriesTimer(bandPanel, infraredImageList, infraredTimeSeriesTimer);
+        createTimeSeriesTimer(bandPanel, infraredImages, infraredTimeSeriesTimer);
 
         opticalTimeSeriesTimer = new Timer(500, null);
-        createTimeSeriesTimer(bandPanel, opticalImageList, opticalTimeSeriesTimer);
+        createTimeSeriesTimer(bandPanel, opticalImages, opticalTimeSeriesTimer);
 
         JPanel buttonPanel = buildButtonPanel("Save as GIF");
         bandPanel.add(buttonPanel);
 
-        if (infraredImageList.size() > 1) {
+        if (infraredImages.size() > 1) {
             JButton saveInfraredButton = new JButton("Infrared series");
             buttonPanel.add(saveInfraredButton);
             saveInfraredButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(infraredImageList, buttonPanel);
+                    saveAnimatedGif(infraredImages, buttonPanel);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
         }
 
-        if (opticalImageList.size() > 1) {
+        if (opticalImages.size() > 1) {
             JButton saveOpticalButton = new JButton("Optical series");
             buttonPanel.add(saveOpticalButton);
             saveOpticalButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(opticalImageList, buttonPanel);
+                    saveAnimatedGif(opticalImages, buttonPanel);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
