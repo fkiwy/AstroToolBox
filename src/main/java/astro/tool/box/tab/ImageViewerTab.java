@@ -2908,42 +2908,41 @@ public class ImageViewerTab {
 
     private void createStaticBook() {
         timer.stop();
-        JPanel grid = new JPanel(new GridLayout(4, 4));
+        JPanel grid = new JPanel(new FlowLayout(FlowLayout.LEFT));
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
             BufferedImage image = addCrosshairs(processImage(component));
-            JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
-            scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
+            JScrollPane scrollPanel = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), component.getTitle()));
             grid.add(scrollPanel);
         }
         if (decalsImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(decalsImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("DESI LS"));
+            BufferedImage image = zoomImage(rotateImage(decalsImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DESI LS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(ps1Image, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("Pan-STARRS"));
+            BufferedImage image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "PS1"));
             grid.add(pane);
         }
         if (ukidssImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(ukidssImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("UKIDSS"));
+            BufferedImage image = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "UKIDSS"));
             grid.add(pane);
         }
         if (vhsImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(vhsImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("VHS"));
+            BufferedImage image = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "VHS"));
             grid.add(pane);
         }
         if (sdssImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(sdssImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("SDSS"));
+            BufferedImage image = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "SDSS"));
             grid.add(pane);
         }
         if (dssImage != null) {
-            JScrollPane pane = new JScrollPane(new JLabel(new ImageIcon(zoomImage(rotateImage(dssImage, quadrantCount), zoom))));
-            pane.setBorder(createEtchedBorder("DSS"));
+            BufferedImage image = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DSS"));
             grid.add(pane);
         }
         imagePanel.removeAll();
