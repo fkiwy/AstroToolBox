@@ -170,22 +170,22 @@ public class InfoSheet {
             bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("J");
+                imageLabels.add("2MASS J");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("H");
+                imageLabels.add("2MASS H");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("K");
+                imageLabels.add("2MASS K");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("K-H-J");
+                imageLabels.add("2MASS K-H-J");
                 bufferedImages.add(bufferedImage);
             }
 
@@ -195,32 +195,32 @@ public class InfoSheet {
             bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("u");
+                imageLabels.add("SDSS u");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("g");
+                imageLabels.add("SDSS g");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("r");
+                imageLabels.add("SDSS r");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("i");
+                imageLabels.add("SDSS i");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("z");
+                imageLabels.add("SDSS z");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("z-g-u");
+                imageLabels.add("SDSS z-g-u");
                 bufferedImages.add(bufferedImage);
             }
 
@@ -255,7 +255,7 @@ public class InfoSheet {
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("3-color");
+                imageLabels.add("IRAC color");
                 bufferedImages.add(bufferedImage);
             }
 
@@ -265,27 +265,27 @@ public class InfoSheet {
             bufferedImages = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("W1");
+                imageLabels.add("WISE W1");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("W2");
+                imageLabels.add("WISE W2");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("W3");
+                imageLabels.add("WISE W3");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("W4");
+                imageLabels.add("WISE W4");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("W4-W2-W1");
+                imageLabels.add("WISE W4-W2-W1");
                 bufferedImages.add(bufferedImage);
             }
 
@@ -300,7 +300,7 @@ public class InfoSheet {
                         String band = entry.getKey();
                         bufferedImage = entry.getValue();
                         if (bufferedImage != null) {
-                            imageLabels.add(band);
+                            imageLabels.add(UKIDSS_LABEL + " " + band);
                             bufferedImages.add(bufferedImage);
                         }
                     }
@@ -317,7 +317,7 @@ public class InfoSheet {
                         String band = entry.getKey();
                         bufferedImage = entry.getValue();
                         if (bufferedImage != null) {
-                            imageLabels.add(band);
+                            imageLabels.add(VHS_LABEL + " " + band);
                             bufferedImages.add(bufferedImage);
                         }
                     }
@@ -329,17 +329,17 @@ public class InfoSheet {
             if (!imageInfos.isEmpty()) {
                 imageLabels = new ArrayList<>();
                 bufferedImages = new ArrayList<>();
-                imageLabels.add("g");
+                imageLabels.add("PS1 g");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true));
-                imageLabels.add("r");
+                imageLabels.add("PS1 r");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true));
-                imageLabels.add("i");
+                imageLabels.add("PS1 i");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true));
-                imageLabels.add("z");
+                imageLabels.add("PS1 z");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true));
-                imageLabels.add("y");
+                imageLabels.add("PS1 y");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true));
-                imageLabels.add("y-i-g");
+                imageLabels.add("PS1 y-i-g");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false));
 
                 createPdfTable("Pan-STARRS", imageLabels, bufferedImages, writer, document);
@@ -349,22 +349,22 @@ public class InfoSheet {
             bufferedImages = new ArrayList<>();
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
-                imageLabels.add("g");
+                imageLabels.add("DESI LS g");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
-                imageLabels.add("r");
+                imageLabels.add("DESI LS r");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
-                imageLabels.add("z");
+                imageLabels.add("DESI LS z");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
-                imageLabels.add("g-r-z");
+                imageLabels.add("DESI LS g-r-z");
                 bufferedImages.add(bufferedImage);
             }
 
