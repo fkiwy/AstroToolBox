@@ -458,8 +458,8 @@ public class InfoSheet {
                     .setDec(catalogEntry.getDec())
                     .setSourceId(catalogEntry.getSourceId() + " ")
                     .setPlx(catalogEntry.getPlx())
-                    .setPmra(catalogEntry.getPmra())
-                    .setPmdec(catalogEntry.getPmdec())
+                    .setPmra(catalogEntry.getTotalProperMotion() > 100000 ? 0 : catalogEntry.getPmra())
+                    .setPmdec(catalogEntry.getTotalProperMotion() > 100000 ? 0 : catalogEntry.getPmdec())
                     .setMagnitudes(catalogEntry.getMagnitudes())
                     .setSpectralTypes(spectralTypes).build();
             batchResults.add(batchResult);
@@ -467,7 +467,7 @@ public class InfoSheet {
 
         int numberOfCols = 10;
         PdfPTable table = new PdfPTable(numberOfCols);
-        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 35, 35, 200, 200});
+        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 40, 40, 200, 200});
         table.setLockedWidth(true);
         table.setSpacingBefore(10);
         table.setKeepTogether(true);

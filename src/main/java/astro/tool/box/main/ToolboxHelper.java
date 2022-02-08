@@ -955,7 +955,6 @@ public class ToolboxHelper {
                 int width = image.getWidth();
                 int height = image.getHeight();
                 int offset = 2;
-                System.out.println("width=" + width + " height=" + height);
                 if (width > height + offset || width < height - offset) {
                     return new LinkedHashMap();
                 }
@@ -1134,7 +1133,10 @@ public class ToolboxHelper {
     }
 
     public static JLabel addTextToImage(BufferedImage image, String text) {
-        JLabel background = new JLabel(new ImageIcon(drawCenterShape(image)));
+        return addTextToImage(new JLabel(new ImageIcon(drawCenterShape(image))), text);
+    }
+
+    public static JLabel addTextToImage(JLabel background, String text) {
         background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
         JLabel label = new TranslucentLabel(text);
         label.setFont(label.getFont().deriveFont(10f));

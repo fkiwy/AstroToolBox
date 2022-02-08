@@ -775,24 +775,24 @@ public class ImageSeriesTab {
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "Spitzer"));
-            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
             if (image != null) {
-                infraredImageList.add(new Couple("Spitzer - CH4", image));
+                infraredImageList.add(new Couple("Spitzer - CH2", image));
             }
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "AllWISE"));
-            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
-            if (image != null) {
-                //infraredImageList.add(new Couple("WISE - W2", image));
-            }
+            //image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
+            //if (image != null) {
+            //    infraredImageList.add(new Couple("WISE - W2", image));
+            //}
         }
         Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
             image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
-            bandPanel.add(buildImagePanel(image, "Pan-STARRS"));
-            opticalImageList.add(new Couple("Pan-STARRS", image));
+            bandPanel.add(buildImagePanel(image, "PS1"));
+            opticalImageList.add(new Couple("PS1", image));
         }
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {

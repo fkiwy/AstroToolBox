@@ -1457,7 +1457,7 @@ public class ImageViewerTab {
                         BufferedImage[] imageSet = new BufferedImage[flipbook.length];
                         int i = 0;
                         for (FlipbookComponent component : flipbook) {
-                            imageSet[i++] = addCrosshairs(processImage(component), component);
+                            imageSet[i++] = addCrosshairs(processImage(component));
                         }
                         if (imageSet.length > 0) {
                             GifSequencer sequencer = new GifSequencer();
@@ -1483,9 +1483,9 @@ public class ImageViewerTab {
                     staticView.setSelected(false);
 
                     FlipbookComponent component = flipbook[imageNumber];
-                    wiseImage = addCrosshairs(component.getImage(), component);
+                    wiseImage = addCrosshairs(component.getImage());
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    JLabel imageLabel = new JLabel(icon);
+                    JLabel imageLabel = addTextToImage(new JLabel(icon), component.getTitle());
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         imageLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
                     } else {
@@ -1493,7 +1493,6 @@ public class ImageViewerTab {
                     }
 
                     imagePanel.removeAll();
-                    imagePanel.add(new JLabel(" " + component.getTitle()));
                     imagePanel.add(imageLabel);
 
                     // Initialize positions of magnified WISE image
@@ -1535,8 +1534,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular DECaLS image
-                        imagePanel.add(new JLabel(" DESI LS"));
-                        decalsLabel = new JLabel(new ImageIcon(processedDecalsImage));
+                        decalsLabel = addTextToImage(new JLabel(new ImageIcon(processedDecalsImage)), "DESI LS");
                         decalsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(decalsLabel);
                     }
@@ -1546,12 +1544,11 @@ public class ImageViewerTab {
                     if (processedPs1Image != null) {
                         // Create and display magnified Pan-STARRS image
                         if (!imageCutOff) {
-                            addMagnifiedImage("Pan-STARRS", processedPs1Image, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage("PS1", processedPs1Image, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular Pan-STARRS image
-                        imagePanel.add(new JLabel(" Pan-STARRS"));
-                        ps1Label = new JLabel(new ImageIcon(processedPs1Image));
+                        ps1Label = addTextToImage(new JLabel(new ImageIcon(processedPs1Image)), "PS1");
                         ps1Label.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(ps1Label);
                     }
@@ -1561,12 +1558,11 @@ public class ImageViewerTab {
                     if (processedVhsImage != null) {
                         // Create and display magnified VHS image
                         if (!imageCutOff) {
-                            addMagnifiedImage("VHS", processedVhsImage, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage(VHS_LABEL, processedVhsImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular VHS image
-                        imagePanel.add(new JLabel(" VHS"));
-                        vhsLabel = new JLabel(new ImageIcon(processedVhsImage));
+                        vhsLabel = addTextToImage(new JLabel(new ImageIcon(processedVhsImage)), VHS_LABEL);
                         vhsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(vhsLabel);
                     }
@@ -1576,12 +1572,11 @@ public class ImageViewerTab {
                     if (processedUkidssImage != null) {
                         // Create and display magnified UKIDSS image
                         if (!imageCutOff) {
-                            addMagnifiedImage("UKIDSS", processedUkidssImage, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage(UKIDSS_LABEL, processedUkidssImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular UKIDSS image
-                        imagePanel.add(new JLabel(" UKIDSS"));
-                        ukidssLabel = new JLabel(new ImageIcon(processedUkidssImage));
+                        ukidssLabel = addTextToImage(new JLabel(new ImageIcon(processedUkidssImage)), UKIDSS_LABEL);
                         ukidssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(ukidssLabel);
                     }
@@ -1594,8 +1589,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular SDSS image
-                        imagePanel.add(new JLabel(" SDSS"));
-                        JLabel sdssLabel = new JLabel(new ImageIcon(processedSdssImage));
+                        JLabel sdssLabel = addTextToImage(new JLabel(new ImageIcon(processedSdssImage)), "SDSS");
                         sdssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(sdssLabel);
                     }
@@ -1608,8 +1602,7 @@ public class ImageViewerTab {
                         }
 
                         // Display regular DSS image
-                        imagePanel.add(new JLabel(" DSS"));
-                        JLabel dssLabel = new JLabel(new ImageIcon(processedDssImage));
+                        JLabel dssLabel = addTextToImage(new JLabel(new ImageIcon(processedDssImage)), "DSS");
                         dssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(dssLabel);
                     }
@@ -2229,10 +2222,11 @@ public class ImageViewerTab {
 
     private void addMagnifiedImage(String imageLabel, BufferedImage image, int upperLeftX, int upperLeftY, int width, int height) {
         try {
-            rightPanel.add(new JLabel(imageLabel));
-            BufferedImage magnifiedDecalsImage = image.getSubimage(upperLeftX, upperLeftY, width, height);
-            magnifiedDecalsImage = zoomImage(magnifiedDecalsImage, 200);
-            rightPanel.add(new JLabel(new ImageIcon(magnifiedDecalsImage)));
+            BufferedImage magnifiedImage = image.getSubimage(upperLeftX, upperLeftY, width, height);
+            magnifiedImage = zoomImage(magnifiedImage, 200);
+            JLabel magnifiedLabel = addTextToImage(new JLabel(new ImageIcon(magnifiedImage)), imageLabel);
+            magnifiedLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+            rightPanel.add(magnifiedLabel);
         } catch (RasterFormatException ex) {
             writeErrorLog(ex);
         }
@@ -2917,7 +2911,7 @@ public class ImageViewerTab {
         JPanel grid = new JPanel(new GridLayout(4, 4));
         for (FlipbookComponent component : flipbook) {
             component.setEpochCount(selectedEpochs);
-            BufferedImage image = addCrosshairs(processImage(component), component);
+            BufferedImage image = addCrosshairs(processImage(component));
             JScrollPane scrollPanel = new JScrollPane(new JLabel(new ImageIcon(image)));
             scrollPanel.setBorder(createEtchedBorder(component.getTitle()));
             grid.add(scrollPanel);
@@ -2971,7 +2965,7 @@ public class ImageViewerTab {
         return image;
     }
 
-    private BufferedImage addCrosshairs(BufferedImage image, FlipbookComponent component) {
+    private BufferedImage addCrosshairs(BufferedImage image) {
         // Copy the picture to draw shapes in real time
         if (markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
             image = copyImage(image);
@@ -4467,9 +4461,9 @@ public class ImageViewerTab {
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, "SDSS - z"));
             }
-            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "Spitzer - CH4"));
+                bandPanel.add(buildImagePanel(image, "Spitzer - CH2"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
