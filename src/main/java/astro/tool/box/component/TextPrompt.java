@@ -1,4 +1,4 @@
-package astro.tool.box.main;
+package astro.tool.box.component;
 
 import java.awt.*;
 import java.awt.event.*;

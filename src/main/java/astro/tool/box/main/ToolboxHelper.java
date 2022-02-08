@@ -1,5 +1,6 @@
 package astro.tool.box.main;
 
+import astro.tool.box.util.GifSequencer;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.tab.SettingsTab.*;

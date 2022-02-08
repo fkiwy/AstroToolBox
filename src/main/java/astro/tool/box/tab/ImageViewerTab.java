@@ -50,7 +50,7 @@ import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.main.Application;
 import astro.tool.box.panel.CmdPanel;
 import astro.tool.box.container.FlipbookComponent;
-import astro.tool.box.main.GifSequencer;
+import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.main.InfoSheet;
 import astro.tool.box.panel.ReferencesPanel;

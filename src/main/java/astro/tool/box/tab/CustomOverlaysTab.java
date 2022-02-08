@@ -6,7 +6,7 @@ import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
-import astro.tool.box.main.TextPrompt;
+import astro.tool.box.component.TextPrompt;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;

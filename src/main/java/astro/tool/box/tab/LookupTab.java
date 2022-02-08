@@ -4,7 +4,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.LookupTable;
-import astro.tool.box.main.FixedTable;
+import astro.tool.box.component.FixedTable;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
