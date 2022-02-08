@@ -731,7 +731,7 @@ public class ToolboxHelper {
     public static String copyObjectInfo(CatalogEntry catalogEntry, List<LookupResult> mainSequenceResults, List<LookupResult> brownDwarfsResults, DistanceLookupService distanceLookupService) {
         StringBuilder toCopy = new StringBuilder();
         toCopy.append(catalogEntry.getEntryData());
-        toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
+        toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type estimates:");
         if (mainSequenceResults != null) {
             toCopy.append(LINE_SEP).append("* Main sequence table:");
             mainSequenceResults.forEach(entry -> {
@@ -743,7 +743,7 @@ public class ToolboxHelper {
             brownDwarfsResults.forEach(entry -> {
                 toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
-                toCopy.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
+                toCopy.append(LINE_SEP).append("      Distance estimates for ").append(entry.getSpt()).append(":");
                 distanceResults.forEach(result -> {
                     toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
                 });

@@ -499,7 +499,7 @@ public class CatalogQueryTab {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
             container.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             container.setPreferredSize(new Dimension(540, BOTTOM_PANEL_HEIGHT));
             container.add(new JScrollPane(spectralTypeTable));

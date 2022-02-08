@@ -25,6 +25,7 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.ColumnText;
@@ -64,6 +65,7 @@ public class InfoSheet {
     private final double targetRa;
     private final double targetDec;
     private final int size;
+
     private final ImageViewerTab imageViewerTab;
 
     private final Map<String, CatalogEntry> catalogInstances;
@@ -116,6 +118,7 @@ public class InfoSheet {
             File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(targetRa) + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + "_", ".pdf");
 
             Document document = new Document();
+            document.setPageSize(PageSize.A4.rotate());
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
 
             DocumentFooter event = new DocumentFooter();
@@ -132,32 +135,32 @@ public class InfoSheet {
             List<BufferedImage> bufferedImages = new ArrayList<>();
             BufferedImage bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("poss1_blue");
+                imageLabels.add("DSS1 B");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("poss1_red");
+                imageLabels.add("DSS1 R");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("poss2ukstu_blue");
+                imageLabels.add("DSS2 B");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("poss2ukstu_red");
+                imageLabels.add("DSS2 R");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("poss2ukstu_ir");
+                imageLabels.add("DSS IR");
                 bufferedImages.add(bufferedImage);
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("dss2IR-dss1Red-dss1Blue");
+                imageLabels.add("DSS IR-R-B");
                 bufferedImages.add(bufferedImage);
             }
 
@@ -371,7 +374,7 @@ public class InfoSheet {
             bufferedImages = new ArrayList<>();
             FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
             int length = flipbook.length;
-            length = length < 7 ? length : 7;
+            length = length < 8 ? length : 8;
             for (int i = 0; i < length; i++) {
                 FlipbookComponent component = flipbook[i];
                 imageLabels.add(component.getTitle());
@@ -398,8 +401,8 @@ public class InfoSheet {
             document.add(new Paragraph(" "));
 
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
-            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type evaluation (*)", mainHeader));
-            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type evaluation (**)", null));
+            document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimates (*)", mainHeader));
+            document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type estimates (**)", null));
 
             document.add(new Paragraph("(*) Uses the color - spectral type relations from Eric Mamajek's Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", SMALL_FONT));
             document.add(new Paragraph("(**) Uses the color - spectral type relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
@@ -523,7 +526,7 @@ public class InfoSheet {
 
         float[] widths = new float[numberOfCells];
         for (int i = 0; i < numberOfCells; i++) {
-            widths[i] = 75;
+            widths[i] = 100;
         }
 
         PdfPTable table = new PdfPTable(numberOfCells);
@@ -538,18 +541,12 @@ public class InfoSheet {
         tableHeader.setBorderWidth(0);
         table.addCell(tableHeader);
 
-        for (String imageLabel : imageLabels) {
-            PdfPCell cell = new PdfPCell(new Phrase(imageLabel, SMALL_FONT));
-            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            cell.setBorderWidth(0);
-            cell.setPadding(1);
-            table.addCell(cell);
-        }
-
-        for (BufferedImage bi : bufferedImages) {
-            bi = drawCenterShape(bi);
+        for (int i = 0; i < bufferedImages.size(); i++) {
+            String label = imageLabels.get(i);
+            BufferedImage bi = drawCenterShape(bufferedImages.get(i));
             Image image = Image.getInstance(writer, bi, 1);
             PdfPCell cell = new PdfPCell(image, true);
+            cell.setCellEvent(new WatermarkedCell(label));
             cell.setBorderWidth(0);
             cell.setPadding(1);
             table.addCell(cell);

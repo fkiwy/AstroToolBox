@@ -245,9 +245,9 @@ public class PhotometricClassifierTab {
                                     prevSearchRadius = searchRadius;
                                     List<ClassificationResult> classificationResults;
                                     classificationResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, null);
-                                    mainSequenceResultTable = displayQueryResults(classificationResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
+                                    mainSequenceResultTable = displayQueryResults(classificationResults, "Main sequence spectral type estimates", JColor.DARK_GREEN.val);
                                     classificationResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
-                                    brownDwarfsResultTable = displayQueryResults(classificationResults, "M, L & T dwarfs spectral type evaluation", JColor.BROWN.val);
+                                    brownDwarfsResultTable = displayQueryResults(classificationResults, "M, L & T dwarfs spectral type estimates", JColor.BROWN.val);
                                 }
                                 displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
                                 displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);

@@ -85,7 +85,7 @@ public class BrownDwarfTab {
 
             JPanel spectralTypePanel = new JPanel();
             spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypePanel.setLayout(new BoxLayout(spectralTypePanel, BoxLayout.Y_AXIS));
             spectralTypePanel.setPreferredSize(new Dimension(500, 375));
@@ -93,7 +93,7 @@ public class BrownDwarfTab {
 
             JPanel distancePanel = new JPanel();
             distancePanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Distance evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Distance estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             distancePanel.setLayout(new BoxLayout(distancePanel, BoxLayout.Y_AXIS));
             distancePanel.setPreferredSize(new Dimension(500, 325));
@@ -260,7 +260,7 @@ public class BrownDwarfTab {
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(500, 150));
         distancePanel.add(remarks);
-        remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
+        remarks.add(new JLabel("Distance estimates are performed using distance modulus for the following bands,"));
         remarks.add(new JLabel("if available: W1, W2, W3, J, H, K, g, r, i, z, y, G, RP"));
         remarks.add(new JLabel("Absolute magnitudes are from the M, L & T dwarfs lookup table."));
         baseFrame.setVisible(true);
