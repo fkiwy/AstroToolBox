@@ -1892,6 +1892,35 @@ public class ImageViewerTab {
                         }
                     });
 
+                    if (decalsLabel != null) {
+                        decalsLabel.addMouseListener(new MouseListener() {
+                            @Override
+                            public void mousePressed(MouseEvent evt) {
+                                try {
+                                    Desktop.getDesktop().browse(new URI(getLegacySkyViewerUrl(targetRa, targetDec, CURRENT_DESI_DR)));
+                                } catch (IOException | URISyntaxException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+
+                            @Override
+                            public void mouseReleased(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseEntered(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseExited(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseClicked(MouseEvent evt) {
+                            }
+                        });
+                    }
+
                     if (ps1Label != null) {
                         ps1Label.addMouseListener(new MouseListener() {
                             @Override
@@ -1921,12 +1950,43 @@ public class ImageViewerTab {
                         });
                     }
 
-                    if (decalsLabel != null) {
-                        decalsLabel.addMouseListener(new MouseListener() {
+                    if (vhsLabel != null) {
+                        vhsLabel.addMouseListener(new MouseListener() {
                             @Override
                             public void mousePressed(MouseEvent evt) {
                                 try {
-                                    Desktop.getDesktop().browse(new URI(getLegacySkyViewerUrl(targetRa, targetDec, CURRENT_DESI_DR)));
+                                    String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
+                                    Desktop.getDesktop().browse(new URI(String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
+                                } catch (IOException | URISyntaxException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+
+                            @Override
+                            public void mouseReleased(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseEntered(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseExited(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseClicked(MouseEvent evt) {
+                            }
+                        });
+                    }
+
+                    if (ukidssLabel != null) {
+                        ukidssLabel.addMouseListener(new MouseListener() {
+                            @Override
+                            public void mousePressed(MouseEvent evt) {
+                                try {
+                                    String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
+                                    Desktop.getDesktop().browse(new URI(String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
