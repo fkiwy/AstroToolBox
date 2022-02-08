@@ -5,6 +5,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.JFrame;
@@ -285,6 +287,40 @@ public class InfoSheet {
             }
 
             createPdfTable("AllWISE", imageLabels, bufferedImages, writer, document);
+
+            if (targetDec > -5) {
+                imageLabels = new ArrayList<>();
+                bufferedImages = new ArrayList<>();
+                Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+                if (!images.isEmpty()) {
+                    for (Entry<String, BufferedImage> entry : images.entrySet()) {
+                        String band = entry.getKey();
+                        bufferedImage = entry.getValue();
+                        if (bufferedImage != null) {
+                            imageLabels.add(band);
+                            bufferedImages.add(bufferedImage);
+                        }
+                    }
+                    createPdfTable(UKIDSS_LABEL, imageLabels, bufferedImages, writer, document);
+                }
+            }
+
+            if (targetDec < 5) {
+                imageLabels = new ArrayList<>();
+                bufferedImages = new ArrayList<>();
+                Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+                if (!images.isEmpty()) {
+                    for (Entry<String, BufferedImage> entry : images.entrySet()) {
+                        String band = entry.getKey();
+                        bufferedImage = entry.getValue();
+                        if (bufferedImage != null) {
+                            imageLabels.add(band);
+                            bufferedImages.add(bufferedImage);
+                        }
+                    }
+                    createPdfTable(VHS_LABEL, imageLabels, bufferedImages, writer, document);
+                }
+            }
 
             Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
