@@ -274,6 +274,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
+        addRow(query, "AND    mura > -999999 AND mudec > -999999");
         addRow(query, "AND    SQRT(mura * mura + mudec * mudec) >= " + tpm);
         return query.toString();
     }
