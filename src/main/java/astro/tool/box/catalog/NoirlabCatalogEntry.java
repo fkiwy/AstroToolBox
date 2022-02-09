@@ -14,6 +14,7 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,7 +56,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     private double pmdec_err;
 
     // Mean Modified Julian Date
-    private double mean_mjd;
+    private LocalDateTime mean_mjd;
 
     // Number of detections in all bands
     private int ndet;
@@ -149,41 +150,41 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         ra_err = toDouble(values[columns.get("raerr")]);
         dec = toDouble(values[columns.get("dec")]);
         dec_err = toDouble(values[columns.get("decerr")]);
-        pmra = toDouble(getFixedPM(values[columns.get("pmra")]));
-        pmra_err = toDouble(getFixedPM(values[columns.get("pmraerr")]));
-        pmdec = toDouble(getFixedPM(values[columns.get("pmdec")]));
-        pmdec_err = toDouble(getFixedPM(values[columns.get("pmdecerr")]));
+        pmra = toDouble(fixPmVal(values[columns.get("pmra")]));
+        pmra_err = toDouble(fixPmVal(values[columns.get("pmraerr")]));
+        pmdec = toDouble(fixPmVal(values[columns.get("pmdec")]));
+        pmdec_err = toDouble(fixPmVal(values[columns.get("pmdecerr")]));
         type = toDouble(values[columns.get("class_star")]);
-        mean_mjd = toDouble(values[columns.get("mjd")]);
+        mean_mjd = convertMJDToDateTime(new BigDecimal(values[columns.get("mjd")]));
         ndet = toInteger(values[columns.get("ndet")]);
         delta_mjd = toDouble(values[columns.get("deltamjd")]);
-        u_mag = getFixedMag(toDouble(values[columns.get("umag")]));
-        u_err = getFixedErr(toDouble(values[columns.get("uerr")]));
-        g_mag = getFixedMag(toDouble(values[columns.get("gmag")]));
-        g_err = getFixedErr(toDouble(values[columns.get("gerr")]));
-        r_mag = getFixedMag(toDouble(values[columns.get("rmag")]));
-        r_err = getFixedErr(toDouble(values[columns.get("rerr")]));
-        i_mag = getFixedMag(toDouble(values[columns.get("imag")]));
-        i_err = getFixedErr(toDouble(values[columns.get("ierr")]));
-        z_mag = getFixedMag(toDouble(values[columns.get("zmag")]));
-        z_err = getFixedErr(toDouble(values[columns.get("zerr")]));
-        y_mag = getFixedMag(toDouble(values[columns.get("ymag")]));
-        y_err = getFixedErr(toDouble(values[columns.get("yerr")]));
-        vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
-        vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
+        u_mag = fixMagVal(toDouble(values[columns.get("umag")]));
+        u_err = fixMagErr(toDouble(values[columns.get("uerr")]));
+        g_mag = fixMagVal(toDouble(values[columns.get("gmag")]));
+        g_err = fixMagErr(toDouble(values[columns.get("gerr")]));
+        r_mag = fixMagVal(toDouble(values[columns.get("rmag")]));
+        r_err = fixMagErr(toDouble(values[columns.get("rerr")]));
+        i_mag = fixMagVal(toDouble(values[columns.get("imag")]));
+        i_err = fixMagErr(toDouble(values[columns.get("ierr")]));
+        z_mag = fixMagVal(toDouble(values[columns.get("zmag")]));
+        z_err = fixMagErr(toDouble(values[columns.get("zerr")]));
+        y_mag = fixMagVal(toDouble(values[columns.get("ymag")]));
+        y_err = fixMagErr(toDouble(values[columns.get("yerr")]));
+        vr_mag = fixMagVal(toDouble(values[columns.get("vrmag")]));
+        vr_err = fixMagErr(toDouble(values[columns.get("vrerr")]));
         glon = toDouble(values[columns.get("glon")]);
         glat = toDouble(values[columns.get("glat")]);
     }
 
-    private String getFixedPM(String pm) {
+    private String fixPmVal(String pm) {
         return "NaN".equals(pm) ? "0" : pm;
     }
 
-    private double getFixedMag(double mag) {
+    private double fixMagVal(double mag) {
         return mag > 99.9 ? 0 : mag;
     }
 
-    private double getFixedErr(double err) {
+    private double fixMagErr(double err) {
         return err > 9.9 ? 0 : err;
     }
 
@@ -205,7 +206,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("Galaxy-Star (0-1)", roundTo2DecNZ(type), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("mean mjd", convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("mean mjd", mean_mjd.format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(ndet), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("delta mjd", roundTo3DecNZ(delta_mjd), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
@@ -341,7 +342,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
                 + roundTo3Dec(pmdec) + ","
                 + roundTo3Dec(pmdec_err) + ","
                 + roundTo2DecNZ(type) + ","
-                + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + ","
+                + mean_mjd.format(DATE_TIME_FORMATTER) + ","
                 + ndet + ","
                 + roundTo3Dec(delta_mjd) + ","
                 + roundTo3Dec(u_mag) + ","
@@ -626,7 +627,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     public double getMeanEpoch() {
-        return convertMJDToYears(mean_mjd);
+        return convertDateToYear(mean_mjd);
     }
 
     public int getNdet() {

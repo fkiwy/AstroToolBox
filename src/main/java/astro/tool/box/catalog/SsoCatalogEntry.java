@@ -13,6 +13,7 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.exception.NoExtinctionValuesException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -70,7 +71,7 @@ public class SsoCatalogEntry implements CatalogEntry {
     private double pertime;
 
     // Modified Julian date of the mid-point of the observation of the frameset within which the FOV the SSO is predicted to fall (mjdate)
-    private double mjd;
+    private LocalDateTime mjd;
 
     // RA distance between associated NEOWISE detection and predicted SSO position (NEOWISE - SSO)
     private double dra;
@@ -141,7 +142,7 @@ public class SsoCatalogEntry implements CatalogEntry {
         ecc = toDouble(values[columns.get("ecc")]);
         incl = toDouble(values[columns.get("incl")]);
         pertime = toDouble(values[columns.get("pertime")]);
-        mjd = toDouble(values[columns.get("mjd")]);
+        mjd = convertMJDToDateTime(new BigDecimal(values[columns.get("mjd")]));
         dra = toDouble(values[columns.get("dra")]);
         ddec = toDouble(values[columns.get("ddec")]);
         W1mag = toDouble(values[columns.get("w1mpro")]);
@@ -175,7 +176,7 @@ public class SsoCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("orbital ecc.", roundTo3DecNZ(ecc), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("orbital incl. (deg)", roundTo3DecNZ(incl), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("perih. passage time", convertMJDToDateTime(new BigDecimal(Double.toString(pertime))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("observation time", convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("observation time", mjd.format(DATE_TIME_FORMATTER), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist. to predict ra (arcsec)", roundTo3DecNZ(dra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist. to predict dec (arcsec)", roundTo3DecNZ(ddec), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W1 (mag)", roundTo3DecNZ(W1mag), Alignment.RIGHT, getDoubleComparator()));
@@ -228,13 +229,53 @@ public class SsoCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + objectID + "," + TYPE_TABLE.get(type) + "," + roundTo7Dec(pra) + "," + roundTo7Dec(pdec) + "," + roundTo3Dec(ppm) + "," + roundTo3Dec(theta) + "," + roundTo3Dec(rhelio) + "," + roundTo3Dec(amag) + "," + roundTo3Dec(vmag) + "," + roundTo3Dec(perdist) + "," + roundTo3Dec(ecc) + "," + roundTo3Dec(incl) + "," + roundTo3Dec(pertime) + "," + roundTo3Dec(mjd) + "," + roundTo3Dec(dra) + "," + roundTo3Dec(ddec) + "," + roundTo3Dec(W1mag) + "," + roundTo3Dec(W1_err) + "," + roundTo3Dec(W2mag) + "," + roundTo3Dec(W2_err);
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + objectID + ","
+                + TYPE_TABLE.get(type) + ","
+                + roundTo7Dec(pra) + ","
+                + roundTo7Dec(pdec) + ","
+                + roundTo3Dec(ppm) + ","
+                + roundTo3Dec(theta) + ","
+                + roundTo3Dec(rhelio) + ","
+                + roundTo3Dec(amag) + ","
+                + roundTo3Dec(vmag) + ","
+                + roundTo3Dec(perdist) + ","
+                + roundTo3Dec(ecc) + ","
+                + roundTo3Dec(incl) + ","
+                + roundTo3Dec(pertime) + ","
+                + mjd.format(DATE_TIME_FORMATTER) + ","
+                + roundTo3Dec(dra) + ","
+                + roundTo3Dec(ddec) + ","
+                + roundTo3Dec(W1mag) + ","
+                + roundTo3Dec(W1_err) + ","
+                + roundTo3Dec(W2mag) + ","
+                + roundTo3Dec(W2_err);
         return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),object id,type,predicted ra,predicted dec,predicted pm (arcsec/sec),pm direction (deg),heliocentric dist. (AU),absolute mag,visual mag,perihelion dist. (AU),orbital ecc.,orbital incl. (deg),perih. passage time,observation time,dist. to predict ra (arcsec),dist. to predict dec (arcsec),W1 (mag),W1 err,W2 (mag),W2 err";
+        String columnTitles = "dist (arcsec),"
+                + "object id,"
+                + "type,"
+                + "predicted ra,"
+                + "predicted dec,"
+                + "predicted pm (arcsec/sec),"
+                + "pm direction (deg),"
+                + "heliocentric dist. (AU),"
+                + "absolute mag,"
+                + "visual mag,"
+                + "perihelion dist. (AU),"
+                + "orbital ecc.,"
+                + "orbital incl. (deg),"
+                + "perih. passage time,"
+                + "observation time,"
+                + "dist. to predict ra (arcsec),"
+                + "dist. to predict dec (arcsec),"
+                + "W1 (mag),"
+                + "W1 err,"
+                + "W2 (mag),"
+                + "W2 err";
         return columnTitles.split(",", -1);
     }
 

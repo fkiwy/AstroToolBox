@@ -13,7 +13,6 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import static astro.tool.box.util.MiscUtils.addRow;
 import static astro.tool.box.util.MiscUtils.encodeQuery;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -136,26 +135,30 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         this.values = values;
         sourceId = toLong(values[columns.get("sourceid")]);
         ra = toDouble(values[columns.get("ra")]);
-        ra_err = toDouble(values[columns.get("sigra")]);
+        ra_err = fixValue(toDouble(values[columns.get("sigra")]));
         dec = toDouble(values[columns.get("dec")]);
-        dec_err = toDouble(values[columns.get("sigdec")]);
-        pmra = toDouble(values[columns.get("mura")]);
-        pmra_err = toDouble(values[columns.get("sigmura")]);
-        pmdec = toDouble(values[columns.get("mudec")]);
-        pmdec_err = toDouble(values[columns.get("sigmudec")]);
+        dec_err = fixValue(toDouble(values[columns.get("sigdec")]));
+        pmra = fixValue(toDouble(values[columns.get("mura")]));
+        pmra_err = fixValue(toDouble(values[columns.get("sigmura")]));
+        pmdec = fixValue(toDouble(values[columns.get("mudec")]));
+        pmdec_err = fixValue(toDouble(values[columns.get("sigmudec")]));
         objectType = toInteger(values[columns.get("mergedclass")]);
         epoch = toDouble(values[columns.get("epoch")]);
-        y_ap3 = toDouble(values[columns.get("yapermag3")]);
-        y_ap3_err = toDouble(values[columns.get("yapermag3err")]);
-        j_ap3 = toDouble(values[columns.get("japermag3")]);
-        j_ap3_err = toDouble(values[columns.get("japermag3err")]);
-        h_ap3 = toDouble(values[columns.get("hapermag3")]);
-        h_ap3_err = toDouble(values[columns.get("hapermag3err")]);
-        ks_ap3 = toDouble(values[columns.get("kapermag3")]);
-        ks_ap3_err = toDouble(values[columns.get("kapermag3err")]);
-        y_j_pnt = toDouble(values[columns.get("ymjpnt")]);
-        j_h_pnt = toDouble(values[columns.get("jmhpnt")]);
-        h_ks_pnt = toDouble(values[columns.get("hmkpnt")]);
+        y_ap3 = fixValue(toDouble(values[columns.get("yapermag3")]));
+        y_ap3_err = fixValue(toDouble(values[columns.get("yapermag3err")]));
+        j_ap3 = fixValue(toDouble(values[columns.get("japermag3")]));
+        j_ap3_err = fixValue(toDouble(values[columns.get("japermag3err")]));
+        h_ap3 = fixValue(toDouble(values[columns.get("hapermag3")]));
+        h_ap3_err = fixValue(toDouble(values[columns.get("hapermag3err")]));
+        ks_ap3 = fixValue(toDouble(values[columns.get("kapermag3")]));
+        ks_ap3_err = fixValue(toDouble(values[columns.get("kapermag3err")]));
+        y_j_pnt = fixValue(toDouble(values[columns.get("ymjpnt")]));
+        j_h_pnt = fixValue(toDouble(values[columns.get("jmhpnt")]));
+        h_ks_pnt = fixValue(toDouble(values[columns.get("hmkpnt")]));
+    }
+
+    private double fixValue(double value) {
+        return value < -999999 ? 0 : value;
     }
 
     @Override
@@ -168,27 +171,27 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("ra err (arcsec)", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("dec err (arcsec)", roundTo7DecNZ(dec_err), Alignment.LEFT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dec err", roundTo7DecNZ(dec_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("object type", TYPE_TABLE.get(objectType), Alignment.LEFT, getStringComparator(), true));
-        catalogElements.add(new CatalogElement("epoch", convertMJDToDateTime(new BigDecimal(Double.toString(epoch))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("Y (mag)", roundTo4DecNZ(y_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("Y err", roundTo4DecNZ(y_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J (mag)", roundTo4DecNZ(j_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("J err", roundTo4DecNZ(j_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("H (mag)", roundTo4DecNZ(h_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("H err", roundTo4DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Ks (mag)", roundTo4DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("Ks err", roundTo4DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("Y-J", roundTo4DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-H", roundTo4DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("H-Ks", roundTo4DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("J-Ks", roundTo4DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("epoch", roundTo3DecNZ(epoch), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("Y (mag)", roundTo3DecNZ(y_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("Y err", roundTo3DecNZ(y_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J (mag)", roundTo3DecNZ(j_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(j_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H (mag)", roundTo3DecNZ(h_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Ks (mag)", roundTo3DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+        catalogElements.add(new CatalogElement("Ks err", roundTo3DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("H-Ks", roundTo3DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("J-Ks", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
     }
 
@@ -293,19 +296,19 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 + roundTo3Dec(pmdec) + ","
                 + roundTo3Dec(pmdec_err) + ","
                 + TYPE_TABLE.get(objectType) + ","
-                + convertMJDToDateTime(new BigDecimal(Double.toString(epoch))).format(DATE_TIME_FORMATTER) + ","
-                + roundTo4Dec(y_ap3) + ","
-                + roundTo4Dec(y_ap3_err) + ","
-                + roundTo4Dec(j_ap3) + ","
-                + roundTo4Dec(j_ap3_err) + ","
-                + roundTo4Dec(h_ap3) + ","
-                + roundTo4Dec(h_ap3_err) + ","
-                + roundTo4Dec(ks_ap3) + ","
-                + roundTo4Dec(ks_ap3_err) + ","
-                + roundTo4Dec(y_j_pnt) + ","
-                + roundTo4Dec(j_h_pnt) + ","
-                + roundTo4Dec(h_ks_pnt) + ","
-                + roundTo4Dec(getJ_K()) + ";"
+                + roundTo3Dec(epoch) + ","
+                + roundTo3Dec(y_ap3) + ","
+                + roundTo3Dec(y_ap3_err) + ","
+                + roundTo3Dec(j_ap3) + ","
+                + roundTo3Dec(j_ap3_err) + ","
+                + roundTo3Dec(h_ap3) + ","
+                + roundTo3Dec(h_ap3_err) + ","
+                + roundTo3Dec(ks_ap3) + ","
+                + roundTo3Dec(ks_ap3_err) + ","
+                + roundTo3Dec(y_j_pnt) + ","
+                + roundTo3Dec(j_h_pnt) + ","
+                + roundTo3Dec(h_ks_pnt) + ","
+                + roundTo3Dec(getJ_K()) + ";"
                 + roundTo3Dec(getTotalProperMotion());
         return columnValues.split(",", -1);
     }
@@ -315,9 +318,9 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         String columnTitles = "dist (arcsec),"
                 + "source id,"
                 + "ra,"
-                + "ra err (arcsec),"
+                + "ra err,"
                 + "dec,"
-                + "dec err (arcsec),"
+                + "dec err,"
                 + "pmra (mas/yr),"
                 + "pmra err,"
                 + "pmdec (mas/yr),"
@@ -543,6 +546,10 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public double getTotalProperMotion() {
         return calculateTotalProperMotion(pmra, pmdec);
+    }
+
+    public double getMeanEpoch() {
+        return epoch;
     }
 
     public double getJ_K() {
