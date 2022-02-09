@@ -99,7 +99,6 @@ public class SettingsTab {
     private int finderChartFOV;
 
     // Image viewer settings
-    private static final String NUMBER_OF_EPOCHS = "numberOfEpochs";
     private static final String WISE_BAND = "wiseBand";
     private static final String EPOCH = "epoch";
     private static final String SIZE = "imageSize";
@@ -115,7 +114,6 @@ public class SettingsTab {
     private static final String SDSS_IMAGES = "sdssImages";
     private static final String DSS_IMAGES = "dssImages";
 
-    private int numberOfEpochs;
     private WiseBand wiseBand;
     private Epoch epoch;
     private int size;
@@ -158,7 +156,7 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(12, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(11, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -228,7 +226,7 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(12, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(11, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -295,14 +293,13 @@ public class SettingsTab {
             catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(12, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
             imageViewerSettings.setPreferredSize(new Dimension(400, 300));
             containerPanel.add(imageViewerSettings);
 
-            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
             epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
@@ -336,14 +333,6 @@ public class SettingsTab {
             imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
             imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
 
-            imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
-            epochSlider = imageViewerTab.getEpochSlider();
-            changeListener = epochSlider.getChangeListeners()[0];
-            epochSlider.removeChangeListener(changeListener);
-            epochSlider.setMaximum(numberOfEpochs);
-            epochSlider.setValue(numberOfEpochs);
-            epochSlider.addChangeListener(changeListener);
-
             if (Epoch.isSubtracted(epoch)) {
                 imageViewerTab.getBlurImages().setSelected(true);
             } else {
@@ -355,7 +344,6 @@ public class SettingsTab {
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
-            imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
             imageViewerTab.setAsyncDownloads(asyncDownloads);
             imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
@@ -363,10 +351,6 @@ public class SettingsTab {
             imageViewerTab.setVhsImages(vhsImages);
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
-
-            imageViewerSettings.add(new JLabel("Survey epochs: ", JLabel.RIGHT));
-            JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
-            imageViewerSettings.add(numberOfEpochsField);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox(WiseBand.values());
@@ -497,7 +481,6 @@ public class SettingsTab {
                     finderChartFOV = Integer.parseInt(finderChartFovField.getText());
 
                     // Image viewer settings
-                    numberOfEpochs = Integer.parseInt(numberOfEpochsField.getText());
                     wiseBand = (WiseBand) wiseBands.getSelectedItem();
                     epoch = (Epoch) epochs.getSelectedItem();
                     size = Integer.parseInt(sizeField.getText());
@@ -576,14 +559,6 @@ public class SettingsTab {
                 imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
                 imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
 
-                imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
-                epochSlider = imageViewerTab.getEpochSlider();
-                changeListener = epochSlider.getChangeListeners()[0];
-                epochSlider.removeChangeListener(changeListener);
-                epochSlider.setMaximum(numberOfEpochs);
-                epochSlider.setValue(numberOfEpochs);
-                epochSlider.addChangeListener(changeListener);
-
                 if (Epoch.isSubtracted(epoch)) {
                     imageViewerTab.getBlurImages().setSelected(true);
                 } else {
@@ -595,7 +570,6 @@ public class SettingsTab {
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
-                imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
                 imageViewerTab.setAsyncDownloads(asyncDownloads);
                 imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
@@ -604,7 +578,6 @@ public class SettingsTab {
                 imageViewerTab.setSdssImages(sdssImages);
                 imageViewerTab.setDssImages(dssImages);
 
-                USER_SETTINGS.setProperty(NUMBER_OF_EPOCHS, numberOfEpochsField.getText());
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
                 USER_SETTINGS.setProperty(EPOCH, epoch.name());
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());

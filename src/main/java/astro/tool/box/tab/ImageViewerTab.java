@@ -173,12 +173,12 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String EPOCH_LABEL = "Survey epochs: %d";
+    public static final String EPOCH_LABEL = "NEOWISE epochs: %d";
     public static final WiseBand WISE_BAND = WiseBand.W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final int NUMBER_OF_EPOCHS = 8;
+    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
@@ -345,8 +345,8 @@ public class ImageViewerTab {
     private int epochCount;
     private int epochCountW1;
     private int epochCountW2;
-    private int numberOfEpochs;
-    private int selectedEpochs;
+    private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
+    private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int minValue;
     private int maxValue;
     private int speed = SPEED;
@@ -380,7 +380,6 @@ public class ImageViewerTab {
     private boolean allEpochsW1Loaded;
     private boolean allEpochsW2Loaded;
     private boolean moreImagesAvailable;
-    private boolean oneMoreImageAvailable;
     private boolean flipbookComplete;
     private boolean reloadImages;
     private boolean imageCutOff;
@@ -656,16 +655,18 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            epochLabel = new JLabel(String.format(EPOCH_LABEL, selectedEpochs));
+            int numberOfNeoEpochs = NUMBER_OF_WISEVIEW_EPOCHS - 1;
+
+            epochLabel = new JLabel(String.format(EPOCH_LABEL, numberOfNeoEpochs));
             mainControlPanel.add(epochLabel);
 
-            epochSlider = new JSlider(JSlider.HORIZONTAL, 2, NUMBER_OF_EPOCHS, NUMBER_OF_EPOCHS);
+            epochSlider = new JSlider(JSlider.HORIZONTAL, 1, numberOfNeoEpochs, numberOfNeoEpochs);
             mainControlPanel.add(epochSlider);
             epochSlider.setMajorTickSpacing(1);
             epochSlider.setPaintTicks(true);
             epochSlider.addChangeListener((ChangeEvent e) -> {
-                selectedEpochs = epochSlider.getValue();
-                epochLabel.setText(String.format(EPOCH_LABEL, selectedEpochs));
+                epochLabel.setText(String.format(EPOCH_LABEL, epochSlider.getValue()));
+                selectedEpochs = epochSlider.getValue() + 1;
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -736,7 +737,7 @@ public class ImageViewerTab {
             mainControlPanel.add(wiseviewCutouts);
             wiseviewCutouts.setToolTipText("WiseView cutouts are from http://byw.tools/wiseview");
             wiseviewCutouts.addActionListener((ActionEvent evt) -> {
-                resetEpochSlider(NUMBER_OF_EPOCHS);
+                resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
@@ -2292,11 +2293,12 @@ public class ImageViewerTab {
     }
 
     private void resetEpochSlider(int numberOfEpochs) {
-        epochLabel.setText(String.format(EPOCH_LABEL, numberOfEpochs));
+        int numberOfNeoEpochs = numberOfEpochs - 1;
+        epochLabel.setText(String.format(EPOCH_LABEL, numberOfNeoEpochs));
         ChangeListener changeListener = epochSlider.getChangeListeners()[0];
         epochSlider.removeChangeListener(changeListener);
-        epochSlider.setMaximum(numberOfEpochs);
-        epochSlider.setValue(numberOfEpochs);
+        epochSlider.setMaximum(numberOfNeoEpochs);
+        epochSlider.setValue(numberOfNeoEpochs);
         epochSlider.addChangeListener(changeListener);
         selectedEpochs = numberOfEpochs;
     }
@@ -2444,7 +2446,6 @@ public class ImageViewerTab {
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
                 moreImagesAvailable = false;
-                oneMoreImageAvailable = false;
                 flipbookComplete = false;
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
@@ -2533,12 +2534,6 @@ public class ImageViewerTab {
                         stream.close();
                         moreImagesAvailable = true;
                     } catch (IOException e) {
-                        try {
-                            InputStream stream = getImageData(1, numberOfEpochs);
-                            stream.close();
-                            oneMoreImageAvailable = true;
-                        } catch (IOException ex) {
-                        }
                     }
                 }
             }
@@ -2548,7 +2543,7 @@ public class ImageViewerTab {
             imageNumber = 0;
 
             if (loadImages || reloadImages) {
-                int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
+                int totalEpochs = selectedEpochs * 2;
                 if (unwiseCutouts.isSelected()) {
                     epochCount = totalEpochs;
                 }
@@ -5493,11 +5488,6 @@ public class ImageViewerTab {
 
     public void setQuadrantCount(int quadrantCount) {
         this.quadrantCount = quadrantCount;
-    }
-
-    public void setNumberOfEpochs(int numberOfEpochs) {
-        this.numberOfEpochs = numberOfEpochs;
-        this.selectedEpochs = numberOfEpochs / 2;
     }
 
     public void setWiseBand(WiseBand wiseBand) {
