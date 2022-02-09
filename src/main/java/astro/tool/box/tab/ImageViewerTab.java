@@ -34,6 +34,7 @@ import astro.tool.box.catalog.SsoCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
@@ -233,6 +234,8 @@ public class ImageViewerTab {
     private List<CatalogEntry> noirlabTpmEntries;
     private List<CatalogEntry> tessEntries;
     private List<CatalogEntry> desEntries;
+    private List<CatalogEntry> ukidssEntries;
+    private List<CatalogEntry> ukidssTpmEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -267,6 +270,7 @@ public class ImageViewerTab {
     private JCheckBox noirlabOverlay;
     private JCheckBox tessOverlay;
     private JCheckBox desOverlay;
+    private JCheckBox ukidssOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -274,8 +278,9 @@ public class ImageViewerTab {
     private JCheckBox spikeOverlay;
     private JCheckBox gaiaProperMotion;
     private JCheckBox gaiaDR3ProperMotion;
-    private JCheckBox catWiseProperMotion;
     private JCheckBox noirlabProperMotion;
+    private JCheckBox catWiseProperMotion;
+    private JCheckBox ukidssProperMotion;
     private JCheckBox showProperMotion;
     private JCheckBox showBrownDwarfsOnly;
     private JCheckBox displaySpectralTypes;
@@ -909,12 +914,19 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(desOverlay);
-            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
+            ukidssOverlay = new JCheckBox(html("U<u>K</u>IDSS LAS"), overlays.isUkidss());
+            ukidssOverlay.setForeground(JColor.BLOOD.val);
+            ukidssOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(ukidssOverlay);
+
+            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlayPanel.add(ssoOverlay);
+            overlaysControlPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -987,6 +999,13 @@ public class ImageViewerTab {
                 processImages();
             });
             properMotionPanel.add(catWiseProperMotion);
+
+            ukidssProperMotion = new JCheckBox(html("U<u>K</u>IDSS LAS"), overlays.isPmukidss());
+            ukidssProperMotion.setForeground(JColor.BLOOD.val);
+            ukidssProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlaysControlPanel.add(ukidssProperMotion);
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
@@ -1092,11 +1111,13 @@ public class ImageViewerTab {
                 overlays.setTwomass(twoMassOverlay.isSelected());
                 overlays.setTess(tessOverlay.isSelected());
                 overlays.setDes(desOverlay.isSelected());
+                overlays.setUkidss(ukidssOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
                 overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
                 overlays.setPmnoirlab(noirlabProperMotion.isSelected());
                 overlays.setPmcatwise(catWiseProperMotion.isSelected());
+                overlays.setPmukidss(ukidssProperMotion.isSelected());
                 overlays.setGhosts(ghostOverlay.isSelected());
                 overlays.setLatents(haloOverlay.isSelected());
                 overlays.setHalos(latentOverlay.isSelected());
@@ -1807,6 +1828,10 @@ public class ImageViewerTab {
                                         showCatalogInfo(desEntries, mouseX, mouseY, JColor.SAND.val);
                                         count++;
                                     }
+                                    if (ukidssOverlay.isSelected() && ukidssEntries != null) {
+                                        showCatalogInfo(ukidssEntries, mouseX, mouseY, JColor.BLOOD.val);
+                                        count++;
+                                    }
                                     if (ssoOverlay.isSelected() && ssoEntries != null) {
                                         showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                         count++;
@@ -1833,6 +1858,10 @@ public class ImageViewerTab {
                                     }
                                     if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
                                         showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
+                                        count++;
+                                    }
+                                    if (ukidssProperMotion.isSelected() && ukidssTpmEntries != null) {
+                                        showPMInfo(ukidssTpmEntries, mouseX, mouseY, JColor.BLOOD.val);
                                         count++;
                                     }
                                     if (count == 0) {
@@ -2133,6 +2162,13 @@ public class ImageViewerTab {
                     desOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForAltK = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ukidssOverlay.setSelected(!ukidssOverlay.isSelected());
+                    ukidssOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
             Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2159,6 +2195,13 @@ public class ImageViewerTab {
                 public void actionPerformed(ActionEvent e) {
                     catWiseProperMotion.setSelected(!catWiseProperMotion.isSelected());
                     catWiseProperMotion.getActionListeners()[0].actionPerformed(null);
+                }
+            };
+            Action keyActionForCtrlAltK = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ukidssProperMotion.setSelected(!ukidssProperMotion.isSelected());
+                    ukidssProperMotion.getActionListeners()[0].actionPerformed(null);
                 }
             };
 
@@ -2202,6 +2245,9 @@ public class ImageViewerTab {
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK), "keyActionForAltE");
             aMap.put("keyActionForAltE", keyActionForAltE);
 
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.ALT_MASK), "keyActionForAltK");
+            aMap.put("keyActionForAltK", keyActionForAltK);
+
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
             aMap.put("keyActionForAltW", keyActionForAltW);
 
@@ -2213,6 +2259,9 @@ public class ImageViewerTab {
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltC");
             aMap.put("keyActionForCtrlAltC", keyActionForCtrlAltC);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltK");
+            aMap.put("keyActionForCtrlAltK", keyActionForCtrlAltK);
 
             tabbedPane.addTab(TAB_NAME, mainPanel);
         } catch (Exception ex) {
@@ -2277,6 +2326,9 @@ public class ImageViewerTab {
         if (desOverlay.isSelected()) {
             count++;
         }
+        if (ukidssOverlay.isSelected()) {
+            count++;
+        }
         if (gaiaProperMotion.isSelected()) {
             count++;
         }
@@ -2287,6 +2339,9 @@ public class ImageViewerTab {
             count++;
         }
         if (catWiseProperMotion.isSelected()) {
+            count++;
+        }
+        if (ukidssProperMotion.isSelected()) {
             count++;
         }
         return count > 0;
@@ -2893,6 +2948,8 @@ public class ImageViewerTab {
         noirlabTpmEntries = null;
         tessEntries = null;
         desEntries = null;
+        ukidssEntries = null;
+        ukidssTpmEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -3184,6 +3241,18 @@ public class ImageViewerTab {
                 drawOverlay(image, desEntries, JColor.SAND.val, Shape.CIRCLE);
             }
         }
+        if (ukidssOverlay.isSelected()) {
+            if (ukidssEntries == null) {
+                ukidssEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    ukidssEntries = fetchCatalogEntries(new UkidssCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, ukidssEntries, JColor.BLOOD.val, Shape.CIRCLE);
+            }
+        }
         if (ssoOverlay.isSelected()) {
             if (ssoEntries == null) {
                 ssoEntries = Collections.emptyList();
@@ -3259,6 +3328,18 @@ public class ImageViewerTab {
                 });
             } else {
                 drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
+            }
+        }
+        if (ukidssProperMotion.isSelected()) {
+            if (ukidssTpmEntries == null) {
+                ukidssTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    ukidssTpmEntries = fetchTpmCatalogEntries(new UkidssCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, totalEpochs);
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
@@ -4987,6 +5068,9 @@ public class ImageViewerTab {
                 ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
                 dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
+            }
+            if (catalogEntry instanceof UkidssCatalogEntry) {
+                numberOfYears = ((UkidssCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
             if (showProperMotion.isSelected()) {

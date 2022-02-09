@@ -229,7 +229,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     @Override
     public java.awt.Color getCatalogColor() {
-        return JColor.LIME.val;
+        return JColor.BLOOD.val;
     }
 
     @Override
@@ -274,7 +274,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
-        addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
+        addRow(query, "AND    SQRT(mura * mura + mudec * mudec) >= " + tpm);
         return query.toString();
     }
 
