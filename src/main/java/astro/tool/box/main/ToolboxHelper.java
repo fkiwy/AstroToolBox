@@ -25,6 +25,7 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
@@ -174,20 +175,22 @@ public class ToolboxHelper {
         catalogInstances.put(gaiaDR3CatalogEntry.getCatalogName(), gaiaDR3CatalogEntry);
         NoirlabCatalogEntry noirlabCatalogEntry = new NoirlabCatalogEntry();
         catalogInstances.put(noirlabCatalogEntry.getCatalogName(), noirlabCatalogEntry);
+        DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
+        catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
         PanStarrsCatalogEntry panStarrsCatalogEntry = new PanStarrsCatalogEntry();
         catalogInstances.put(panStarrsCatalogEntry.getCatalogName(), panStarrsCatalogEntry);
         SdssCatalogEntry sdssCatalogEntry = new SdssCatalogEntry();
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
+        TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
+        catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
+        UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
+        catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
         VhsCatalogEntry vhsCatalogEntry = new VhsCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
         GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
-        TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
-        catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         TessCatalogEntry tessCatalogEntry = new TessCatalogEntry();
         catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
-        DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
-        catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
 
         return catalogInstances;
     }
