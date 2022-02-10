@@ -1876,7 +1876,6 @@ public class ImageViewerTab {
                                         }
                                     }
                                     break;
-
                             }
                         }
 
@@ -4068,11 +4067,14 @@ public class ImageViewerTab {
             }
             String surveyLabel = "UKIDSS";
             Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, surveyLabel);
-            BufferedImage nirImage = nirImages.get("K-H-J").getImage();
+            NirImage nirImage = nirImages.get("K-H-J");
+            BufferedImage image;
             if (nirImage == null) {
-                nirImage = nirImages.get("K-J").getImage();
+                image = nirImages.get("K-J").getImage();
+            } else {
+                image = nirImages.get("K-H-J").getImage();
             }
-            return nirImage;
+            return image;
         } catch (Exception ex) {
             return null;
         }
@@ -4085,11 +4087,14 @@ public class ImageViewerTab {
             }
             String surveyLabel = "VHS";
             Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, surveyLabel);
-            BufferedImage nirImage = nirImages.get("K-H-J").getImage();
+            NirImage nirImage = nirImages.get("K-H-J");
+            BufferedImage image;
             if (nirImage == null) {
-                nirImage = nirImages.get("K-J").getImage();
+                image = nirImages.get("K-J").getImage();
+            } else {
+                image = nirImages.get("K-H-J").getImage();
             }
-            return nirImage;
+            return image;
         } catch (Exception ex) {
             return null;
         }
