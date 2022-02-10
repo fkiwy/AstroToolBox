@@ -171,13 +171,7 @@ public class SettingsTab {
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
             useProxy = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_PROXY, "false"));
-            String simbadMirrorProperty = USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR);
-            if (simbadMirrorProperty == null) {
-                useSimbadMirror = true;
-                USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
-            } else {
-                useSimbadMirror = Boolean.parseBoolean(simbadMirrorProperty);
-            }
+            useSimbadMirror = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR, "false"));
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
             gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");

@@ -175,7 +175,7 @@ public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
     public static final String EPOCH_LABEL = "NEOWISE epochs: %d";
-    public static final WiseBand WISE_BAND = WiseBand.W2;
+    public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final Epoch EPOCH = Epoch.FIRST_LAST;
     public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
@@ -186,9 +186,9 @@ public class ImageViewerTab {
     public static final int PANEL_WIDTH = 180;
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 5;
-    public static final int SPEED = 300;
+    public static final int SPEED = 200;
     public static final int ZOOM = 500;
-    public static final int SIZE = 500;
+    public static final int SIZE = 100;
     public static final int DIFFERENT_SIZE = 100;
     public static final int PROPER_MOTION = 100;
     public static final String OVERLAYS_KEY = "overlays";

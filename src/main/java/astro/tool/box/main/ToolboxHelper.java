@@ -958,7 +958,9 @@ public class ToolboxHelper {
                 int width = image.getWidth();
                 int height = image.getHeight();
                 int offset = 2;
+                System.out.println("width=" + width + " height=" + height);
                 if (width > height + offset || width < height - offset) {
+                    System.out.println("------------------------->" + targetRa + " " + targetDec);
                     return new LinkedHashMap();
                 }
                 if (surveyLabel.equals(UKIDSS_LABEL)) {
