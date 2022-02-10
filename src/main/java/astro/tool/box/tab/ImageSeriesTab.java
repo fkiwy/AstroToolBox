@@ -23,6 +23,7 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
@@ -108,6 +109,7 @@ public class ImageSeriesTab {
     private GaiaDR3CatalogEntry gaiaDR3Entry;
     private CatWiseCatalogEntry catWiseEntry;
     private NoirlabCatalogEntry noirlabEntry;
+    private UkidssCatalogEntry ukidssEntry;
 
     private double targetRa;
     private double targetDec;
@@ -228,6 +230,7 @@ public class ImageSeriesTab {
                     gaiaDR3Entry = null;
                     catWiseEntry = null;
                     noirlabEntry = null;
+                    ukidssEntry = null;
                     prevTargetRa = targetRa;
                     prevTargetDec = targetDec;
                     prevFieldOfView = fieldOfView;
@@ -322,6 +325,7 @@ public class ImageSeriesTab {
                                 if (noirlabEntry != null && noirlabEntry.getNdet() >= 5 && noirlabEntry.getDelta_mjd() >= 180) {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
+                                addProperMotionEntry(ukidssEntry, resultRows);
                                 if (!resultRows.isEmpty()) {
                                     String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist. from target (arcsec)", "source 2", "dist. from target (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
                                     Object[][] rows = new Object[][]{};
@@ -347,6 +351,8 @@ public class ImageSeriesTab {
                                                 activateSelectedCatalogOverlay(imageViewerTab, catWiseEntry);
                                             } else if (label.contains(NoirlabCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, noirlabEntry);
+                                            } else if (label.contains(UkidssCatalogEntry.CATALOG_NAME)) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, ukidssEntry);
                                             }
                                             tabbedPane.setSelectedIndex(3);
                                         }
@@ -936,6 +942,9 @@ public class ImageSeriesTab {
                     case NoirlabCatalogEntry.CATALOG_NAME:
                         noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
                         break;
+                    case UkidssCatalogEntry.CATALOG_NAME:
+                        ukidssEntry = (UkidssCatalogEntry) nearestEntry;
+                        break;
                 }
             }
             return catalogEntries;
@@ -1030,6 +1039,9 @@ public class ImageSeriesTab {
                 break;
             case DesCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getDesOverlay().setSelected(true);
+                break;
+            case UkidssCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getUkidssOverlay().setSelected(true);
                 break;
         }
     }

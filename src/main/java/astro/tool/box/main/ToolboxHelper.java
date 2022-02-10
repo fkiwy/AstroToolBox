@@ -1133,7 +1133,7 @@ public class ToolboxHelper {
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
-        Drawable drawable = new Circle(x, y, 30, Color.YELLOW);
+        Drawable drawable = new Circle(x, y, 30, Color.RED);
         drawable.draw(g);
         return image;
     }

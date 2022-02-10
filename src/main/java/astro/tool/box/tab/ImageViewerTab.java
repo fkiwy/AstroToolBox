@@ -5547,6 +5547,10 @@ public class ImageViewerTab {
         return desOverlay;
     }
 
+    public JCheckBox getUkidssOverlay() {
+        return ukidssOverlay;
+    }
+
     public Timer getTimer() {
         return timer;
     }
