@@ -12,6 +12,7 @@ import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
 import astro.tool.box.container.Couple;
+import astro.tool.box.container.NirImage;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
@@ -119,7 +120,6 @@ public class InfoSheet {
             File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(targetRa) + addPlusSign(roundDouble(targetDec, PATTERN_2DEC_NZ)) + "_", ".pdf");
 
             Document document = new Document();
-            document.setPageSize(PageSize.A4.rotate());
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tmpFile));
 
             DocumentFooter event = new DocumentFooter();
@@ -132,7 +132,7 @@ public class InfoSheet {
 
             document.add(new Paragraph(" "));
 
-            List<Couple<String, BufferedImage>> timeSeries = new ArrayList<>();
+            List<Couple<String, NirImage>> timeSeries = new ArrayList<>();
 
             List<String> imageLabels = new ArrayList<>();
             List<BufferedImage> bufferedImages = new ArrayList<>();
@@ -160,7 +160,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("DSS IR");
                 bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("DSS IR", bufferedImage));
+                timeSeries.add(new Couple("DSS IR", new NirImage(1980, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
             if (bufferedImage != null) {
@@ -186,7 +186,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("2MASS K");
                 bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("2MASS K", bufferedImage));
+                timeSeries.add(new Couple("2MASS K", new NirImage(1999, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (bufferedImage != null) {
@@ -222,7 +222,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("SDSS z");
                 bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("SDSS z", bufferedImage));
+                timeSeries.add(new Couple("SDSS z", new NirImage(2003, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
             if (bufferedImage != null) {
@@ -243,7 +243,6 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("IRAC2");
                 bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("IRAC2", bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
             if (bufferedImage != null) {
@@ -254,6 +253,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("IRAC4");
                 bufferedImages.add(bufferedImage);
+                timeSeries.add(new Couple("IRAC4", new NirImage(2005, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
             if (bufferedImage != null) {
@@ -279,7 +279,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("WISE W2");
                 bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("WISE W2", bufferedImage));
+                timeSeries.add(new Couple("WISE W2", new NirImage(2010, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (bufferedImage != null) {
@@ -302,14 +302,19 @@ public class InfoSheet {
             if (targetDec > -5) {
                 imageLabels = new ArrayList<>();
                 bufferedImages = new ArrayList<>();
-                Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+                Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
                 if (!images.isEmpty()) {
-                    for (Entry<String, BufferedImage> entry : images.entrySet()) {
+                    for (Entry<String, NirImage> entry : images.entrySet()) {
                         String band = entry.getKey();
-                        bufferedImage = entry.getValue();
+                        NirImage nirImage = entry.getValue();
+                        bufferedImage = nirImage.getImage();
                         if (bufferedImage != null) {
-                            imageLabels.add(UKIDSS_LABEL + " " + band);
+                            String imageLabel = UKIDSS_LABEL + " " + band;
+                            imageLabels.add(imageLabel);
                             bufferedImages.add(bufferedImage);
+                            if (band.equals("K")) {
+                                timeSeries.add(new Couple(imageLabel, new NirImage(nirImage.getYear(), bufferedImage)));
+                            }
                         }
                     }
                     createPdfTable(imageLabels, bufferedImages, writer, document);
@@ -319,14 +324,19 @@ public class InfoSheet {
             if (targetDec < 5) {
                 imageLabels = new ArrayList<>();
                 bufferedImages = new ArrayList<>();
-                Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+                Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
                 if (!images.isEmpty()) {
-                    for (Entry<String, BufferedImage> entry : images.entrySet()) {
+                    for (Entry<String, NirImage> entry : images.entrySet()) {
                         String band = entry.getKey();
-                        bufferedImage = entry.getValue();
+                        NirImage nirImage = entry.getValue();
+                        bufferedImage = nirImage.getImage();
                         if (bufferedImage != null) {
-                            imageLabels.add(VHS_LABEL + " " + band);
+                            String imageLabel = VHS_LABEL + " " + band;
+                            imageLabels.add(imageLabel);
                             bufferedImages.add(bufferedImage);
+                            if (band.equals("K")) {
+                                timeSeries.add(new Couple(imageLabel, new NirImage(nirImage.getYear(), bufferedImage)));
+                            }
                         }
                     }
                     createPdfTable(imageLabels, bufferedImages, writer, document);
@@ -345,7 +355,7 @@ public class InfoSheet {
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true));
                 imageLabels.add("PS1 z");
                 bufferedImages.add(bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true));
-                timeSeries.add(new Couple("PS1 z", bufferedImage));
+                timeSeries.add(new Couple("PS1 z", new NirImage(2012, bufferedImage)));
                 imageLabels.add("PS1 y");
                 bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true));
                 imageLabels.add("PS1 y-i-g");
@@ -370,7 +380,7 @@ public class InfoSheet {
             if (bufferedImage != null) {
                 imageLabels.add("DESI LS z");
                 bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("DESI LS z", bufferedImage));
+                timeSeries.add(new Couple("DESI LS z", new NirImage(2020, bufferedImage)));
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
@@ -380,15 +390,18 @@ public class InfoSheet {
 
             createPdfTable(imageLabels, bufferedImages, writer, document);
 
+            // Cross survey time series
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
-            for (Couple<String, BufferedImage> couple : timeSeries) {
+            timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+            for (Couple<String, NirImage> couple : timeSeries) {
                 imageLabels.add(couple.getA());
-                bufferedImages.add(couple.getB());
+                bufferedImages.add(couple.getB().getImage());
             }
 
             createPdfTable(imageLabels, bufferedImages, writer, document);
 
+            // WISE time series
             imageLabels = new ArrayList<>();
             bufferedImages = new ArrayList<>();
             FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
@@ -486,7 +499,7 @@ public class InfoSheet {
 
         int numberOfCols = 10;
         PdfPTable table = new PdfPTable(numberOfCols);
-        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 40, 40, 200, 200});
+        table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 35, 35, 100, 100});
         table.setLockedWidth(true);
         table.setSpacingBefore(10);
         table.setKeepTogether(true);
@@ -538,32 +551,51 @@ public class InfoSheet {
     }
 
     private void createPdfTable(List<String> imageLabels, List<BufferedImage> bufferedImages, PdfWriter writer, Document document) throws Exception {
-        int numberOfCells = imageLabels.size();
+        int numberOfImages = bufferedImages.size();
 
-        if (numberOfCells == 0) {
+        if (numberOfImages == 0) {
             return;
         }
 
-        float[] widths = new float[numberOfCells];
-        for (int i = 0; i < numberOfCells; i++) {
-            widths[i] = 100;
+        int maxCellsPerRow = 6;
+        int cellsPerRow = numberOfImages;
+        int totalCells = numberOfImages;
+
+        if (numberOfImages > maxCellsPerRow) {
+            cellsPerRow = maxCellsPerRow;
+            int remainder = numberOfImages % maxCellsPerRow;
+            int numberOfRows = numberOfImages / maxCellsPerRow;
+            numberOfRows = remainder > 0 ? numberOfRows + 1 : numberOfRows;
+            totalCells = numberOfRows * maxCellsPerRow;
         }
 
-        PdfPTable table = new PdfPTable(numberOfCells);
+        float[] widths = new float[cellsPerRow];
+        for (int i = 0; i < cellsPerRow; i++) {
+            widths[i] = 90;
+        }
+
+        PdfPTable table = new PdfPTable(cellsPerRow);
         table.setTotalWidth(widths);
         table.setLockedWidth(true);
-        table.setKeepTogether(true);
+        table.setSpacingBefore(5);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
-        for (int i = 0; i < bufferedImages.size(); i++) {
-            String label = imageLabels.get(i);
-            BufferedImage bi = drawCenterShape(bufferedImages.get(i));
-            Image image = Image.getInstance(writer, bi, 1);
-            PdfPCell cell = new PdfPCell(image, true);
-            cell.setCellEvent(new WatermarkedCell(label));
-            cell.setBorderWidth(0);
-            cell.setPadding(1);
-            table.addCell(cell);
+        for (int i = 0; i < totalCells; i++) {
+            if (i < numberOfImages) {
+                String label = imageLabels.get(i);
+                BufferedImage bi = drawCenterShape(bufferedImages.get(i));
+                Image image = Image.getInstance(writer, bi, 1);
+                PdfPCell cell = new PdfPCell(image, true);
+                cell.setCellEvent(new WatermarkedCell(label));
+                cell.setBorderWidth(0);
+                cell.setPadding(1);
+                table.addCell(cell);
+            } else {
+                PdfPCell cell = new PdfPCell();
+                cell.setBorderWidth(0);
+                cell.setPadding(1);
+                table.addCell(cell);
+            }
         }
 
         document.add(table);

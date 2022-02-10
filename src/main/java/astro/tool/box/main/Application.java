@@ -50,7 +50,7 @@ public class Application {
 
     private ImageViewerTab imageViewerTab;
 
-    private static boolean versionLoaded;
+    private static boolean versionLoaded = true;
 
     public static List<NumberTriplet> CMD_DATA;
 

@@ -28,6 +28,7 @@ import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.FileType;
 import astro.tool.box.container.FlipbookComponent;
+import astro.tool.box.container.NirImage;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.Counter;
 import java.awt.BorderLayout;
@@ -648,14 +649,14 @@ public class ImageSeriesTab {
         if (targetDec < -5) {
             return;
         }
-        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+        Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
         if (images.isEmpty()) {
             return;
         }
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         images.entrySet().forEach(entry -> {
             String band = entry.getKey();
-            BufferedImage image = entry.getValue();
+            BufferedImage image = entry.getValue().getImage();
             bandPanel.add(buildImagePanel(image, UKIDSS_LABEL + " " + band));
             if (band.equals("K")) {
                 ukidssImage = image;
@@ -672,14 +673,14 @@ public class ImageSeriesTab {
         if (targetDec > 5) {
             return;
         }
-        Map<String, BufferedImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+        Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
         if (images.isEmpty()) {
             return;
         }
         JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         images.entrySet().forEach(entry -> {
             String band = entry.getKey();
-            BufferedImage image = entry.getValue();
+            BufferedImage image = entry.getValue().getImage();
             bandPanel.add(buildImagePanel(image, VHS_LABEL + " " + band));
             if (band.equals("K")) {
                 vhsImage = image;
@@ -775,9 +776,9 @@ public class ImageSeriesTab {
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "IRAC color"));
-            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
             if (image != null) {
-                infraredImages.add(new Couple("IRAC2", image));
+                infraredImages.add(new Couple("IRAC4", image));
             }
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");

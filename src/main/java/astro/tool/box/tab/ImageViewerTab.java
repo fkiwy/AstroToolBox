@@ -53,6 +53,7 @@ import astro.tool.box.panel.CmdPanel;
 import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
+import astro.tool.box.container.NirImage;
 import astro.tool.box.main.InfoSheet;
 import astro.tool.box.panel.ReferencesPanel;
 import astro.tool.box.panel.SedPanel;
@@ -4066,10 +4067,10 @@ public class ImageViewerTab {
                 return null;
             }
             String surveyLabel = "UKIDSS";
-            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, surveyLabel);
-            BufferedImage nirImage = nirImages.get("K-H-J");
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, surveyLabel);
+            BufferedImage nirImage = nirImages.get("K-H-J").getImage();
             if (nirImage == null) {
-                nirImage = nirImages.get("K-J");
+                nirImage = nirImages.get("K-J").getImage();
             }
             return nirImage;
         } catch (Exception ex) {
@@ -4083,10 +4084,10 @@ public class ImageViewerTab {
                 return null;
             }
             String surveyLabel = "VHS";
-            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, surveyLabel);
-            BufferedImage nirImage = nirImages.get("K-H-J");
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, surveyLabel);
+            BufferedImage nirImage = nirImages.get("K-H-J").getImage();
             if (nirImage == null) {
-                nirImage = nirImages.get("K-J");
+                nirImage = nirImages.get("K-J").getImage();
             }
             return nirImage;
         } catch (Exception ex) {
@@ -4372,14 +4373,14 @@ public class ImageViewerTab {
             if (targetDec < -5) {
                 return;
             }
-            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
             if (nirImages.isEmpty()) {
                 return;
             }
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
             nirImages.entrySet().forEach(entry -> {
                 String band = entry.getKey();
-                BufferedImage image = entry.getValue();
+                BufferedImage image = entry.getValue().getImage();
                 bandPanel.add(buildImagePanel(image, UKIDSS_LABEL + " " + band));
             });
             int componentCount = bandPanel.getComponentCount();
@@ -4409,14 +4410,14 @@ public class ImageViewerTab {
             if (targetDec > 5) {
                 return;
             }
-            Map<String, BufferedImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
             if (nirImages.isEmpty()) {
                 return;
             }
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
             nirImages.entrySet().forEach(entry -> {
                 String band = entry.getKey();
-                BufferedImage image = entry.getValue();
+                BufferedImage image = entry.getValue().getImage();
                 bandPanel.add(buildImagePanel(image, VHS_LABEL + " " + band));
             });
             int componentCount = bandPanel.getComponentCount();
@@ -4536,9 +4537,9 @@ public class ImageViewerTab {
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, "SDSS z"));
             }
-            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
+            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "IRAC2"));
+                bandPanel.add(buildImagePanel(image, "IRAC4"));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {

@@ -25,7 +25,6 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
@@ -133,7 +132,7 @@ import org.json.JSONObject;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.4.1";
+    public static final String PGM_VERSION = "2.4.1"; // !!! Application.versionLoaded = false; !!!
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
@@ -189,8 +188,6 @@ public class ToolboxHelper {
         catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
         DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
         catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
-        UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
-        catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
 
         return catalogInstances;
     }
@@ -920,30 +917,49 @@ public class ToolboxHelper {
         return image;
     }
 
-    public static Map<String, BufferedImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
+    public static Map<String, NirImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
         String imageSize = roundTo2DecNZ(size / 60f);
         List<NirImage> nirImages = new ArrayList();
         String[] filterIds = new String[]{"2", "3", "4", "5"};
         for (String filterId : filterIds) {
             String downloadUrl = String.format(surveyUrl, targetRa, targetDec, filterId, imageSize, imageSize);
             String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
+            int i = 0;
+            String imageUrl = "";
+            String extNo = "";
+            String year = "";
             try (Scanner scanner = new Scanner(response)) {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.contains("href")) {
                         String[] parts = line.split("href=\"");
                         parts = parts[1].split("\"");
-                        String imageUrl = parts[0].replace("getImage", "getJImage");
+                        imageUrl = parts[0].replace("getImage", "getJImage");
                         parts = line.split("extNo=");
                         parts = parts[1].split("&");
-                        String extNo = parts[0];
-                        nirImages.add(new NirImage(filterId, extNo, imageUrl));
+                        extNo = parts[0];
+                        i = 1;
+                    }
+                    if (i == 7) {
+                        try {
+                            String[] parts = line.split("<td nowrap>");
+                            parts = parts[1].split("-");
+                            year = parts[0];
+                        } catch (Exception ex) {
+                            year = "2010";
+                        }
                         break;
+                    }
+                    if (i > 0) {
+                        i++;
                     }
                 }
             }
+            if (!imageUrl.isEmpty()) {
+                nirImages.add(new NirImage(filterId, extNo, Integer.valueOf(year), imageUrl));
+            }
         }
-        Map<String, BufferedImage> images = new LinkedHashMap();
+        Map<String, NirImage> images = new LinkedHashMap();
         if (nirImages.isEmpty()) {
             return images;
         }
@@ -958,9 +974,7 @@ public class ToolboxHelper {
                 int width = image.getWidth();
                 int height = image.getHeight();
                 int offset = 2;
-                System.out.println("width=" + width + " height=" + height);
                 if (width > height + offset || width < height - offset) {
-                    System.out.println("------------------------->" + targetRa + " " + targetDec);
                     return new LinkedHashMap();
                 }
                 if (surveyLabel.equals(UKIDSS_LABEL)) {
@@ -979,19 +993,27 @@ public class ToolboxHelper {
                 }
                 // Flip image
                 image = flipImage(image);
-                images.put(band, image);
+                nirImage.setImage(image);
+                images.put(band, nirImage);
             } catch (IOException ex) {
             }
         }
-        BufferedImage i1 = images.get("K");
-        BufferedImage i2 = images.get("H");
-        BufferedImage i3 = images.get("J");
+        BufferedImage i1 = images.get("K").getImage();
+        BufferedImage i2 = images.get("H").getImage();
+        BufferedImage i3 = images.get("J").getImage();
+        int y1 = images.get("K").getYear();
+        int y2 = images.get("H").getYear();
+        int y3 = images.get("J").getYear();
         if (i1 != null && i2 != null && i3 != null) {
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
-            images.put("K-H-J", colorImage);
+            NirImage nirImage = new NirImage("K-H-J", "", (y1 + y2 + y3) / 3, "");
+            nirImage.setImage(colorImage);
+            images.put("K-H-J", nirImage);
         } else if (i1 != null && i3 != null) {
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-            images.put("K-J", colorImage);
+            NirImage nirImage = new NirImage("K-J", "", (y1 + y3) / 2, "");
+            nirImage.setImage(colorImage);
+            images.put("K-J", nirImage);
         }
         return images;
     }
@@ -1108,7 +1130,7 @@ public class ToolboxHelper {
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
-        Drawable drawable = new Circle(x, y, 30, Color.YELLOW);
+        Drawable drawable = new Circle(x, y, 30, Color.RED);
         drawable.draw(g);
         return image;
     }
