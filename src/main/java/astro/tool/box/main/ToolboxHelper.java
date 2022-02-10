@@ -1001,21 +1001,26 @@ public class ToolboxHelper {
             } catch (IOException ex) {
             }
         }
-        BufferedImage i1 = images.get("K").getImage();
-        BufferedImage i2 = images.get("H").getImage();
-        BufferedImage i3 = images.get("J").getImage();
-        int y1 = images.get("K").getYear();
-        int y2 = images.get("H").getYear();
-        int y3 = images.get("J").getYear();
-        if (i1 != null && i2 != null && i3 != null) {
+        NirImage nir1 = images.get("K");
+        NirImage nir2 = images.get("H");
+        NirImage nir3 = images.get("J");
+        if (nir1 != null && nir2 != null && nir3 != null) {
+            BufferedImage i1 = nir1.getImage();
+            BufferedImage i2 = nir2.getImage();
+            BufferedImage i3 = nir3.getImage();
+            int y1 = nir1.getYear();
+            int y2 = nir2.getYear();
+            int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
-            NirImage nirImage = new NirImage("K-H-J", "", (y1 + y2 + y3) / 3, "");
-            nirImage.setImage(colorImage);
+            NirImage nirImage = new NirImage("K-H-J", (y1 + y2 + y3) / 3, colorImage);
             images.put("K-H-J", nirImage);
-        } else if (i1 != null && i3 != null) {
+        } else if (nir1 != null && nir3 != null) {
+            BufferedImage i1 = nir1.getImage();
+            BufferedImage i3 = nir3.getImage();
+            int y1 = nir1.getYear();
+            int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-            NirImage nirImage = new NirImage("K-J", "", (y1 + y3) / 2, "");
-            nirImage.setImage(colorImage);
+            NirImage nirImage = new NirImage("K-J", (y1 + y3) / 2, colorImage);
             images.put("K-J", nirImage);
         }
         return images;

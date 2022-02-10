@@ -26,6 +26,11 @@ public class NirImage {
         this.image = image;
     }
 
+    public NirImage(String filderId, int year, BufferedImage image) {
+        this(filderId, null, year, null);
+        this.image = image;
+    }
+
     public String getFilderId() {
         return filderId;
     }
