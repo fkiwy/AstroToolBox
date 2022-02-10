@@ -50,7 +50,7 @@ public class Application {
 
     private ImageViewerTab imageViewerTab;
 
-    private static boolean versionLoaded = true;
+    private static boolean versionLoaded;
 
     public static List<NumberTriplet> CMD_DATA;
 
@@ -123,7 +123,9 @@ public class Application {
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);
 
-        if (!versionLoaded) {
+        boolean checkVersion = Boolean.parseBoolean(getUserSetting("checkVersion", "true"));
+
+        if (!versionLoaded && checkVersion) {
             try {
                 String response = readResponse(establishHttpConnection(RELEASES_URL + "versions.txt"), PGM_NAME + " version file");
                 if (!response.isEmpty()) {

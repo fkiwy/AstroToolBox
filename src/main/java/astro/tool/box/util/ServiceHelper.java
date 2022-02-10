@@ -30,7 +30,7 @@ public class ServiceHelper {
     }
 
     public static String getSimbadBaseUrl() {
-        boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR));
+        boolean useSimbadMirror = Boolean.parseBoolean(getUserSetting(USE_SIMBAD_MIRROR, "false"));
         return useSimbadMirror ? SIMBAD_MIRROR_URL : SIMBAD_BASE_URL;
     }
 
