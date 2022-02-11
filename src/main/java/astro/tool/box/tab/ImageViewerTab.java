@@ -1247,6 +1247,8 @@ public class ImageViewerTab {
                     sdssImageSeries.setSelected(true);
                     spitzerImageSeries.setSelected(true);
                     allwiseImageSeries.setSelected(true);
+                    ukidssImageSeries.setSelected(true);
+                    vhsImageSeries.setSelected(true);
                     panstarrsImageSeries.setSelected(true);
                     legacyImageSeries.setSelected(true);
                     staticTimeSeries.setSelected(false);
@@ -4065,8 +4067,7 @@ public class ImageViewerTab {
             if (targetDec < -5) {
                 return null;
             }
-            String surveyLabel = "UKIDSS";
-            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, surveyLabel);
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
             NirImage nirImage = nirImages.get("K-H-J");
             BufferedImage image;
             if (nirImage == null) {
@@ -4085,8 +4086,7 @@ public class ImageViewerTab {
             if (targetDec > 5) {
                 return null;
             }
-            String surveyLabel = "VHS";
-            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, surveyLabel);
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, VHS_LABEL);
             NirImage nirImage = nirImages.get("K-H-J");
             BufferedImage image;
             if (nirImage == null) {
@@ -4530,40 +4530,77 @@ public class ImageViewerTab {
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
+            List<Couple<String, NirImage>> timeSeries = new ArrayList<>();
+
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "DSS2 IR"));
+                timeSeries.add(new Couple("DSS IR", new NirImage(1980, image)));
             }
+
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "2MASS K"));
+                timeSeries.add(new Couple("2MASS K", new NirImage(1999, image)));
             }
+
             image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "SDSS z"));
+                timeSeries.add(new Couple("SDSS z", new NirImage(2003, image)));
             }
+
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "IRAC4"));
+                timeSeries.add(new Couple("IRAC4", new NirImage(2005, image)));
             }
+
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "WISE W2"));
+                timeSeries.add(new Couple("WISE W2", new NirImage(2010, image)));
             }
+
+            if (targetDec > -5) {
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+                String band = "K";
+                NirImage nirImage = nirImages.get(band);
+                if (nirImage != null) {
+                    image = nirImage.getImage();
+                    if (image != null) {
+                        timeSeries.add(new Couple(UKIDSS_LABEL + " " + band, new NirImage(nirImage.getYear(), image)));
+                    }
+                }
+            }
+
+            if (targetDec < 5) {
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+                String band = "K";
+                NirImage nirImage = nirImages.get(band);
+                if (nirImage != null) {
+                    image = nirImage.getImage();
+                    if (image != null) {
+                        timeSeries.add(new Couple(VHS_LABEL + " " + band, new NirImage(nirImage.getYear(), image)));
+                    }
+                }
+            }
+
             Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
                 image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
-                bandPanel.add(buildImagePanel(image, "PS1 z"));
-            }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
-            if (image != null) {
-                bandPanel.add(buildImagePanel(image, "DESI LS z"));
+                timeSeries.add(new Couple("PS1 z", new NirImage(2012, image)));
             }
 
-            int componentCount = bandPanel.getComponentCount();
+            image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+            if (image != null) {
+                timeSeries.add(new Couple("DESI LS z", new NirImage(2020, image)));
+            }
+
+            int componentCount = timeSeries.size();
             if (componentCount == 0) {
                 return;
             }
+
+            timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+            timeSeries.forEach(couple -> {
+                bandPanel.add(buildImagePanel(couple.getB().getImage(), couple.getA()));
+            });
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -4585,56 +4622,89 @@ public class ImageViewerTab {
     private void displayAnimatedTimeSeries(double targetRa, double targetDec, int size) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            List<Couple<String, NirImage>> timeSeries = new ArrayList<>();
+
             BufferedImage image;
-            List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
             if (dssImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
                 if (image != null) {
-                    imageList.add(new Couple("DSS2 - IR", image));
+                    timeSeries.add(new Couple("DSS IR", new NirImage(1980, image)));
                 }
             }
+
             if (twoMassImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
                 if (image != null) {
-                    imageList.add(new Couple("2MASS - K", image));
+                    timeSeries.add(new Couple("2MASS K", new NirImage(1999, image)));
                 }
             }
+
             if (sdssImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
                 if (image != null) {
-                    imageList.add(new Couple("SDSS - z", image));
+                    timeSeries.add(new Couple("SDSS z", new NirImage(2003, image)));
                 }
             }
+
             if (spitzerImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
                 if (image != null) {
-                    imageList.add(new Couple("Spitzer - CH4", image));
+                    timeSeries.add(new Couple("IRAC4", new NirImage(2005, image)));
                 }
             }
+
             if (allwiseImageSeries.isSelected()) {
                 image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
                 if (image != null) {
-                    imageList.add(new Couple("WISE - W2", image));
+                    timeSeries.add(new Couple("WISE W2", new NirImage(2010, image)));
                 }
             }
+
+            if (ukidssImageSeries.isSelected() && targetDec > -5) {
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+                String band = "K";
+                NirImage nirImage = nirImages.get(band);
+                if (nirImage != null) {
+                    image = nirImage.getImage();
+                    if (image != null) {
+                        timeSeries.add(new Couple(UKIDSS_LABEL + " " + band, new NirImage(nirImage.getYear(), image)));
+                    }
+                }
+            }
+
+            if (vhsImageSeries.isSelected() && targetDec < 5) {
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+                String band = "K";
+                NirImage nirImage = nirImages.get(band);
+                if (nirImage != null) {
+                    image = nirImage.getImage();
+                    if (image != null) {
+                        timeSeries.add(new Couple(VHS_LABEL + " " + band, new NirImage(nirImage.getYear(), image)));
+                    }
+                }
+            }
+
             if (panstarrsImageSeries.isSelected()) {
                 Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
                 if (!imageInfos.isEmpty()) {
                     image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
-                    imageList.add(new Couple("PS1 - z", image));
-                }
-            }
-            if (legacyImageSeries.isSelected()) {
-                image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
-                if (image != null) {
-                    imageList.add(new Couple("DESI LS - z", image));
+                    timeSeries.add(new Couple("PS1 z", new NirImage(2012, image)));
                 }
             }
 
-            int componentCount = imageList.size();
+            if (legacyImageSeries.isSelected()) {
+                image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+                if (image != null) {
+                    timeSeries.add(new Couple("DESI LS z", new NirImage(2020, image)));
+                }
+            }
+
+            int componentCount = timeSeries.size();
             if (componentCount == 0) {
                 return;
             }
+
+            timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
 
             JPanel container = new JPanel();
 
@@ -4651,10 +4721,10 @@ public class ImageViewerTab {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File file = fileChooser.getSelectedFile();
                         file = new File(file.getPath() + ".gif");
-                        BufferedImage[] imageSet = new BufferedImage[imageList.size()];
+                        BufferedImage[] imageSet = new BufferedImage[timeSeries.size()];
                         int i = 0;
-                        for (Couple<String, BufferedImage> imageData : imageList) {
-                            BufferedImage imageBuffer = imageData.getB();
+                        for (Couple<String, NirImage> nirImage : timeSeries) {
+                            BufferedImage imageBuffer = nirImage.getB().getImage();
                             imageSet[i++] = drawCenterShape(imageBuffer);
                         }
                         if (imageSet.length > 0) {
@@ -4675,13 +4745,13 @@ public class ImageViewerTab {
             imageFrame.setAlwaysOnTop(false);
             imageFrame.setResizable(false);
 
-            Timer timeSeries = new Timer(speed, (ActionEvent e) -> {
+            Timer seriesTimer = new Timer(speed, (ActionEvent e) -> {
                 if (imageCount > componentCount - 1) {
                     imageCount = 0;
                 }
                 displayPanel.removeAll();
-                Couple<String, BufferedImage> imageData = imageList.get(imageCount);
-                displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
+                Couple<String, NirImage> nirImage = timeSeries.get(imageCount);
+                displayPanel.add(buildImagePanel(nirImage.getB().getImage(), nirImage.getA()));
                 imageFrame.setVisible(true);
                 imageCount++;
             });
@@ -4689,12 +4759,12 @@ public class ImageViewerTab {
             imageFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent evt) {
-                    timeSeries.stop();
+                    seriesTimer.stop();
                     imageCount = 0;
                 }
             });
 
-            timeSeries.start();
+            seriesTimer.start();
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {

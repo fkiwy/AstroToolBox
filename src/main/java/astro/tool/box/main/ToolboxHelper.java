@@ -1012,7 +1012,7 @@ public class ToolboxHelper {
             int y2 = nir2.getYear();
             int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
-            NirImage nirImage = new NirImage("K-H-J", (y1 + y2 + y3) / 3, colorImage);
+            NirImage nirImage = new NirImage((y1 + y2 + y3) / 3, colorImage);
             images.put("K-H-J", nirImage);
         } else if (nir1 != null && nir3 != null) {
             BufferedImage i1 = nir1.getImage();
@@ -1020,7 +1020,7 @@ public class ToolboxHelper {
             int y1 = nir1.getYear();
             int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-            NirImage nirImage = new NirImage("K-J", (y1 + y3) / 2, colorImage);
+            NirImage nirImage = new NirImage((y1 + y3) / 2, colorImage);
             images.put("K-J", nirImage);
         }
         return images;
