@@ -842,6 +842,33 @@ public class ToolboxHelper {
         return subjects;
     }
 
+    public static int getEpoch(double targetRa, double targetDec, int size, String survey, String band) {
+        try {
+            String downloadUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
+            String response = readResponse(establishHttpConnection(downloadUrl), "IRSA");
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("obsdate")) {
+                        String[] parts = line.split("<obsdate>");
+                        parts = parts[1].split("-");
+                        return Integer.valueOf(parts[0]);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+        }
+        return 0;
+    }
+
+    public static String getImageLabel(String text, int year) {
+        return text + (year > 0 ? " Epoch " + year : "");
+    }
+
+    public static String getImageLabel(String text, String year) {
+        return text + " Epoch " + year;
+    }
+
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
         BufferedImage bi;
         String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);

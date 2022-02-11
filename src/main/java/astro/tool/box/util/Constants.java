@@ -42,6 +42,15 @@ public class Constants {
 
     public static final String CURRENT_DESI_DR = "ls-dr9";
 
+    public static final String SPITZER_EPOCH = "~2003";
+    public static final int SPITZER_EPOCH_NUM = 2003;
+
+    public static final String PANSTARRS_EPOCH = "~2012";
+    public static final int PANSTARRS_EPOCH_NUM = 2012;
+
+    public static final String DESI_LS_EPOCH = "~2019";
+    public static final int DESI_LS_EPOCH_NUM = 2019;
+
     public static final String LINE_BREAK = "<br/>";
 
     public static final String LINE_SEP = System.lineSeparator();
