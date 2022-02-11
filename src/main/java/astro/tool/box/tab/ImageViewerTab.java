@@ -1266,8 +1266,9 @@ public class ImageViewerTab {
                 createDataSheet.setSelected(false);
             });
 
-            createDataSheet = new JCheckBox("Object info sheet", false);
+            createDataSheet = new JCheckBox("Image series PDF (*)", false);
             mouseControlPanel.add(createDataSheet);
+            createDataSheet.setToolTipText("The production of the PDF may last a couple of minutes. \nDo not continue to work with AstroToolBox until the PDF is finished!");
             createDataSheet.addActionListener((ActionEvent evt) -> {
                 if (createDataSheet.isSelected()) {
                     setImageViewer(this);
@@ -1287,7 +1288,7 @@ public class ImageViewerTab {
 
             changeFovLabel = new JLabel(html(String.format(CHANGE_FOV_TEXT, fieldOfView)));
             mouseControlPanel.add(changeFovLabel);
-            changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view");
+            changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view.");
 
             mouseControlPanel.add(createHeaderLabel("Mouse right click:"));
 

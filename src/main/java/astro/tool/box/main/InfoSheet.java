@@ -27,7 +27,6 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.ColumnText;
@@ -430,8 +429,6 @@ public class InfoSheet {
                 }
             }
 
-            document.add(new Paragraph(" "));
-
             String mainHeader = "CATALOG ENTRIES (Search radius = " + roundTo1DecNZ(searchRadius) + "\")";
 
             document.add(createCatalogEntriesTable(mainSequenceLookupService, catalogEntries, "Main sequence spectral type estimates (*)", mainHeader));
@@ -577,7 +574,7 @@ public class InfoSheet {
         PdfPTable table = new PdfPTable(cellsPerRow);
         table.setTotalWidth(widths);
         table.setLockedWidth(true);
-        table.setSpacingBefore(5);
+        table.setSpacingAfter(5);
         table.setHorizontalAlignment(Element.ALIGN_LEFT);
 
         for (int i = 0; i < totalCells; i++) {

@@ -35,8 +35,8 @@ class WatermarkedCell implements PdfPCellEvent {
         text.setBackground(BaseColor.WHITE, 1, 0.5f, 1.2f, 1.5f);
         ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT,
                 new Phrase(text),
-                position.getLeft() + 5,
-                position.getTop() - 8, 0);
+                position.getLeft() + 2,
+                position.getTop() - 7, 0);
         canvas.restoreState();
     }
 
