@@ -486,7 +486,12 @@ public class ImageSeriesTab {
     }
 
     private void displayImages(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel bandPanel;
+
+        // ______________________________
+        //           DSS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
         if (image != null) {
@@ -521,6 +526,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ______________________________
+        //           2MASS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
@@ -548,6 +556,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ______________________________
+        //           SDSS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
@@ -583,6 +594,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ______________________________
+        //           Spitzer
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
@@ -618,6 +632,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ______________________________
+        //           WISE
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
@@ -648,6 +665,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ______________________________
+        //           UKIDSS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         if (targetDec > -5) {
             Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
             if (!images.isEmpty()) {
@@ -668,6 +688,9 @@ public class ImageSeriesTab {
             }
         }
 
+        // ______________________________
+        //           VHS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         if (targetDec < 5) {
             Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
             if (!images.isEmpty()) {
@@ -688,13 +711,14 @@ public class ImageSeriesTab {
             }
         }
 
-        // Fetch file names for Pan-STARRS filters
+        // ______________________________
+        //           Pan-STARRS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (imageInfos.isEmpty()) {
             return;
         }
 
-        // Fetch images for Pan-STARRS filters
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), "PS1 g"));
@@ -713,6 +737,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ______________________________
+        //           DESI LS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
@@ -741,6 +768,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ________________________________________
+        //           Cross survey time series
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         for (Couple<String, BufferedImage> couple : timeSeries) {
@@ -786,6 +816,9 @@ public class ImageSeriesTab {
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
 
+        // ________________________________________
+        //           DESI LS time series
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "decals-dr5");
@@ -838,6 +871,9 @@ public class ImageSeriesTab {
             return;
         }
 
+        // ________________________________________
+        //           WISE time series
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         for (FlipbookComponent component : flipbook) {
