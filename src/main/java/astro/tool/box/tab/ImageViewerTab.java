@@ -54,7 +54,7 @@ import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
-import astro.tool.box.main.InfoSheet;
+import astro.tool.box.main.ImageSeriesPdf;
 import astro.tool.box.panel.ReferencesPanel;
 import astro.tool.box.panel.SedPanel;
 import astro.tool.box.panel.WdSedPanel;
@@ -297,7 +297,7 @@ public class ImageViewerTab {
     private JCheckBox legacyImageSeries;
     private JCheckBox staticTimeSeries;
     private JCheckBox animatedTimeSeries;
-    private JCheckBox createDataSheet;
+    private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
     private JComboBox epochs;
@@ -1169,55 +1169,55 @@ public class ImageViewerTab {
             dssImageSeries = new JCheckBox("DSS 1Red, 1Blue, 2Red, 2Blue, 2IR", false);
             mouseControlPanel.add(dssImageSeries);
             dssImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             twoMassImageSeries = new JCheckBox("2MASS J, H & K bands", false);
             mouseControlPanel.add(twoMassImageSeries);
             twoMassImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             sdssImageSeries = new JCheckBox("SDSS u, g, r, i & z bands", false);
             mouseControlPanel.add(sdssImageSeries);
             sdssImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             spitzerImageSeries = new JCheckBox("Spitzer CH1, CH2, CH3, CH4, MIPS24", false);
             mouseControlPanel.add(spitzerImageSeries);
             spitzerImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             allwiseImageSeries = new JCheckBox("AllWISE W1, W2, W3 & W4 bands", true);
             mouseControlPanel.add(allwiseImageSeries);
             allwiseImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             ukidssImageSeries = new JCheckBox("UKIDSS Y, J, H & K bands", false);
             mouseControlPanel.add(ukidssImageSeries);
             ukidssImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             vhsImageSeries = new JCheckBox("VHS Y, J, H & K bands", false);
             mouseControlPanel.add(vhsImageSeries);
             vhsImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             panstarrsImageSeries = new JCheckBox("Pan-STARRS g, r, i, z & y bands", false);
             mouseControlPanel.add(panstarrsImageSeries);
             panstarrsImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             legacyImageSeries = new JCheckBox("DESI LS g, r & z bands", false);
             mouseControlPanel.add(legacyImageSeries);
             legacyImageSeries.addActionListener((ActionEvent evt) -> {
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             staticTimeSeries = new JCheckBox("Time series - static", false);
@@ -1235,7 +1235,7 @@ public class ImageViewerTab {
                     legacyImageSeries.setSelected(false);
                     animatedTimeSeries.setSelected(false);
                 }
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
             animatedTimeSeries = new JCheckBox("Time series - animated", false);
@@ -1263,14 +1263,14 @@ public class ImageViewerTab {
                     panstarrsImageSeries.setSelected(false);
                     legacyImageSeries.setSelected(false);
                 }
-                createDataSheet.setSelected(false);
+                imageSeriesPdf.setSelected(false);
             });
 
-            createDataSheet = new JCheckBox("Image series PDF (*)", false);
-            mouseControlPanel.add(createDataSheet);
-            createDataSheet.setToolTipText("The production of the PDF may last a couple of minutes. \nDo not continue to work with AstroToolBox until the PDF is finished!");
-            createDataSheet.addActionListener((ActionEvent evt) -> {
-                if (createDataSheet.isSelected()) {
+            imageSeriesPdf = new JCheckBox("Image series PDF (*)", false);
+            mouseControlPanel.add(imageSeriesPdf);
+            imageSeriesPdf.setToolTipText("The production of the PDF may last a couple of minutes. \nDo not continue to work with AstroToolBox until the PDF is finished!");
+            imageSeriesPdf.addActionListener((ActionEvent evt) -> {
+                if (imageSeriesPdf.isSelected()) {
                     setImageViewer(this);
                     dssImageSeries.setSelected(false);
                     twoMassImageSeries.setSelected(false);
@@ -1689,8 +1689,8 @@ public class ImageViewerTab {
                                         }
                                         crosshairCoords.setText(sb.toString());
                                     } else {
-                                        if (createDataSheet.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> new InfoSheet(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
+                                        if (imageSeriesPdf.isSelected()) {
+                                            CompletableFuture.supplyAsync(() -> new ImageSeriesPdf(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
                                         } else if (animatedTimeSeries.isSelected()) {
                                             if (imageCount == 0) {
                                                 displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
