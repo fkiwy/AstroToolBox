@@ -1268,7 +1268,7 @@ public class ImageViewerTab {
 
             imageSeriesPdf = new JCheckBox("Image series PDF (*)", false);
             mouseControlPanel.add(imageSeriesPdf);
-            imageSeriesPdf.setToolTipText("The production of the PDF may last a couple of minutes. \nDo not continue to work with AstroToolBox until the PDF is finished!");
+            imageSeriesPdf.setToolTipText("The creation of the PDF may take a few minutes.\nDo not continue working with AstroToolBox until the PDF is ready!");
             imageSeriesPdf.addActionListener((ActionEvent evt) -> {
                 if (imageSeriesPdf.isSelected()) {
                     setImageViewer(this);
