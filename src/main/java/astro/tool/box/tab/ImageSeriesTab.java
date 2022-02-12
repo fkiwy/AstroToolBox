@@ -491,33 +491,40 @@ public class ImageSeriesTab {
         // ______________________________
         //           DSS
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
+        int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
+        int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
+        int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
+        int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
+        int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS1 B"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 B", year_1b)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS1 R"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 R", year_1r)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS2 B"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 B", year_2b)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS2 R"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 R", year_2r)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS2 IR"));
-            infraredImages.add(new Couple("DSS2 IR", image));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR", year_2ir)));
+            infraredImages.add(new Couple(getImageLabel("DSS IR", year_2ir), image));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS IR-R-B"));
-            timeSeries.add(new Couple("DSS IR-R-B", new NirImage(1980, image)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR-R-B", year_2ir_1r_1b)));
+            timeSeries.add(new Couple(getImageLabel("DSS IR-R-B", year_2ir_1r_1b), new NirImage(year_2ir_1r_1b, image)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -529,25 +536,30 @@ public class ImageSeriesTab {
         // ______________________________
         //           2MASS
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_j = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=j");
+        int year_h = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=h");
+        int year_k = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=k");
+        int year_k_h_j = getMeanEpoch(year_k, year_h, year_j);
+
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS J"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS J", year_j)));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS H"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS H", year_h)));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS K"));
-            infraredImages.add(new Couple("2MASS K", image));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K", year_k)));
+            infraredImages.add(new Couple(getImageLabel("2MASS K", year_k), image));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "2MASS K-H-J"));
-            timeSeries.add(new Couple("2MASS K-H-J", new NirImage(1999, image)));
+            timeSeries.add(new Couple(getImageLabel("2MASS K-H-J", year_k_h_j), new NirImage(year_k_h_j, image)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -559,33 +571,40 @@ public class ImageSeriesTab {
         // ______________________________
         //           SDSS
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_u = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
+        int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
+        int year_r = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=r");
+        int year_i = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=i");
+        int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
+        int year_z_g_u = getMeanEpoch(year_z, year_g, year_u);
+
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS u"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS u", year_u)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS g"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS g", year_g)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS r"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS r", year_r)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS i"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS i", year_i)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS z"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z", year_z)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS z-g-u"));
-            opticalImages.add(new Couple("SDSS z-g-u", image));
-            timeSeries.add(new Couple("SDSS z-g-u", new NirImage(2003, image)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z-g-u", year_z_g_u)));
+            opticalImages.add(new Couple(getImageLabel("SDSS z-g-u", year_z_g_u), image));
+            timeSeries.add(new Couple(getImageLabel("SDSS z-g-u", year_z_g_u), new NirImage(2003, image)));
         }
 
         if (bandPanel.getComponentCount() > 0) {

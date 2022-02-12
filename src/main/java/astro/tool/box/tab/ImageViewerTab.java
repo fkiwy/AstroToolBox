@@ -4131,36 +4131,38 @@ public class ImageViewerTab {
     private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
+            int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
+            int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
+            int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
+            int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
+            int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
-                bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 B", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 B", year_1b)));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
-                bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 R", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 R", year_1r)));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
-                bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 B", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 B", year_2b)));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
-                bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 R", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 R", year_2r)));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
-                bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR", year_2ir)));
             }
             image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "DSS IR-R-B"));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR-R-B", year_2ir_1r_1b)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4188,26 +4190,31 @@ public class ImageViewerTab {
     private void display2MassImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            int year_j = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=j");
+            int year_h = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=h");
+            int year_k = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=k");
+            int year_k_h_j = getMeanEpoch(year_k, year_h, year_j);
+
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=j");
-                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS J", year)));
+
+                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS J", year_j)));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=h");
-                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS H", year)));
+
+                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS H", year_h)));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=k");
-                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K", year)));
+
+                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K", year_k)));
             }
             image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "2MASS K-H-J"));
+                bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K-H-J", year_k_h_j)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4235,36 +4242,38 @@ public class ImageViewerTab {
     private void displaySdssImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            int year_u = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
+            int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
+            int year_r = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=r");
+            int year_i = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=i");
+            int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
+            int year_z_g_u = getMeanEpoch(year_z, year_g, year_u);
+
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
-                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS u", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS u", year_u)));
             }
             image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
-                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS g", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS g", year_g)));
             }
             image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=r");
-                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS r", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS r", year_r)));
             }
             image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=i");
-                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS i", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS i", year_i)));
             }
             image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
-                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z", year_z)));
             }
             image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "SDSS z-g-u"));
+                bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z-g-u", year_z_g_u)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4292,36 +4301,38 @@ public class ImageViewerTab {
     private void displaySpitzerImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            int year_ch1 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1");
+            int year_ch2 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2");
+            int year_ch3 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3");
+            int year_ch4 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4");
+            int year_mips24 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24");
+            int year_ch3_ch2_ch1 = getMeanEpoch(year_ch3, year_ch2, year_ch1);
+
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1");
-                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC1", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC1", year_ch1)));
             }
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2");
-                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC2", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC2", year_ch2)));
             }
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3");
-                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3", year_ch3)));
             }
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4");
-                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC4", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC4", year_ch4)));
             }
             image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24");
-                bandPanel.add(buildImagePanel(image, getImageLabel("MIPS24", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("MIPS24", year_mips24)));
             }
             image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "IRAC color"));
+                bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3-2-1", year_ch3_ch2_ch1)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4349,31 +4360,33 @@ public class ImageViewerTab {
     private void displayAllwiseImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
+            int year_w1 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=1");
+            int year_w2 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
+            int year_w3 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=3");
+            int year_w4 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=4");
+            int year_w4_w2_w1 = getMeanEpoch(year_w4, year_w2, year_w1);
+
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
             BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=1");
-                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W1", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W1", year_w1)));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
-                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W2", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W2", year_w2)));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=3");
-                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W3", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W3", year_w3)));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
             if (image != null) {
-                int year = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=4");
-                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4", year)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4", year_w4)));
             }
             image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, "WISE W4-W2-W1"));
+                bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4-W2-W1", year_w4_w2_w1)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4492,7 +4505,7 @@ public class ImageViewerTab {
             int year_i = years.get("i").intValue();
             int year_z = years.get("z").intValue();
             int year_y = years.get("y").intValue();
-            int year_grizy = (year_g + year_i + year_y) / 3;
+            int year_yig = getMeanEpoch(year_y, year_i, year_g);
 
             // Fetch images for Pan-STARRS filters
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
@@ -4501,7 +4514,7 @@ public class ImageViewerTab {
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), getImageLabel("PS1 i", year_i)));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_grizy)));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_yig)));
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());

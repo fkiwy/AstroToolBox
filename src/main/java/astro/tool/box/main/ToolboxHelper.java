@@ -852,6 +852,18 @@ public class ToolboxHelper {
         return text + " " + epoch;
     }
 
+    public static int getMeanEpoch(int... epochs) {
+        int sum = 0;
+        int i = 0;
+        for (int epoch : epochs) {
+            if (epoch != 0) {
+                sum += epoch;
+                i++;
+            }
+        }
+        return sum / i;
+    }
+
     public static int getEpoch(double targetRa, double targetDec, int size, String survey, String band) {
         try {
             String downloadUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
@@ -1100,7 +1112,7 @@ public class ToolboxHelper {
             int y2 = nir2.getYear();
             int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
-            NirImage nirImage = new NirImage((y1 + y2 + y3) / 3, colorImage);
+            NirImage nirImage = new NirImage(getMeanEpoch(y1, y2, y3), colorImage);
             images.put("K-H-J", nirImage);
         } else if (nir1 != null && nir3 != null) {
             BufferedImage i1 = nir1.getImage();
@@ -1108,7 +1120,7 @@ public class ToolboxHelper {
             int y1 = nir1.getYear();
             int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-            NirImage nirImage = new NirImage((y1 + y3) / 2, colorImage);
+            NirImage nirImage = new NirImage(getMeanEpoch(y1, y3), colorImage);
             images.put("K-J", nirImage);
         }
         return images;
