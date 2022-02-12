@@ -768,7 +768,7 @@ public class ImageSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, CURRENT_DESI_DR), "Single exposures"));
+            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, DESI_LS_DR_PARAM), "Single exposures"));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());

@@ -40,16 +40,17 @@ public class Constants {
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
-    public static final String CURRENT_DESI_DR = "ls-dr9";
+    public static final String UKIDSS_LABEL = "UKIDSS";
 
-    public static final String SPITZER_EPOCH = "~2003";
-    public static final int SPITZER_EPOCH_NUM = 2003;
+    public static final String VHS_LABEL = "VHS";
 
-    public static final String PANSTARRS_EPOCH = "~2012";
-    public static final int PANSTARRS_EPOCH_NUM = 2012;
+    public static final int SPITZER_EPOCH = 2003;
 
-    public static final String DESI_LS_EPOCH = "~2019";
-    public static final int DESI_LS_EPOCH_NUM = 2019;
+    public static final int DESI_LS_EPOCH = 2019;
+
+    public static final String DESI_LS_DR_LABEL = "DR9";
+
+    public static final String DESI_LS_DR_PARAM = "ls-dr9";
 
     public static final String LINE_BREAK = "<br/>";
 

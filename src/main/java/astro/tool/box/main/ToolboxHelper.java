@@ -1,6 +1,7 @@
 package astro.tool.box.main;
 
 import astro.tool.box.util.GifSequencer;
+import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.tab.SettingsTab.*;
@@ -30,6 +31,7 @@ import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
 import astro.tool.box.component.TranslucentLabel;
+import astro.tool.box.container.MjdEpoch;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.LookupResult;
@@ -85,6 +87,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -94,6 +97,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -139,8 +143,6 @@ public class ToolboxHelper {
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
-    public static final String UKIDSS_LABEL = "UKIDSS";
-    public static final String VHS_LABEL = "VHS";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -842,6 +844,14 @@ public class ToolboxHelper {
         return subjects;
     }
 
+    public static String getImageLabel(String text, int epoch) {
+        return text + (epoch > 0 ? " " + epoch : "");
+    }
+
+    public static String getImageLabel(String text, String epoch) {
+        return text + " " + epoch;
+    }
+
     public static int getEpoch(double targetRa, double targetDec, int size, String survey, String band) {
         try {
             String downloadUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
@@ -861,14 +871,6 @@ public class ToolboxHelper {
         return 0;
     }
 
-    public static String getImageLabel(String text, int year) {
-        return text + (year > 0 ? " Epoch " + year : "");
-    }
-
-    public static String getImageLabel(String text, String year) {
-        return text + " Epoch " + year;
-    }
-
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
         BufferedImage bi;
         String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
@@ -882,10 +884,69 @@ public class ToolboxHelper {
         return bi;
     }
 
+    public static int getPs1Epoch(double targetRa, double targetDec, String filters) {
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, filters);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int mjd = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("mjd")) {
+                        mjd = i;
+                        break;
+                    }
+                }
+                int i = 0;
+                double epoch = 0;
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    epoch += toDouble(columnValues[mjd]);
+                    i++;
+                }
+                return convertMJDToDate(epoch / i).get(ChronoField.YEAR);
+            }
+        } catch (Exception ex) {
+        }
+        return 0;
+    }
+
+    public static Map<String, Double> getPs1Epochs(double targetRa, double targetDec) {
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&type=warp&sep=comma", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int filter = 0;
+                int mjd = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filter")) {
+                        filter = i;
+                    }
+                    if (columnNames[i].equals("mjd")) {
+                        mjd = i;
+                    }
+                }
+                List<MjdEpoch> epochs = new ArrayList();
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    String band = columnValues[filter];
+                    double epoch = toDouble(columnValues[mjd]);
+                    epochs.add(new MjdEpoch(band, convertMJDToDate(epoch).get(ChronoField.YEAR)));
+
+                }
+                return epochs.stream().collect(Collectors.groupingBy(MjdEpoch::getBand, Collectors.averagingInt(MjdEpoch::getEpoch)));
+
+            }
+        } catch (Exception ex) {
+        }
+        return new HashMap();
+    }
+
     public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
         Map<String, String> fileNames = new LinkedHashMap();
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
-        String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
+        String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+        String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
         try (Scanner scanner = new Scanner(response)) {
             String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
             int filter = 0;
@@ -920,7 +981,7 @@ public class ToolboxHelper {
     }
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert) {
-        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, CURRENT_DESI_DR);
+        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, DESI_LS_DR_PARAM);
     }
 
     public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
