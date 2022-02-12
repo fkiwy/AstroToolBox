@@ -554,7 +554,7 @@ public class ImageSeriesPdf {
             return;
         }
 
-        int maxCellsPerRow = 6;
+        int maxCellsPerRow = 7;
         int cellsPerRow = numberOfImages;
         int totalCells = numberOfImages;
 
@@ -568,7 +568,7 @@ public class ImageSeriesPdf {
 
         float[] widths = new float[cellsPerRow];
         for (int i = 0; i < cellsPerRow; i++) {
-            widths[i] = 90;
+            widths[i] = 75;
         }
 
         PdfPTable table = new PdfPTable(cellsPerRow);

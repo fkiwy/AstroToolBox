@@ -16,7 +16,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 
 class WatermarkedCell implements PdfPCellEvent {
 
-    private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 6, BaseColor.BLACK);
+    private static final Font SMALL_FONT = FontFactory.getFont(FontFactory.HELVETICA, 5, BaseColor.BLACK);
 
     String watermark;
 
@@ -36,7 +36,7 @@ class WatermarkedCell implements PdfPCellEvent {
         ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT,
                 new Phrase(text),
                 position.getLeft() + 2,
-                position.getTop() - 7, 0);
+                position.getTop() - 6, 0);
         canvas.restoreState();
     }
 
