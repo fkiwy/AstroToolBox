@@ -132,287 +132,288 @@ public class ImageSeriesPdf {
             document.add(new Paragraph(" "));
 
             List<Couple<String, NirImage>> timeSeries = new ArrayList<>();
+            List<Couple<String, BufferedImage>> images = new ArrayList<>();
 
-            List<String> imageLabels = new ArrayList<>();
-            List<BufferedImage> bufferedImages = new ArrayList<>();
+            int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
+            int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
+            int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
+            int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
+            int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
+            int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+
             BufferedImage bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("DSS1 B");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DSS1 B", year_1b), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("DSS1 R");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DSS1 R", year_1r), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("DSS2 B");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DSS2 B", year_2b), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("DSS2 R");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DSS2 R", year_2r), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("DSS IR");
-                bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("DSS IR", new NirImage(1980, bufferedImage)));
+                images.add(new Couple(getImageLabel("DSS2 IR", year_2ir), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("DSS IR", year_2ir), new NirImage(year_2ir, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("DSS IR-R-B");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DSS IR-R-B", year_2ir_1r_1b), bufferedImage));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            int year_j = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=j");
+            int year_h = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=h");
+            int year_k = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=k");
+            int year_k_h_j = getMeanEpoch(year_k, year_h, year_j);
+
+            images = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("2MASS J");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("2MASS J", year_j), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("2MASS H");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("2MASS H", year_h), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("2MASS K");
-                bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("2MASS K", new NirImage(1999, bufferedImage)));
+                images.add(new Couple(getImageLabel("2MASS K", year_k), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("2MASS K", year_k), new NirImage(year_k, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("2MASS K-H-J");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("2MASS K-H-J", year_k_h_j), bufferedImage));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            int year_u = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
+            int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
+            int year_r = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=r");
+            int year_i = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=i");
+            int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
+            int year_z_g_u = getMeanEpoch(year_z, year_g, year_u);
+
+            images = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("SDSS u");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("SDSS u", year_u), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("SDSS g");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("SDSS g", year_g), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("SDSS r");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("SDSS r", year_r), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("SDSS i");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("SDSS i", year_i), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("SDSS z");
-                bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("SDSS z", new NirImage(2003, bufferedImage)));
+                images.add(new Couple(getImageLabel("SDSS z", year_z), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("SDSS z", year_z), new NirImage(year_z, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("SDSS z-g-u");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("SDSS z-g-u", year_z_g_u), bufferedImage));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            int year_ch1 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1");
+            int year_ch2 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2");
+            int year_ch3 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3");
+            int year_ch4 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4");
+            int year_mips24 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24");
+            int year_ch3_ch2_ch1 = getMeanEpoch(year_ch3, year_ch2, year_ch1);
+
+            images = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("IRAC1");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("IRAC1", year_ch1), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("IRAC2");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("IRAC2", year_ch2), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("IRAC3");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("IRAC3", year_ch3), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("IRAC4");
-                bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("IRAC4", new NirImage(2005, bufferedImage)));
+                images.add(new Couple(getImageLabel("IRAC4", year_ch4), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("IRAC4", year_ch4), new NirImage(SPITZER_EPOCH, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("MIPS24");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("MIPS24", year_mips24), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("IRAC color");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("IRAC3-2-1", year_ch3_ch2_ch1), bufferedImage));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            int year_w1 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=1");
+            int year_w2 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
+            int year_w3 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=3");
+            int year_w4 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=4");
+            int year_w4_w2_w1 = getMeanEpoch(year_w4, year_w2, year_w1);
+
+            images = new ArrayList<>();
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("WISE W1");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("WISE W1", year_w1), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("WISE W2");
-                bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("WISE W2", new NirImage(2010, bufferedImage)));
+                images.add(new Couple(getImageLabel("WISE W2", year_w2), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("WISE W2", year_w2), new NirImage(year_w2, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("WISE W3");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("WISE W3", year_w3), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
             if (bufferedImage != null) {
-                imageLabels.add("WISE W4");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("WISE W4", year_w4), bufferedImage));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
             if (bufferedImage != null) {
-                imageLabels.add("WISE W4-W2-W1");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("WISE W4-W2-W1", year_w4_w2_w1), bufferedImage));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
             if (targetDec > -5) {
-                imageLabels = new ArrayList<>();
-                bufferedImages = new ArrayList<>();
-                Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
-                if (!images.isEmpty()) {
-                    for (Entry<String, NirImage> entry : images.entrySet()) {
+                images = new ArrayList<>();
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+                if (!nirImages.isEmpty()) {
+                    for (Entry<String, NirImage> entry : nirImages.entrySet()) {
                         String band = entry.getKey();
                         NirImage nirImage = entry.getValue();
                         bufferedImage = nirImage.getImage();
+                        int year = nirImage.getYear();
                         if (bufferedImage != null) {
                             String imageLabel = UKIDSS_LABEL + " " + band;
-                            imageLabels.add(imageLabel);
-                            bufferedImages.add(bufferedImage);
+                            images.add(new Couple(getImageLabel(imageLabel, year), bufferedImage));
                             if (band.equals("K")) {
-                                timeSeries.add(new Couple(imageLabel, new NirImage(nirImage.getYear(), bufferedImage)));
+                                timeSeries.add(new Couple(getImageLabel(imageLabel, year), new NirImage(year, bufferedImage)));
                             }
                         }
                     }
-                    createPdfTable(imageLabels, bufferedImages, writer, document);
+                    createPdfTable(images, writer, document);
                 }
             }
 
             if (targetDec < 5) {
-                imageLabels = new ArrayList<>();
-                bufferedImages = new ArrayList<>();
-                Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
-                if (!images.isEmpty()) {
-                    for (Entry<String, NirImage> entry : images.entrySet()) {
+                images = new ArrayList<>();
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+                if (!nirImages.isEmpty()) {
+                    for (Entry<String, NirImage> entry : nirImages.entrySet()) {
                         String band = entry.getKey();
                         NirImage nirImage = entry.getValue();
                         bufferedImage = nirImage.getImage();
+                        int year = nirImage.getYear();
                         if (bufferedImage != null) {
                             String imageLabel = VHS_LABEL + " " + band;
-                            imageLabels.add(imageLabel);
-                            bufferedImages.add(bufferedImage);
+                            images.add(new Couple(getImageLabel(imageLabel, year), bufferedImage));
                             if (band.equals("K")) {
-                                timeSeries.add(new Couple(imageLabel, new NirImage(nirImage.getYear(), bufferedImage)));
+                                timeSeries.add(new Couple(getImageLabel(imageLabel, year), new NirImage(year, bufferedImage)));
                             }
                         }
                     }
-                    createPdfTable(imageLabels, bufferedImages, writer, document);
+                    createPdfTable(images, writer, document);
                 }
             }
 
             Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
-                imageLabels = new ArrayList<>();
-                bufferedImages = new ArrayList<>();
-                imageLabels.add("PS1 g");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true));
-                imageLabels.add("PS1 r");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true));
-                imageLabels.add("PS1 i");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true));
-                imageLabels.add("PS1 z");
-                bufferedImages.add(bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true));
-                timeSeries.add(new Couple("PS1 z", new NirImage(2012, bufferedImage)));
-                imageLabels.add("PS1 y");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true));
-                imageLabels.add("PS1 y-i-g");
-                bufferedImages.add(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false));
+                Map<String, Double> years = getPs1Epochs(targetRa, targetDec);
+                year_g = years.get("g").intValue();
+                year_r = years.get("r").intValue();
+                year_i = years.get("i").intValue();
+                year_z = years.get("z").intValue();
+                int year_y = years.get("y").intValue();
+                int year_y_i_g = getMeanEpoch(year_y, year_i, year_g);
 
-                createPdfTable(imageLabels, bufferedImages, writer, document);
+                images = new ArrayList<>();
+                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true);
+                images.add(new Couple(getImageLabel("PS1 g", year_g), bufferedImage));
+
+                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true);
+                images.add(new Couple(getImageLabel("PS1 r", year_r), bufferedImage));
+
+                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true);
+                images.add(new Couple(getImageLabel("PS1 i", year_i), bufferedImage));
+
+                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
+                images.add(new Couple(getImageLabel("PS1 z", year_z), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("PS1 z", year_z), new NirImage(year_z, bufferedImage)));
+
+                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true);
+                images.add(new Couple(getImageLabel("PS1 y", year_y), bufferedImage));
+
+                bufferedImage = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
+                images.add(new Couple(getImageLabel("PS1 y-i-g", year_y_i_g), bufferedImage));
+
+                createPdfTable(images, writer, document);
             }
 
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            images = new ArrayList<>();
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
-                imageLabels.add("DESI LS g");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DESI LS g", DESI_LS_DR_LABEL), bufferedImage));
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
-                imageLabels.add("DESI LS r");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DESI LS r", DESI_LS_DR_LABEL), bufferedImage));
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
-                imageLabels.add("DESI LS z");
-                bufferedImages.add(bufferedImage);
-                timeSeries.add(new Couple("DESI LS z", new NirImage(2020, bufferedImage)));
+                images.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
             }
             bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
-                imageLabels.add("DESI LS g-r-z");
-                bufferedImages.add(bufferedImage);
+                images.add(new Couple(getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
             // Cross survey time series
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            images = new ArrayList<>();
             timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
             for (Couple<String, NirImage> couple : timeSeries) {
-                imageLabels.add(couple.getA());
-                bufferedImages.add(couple.getB().getImage());
+                images.add(new Couple(couple.getA(), couple.getB().getImage()));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
             // WISE time series
-            imageLabels = new ArrayList<>();
-            bufferedImages = new ArrayList<>();
+            images = new ArrayList<>();
             FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
             int length = flipbook.length;
             length = length < 8 ? length : 8;
             for (int i = 0; i < length; i++) {
                 FlipbookComponent component = flipbook[i];
-                imageLabels.add(component.getTitle());
-                bufferedImages.add(imageViewerTab.processImage(component));
+                images.add(new Couple(component.getTitle(), imageViewerTab.processImage(component)));
             }
 
-            createPdfTable(imageLabels, bufferedImages, writer, document);
+            createPdfTable(images, writer, document);
 
             int searchRadius = 10;
             List<CatalogEntry> catalogEntries = new ArrayList<>();
@@ -547,8 +548,8 @@ public class ImageSeriesPdf {
         return table;
     }
 
-    private void createPdfTable(List<String> imageLabels, List<BufferedImage> bufferedImages, PdfWriter writer, Document document) throws Exception {
-        int numberOfImages = bufferedImages.size();
+    private void createPdfTable(List<Couple<String, BufferedImage>> images, PdfWriter writer, Document document) throws Exception {
+        int numberOfImages = images.size();
 
         if (numberOfImages == 0) {
             return;
@@ -579,8 +580,9 @@ public class ImageSeriesPdf {
 
         for (int i = 0; i < totalCells; i++) {
             if (i < numberOfImages) {
-                String label = imageLabels.get(i);
-                BufferedImage bi = drawCenterShape(bufferedImages.get(i));
+                Couple<String, BufferedImage> couple = images.get(i);
+                String label = couple.getA();
+                BufferedImage bi = drawCenterShape(couple.getB());
                 Image image = Image.getInstance(writer, bi, 1);
                 PdfPCell cell = new PdfPCell(image, true);
                 cell.setCellEvent(new WatermarkedCell(label));

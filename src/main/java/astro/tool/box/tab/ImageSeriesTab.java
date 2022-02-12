@@ -589,7 +589,7 @@ public class ImageSeriesTab {
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z-g-u", year_z_g_u)));
-            timeSeries.add(new Couple(getImageLabel("SDSS z-g-u", year_z_g_u), new NirImage(2003, image)));
+            timeSeries.add(new Couple(getImageLabel("SDSS z-g-u", year_z_g_u), new NirImage(year_z_g_u, image)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -633,7 +633,7 @@ public class ImageSeriesTab {
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, getImageLabel("IRAC color", year_ch3_ch2_ch1)));
-            timeSeries.add(new Couple(getImageLabel("IRAC color", year_ch3_ch2_ch1), new NirImage(2005, image)));
+            timeSeries.add(new Couple(getImageLabel("IRAC color", year_ch3_ch2_ch1), new NirImage(SPITZER_EPOCH, image)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
