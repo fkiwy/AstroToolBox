@@ -861,7 +861,7 @@ public class ToolboxHelper {
                 i++;
             }
         }
-        return sum / i;
+        return i == 0 ? i : sum / i;
     }
 
     public static int getEpoch(double targetRa, double targetDec, int size, String survey, String band) {
