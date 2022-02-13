@@ -303,13 +303,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 addRow(queryBuilder, catalogQuery);
                 catalogQuery = createProperMotionQuery(queryBuilder);
                 break;
-
-            case DXS:
-                catalogQuery = createCatalogQueryDXS();
-                break;
-            case UDS:
-                catalogQuery = createCatalogQueryUDS();
-                break;
         }
         return NOAO_TAP_URL + encodeQuery(catalogQuery);
     }
