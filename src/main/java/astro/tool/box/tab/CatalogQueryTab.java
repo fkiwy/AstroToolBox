@@ -339,9 +339,9 @@ public class CatalogQueryTab {
                 }
                 currentTable = catalogTable;
                 String sourceId = (String) catalogTable.getValueAt(catalogTable.getSelectedRow(), 1);
-                CatalogEntry selected = catalogEntries.stream().filter(entry -> {
-                    return entry.getSourceId().equals(sourceId);
-                }).findFirst().get();
+                CatalogEntry selected = catalogEntries.stream()
+                        .filter(entry -> entry.getSourceId().equals(sourceId))
+                        .findFirst().get();
                 if (selected != null) {
                     selectedEntry = selected;
                     removeAndRecreateBottomPanel();

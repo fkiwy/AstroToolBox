@@ -132,6 +132,16 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         TYPE_TABLE.put(-9, "Saturated");
     }
 
+    private static final Map<Survey, String> SURVEY_LABEL = new HashMap<>();
+
+    static {
+        SURVEY_LABEL.put(Survey.LAS, "Large Area Survey");
+        SURVEY_LABEL.put(Survey.GCS, "Galactic Clusters Survey");
+        SURVEY_LABEL.put(Survey.GPS, "Galactic Plane Survey");
+        SURVEY_LABEL.put(Survey.DXS, "Deep Extragalactic Survey");
+        SURVEY_LABEL.put(Survey.UDS, "Ultra Deep Survey");
+    }
+
     public UkidssCatalogEntry() {
     }
 
@@ -180,6 +190,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("UKIDSS survey", SURVEY_LABEL.get(survey), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
@@ -230,7 +241,9 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new UkidssCatalogEntry(columns, values);
+        UkidssCatalogEntry entry = new UkidssCatalogEntry(columns, values);
+        entry.setSurvey(survey);
+        return entry;
     }
 
     @Override
@@ -432,6 +445,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + SURVEY_LABEL.get(survey) + ","
                 + sourceId + ","
                 + roundTo7Dec(ra) + ","
                 + roundTo7Dec(ra_err) + ","
@@ -454,7 +468,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 + roundTo3Dec(y_j_pnt) + ","
                 + roundTo3Dec(j_h_pnt) + ","
                 + roundTo3Dec(h_ks_pnt) + ","
-                + roundTo3Dec(getJ_K()) + ";"
+                + roundTo3Dec(getJ_K()) + ","
                 + roundTo3Dec(getTotalProperMotion());
         return columnValues.split(",", -1);
     }
@@ -462,6 +476,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),"
+                + "UKIDSS survey,"
                 + "source id,"
                 + "ra,"
                 + "ra err,"
