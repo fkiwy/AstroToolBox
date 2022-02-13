@@ -921,7 +921,7 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(desOverlay);
-            ukidssOverlay = new JCheckBox(html("U<u>K</u>IDSS LAS"), overlays.isUkidss());
+            ukidssOverlay = new JCheckBox(html("U<u>K</u>IDSS DR11"), overlays.isUkidss());
             ukidssOverlay.setForeground(JColor.BLOOD.val);
             ukidssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();

@@ -5,14 +5,13 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.MiscUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog {
 
-    public static final String CATALOG_NAME = "UKIDSS LAS DR11";
+    public static final String CATALOG_NAME = "UKIDSS DR11";
 
     // Unique identifier of this merged detection as assigned by merge algorithm
     private long sourceId;
@@ -116,6 +115,12 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     private String[] values;
 
+    private Survey survey;
+
+    public enum Survey {
+        LAS, GCS, GPS, DXS, UDS
+    }
+
     private static final Map<Integer, String> TYPE_TABLE = new HashMap<>();
 
     static {
@@ -135,17 +140,23 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         this.values = values;
         sourceId = toLong(values[columns.get("sourceid")]);
         ra = toDouble(values[columns.get("ra")]);
-        ra_err = fixValue(toDouble(values[columns.get("sigra")]));
         dec = toDouble(values[columns.get("dec")]);
-        dec_err = fixValue(toDouble(values[columns.get("sigdec")]));
-        pmra = fixValue(toDouble(values[columns.get("mura")]));
-        pmra_err = fixValue(toDouble(values[columns.get("sigmura")]));
-        pmdec = fixValue(toDouble(values[columns.get("mudec")]));
-        pmdec_err = fixValue(toDouble(values[columns.get("sigmudec")]));
+        if (columns.get("sigra") != null) {
+            ra_err = fixValue(toDouble(values[columns.get("sigra")]));
+            dec_err = fixValue(toDouble(values[columns.get("sigdec")]));
+        }
+        if (columns.get("mura") != null) {
+            pmra = fixValue(toDouble(values[columns.get("mura")]));
+            pmra_err = fixValue(toDouble(values[columns.get("sigmura")]));
+            pmdec = fixValue(toDouble(values[columns.get("mudec")]));
+            pmdec_err = fixValue(toDouble(values[columns.get("sigmudec")]));
+            epoch = toDouble(values[columns.get("epoch")]);
+        }
         objectType = toInteger(values[columns.get("mergedclass")]);
-        epoch = toDouble(values[columns.get("epoch")]);
-        y_ap3 = fixValue(toDouble(values[columns.get("yapermag3")]));
-        y_ap3_err = fixValue(toDouble(values[columns.get("yapermag3err")]));
+        if (columns.get("yapermag3") != null) {
+            y_ap3 = fixValue(toDouble(values[columns.get("yapermag3")]));
+            y_ap3_err = fixValue(toDouble(values[columns.get("yapermag3err")]));
+        }
         j_ap3 = fixValue(toDouble(values[columns.get("japermag3")]));
         j_ap3_err = fixValue(toDouble(values[columns.get("japermag3err")]));
         h_ap3 = fixValue(toDouble(values[columns.get("hapermag3")]));
@@ -234,15 +245,58 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     @Override
     public String getCatalogUrl() {
-        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
+        String catalogQuery = "";
+        switch (survey) {
+            case LAS:
+                catalogQuery = createCatalogQueryLAS();
+                break;
+            case GCS:
+                catalogQuery = createCatalogQueryGCS();
+                break;
+            case GPS:
+                catalogQuery = createCatalogQueryGPS();
+                break;
+            case DXS:
+                catalogQuery = createCatalogQueryDXS();
+                break;
+            case UDS:
+                catalogQuery = createCatalogQueryUDS();
+                break;
+        }
+        return NOAO_TAP_URL + encodeQuery(catalogQuery);
     }
 
     @Override
     public String getProperMotionQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createProperMotionQuery());
+        StringBuilder queryBuilder = new StringBuilder();
+        String catalogQuery = "";
+        switch (survey) {
+            case LAS:
+                catalogQuery = createCatalogQueryLAS();
+                addRow(queryBuilder, catalogQuery);
+                catalogQuery = createProperMotionQuery(queryBuilder);
+                break;
+            case GCS:
+                catalogQuery = createCatalogQueryGCS();
+                addRow(queryBuilder, catalogQuery);
+                catalogQuery = createProperMotionQuery(queryBuilder);
+                break;
+            case GPS:
+                catalogQuery = createCatalogQueryGPS();
+                addRow(queryBuilder, catalogQuery);
+                catalogQuery = createProperMotionQuery(queryBuilder);
+                break;
+            case DXS:
+                catalogQuery = createCatalogQueryDXS();
+                break;
+            case UDS:
+                catalogQuery = createCatalogQueryUDS();
+                break;
+        }
+        return NOAO_TAP_URL + encodeQuery(catalogQuery);
     }
 
-    private String createCatalogQuery() {
+    private String createCatalogQueryLAS() {
         StringBuilder query = new StringBuilder();
         addRow(query, "SELECT sourceid,");
         addRow(query, "       ra,");
@@ -271,9 +325,100 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         return query.toString();
     }
 
-    private String createProperMotionQuery() {
+    private String createCatalogQueryGCS() {
         StringBuilder query = new StringBuilder();
-        addRow(query, createCatalogQuery());
+        addRow(query, "SELECT sourceid,");
+        addRow(query, "       ra,");
+        addRow(query, "       sigra,");
+        addRow(query, "       dec,");
+        addRow(query, "       sigdec,");
+        addRow(query, "       mura,");
+        addRow(query, "       sigmura,");
+        addRow(query, "       mudec,");
+        addRow(query, "       sigmudec,");
+        addRow(query, "       mergedclass,");
+        addRow(query, "       epoch,");
+        addRow(query, "       yapermag3,");
+        addRow(query, "       yapermag3err,");
+        addRow(query, "       japermag3,");
+        addRow(query, "       japermag3err,");
+        addRow(query, "       hapermag3,");
+        addRow(query, "       hapermag3err,");
+        addRow(query, "       kapermag3,");
+        addRow(query, "       kapermag3err,");
+        addRow(query, "       ymjpnt,");
+        addRow(query, "       jmhpnt,");
+        addRow(query, "       hmkpnt");
+        addRow(query, "FROM   ukidss_dr11plus.gcssource");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
+    }
+
+    private String createCatalogQueryGPS() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT sourceid,");
+        addRow(query, "       ra,");
+        addRow(query, "       sigra,");
+        addRow(query, "       dec,");
+        addRow(query, "       sigdec,");
+        addRow(query, "       mura,");
+        addRow(query, "       sigmura,");
+        addRow(query, "       mudec,");
+        addRow(query, "       sigmudec,");
+        addRow(query, "       mergedclass,");
+        addRow(query, "       epoch,");
+        addRow(query, "       japermag3,");
+        addRow(query, "       japermag3err,");
+        addRow(query, "       hapermag3,");
+        addRow(query, "       hapermag3err,");
+        addRow(query, "       kapermag3,");
+        addRow(query, "       kapermag3err,");
+        addRow(query, "       jmhpnt,");
+        addRow(query, "       hmkpnt");
+        addRow(query, "FROM   ukidss_dr11plus.gpssource");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
+    }
+
+    private String createCatalogQueryDXS() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT sourceid,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       mergedclass,");
+        addRow(query, "       japermag3,");
+        addRow(query, "       japermag3err,");
+        addRow(query, "       hapermag3,");
+        addRow(query, "       hapermag3err,");
+        addRow(query, "       kapermag3,");
+        addRow(query, "       kapermag3err,");
+        addRow(query, "       jmhpnt,");
+        addRow(query, "       hmkpnt");
+        addRow(query, "FROM   ukidss_dr11plus.dxssource");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
+    }
+
+    private String createCatalogQueryUDS() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT sourceid,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       mergedclass,");
+        addRow(query, "       japermag3,");
+        addRow(query, "       japermag3err,");
+        addRow(query, "       hapermag3,");
+        addRow(query, "       hapermag3err,");
+        addRow(query, "       kapermag3,");
+        addRow(query, "       kapermag3err,");
+        addRow(query, "       jmhpnt,");
+        addRow(query, "       hmkpnt");
+        addRow(query, "FROM   ukidss_dr11plus.udssource");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
+    }
+
+    private String createProperMotionQuery(StringBuilder query) {
         addRow(query, "AND    mura > -999999 AND mudec > -999999");
         addRow(query, "AND    SQRT(mura * mura + mudec * mudec) >= " + tpm);
         return query.toString();
@@ -551,6 +696,10 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     public double getMeanEpoch() {
         return epoch;
+    }
+
+    public void setSurvey(Survey survey) {
+        this.survey = survey;
     }
 
     public double getJ_K() {
