@@ -845,7 +845,7 @@ public class ToolboxHelper {
     }
 
     public static String getImageLabel(String text, int epoch) {
-        return text + (epoch > 0 ? " Epoch " + epoch : "");
+        return text + (epoch > 0 ? " Ep. " + epoch : "");
     }
 
     public static String getImageLabel(String text, String epoch) {

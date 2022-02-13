@@ -362,6 +362,8 @@ public class ImageViewerTab {
     private int year_ps1_y_i_g;
     private int year_ukidss_k_h_j;
     private int year_vhs_k_h_j;
+    private int year_sdss_z_g_u;
+    private int year_dss_2ir_1r_1b;
 
     private double targetRa;
     private double targetDec;
@@ -1583,12 +1585,12 @@ public class ImageViewerTab {
 
                     // SDSS image
                     if (processedSdssImage != null) {
-                        images.add(new Couple("SDSS", new NirImage(2001, processedSdssImage)));
+                        images.add(new Couple(getImageLabel("SDSS", year_sdss_z_g_u), new NirImage(year_sdss_z_g_u, processedSdssImage)));
                     }
 
                     // DSS image
                     if (processedDssImage != null) {
-                        images.add(new Couple("DSS", new NirImage(1980, processedDssImage)));
+                        images.add(new Couple(getImageLabel("DSS", year_dss_2ir_1r_1b), new NirImage(year_dss_2ir_1r_1b, processedDssImage)));
                     }
 
                     images.sort(Comparator.comparing(c -> 3000 - c.getB().getYear()));
@@ -2498,6 +2500,8 @@ public class ImageViewerTab {
                 year_ps1_y_i_g = 0;
                 year_ukidss_k_h_j = 0;
                 year_vhs_k_h_j = 0;
+                year_sdss_z_g_u = 0;
+                year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
                 decalsImage = null;
                 processedDecalsImage = null;
@@ -4098,6 +4102,11 @@ public class ImageViewerTab {
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
                 image = ImageIO.read(stream);
             }
+            //BufferedImage image = retrieveImage(targetRa, targetDec, (int) round(size * pixelScale), "sdss", "file_type=colorimage");
+            int year_u = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
+            int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
+            int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
+            year_sdss_z_g_u = getMeanEpoch(year_z, year_g, year_u);
             return image;
         } catch (Exception ex) {
             return null;
@@ -4107,6 +4116,10 @@ public class ImageViewerTab {
     private BufferedImage fetchDssImage(double targetRa, double targetDec, double size) {
         try {
             BufferedImage image = retrieveImage(targetRa, targetDec, (int) round(size * pixelScale), "dss", "file_type=colorimage");
+            int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
+            int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
+            int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
+            year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
             return image;
         } catch (Exception ex) {
             return null;
