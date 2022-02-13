@@ -166,6 +166,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         if (columns.get("yapermag3") != null) {
             y_ap3 = fixValue(toDouble(values[columns.get("yapermag3")]));
             y_ap3_err = fixValue(toDouble(values[columns.get("yapermag3err")]));
+            y_j_pnt = fixValue(toDouble(values[columns.get("ymjpnt")]));
         }
         j_ap3 = fixValue(toDouble(values[columns.get("japermag3")]));
         j_ap3_err = fixValue(toDouble(values[columns.get("japermag3err")]));
@@ -173,7 +174,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         h_ap3_err = fixValue(toDouble(values[columns.get("hapermag3err")]));
         ks_ap3 = fixValue(toDouble(values[columns.get("kapermag3")]));
         ks_ap3_err = fixValue(toDouble(values[columns.get("kapermag3err")]));
-        y_j_pnt = fixValue(toDouble(values[columns.get("ymjpnt")]));
         j_h_pnt = fixValue(toDouble(values[columns.get("jmhpnt")]));
         h_ks_pnt = fixValue(toDouble(values[columns.get("hmkpnt")]));
     }
@@ -191,7 +191,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
-        catalogElements.add(new CatalogElement("UKIDSS survey", SURVEY_LABEL.get(survey), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
@@ -200,6 +199,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
+        catalogElements.add(new CatalogElement("UKIDSS survey", SURVEY_LABEL.get(survey), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("object type", TYPE_TABLE.get(objectType), Alignment.LEFT, getStringComparator(), true));
         catalogElements.add(new CatalogElement("epoch", roundTo3DecNZ(epoch), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("Y (mag)", roundTo3DecNZ(y_ap3), Alignment.RIGHT, getDoubleComparator(), true));
@@ -446,7 +446,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
                 + sourceId + ","
-                + SURVEY_LABEL.get(survey) + ","
                 + roundTo7Dec(ra) + ","
                 + roundTo7Dec(ra_err) + ","
                 + roundTo7Dec(dec) + ","
@@ -455,6 +454,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 + roundTo3Dec(pmra_err) + ","
                 + roundTo3Dec(pmdec) + ","
                 + roundTo3Dec(pmdec_err) + ","
+                + SURVEY_LABEL.get(survey) + ","
                 + TYPE_TABLE.get(objectType) + ","
                 + roundTo3Dec(epoch) + ","
                 + roundTo3Dec(y_ap3) + ","
@@ -477,7 +477,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),"
                 + "source id,"
-                + "UKIDSS survey,"
                 + "ra,"
                 + "ra err,"
                 + "dec,"
@@ -486,6 +485,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 + "pmra err,"
                 + "pmdec (mas/yr),"
                 + "pmdec err,"
+                + "UKIDSS survey,"
                 + "object type,"
                 + "epoch,"
                 + "Y (mag),"
