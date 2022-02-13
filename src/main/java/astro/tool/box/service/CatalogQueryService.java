@@ -13,38 +13,31 @@ public class CatalogQueryService {
 
     public List<CatalogEntry> getCatalogEntriesByCoords(CatalogEntry catalogEntry) throws IOException {
         if (catalogEntry instanceof UkidssCatalogEntry) {
-            List<CatalogEntry> catalogEntries = new ArrayList();
-            for (Survey survey : UkidssCatalogEntry.Survey.values()) {
-                ((UkidssCatalogEntry) catalogEntry).setSurvey(survey);
-                catalogEntries.addAll(
-                        transformResponseToCatalogEntries(
-                                readResponse(
-                                        establishHttpConnection(catalogEntry.getCatalogUrl()), catalogEntry.getCatalogName()
-                                ), catalogEntry
-                        )
-                );
-            }
-            return catalogEntries;
+            return getUkidssEntries((UkidssCatalogEntry) catalogEntry, false);
         }
         return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getCatalogUrl()), catalogEntry.getCatalogName()), catalogEntry);
     }
 
     public List<CatalogEntry> getCatalogEntriesByCoordsAndTpm(ProperMotionQuery catalogEntry) throws IOException {
         if (catalogEntry instanceof UkidssCatalogEntry) {
-            List<CatalogEntry> catalogEntries = new ArrayList();
-            for (Survey survey : UkidssCatalogEntry.Survey.values()) {
-                ((UkidssCatalogEntry) catalogEntry).setSurvey(survey);
-                catalogEntries.addAll(
-                        transformResponseToCatalogEntries(
-                                readResponse(
-                                        establishHttpConnection(catalogEntry.getProperMotionQueryUrl()), catalogEntry.getCatalogName()
-                                ), catalogEntry
-                        )
-                );
-            }
-            return catalogEntries;
+            return getUkidssEntries((UkidssCatalogEntry) catalogEntry, true);
         }
         return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getProperMotionQueryUrl()), catalogEntry.getCatalogName()), catalogEntry);
+    }
+
+    private List<CatalogEntry> getUkidssEntries(UkidssCatalogEntry catalogEntry, boolean properMotionQuery) throws IOException {
+        List<CatalogEntry> catalogEntries = new ArrayList();
+        for (Survey survey : UkidssCatalogEntry.Survey.values()) {
+            catalogEntry.setSurvey(survey);
+            String queryUrl;
+            if (properMotionQuery) {
+                queryUrl = catalogEntry.getProperMotionQueryUrl();
+            } else {
+                queryUrl = catalogEntry.getCatalogUrl();
+            }
+            catalogEntries.addAll(transformResponseToCatalogEntries(readResponse(establishHttpConnection(queryUrl), catalogEntry.getCatalogName()), catalogEntry));
+        }
+        return catalogEntries;
     }
 
 }
