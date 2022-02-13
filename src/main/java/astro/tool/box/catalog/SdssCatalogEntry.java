@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class SdssCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "SDSS DR16";
+    public static final String CATALOG_NAME = "SDSS DR17";
 
     // Unique object identifier
     private long objID;

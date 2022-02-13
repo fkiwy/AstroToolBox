@@ -359,6 +359,10 @@ public class ImageViewerTab {
     private int zoom = ZOOM;
     private int size = SIZE;
 
+    private int year_ps1_y_i_g;
+    private int year_ukidss_k_h_j;
+    private int year_vhs_k_h_j;
+
     private double targetRa;
     private double targetDec;
 
@@ -864,7 +868,7 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR16"), overlays.isSdss());
+            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR17"), overlays.isSdss());
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -1551,84 +1555,55 @@ public class ImageViewerTab {
                     rightPanel.repaint();
                     addMagnifiedImage("WISE", wiseImage, upperLeftX, upperLeftY, width, height);
 
-                    // Display DECaLS images
+                    List<Couple<String, NirImage>> images = new ArrayList();
+
+                    // DECaLS image
                     JLabel decalsLabel = null;
                     if (processedDecalsImage != null) {
-                        // Create and display magnified DECaLS image
-                        if (!imageCutOff) {
-                            addMagnifiedImage("DESI LS", processedDecalsImage, upperLeftX, upperLeftY, width, height);
-                        }
-
-                        // Display regular DECaLS image
-                        decalsLabel = addTextToImage(new JLabel(new ImageIcon(processedDecalsImage)), "DESI LS");
-                        decalsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(decalsLabel);
+                        images.add(new Couple(getImageLabel("DESI LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDecalsImage)));
                     }
 
-                    // Display Pan-STARRS images
+                    // Pan-STARRS image
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
-                        // Create and display magnified Pan-STARRS image
-                        if (!imageCutOff) {
-                            addMagnifiedImage("PS1", processedPs1Image, upperLeftX, upperLeftY, width, height);
-                        }
-
-                        // Display regular Pan-STARRS image
-                        ps1Label = addTextToImage(new JLabel(new ImageIcon(processedPs1Image)), "PS1");
-                        ps1Label.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(ps1Label);
+                        images.add(new Couple(getImageLabel("PS1", year_ps1_y_i_g), new NirImage(2012, processedPs1Image)));
                     }
 
-                    // Display VHS images
+                    // VHS image
                     JLabel vhsLabel = null;
                     if (processedVhsImage != null) {
-                        // Create and display magnified VHS image
-                        if (!imageCutOff) {
-                            addMagnifiedImage(VHS_LABEL, processedVhsImage, upperLeftX, upperLeftY, width, height);
-                        }
-
-                        // Display regular VHS image
-                        vhsLabel = addTextToImage(new JLabel(new ImageIcon(processedVhsImage)), VHS_LABEL);
-                        vhsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(vhsLabel);
+                        images.add(new Couple(getImageLabel(VHS_LABEL, year_vhs_k_h_j), new NirImage(year_vhs_k_h_j, processedVhsImage)));
                     }
 
-                    // Display UKIDSS images
+                    // UKIDSS image
                     JLabel ukidssLabel = null;
                     if (processedUkidssImage != null) {
-                        // Create and display magnified UKIDSS image
-                        if (!imageCutOff) {
-                            addMagnifiedImage(UKIDSS_LABEL, processedUkidssImage, upperLeftX, upperLeftY, width, height);
-                        }
-
-                        // Display regular UKIDSS image
-                        ukidssLabel = addTextToImage(new JLabel(new ImageIcon(processedUkidssImage)), UKIDSS_LABEL);
-                        ukidssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(ukidssLabel);
+                        images.add(new Couple(getImageLabel(UKIDSS_LABEL, year_ukidss_k_h_j), new NirImage(year_ukidss_k_h_j, processedUkidssImage)));
                     }
 
-                    // Display SDSS images
+                    // SDSS image
                     if (processedSdssImage != null) {
-                        // Create and display magnified SDSS image
-                        if (!imageCutOff) {
-                            addMagnifiedImage("SDSS", processedSdssImage, upperLeftX, upperLeftY, width, height);
-                        }
-
-                        // Display regular SDSS image
-                        JLabel sdssLabel = addTextToImage(new JLabel(new ImageIcon(processedSdssImage)), "SDSS");
-                        sdssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(sdssLabel);
+                        images.add(new Couple("SDSS", new NirImage(2001, processedSdssImage)));
                     }
 
-                    // Display DSS images
+                    // DSS image
                     if (processedDssImage != null) {
-                        // Create and display magnified DSS image
+                        images.add(new Couple("DSS", new NirImage(1980, processedDssImage)));
+                    }
+
+                    images.sort(Comparator.comparing(c -> 3000 - c.getB().getYear()));
+
+                    for (Couple<String, NirImage> couple : images) {
+                        String label = couple.getA();
+                        BufferedImage image = couple.getB().getImage();
+
+                        // Create and display magnified image
                         if (!imageCutOff) {
-                            addMagnifiedImage("DSS", processedDssImage, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage(label, image, upperLeftX, upperLeftY, width, height);
                         }
 
-                        // Display regular DSS image
-                        JLabel dssLabel = addTextToImage(new JLabel(new ImageIcon(processedDssImage)), "DSS");
+                        // Display regular image
+                        JLabel dssLabel = addTextToImage(new JLabel(new ImageIcon(image)), label);
                         dssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(dssLabel);
                     }
@@ -2508,18 +2483,21 @@ public class ImageViewerTab {
                 allEpochsW2Loaded = false;
                 moreImagesAvailable = false;
                 flipbookComplete = false;
+                hasException = false;
+                imageCutOff = false;
                 imagesW1 = new HashMap<>();
                 imagesW2 = new HashMap<>();
                 images = new HashMap<>();
                 crosshairs = new ArrayList<>();
                 crosshairCoords.setText("");
-                hasException = false;
                 naxis1 = naxis2 = size;
                 pointerX = pointerY = 0;
                 windowShift = 0;
                 epochCountW1 = 0;
                 epochCountW2 = 0;
-                imageCutOff = false;
+                year_ps1_y_i_g = 0;
+                year_ukidss_k_h_j = 0;
+                year_vhs_k_h_j = 0;
                 initCatalogEntries();
                 decalsImage = null;
                 processedDecalsImage = null;
@@ -4060,6 +4038,11 @@ public class ImageViewerTab {
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
                 image = ImageIO.read(stream);
             }
+            Map<String, Double> years = getPs1Epochs(targetRa, targetDec);
+            int year_g = years.get("g").intValue();
+            int year_i = years.get("i").intValue();
+            int year_y = years.get("y").intValue();
+            year_ps1_y_i_g = getMeanEpoch(year_y, year_i, year_g);
             return image;
         } catch (Exception ex) {
             return null;
@@ -4073,13 +4056,14 @@ public class ImageViewerTab {
             }
             Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
             NirImage nirImage = nirImages.get("K-H-J");
-            BufferedImage image;
             if (nirImage == null) {
-                image = nirImages.get("K-J").getImage();
-            } else {
-                image = nirImages.get("K-H-J").getImage();
+                nirImage = nirImages.get("K-J");
             }
-            return image;
+            if (nirImage == null) {
+                return null;
+            }
+            year_ukidss_k_h_j = nirImage.getYear();
+            return nirImage.getImage();
         } catch (Exception ex) {
             return null;
         }
@@ -4092,13 +4076,14 @@ public class ImageViewerTab {
             }
             Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, VHS_SURVEY_URL, VHS_LABEL);
             NirImage nirImage = nirImages.get("K-H-J");
-            BufferedImage image;
             if (nirImage == null) {
-                image = nirImages.get("K-J").getImage();
-            } else {
-                image = nirImages.get("K-H-J").getImage();
+                nirImage = nirImages.get("K-J");
             }
-            return image;
+            if (nirImage == null) {
+                return null;
+            }
+            year_vhs_k_h_j = nirImage.getYear();
+            return nirImage.getImage();
         } catch (Exception ex) {
             return null;
         }

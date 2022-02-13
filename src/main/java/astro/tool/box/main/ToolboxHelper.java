@@ -845,7 +845,7 @@ public class ToolboxHelper {
     }
 
     public static String getImageLabel(String text, int epoch) {
-        return text + (epoch > 0 ? " " + epoch : "");
+        return text + (epoch > 0 ? " Epoch " + epoch : "");
     }
 
     public static String getImageLabel(String text, String epoch) {
@@ -864,7 +864,7 @@ public class ToolboxHelper {
         return i == 0 ? i : sum / i;
     }
 
-    public static int getEpoch(double targetRa, double targetDec, int size, String survey, String band) {
+    public static int getEpoch(double targetRa, double targetDec, double size, String survey, String band) {
         try {
             String downloadUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
             String response = readResponse(establishHttpConnection(downloadUrl), "IRSA");

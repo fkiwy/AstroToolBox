@@ -632,8 +632,8 @@ public class ImageSeriesTab {
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC color", year_ch3_ch2_ch1)));
-            timeSeries.add(new Couple(getImageLabel("IRAC color", year_ch3_ch2_ch1), new NirImage(SPITZER_EPOCH, image)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3-2-1", year_ch3_ch2_ch1)));
+            timeSeries.add(new Couple(getImageLabel("IRAC3-2-1", year_ch3_ch2_ch1), new NirImage(SPITZER_EPOCH, image)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -695,7 +695,7 @@ public class ImageSeriesTab {
                     int year = nirImage.getYear();
                     bandPanel.add(buildImagePanel(image, getImageLabel(UKIDSS_LABEL + " " + band, year)));
                     if (band.equals("K-H-J") || band.equals("K-J")) {
-                        timeSeries.add(new Couple(getImageLabel(UKIDSS_LABEL + " " + band, year), new NirImage(nirImage.getYear(), image)));
+                        timeSeries.add(new Couple(getImageLabel(UKIDSS_LABEL + " " + band, year), new NirImage(year, image)));
                     }
                 }
                 if (bandPanel.getComponentCount() > 0) {
@@ -720,7 +720,7 @@ public class ImageSeriesTab {
                     int year = nirImage.getYear();
                     bandPanel.add(buildImagePanel(image, getImageLabel(VHS_LABEL + " " + band, year)));
                     if (band.equals("K-H-J") || band.equals("K-J")) {
-                        timeSeries.add(new Couple(getImageLabel(VHS_LABEL + " " + band, year), new NirImage(nirImage.getYear(), image)));
+                        timeSeries.add(new Couple(getImageLabel(VHS_LABEL + " " + band, year), new NirImage(year, image)));
                     }
                 }
                 if (bandPanel.getComponentCount() > 0) {
