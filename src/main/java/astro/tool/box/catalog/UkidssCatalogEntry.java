@@ -190,8 +190,8 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public void loadCatalogElements() {
         catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT, getDoubleComparator()));
-        catalogElements.add(new CatalogElement("UKIDSS survey", SURVEY_LABEL.get(survey), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
+        catalogElements.add(new CatalogElement("UKIDSS survey", SURVEY_LABEL.get(survey), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
@@ -445,8 +445,8 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public String[] getColumnValues() {
         String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
-                + SURVEY_LABEL.get(survey) + ","
                 + sourceId + ","
+                + SURVEY_LABEL.get(survey) + ","
                 + roundTo7Dec(ra) + ","
                 + roundTo7Dec(ra_err) + ","
                 + roundTo7Dec(dec) + ","
@@ -476,8 +476,8 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     @Override
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),"
-                + "UKIDSS survey,"
                 + "source id,"
+                + "UKIDSS survey,"
                 + "ra,"
                 + "ra err,"
                 + "dec,"
