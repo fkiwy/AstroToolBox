@@ -342,7 +342,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         if (TapProvider.IRSA.equals(getTapProvider())) {
             return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "allwise_p3as_psd");
         } else {

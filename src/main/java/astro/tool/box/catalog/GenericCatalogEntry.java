@@ -81,7 +81,7 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return "";
     }
 

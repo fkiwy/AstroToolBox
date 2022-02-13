@@ -246,7 +246,7 @@ public class SimbadCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createSimbadUrl(ra, dec, searchRadius / DEG_ARCSEC);
     }
 

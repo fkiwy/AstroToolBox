@@ -233,7 +233,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createPanStarrsUrl(raMean, decMean, searchRadius / DEG_ARCSEC);
     }
 

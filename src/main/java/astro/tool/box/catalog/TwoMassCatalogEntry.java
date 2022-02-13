@@ -304,7 +304,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         if (TapProvider.IRSA.equals(getTapProvider())) {
             return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "fp_psc");
         } else {

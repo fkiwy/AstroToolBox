@@ -118,7 +118,11 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     private Survey survey;
 
     public enum Survey {
-        LAS, GCS, GPS, DXS, UDS
+        LAS, GCS, GPS, DXS, UDS;
+
+        public static Survey[] motionSurveys() {
+            return new Survey[]{LAS, GCS, GPS};
+        }
     }
 
     private static final Map<Integer, String> TYPE_TABLE = new HashMap<>();
@@ -257,7 +261,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         String catalogQuery = "";
         switch (survey) {
             case LAS:
@@ -280,7 +284,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         StringBuilder queryBuilder = new StringBuilder();
         String catalogQuery = "";
         switch (survey) {
@@ -299,6 +303,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 addRow(queryBuilder, catalogQuery);
                 catalogQuery = createProperMotionQuery(queryBuilder);
                 break;
+
             case DXS:
                 catalogQuery = createCatalogQueryDXS();
                 break;

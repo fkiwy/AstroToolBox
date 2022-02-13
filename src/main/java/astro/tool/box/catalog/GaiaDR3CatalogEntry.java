@@ -200,12 +200,12 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return ESAC_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         return ESAC_TAP_URL + encodeQuery(createProperMotionQuery());
     }
 

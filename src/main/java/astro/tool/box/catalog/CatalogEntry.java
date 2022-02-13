@@ -33,7 +33,7 @@ public interface CatalogEntry {
 
     java.awt.Color getCatalogColor();
 
-    String getCatalogUrl();
+    String getCatalogQueryUrl();
 
     String[] getColumnValues();
 

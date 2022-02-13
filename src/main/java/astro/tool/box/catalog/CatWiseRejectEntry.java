@@ -214,12 +214,12 @@ public class CatWiseRejectEntry implements CatalogEntry, ProperMotionQuery, Prop
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "catwise_2020_reject");
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
     }
 

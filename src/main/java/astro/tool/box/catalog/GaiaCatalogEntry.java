@@ -212,7 +212,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         if (TapProvider.IRSA.equals(getTapProvider())) {
             return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "gaia_dr2_source");
         } else {
@@ -221,7 +221,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         if (TapProvider.IRSA.equals(getTapProvider())) {
             return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
         } else {

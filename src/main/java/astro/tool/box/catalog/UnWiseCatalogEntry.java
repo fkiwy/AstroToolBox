@@ -169,7 +169,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
     }
 

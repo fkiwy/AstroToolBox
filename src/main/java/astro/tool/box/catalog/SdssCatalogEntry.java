@@ -223,7 +223,7 @@ public class SdssCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createSdssUrl(ra, dec, searchRadius / ARCMIN_ARCSEC);
     }
 

@@ -261,7 +261,7 @@ public class DesCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/357/des_dr1", "RAJ2000", "DEJ2000");
     }
 

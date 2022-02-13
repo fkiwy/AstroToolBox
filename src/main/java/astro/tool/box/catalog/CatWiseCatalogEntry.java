@@ -240,7 +240,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         if (TapProvider.IRSA.equals(getTapProvider())) {
             return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "catwise_2020");
         } else {
@@ -249,7 +249,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         if (TapProvider.IRSA.equals(getTapProvider())) {
             return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
         } else {

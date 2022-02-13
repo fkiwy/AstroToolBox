@@ -396,7 +396,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "IV/38/tic", "RAJ2000", "DEJ2000");
     }
 
