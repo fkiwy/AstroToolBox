@@ -14,6 +14,7 @@ import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.enumeration.Band;
@@ -337,23 +338,42 @@ public class WdSedPanel extends JPanel {
                 sedPhotometry.put(Band.H, vhsEntry.getHmag());
                 sedPhotometry.put(Band.K, vhsEntry.getKmag());
             } else {
-                TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
-                twoMassEntry.setRa(catalogEntry.getRa());
-                twoMassEntry.setDec(catalogEntry.getDec());
-                twoMassEntry.setSearchRadius(searchRadius);
-                retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
+                UkidssCatalogEntry ukidssEntry = new UkidssCatalogEntry();
+                ukidssEntry.setRa(catalogEntry.getRa());
+                ukidssEntry.setDec(catalogEntry.getDec());
+                ukidssEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
                 if (retrievedEntry != null) {
-                    twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
-                    seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId()).append(" ");
-                    sedCatalogs.put(Band.J, TwoMassCatalogEntry.CATALOG_NAME);
-                    sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
-                    sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
-                    sedReferences.put(Band.J, new SedReferences(1594, 1.235));
-                    sedReferences.put(Band.H, new SedReferences(1024, 1.662));
-                    sedReferences.put(Band.K, new SedReferences(666.7, 2.159));
-                    sedPhotometry.put(Band.J, twoMassEntry.getJmag());
-                    sedPhotometry.put(Band.H, twoMassEntry.getHmag());
-                    sedPhotometry.put(Band.K, twoMassEntry.getKmag());
+                    ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
+                    seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId()).append(" ");
+                    sedCatalogs.put(Band.J, UkidssCatalogEntry.CATALOG_NAME);
+                    sedCatalogs.put(Band.H, UkidssCatalogEntry.CATALOG_NAME);
+                    sedCatalogs.put(Band.K, UkidssCatalogEntry.CATALOG_NAME);
+                    sedReferences.put(Band.J, new SedReferences(1553, 1.2483));
+                    sedReferences.put(Band.H, new SedReferences(1034, 1.6313));
+                    sedReferences.put(Band.K, new SedReferences(641.6, 2.201));
+                    sedPhotometry.put(Band.J, ukidssEntry.getJmag());
+                    sedPhotometry.put(Band.H, ukidssEntry.getHmag());
+                    sedPhotometry.put(Band.K, ukidssEntry.getKmag());
+                } else {
+                    TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
+                    twoMassEntry.setRa(catalogEntry.getRa());
+                    twoMassEntry.setDec(catalogEntry.getDec());
+                    twoMassEntry.setSearchRadius(searchRadius);
+                    retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
+                    if (retrievedEntry != null) {
+                        twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
+                        seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId()).append(" ");
+                        sedCatalogs.put(Band.J, TwoMassCatalogEntry.CATALOG_NAME);
+                        sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
+                        sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
+                        sedReferences.put(Band.J, new SedReferences(1594, 1.235));
+                        sedReferences.put(Band.H, new SedReferences(1024, 1.662));
+                        sedReferences.put(Band.K, new SedReferences(666.7, 2.159));
+                        sedPhotometry.put(Band.J, twoMassEntry.getJmag());
+                        sedPhotometry.put(Band.H, twoMassEntry.getHmag());
+                        sedPhotometry.put(Band.K, twoMassEntry.getKmag());
+                    }
                 }
             }
         }

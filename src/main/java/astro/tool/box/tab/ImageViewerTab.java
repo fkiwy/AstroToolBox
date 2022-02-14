@@ -4119,7 +4119,8 @@ public class ImageViewerTab {
             int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
             int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
-            year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+            //year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+            year_dss_2ir_1r_1b = year_2ir;
             return image;
         } catch (Exception ex) {
             return null;
@@ -4134,7 +4135,8 @@ public class ImageViewerTab {
             int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
             int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
-            int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+            //int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+            int year_2ir_1r_1b = year_2ir;
 
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 

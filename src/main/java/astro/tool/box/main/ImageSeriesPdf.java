@@ -139,7 +139,8 @@ public class ImageSeriesPdf {
             int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
             int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
-            int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+            //int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+            int year_2ir_1r_1b = year_2ir;
 
             BufferedImage bufferedImage = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
             if (bufferedImage != null) {
