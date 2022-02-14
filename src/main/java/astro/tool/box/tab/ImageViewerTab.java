@@ -4116,8 +4116,8 @@ public class ImageViewerTab {
     private BufferedImage fetchDssImage(double targetRa, double targetDec, double size) {
         try {
             BufferedImage image = retrieveImage(targetRa, targetDec, (int) round(size * pixelScale), "dss", "file_type=colorimage");
-            int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
-            int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
+            //int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
+            //int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
             //year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
             year_dss_2ir_1r_1b = year_2ir;
