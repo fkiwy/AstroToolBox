@@ -619,6 +619,7 @@ public class CatalogQueryTab {
             JButton createSedButton = new JButton("SED");
             collectPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
+                createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
@@ -629,11 +630,13 @@ public class CatalogQueryTab {
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
+                createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
             JButton createWdSedButton = new JButton("WD SED");
             collectPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
+                createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
@@ -644,6 +647,7 @@ public class CatalogQueryTab {
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
+                createWdSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
             if (catalogEntry instanceof GaiaCmd) {

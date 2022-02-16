@@ -5444,6 +5444,7 @@ public class ImageViewerTab {
             JButton createSedButton = new JButton("SED");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
+                createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
@@ -5454,11 +5455,13 @@ public class ImageViewerTab {
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
+                createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
             JButton createWdSedButton = new JButton("WD SED");
             buttonPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
+                createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
@@ -5469,6 +5472,7 @@ public class ImageViewerTab {
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
+                createWdSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
             if (catalogEntry instanceof GaiaCmd) {
