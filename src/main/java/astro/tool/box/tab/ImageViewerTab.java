@@ -1517,15 +1517,16 @@ public class ImageViewerTab {
                     FlipbookComponent component = flipbook[imageNumber];
                     wiseImage = addCrosshairs(component.getImage());
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    JLabel imageLabel = addTextToImage(new JLabel(icon), component.getTitle());
+                    String regularLabel = decalsCutouts.isSelected() ? "DESI LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
+                    JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
-                        imageLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+                        regularImage.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
                     } else {
-                        imageLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+                        regularImage.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
                     }
 
                     imagePanel.removeAll();
-                    imagePanel.add(imageLabel);
+                    imagePanel.add(regularImage);
 
                     // Initialize positions of magnified WISE image
                     int width = 50;
@@ -1555,57 +1556,58 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    addMagnifiedImage("WISE", wiseImage, upperLeftX, upperLeftY, width, height);
+                    regularLabel = decalsCutouts.isSelected() ? "DESI LS" : "WISE";
+                    addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
-                    List<Couple<String, NirImage>> images = new ArrayList();
+                    List<Couple<String, NirImage>> surveyImages = new ArrayList();
 
                     // DECaLS image
                     JLabel decalsLabel = null;
                     if (processedDecalsImage != null) {
-                        images.add(new Couple(getImageLabel("DESI LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDecalsImage)));
+                        surveyImages.add(new Couple(getImageLabel("DESI LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDecalsImage)));
                     }
 
                     // Pan-STARRS image
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
-                        images.add(new Couple(getImageLabel("PS1", year_ps1_y_i_g), new NirImage(2012, processedPs1Image)));
+                        surveyImages.add(new Couple(getImageLabel("PS1", year_ps1_y_i_g), new NirImage(2012, processedPs1Image)));
                     }
 
                     // VHS image
                     JLabel vhsLabel = null;
                     if (processedVhsImage != null) {
-                        images.add(new Couple(getImageLabel(VHS_LABEL, year_vhs_k_h_j), new NirImage(year_vhs_k_h_j, processedVhsImage)));
+                        surveyImages.add(new Couple(getImageLabel(VHS_LABEL, year_vhs_k_h_j), new NirImage(year_vhs_k_h_j, processedVhsImage)));
                     }
 
                     // UKIDSS image
                     JLabel ukidssLabel = null;
                     if (processedUkidssImage != null) {
-                        images.add(new Couple(getImageLabel(UKIDSS_LABEL, year_ukidss_k_h_j), new NirImage(year_ukidss_k_h_j, processedUkidssImage)));
+                        surveyImages.add(new Couple(getImageLabel(UKIDSS_LABEL, year_ukidss_k_h_j), new NirImage(year_ukidss_k_h_j, processedUkidssImage)));
                     }
 
                     // SDSS image
                     if (processedSdssImage != null) {
-                        images.add(new Couple(getImageLabel("SDSS", year_sdss_z_g_u), new NirImage(year_sdss_z_g_u, processedSdssImage)));
+                        surveyImages.add(new Couple(getImageLabel("SDSS", year_sdss_z_g_u), new NirImage(year_sdss_z_g_u, processedSdssImage)));
                     }
 
                     // DSS image
                     if (processedDssImage != null) {
-                        images.add(new Couple(getImageLabel("DSS", year_dss_2ir_1r_1b), new NirImage(year_dss_2ir_1r_1b, processedDssImage)));
+                        surveyImages.add(new Couple(getImageLabel("DSS", year_dss_2ir_1r_1b), new NirImage(year_dss_2ir_1r_1b, processedDssImage)));
                     }
 
-                    images.sort(Comparator.comparing(c -> 3000 - c.getB().getYear()));
+                    surveyImages.sort(Comparator.comparing(c -> 3000 - c.getB().getYear()));
 
-                    for (Couple<String, NirImage> couple : images) {
-                        String label = couple.getA();
-                        BufferedImage image = couple.getB().getImage();
+                    for (Couple<String, NirImage> couple : surveyImages) {
+                        String surveyLabel = couple.getA();
+                        BufferedImage surveyImage = couple.getB().getImage();
 
                         // Create and display magnified image
                         if (!imageCutOff) {
-                            addMagnifiedImage(label, image, upperLeftX, upperLeftY, width, height);
+                            addMagnifiedImage(surveyLabel, surveyImage, upperLeftX, upperLeftY, width, height);
                         }
 
                         // Display regular image
-                        JLabel dssLabel = addTextToImage(new JLabel(new ImageIcon(image)), label);
+                        JLabel dssLabel = addTextToImage(new JLabel(new ImageIcon(surveyImage)), surveyLabel);
                         dssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
                         imagePanel.add(dssLabel);
                     }
@@ -1613,7 +1615,7 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                     imageNumber++;
 
-                    imageLabel.addMouseListener(new MouseListener() {
+                    regularImage.addMouseListener(new MouseListener() {
                         @Override
                         public void mousePressed(MouseEvent evt) {
                             int mouseX = evt.getX();
@@ -1881,7 +1883,7 @@ public class ImageViewerTab {
                         }
                     });
 
-                    imageLabel.addMouseWheelListener((MouseWheelEvent evt) -> {
+                    regularImage.addMouseWheelListener((MouseWheelEvent evt) -> {
                         int notches = evt.getWheelRotation();
                         if (markTarget.isSelected() || drawCrosshairs.isSelected() || showCrosshairs.isSelected()) {
                             if (notches < 0) {
