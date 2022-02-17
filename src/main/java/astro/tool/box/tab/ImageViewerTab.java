@@ -1587,7 +1587,7 @@ public class ImageViewerTab {
 
                     // SDSS image
                     if (processedSdssImage != null) {
-                        surveyImages.add(new Couple(getImageLabel("SDSS", year_sdss_z_g_u), new NirImage(year_sdss_z_g_u, processedSdssImage)));
+                        surveyImages.add(new Couple("SDSS 1998-2009", new NirImage(2000, processedSdssImage)));
                     }
 
                     // DSS image
