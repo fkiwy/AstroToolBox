@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -165,9 +166,6 @@ public class CatalogQueryTab {
             searchButton.requestFocus();
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -233,36 +231,46 @@ public class CatalogQueryTab {
                         removeAndRecreateCenterPanel();
                         removeAndRecreateBottomPanel();
 
-                        int count = 0;
-                        StringBuilder resultsPerCatalog = new StringBuilder();
-                        Iterator<String> iter = selectedCatalogs.listIterator();
-                        while (iter.hasNext()) {
-                            CatalogEntry catalogQuery = catalogInstances.get(iter.next());
-                            catalogQuery.setRa(targetRa);
-                            catalogQuery.setDec(targetDec);
-                            catalogQuery.setSearchRadius(searchRadius);
-                            int results = queryCatalog(catalogQuery);
-                            count += results;
-                            resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
-                            if (iter.hasNext()) {
-                                resultsPerCatalog.append("; ");
+                        CompletableFuture.supplyAsync(() -> {
+                            baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                            coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                            radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                            try {
+                                int count = 0;
+                                StringBuilder resultsPerCatalog = new StringBuilder();
+                                Iterator<String> iter = selectedCatalogs.listIterator();
+                                while (iter.hasNext()) {
+                                    CatalogEntry catalogQuery = catalogInstances.get(iter.next());
+                                    catalogQuery.setRa(targetRa);
+                                    catalogQuery.setDec(targetDec);
+                                    catalogQuery.setSearchRadius(searchRadius);
+                                    int results = queryCatalog(catalogQuery);
+                                    count += results;
+                                    resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
+                                    if (iter.hasNext()) {
+                                        resultsPerCatalog.append("; ");
+                                    }
+                                }
+                                displayLinks(targetRa, targetDec, searchRadius);
+                                String searchLabelText = "RA=" + targetRa + "° dec=" + targetDec + "° radius=" + searchRadius + " arcsec";
+                                if (count > 0) {
+                                    searchLabel.setText(count + " result(s) for " + searchLabelText + " (" + resultsPerCatalog + ")");
+                                } else {
+                                    searchLabel.setText("No results for " + searchLabelText);
+                                }
+                                baseFrame.setVisible(true);
+                            } catch (Exception ex) {
+                                showExceptionDialog(baseFrame, ex);
+                            } finally {
+                                baseFrame.setCursor(Cursor.getDefaultCursor());
+                                coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                                radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                             }
-                        }
-                        displayLinks(targetRa, targetDec, searchRadius);
-                        String searchLabelText = "RA=" + targetRa + "° dec=" + targetDec + "° radius=" + searchRadius + " arcsec";
-                        if (count > 0) {
-                            searchLabel.setText(count + " result(s) for " + searchLabelText + " (" + resultsPerCatalog + ")");
-                        } else {
-                            searchLabel.setText("No results for " + searchLabelText);
-                        }
-                        baseFrame.setVisible(true);
+                            return null;
+                        });
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
-                } finally {
-                    baseFrame.setCursor(Cursor.getDefaultCursor());
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                 }
             });
             topPanel.add(searchButton);
@@ -308,6 +316,7 @@ public class CatalogQueryTab {
         });
         if (!catalogEntries.isEmpty()) {
             displayCatalogResults(catalogEntries, catalogQuery.getSearchRadius());
+            baseFrame.setVisible(true);
         }
         return catalogEntries.size();
     }
