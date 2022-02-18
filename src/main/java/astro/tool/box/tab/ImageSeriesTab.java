@@ -753,7 +753,7 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
             bandPanel.add(buildImagePanel(image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
-            timeSeries.add(new Couple(getImageLabel("PS1 y-i-g", year_y_i_g), new NirImage(2012, image)));
+            timeSeries.add(new Couple(getImageLabel("PS1 y-i-g", year_y_i_g), new NirImage(year_y_i_g, image)));
 
             if (bandPanel.getComponentCount() > 0) {
                 bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP), "WARP images"));

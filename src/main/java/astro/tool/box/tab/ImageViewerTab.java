@@ -1570,7 +1570,7 @@ public class ImageViewerTab {
                     // Pan-STARRS image
                     JLabel ps1Label = null;
                     if (processedPs1Image != null) {
-                        surveyImages.add(new Couple(getImageLabel("PS1", year_ps1_y_i_g), new NirImage(2012, processedPs1Image)));
+                        surveyImages.add(new Couple(getImageLabel("PS1", year_ps1_y_i_g), new NirImage(year_ps1_y_i_g, processedPs1Image)));
                     }
 
                     // VHS image
@@ -1607,9 +1607,18 @@ public class ImageViewerTab {
                         }
 
                         // Display regular image
-                        JLabel dssLabel = addTextToImage(new JLabel(new ImageIcon(surveyImage)), surveyLabel);
-                        dssLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
-                        imagePanel.add(dssLabel);
+                        JLabel imageLabel = addTextToImage(new JLabel(new ImageIcon(surveyImage)), surveyLabel);
+                        if (surveyLabel.contains("DESI")) {
+                            decalsLabel = imageLabel;
+                        } else if (surveyLabel.contains("PS1")) {
+                            ps1Label = imageLabel;
+                        } else if (surveyLabel.contains(VHS_LABEL)) {
+                            vhsLabel = imageLabel;
+                        } else if (surveyLabel.contains(UKIDSS_LABEL)) {
+                            ukidssLabel = imageLabel;
+                        }
+                        imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 2, 2));
+                        imagePanel.add(imageLabel);
                     }
 
                     baseFrame.repaint();

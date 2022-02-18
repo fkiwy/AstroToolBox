@@ -1092,6 +1092,9 @@ public class ToolboxHelper {
                         case "3":
                             image = rotateImage(image, 3);
                             break;
+                        case "4":
+                            image = rotateImage(image, 2);
+                            break;
                     }
                 }
                 // Flip image
