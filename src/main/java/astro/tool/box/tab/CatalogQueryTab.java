@@ -431,7 +431,7 @@ public class CatalogQueryTab {
         linkPanel.add(createHyperlink("VHS DR5", getSpecificCatalogsUrl("II/367/vhs_dr5", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
+        linkPanel.add(createHyperlink("Gaia EDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia distances", getSpecificCatalogsUrl("I/352/gedr3dis", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia quasars & galaxies", getSpecificCatalogsUrl("VII/285/gdr2ext", degRA, degDE, degRadius)));
         linkPanel.add(createHyperlink("Gaia Teff regression", getSpecificCatalogsUrl("J/AJ/158/93/table2", degRA, degDE, degRadius)));

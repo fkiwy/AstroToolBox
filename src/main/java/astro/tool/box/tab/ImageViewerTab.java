@@ -846,7 +846,7 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(gaiaOverlay);
-            gaiaDR3Overlay = new JCheckBox(html("<u>G</u>aia eDR3"), overlays.isGaiadr3());
+            gaiaDR3Overlay = new JCheckBox(html("<u>G</u>aia EDR3"), overlays.isGaiadr3());
             gaiaDR3Overlay.setForeground(Color.CYAN.darker());
             gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -891,7 +891,7 @@ public class ImageViewerTab {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
-            gaiaWDOverlay = new JCheckBox(html("Gaia eDR3 <u>W</u>D"), overlays.isGaiawd());
+            gaiaWDOverlay = new JCheckBox(html("Gaia EDR3 <u>W</u>D"), overlays.isGaiawd());
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
             gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -985,7 +985,7 @@ public class ImageViewerTab {
                 processImages();
             });
             properMotionPanel.add(gaiaProperMotion);
-            gaiaDR3ProperMotion = new JCheckBox(html("<u>G</u>aia eDR3"), overlays.isPmgaiadr3());
+            gaiaDR3ProperMotion = new JCheckBox(html("<u>G</u>aia EDR3"), overlays.isPmgaiadr3());
             gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
             gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
