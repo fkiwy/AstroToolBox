@@ -870,7 +870,7 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR17"), overlays.isSdss());
+            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR16"), overlays.isSdss());
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
