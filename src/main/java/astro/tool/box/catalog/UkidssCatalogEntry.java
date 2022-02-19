@@ -715,6 +715,14 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         this.survey = survey;
     }
 
+    public double getJ_H() {
+        return j_h_pnt;
+    }
+
+    public double getH_K() {
+        return h_ks_pnt;
+    }
+
     public double getJ_K() {
         if (j_ap3 == 0 || ks_ap3 == 0) {
             return 0;
