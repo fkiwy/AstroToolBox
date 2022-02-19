@@ -12,7 +12,7 @@ import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.DustExtinctionService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -157,7 +157,7 @@ public class BrownDwarfTab {
                     selectedEntry = selectedEntry.copy();
                     try {
                         selectedEntry.applyExtinctionCorrection(extinctionsByBand);
-                    } catch (NoExtinctionValuesException ex) {
+                    } catch (ExtinctionException ex) {
                         entryPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.RED));
                     }
                 } catch (Exception ex) {

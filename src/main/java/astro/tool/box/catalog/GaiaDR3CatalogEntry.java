@@ -12,7 +12,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -329,8 +329,8 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
-        throw new NoExtinctionValuesException();
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
+        throw new ExtinctionException();
     }
 
     @Override

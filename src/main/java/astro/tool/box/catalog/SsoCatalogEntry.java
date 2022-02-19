@@ -11,7 +11,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -280,8 +280,8 @@ public class SsoCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
-        throw new NoExtinctionValuesException();
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
+        throw new ExtinctionException();
     }
 
     @Override
