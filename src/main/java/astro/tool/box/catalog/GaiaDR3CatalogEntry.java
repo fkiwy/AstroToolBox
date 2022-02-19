@@ -375,17 +375,17 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (Gmag != 0) {
             mags.append(roundTo3DecNZ(Gmag)).append(",").append(roundTo3DecNZ(G_err)).append(",");
         } else {
-            mags.append(",");
+            mags.append(",,");
         }
         if (BPmag != 0) {
             mags.append(roundTo3DecNZ(BPmag)).append(",").append(roundTo3DecNZ(BP_err)).append(",");
         } else {
-            mags.append(",");
+            mags.append(",,");
         }
         if (RPmag != 0) {
             mags.append(roundTo3DecNZ(RPmag)).append(",").append(roundTo3DecNZ(RP_err)).append(",");
         } else {
-            mags.append(",");
+            mags.append(",,");
         }
         return mags.toString();
     }
