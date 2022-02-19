@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaDR3EsoCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
+public class GaiaDR3EsaCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
 
     public static final String CATALOG_NAME = "Gaia EDR3";
 
@@ -103,10 +103,10 @@ public class GaiaDR3EsoCatalogEntry implements CatalogEntry, ProperMotionQuery, 
 
     private String[] values;
 
-    public GaiaDR3EsoCatalogEntry() {
+    public GaiaDR3EsaCatalogEntry() {
     }
 
-    public GaiaDR3EsoCatalogEntry(Map<String, Integer> columns, String[] values) {
+    public GaiaDR3EsaCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
         sourceId = toLong(values[columns.get("source_id")]);
@@ -131,7 +131,7 @@ public class GaiaDR3EsoCatalogEntry implements CatalogEntry, ProperMotionQuery, 
 
     @Override
     public CatalogEntry copy() {
-        return new GaiaDR3EsoCatalogEntry(columns, values);
+        return new GaiaDR3EsaCatalogEntry(columns, values);
     }
 
     @Override
@@ -180,13 +180,13 @@ public class GaiaDR3EsoCatalogEntry implements CatalogEntry, ProperMotionQuery, 
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GaiaDR3EsoCatalogEntry other = (GaiaDR3EsoCatalogEntry) obj;
+        final GaiaDR3EsaCatalogEntry other = (GaiaDR3EsaCatalogEntry) obj;
         return this.sourceId == other.sourceId;
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new GaiaDR3EsoCatalogEntry(columns, values);
+        return new GaiaDR3EsaCatalogEntry(columns, values);
     }
 
     @Override
