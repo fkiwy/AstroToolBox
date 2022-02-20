@@ -30,6 +30,10 @@ public class StatisticFunctions {
         return Arrays.stream(values).average().getAsDouble();
     }
 
+    public static double calculateMean(List<Double> values) {
+        return calculateMean(convertToArray(values));
+    }
+
     /**
      * Calculate the standard deviation of a population
      *
@@ -42,6 +46,10 @@ public class StatisticFunctions {
         return sqrt(variance);
     }
 
+    public static double calculateStandardDeviation(List<Double> values) {
+        return calculateStandardDeviation(convertToArray(values));
+    }
+
     /**
      * Calculate the standard error of the mean
      *
@@ -51,6 +59,24 @@ public class StatisticFunctions {
     public static double calculateStandardError(double... values) {
         double standardDeviation = calculateStandardDeviation(values);
         return standardDeviation / sqrt(values.length);
+    }
+
+    public static double calculateStandardError(List<Double> values) {
+        return calculateStandardError(convertToArray(values));
+    }
+
+    /**
+     * Convert list of double values to array
+     *
+     * @param values
+     * @return the array
+     */
+    public static double[] convertToArray(List<Double> values) {
+        double[] doubles = new double[values.size()];
+        for (int i = 0; i < doubles.length; i++) {
+            doubles[i] = values.get(i);
+        }
+        return doubles;
     }
 
 }
