@@ -3909,20 +3909,16 @@ public class ImageViewerTab {
             }
         }
         Collections.sort(data);
-        List<Double> data1;
-        List<Double> data2;
-        int dataSize = data.size() - 1;
-        data1 = data.subList(0, dataSize / 2);
-        if (dataSize % 2 == 0) {
-            data2 = data.subList(dataSize / 2, dataSize);
-        } else {
-            data2 = data.subList(dataSize / 2 + 1, dataSize);
-        }
+        List<Double> lowerPart;
+        List<Double> upperPart;
+        int dataSize = data.size();
+        lowerPart = data.subList(0, dataSize / 2);
+        upperPart = data.subList(dataSize / 2 + (dataSize % 2 == 0 ? 0 : 1), dataSize);
         double lowerBound;
         double upperBound;
         if (AUTO_RANGE.equals(range)) {
-            double q1 = determineMedian(data1);
-            double q3 = determineMedian(data2);
+            double q1 = determineMedian(lowerPart);
+            double q3 = determineMedian(upperPart);
             double iqr = q3 - q1;
             double fov = toDouble(sizeField.getText());
             double scale = fov > 1000 ? fov / 1000 : 1;
@@ -3931,7 +3927,7 @@ public class ImageViewerTab {
                 upperBound = q3 + 5 * iqr * scale;
             } else {
                 double minVal = data.get(0);
-                double maxVal = data.get(data.size() - 1);
+                double maxVal = data.get(dataSize - 1);
                 lowerBound = q1 - iqr * scale;
                 lowerBound = minVal < -1000 ? lowerBound : minVal;
                 upperBound = q3 + 10 * iqr * scale;
@@ -3940,14 +3936,12 @@ public class ImageViewerTab {
         } else {
             double percent = Double.valueOf(range);
             if (Epoch.isSubtracted(epoch) || decalsCutouts.isSelected()) {
-                Collections.sort(data1, Comparator.reverseOrder());
-                int size1 = data1.size() - 1;
-                lowerBound = data1.get((int) (size1 * percent / 100));
+                Collections.sort(lowerPart, Comparator.reverseOrder());
+                lowerBound = lowerPart.get((int) (lowerPart.size() * percent / 100) - 1);
             } else {
                 lowerBound = data.get(0);
             }
-            int size2 = data2.size() - 1;
-            upperBound = data2.get((int) (size2 * percent / 100));
+            upperBound = upperPart.get((int) (upperPart.size() * percent / 100) - 1);
         }
         return new NumberPair(lowerBound, upperBound);
     }
