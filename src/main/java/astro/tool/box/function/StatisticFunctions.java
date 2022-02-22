@@ -4,7 +4,7 @@ import static astro.tool.box.function.NumericFunctions.roundTo2Dec;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class StatisticFunctions {
@@ -25,25 +25,20 @@ public class StatisticFunctions {
             throw new IllegalArgumentException(String.format("High percentile (=%s) out of range. Must be between 0 and 100.", roundTo2Dec(highPercentile)));
         }
 
-        Collections.sort(values);
-
-        List<Double> lowValues;
-        List<Double> highValues;
+        values.sort(Comparator.naturalOrder());
         int size = values.size();
-        lowValues = values.subList(0, size / 2);
-        highValues = values.subList(size / 2 + (size % 2 == 0 ? 0 : 1), size);
+        int half = size / 2;
 
-        int lowSize = lowValues.size();
-        int from = (int) floor(lowSize * lowPercentile / 100);
-        List<Double> lowOuliersRemoved = lowValues.subList(from, lowSize);
+        int lowOuliers = (int) (half * lowPercentile / 100);
+        List<Double> lowOuliersRemoved = values.subList(lowOuliers, half);
 
-        int highSize = highValues.size();
-        int to = (int) ceil(highSize * highPercentile / 100);
-        List<Double> highOutliersRemoved = highValues.subList(0, to);
+        int highOutliers = (int) (half * (100 - highPercentile) / 100);
+        List<Double> highOutliersRemoved = values.subList(half, size - highOutliers);
 
         List<Double> outliersRemoved = new ArrayList();
         outliersRemoved.addAll(lowOuliersRemoved);
         outliersRemoved.addAll(highOutliersRemoved);
+
         return outliersRemoved;
     }
 
@@ -54,13 +49,16 @@ public class StatisticFunctions {
      * @return the median
      */
     public static double determineMedian(List<Double> values) {
+        values.sort(Comparator.naturalOrder());
         if (values.isEmpty()) {
             return 0;
         }
-        if (values.size() % 2 == 0) {
-            return (values.get(values.size() / 2) + values.get(values.size() / 2 - 1)) / 2;
+        int size = values.size();
+        int half = size / 2;
+        if (size % 2 == 0) {
+            return calculateMean(values.get(half), values.get(half + 1));
         } else {
-            return values.get(values.size() / 2);
+            return values.get(half);
         }
     }
 

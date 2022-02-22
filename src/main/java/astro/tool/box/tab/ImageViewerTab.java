@@ -3908,12 +3908,13 @@ public class ImageViewerTab {
                 }
             }
         }
-        Collections.sort(data);
+        data.sort(Comparator.naturalOrder());
         List<Double> lowerPart;
         List<Double> upperPart;
-        int dataSize = data.size();
-        lowerPart = data.subList(0, dataSize / 2);
-        upperPart = data.subList(dataSize / 2 + (dataSize % 2 == 0 ? 0 : 1), dataSize);
+        int length = data.size();
+        int half = length / 2;
+        lowerPart = data.subList(0, half);
+        upperPart = data.subList(half, length);
         double lowerBound;
         double upperBound;
         if (AUTO_RANGE.equals(range)) {
@@ -3927,7 +3928,7 @@ public class ImageViewerTab {
                 upperBound = q3 + 5 * iqr * scale;
             } else {
                 double minVal = data.get(0);
-                double maxVal = data.get(dataSize - 1);
+                double maxVal = data.get(length - 1);
                 lowerBound = q1 - iqr * scale;
                 lowerBound = minVal < -1000 ? lowerBound : minVal;
                 upperBound = q3 + 10 * iqr * scale;
@@ -3935,13 +3936,13 @@ public class ImageViewerTab {
             }
         } else {
             double percent = Double.valueOf(range);
+            List<Double> outliersRemoved = removeOutliers(data, 100 - percent, percent);
             if (Epoch.isSubtracted(epoch) || decalsCutouts.isSelected()) {
-                Collections.sort(lowerPart, Comparator.reverseOrder());
-                lowerBound = lowerPart.get((int) (lowerPart.size() * percent / 100) - 1);
+                lowerBound = outliersRemoved.get(0);
             } else {
                 lowerBound = data.get(0);
             }
-            upperBound = upperPart.get((int) (upperPart.size() * percent / 100) - 1);
+            upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         }
         return new NumberPair(lowerBound, upperBound);
     }
