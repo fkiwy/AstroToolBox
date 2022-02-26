@@ -107,6 +107,24 @@ public class StatisticFunctions {
     }
 
     /**
+     * Calculate the quadrature of some values
+     *
+     * @param values
+     * @return the quadrature of some values
+     */
+    public static double calculateQuadrature(double... values) {
+        if (values.length == 0) {
+            return 0;
+        }
+        double squaredSum = Arrays.stream(values).map(value -> pow(value, 2)).sum();
+        return sqrt(squaredSum);
+    }
+
+    public static double calculateQuadrature(List<Double> values) {
+        return calculateQuadrature(convertToArray(values));
+    }
+
+    /**
      * Calculate the standard deviation of a population
      *
      * @param values
