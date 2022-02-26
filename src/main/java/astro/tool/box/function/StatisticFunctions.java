@@ -1,13 +1,40 @@
 package astro.tool.box.function;
 
+import astro.tool.box.enumeration.StatType;
 import static astro.tool.box.function.NumericFunctions.roundTo2Dec;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StatisticFunctions {
+
+    /**
+     * Remove outliers from a list of values using sigma clipping
+     *
+     * @param values
+     * @param factor (to multiply with standard deviation)
+     * @param statType (StatType.MEAN or StatType.MEDIAN)
+     * @return the sanitized list
+     */
+    public static List<Double> removeOutliers(List<Double> values, int factor, StatType statType) {
+        double avg;
+        if (StatType.MEAN.equals(statType)) {
+            avg = calculateMean(values);
+        } else {
+            avg = determineMedian(values);
+        }
+        double std = calculateStandardDeviation(values);
+        return values.stream()
+                .filter(val -> isNoOutlier(val, avg, std * factor))
+                .collect(Collectors.toList());
+    }
+
+    private static boolean isNoOutlier(double val, double avg, double dev) {
+        return val > avg - dev && val < avg + dev;
+    }
 
     /**
      * Remove outliers from a list of values using low and high percentiles
@@ -90,7 +117,7 @@ public class StatisticFunctions {
             return 0;
         }
         double mean = calculateMean(values);
-        double variance = Arrays.stream(values).map(v -> pow(v - mean, 2)).average().getAsDouble();
+        double variance = Arrays.stream(values).map(value -> pow(value - mean, 2)).average().getAsDouble();
         return sqrt(variance);
     }
 
