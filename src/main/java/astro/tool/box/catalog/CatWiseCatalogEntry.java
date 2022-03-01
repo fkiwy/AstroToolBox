@@ -354,6 +354,8 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     public Map<Color, Double> getColors(boolean toVega) {
         Map<Color, Double> colors = new LinkedHashMap<>();
         colors.put(Color.W1_W2, getW1_W2());
+        colors.put(Color.e_W1_W2, getW1_W2() - getW1_W2_err());
+        colors.put(Color.E_W1_W2, getW1_W2() + getW1_W2_err());
         return colors;
     }
 
@@ -542,6 +544,14 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             return 0;
         } else {
             return W1mag - W2mag;
+        }
+    }
+
+    public double getW1_W2_err() {
+        if (W1_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W2_err);
         }
     }
 

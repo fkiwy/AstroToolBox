@@ -276,6 +276,14 @@ public class SdssCatalogEntry implements CatalogEntry {
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
         colors.put(Color.i_z, get_i_z());
+        colors.put(Color.e_u_g, get_u_g() - get_u_g_err());
+        colors.put(Color.e_g_r, get_g_r() - get_g_r_err());
+        colors.put(Color.e_r_i, get_r_i() - get_r_i_err());
+        colors.put(Color.e_i_z, get_i_z() - get_i_z_err());
+        colors.put(Color.E_u_g, get_u_g() + get_u_g_err());
+        colors.put(Color.E_g_r, get_g_r() + get_g_r_err());
+        colors.put(Color.E_r_i, get_r_i() + get_r_i_err());
+        colors.put(Color.E_i_z, get_i_z() + get_i_z_err());
         return colors;
     }
 
@@ -507,6 +515,54 @@ public class SdssCatalogEntry implements CatalogEntry {
                 return (i_mag - ABOffset.i.val) - (z_mag - ABOffset.z.val);
             } else {
                 return i_mag - z_mag;
+            }
+        }
+    }
+
+    public double get_u_g_err() {
+        if (u_err == 0 || g_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((u_err - ABOffset.u.val), (g_err - ABOffset.g.val));
+            } else {
+                return calculateAddSubError(u_err, g_err);
+            }
+        }
+    }
+
+    public double get_g_r_err() {
+        if (g_err == 0 || r_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((g_err - ABOffset.g.val), (r_err - ABOffset.r.val));
+            } else {
+                return calculateAddSubError(g_err, r_err);
+            }
+        }
+    }
+
+    public double get_r_i_err() {
+        if (r_err == 0 || i_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((r_err - ABOffset.r.val), (i_err - ABOffset.i.val));
+            } else {
+                return calculateAddSubError(r_err, i_err);
+            }
+        }
+    }
+
+    public double get_i_z_err() {
+        if (i_err == 0 || z_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((i_err - ABOffset.i.val), (z_err - ABOffset.z.val));
+            } else {
+                return calculateAddSubError(i_err, z_err);
             }
         }
     }

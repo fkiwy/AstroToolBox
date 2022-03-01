@@ -530,6 +530,12 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         colors.put(Color.J_H, j_h_pnt);
         colors.put(Color.H_K, h_ks_pnt);
         colors.put(Color.J_K, getJ_K());
+        colors.put(Color.e_J_H, getJ_H() - getJ_H_err());
+        colors.put(Color.e_H_K, getH_K() - getH_K_err());
+        colors.put(Color.e_J_K, getJ_K() - getJ_K_err());
+        colors.put(Color.E_J_H, getJ_H() + getJ_H_err());
+        colors.put(Color.E_H_K, getH_K() + getH_K_err());
+        colors.put(Color.E_J_K, getJ_K() + getJ_K_err());
         return colors;
     }
 
@@ -728,6 +734,30 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
             return 0;
         } else {
             return j_ap3 - ks_ap3;
+        }
+    }
+
+    public double getJ_H_err() {
+        if (j_ap3_err == 0 || h_ap3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(j_ap3_err, h_ap3_err);
+        }
+    }
+
+    public double getH_K_err() {
+        if (h_ap3_err == 0 || ks_ap3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(h_ap3_err, ks_ap3_err);
+        }
+    }
+
+    public double getJ_K_err() {
+        if (j_ap3_err == 0 || ks_ap3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(j_ap3_err, ks_ap3_err);
         }
     }
 

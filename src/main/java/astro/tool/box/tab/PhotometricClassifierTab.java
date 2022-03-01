@@ -160,10 +160,9 @@ public class PhotometricClassifierTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    if (bottomPanel.getComponentCount() > 0) {
-                        bottomPanel.removeAll();
-                        baseFrame.setVisible(true);
-                    }
+                    centerPanel.removeAll();
+                    bottomPanel.removeAll();
+                    baseFrame.setVisible(true);
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -495,7 +494,7 @@ public class PhotometricClassifierTab {
             });
         });
 
-        String titles = "catalog,spectral type,color,value, reference value, source id";
+        String titles = "catalog,spectral type,color,value,reference value,source id";
         String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(occurrences.toArray(rows), columns);
@@ -506,6 +505,7 @@ public class PhotometricClassifierTab {
         resultTable.setRowSorter(createResultTableSorter(defaultTableModel, occurrences));
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(120);
+        columnModel.getColumn(2).setPreferredWidth(80);
         columnModel.getColumn(4).setPreferredWidth(100);
         columnModel.getColumn(5).setPreferredWidth(150);
 

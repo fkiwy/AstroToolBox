@@ -415,6 +415,20 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.K_W1, getK_W1());
+        colors.put(Color.e_W1_W2, getW1_W2() - getW1_W2_err());
+        colors.put(Color.e_W1_W3, getW1_W3() - getW1_W3_err());
+        colors.put(Color.e_W1_W4, getW1_W4() - getW1_W4_err());
+        colors.put(Color.e_J_H, getJ_H() - getJ_H_err());
+        colors.put(Color.e_H_K, getH_K() - getH_K_err());
+        colors.put(Color.e_J_K, getJ_K() - getJ_K_err());
+        colors.put(Color.e_K_W1, getK_W1() - getK_W1_err());
+        colors.put(Color.E_W1_W2, getW1_W2() + getW1_W2_err());
+        colors.put(Color.E_W1_W3, getW1_W3() + getW1_W3_err());
+        colors.put(Color.E_W1_W4, getW1_W4() + getW1_W4_err());
+        colors.put(Color.E_J_H, getJ_H() + getJ_H_err());
+        colors.put(Color.E_H_K, getH_K() + getH_K_err());
+        colors.put(Color.E_J_K, getJ_K() + getJ_K_err());
+        colors.put(Color.E_K_W1, getK_W1() + getK_W1_err());
         return colors;
     }
 
@@ -680,6 +694,86 @@ public class AllWiseCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return Jmag - W2mag;
+        }
+    }
+
+    public double getW1_W2_err() {
+        if (W1_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W2_err);
+        }
+    }
+
+    public double getW1_W3_err() {
+        if (W1_err == 0 || W3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W3_err);
+        }
+    }
+
+    public double getW1_W4_err() {
+        if (W1_err == 0 || W4_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W4_err);
+        }
+    }
+
+    public double getW2_W3_err() {
+        if (W2_err == 0 || W3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W2_err, W3_err);
+        }
+    }
+
+    public double getW3_W4_err() {
+        if (W3_err == 0 || W4_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W3_err, W4_err);
+        }
+    }
+
+    public double getJ_H_err() {
+        if (J_err == 0 || H_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, H_err);
+        }
+    }
+
+    public double getH_K_err() {
+        if (H_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(H_err, K_err);
+        }
+    }
+
+    public double getJ_K_err() {
+        if (J_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, K_err);
+        }
+    }
+
+    public double getK_W1_err() {
+        if (K_err == 0 || W1_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(K_err, W1_err);
+        }
+    }
+
+    public double getJ_W2_err() {
+        if (J_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, W2_err);
         }
     }
 

@@ -189,7 +189,7 @@ public class BrownDwarfTab {
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(1).setPreferredWidth(120);
         columnModel.getColumn(2).setPreferredWidth(100);
         columnModel.getColumn(3).setPreferredWidth(100);
 

@@ -5532,7 +5532,7 @@ public class ImageViewerTab {
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel columnModel = spectralTypeTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(1).setPreferredWidth(120);
         columnModel.getColumn(2).setPreferredWidth(75);
         columnModel.getColumn(3).setPreferredWidth(50);
         columnModel.getColumn(4).setPreferredWidth(50);
@@ -5564,7 +5564,7 @@ public class ImageViewerTab {
         spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel columnModel = spectralTypeTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(1).setPreferredWidth(120);
         columnModel.getColumn(2).setPreferredWidth(75);
         columnModel.getColumn(3).setPreferredWidth(50);
 

@@ -304,12 +304,6 @@ public class SimbadCatalogEntry implements CatalogEntry {
     public Map<Color, Double> getColors(boolean toVega) {
         this.toVega = toVega;
         Map<Color, Double> colors = new LinkedHashMap<>();
-        colors.put(Color.U_B, getU_B());
-        colors.put(Color.B_V, getB_V());
-        colors.put(Color.V_R, getV_R());
-        colors.put(Color.V_I, getV_I());
-        colors.put(Color.V_J, getV_J());
-        colors.put(Color.R_I, getR_I());
         colors.put(Color.J_H, getJ_H());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.H_K, getH_K());

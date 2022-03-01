@@ -358,6 +358,12 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         colors.put(Color.J_H, getJ_H());
         colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
+        colors.put(Color.e_J_H, getJ_H() - getJ_H_err());
+        colors.put(Color.e_H_K, getH_K() - getH_K_err());
+        colors.put(Color.e_J_K, getJ_K() - getJ_K_err());
+        colors.put(Color.E_J_H, getJ_H() + getJ_H_err());
+        colors.put(Color.E_H_K, getH_K() + getH_K_err());
+        colors.put(Color.E_J_K, getJ_K() + getJ_K_err());
         return colors;
     }
 
@@ -542,6 +548,30 @@ public class TwoMassCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return Jmag - Kmag;
+        }
+    }
+
+    public double getJ_H_err() {
+        if (J_err == 0 || H_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, H_err);
+        }
+    }
+
+    public double getH_K_err() {
+        if (H_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(H_err, K_err);
+        }
+    }
+
+    public double getJ_K_err() {
+        if (J_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, K_err);
         }
     }
 

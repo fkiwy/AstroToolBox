@@ -22,6 +22,7 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
 
     public BrownDwarfLookupEntry(String[] values) {
         spt = values[0];
+        // Absolute magnitudes
         magnitudes = new HashMap<>();
         magnitudes.put(Band.g, toDouble(values[1]));
         magnitudes.put(Band.r, toDouble(values[2]));
@@ -37,28 +38,81 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         magnitudes.put(Band.BP, toDouble(values[36]));
         magnitudes.put(Band.G, toDouble(values[37]));
         magnitudes.put(Band.RP, toDouble(values[38]));
+        //----------------------------------------------------------------------
+        // Colors
         colors = new HashMap<>();
+        // PS1
         colors.put(Color.g_r_PS1, toDouble(values[12]));
         colors.put(Color.r_i_PS1, toDouble(values[13]));
         colors.put(Color.i_z_PS1, toDouble(values[14]));
         colors.put(Color.z_y_PS1, toDouble(values[15]));
         colors.put(Color.i_y_PS1, toDouble(values[22]));
+        colors.put(Color.e_g_r_PS1, toDouble(values[12]));
+        colors.put(Color.e_r_i_PS1, toDouble(values[13]));
+        colors.put(Color.e_i_z_PS1, toDouble(values[14]));
+        colors.put(Color.e_z_y_PS1, toDouble(values[15]));
+        colors.put(Color.e_i_y_PS1, toDouble(values[22]));
+        colors.put(Color.E_g_r_PS1, toDouble(values[12]));
+        colors.put(Color.E_r_i_PS1, toDouble(values[13]));
+        colors.put(Color.E_i_z_PS1, toDouble(values[14]));
+        colors.put(Color.E_z_y_PS1, toDouble(values[15]));
+        colors.put(Color.E_i_y_PS1, toDouble(values[22]));
+        // 2MASS
         //colors.put(Color.J_H, toDouble(values[17]));
         //colors.put(Color.H_K, toDouble(values[18]));
+        colors.put(Color.J_K, toDouble(values[25]));
+        //colors.put(Color.e_J_H, toDouble(values[17]));
+        //colors.put(Color.e_H_K, toDouble(values[18]));
+        colors.put(Color.e_J_K, toDouble(values[25]));
+        //colors.put(Color.E_J_H, toDouble(values[17]));
+        //colors.put(Color.E_H_K, toDouble(values[18]));
+        colors.put(Color.E_J_K, toDouble(values[25]));
+        // WISE
         colors.put(Color.K_W1, toDouble(values[19]));
         colors.put(Color.W1_W2, toDouble(values[20]));
-        colors.put(Color.J_K, toDouble(values[25]));
+        colors.put(Color.e_K_W1, toDouble(values[19]));
+        colors.put(Color.e_W1_W2, toDouble(values[20]));
+        colors.put(Color.E_K_W1, toDouble(values[19]));
+        colors.put(Color.E_W1_W2, toDouble(values[20]));
+        // NSC
         colors.put(Color.i_z_NSC, toDouble(values[27]));
-        //colors.put(Color.z_Y_NSC, toDouble(values[28]));
+        colors.put(Color.z_Y_NSC, toDouble(values[28]));
+        colors.put(Color.e_i_z_NSC, toDouble(values[27]));
+        colors.put(Color.e_z_Y_NSC, toDouble(values[28]));
+        colors.put(Color.E_i_z_NSC, toDouble(values[27]));
+        colors.put(Color.E_z_Y_NSC, toDouble(values[28]));
+        // DES
         colors.put(Color.i_z_DES, toDouble(values[27]));
-        //colors.put(Color.z_Y_DES, toDouble(values[28]));
+        colors.put(Color.z_Y_DES, toDouble(values[28]));
+        colors.put(Color.e_i_z_DES, toDouble(values[27]));
+        colors.put(Color.e_z_Y_DES, toDouble(values[28]));
+        colors.put(Color.E_i_z_DES, toDouble(values[27]));
+        colors.put(Color.E_z_Y_DES, toDouble(values[28]));
+        // SDSS
         colors.put(Color.i_z, toDouble(values[30]));
+        colors.put(Color.e_i_z, toDouble(values[30]));
+        colors.put(Color.E_i_z, toDouble(values[30]));
+        // Gaia
         colors.put(Color.G_RP, toDouble(values[33]));
         colors.put(Color.BP_RP, toDouble(values[34]));
         colors.put(Color.BP_G, toDouble(values[35]));
         colors.put(Color.M_BP, toDouble(values[36]));
         colors.put(Color.M_G, toDouble(values[37]));
         colors.put(Color.M_RP, toDouble(values[38]));
+        colors.put(Color.e_G_RP, toDouble(values[33]));
+        colors.put(Color.e_BP_RP, toDouble(values[34]));
+        colors.put(Color.e_BP_G, toDouble(values[35]));
+        colors.put(Color.e_M_BP, toDouble(values[36]));
+        colors.put(Color.e_M_G, toDouble(values[37]));
+        colors.put(Color.e_M_RP, toDouble(values[38]));
+        colors.put(Color.E_G_RP, toDouble(values[33]));
+        colors.put(Color.E_BP_RP, toDouble(values[34]));
+        colors.put(Color.E_BP_G, toDouble(values[35]));
+        colors.put(Color.E_M_BP, toDouble(values[36]));
+        colors.put(Color.E_M_G, toDouble(values[37]));
+        colors.put(Color.E_M_RP, toDouble(values[38]));
+        //----------------------------------------------------------------------
+        //Errors of absolute magnitude
         errors = new HashMap<>();
         errors.put(Band.g, toDouble(values[39]));
         errors.put(Band.r, toDouble(values[40]));

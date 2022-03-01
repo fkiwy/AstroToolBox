@@ -430,6 +430,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         colors.put(Color.r_i_NSC, get_r_i());
         colors.put(Color.i_z_NSC, get_i_z());
         colors.put(Color.z_Y_NSC, get_z_y());
+        colors.put(Color.e_g_r_NSC, get_g_r() - get_g_r_err());
+        colors.put(Color.e_r_i_NSC, get_r_i() - get_r_i_err());
+        colors.put(Color.e_i_z_NSC, get_i_z() - get_i_z_err());
+        colors.put(Color.e_z_Y_NSC, get_z_y() - get_z_y_err());
+        colors.put(Color.E_g_r_NSC, get_g_r() + get_g_r_err());
+        colors.put(Color.E_r_i_NSC, get_r_i() + get_r_i_err());
+        colors.put(Color.E_i_z_NSC, get_i_z() + get_i_z_err());
+        colors.put(Color.E_z_Y_NSC, get_z_y() + get_z_y_err());
         return colors;
     }
 
@@ -683,6 +691,46 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             return 0;
         } else {
             return z_mag - y_mag;
+        }
+    }
+
+    public double get_u_g_err() {
+        if (u_err == 0 || g_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(u_err, g_err);
+        }
+    }
+
+    public double get_g_r_err() {
+        if (g_err == 0 || r_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(g_err, r_err);
+        }
+    }
+
+    public double get_r_i_err() {
+        if (r_err == 0 || i_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(r_err, i_err);
+        }
+    }
+
+    public double get_i_z_err() {
+        if (i_err == 0 || z_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(i_err, z_err);
+        }
+    }
+
+    public double get_z_y_err() {
+        if (z_err == 0 || y_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(z_err, y_err);
         }
     }
 

@@ -625,7 +625,6 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         colors.put(Color.G_RP, getG_RP());
         colors.put(Color.BP_RP, getBP_RP());
         colors.put(Color.BP_G, getBP_G());
-        colors.put(Color.B_V, getB_V());
         colors.put(Color.u_g, get_u_g());
         colors.put(Color.g_r, get_g_r());
         colors.put(Color.r_i, get_r_i());
@@ -637,6 +636,40 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.K_W1, getK_W1());
+        colors.put(Color.e_M_G, getAbsoluteGmag() - getAbsoluteGmagError());
+        colors.put(Color.e_M_BP, getAbsoluteBPmag() - getAbsoluteBPmagError());
+        colors.put(Color.e_M_RP, getAbsoluteRPmag() - getAbsoluteRPmagError());
+        colors.put(Color.e_G_RP, getG_RP() - getG_RP_err());
+        colors.put(Color.e_BP_RP, getBP_RP() - getBP_RP_err());
+        colors.put(Color.e_BP_G, getBP_G() - getBP_G_err());
+        colors.put(Color.E_M_G, getAbsoluteGmag() + getAbsoluteGmagError());
+        colors.put(Color.E_M_BP, getAbsoluteBPmag() + getAbsoluteBPmagError());
+        colors.put(Color.E_M_RP, getAbsoluteRPmag() + getAbsoluteRPmagError());
+        colors.put(Color.E_G_RP, getG_RP() + getG_RP_err());
+        colors.put(Color.E_BP_RP, getBP_RP() + getBP_RP_err());
+        colors.put(Color.E_BP_G, getBP_G() + getBP_G_err());
+        colors.put(Color.e_u_g, get_u_g() - get_u_g_err());
+        colors.put(Color.e_g_r, get_g_r() - get_g_r_err());
+        colors.put(Color.e_r_i, get_r_i() - get_r_i_err());
+        colors.put(Color.e_i_z, get_i_z() - get_i_z_err());
+        colors.put(Color.E_u_g, get_u_g() + get_u_g_err());
+        colors.put(Color.E_g_r, get_g_r() + get_g_r_err());
+        colors.put(Color.E_r_i, get_r_i() + get_r_i_err());
+        colors.put(Color.E_i_z, get_i_z() + get_i_z_err());
+        colors.put(Color.e_W1_W2, getW1_W2() - getW1_W2_err());
+        colors.put(Color.e_W1_W3, getW1_W3() - getW1_W3_err());
+        colors.put(Color.e_W1_W4, getW1_W4() - getW1_W4_err());
+        colors.put(Color.e_J_H, getJ_H() - getJ_H_err());
+        colors.put(Color.e_H_K, getH_K() - getH_K_err());
+        colors.put(Color.e_J_K, getJ_K() - getJ_K_err());
+        colors.put(Color.e_K_W1, getK_W1() - getK_W1_err());
+        colors.put(Color.E_W1_W2, getW1_W2() + getW1_W2_err());
+        colors.put(Color.E_W1_W3, getW1_W3() + getW1_W3_err());
+        colors.put(Color.E_W1_W4, getW1_W4() + getW1_W4_err());
+        colors.put(Color.E_J_H, getJ_H() + getJ_H_err());
+        colors.put(Color.E_H_K, getH_K() + getH_K_err());
+        colors.put(Color.E_J_K, getJ_K() + getJ_K_err());
+        colors.put(Color.E_K_W1, getK_W1() + getK_W1_err());
         return colors;
     }
 
@@ -825,6 +858,18 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
     }
 
+    public double getAbsoluteGmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(Gmag, G_err, plx, plx_err);
+    }
+
+    public double getAbsoluteRPmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(RPmag, RP_err, plx, plx_err);
+    }
+
+    public double getAbsoluteBPmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(BPmag, BP_err, plx, plx_err);
+    }
+
     @Override
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
@@ -988,6 +1033,158 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
             return 0;
         } else {
             return Jmag - W2mag;
+        }
+    }
+
+    public double getBP_RP_err() {
+        if (BP_err == 0 || RP_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(BP_err, RP_err);
+        }
+    }
+
+    public double getG_RP_err() {
+        if (G_err == 0 || RP_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(G_err, RP_err);
+        }
+    }
+
+    public double getBP_G_err() {
+        if (BP_err == 0 || G_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(BP_err, G_err);
+        }
+    }
+
+    public double get_u_g_err() {
+        if (u_err == 0 || g_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((u_err - ABOffset.u.val), (g_err - ABOffset.g.val));
+            } else {
+                return calculateAddSubError(u_err, g_err);
+            }
+        }
+    }
+
+    public double get_g_r_err() {
+        if (g_err == 0 || r_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((g_err - ABOffset.g.val), (r_err - ABOffset.r.val));
+            } else {
+                return calculateAddSubError(g_err, r_err);
+            }
+        }
+    }
+
+    public double get_r_i_err() {
+        if (r_err == 0 || i_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((r_err - ABOffset.r.val), (i_err - ABOffset.i.val));
+            } else {
+                return calculateAddSubError(r_err, i_err);
+            }
+        }
+    }
+
+    public double get_i_z_err() {
+        if (i_err == 0 || z_err == 0) {
+            return 0;
+        } else {
+            if (toVega) {
+                return calculateAddSubError((i_err - ABOffset.i.val), (z_err - ABOffset.z.val));
+            } else {
+                return calculateAddSubError(i_err, z_err);
+            }
+        }
+    }
+
+    public double getW1_W2_err() {
+        if (W1_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W2_err);
+        }
+    }
+
+    public double getW1_W3_err() {
+        if (W1_err == 0 || W3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W3_err);
+        }
+    }
+
+    public double getW1_W4_err() {
+        if (W1_err == 0 || W4_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W4_err);
+        }
+    }
+
+    public double getW2_W3_err() {
+        if (W2_err == 0 || W3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W2_err, W3_err);
+        }
+    }
+
+    public double getW3_W4_err() {
+        if (W3_err == 0 || W4_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W3_err, W4_err);
+        }
+    }
+
+    public double getJ_H_err() {
+        if (J_err == 0 || H_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, H_err);
+        }
+    }
+
+    public double getH_K_err() {
+        if (H_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(H_err, K_err);
+        }
+    }
+
+    public double getJ_K_err() {
+        if (J_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, K_err);
+        }
+    }
+
+    public double getK_W1_err() {
+        if (K_err == 0 || W1_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(K_err, W1_err);
+        }
+    }
+
+    public double getJ_W2_err() {
+        if (J_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, W2_err);
         }
     }
 
