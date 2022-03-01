@@ -81,7 +81,8 @@ public class StatisticFunctions {
             return 0;
         }
         int size = values.size();
-        int half = size / 2;
+        int half = size / 2 - 1;
+        half = half < 0 ? 0 : half;
         if (size % 2 == 0) {
             return calculateMean(values.get(half), values.get(half + 1));
         } else {
