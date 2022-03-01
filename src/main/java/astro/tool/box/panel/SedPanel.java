@@ -24,6 +24,7 @@ import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.service.CatalogQueryService;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -72,6 +73,7 @@ public class SedPanel extends JPanel {
     private final JCheckBox overplotTemplates;
     private final JTextField photSearchRadius;
     private final JTextField maxTemplateOffset;
+    private final JButton removeButton;
 
     private Map<Band, SedReferences> sedReferences;
     private Map<Band, SedFluxes> sedFluxes;
@@ -89,6 +91,7 @@ public class SedPanel extends JPanel {
         spectralTypes = new JComboBox(SpectralType.values());
         overplotTemplates = new JCheckBox("Overplot templates");
         overplotTemplates.setSelected(true);
+        removeButton = new JButton("Remove all templates");
 
         XYSeriesCollection collection = createSed(catalogEntry, null, true);
         JFreeChart chart = createChart(collection);
@@ -128,7 +131,6 @@ public class SedPanel extends JPanel {
             addReferenceSeds(sedPhotometry, collection);
         });
 
-        JButton removeButton = new JButton("Remove all templates");
         commandPanel.add(removeButton);
         removeButton.addActionListener((ActionEvent e) -> {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
@@ -143,9 +145,9 @@ public class SedPanel extends JPanel {
             createSed(catalogEntry, collection, true);
         });
 
-        JButton searchButton = new JButton("Create PDF");
-        commandPanel.add(searchButton);
-        searchButton.addActionListener((ActionEvent e) -> {
+        JButton createButton = new JButton("Create PDF");
+        commandPanel.add(createButton);
+        createButton.addActionListener((ActionEvent e) -> {
             try {
                 File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa()) + addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
                 createPDF(chart, tmpFile, 800, 700);
@@ -179,6 +181,12 @@ public class SedPanel extends JPanel {
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        photSearchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        maxTemplateOffset.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        removeButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        overplotTemplates.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
         sedReferences = new HashMap();
         sedFluxes = new HashMap();
         sedPhotometry = new HashMap();
@@ -451,6 +459,12 @@ public class SedPanel extends JPanel {
         if (addReferenceSeds) {
             addReferenceSeds(sedPhotometry, collection);
         }
+
+        baseFrame.setCursor(Cursor.getDefaultCursor());
+        photSearchRadius.setCursor(Cursor.getDefaultCursor());
+        maxTemplateOffset.setCursor(Cursor.getDefaultCursor());
+        removeButton.setCursor(Cursor.getDefaultCursor());
+        overplotTemplates.setCursor(Cursor.getDefaultCursor());
 
         return collection;
     }

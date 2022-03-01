@@ -123,9 +123,9 @@ public class CmdPanel extends JPanel {
         coolingSequencesHe = new JCheckBox("DB");
         commandPanel.add(coolingSequencesHe);
 
-        JButton searchButton = new JButton("Create PDF");
-        commandPanel.add(searchButton);
-        searchButton.addActionListener((ActionEvent e) -> {
+        JButton createButton = new JButton("Create PDF");
+        commandPanel.add(createButton);
+        createButton.addActionListener((ActionEvent e) -> {
             try {
                 File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa()) + addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
                 createPDF(chart, tmpFile, 800, 700);
