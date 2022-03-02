@@ -58,15 +58,15 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.E_z_y_PS1, toDouble(values[15]));
         colors.put(Color.E_i_y_PS1, toDouble(values[22]));
         // 2MASS
-        //colors.put(Color.J_H, toDouble(values[17]));
-        //colors.put(Color.H_K, toDouble(values[18]));
-        colors.put(Color.J_K, toDouble(values[25]));
-        //colors.put(Color.e_J_H, toDouble(values[17]));
-        //colors.put(Color.e_H_K, toDouble(values[18]));
-        colors.put(Color.e_J_K, toDouble(values[25]));
-        //colors.put(Color.E_J_H, toDouble(values[17]));
-        //colors.put(Color.E_H_K, toDouble(values[18]));
-        colors.put(Color.E_J_K, toDouble(values[25]));
+        colors.put(Color.J_H, toDouble(values[17]));
+        colors.put(Color.H_K, toDouble(values[18]));
+        //colors.put(Color.J_K, toDouble(values[25]));
+        colors.put(Color.e_J_H, toDouble(values[17]));
+        colors.put(Color.e_H_K, toDouble(values[18]));
+        //colors.put(Color.e_J_K, toDouble(values[25]));
+        colors.put(Color.E_J_H, toDouble(values[17]));
+        colors.put(Color.E_H_K, toDouble(values[18]));
+        //colors.put(Color.E_J_K, toDouble(values[25]));
         // WISE
         colors.put(Color.K_W1, toDouble(values[19]));
         colors.put(Color.W1_W2, toDouble(values[20]));
