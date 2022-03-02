@@ -177,7 +177,6 @@ public class WdSedPanel extends JPanel {
     }
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
-        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         photSearchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         maxTemplateOffset.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         removeButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -429,7 +428,6 @@ public class WdSedPanel extends JPanel {
             addReferenceSeds(sedPhotometry, collection);
         }
 
-        baseFrame.setCursor(Cursor.getDefaultCursor());
         photSearchRadius.setCursor(Cursor.getDefaultCursor());
         maxTemplateOffset.setCursor(Cursor.getDefaultCursor());
         removeButton.setCursor(Cursor.getDefaultCursor());
