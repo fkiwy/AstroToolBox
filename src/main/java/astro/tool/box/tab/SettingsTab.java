@@ -37,14 +37,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeListener;
 
 public class SettingsTab {
 
@@ -69,6 +67,7 @@ public class SettingsTab {
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
+    public static final String PHOTOMETRIC_ERRORS = "photometricErrors";
     public static final String CUTOUT_SERVICE = "cutoutService";
     public static final String GAIA_CMD_PATH = "gaiaCmdPath";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
@@ -79,6 +78,7 @@ public class SettingsTab {
     private int proxyPort;
     private boolean useProxy;
     private boolean useSimbadMirror;
+    private boolean photometricErrors;
     private String cutoutService;
     private String gaiaCmdPath;
     private String objectCollectionPath;
@@ -137,10 +137,8 @@ public class SettingsTab {
 
     private JPanel catalogPanel;
     private ActionListener actionListener;
-    private ChangeListener changeListener;
     private JComboBox wiseBandsBox;
     private JComboBox epochsBox;
-    private JSlider epochSlider;
 
     public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
         this.baseFrame = baseFrame;
@@ -158,11 +156,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(11, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(12, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 300));
+            globalSettings.setPreferredSize(new Dimension(475, 325));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
@@ -172,6 +170,7 @@ public class SettingsTab {
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
             useProxy = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_PROXY, "false"));
             useSimbadMirror = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR, "false"));
+            photometricErrors = Boolean.parseBoolean(USER_SETTINGS.getProperty(PHOTOMETRIC_ERRORS, "false"));
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
             gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
@@ -218,11 +217,16 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
+            globalSettings.add(new JLabel("Consider phot. errors in spt estimates: ", JLabel.RIGHT));
+            JCheckBox photometricErrorsBox = new JCheckBox("(needs a restart after \"Apply settings\")");
+            photometricErrorsBox.setSelected(photometricErrors);
+            globalSettings.add(photometricErrorsBox);
+
             globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
 
-            globalSettings.add(new JLabel("File location of Gaia CMD data (*): ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("File location of Gaia CMD data: ", JLabel.RIGHT));
             JTextField gaiaCmdPathField = new JTextField(gaiaCmdPath);
             globalSettings.add(gaiaCmdPathField);
 
@@ -234,11 +238,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(11, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(12, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 300));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 325));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -301,11 +305,11 @@ public class SettingsTab {
             catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(12, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 300));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 325));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
@@ -465,7 +469,6 @@ public class SettingsTab {
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
                     useProxy = useProxyCheckBox.isSelected();
-                    useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
                     if (useProxy) {
                         List<String> errorMessages = new ArrayList<>();
                         if (proxyAddress.isEmpty()) {
@@ -480,6 +483,8 @@ public class SettingsTab {
                             return;
                         }
                     }
+                    useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    photometricErrors = photometricErrorsBox.isSelected();
 
                     // Catalog search settings
                     copyCoordsToClipboard = clipboardCheckBox.isSelected();
@@ -519,6 +524,7 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+                USER_SETTINGS.setProperty(PHOTOMETRIC_ERRORS, String.valueOf(photometricErrors));
                 USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
                 USER_SETTINGS.setProperty(GAIA_CMD_PATH, gaiaCmdPathField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
