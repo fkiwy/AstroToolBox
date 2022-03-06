@@ -36,8 +36,8 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
         colors.put(Color.M_G, toDouble(values[12]));
 
         // 2MASS
-        colors.put(Color.J_H, toDouble(values[18]));
-        colors.put(Color.H_K, toDouble(values[19]));
+        //colors.put(Color.J_H, toDouble(values[18]));
+        //colors.put(Color.H_K, toDouble(values[19]));
 
         // WISE
         colors.put(Color.K_W1, toDouble(values[20]));
@@ -46,7 +46,7 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
         colors.put(Color.W1_W4, toDouble(values[23]));
 
         // SDSS
-        colors.put(Color.g_r, toDouble(values[26]));
+        //colors.put(Color.g_r, toDouble(values[26]));
         colors.put(Color.i_z, toDouble(values[27]));
 
         boolean photometricErrors = Boolean.parseBoolean(getUserSetting(PHOTOMETRIC_ERRORS, "false"));
@@ -60,10 +60,10 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
             colors.put(Color.E_M_G, toDouble(values[12]));
 
             // 2MASS
-            colors.put(Color.e_J_H, toDouble(values[18]));
-            colors.put(Color.e_H_K, toDouble(values[19]));
-            colors.put(Color.E_J_H, toDouble(values[18]));
-            colors.put(Color.E_H_K, toDouble(values[19]));
+            //colors.put(Color.e_J_H, toDouble(values[18]));
+            //colors.put(Color.e_H_K, toDouble(values[19]));
+            //colors.put(Color.E_J_H, toDouble(values[18]));
+            //colors.put(Color.E_H_K, toDouble(values[19]));
 
             // WISE
             colors.put(Color.e_K_W1, toDouble(values[20]));
@@ -76,9 +76,9 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
             colors.put(Color.E_W1_W4, toDouble(values[23]));
 
             // SDSS
-            colors.put(Color.e_g_r, toDouble(values[26]));
+            //colors.put(Color.e_g_r, toDouble(values[26]));
             colors.put(Color.e_i_z, toDouble(values[27]));
-            colors.put(Color.E_g_r, toDouble(values[26]));
+            //colors.put(Color.E_g_r, toDouble(values[26]));
             colors.put(Color.E_i_z, toDouble(values[27]));
         }
     }

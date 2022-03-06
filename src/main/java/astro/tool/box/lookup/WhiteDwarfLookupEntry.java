@@ -35,7 +35,7 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
         colors.put(Color.H_K, toDouble(values[22]));
 
         // SDSS
-        colors.put(Color.u_g, toDouble(values[23]));
+        //colors.put(Color.u_g, toDouble(values[23]));
         colors.put(Color.g_r, toDouble(values[24]));
         colors.put(Color.r_i, toDouble(values[25]));
         colors.put(Color.i_z, toDouble(values[26]));
@@ -53,11 +53,11 @@ public class WhiteDwarfLookupEntry implements SpectralTypeLookup {
             colors.put(Color.E_H_K, toDouble(values[22]));
 
             // SDSS
-            colors.put(Color.e_u_g, toDouble(values[23]));
+            //colors.put(Color.e_u_g, toDouble(values[23]));
             colors.put(Color.e_g_r, toDouble(values[24]));
             colors.put(Color.e_r_i, toDouble(values[25]));
             colors.put(Color.e_i_z, toDouble(values[26]));
-            colors.put(Color.E_u_g, toDouble(values[23]));
+            //colors.put(Color.E_u_g, toDouble(values[23]));
             colors.put(Color.E_g_r, toDouble(values[24]));
             colors.put(Color.E_r_i, toDouble(values[25]));
             colors.put(Color.E_i_z, toDouble(values[26]));
