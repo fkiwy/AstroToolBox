@@ -61,7 +61,7 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
         colors.put(Color.J_K, toDouble(values[25]));
 
         // WISE
-        colors.put(Color.K_W1, toDouble(values[19]));
+        //colors.put(Color.K_W1, toDouble(values[19]));
         colors.put(Color.W1_W2, toDouble(values[20]));
 
         // NSC
@@ -106,9 +106,9 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
             colors.put(Color.E_J_K, toDouble(values[25]));
 
             // WISE
-            colors.put(Color.e_K_W1, toDouble(values[19]));
+            //colors.put(Color.e_K_W1, toDouble(values[19]));
             colors.put(Color.e_W1_W2, toDouble(values[20]));
-            colors.put(Color.E_K_W1, toDouble(values[19]));
+            //colors.put(Color.E_K_W1, toDouble(values[19]));
             colors.put(Color.E_W1_W2, toDouble(values[20]));
 
             // NSC
