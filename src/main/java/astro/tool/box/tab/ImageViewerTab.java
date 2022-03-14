@@ -2592,6 +2592,7 @@ public class ImageViewerTab {
             imageNumber = 0;
 
             if (loadImages || reloadImages) {
+                epochCount = 0;
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
                 int totalEpochs = selectedEpochs * 2;
