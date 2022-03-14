@@ -245,6 +245,7 @@ public class ImageSeriesTab {
                         sizeField.addActionListener(actionListener);
                         imageViewerTab.getZoomSlider().setValue(250);
                         imageViewerTab.getSkipIntermediateEpochs().setSelected(false);
+                        imageViewerTab.createFlipbook();
 
                         CompletableFuture.supplyAsync(() -> {
                             try {

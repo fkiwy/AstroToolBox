@@ -112,6 +112,7 @@ public class ImageSeriesPdf {
         try {
             imageViewerTab.getZoomSlider().setValue(250);
             imageViewerTab.getSkipIntermediateEpochs().setSelected(false);
+            imageViewerTab.createFlipbook();
 
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
