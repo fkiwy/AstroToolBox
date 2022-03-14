@@ -16,7 +16,6 @@ import astro.tool.box.container.NirImage;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.tab.ImageViewerTab;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -112,7 +111,7 @@ public class ImageSeriesPdf {
         sizeField.addActionListener(actionListener);
         try {
             imageViewerTab.getZoomSlider().setValue(250);
-            imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
+            imageViewerTab.getSkipIntermediateEpochs().setSelected(false);
 
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -406,11 +405,8 @@ public class ImageSeriesPdf {
 
             // WISE time series
             images = new ArrayList<>();
-            FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
-            int length = flipbook.length;
-            length = length < 8 ? length : 8;
-            for (int i = 0; i < length; i++) {
-                FlipbookComponent component = flipbook[i];
+            List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
+            for (FlipbookComponent component : flipbook) {
                 images.add(new Couple(component.getTitle(), imageViewerTab.processImage(component)));
             }
 

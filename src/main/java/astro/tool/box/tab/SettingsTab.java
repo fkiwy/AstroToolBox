@@ -3,7 +3,6 @@ package astro.tool.box.tab;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
@@ -102,7 +101,6 @@ public class SettingsTab {
 
     // Image viewer settings
     private static final String WISE_BAND = "wiseBand";
-    private static final String EPOCH = "epoch";
     private static final String SIZE = "imageSize";
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
@@ -117,7 +115,6 @@ public class SettingsTab {
     private static final String DSS_IMAGES = "dssImages";
 
     private WiseBand wiseBand;
-    private Epoch epoch;
     private int size;
     private int speed;
     private int zoom;
@@ -138,7 +135,6 @@ public class SettingsTab {
     private JPanel catalogPanel;
     private ActionListener actionListener;
     private JComboBox wiseBandsBox;
-    private JComboBox epochsBox;
 
     public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
         this.baseFrame = baseFrame;
@@ -313,7 +309,6 @@ public class SettingsTab {
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
-            epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
@@ -333,26 +328,12 @@ public class SettingsTab {
             wiseBandsBox.setSelectedItem(wiseBand);
             wiseBandsBox.addActionListener(actionListener);
 
-            epochsBox = imageViewerTab.getEpochs();
-            actionListener = epochsBox.getActionListeners()[0];
-            epochsBox.removeActionListener(actionListener);
-            epochsBox.setSelectedItem(epoch);
-            epochsBox.addActionListener(actionListener);
-
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
             imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
             imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
-
-            if (Epoch.isSubtracted(epoch)) {
-                imageViewerTab.getBlurImages().setSelected(true);
-            } else {
-                imageViewerTab.getBlurImages().setSelected(false);
-            }
-
             imageViewerTab.setWiseBand(wiseBand);
-            imageViewerTab.setEpoch(epoch);
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
@@ -368,11 +349,6 @@ public class SettingsTab {
             JComboBox wiseBands = new JComboBox(WiseBand.values());
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
-
-            imageViewerSettings.add(new JLabel("Epochs: ", JLabel.RIGHT));
-            JComboBox epochs = new JComboBox(Epoch.values());
-            epochs.setSelectedItem(epoch);
-            imageViewerSettings.add(epochs);
 
             imageViewerSettings.add(new JLabel("Field of view (arcsec): ", JLabel.RIGHT));
             JTextField sizeField = new JTextField(String.valueOf(size));
@@ -496,7 +472,6 @@ public class SettingsTab {
 
                     // Image viewer settings
                     wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                    epoch = (Epoch) epochs.getSelectedItem();
                     size = Integer.parseInt(sizeField.getText());
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
@@ -563,26 +538,12 @@ public class SettingsTab {
                 wiseBandsBox.setSelectedItem(wiseBand);
                 wiseBandsBox.addActionListener(actionListener);
 
-                epochsBox = imageViewerTab.getEpochs();
-                actionListener = epochsBox.getActionListeners()[0];
-                epochsBox.removeActionListener(actionListener);
-                epochsBox.setSelectedItem(epoch);
-                epochsBox.addActionListener(actionListener);
-
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
                 imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
                 imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
-
-                if (Epoch.isSubtracted(epoch)) {
-                    imageViewerTab.getBlurImages().setSelected(true);
-                } else {
-                    imageViewerTab.getBlurImages().setSelected(false);
-                }
-
                 imageViewerTab.setWiseBand(wiseBand);
-                imageViewerTab.setEpoch(epoch);
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
@@ -595,7 +556,6 @@ public class SettingsTab {
                 imageViewerTab.setDssImages(dssImages);
 
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
-                USER_SETTINGS.setProperty(EPOCH, epoch.name());
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());

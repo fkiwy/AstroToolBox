@@ -26,7 +26,6 @@ import astro.tool.box.catalog.TwoMassCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.FileType;
 import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.container.NirImage;
@@ -245,7 +244,7 @@ public class ImageSeriesTab {
                         sizeField.setText(String.valueOf(fieldOfView));
                         sizeField.addActionListener(actionListener);
                         imageViewerTab.getZoomSlider().setValue(250);
-                        imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
+                        imageViewerTab.getSkipIntermediateEpochs().setSelected(false);
 
                         CompletableFuture.supplyAsync(() -> {
                             try {
@@ -882,7 +881,7 @@ public class ImageSeriesTab {
         // ________________________________________
         //           WISE time series
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-        FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
+        List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
         if (flipbook != null) {
             bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
