@@ -2596,9 +2596,6 @@ public class ImageViewerTab {
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
                 int totalEpochs = selectedEpochs * 2;
-                if (unwiseCutouts.isSelected()) {
-                    epochCount = totalEpochs;
-                }
                 requestedEpochs = new ArrayList<>();
                 if (moreImagesAvailable) {
                     for (int i = 0; i < 100; i++) {
