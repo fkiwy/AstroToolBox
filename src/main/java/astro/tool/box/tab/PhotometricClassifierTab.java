@@ -111,7 +111,6 @@ public class PhotometricClassifierTab {
         catalogInstances = getCatalogInstances();
 
         // Catalogs to be removed from the classification
-        catalogInstances.remove(SimbadCatalogEntry.CATALOG_NAME);
         catalogInstances.remove(GaiaCatalogEntry.CATALOG_NAME);
         catalogInstances.remove(GaiaWDCatalogEntry.CATALOG_NAME);
         catalogInstances.remove(TessCatalogEntry.CATALOG_NAME);
