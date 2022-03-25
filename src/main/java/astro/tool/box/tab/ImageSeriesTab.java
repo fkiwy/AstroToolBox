@@ -457,7 +457,7 @@ public class ImageSeriesTab {
     }
 
     private void addProperMotionEntry(ProperMotionCatalog entry, List<String[]> resultRows) {
-        if (entry != null) {
+        if (entry != null && entry.getTotalProperMotion() > 0) {
             double tpm = entry.getTotalProperMotion();
             double pmRa = entry.getPmra();
             double pmDec = entry.getPmdec();
@@ -802,7 +802,9 @@ public class ImageSeriesTab {
         List<Couple<String, BufferedImage>> imageList = new ArrayList();
         for (Couple<String, NirImage> couple : timeSeries) {
             bandPanel.add(buildImagePanel(couple.getB().getImage(), couple.getA()));
-            imageList.add(new Couple(couple.getA(), couple.getB().getImage()));
+            if (!couple.getA().contains("WISE")) {
+                imageList.add(new Couple(couple.getA(), couple.getB().getImage()));
+            }
         }
 
         timeSeriesTimer = new Timer(500, null);
@@ -812,7 +814,7 @@ public class ImageSeriesTab {
         bandPanel.add(buttonPanel);
 
         if (timeSeries.size() > 1) {
-            JButton saveInfraredButton = new JButton("Infrared series");
+            JButton saveInfraredButton = new JButton("Cross survey series");
             buttonPanel.add(saveInfraredButton);
             saveInfraredButton.addActionListener((ActionEvent evt) -> {
                 try {
