@@ -96,7 +96,6 @@ public class ImageSeriesTab {
     private JTextField coordsField;
     private JTextField fovField;
     private JTable currentTable;
-    private JPanel buttonPanel;
 
     private TwoMassCatalogEntry twoMassEntry;
     private AllWiseCatalogEntry allWiseEntry;
@@ -756,7 +755,7 @@ public class ImageSeriesTab {
             timeSeries.add(new Couple(getImageLabel("PS1 y-i-g", year_y_i_g), new NirImage(year_y_i_g, image)));
 
             if (bandPanel.getComponentCount() > 0) {
-                bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP), "WARP images"));
+                bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP)));
                 centerPanel.add(bandPanel);
                 baseFrame.setVisible(true);
                 scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -787,7 +786,7 @@ public class ImageSeriesTab {
         }
 
         if (bandPanel.getComponentCount() > 0) {
-            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, DESI_LS_DR_PARAM), "Single exposures"));
+            bandPanel.add(createHyperlink("Single exposures", getLegacySingleExposuresUrl(targetRa, targetDec, DESI_LS_DR_PARAM)));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -810,15 +809,12 @@ public class ImageSeriesTab {
         timeSeriesTimer = new Timer(500, null);
         createTimeSeriesTimer(bandPanel, imageList, timeSeriesTimer);
 
-        buttonPanel = buildButtonPanel("Save as GIF");
-        bandPanel.add(buttonPanel);
-
         if (timeSeries.size() > 1) {
-            JButton saveInfraredButton = new JButton("Cross survey series");
-            buttonPanel.add(saveInfraredButton);
-            saveInfraredButton.addActionListener((ActionEvent evt) -> {
+            JButton saveButton = new JButton("Save as GIF");
+            bandPanel.add(saveButton);
+            saveButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(imageList, buttonPanel);
+                    saveAnimatedGif(imageList, saveButton);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
@@ -860,15 +856,11 @@ public class ImageSeriesTab {
         if (decalsImages.size() > 2) {
             decalsTimeSeriesTimer = new Timer(500, null);
             createTimeSeriesTimer(bandPanel, decalsImages, decalsTimeSeriesTimer);
-
-            buttonPanel = buildButtonPanel("Save as GIF");
-            bandPanel.add(buttonPanel);
-
-            JButton saveButton = new JButton("DESI LS series");
-            buttonPanel.add(saveButton);
+            JButton saveButton = new JButton("Save as GIF");
+            bandPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(decalsImages, buttonPanel);
+                    saveAnimatedGif(decalsImages, saveButton);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
@@ -897,14 +889,11 @@ public class ImageSeriesTab {
             wiseTimeSeriesTimer = new Timer(500, null);
             createTimeSeriesTimer(bandPanel, wiseImages, wiseTimeSeriesTimer);
 
-            buttonPanel = buildButtonPanel("Save as GIF");
-            bandPanel.add(buttonPanel);
-
-            JButton saveButton = new JButton("WISE series");
-            buttonPanel.add(saveButton);
+            JButton saveButton = new JButton("Save as GIF");
+            bandPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(wiseImages, buttonPanel);
+                    saveAnimatedGif(wiseImages, saveButton);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
@@ -942,19 +931,6 @@ public class ImageSeriesTab {
         JLabel label = addTextToImage(image, imageLabel);
         JPanel panel = new JPanel();
         panel.add(label);
-        return panel;
-    }
-
-    private JPanel buildLinkPanel(String link, String imageHeader) {
-        JPanel panel = new JPanel();
-        panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(createHyperlink("Display in web browser", link));
-        return panel;
-    }
-
-    private JPanel buildButtonPanel(String imageHeader) {
-        JPanel panel = new JPanel();
-        panel.setBorder(createEtchedBorder(imageHeader));
         return panel;
     }
 

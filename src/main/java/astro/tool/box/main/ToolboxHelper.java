@@ -1285,7 +1285,7 @@ public class ToolboxHelper {
         return background;
     }
 
-    public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, JPanel container) throws Exception {
+    public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, Component container) throws Exception {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
         int returnVal = fileChooser.showSaveDialog(container);
