@@ -99,7 +99,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -166,11 +165,6 @@ import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
 import nom.tam.fits.ImageHDU;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
 
 public class ImageViewerTab {
 
@@ -180,7 +174,6 @@ public class ImageViewerTab {
     public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
-    public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -245,9 +238,8 @@ public class ImageViewerTab {
     private JPanel zooniversePanel1;
     private JPanel zooniversePanel2;
     private JScrollPane rightScrollPanel;
-    private JRadioButton wiseviewCutouts;
-    private JRadioButton unwiseCutouts;
-    private JRadioButton decalsCutouts;
+    private JRadioButton wiseCutouts;
+    private JRadioButton desiCutouts;
     private JRadioButton showCatalogsButton;
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
@@ -318,13 +310,13 @@ public class ImageViewerTab {
     private Timer timer;
 
     private BufferedImage wiseImage;
-    private BufferedImage decalsImage;
+    private BufferedImage desiImage;
     private BufferedImage ps1Image;
     private BufferedImage ukidssImage;
     private BufferedImage vhsImage;
     private BufferedImage sdssImage;
     private BufferedImage dssImage;
-    private BufferedImage processedDecalsImage;
+    private BufferedImage processedDesiImage;
     private BufferedImage processedPs1Image;
     private BufferedImage processedUkidssImage;
     private BufferedImage processedVhsImage;
@@ -724,6 +716,32 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
+            settingsPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(settingsPanel);
+
+            wiseCutouts = new JRadioButton("WISE cutouts", true);
+            settingsPanel.add(wiseCutouts);
+            wiseCutouts.addActionListener((ActionEvent evt) -> {
+                resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
+                pixelScale = PIXEL_SCALE_WISE;
+                previousRa = 0;
+                previousDec = 0;
+                ranges.setSelectedItem(AUTO_RANGE);
+            });
+
+            desiCutouts = new JRadioButton("DESI LS cutouts");
+            settingsPanel.add(desiCutouts);
+            desiCutouts.addActionListener((ActionEvent evt) -> {
+                pixelScale = PIXEL_SCALE_DECAM;
+                previousRa = 0;
+                previousDec = 0;
+                ranges.setSelectedItem(AUTO_RANGE);
+            });
+
+            ButtonGroup cutoutGroup = new ButtonGroup();
+            cutoutGroup.add(wiseCutouts);
+            cutoutGroup.add(desiCutouts);
+
             JButton resetDefaultsButton = new JButton("Reset image processing defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
@@ -734,47 +752,6 @@ public class ImageViewerTab {
                 }
                 ranges.setSelectedItem(AUTO_RANGE);
             });
-
-            mainControlPanel.add(new JLabel());
-
-            mainControlPanel.add(createHeaderLabel("Cutout service:"));
-
-            wiseviewCutouts = new JRadioButton(html("WiseView (*)"), true);
-            mainControlPanel.add(wiseviewCutouts);
-            wiseviewCutouts.setToolTipText("WiseView cutouts are from http://byw.tools/wiseview");
-            wiseviewCutouts.addActionListener((ActionEvent evt) -> {
-                resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
-                pixelScale = PIXEL_SCALE_WISE;
-                previousRa = 0;
-                previousDec = 0;
-                ranges.setSelectedItem(AUTO_RANGE);
-            });
-
-            unwiseCutouts = new JRadioButton(html("unWISE coadds (*)"));
-            mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("unWISE coadds are from http://unwise.me \nNo separate scan directions. High proper motion objects may look smeared.");
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
-                pixelScale = PIXEL_SCALE_WISE;
-                previousRa = 0;
-                previousDec = 0;
-                ranges.setSelectedItem(AUTO_RANGE);
-            });
-
-            decalsCutouts = new JRadioButton(html("DESI Legacy Survey (*)"));
-            mainControlPanel.add(decalsCutouts);
-            decalsCutouts.setToolTipText("DESI LS cutouts are from https://www.legacysurvey.org \nNot reliable for motion detection. Epochs can be to close together. \nW1 represents the r-band, W2 the z-band.");
-            decalsCutouts.addActionListener((ActionEvent evt) -> {
-                pixelScale = PIXEL_SCALE_DECAM;
-                previousRa = 0;
-                previousDec = 0;
-                ranges.setSelectedItem(AUTO_RANGE);
-            });
-
-            ButtonGroup cutoutGroup = new ButtonGroup();
-            cutoutGroup.add(wiseviewCutouts);
-            cutoutGroup.add(unwiseCutouts);
-            cutoutGroup.add(decalsCutouts);
 
             mainControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
 
@@ -1514,7 +1491,7 @@ public class ImageViewerTab {
                         return;
                     }
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    String regularLabel = decalsCutouts.isSelected() ? "DESI LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
+                    String regularLabel = desiCutouts.isSelected() ? "DESI LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         regularImage.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
@@ -1553,15 +1530,15 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    regularLabel = decalsCutouts.isSelected() ? "DESI LS" : "WISE";
+                    regularLabel = desiCutouts.isSelected() ? "DESI LS" : "WISE";
                     addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
                     List<Couple<String, NirImage>> surveyImages = new ArrayList();
 
-                    // DECaLS image
-                    JLabel decalsLabel = null;
-                    if (processedDecalsImage != null) {
-                        surveyImages.add(new Couple(getImageLabel("DESI LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDecalsImage)));
+                    // DESI LS image
+                    JLabel desiLabel = null;
+                    if (processedDesiImage != null) {
+                        surveyImages.add(new Couple(getImageLabel("DESI LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDesiImage)));
                     }
 
                     // Pan-STARRS image
@@ -1606,7 +1583,7 @@ public class ImageViewerTab {
                         // Display regular image
                         JLabel imageLabel = addTextToImage(new JLabel(new ImageIcon(surveyImage)), surveyLabel);
                         if (surveyLabel.contains("DESI")) {
-                            decalsLabel = imageLabel;
+                            desiLabel = imageLabel;
                         } else if (surveyLabel.contains("PS1")) {
                             ps1Label = imageLabel;
                         } else if (surveyLabel.contains(VHS_LABEL)) {
@@ -1748,7 +1725,7 @@ public class ImageViewerTab {
                                                     displayPs1Images(newRa, newDec, fieldOfView, counter);
                                                 }
                                                 if (legacyImageSeries.isSelected()) {
-                                                    displayDecalsImages(targetRa, targetDec, fieldOfView, counter);
+                                                    displayDesiImages(targetRa, targetDec, fieldOfView, counter);
                                                 }
                                                 if (staticTimeSeries.isSelected()) {
                                                     displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
@@ -1907,8 +1884,8 @@ public class ImageViewerTab {
                         }
                     });
 
-                    if (decalsLabel != null) {
-                        decalsLabel.addMouseListener(new MouseListener() {
+                    if (desiLabel != null) {
+                        desiLabel.addMouseListener(new MouseListener() {
                             @Override
                             public void mousePressed(MouseEvent evt) {
                                 try {
@@ -2463,7 +2440,7 @@ public class ImageViewerTab {
             }
             try {
                 size = (int) ceil(toInteger(sizeField.getText()) / pixelScale);
-                if (decalsCutouts.isSelected()) {
+                if (desiCutouts.isSelected()) {
                     if (size > 1200) {
                         errorMessages.add("Field of view must not be larger than 300 arcsec.");
                     }
@@ -2508,12 +2485,12 @@ public class ImageViewerTab {
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
-                decalsImage = null;
-                processedDecalsImage = null;
+                desiImage = null;
+                processedDesiImage = null;
                 if (legacyImages) {
                     CompletableFuture.supplyAsync(() -> {
-                        decalsImage = fetchDecalsImage(targetRa, targetDec, size);
-                        processedDecalsImage = zoomImage(rotateImage(decalsImage, quadrantCount), zoom);
+                        desiImage = fetchDesiImage(targetRa, targetDec, size);
+                        processedDesiImage = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2576,7 +2553,7 @@ public class ImageViewerTab {
                         zooniversePanel2.add(subjects.get(i));
                     }
                 }
-                if (wiseviewCutouts.isSelected()) {
+                if (wiseCutouts.isSelected()) {
                     try {
                         InputStream stream = getImageData(1, numberOfEpochs + 4);
                         stream.close();
@@ -2960,8 +2937,8 @@ public class ImageViewerTab {
     }
 
     private void processImages() {
-        if (decalsImage != null) {
-            processedDecalsImage = zoomImage(rotateImage(decalsImage, quadrantCount), zoom);
+        if (desiImage != null) {
+            processedDesiImage = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
         }
         if (ps1Image != null) {
             processedPs1Image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
@@ -3026,8 +3003,8 @@ public class ImageViewerTab {
             JScrollPane scrollPanel = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), component.getTitle()));
             grid.add(scrollPanel);
         }
-        if (decalsImage != null) {
-            BufferedImage image = zoomImage(rotateImage(decalsImage, quadrantCount), zoom);
+        if (desiImage != null) {
+            BufferedImage image = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
             JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DESI LS"));
             grid.add(pane);
         }
@@ -3341,64 +3318,66 @@ public class ImageViewerTab {
                 }
             });
         }
-        if (gaiaProperMotion.isSelected()) {
-            if (gaiaTpmEntries == null) {
-                gaiaTpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), totalEpochs);
+        if (wiseCutouts.isSelected()) {
+            if (gaiaProperMotion.isSelected()) {
+                if (gaiaTpmEntries == null) {
+                    gaiaTpmEntries = Collections.emptyList();
+                    CompletableFuture.supplyAsync(() -> {
+                        gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry());
+                        processImages();
+                        return null;
+                    });
+                } else {
+                    drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), totalEpochs);
+                }
             }
-        }
-        if (gaiaDR3ProperMotion.isSelected()) {
-            if (gaiaDR3TpmEntries == null) {
-                gaiaDR3TpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    gaiaDR3TpmEntries = fetchTpmCatalogEntries(new GaiaDR3CatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), totalEpochs);
+            if (gaiaDR3ProperMotion.isSelected()) {
+                if (gaiaDR3TpmEntries == null) {
+                    gaiaDR3TpmEntries = Collections.emptyList();
+                    CompletableFuture.supplyAsync(() -> {
+                        gaiaDR3TpmEntries = fetchTpmCatalogEntries(new GaiaDR3CatalogEntry());
+                        processImages();
+                        return null;
+                    });
+                } else {
+                    drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), totalEpochs);
+                }
             }
-        }
-        if (noirlabProperMotion.isSelected()) {
-            if (noirlabTpmEntries == null) {
-                noirlabTpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, totalEpochs);
+            if (noirlabProperMotion.isSelected()) {
+                if (noirlabTpmEntries == null) {
+                    noirlabTpmEntries = Collections.emptyList();
+                    CompletableFuture.supplyAsync(() -> {
+                        noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
+                        processImages();
+                        return null;
+                    });
+                } else {
+                    drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, totalEpochs);
+                }
             }
-        }
-        if (catWiseProperMotion.isSelected()) {
-            if (catWiseTpmEntries == null) {
-                catWiseTpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
+            if (catWiseProperMotion.isSelected()) {
+                if (catWiseTpmEntries == null) {
+                    catWiseTpmEntries = Collections.emptyList();
+                    CompletableFuture.supplyAsync(() -> {
+                        catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry());
+                        processImages();
+                        return null;
+                    });
+                } else {
+                    drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
+                }
             }
-        }
-        if (ukidssProperMotion.isSelected()) {
-            if (ukidssTpmEntries == null) {
-                ukidssTpmEntries = Collections.emptyList();
-                CompletableFuture.supplyAsync(() -> {
-                    ukidssTpmEntries = fetchTpmCatalogEntries(new UkidssCatalogEntry());
-                    processImages();
-                    return null;
-                });
-            } else {
-                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, totalEpochs);
+            if (ukidssProperMotion.isSelected()) {
+                if (ukidssTpmEntries == null) {
+                    ukidssTpmEntries = Collections.emptyList();
+                    CompletableFuture.supplyAsync(() -> {
+                        ukidssTpmEntries = fetchTpmCatalogEntries(new UkidssCatalogEntry());
+                        processImages();
+                        return null;
+                    });
+                } else {
+                    drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, totalEpochs);
+                }
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
@@ -3431,8 +3410,8 @@ public class ImageViewerTab {
             return;
         }
         writeLogEntry("Downloading ...");
-        if (decalsCutouts.isSelected()) {
-            retrieveDecalsImages(band, images);
+        if (desiCutouts.isSelected()) {
+            retrieveDesiImages(band, images);
         } else {
             for (int i = 0; i < requestedEpochs.size(); i++) {
                 int requestedEpoch = requestedEpochs.get(i);
@@ -3441,17 +3420,6 @@ public class ImageViewerTab {
                 if (container != null) {
                     writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
                     continue;
-                }
-                if (unwiseCutouts.isSelected()) {
-                    if (requestedEpoch % 2 > 0) {
-                        container = images.get(band + "_" + (requestedEpoch - 1));
-                        if (container != null) {
-                            LocalDateTime obsDate = container.getDate().plusMonths(6);
-                            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, container.getImage()));
-                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
-                            continue;
-                        }
-                    }
                 }
                 Fits fits;
                 try {
@@ -3482,13 +3450,7 @@ public class ImageViewerTab {
                 Header header = hdu.getHeader();
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate;
-                if (unwiseCutouts.isSelected()) {
-                    int wiseEpoch = requestedEpoch / 2;
-                    int year = wiseEpoch == 0 ? 2010 : 2013 + wiseEpoch;
-                    obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
-                } else {
-                    obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-                }
+                obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
                 writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
             }
@@ -3655,48 +3617,21 @@ public class ImageViewerTab {
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        if (unwiseCutouts.isSelected()) {
-            epoch /= 2;
-            String unwiseEpoch;
-            if (epoch == 0) {
-                unwiseEpoch = "allwise";
-            } else {
-                unwiseEpoch = "neo" + epoch;
-            }
-            String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, targetRa, targetDec, size, band);
-            try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
-                    InputStream bi = new BufferedInputStream(fi);
-                    InputStream gzi = new GzipCompressorInputStream(bi);
-                    ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
-                ArchiveEntry entry;
-                Map<Long, byte[]> entries = new HashMap();
-                while ((entry = ti.getNextEntry()) != null) {
-                    byte[] buf = new byte[(int) entry.getSize()];
-                    IOUtils.readFully(ti, buf);
-                    entries.put(entry.getSize(), buf);
-                }
-                List<Long> sizes = entries.keySet().stream().collect(Collectors.toList());
-                sizes.sort(Comparator.reverseOrder());
-                long largest = sizes.get(0);
-                return new ByteArrayInputStream(entries.get(largest));
-            }
-        } else {
-            String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            return connection.getInputStream();
-        }
+        String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
+        HttpURLConnection connection = establishHttpConnection(imageUrl);
+        return connection.getInputStream();
     }
 
-    private void retrieveDecalsImages(int band, Map<String, ImageContainer> images) throws Exception {
-        boolean firstEpochDownloaded = downloadDecalsCutouts(0, band, images, "decals-dr5", 2016);
+    private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
+        boolean firstEpochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5", 2016);
         if (!firstEpochDownloaded || !skipIntermediateEpochs.isSelected()) {
-            downloadDecalsCutouts(2, band, images, "decals-dr7", 2018);
-            downloadDecalsCutouts(4, band, images, "ls-dr8", 2019);
+            downloadDesiCutouts(2, band, images, "decals-dr7", 2018);
+            downloadDesiCutouts(4, band, images, "ls-dr8", 2019);
         }
-        downloadDecalsCutouts(6, band, images, "ls-dr9", 2020);
+        downloadDesiCutouts(6, band, images, "ls-dr9", 2020);
     }
 
-    private boolean downloadDecalsCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
+    private boolean downloadDesiCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
@@ -3976,7 +3911,7 @@ public class ImageViewerTab {
         } else {
             double percent = Double.valueOf(range);
             List<Double> outliersRemoved = removeOutliers(data, 100 - percent, percent);
-            if (differenceImaging.isSelected() || decalsCutouts.isSelected()) {
+            if (differenceImaging.isSelected() || desiCutouts.isSelected()) {
                 lowerBound = outliersRemoved.get(0);
             } else {
                 lowerBound = data.get(0);
@@ -4024,14 +3959,9 @@ public class ImageViewerTab {
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
-        if (unwiseCutouts.isSelected()) {
-            imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
-            imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
-            imageViewerTab.getUnwiseCutouts().setSelected(true);
-        }
-        if (decalsCutouts.isSelected()) {
+        if (desiCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
-            imageViewerTab.getDecalsCutouts().setSelected(true);
+            imageViewerTab.getDesiCutouts().setSelected(true);
         }
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.setQuadrantCount(quadrantCount);
@@ -4044,7 +3974,7 @@ public class ImageViewerTab {
         return true;
     }
 
-    private BufferedImage fetchDecalsImage(double targetRa, double targetDec, double size) {
+    private BufferedImage fetchDesiImage(double targetRa, double targetDec, double size) {
         try {
             int imageSize = (int) round(size * pixelScale * 4);
             if (imageSize > 3000) {
@@ -4577,24 +4507,24 @@ public class ImageViewerTab {
         }
     }
 
-    private void displayDecalsImages(double targetRa, double targetDec, int size, Counter counter) {
+    private void displayDesiImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
-            BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
+            BufferedImage image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS g", DESI_LS_DR_LABEL)));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
+            image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS r", DESI_LS_DR_LABEL)));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+            image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS z", DESI_LS_DR_LABEL)));
             }
-            image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
+            image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL)));
             }
@@ -4691,7 +4621,7 @@ public class ImageViewerTab {
                 timeSeries.add(new Couple(getImageLabel("PS1 z", year), new NirImage(year, image)));
             }
 
-            image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+            image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
                 timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
             }
@@ -4808,7 +4738,7 @@ public class ImageViewerTab {
             }
 
             if (legacyImageSeries.isSelected()) {
-                image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+                image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
                     timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
                 }
@@ -5265,9 +5195,8 @@ public class ImageViewerTab {
             }
 
             if (showProperMotion.isSelected()) {
-                NumberPair pixelCoords;
                 NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
-                pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
+                NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
                 Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(200), color);
                 disk.draw(image.getGraphics());
             } else {
@@ -5624,7 +5553,7 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize(int val) {
-        int x = decalsCutouts.isSelected() ? 1500 : 300;
+        int x = desiCutouts.isSelected() ? 1500 : 300;
         double overlaySize = zoom / val + x / size;
         return min(overlaySize, 15);
     }
@@ -5673,12 +5602,8 @@ public class ImageViewerTab {
         return epochLabel;
     }
 
-    public JRadioButton getUnwiseCutouts() {
-        return unwiseCutouts;
-    }
-
-    public JRadioButton getDecalsCutouts() {
-        return decalsCutouts;
+    public JRadioButton getDesiCutouts() {
+        return desiCutouts;
     }
 
     public JCheckBox getSkipIntermediateEpochs() {

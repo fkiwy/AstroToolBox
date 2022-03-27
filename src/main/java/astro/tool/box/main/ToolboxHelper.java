@@ -992,11 +992,11 @@ public class ToolboxHelper {
         return bi;
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert) {
-        return retrieveDecalsImage(targetRa, targetDec, size, band, invert, DESI_LS_DR_PARAM);
+    public static BufferedImage retrieveDesiImage(double targetRa, double targetDec, int size, String band, boolean invert) {
+        return retrieveDesiImage(targetRa, targetDec, size, band, invert, DESI_LS_DR_PARAM);
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
+    public static BufferedImage retrieveDesiImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
         BufferedImage image;
         if (band == null) {
             band = "";

@@ -375,20 +375,20 @@ public class ImageSeriesPdf {
             }
 
             images = new ArrayList<>();
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
+            bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
                 images.add(new Couple(getImageLabel("DESI LS g", DESI_LS_DR_LABEL), bufferedImage));
             }
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
+            bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
                 images.add(new Couple(getImageLabel("DESI LS r", DESI_LS_DR_LABEL), bufferedImage));
             }
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+            bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
                 images.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), bufferedImage));
                 timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
             }
-            bufferedImage = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
+            bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
                 images.add(new Couple(getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
             }

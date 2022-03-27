@@ -80,11 +80,11 @@ public class ImageSeriesTab {
     private final CatalogQueryService catalogQueryService;
 
     private List<Couple<String, NirImage>> timeSeries;
-    private List<Couple<String, BufferedImage>> decalsImages;
+    private List<Couple<String, BufferedImage>> desiImages;
     private List<Couple<String, BufferedImage>> wiseImages;
 
     private Timer timeSeriesTimer;
-    private Timer decalsTimeSeriesTimer;
+    private Timer desiTimeSeriesTimer;
     private Timer wiseTimeSeriesTimer;
 
     private JPanel mainPanel;
@@ -204,10 +204,10 @@ public class ImageSeriesTab {
                         return;
                     }
                     timeSeries = new ArrayList<>();
-                    decalsImages = new ArrayList<>();
+                    desiImages = new ArrayList<>();
                     wiseImages = new ArrayList<>();
                     timeSeriesTimer = null;
-                    decalsTimeSeriesTimer = null;
+                    desiTimeSeriesTimer = null;
                     wiseTimeSeriesTimer = null;
                     if (centerPanel.getComponentCount() > 0) {
                         centerPanel.removeAll();
@@ -423,8 +423,8 @@ public class ImageSeriesTab {
         if (timeSeriesTimer != null) {
             timeSeriesTimer.restart();
         }
-        if (decalsTimeSeriesTimer != null) {
-            decalsTimeSeriesTimer.restart();
+        if (desiTimeSeriesTimer != null) {
+            desiTimeSeriesTimer.restart();
         }
         if (wiseTimeSeriesTimer != null) {
             wiseTimeSeriesTimer.restart();
@@ -435,8 +435,8 @@ public class ImageSeriesTab {
         if (timeSeriesTimer != null) {
             timeSeriesTimer.stop();
         }
-        if (decalsTimeSeriesTimer != null) {
-            decalsTimeSeriesTimer.stop();
+        if (desiTimeSeriesTimer != null) {
+            desiTimeSeriesTimer.stop();
         }
         if (wiseTimeSeriesTimer != null) {
             wiseTimeSeriesTimer.stop();
@@ -767,19 +767,19 @@ public class ImageSeriesTab {
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        image = retrieveDecalsImage(targetRa, targetDec, size, "g", true);
+        image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS g", DESI_LS_DR_LABEL)));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "r", true);
+        image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS r", DESI_LS_DR_LABEL)));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "z", true);
+        image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS z", DESI_LS_DR_LABEL)));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false);
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
             bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL)));
             timeSeries.add(new Couple(getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
@@ -832,35 +832,35 @@ public class ImageSeriesTab {
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "decals-dr5");
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "decals-dr5");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
-            decalsImages.add(new Couple("DECaLS DR5", image));
+            bandPanel.add(buildImagePanel(image, "DESI LS DR5"));
+            desiImages.add(new Couple("DESI LS DR5", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "decals-dr7");
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "decals-dr7");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
-            decalsImages.add(new Couple("DECaLS DR7", image));
+            bandPanel.add(buildImagePanel(image, "DESI LS DR7"));
+            desiImages.add(new Couple("DESI LS DR7", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "ls-dr8");
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr8");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DESI LS DR8"));
-            decalsImages.add(new Couple("LS DR8", image));
+            desiImages.add(new Couple("LS DR8", image));
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", false, "ls-dr9");
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr9");
         if (image != null) {
             bandPanel.add(buildImagePanel(image, "DESI LS DR9"));
-            decalsImages.add(new Couple("LS DR9", image));
+            desiImages.add(new Couple("LS DR9", image));
         }
 
-        if (decalsImages.size() > 2) {
-            decalsTimeSeriesTimer = new Timer(500, null);
-            createTimeSeriesTimer(bandPanel, decalsImages, decalsTimeSeriesTimer);
+        if (desiImages.size() > 2) {
+            desiTimeSeriesTimer = new Timer(500, null);
+            createTimeSeriesTimer(bandPanel, desiImages, desiTimeSeriesTimer);
             JButton saveButton = new JButton("Save as GIF");
             bandPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(decalsImages, saveButton);
+                    saveAnimatedGif(desiImages, saveButton);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
