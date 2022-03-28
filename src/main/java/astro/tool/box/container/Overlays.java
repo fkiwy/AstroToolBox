@@ -28,9 +28,7 @@ public class Overlays {
         GHOSTS,
         LATENTS,
         HALOS,
-        SPIKES,
-        ESTSPT,
-        POTBD
+        SPIKES
     }
 
     private boolean simbad;
@@ -59,8 +57,6 @@ public class Overlays {
     private boolean latents;
     private boolean halos;
     private boolean spikes;
-    private boolean estspt;
-    private boolean potbd;
 
     public String serialize() {
         StringBuilder overlays = new StringBuilder();
@@ -141,12 +137,6 @@ public class Overlays {
         }
         if (spikes) {
             overlays.append(ID.SPIKES).append(",");
-        }
-        if (estspt) {
-            overlays.append(ID.ESTSPT).append(",");
-        }
-        if (potbd) {
-            overlays.append(ID.POTBD).append(",");
         }
         if (overlays.length() > 0) {
             overlays.setLength(overlays.lastIndexOf(","));
@@ -232,12 +222,6 @@ public class Overlays {
         }
         if (overlays.contains(ID.SPIKES.name())) {
             spikes = true;
-        }
-        if (overlays.contains(ID.ESTSPT.name())) {
-            estspt = true;
-        }
-        if (overlays.contains(ID.POTBD.name())) {
-            potbd = true;
         }
     }
 
@@ -447,22 +431,6 @@ public class Overlays {
 
     public void setSpikes(boolean spikes) {
         this.spikes = spikes;
-    }
-
-    public boolean isEstspt() {
-        return estspt;
-    }
-
-    public void setEstspt(boolean estspt) {
-        this.estspt = estspt;
-    }
-
-    public boolean isPotbd() {
-        return potbd;
-    }
-
-    public void setPotbd(boolean potbd) {
-        this.potbd = potbd;
     }
 
 }
