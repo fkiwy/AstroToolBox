@@ -184,8 +184,7 @@ public class ImageViewerTab {
     public static final int DIFFERENT_SIZE = 100;
     public static final int PROPER_MOTION = 100;
     public static final String OVERLAYS_KEY = "overlays";
-    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" (*)";
-    public static final String NO_OBJECT_FOUND = "Proper motion checker:\nNo object found at the given coordinates in a search radius of 5 arcsec.";
+    public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" " + INFO_ICON;
 
     //Reference epochs:
     //allwise: 2010.559
@@ -458,7 +457,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 30;
+            int rows = 29;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -685,9 +684,20 @@ public class ImageViewerTab {
             markTarget = new JCheckBox("Mark target");
             settingsPanel.add(markTarget);
 
-            showCrosshairs = new JCheckBox(html("Crosshairs (*)"));
+            showCrosshairs = new JCheckBox(html("Crosshairs " + INFO_ICON));
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
+
+            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
+            mainControlPanel.add(resetDefaultsButton);
+            resetDefaultsButton.addActionListener((ActionEvent evt) -> {
+                if (differenceImaging.isSelected()) {
+                    blurImages.setSelected(true);
+                } else {
+                    blurImages.setSelected(false);
+                }
+                ranges.setSelectedItem(AUTO_RANGE);
+            });
 
             settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
@@ -715,20 +725,7 @@ public class ImageViewerTab {
             cutoutGroup.add(wiseCutouts);
             cutoutGroup.add(desiCutouts);
 
-            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
-            mainControlPanel.add(resetDefaultsButton);
-            resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                if (differenceImaging.isSelected()) {
-                    blurImages.setSelected(true);
-                } else {
-                    blurImages.setSelected(false);
-                }
-                ranges.setSelectedItem(AUTO_RANGE);
-            });
-
-            mainControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
-
-            mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects:"));
+            mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects"));
 
             zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(zooniversePanel1);
@@ -748,7 +745,7 @@ public class ImageViewerTab {
             overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Overlays", overlaysScrollPanel);
 
-            JLabel catalogOverlaysLabel = createHeaderLabel(html("Catalog overlays: (*)"));
+            JLabel catalogOverlaysLabel = createHeaderLabel(html("Catalog overlays " + INFO_ICON));
             overlaysControlPanel.add(catalogOverlaysLabel);
             catalogOverlaysLabel.setToolTipText("Shortcuts: Alt+[underscored letter]");
 
@@ -917,7 +914,7 @@ public class ImageViewerTab {
                 }
             });
 
-            JLabel pmOverlaysLabel = createHeaderLabel(html("Proper motion vectors: (*)"));
+            JLabel pmOverlaysLabel = createHeaderLabel(html("Proper motion vectors " + INFO_ICON));
             overlaysControlPanel.add(pmOverlaysLabel);
             pmOverlaysLabel.setToolTipText("Shortcuts: Ctrl+Alt+[underscored letter]");
 
@@ -977,7 +974,7 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts: (*)"));
+            JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts " + INFO_ICON));
             overlaysControlPanel.add(artifactsLabel);
             artifactsLabel.setToolTipText(html(""
                     + "Small shapes represent affected sources." + LINE_BREAK
@@ -1019,7 +1016,7 @@ public class ImageViewerTab {
                 saveOverlaysMessage.setText("");
             });
 
-            JButton saveButton = new JButton(html("Save selected overlays (*)"));
+            JButton saveButton = new JButton(html("Save selected overlays " + INFO_ICON));
             overlaysControlPanel.add(saveButton);
             saveButton.setToolTipText("Custom overlays not included!");
             saveButton.addActionListener((ActionEvent evt) -> {
@@ -1058,8 +1055,6 @@ public class ImageViewerTab {
                 }
             });
 
-            overlaysControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
-
             overlaysControlPanel.add(saveOverlaysMessage);
 
             //====================
@@ -1074,7 +1069,7 @@ public class ImageViewerTab {
             mouseScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Mouse", mouseScrollPanel);
 
-            mouseControlPanel.add(createHeaderLabel("Mouse left click w/o overlays:"));
+            mouseControlPanel.add(createHeaderLabel("Mouse left click w/o overlays"));
 
             showCatalogsButton = new JRadioButton("Show catalog entries for object", true);
             mouseControlPanel.add(showCatalogsButton);
@@ -1086,7 +1081,7 @@ public class ImageViewerTab {
             buttonGroup.add(showCatalogsButton);
             buttonGroup.add(recenterImagesButton);
 
-            mouseControlPanel.add(createHeaderLabel("Mouse wheel click:"));
+            mouseControlPanel.add(createHeaderLabel("Mouse wheel click"));
 
             mouseControlPanel.add(new JLabel("Select images to display:"));
 
@@ -1190,9 +1185,11 @@ public class ImageViewerTab {
                 imageSeriesPdf.setSelected(false);
             });
 
-            imageSeriesPdf = new JCheckBox("Image series PDF (*)", false);
+            imageSeriesPdf = new JCheckBox(html("Image series PDF " + INFO_ICON), false);
             mouseControlPanel.add(imageSeriesPdf);
-            imageSeriesPdf.setToolTipText("The creation of the PDF may take a few minutes.\nDo not continue working with AstroToolBox until the PDF is ready!");
+            imageSeriesPdf.setToolTipText(html(""
+                    + "The creation of the PDF may take a few minutes." + LINE_BREAK
+                    + "Do not continue working with AstroToolBox until the PDF is ready!"));
             imageSeriesPdf.addActionListener((ActionEvent evt) -> {
                 if (imageSeriesPdf.isSelected()) {
                     setImageViewer(this);
@@ -1214,7 +1211,7 @@ public class ImageViewerTab {
             mouseControlPanel.add(changeFovLabel);
             changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view.");
 
-            mouseControlPanel.add(createHeaderLabel("Mouse right click:"));
+            mouseControlPanel.add(createHeaderLabel("Mouse right click"));
 
             mouseControlPanel.add(new JLabel("Show object in a different field of view"));
 
@@ -1226,7 +1223,7 @@ public class ImageViewerTab {
 
             mouseControlPanel.add(new JLabel());
 
-            drawCrosshairs = createHeaderBox(html("Draw crosshairs: (*)"));
+            drawCrosshairs = createHeaderBox(html("Draw crosshairs: " + INFO_ICON));
             mouseControlPanel.add(drawCrosshairs);
             drawCrosshairs.setToolTipText(html(""
                     + "Tick the check box!" + LINE_BREAK
@@ -1245,8 +1242,6 @@ public class ImageViewerTab {
             crosshairCoords = new JTextArea();
             mouseControlPanel.add(new JScrollPane(crosshairCoords));
             crosshairCoords.setBackground(new JLabel().getBackground());
-
-            mouseControlPanel.add(new JLabel(html("(*) Shows a tooltip when hovered")));
 
             //=====================
             // Tab: Player controls

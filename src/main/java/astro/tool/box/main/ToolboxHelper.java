@@ -143,6 +143,7 @@ public class ToolboxHelper {
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
+    public static final String INFO_ICON = "&#128712";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
