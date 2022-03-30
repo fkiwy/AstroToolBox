@@ -381,7 +381,7 @@ public class ImageSeriesTab {
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
                                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                                    messagePanel.add(new JLabel(red("(*) Please check that all the sources listed above correspond to the same object!")));
+                                    messagePanel.add(new JLabel("(*) Warning: The sources listed above do not necessarily belong to the same object."));
                                     messagePanel.add(new JLabel("Clicking on any row above will take you to the Image Viewer with the appropriate overlays enabled."));
                                     container.add(messagePanel);
                                     bottomPanel.addTab("Proper motions", container);
