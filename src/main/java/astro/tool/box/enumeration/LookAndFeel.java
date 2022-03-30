@@ -2,6 +2,6 @@ package astro.tool.box.enumeration;
 
 public enum LookAndFeel {
 
-    Java, OS, Flat_Light, Flat_Dark
+    System, Flat_Light, Flat_Dark, Flat_Darcula, Flat_IntelliJ
 
 }

@@ -663,7 +663,7 @@ public class ImageViewerTab {
             settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
 
-            borderFirst = new JCheckBox("Border 1st ep.");
+            borderFirst = new JCheckBox("Border 1st epoch");
             settingsPanel.add(borderFirst);
 
             staticView = new JCheckBox("Static view");

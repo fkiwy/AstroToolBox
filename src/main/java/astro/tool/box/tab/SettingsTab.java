@@ -6,7 +6,9 @@ import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -612,10 +614,7 @@ public class SettingsTab {
         boolean isFlatLaf = false;
         try {
             switch (lookAndFeel) {
-                case Java:
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                    break;
-                case OS:
+                case System:
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     break;
                 case Flat_Light:
@@ -624,6 +623,14 @@ public class SettingsTab {
                     break;
                 case Flat_Dark:
                     UIManager.setLookAndFeel(new FlatDarkLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Darcula:
+                    UIManager.setLookAndFeel(new FlatDarculaLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_IntelliJ:
+                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
                     isFlatLaf = true;
                     break;
             }
