@@ -320,7 +320,7 @@ public class ImageSeriesTab {
                                 }
                                 addProperMotionEntry(ukidssEntry, resultRows);
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist. from target (arcsec)", "source 2", "dist. from target (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
+                                    String[] columns = new String[]{"Proper motion origin", "source 1", "dist. from target (arcsec)", "source 2", "dist. from target (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     resultTable.setAutoCreateRowSorter(true);
@@ -381,8 +381,9 @@ public class ImageSeriesTab {
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
                                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                                    messagePanel.add(new JLabel("(*) Warning: The sources listed above do not necessarily belong to the same object."));
-                                    messagePanel.add(new JLabel("Clicking on any row above will take you to the Image Viewer with the appropriate overlays enabled."));
+                                    messagePanel.add(new JLabel(red("Warning:")));
+                                    messagePanel.add(new JLabel("The entries listed above do not necessarily belong to the same object."));
+                                    messagePanel.add(new JLabel("Clicking on an entry will take you to the Image Viewer with the appropriate overlays enabled."));
                                     container.add(messagePanel);
                                     bottomPanel.addTab("Proper motions", container);
                                     bottomPanel.setSelectedIndex(bottomPanel.getTabCount() - 1);
