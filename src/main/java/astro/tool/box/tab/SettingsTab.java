@@ -215,8 +215,8 @@ public class SettingsTab {
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
-            globalSettings.add(new JLabel("Consider phot. errors in spt estimates: ", JLabel.RIGHT));
-            JCheckBox photometricErrorsBox = new JCheckBox("needs a restart after: Apply settings");
+            globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", JLabel.RIGHT));
+            JCheckBox photometricErrorsBox = new JCheckBox("Needs a restart after: Apply settings");
             photometricErrorsBox.setSelected(photometricErrors);
             globalSettings.add(photometricErrorsBox);
 
