@@ -614,7 +614,7 @@ public class SettingsTab {
         boolean isFlatLaf = false;
         try {
             switch (lookAndFeel) {
-                case System:
+                case OS:
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     break;
                 case Flat_Light:
