@@ -1863,7 +1863,7 @@ public class ImageViewerTab {
                             @Override
                             public void mousePressed(MouseEvent evt) {
                                 try {
-                                    Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView, FileType.STACK)));
+                                    Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView, FileType.STACK_AND_WARP)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
