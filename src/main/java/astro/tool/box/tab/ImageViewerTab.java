@@ -38,6 +38,7 @@ import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.component.TextPrompt;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
@@ -474,6 +475,8 @@ public class ImageViewerTab {
 
             coordsField = new JTextField();
             mainControlPanel.add(coordsField);
+            TextPrompt coordsFieldPrompt = new TextPrompt("Enter coordinates and press Enter");
+            coordsFieldPrompt.applyTo(coordsField);
             coordsField.addActionListener((ActionEvent evt) -> {
                 createFlipbook();
             });

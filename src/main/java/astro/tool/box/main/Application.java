@@ -120,6 +120,8 @@ public class Application {
         SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
         settingsTab.init();
 
+        tabbedPane.setSelectedIndex(3);
+
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);
 
