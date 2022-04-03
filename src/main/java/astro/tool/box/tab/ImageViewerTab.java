@@ -154,6 +154,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -234,8 +235,8 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JLabel changeFovLabel;
     private JLabel epochLabel;
-    private JPanel zooniversePanel1;
-    private JPanel zooniversePanel2;
+    private JPanel bywTopRow;
+    private JPanel bywBottomRow;
     private JScrollPane rightScrollPanel;
     private JRadioButton wiseCutouts;
     private JRadioButton desiCutouts;
@@ -459,7 +460,7 @@ public class ImageViewerTab {
             // Tab: Main controls
             //===================
             int rows = 29;
-            int controlPanelWidth = 255;
+            int controlPanelWidth = 240;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
@@ -728,13 +729,18 @@ public class ImageViewerTab {
             cutoutGroup.add(wiseCutouts);
             cutoutGroup.add(desiCutouts);
 
-            mainControlPanel.add(createHeaderLabel("Nearest BYWP9 subjects"));
+            JPanel bywLabel = new JPanel();
+            mainControlPanel.add(bywLabel);
+            bywLabel.add(new JLabel("Nearest BYW subjects"));
+            bywLabel.setBorder(new MatteBorder(2, 2, 1, 2, Color.LIGHT_GRAY));
 
-            zooniversePanel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(zooniversePanel1);
+            bywTopRow = new JPanel();
+            mainControlPanel.add(bywTopRow);
+            bywTopRow.setBorder(new MatteBorder(0, 2, 0, 2, Color.LIGHT_GRAY));
 
-            zooniversePanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(zooniversePanel2);
+            bywBottomRow = new JPanel();
+            mainControlPanel.add(bywBottomRow);
+            bywBottomRow.setBorder(new MatteBorder(0, 2, 2, 2, Color.LIGHT_GRAY));
 
             //======================
             // Tab: Catalog overlays
@@ -2419,18 +2425,18 @@ public class ImageViewerTab {
                         return null;
                     });
                 }
-                zooniversePanel1.removeAll();
-                zooniversePanel2.removeAll();
+                bywTopRow.removeAll();
+                bywBottomRow.removeAll();
                 List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
                 int numberOfSubjects = subjects.size();
                 if (numberOfSubjects == 0) {
-                    zooniversePanel1.add(new JLabel("None"));
+                    bywTopRow.add(new JLabel("N/A"));
                 } else {
                     for (int i = 0; i < 4 && i < numberOfSubjects; i++) {
-                        zooniversePanel1.add(subjects.get(i));
+                        bywTopRow.add(subjects.get(i));
                     }
                     for (int i = 4; i < 8 && i < numberOfSubjects; i++) {
-                        zooniversePanel2.add(subjects.get(i));
+                        bywBottomRow.add(subjects.get(i));
                     }
                 }
                 if (wiseCutouts.isSelected()) {
