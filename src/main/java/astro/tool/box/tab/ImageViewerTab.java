@@ -99,6 +99,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -166,6 +167,11 @@ import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
 import nom.tam.fits.ImageHDU;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 public class ImageViewerTab {
 
@@ -175,6 +181,7 @@ public class ImageViewerTab {
     public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
+    public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -239,6 +246,7 @@ public class ImageViewerTab {
     private JPanel bywBottomRow;
     private JScrollPane rightScrollPanel;
     private JRadioButton wiseCutouts;
+    private JRadioButton wiseCoadds;
     private JRadioButton desiCutouts;
     private JRadioButton showCatalogsButton;
     private JCheckBox differenceImaging;
@@ -459,8 +467,8 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 29;
-            int controlPanelWidth = 240;
+            int rows = 31;
+            int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
@@ -667,7 +675,7 @@ public class ImageViewerTab {
             settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
 
-            borderFirst = new JCheckBox("Border 1st epoch");
+            borderFirst = new JCheckBox("Border 1st ep.");
             settingsPanel.add(borderFirst);
 
             staticView = new JCheckBox("Static view");
@@ -703,11 +711,8 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            settingsPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(settingsPanel);
-
-            wiseCutouts = new JRadioButton("WISE cutouts", true);
-            settingsPanel.add(wiseCutouts);
+            wiseCutouts = new JRadioButton("WISE cutouts (sep. scan)", true);
+            mainControlPanel.add(wiseCutouts);
             wiseCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
@@ -716,8 +721,18 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
+            wiseCoadds = new JRadioButton(html("unWISE deep coadds"));
+            mainControlPanel.add(wiseCoadds);
+            wiseCoadds.addActionListener((ActionEvent evt) -> {
+                resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+                pixelScale = PIXEL_SCALE_WISE;
+                previousRa = 0;
+                previousDec = 0;
+                ranges.setSelectedItem(AUTO_RANGE);
+            });
+
             desiCutouts = new JRadioButton("DESI LS cutouts");
-            settingsPanel.add(desiCutouts);
+            mainControlPanel.add(desiCutouts);
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
@@ -727,6 +742,7 @@ public class ImageViewerTab {
 
             ButtonGroup cutoutGroup = new ButtonGroup();
             cutoutGroup.add(wiseCutouts);
+            cutoutGroup.add(wiseCoadds);
             cutoutGroup.add(desiCutouts);
 
             JPanel bywLabel = new JPanel();
@@ -3204,7 +3220,7 @@ public class ImageViewerTab {
                 }
             });
         }
-        if (wiseCutouts.isSelected()) {
+        if (wiseCutouts.isSelected() || wiseCoadds.isSelected()) {
             if (gaiaProperMotion.isSelected()) {
                 if (gaiaTpmEntries == null) {
                     gaiaTpmEntries = Collections.emptyList();
@@ -3307,6 +3323,17 @@ public class ImageViewerTab {
                     writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
                     continue;
                 }
+                if (wiseCoadds.isSelected()) {
+                    if (requestedEpoch % 2 > 0) {
+                        container = images.get(band + "_" + (requestedEpoch - 1));
+                        if (container != null) {
+                            LocalDateTime obsDate = container.getDate().plusMonths(6);
+                            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, container.getImage()));
+                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
+                            continue;
+                        }
+                    }
+                }
                 Fits fits;
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
@@ -3336,7 +3363,13 @@ public class ImageViewerTab {
                 Header header = hdu.getHeader();
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate;
-                obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+                if (wiseCoadds.isSelected()) {
+                    int wiseEpoch = requestedEpoch / 2;
+                    int year = wiseEpoch == 0 ? 2010 : 2013 + wiseEpoch;
+                    obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
+                } else {
+                    obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
+                }
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
                 writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
             }
@@ -3503,9 +3536,36 @@ public class ImageViewerTab {
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
-        HttpURLConnection connection = establishHttpConnection(imageUrl);
-        return connection.getInputStream();
+        if (wiseCoadds.isSelected()) {
+            epoch /= 2;
+            String unwiseEpoch;
+            if (epoch == 0) {
+                unwiseEpoch = "allwise";
+            } else {
+                unwiseEpoch = "neo" + epoch;
+            }
+            String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, targetRa, targetDec, size, band);
+            try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
+                    InputStream bi = new BufferedInputStream(fi);
+                    InputStream gzi = new GzipCompressorInputStream(bi);
+                    ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
+                ArchiveEntry entry;
+                Map<Long, byte[]> entries = new HashMap();
+                while ((entry = ti.getNextEntry()) != null) {
+                    byte[] buf = new byte[(int) entry.getSize()];
+                    IOUtils.readFully(ti, buf);
+                    entries.put(entry.getSize(), buf);
+                }
+                List<Long> sizes = entries.keySet().stream().collect(Collectors.toList());
+                sizes.sort(Comparator.reverseOrder());
+                long largest = sizes.get(0);
+                return new ByteArrayInputStream(entries.get(largest));
+            }
+        } else {
+            String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            return connection.getInputStream();
+        }
     }
 
     private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
@@ -3845,6 +3905,11 @@ public class ImageViewerTab {
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
+        if (wiseCoadds.isSelected()) {
+            imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+            imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
+            imageViewerTab.getWiseCoadds().setSelected(true);
+        }
         if (desiCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDesiCutouts().setSelected(true);
@@ -5442,6 +5507,10 @@ public class ImageViewerTab {
 
     public JLabel getEpochLabel() {
         return epochLabel;
+    }
+
+    public JRadioButton getWiseCoadds() {
+        return wiseCoadds;
     }
 
     public JRadioButton getDesiCutouts() {
