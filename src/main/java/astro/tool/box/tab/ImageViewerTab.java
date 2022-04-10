@@ -598,11 +598,10 @@ public class ImageViewerTab {
             JLabel zoomLabel = new JLabel(String.format("Zoom: %d", zoom));
             mainControlPanel.add(zoomLabel);
 
-            zoomSlider = new JSlider(0, 2000, ZOOM);
+            zoomSlider = new JSlider(100, 2000, ZOOM);
             mainControlPanel.add(zoomSlider);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
                 zoom = zoomSlider.getValue();
-                zoom = zoom < 100 ? 100 : zoom;
                 zoomLabel.setText(String.format("Zoom: %d", zoom));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
