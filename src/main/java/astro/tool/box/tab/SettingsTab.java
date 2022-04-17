@@ -380,7 +380,7 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
-            JCheckBox legacyImagesCheckBox = new JCheckBox("DESI LS", legacyImages);
+            JCheckBox legacyImagesCheckBox = new JCheckBox("DECam LS", legacyImages);
             downloadPanel.add(legacyImagesCheckBox);
             JCheckBox panstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", panstarrsImages);
             downloadPanel.add(panstarrsImagesCheckBox);

@@ -730,7 +730,7 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            desiCutouts = new JRadioButton("DESI LS cutouts");
+            desiCutouts = new JRadioButton("DECam LS cutouts");
             mainControlPanel.add(desiCutouts);
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
@@ -1157,7 +1157,7 @@ public class ImageViewerTab {
                 imageSeriesPdf.setSelected(false);
             });
 
-            legacyImageSeries = new JCheckBox("DESI LS g, r & z bands", false);
+            legacyImageSeries = new JCheckBox("DECam LS g, r & z bands", false);
             mouseControlPanel.add(legacyImageSeries);
             legacyImageSeries.addActionListener((ActionEvent evt) -> {
                 imageSeriesPdf.setSelected(false);
@@ -1457,7 +1457,7 @@ public class ImageViewerTab {
                         return;
                     }
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    String regularLabel = desiCutouts.isSelected() ? "DESI LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
+                    String regularLabel = desiCutouts.isSelected() ? "DECam LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         regularImage.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
@@ -1496,7 +1496,7 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    regularLabel = desiCutouts.isSelected() ? "DESI LS" : "WISE";
+                    regularLabel = desiCutouts.isSelected() ? "DECam LS" : "WISE";
                     addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
                     List<Couple<String, NirImage>> surveyImages = new ArrayList();
@@ -1504,7 +1504,7 @@ public class ImageViewerTab {
                     // DESI LS image
                     JLabel desiLabel = null;
                     if (processedDesiImage != null) {
-                        surveyImages.add(new Couple(getImageLabel("DESI LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDesiImage)));
+                        surveyImages.add(new Couple(getImageLabel("LS", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, processedDesiImage)));
                     }
 
                     // Pan-STARRS image
@@ -1548,7 +1548,7 @@ public class ImageViewerTab {
 
                         // Display regular image
                         JLabel imageLabel = addTextToImage(new JLabel(new ImageIcon(surveyImage)), surveyLabel);
-                        if (surveyLabel.contains("DESI")) {
+                        if (surveyLabel.contains("DECam")) {
                             desiLabel = imageLabel;
                         } else if (surveyLabel.contains("PS1")) {
                             ps1Label = imageLabel;
@@ -2906,7 +2906,7 @@ public class ImageViewerTab {
         }
         if (desiImage != null) {
             BufferedImage image = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DESI LS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECam LS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
@@ -4464,19 +4464,19 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS g", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS g", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS r", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS r", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS z", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS g-r-z", DESI_LS_DR_LABEL)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4486,7 +4486,7 @@ public class ImageViewerTab {
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("DESI LS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.setTitle("DECam LS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
@@ -4535,7 +4535,7 @@ public class ImageViewerTab {
             image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (image != null) {
                 int year = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
-                timeSeries.add(new Couple(getImageLabel("WISE W2", year), new NirImage(year, image)));
+                timeSeries.add(new Couple(getImageLabel("WISE W2", year), new NirImage(ALLWISE_EPOCH, image)));
             }
 
             if (targetDec > -5) {
@@ -4573,7 +4573,7 @@ public class ImageViewerTab {
 
             image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+                timeSeries.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
             }
 
             int componentCount = timeSeries.size();
@@ -4648,7 +4648,7 @@ public class ImageViewerTab {
                 image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
                 if (image != null) {
                     int year = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
-                    timeSeries.add(new Couple(getImageLabel("WISE W2", year), new NirImage(year, image)));
+                    timeSeries.add(new Couple(getImageLabel("WISE W2", year), new NirImage(ALLWISE_EPOCH, image)));
                 }
             }
 
@@ -4690,7 +4690,7 @@ public class ImageViewerTab {
             if (legacyImageSeries.isSelected()) {
                 image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
-                    timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+                    timeSeries.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
                 }
             }
 

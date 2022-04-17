@@ -46,6 +46,8 @@ public class Constants {
 
     public static final int SPITZER_EPOCH = 2003;
 
+    public static final int ALLWISE_EPOCH = 2010;
+
     public static final int DESI_LS_EPOCH = 2019;
 
     public static final String DESI_LS_DR_LABEL = "DR9";

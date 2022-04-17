@@ -11,6 +11,7 @@ import astro.tool.box.tab.BrownDwarfTab;
 import astro.tool.box.tab.CatalogQueryTab;
 import astro.tool.box.tab.CustomOverlaysTab;
 import astro.tool.box.tab.FileBrowserTab;
+import astro.tool.box.tab.FinderChartTab;
 import astro.tool.box.tab.ImageViewerTab;
 import astro.tool.box.tab.LookupTab;
 import astro.tool.box.tab.ObjectCollectionTab;
@@ -89,6 +90,9 @@ public class Application {
 
         ImageSeriesTab imageSeriesTab = new ImageSeriesTab(baseFrame, tabbedPane, imageViewerTab);
         imageSeriesTab.init();
+
+        FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
+        finderChartTab.init();
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();

@@ -282,7 +282,7 @@ public class ImageSeriesPdf {
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
             if (bufferedImage != null) {
                 images.add(new Couple(getImageLabel("WISE W2", year_w2), bufferedImage));
-                timeSeries.add(new Couple(getImageLabel("WISE W2", year_w2), new NirImage(year_w2, bufferedImage)));
+                timeSeries.add(new Couple(getImageLabel("WISE W2", year_w2), new NirImage(ALLWISE_EPOCH, bufferedImage)));
             }
             bufferedImage = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
             if (bufferedImage != null) {
@@ -377,20 +377,20 @@ public class ImageSeriesPdf {
             images = new ArrayList<>();
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DESI LS g", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECam LS g", DESI_LS_DR_LABEL), bufferedImage));
             }
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DESI LS r", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECam LS r", DESI_LS_DR_LABEL), bufferedImage));
             }
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), bufferedImage));
-                timeSeries.add(new Couple(getImageLabel("DESI LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
+                images.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
             }
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DESI LS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECam LS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
             }
 
             createPdfTable(images, writer, document);
