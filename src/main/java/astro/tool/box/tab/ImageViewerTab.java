@@ -1548,7 +1548,7 @@ public class ImageViewerTab {
 
                         // Display regular image
                         JLabel imageLabel = addTextToImage(new JLabel(new ImageIcon(surveyImage)), surveyLabel);
-                        if (surveyLabel.contains("DECam")) {
+                        if (surveyLabel.contains("LS")) {
                             desiLabel = imageLabel;
                         } else if (surveyLabel.contains("PS1")) {
                             ps1Label = imageLabel;
