@@ -55,6 +55,7 @@ import astro.tool.box.container.ComponentInfo;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
+import astro.tool.box.enumeration.StatType;
 import astro.tool.box.main.ImageSeriesPdf;
 import astro.tool.box.panel.ReferencesPanel;
 import astro.tool.box.panel.SedPanel;
@@ -543,8 +544,10 @@ public class ImageViewerTab {
                 "93",
                 "92",
                 "91",
-                "90"
-            });
+                "90",
+                "85",
+                "80",
+                "70",});
             mainControlPanel.add(ranges);
             ranges.setSelectedItem(range);
             ranges.addActionListener((ActionEvent evt) -> {
@@ -710,8 +713,9 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            wiseCutouts = new JRadioButton("WISE cutouts (sep. scan)", true);
+            wiseCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
             mainControlPanel.add(wiseCutouts);
+            wiseCutouts.setToolTipText("WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
             wiseCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
@@ -720,8 +724,9 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            wiseCoadds = new JRadioButton(html("unWISE deep coadds"));
+            wiseCoadds = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
             mainControlPanel.add(wiseCoadds);
+            wiseCoadds.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
             wiseCoadds.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
@@ -730,8 +735,9 @@ public class ImageViewerTab {
                 ranges.setSelectedItem(AUTO_RANGE);
             });
 
-            desiCutouts = new JRadioButton("DECam LS cutouts");
+            desiCutouts = new JRadioButton(html("DECam LS cutouts " + INFO_ICON));
             mainControlPanel.add(desiCutouts);
+            desiCutouts.setToolTipText("DECam LS cutouts are from https://www.legacysurvey.org and are not well suited for motion detection.\nEpochs can be to close together. W1 represents the r-band, W2 the z-band.");
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
@@ -3827,42 +3833,37 @@ public class ImageViewerTab {
                 }
             }
         }
-        data.sort(Comparator.naturalOrder());
-        List<Double> lowerPart;
-        List<Double> upperPart;
-        int length = data.size();
-        int half = length / 2;
-        lowerPart = data.subList(0, half);
-        upperPart = data.subList(half, length);
         double lowerBound;
         double upperBound;
+        List<Double> outliersRemoved = data;
         if (AUTO_RANGE.equals(range)) {
-            double q1 = determineMedian(lowerPart);
-            double q3 = determineMedian(upperPart);
-            double iqr = q3 - q1;
-            double fov = toDouble(sizeField.getText());
-            double scale = fov > 1000 ? fov / 1000 : 1;
-            if (differenceImaging.isSelected()) {
-                lowerBound = q1 - 5 * iqr * scale;
-                upperBound = q3 + 5 * iqr * scale;
+            int clippingFactor;
+            if (desiCutouts.isSelected()) {
+                if (differenceImaging.isSelected()) {
+                    clippingFactor = 10;
+                } else {
+                    clippingFactor = 15;
+                }
             } else {
-                double minVal = data.get(0);
-                double maxVal = data.get(length - 1);
-                lowerBound = q1 - iqr * scale;
-                lowerBound = minVal < -1000 ? lowerBound : minVal;
-                upperBound = q3 + 10 * iqr * scale;
-                upperBound = upperBound > maxVal ? maxVal : upperBound;
+                if (differenceImaging.isSelected()) {
+                    clippingFactor = 5;
+                } else {
+                    clippingFactor = 10;
+                }
+            }
+            int oldSize = 1;
+            int newSize = 0;
+            while (oldSize != newSize) {
+                oldSize = newSize;
+                outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
+                newSize = outliersRemoved.size();
             }
         } else {
             double percent = Double.valueOf(range);
-            List<Double> outliersRemoved = removeOutliers(data, 100 - percent, percent);
-            if (differenceImaging.isSelected() || desiCutouts.isSelected()) {
-                lowerBound = outliersRemoved.get(0);
-            } else {
-                lowerBound = data.get(0);
-            }
-            upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
+            outliersRemoved = removeOutliers(data, 100 - percent, percent);
         }
+        lowerBound = outliersRemoved.get(0);
+        upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
 
@@ -5193,7 +5194,7 @@ public class ImageViewerTab {
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
         scrollPanel.setPreferredSize(new Dimension(650, 330));
         scrollPanel.setMinimumSize(new Dimension(650, 330));
-        scrollPanel.setMaximumSize(new Dimension(650, 330));
+        //scrollPanel.setMaximumSize(new Dimension(650, 330));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));

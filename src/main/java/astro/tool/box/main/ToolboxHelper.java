@@ -1000,26 +1000,30 @@ public class ToolboxHelper {
         return new HashMap();
     }
 
-    public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
+    public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) {
         Map<String, String> fileNames = new LinkedHashMap();
-        String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
-        String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
-        try (Scanner scanner = new Scanner(response)) {
-            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-            int filter = 0;
-            int fileName = 0;
-            for (int i = 0; i < columnNames.length; i++) {
-                if (columnNames[i].equals("filter")) {
-                    filter = i;
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int filter = 0;
+                int fileName = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filter")) {
+                        filter = i;
+                    }
+                    if (columnNames[i].equals("filename")) {
+                        fileName = i;
+                    }
                 }
-                if (columnNames[i].equals("filename")) {
-                    fileName = i;
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    fileNames.put(columnValues[filter], columnValues[fileName]);
                 }
             }
-            while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                fileNames.put(columnValues[filter], columnValues[fileName]);
-            }
+        } catch (Exception ex) {
+            writeErrorLog(ex);
         }
         return fileNames;
     }
