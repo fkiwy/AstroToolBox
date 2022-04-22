@@ -188,6 +188,7 @@ public class ImageViewerTab {
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 6;
     public static final int CONTRAST = 10;
+    public static final int CONTRAST_DESI = 5;
     public static final int SPEED = 200;
     public static final int ZOOM = 500;
     public static final int SIZE = 100;
@@ -466,7 +467,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 26;
+            int rows = 27;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -652,14 +653,25 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
+            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
+            mainControlPanel.add(resetDefaultsButton);
+            resetDefaultsButton.addActionListener((ActionEvent evt) -> {
+                if (differenceImaging.isSelected()) {
+                    blurImages.setSelected(true);
+                } else {
+                    blurImages.setSelected(false);
+                }
+                resetContrastSlider();
+                createFlipbook();
+            });
+
             wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
             mainControlPanel.add(wiseviewCutouts);
             wiseviewCutouts.setToolTipText("WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
             wiseviewCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
-                previousRa = 0;
-                previousDec = 0;
+                previousSize = 0;
                 createFlipbook();
             });
 
@@ -669,8 +681,7 @@ public class ImageViewerTab {
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
-                previousRa = 0;
-                previousDec = 0;
+                previousSize = 0;
                 createFlipbook();
             });
 
@@ -679,8 +690,7 @@ public class ImageViewerTab {
             desiCutouts.setToolTipText("DECaLS LS cutouts (DR5, 7, 8 & 9) are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 & DR9). W1 represents the r-band, W2 the z-band.");
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
-                previousRa = 0;
-                previousDec = 0;
+                previousSize = 0;
                 createFlipbook();
             });
 
@@ -2172,6 +2182,15 @@ public class ImageViewerTab {
         selectedEpochs = numberOfEpochs;
     }
 
+    private void resetContrastSlider() {
+        int defaultContrast = desiCutouts.isSelected() ? CONTRAST_DESI : CONTRAST;
+        ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
+        contrastSlider.removeChangeListener(changeListener);
+        contrastSlider.setValue(defaultContrast);
+        contrastSlider.addChangeListener(changeListener);
+        contrast = contrastSlider.getMaximum() - defaultContrast;
+    }
+
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
         double anchorX = wiseImage.getWidth() / 2;
         double anchorY = wiseImage.getHeight() / 2;
@@ -2331,6 +2350,7 @@ public class ImageViewerTab {
                 initCatalogEntries();
                 desiImage = null;
                 processedDesiImage = null;
+                resetContrastSlider();
                 if (legacyImages) {
                     CompletableFuture.supplyAsync(() -> {
                         desiImage = fetchDesiImage(targetRa, targetDec, size);
