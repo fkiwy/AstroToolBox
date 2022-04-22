@@ -179,7 +179,6 @@ public class ImageViewerTab {
     public static final String TAB_NAME = "Image Viewer";
     public static final String EPOCH_LABEL = "NEOWISE epochs: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
-    public static final String AUTO_RANGE = "AUTO";
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
@@ -188,6 +187,7 @@ public class ImageViewerTab {
     public static final int PANEL_WIDTH = 180;
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 6;
+    public static final int CONTRAST = 10;
     public static final int SPEED = 200;
     public static final int ZOOM = 500;
     public static final int SIZE = 100;
@@ -246,8 +246,8 @@ public class ImageViewerTab {
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
     private JScrollPane rightScrollPanel;
-    private JRadioButton wiseCutouts;
-    private JRadioButton wiseCoadds;
+    private JRadioButton wiseviewCutouts;
+    private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
     private JRadioButton showCatalogsButton;
     private JCheckBox differenceImaging;
@@ -301,9 +301,7 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
-    private JComboBox ranges;
-    private JSlider minValSlider;
-    private JSlider maxValSlider;
+    private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -340,7 +338,6 @@ public class ImageViewerTab {
     private ImageViewerTab imageViewer;
 
     private WiseBand wiseBand = WISE_BAND;
-    private String range = AUTO_RANGE;
     private double pixelScale = PIXEL_SCALE_WISE;
     private int fieldOfView = 30;
     private int shapeSize = 5;
@@ -355,6 +352,7 @@ public class ImageViewerTab {
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int minValue;
     private int maxValue;
+    private int contrast = CONTRAST;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -468,7 +466,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 31;
+            int rows = 26;
             int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -521,65 +519,17 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Pixel value range (%):"));
-
-            ranges = new JComboBox(new Object[]{
-                AUTO_RANGE,
-                "100",
-                "99.9",
-                "99.8",
-                "99.7",
-                "99.6",
-                "99.5",
-                "99.4",
-                "99.3",
-                "99.2",
-                "99.1",
-                "99",
-                "98",
-                "97",
-                "96",
-                "95",
-                "94",
-                "93",
-                "92",
-                "91",
-                "90",
-                "85",
-                "80",
-                "70",});
-            mainControlPanel.add(ranges);
-            ranges.setSelectedItem(range);
-            ranges.addActionListener((ActionEvent evt) -> {
-                range = (String) ranges.getSelectedItem();
-                createFlipbook();
-            });
-
-            mainControlPanel.add(new JLabel("Brightness:"));
-
-            minValSlider = new JSlider();
-            mainControlPanel.add(minValSlider);
-            minValSlider.addChangeListener((ChangeEvent e) -> {
-                minValue = minValSlider.getValue();
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                processImages();
-            });
-
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            maxValSlider = new JSlider();
-            mainControlPanel.add(maxValSlider);
-            maxValSlider.setInverted(true);
-            maxValSlider.addChangeListener((ChangeEvent e) -> {
-                maxValue = maxValSlider.getValue();
+            contrastSlider = new JSlider(0, 20, CONTRAST);
+            mainControlPanel.add(contrastSlider);
+            contrastSlider.addChangeListener((ChangeEvent e) -> {
+                contrast = 20 - contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                processImages();
+                createFlipbook();
             });
 
             JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
@@ -702,52 +652,41 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
-            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
-            mainControlPanel.add(resetDefaultsButton);
-            resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                if (differenceImaging.isSelected()) {
-                    blurImages.setSelected(true);
-                } else {
-                    blurImages.setSelected(false);
-                }
-                ranges.setSelectedItem(AUTO_RANGE);
-            });
-
-            wiseCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
-            mainControlPanel.add(wiseCutouts);
-            wiseCutouts.setToolTipText("WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
-            wiseCutouts.addActionListener((ActionEvent evt) -> {
+            wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
+            mainControlPanel.add(wiseviewCutouts);
+            wiseviewCutouts.setToolTipText("WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
+            wiseviewCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
-                ranges.setSelectedItem(AUTO_RANGE);
+                createFlipbook();
             });
 
-            wiseCoadds = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
-            mainControlPanel.add(wiseCoadds);
-            wiseCoadds.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
-            wiseCoadds.addActionListener((ActionEvent evt) -> {
+            unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
+            mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
+            unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousRa = 0;
                 previousDec = 0;
-                ranges.setSelectedItem(AUTO_RANGE);
+                createFlipbook();
             });
 
-            desiCutouts = new JRadioButton(html("DECam LS cutouts " + INFO_ICON));
+            desiCutouts = new JRadioButton(html("DECaLS LS cutouts " + INFO_ICON));
             mainControlPanel.add(desiCutouts);
-            desiCutouts.setToolTipText("DECam LS cutouts are from https://www.legacysurvey.org and are not well suited for motion detection.\nEpochs can be to close together. W1 represents the r-band, W2 the z-band.");
+            desiCutouts.setToolTipText("DECaLS LS cutouts (DR5, 7, 8 & 9) are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 & DR9). W1 represents the r-band, W2 the z-band.");
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousRa = 0;
                 previousDec = 0;
-                ranges.setSelectedItem(AUTO_RANGE);
+                createFlipbook();
             });
 
             ButtonGroup cutoutGroup = new ButtonGroup();
-            cutoutGroup.add(wiseCutouts);
-            cutoutGroup.add(wiseCoadds);
+            cutoutGroup.add(wiseviewCutouts);
+            cutoutGroup.add(unwiseCutouts);
             cutoutGroup.add(desiCutouts);
 
             JPanel bywLabel = new JPanel();
@@ -1163,7 +1102,7 @@ public class ImageViewerTab {
                 imageSeriesPdf.setSelected(false);
             });
 
-            legacyImageSeries = new JCheckBox("DECam LS g, r & z bands", false);
+            legacyImageSeries = new JCheckBox("DECaLS LS g, r & z bands", false);
             mouseControlPanel.add(legacyImageSeries);
             legacyImageSeries.addActionListener((ActionEvent evt) -> {
                 imageSeriesPdf.setSelected(false);
@@ -1463,7 +1402,7 @@ public class ImageViewerTab {
                         return;
                     }
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    String regularLabel = desiCutouts.isSelected() ? "DECam LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
+                    String regularLabel = desiCutouts.isSelected() ? "DECaLS LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         regularImage.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
@@ -1502,7 +1441,7 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    regularLabel = desiCutouts.isSelected() ? "DECam LS" : "WISE";
+                    regularLabel = desiCutouts.isSelected() ? "DECaLS LS" : "WISE";
                     addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
                     List<Couple<String, NirImage>> surveyImages = new ArrayList();
@@ -2384,8 +2323,6 @@ public class ImageViewerTab {
                 naxis1 = naxis2 = size;
                 pointerX = pointerY = 0;
                 windowShift = 0;
-                epochCountW1 = 0;
-                epochCountW2 = 0;
                 year_ps1_y_i_g = 0;
                 year_ukidss_k_h_j = 0;
                 year_vhs_k_h_j = 0;
@@ -2460,7 +2397,7 @@ public class ImageViewerTab {
                         bywBottomRow.add(subjects.get(i));
                     }
                 }
-                if (wiseCutouts.isSelected()) {
+                if (wiseviewCutouts.isSelected()) {
                     try {
                         InputStream stream = getImageData(1, numberOfEpochs + 4);
                         stream.close();
@@ -2477,6 +2414,8 @@ public class ImageViewerTab {
 
             if (loadImages || reloadImages) {
                 epochCount = 0;
+                epochCountW1 = 0;
+                epochCountW2 = 0;
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
                 int totalEpochs = selectedEpochs * 2;
@@ -2744,7 +2683,7 @@ public class ImageViewerTab {
                     break;
             }
 
-            List<Double> minValues = new ArrayList<>();
+            /*List<Double> minValues = new ArrayList<>();
             List<Double> maxValues = new ArrayList<>();
             for (FlipbookComponent component : flipbook) {
                 NumberPair refVal = getRefValues(component);
@@ -2754,9 +2693,14 @@ public class ImageViewerTab {
             int count = flipbook.size();
             minValues.sort(Comparator.naturalOrder());
             maxValues.sort(Comparator.naturalOrder());
-            double minVal = minValues.get(count - 1);
-            double maxVal = maxValues.get(count - 1);
-            setMinMaxVal((int) minVal, (int) maxVal);
+            minValue = (int) round(minValues.get(count - 1));
+            maxValue = (int) round(maxValues.get(count - 1));*/
+            int count = flipbook.size();
+            if (count > 0) {
+                NumberPair refVal = getRefValues(flipbook.get(0));
+                minValue = (int) round(refVal.getX());
+                maxValue = (int) round(refVal.getY());
+            }
 
             flipbookComplete = true;
             processImages();
@@ -2912,7 +2856,7 @@ public class ImageViewerTab {
         }
         if (desiImage != null) {
             BufferedImage image = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECam LS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECaLS LS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
@@ -3225,7 +3169,7 @@ public class ImageViewerTab {
                 }
             });
         }
-        if (wiseCutouts.isSelected() || wiseCoadds.isSelected()) {
+        if (wiseviewCutouts.isSelected() || unwiseCutouts.isSelected()) {
             if (gaiaProperMotion.isSelected()) {
                 if (gaiaTpmEntries == null) {
                     gaiaTpmEntries = Collections.emptyList();
@@ -3328,7 +3272,7 @@ public class ImageViewerTab {
                     writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
                     continue;
                 }
-                if (wiseCoadds.isSelected()) {
+                if (unwiseCutouts.isSelected()) {
                     if (requestedEpoch % 2 > 0) {
                         container = images.get(band + "_" + (requestedEpoch - 1));
                         if (container != null) {
@@ -3368,7 +3312,7 @@ public class ImageViewerTab {
                 Header header = hdu.getHeader();
                 double minObsEpoch = header.getDoubleValue("MJDMIN");
                 LocalDateTime obsDate;
-                if (wiseCoadds.isSelected()) {
+                if (unwiseCutouts.isSelected()) {
                     int wiseEpoch = requestedEpoch / 2;
                     int year = wiseEpoch == 0 ? 2010 : 2013 + wiseEpoch;
                     obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
@@ -3541,7 +3485,7 @@ public class ImageViewerTab {
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        if (wiseCoadds.isSelected()) {
+        if (unwiseCutouts.isSelected()) {
             epoch /= 2;
             String unwiseEpoch;
             if (epoch == 0) {
@@ -3815,15 +3759,6 @@ public class ImageViewerTab {
         return (value - minVal) * ((newMaxVal - newMinVal) / (maxVal - minVal)) + newMinVal;
     }
 
-    private void setMinMaxVal(int min, int max) {
-        minValSlider.setMinimum(min - max);
-        minValSlider.setMaximum(max);
-        minValSlider.setValue(min);
-        maxValSlider.setMinimum(min);
-        maxValSlider.setMaximum(max + max);
-        maxValSlider.setValue(max);
-    }
-
     private NumberPair determineRefValues(float[][] values) {
         List<Double> data = new ArrayList<>();
         for (float[] row : values) {
@@ -3833,37 +3768,22 @@ public class ImageViewerTab {
                 }
             }
         }
-        double lowerBound;
-        double upperBound;
         List<Double> outliersRemoved = data;
-        if (AUTO_RANGE.equals(range)) {
-            int clippingFactor;
-            if (desiCutouts.isSelected()) {
-                if (differenceImaging.isSelected()) {
-                    clippingFactor = 10;
-                } else {
-                    clippingFactor = 15;
-                }
+        int oldSize = 1;
+        int newSize = 0;
+        while (oldSize != newSize) {
+            oldSize = newSize;
+            outliersRemoved = removeOutliers(outliersRemoved, contrast, StatType.MEDIAN);
+            if (outliersRemoved.isEmpty()) {
+                outliersRemoved = data;
+                contrast++;
+                newSize = -1;
             } else {
-                if (differenceImaging.isSelected()) {
-                    clippingFactor = 5;
-                } else {
-                    clippingFactor = 10;
-                }
-            }
-            int oldSize = 1;
-            int newSize = 0;
-            while (oldSize != newSize) {
-                oldSize = newSize;
-                outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
                 newSize = outliersRemoved.size();
             }
-        } else {
-            double percent = Double.valueOf(range);
-            outliersRemoved = removeOutliers(data, 100 - percent, percent);
         }
-        lowerBound = outliersRemoved.get(0);
-        upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
+        double lowerBound = outliersRemoved.get(0);
+        double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
 
@@ -3905,7 +3825,7 @@ public class ImageViewerTab {
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
-        if (wiseCoadds.isSelected()) {
+        if (unwiseCutouts.isSelected()) {
             imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
             imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
             imageViewerTab.getWiseCoadds().setSelected(true);
@@ -4465,19 +4385,19 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS g", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS g", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS r", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS r", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS g-r-z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS g-r-z", DESI_LS_DR_LABEL)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4487,7 +4407,7 @@ public class ImageViewerTab {
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("DECam LS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.setTitle("DECaLS LS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
@@ -4574,7 +4494,7 @@ public class ImageViewerTab {
 
             image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                timeSeries.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+                timeSeries.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
             }
 
             int componentCount = timeSeries.size();
@@ -4691,7 +4611,7 @@ public class ImageViewerTab {
             if (legacyImageSeries.isSelected()) {
                 image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
-                    timeSeries.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+                    timeSeries.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
                 }
             }
 
@@ -5510,7 +5430,7 @@ public class ImageViewerTab {
     }
 
     public JRadioButton getWiseCoadds() {
-        return wiseCoadds;
+        return unwiseCutouts;
     }
 
     public JRadioButton getDesiCutouts() {

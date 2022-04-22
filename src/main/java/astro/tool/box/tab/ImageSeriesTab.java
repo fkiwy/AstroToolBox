@@ -770,20 +770,20 @@ public class ImageSeriesTab {
 
         image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS g", DESI_LS_DR_LABEL)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS g", DESI_LS_DR_LABEL)));
         }
         image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS r", DESI_LS_DR_LABEL)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS r", DESI_LS_DR_LABEL)));
         }
         image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS z", DESI_LS_DR_LABEL)));
-            timeSeries.add(new Couple(getImageLabel("DECam LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL)));
+            timeSeries.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
         }
         image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, getImageLabel("DECam LS g-r-z", DESI_LS_DR_LABEL)));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS g-r-z", DESI_LS_DR_LABEL)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -833,13 +833,13 @@ public class ImageSeriesTab {
 
         image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "decals-dr5");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECam LS DR5"));
-            desiImages.add(new Couple("DECam LS DR5", image));
+            bandPanel.add(buildImagePanel(image, "DECaLS LS DR5"));
+            desiImages.add(new Couple("DECaLS LS DR5", image));
         }
         image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "decals-dr7");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECam LS DR7"));
-            desiImages.add(new Couple("DECam LS DR7", image));
+            bandPanel.add(buildImagePanel(image, "DECaLS LS DR7"));
+            desiImages.add(new Couple("DECaLS LS DR7", image));
         }
         image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr8");
         if (image != null) {
