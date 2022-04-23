@@ -377,20 +377,20 @@ public class ImageSeriesPdf {
             images = new ArrayList<>();
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DECaLS LS g", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECaLS g", DESI_LS_DR_LABEL), bufferedImage));
             }
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DECaLS LS r", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECaLS r", DESI_LS_DR_LABEL), bufferedImage));
             }
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), bufferedImage));
-                timeSeries.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
+                images.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), bufferedImage));
+                timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
             }
             bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DECaLS LS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECaLS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
             }
 
             createPdfTable(images, writer, document);

@@ -187,7 +187,7 @@ public class ImageViewerTab {
     public static final int PANEL_WIDTH = 180;
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 6;
-    public static final int CONTRAST = 10;
+    public static final int CONTRAST_WISE = 10;
     public static final int CONTRAST_DESI = 5;
     public static final int SPEED = 200;
     public static final int ZOOM = 500;
@@ -254,6 +254,7 @@ public class ImageViewerTab {
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
+    private JCheckBox keepContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -353,7 +354,7 @@ public class ImageViewerTab {
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int minValue;
     private int maxValue;
-    private int contrast = CONTRAST;
+    private int contrast = CONTRAST_WISE;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -468,7 +469,7 @@ public class ImageViewerTab {
             // Tab: Main controls
             //===================
             int rows = 27;
-            int controlPanelWidth = 250;
+            int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
@@ -522,7 +523,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(0, 20, CONTRAST);
+            contrastSlider = new JSlider(0, 20, CONTRAST_WISE);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
                 contrast = 20 - contrastSlider.getValue();
@@ -599,8 +600,11 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            differenceImaging = new JCheckBox("Difference imaging");
-            mainControlPanel.add(differenceImaging);
+            JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(settingsPanel);
+
+            differenceImaging = new JCheckBox("Subract images");
+            settingsPanel.add(differenceImaging);
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
                     blurImages.setSelected(true);
@@ -610,7 +614,10 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
+            keepContrast = new JCheckBox("Keep contrast");
+            settingsPanel.add(keepContrast);
+
+            settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
 
             blurImages = new JCheckBox("Blur images");
@@ -685,9 +692,9 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            desiCutouts = new JRadioButton(html("DECaLS LS cutouts " + INFO_ICON));
+            desiCutouts = new JRadioButton(html("DECaLS cutouts " + INFO_ICON));
             mainControlPanel.add(desiCutouts);
-            desiCutouts.setToolTipText("DECaLS LS cutouts (DR5, 7, 8 & 9) are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 & DR9). W1 represents the r-band, W2 the z-band.");
+            desiCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 and DR9).\nW1 represents the r-band, W2 the z-band.");
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
                 previousSize = 0;
@@ -1112,7 +1119,7 @@ public class ImageViewerTab {
                 imageSeriesPdf.setSelected(false);
             });
 
-            legacyImageSeries = new JCheckBox("DECaLS LS g, r & z bands", false);
+            legacyImageSeries = new JCheckBox("DECaLS g, r & z bands", false);
             mouseControlPanel.add(legacyImageSeries);
             legacyImageSeries.addActionListener((ActionEvent evt) -> {
                 imageSeriesPdf.setSelected(false);
@@ -1412,7 +1419,7 @@ public class ImageViewerTab {
                         return;
                     }
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    String regularLabel = desiCutouts.isSelected() ? "DECaLS LS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
+                    String regularLabel = desiCutouts.isSelected() ? "DECaLS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         regularImage.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
@@ -1451,7 +1458,7 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    regularLabel = desiCutouts.isSelected() ? "DECaLS LS" : "WISE";
+                    regularLabel = desiCutouts.isSelected() ? "DECaLS" : "WISE";
                     addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
                     List<Couple<String, NirImage>> surveyImages = new ArrayList();
@@ -2183,7 +2190,7 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
-        int defaultContrast = desiCutouts.isSelected() ? CONTRAST_DESI : CONTRAST;
+        int defaultContrast = desiCutouts.isSelected() ? CONTRAST_DESI : CONTRAST_WISE;
         ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
         contrastSlider.setValue(defaultContrast);
@@ -2350,7 +2357,9 @@ public class ImageViewerTab {
                 initCatalogEntries();
                 desiImage = null;
                 processedDesiImage = null;
-                resetContrastSlider();
+                if (!keepContrast.isSelected()) {
+                    resetContrastSlider();
+                }
                 if (legacyImages) {
                     CompletableFuture.supplyAsync(() -> {
                         desiImage = fetchDesiImage(targetRa, targetDec, size);
@@ -2876,7 +2885,7 @@ public class ImageViewerTab {
         }
         if (desiImage != null) {
             BufferedImage image = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECaLS LS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECaLS"));
             grid.add(pane);
         }
         if (ps1Image != null) {
@@ -4405,19 +4414,19 @@ public class ImageViewerTab {
 
             BufferedImage image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS g", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS r", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS r", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS z", DESI_LS_DR_LABEL)));
             }
             image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS LS g-r-z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g-r-z", DESI_LS_DR_LABEL)));
             }
 
             int componentCount = bandPanel.getComponentCount();
@@ -4427,7 +4436,7 @@ public class ImageViewerTab {
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
-            imageFrame.setTitle("DECaLS LS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.setTitle("DECaLS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
             imageFrame.add(bandPanel);
             imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
             imageFrame.setLocation(0, counter.value());
@@ -4514,7 +4523,7 @@ public class ImageViewerTab {
 
             image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
             if (image != null) {
-                timeSeries.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+                timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
             }
 
             int componentCount = timeSeries.size();
@@ -4631,7 +4640,7 @@ public class ImageViewerTab {
             if (legacyImageSeries.isSelected()) {
                 image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
                 if (image != null) {
-                    timeSeries.add(new Couple(getImageLabel("DECaLS LS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+                    timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
                 }
             }
 
