@@ -177,7 +177,7 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String RANGE_LABEL = "Pixel range (min, max) = (%d, %d):";
+    public static final String RANGE_LABEL = "Pixel range (min – max): %d – %d";
     public static final String EPOCH_LABEL = "NEOWISE epochs: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
