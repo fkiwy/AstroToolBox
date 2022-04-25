@@ -2206,7 +2206,7 @@ public class ImageViewerTab {
         rangeSlider.removeChangeListener(changeListener);
         rangeSlider.setValue(defaultContrast);
         rangeSlider.addChangeListener(changeListener);
-        clippingFactor = rangeSlider.getMaximum() - defaultContrast;
+        clippingFactor = defaultContrast;
     }
 
     private void resetContastSlider() {
