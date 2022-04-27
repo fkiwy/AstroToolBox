@@ -5422,7 +5422,8 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize(int scale) {
-        double overlaySize = scale * zoom * sqrt(size) * 0.15 / size; // 0.15 or 0.2
+        double factor = desiCutouts.isSelected() ? 0.35 : 0.15;
+        double overlaySize = scale * factor * zoom * sqrt(size) / size;
         return max(5, min(overlaySize, 15));
     }
 
