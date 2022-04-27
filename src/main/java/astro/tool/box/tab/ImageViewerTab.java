@@ -526,6 +526,7 @@ public class ImageViewerTab {
 
             rangeSlider = new JSlider(0, 20, 0);
             mainControlPanel.add(rangeSlider);
+            rangeSlider.setInverted(true);
             rangeSlider.addChangeListener((ChangeEvent e) -> {
                 clippingFactor = rangeSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
@@ -541,6 +542,7 @@ public class ImageViewerTab {
 
             contastSlider = new JSlider(0, 0, 0);
             mainControlPanel.add(contastSlider);
+            contastSlider.setInverted(true);
             contastSlider.addChangeListener((ChangeEvent e) -> {
                 maxValue = contastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
@@ -5069,7 +5071,7 @@ public class ImageViewerTab {
             if (showProperMotion.isSelected()) {
                 NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
                 NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
-                Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(200), color);
+                Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
                 disk.draw(image.getGraphics());
             } else {
                 NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
@@ -5416,13 +5418,12 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize() {
-        return getOverlaySize(100);
+        return getOverlaySize(1);
     }
 
-    private double getOverlaySize(int val) {
-        int x = desiCutouts.isSelected() ? 1500 : 300;
-        double overlaySize = zoom / val + x / size;
-        return min(overlaySize, 15);
+    private double getOverlaySize(int scale) {
+        double overlaySize = scale * zoom * sqrt(size) * 0.15 / size; // 0.15 or 0.2
+        return max(5, min(overlaySize, 15));
     }
 
     public JCheckBox getBlurImages() {
