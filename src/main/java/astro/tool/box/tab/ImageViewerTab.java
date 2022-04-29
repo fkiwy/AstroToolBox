@@ -1954,7 +1954,7 @@ public class ImageViewerTab {
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && flipbook != null) {
                     if (!staticView.isSelected()) {
-                        createFlipbook();
+                        //createFlipbook();
                         timer.restart();
                     }
                 } else {
@@ -3211,66 +3211,64 @@ public class ImageViewerTab {
                 }
             });
         }
-        if (wiseviewCutouts.isSelected() || unwiseCutouts.isSelected()) {
-            if (gaiaProperMotion.isSelected()) {
-                if (gaiaTpmEntries == null) {
-                    gaiaTpmEntries = Collections.emptyList();
-                    CompletableFuture.supplyAsync(() -> {
-                        gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry());
-                        processImages();
-                        return null;
-                    });
-                } else {
-                    drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), totalEpochs);
-                }
+        if (gaiaProperMotion.isSelected()) {
+            if (gaiaTpmEntries == null) {
+                gaiaTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), totalEpochs);
             }
-            if (gaiaDR3ProperMotion.isSelected()) {
-                if (gaiaDR3TpmEntries == null) {
-                    gaiaDR3TpmEntries = Collections.emptyList();
-                    CompletableFuture.supplyAsync(() -> {
-                        gaiaDR3TpmEntries = fetchTpmCatalogEntries(new GaiaDR3CatalogEntry());
-                        processImages();
-                        return null;
-                    });
-                } else {
-                    drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), totalEpochs);
-                }
+        }
+        if (gaiaDR3ProperMotion.isSelected()) {
+            if (gaiaDR3TpmEntries == null) {
+                gaiaDR3TpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    gaiaDR3TpmEntries = fetchTpmCatalogEntries(new GaiaDR3CatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), totalEpochs);
             }
-            if (noirlabProperMotion.isSelected()) {
-                if (noirlabTpmEntries == null) {
-                    noirlabTpmEntries = Collections.emptyList();
-                    CompletableFuture.supplyAsync(() -> {
-                        noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
-                        processImages();
-                        return null;
-                    });
-                } else {
-                    drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, totalEpochs);
-                }
+        }
+        if (noirlabProperMotion.isSelected()) {
+            if (noirlabTpmEntries == null) {
+                noirlabTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    noirlabTpmEntries = fetchTpmCatalogEntries(new NoirlabCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, totalEpochs);
             }
-            if (catWiseProperMotion.isSelected()) {
-                if (catWiseTpmEntries == null) {
-                    catWiseTpmEntries = Collections.emptyList();
-                    CompletableFuture.supplyAsync(() -> {
-                        catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry());
-                        processImages();
-                        return null;
-                    });
-                } else {
-                    drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
-                }
+        }
+        if (catWiseProperMotion.isSelected()) {
+            if (catWiseTpmEntries == null) {
+                catWiseTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    catWiseTpmEntries = fetchTpmCatalogEntries(new CatWiseCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
             }
-            if (ukidssProperMotion.isSelected()) {
-                if (ukidssTpmEntries == null) {
-                    ukidssTpmEntries = Collections.emptyList();
-                    CompletableFuture.supplyAsync(() -> {
-                        ukidssTpmEntries = fetchTpmCatalogEntries(new UkidssCatalogEntry());
-                        processImages();
-                        return null;
-                    });
-                } else {
-                    drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, totalEpochs);
-                }
+        }
+        if (ukidssProperMotion.isSelected()) {
+            if (ukidssTpmEntries == null) {
+                ukidssTpmEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    ukidssTpmEntries = fetchTpmCatalogEntries(new UkidssCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, totalEpochs);
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
@@ -3810,6 +3808,7 @@ public class ImageViewerTab {
                 }
             }
         }
+        List<Double> minOutliersRemoved = removeOutliers(data, 1, 100);
         List<Double> outliersRemoved = data;
         int oldSize = 1;
         int newSize = 0;
@@ -3824,7 +3823,7 @@ public class ImageViewerTab {
                 newSize = outliersRemoved.size();
             }
         }
-        double lowerBound = outliersRemoved.get(0);
+        double lowerBound = differenceImaging.isSelected() ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
         double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
