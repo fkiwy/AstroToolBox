@@ -2734,8 +2734,8 @@ public class ImageViewerTab {
             int count = flipbook.size();
             if (count > 0) {
                 NumberPair refVal = getRefValues(flipbook.get(0));
-                minValue = (int) round(refVal.getX());
-                maxValue = (int) round(refVal.getY());
+                minValue = (int) refVal.getX();
+                maxValue = (int) refVal.getY();
                 rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
                 ChangeListener changeListener = contastSlider.getChangeListeners()[0];
                 contastSlider.removeChangeListener(changeListener);
