@@ -3367,21 +3367,20 @@ public class ImageViewerTab {
             return;
         }
         writeLogEntry("Grouping ...");
-        List<ImageContainer> sortedList = images.values().stream()
+        List<ImageContainer> containers = images.values().stream()
                 .filter(container -> container.getImage() != null)
                 .sorted(Comparator.comparing(ImageContainer::getDate))
                 .collect(Collectors.toList());
         List<List<ImageContainer>> groupedList = new ArrayList<>();
         List<ImageContainer> group = new ArrayList<>();
-        ImageContainer containerSaved = sortedList.get(0);
-        LocalDateTime date = containerSaved.getDate();
+        LocalDateTime date = containers.get(0).getDate();
         int prevYear = date.getYear();
         int prevMonth = date.getMonthValue();
         int prevNode = 1;
         int node1 = 0;
         int node2 = 0;
         boolean nodeChange = false;
-        for (ImageContainer container : sortedList) {
+        for (ImageContainer container : containers) {
             date = container.getDate();
             int year = date.getYear();
             int month = date.getMonthValue();
