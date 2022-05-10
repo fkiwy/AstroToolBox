@@ -1954,7 +1954,7 @@ public class ImageViewerTab {
                 int index = sourceTabbedPane.getSelectedIndex();
                 if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && flipbook != null) {
                     if (!staticView.isSelected()) {
-                        //createFlipbook();
+                        createFlipbook();
                         timer.restart();
                     }
                 } else {
