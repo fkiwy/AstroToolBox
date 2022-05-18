@@ -19,7 +19,7 @@ public class StatisticFunctions {
      * @param statType (StatType.MEAN or StatType.MEDIAN)
      * @return the sanitized list
      */
-    public static List<Double> removeOutliers(List<Double> values, int clippingFactor, StatType statType) {
+    public static List<Double> removeOutliers(List<Double> values, double clippingFactor, StatType statType) {
         double avg;
         if (StatType.MEAN.equals(statType)) {
             avg = calculateMean(values);
