@@ -177,7 +177,7 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String EPOCH_LABEL = "NEOWISE epochs: %d";
+    public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
@@ -834,7 +834,7 @@ public class ImageViewerTab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            desOverlay = new JCheckBox(html("D<u>E</u>S DR1"), overlays.isDes());
+            desOverlay = new JCheckBox(html("D<u>E</u>S DR2"), overlays.isDes());
             desOverlay.setForeground(JColor.SAND.val);
             desOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
