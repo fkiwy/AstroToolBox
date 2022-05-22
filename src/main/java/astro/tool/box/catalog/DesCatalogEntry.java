@@ -24,7 +24,7 @@ import java.util.Objects;
 
 public class DesCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "DES DR1";
+    public static final String CATALOG_NAME = "DES DR2";
 
     // Identifier based on IAU format
     private String sourceId;
@@ -146,8 +146,8 @@ public class DesCatalogEntry implements CatalogEntry {
         this.columns = columns;
         this.values = values;
         sourceId = values[columns.get("DES")];
-        ra = toDouble(values[columns.get("RAJ2000")]);
-        dec = toDouble(values[columns.get("DEJ2000")]);
+        ra = toDouble(values[columns.get("RA_ICRS")]);
+        dec = toDouble(values[columns.get("DE_ICRS")]);
         g_ext = toDouble(values[columns.get("S/Gg")]);
         r_ext = toDouble(values[columns.get("S/Gr")]);
         i_ext = toDouble(values[columns.get("S/Gi")]);
@@ -157,7 +157,7 @@ public class DesCatalogEntry implements CatalogEntry {
         r_caut = toInteger(values[columns.get("rFlag")]);
         i_caut = toInteger(values[columns.get("iFlag")]);
         z_caut = toInteger(values[columns.get("zFlag")]);
-        y_caut = toInteger(values[columns.get("YFlag")]);
+        y_caut = toInteger(values[columns.get("yFlag")]);
         g_mag = toDouble(values[columns.get("gmag")]);
         g_err = toDouble(values[columns.get("e_gmag")]);
         r_mag = toDouble(values[columns.get("rmag")]);
@@ -262,7 +262,7 @@ public class DesCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogQueryUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/357/des_dr1", "RAJ2000", "DEJ2000");
+        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/371/des_dr2", "RA_ICRS", "DE_ICRS");
     }
 
     @Override
