@@ -2418,7 +2418,7 @@ public class ImageViewerTab {
                 }
                 if (wiseviewCutouts.isSelected()) {
                     try {
-                        InputStream stream = getImageData(1, numberOfEpochs + 4);
+                        InputStream stream = getImageData(1, numberOfEpochs + 6);
                         stream.close();
                         moreImagesAvailable = true;
                     } catch (IOException e) {
