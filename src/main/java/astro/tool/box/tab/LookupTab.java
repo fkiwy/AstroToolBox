@@ -62,7 +62,7 @@ public class LookupTab {
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = "Main sequence lookup table - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)";
+                        tableName = String.format("Main sequence lookup table - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)", MAMAJEK_VERSION);
                         break;
                     case MLT_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";

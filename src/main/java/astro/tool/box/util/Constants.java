@@ -54,6 +54,8 @@ public class Constants {
 
     public static final String DESI_LS_DR_PARAM = "ls-dr9";
 
+    public static final String MAMAJEK_VERSION = "2022.04.16";
+
     public static final String LINE_BREAK = "<br/>";
 
     public static final String LINE_SEP = System.lineSeparator();
