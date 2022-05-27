@@ -182,20 +182,21 @@ public class SettingsTab {
             globalSettings.add(new JLabel("TAP provider for AllWISE, ", JLabel.RIGHT));
             globalSettings.add(new JLabel());
 
-            globalSettings.add(new JLabel("CatWISE, 2MASS and Gaia DR2: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("CatWISE, 2MASS and Gaia: ", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
 
-            JRadioButton irsaButton = new JRadioButton("IRSA", tapProvider.equals(TapProvider.IRSA));
-            radioPanel.add(irsaButton);
-
             JRadioButton vizierButton = new JRadioButton("VizieR", tapProvider.equals(TapProvider.VIZIER));
             radioPanel.add(vizierButton);
 
+            JRadioButton noirlabButton = new JRadioButton("NOIRLab", tapProvider.equals(TapProvider.NOAO));
+            radioPanel.add(noirlabButton);
+
             ButtonGroup buttonGroup = new ButtonGroup();
-            buttonGroup.add(irsaButton);
+
             buttonGroup.add(vizierButton);
+            buttonGroup.add(noirlabButton);
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
@@ -406,7 +407,7 @@ public class SettingsTab {
 
             JPanel gridPanel = new JPanel(new GridLayout(2, 1));
             containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1210, 160));
+            gridPanel.setPreferredSize(new Dimension(1235, 160));
 
             // Catalogs
             catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -442,7 +443,7 @@ public class SettingsTab {
                 try {
                     // Global settings
                     lookAndFeel = (LookAndFeel) themes.getSelectedItem();
-                    tapProvider = irsaButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
+                    tapProvider = noirlabButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);

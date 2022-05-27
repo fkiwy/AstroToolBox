@@ -5,14 +5,13 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.MiscUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,12 +88,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
     public UnWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        for (int i = 0; i < values.length; i++) {
-            String value = values[i];
-            if ("Infinity".equals(value) || "-Infinity".equals(value) || "NaN".equals(value)) {
-                values[i] = "0";
-            }
-        }
+        replaceNanValuesByZero(values);
         unwise_objid = values[columns.get("unwise_objid")];
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);

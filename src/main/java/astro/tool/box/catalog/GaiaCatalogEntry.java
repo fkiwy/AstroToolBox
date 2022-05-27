@@ -6,14 +6,12 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceHelper.*;
 import static astro.tool.box.util.MiscUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -126,31 +124,53 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     public GaiaCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = toLong(values[columns.get("source_id")]);
-        ra = toDouble(values[columns.get("ra")]);
-        dec = toDouble(values[columns.get("dec")]);
-        plx = toDouble(values[columns.get("parallax")]);
-        plx_err = toDouble(values[columns.get("parallax_error")]);
-        pmra = toDouble(values[columns.get("pmra")]);
-        pmra_err = toDouble(values[columns.get("pmra_error")]);
-        pmdec = toDouble(values[columns.get("pmdec")]);
-        pmdec_err = toDouble(values[columns.get("pmdec_error")]);
-        Gmag = toDouble(values[columns.get("phot_g_mean_mag")]);
-        BPmag = toDouble(values[columns.get("phot_bp_mean_mag")]);
-        RPmag = toDouble(values[columns.get("phot_rp_mean_mag")]);
-        if (TapProvider.VIZIER.equals(getTapProvider())) {
+        if (isVizierTAP()) {
+            sourceId = toLong(values[columns.get("source_id")]);
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            plx = toDouble(values[columns.get("parallax")]);
+            plx_err = toDouble(values[columns.get("parallax_error")]);
+            pmra = toDouble(values[columns.get("pmra")]);
+            pmra_err = toDouble(values[columns.get("pmra_error")]);
+            pmdec = toDouble(values[columns.get("pmdec")]);
+            pmdec_err = toDouble(values[columns.get("pmdec_error")]);
+            Gmag = toDouble(values[columns.get("phot_g_mean_mag")]);
+            BPmag = toDouble(values[columns.get("phot_bp_mean_mag")]);
+            RPmag = toDouble(values[columns.get("phot_rp_mean_mag")]);
             G_err = toDouble(values[columns.get("phot_g_mean_mag_error")]);
             BP_err = toDouble(values[columns.get("phot_bp_mean_mag_error")]);
             RP_err = toDouble(values[columns.get("phot_rp_mean_mag_error")]);
+            BP_RP = toDouble(values[columns.get("bp_rp")]);
+            BP_G = toDouble(values[columns.get("bp_g")]);
+            G_RP = toDouble(values[columns.get("g_rp")]);
+            radvel = toDouble(values[columns.get("radial_velocity")]);
+            radvel_err = toDouble(values[columns.get("radial_velocity_error")]);
+            teff = toDouble(values[columns.get("teff_val")]);
+            radsun = toDouble(values[columns.get("radius_val")]);
+            lumsun = toDouble(values[columns.get("lum_val")]);
+        } else {
+            replaceNanValuesByZero(values);
+            sourceId = toLong(values[columns.get("source_id")]);
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            plx = toDouble(values[columns.get("parallax")]);
+            plx_err = toDouble(values[columns.get("parallax_error")]);
+            pmra = toDouble(values[columns.get("pmra")]);
+            pmra_err = toDouble(values[columns.get("pmra_error")]);
+            pmdec = toDouble(values[columns.get("pmdec")]);
+            pmdec_err = toDouble(values[columns.get("pmdec_error")]);
+            Gmag = toDouble(values[columns.get("phot_g_mean_mag")]);
+            BPmag = toDouble(values[columns.get("phot_bp_mean_mag")]);
+            RPmag = toDouble(values[columns.get("phot_rp_mean_mag")]);
+            BP_RP = toDouble(values[columns.get("bp_rp")]);
+            BP_G = toDouble(values[columns.get("bp_g")]);
+            G_RP = toDouble(values[columns.get("g_rp")]);
+            radvel = toDouble(values[columns.get("radial_velocity")]);
+            radvel_err = toDouble(values[columns.get("radial_velocity_error")]);
+            teff = toDouble(values[columns.get("teff_val")]);
+            radsun = toDouble(values[columns.get("radius_val")]);
+            lumsun = toDouble(values[columns.get("lum_val")]);
         }
-        BP_RP = toDouble(values[columns.get("bp_rp")]);
-        BP_G = toDouble(values[columns.get("bp_g")]);
-        G_RP = toDouble(values[columns.get("g_rp")]);
-        radvel = toDouble(values[columns.get("radial_velocity")]);
-        radvel_err = toDouble(values[columns.get("radial_velocity_error")]);
-        teff = toDouble(values[columns.get("teff_val")]);
-        radsun = toDouble(values[columns.get("radius_val")]);
-        lumsun = toDouble(values[columns.get("lum_val")]);
     }
 
     @Override
@@ -230,23 +250,23 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
 
     @Override
     public String getCatalogQueryUrl() {
-        if (TapProvider.VIZIER.equals(getTapProvider())) {
-            return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "I/345/gaia2", "ra", "dec");
+        if (isVizierTAP()) {
+            return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
         } else {
-            return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "gaia_dr2_source");
+            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 
     @Override
     public String getMotionQueryUrl() {
-        if (TapProvider.VIZIER.equals(getTapProvider())) {
-            return VIZIER_TAP_URL + createProperMotionQuery();
+        if (isVizierTAP()) {
+            return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
         } else {
-            return IRSA_TAP_URL + "/sync?query=" + createProperMotionQuery() + "&format=csv";
+            return NOAO_TAP_URL + encodeQuery(createAltProperMotionQuery());
         }
     }
 
-    private String createProperMotionQuery() {
+    private String createCatalogQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, "SELECT source_id,");
         addRow(query, "       ra,");
@@ -260,11 +280,9 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
         addRow(query, "       phot_g_mean_mag,");
         addRow(query, "       phot_bp_mean_mag,");
         addRow(query, "       phot_rp_mean_mag,");
-        if (TapProvider.VIZIER.equals(getTapProvider())) {
-            addRow(query, "       phot_g_mean_mag_error,");
-            addRow(query, "       phot_bp_mean_mag_error,");
-            addRow(query, "       phot_rp_mean_mag_error,");
-        }
+        addRow(query, "       phot_g_mean_mag_error,");
+        addRow(query, "       phot_bp_mean_mag_error,");
+        addRow(query, "       phot_rp_mean_mag_error,");
         addRow(query, "       bp_rp,");
         addRow(query, "       bp_g,");
         addRow(query, "       g_rp,");
@@ -273,10 +291,50 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
         addRow(query, "       teff_val,");
         addRow(query, "       radius_val,");
         addRow(query, "       lum_val");
-        addRow(query, "FROM   " + (TapProvider.VIZIER.equals(getTapProvider()) ? "\"I/345/gaia2\"" : "gaia_dr2_source"));
+        addRow(query, "FROM   \"I/345/gaia2\"");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
-        addRow(query, "AND   (SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm + ")");
-        return encodeQuery(query.toString());
+        return query.toString();
+    }
+
+    private String createProperMotionQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, createCatalogQuery());
+        addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
+        return query.toString();
+    }
+
+    private String createAltCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT source_id,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       parallax,");
+        addRow(query, "       parallax_error,");
+        addRow(query, "       pmra,");
+        addRow(query, "       pmra_error,");
+        addRow(query, "       pmdec,");
+        addRow(query, "       pmdec_error,");
+        addRow(query, "       phot_g_mean_mag,");
+        addRow(query, "       phot_bp_mean_mag,");
+        addRow(query, "       phot_rp_mean_mag,");
+        addRow(query, "       bp_rp,");
+        addRow(query, "       bp_g,");
+        addRow(query, "       g_rp,");
+        addRow(query, "       radial_velocity,");
+        addRow(query, "       radial_velocity_error,");
+        addRow(query, "       teff_val,");
+        addRow(query, "       radius_val,");
+        addRow(query, "       lum_val");
+        addRow(query, "FROM   gaia_dr2.gaia_source");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
+    }
+
+    private String createAltProperMotionQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, createAltCatalogQuery());
+        addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
+        return query.toString();
     }
 
     @Override

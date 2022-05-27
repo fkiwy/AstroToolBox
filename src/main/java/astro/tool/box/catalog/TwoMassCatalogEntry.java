@@ -13,7 +13,6 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.TapProvider;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -105,24 +104,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
     public TwoMassCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        if (TapProvider.IRSA.equals(getTapProvider())) {
-            sourceId = values[columns.get("designation")];
-            ra = toDouble(values[columns.get("ra")]);
-            dec = toDouble(values[columns.get("dec")]);
-            Jmag = toDouble(values[columns.get("j_m")]);
-            J_err = toDouble(values[columns.get("j_cmsig")]);
-            Hmag = toDouble(values[columns.get("h_m")]);
-            H_err = toDouble(values[columns.get("h_cmsig")]);
-            Kmag = toDouble(values[columns.get("k_m")]);
-            K_err = toDouble(values[columns.get("k_cmsig")]);
-            xdate = values[columns.get("xdate")];
-            ph_qual = values[columns.get("ph_qual")];
-            rd_flg = values[columns.get("rd_flg")];
-            bl_flg = values[columns.get("bl_flg")];
-            cc_flg = values[columns.get("cc_flg")];
-            gal_contam = toInteger(values[columns.get("gal_contam")]);
-            mp_flg = toInteger(values[columns.get("mp_flg")]);
-        } else {
+        if (isVizierTAP()) {
             sourceId = values[columns.get("2MASS")];
             ra = toDouble(values[columns.get("RAJ2000")]);
             dec = toDouble(values[columns.get("DEJ2000")]);
@@ -139,6 +121,24 @@ public class TwoMassCatalogEntry implements CatalogEntry {
             cc_flg = values[columns.get("Cflg")];
             gal_contam = toInteger(values[columns.get("Xflg")]);
             mp_flg = toInteger(values[columns.get("Aflg")]);
+        } else {
+            replaceNanValuesByZero(values);
+            sourceId = values[columns.get("designation")];
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            Jmag = toDouble(values[columns.get("j_m")]);
+            J_err = toDouble(values[columns.get("j_cmsig")]);
+            Hmag = toDouble(values[columns.get("h_m")]);
+            H_err = toDouble(values[columns.get("h_cmsig")]);
+            Kmag = toDouble(values[columns.get("k_m")]);
+            K_err = toDouble(values[columns.get("k_cmsig")]);
+            xdate = values[columns.get("date")];
+            ph_qual = values[columns.get("ph_qual")];
+            rd_flg = values[columns.get("rd_flg")];
+            bl_flg = values[columns.get("bl_flg")];
+            cc_flg = values[columns.get("cc_flg")];
+            gal_contam = toInteger(values[columns.get("gal_contam")]);
+            mp_flg = toInteger(values[columns.get("mp_flg")]);
         }
     }
 
@@ -305,11 +305,34 @@ public class TwoMassCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogQueryUrl() {
-        if (TapProvider.IRSA.equals(getTapProvider())) {
-            return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "fp_psc");
-        } else {
+        if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/246/out", "RAJ2000", "DEJ2000");
+        } else {
+            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
+    }
+
+    private String createAltCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT designation,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       j_m,");
+        addRow(query, "       j_cmsig,");
+        addRow(query, "       h_m,");
+        addRow(query, "       h_cmsig,");
+        addRow(query, "       k_m,");
+        addRow(query, "       k_cmsig,");
+        addRow(query, "       date,");
+        addRow(query, "       ph_qual,");
+        addRow(query, "       rd_flg,");
+        addRow(query, "       bl_flg,");
+        addRow(query, "       cc_flg,");
+        addRow(query, "       gal_contam,");
+        addRow(query, "       mp_flg");
+        addRow(query, "FROM   twomass.psc");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
     }
 
     @Override

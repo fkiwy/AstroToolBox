@@ -118,27 +118,49 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     public GaiaDR3CatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = toLong(values[columns.get("Source")]);
-        ra = toDouble(values[columns.get("RA_ICRS")]);
-        dec = toDouble(values[columns.get("DE_ICRS")]);
-        plx = toDouble(values[columns.get("Plx")]);
-        plx_err = toDouble(values[columns.get("e_Plx")]);
-        pmra = toDouble(values[columns.get("pmRA")]);
-        pmra_err = toDouble(values[columns.get("e_pmRA")]);
-        pmdec = toDouble(values[columns.get("pmDE")]);
-        pmdec_err = toDouble(values[columns.get("e_pmDE")]);
-        Gmag = toDouble(values[columns.get("Gmag")]);
-        G_err = toDouble(values[columns.get("e_Gmag")]);
-        BPmag = toDouble(values[columns.get("BPmag")]);
-        BP_err = toDouble(values[columns.get("e_BPmag")]);
-        RPmag = toDouble(values[columns.get("RPmag")]);
-        RP_err = toDouble(values[columns.get("e_RPmag")]);
-        BP_RP = toDouble(values[columns.get("BP-RP")]);
-        BP_G = toDouble(values[columns.get("BP-G")]);
-        G_RP = toDouble(values[columns.get("G-RP")]);
-        ruwe = toDouble(values[columns.get("RUWE")]);
-        radvel = toDouble(values[columns.get("RVDR2")]);
-        radvel_err = toDouble(values[columns.get("e_RVDR2")]);
+        if (isVizierTAP()) {
+            sourceId = toLong(values[columns.get("Source")]);
+            ra = toDouble(values[columns.get("RA_ICRS")]);
+            dec = toDouble(values[columns.get("DE_ICRS")]);
+            plx = toDouble(values[columns.get("Plx")]);
+            plx_err = toDouble(values[columns.get("e_Plx")]);
+            pmra = toDouble(values[columns.get("pmRA")]);
+            pmra_err = toDouble(values[columns.get("e_pmRA")]);
+            pmdec = toDouble(values[columns.get("pmDE")]);
+            pmdec_err = toDouble(values[columns.get("e_pmDE")]);
+            Gmag = toDouble(values[columns.get("Gmag")]);
+            G_err = toDouble(values[columns.get("e_Gmag")]);
+            BPmag = toDouble(values[columns.get("BPmag")]);
+            BP_err = toDouble(values[columns.get("e_BPmag")]);
+            RPmag = toDouble(values[columns.get("RPmag")]);
+            RP_err = toDouble(values[columns.get("e_RPmag")]);
+            BP_RP = toDouble(values[columns.get("BP-RP")]);
+            BP_G = toDouble(values[columns.get("BP-G")]);
+            G_RP = toDouble(values[columns.get("G-RP")]);
+            ruwe = toDouble(values[columns.get("RUWE")]);
+            radvel = toDouble(values[columns.get("RVDR2")]);
+            radvel_err = toDouble(values[columns.get("e_RVDR2")]);
+        } else {
+            replaceNanValuesByZero(values);
+            sourceId = toLong(values[columns.get("source_id")]);
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            plx = toDouble(values[columns.get("parallax")]);
+            plx_err = toDouble(values[columns.get("parallax_error")]);
+            pmra = toDouble(values[columns.get("pmra")]);
+            pmra_err = toDouble(values[columns.get("pmra_error")]);
+            pmdec = toDouble(values[columns.get("pmdec")]);
+            pmdec_err = toDouble(values[columns.get("pmdec_error")]);
+            Gmag = toDouble(values[columns.get("phot_g_mean_mag")]);
+            BPmag = toDouble(values[columns.get("phot_bp_mean_mag")]);
+            RPmag = toDouble(values[columns.get("phot_rp_mean_mag")]);
+            BP_RP = toDouble(values[columns.get("bp_rp")]);
+            BP_G = toDouble(values[columns.get("bp_g")]);
+            G_RP = toDouble(values[columns.get("g_rp")]);
+            ruwe = toDouble(values[columns.get("ruwe")]);
+            radvel = toDouble(values[columns.get("dr2_radial_velocity")]);
+            radvel_err = toDouble(values[columns.get("dr2_radial_velocity_error")]);
+        }
     }
 
     @Override
@@ -216,12 +238,20 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String getCatalogQueryUrl() {
-        return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
+        if (isVizierTAP()) {
+            return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
+        } else {
+            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+        }
     }
 
     @Override
     public String getMotionQueryUrl() {
-        return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
+        if (isVizierTAP()) {
+            return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
+        } else {
+            return NOAO_TAP_URL + encodeQuery(createAltProperMotionQuery());
+        }
     }
 
     private String createCatalogQuery() {
@@ -256,6 +286,38 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
         addRow(query, "AND    SQRT(pmRA * pmRA + pmDE * pmDE) >= " + tpm);
+        return query.toString();
+    }
+
+    private String createAltCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT source_id,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       parallax,");
+        addRow(query, "       parallax_error,");
+        addRow(query, "       pmra,");
+        addRow(query, "       pmra_error,");
+        addRow(query, "       pmdec,");
+        addRow(query, "       pmdec_error,");
+        addRow(query, "       phot_g_mean_mag,");
+        addRow(query, "       phot_bp_mean_mag,");
+        addRow(query, "       phot_rp_mean_mag,");
+        addRow(query, "       bp_rp,");
+        addRow(query, "       bp_g,");
+        addRow(query, "       g_rp,");
+        addRow(query, "       ruwe,");
+        addRow(query, "       dr2_radial_velocity,");
+        addRow(query, "       dr2_radial_velocity_error");
+        addRow(query, "FROM   gaia_edr3.gaia_source");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
+    }
+
+    private String createAltProperMotionQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, createAltCatalogQuery());
+        addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
         return query.toString();
     }
 
