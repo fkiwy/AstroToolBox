@@ -107,6 +107,7 @@ public class CustomOverlaysTab {
 
         String overlayName = customOverlay.getName();
         String tableName = customOverlay.getTableName();
+        String tapUrl = customOverlay.getTapUrl();
 
         JTextField overlayNameField = new JTextField(18);
         overlayRow.add(overlayNameField);
@@ -160,14 +161,14 @@ public class CustomOverlaysTab {
         raPositionField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt raPositionPrompt = new TextPrompt("RA column #");
         raPositionPrompt.applyTo(raPositionField);
-        raPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
+        raPositionField.setText(overlayName == null || !tableName.isEmpty() || !tapUrl.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
 
         JTextField decPositionField = new JTextField(8);
         overlayRow.add(decPositionField);
         decPositionField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
         decPositionPrompt.applyTo(decPositionField);
-        decPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
+        decPositionField.setText(overlayName == null || !tableName.isEmpty() || !tapUrl.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
         JTextField tableNameField = new JTextField(12);
         overlayRow.add(tableNameField);
