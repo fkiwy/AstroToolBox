@@ -215,7 +215,7 @@ public class GaiaDR3EsaCatalogEntry implements CatalogEntry, ProperMotionQuery, 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 79 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
