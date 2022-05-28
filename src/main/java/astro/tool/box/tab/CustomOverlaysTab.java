@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import static java.lang.Math.max;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,10 +85,7 @@ public class CustomOverlaysTab {
             JButton addButton = new JButton("Create new overlay");
             topPanel.add(addButton);
 
-            int overlayCount = overlays.size();
-            int filler = max(25 - overlayCount, 0);
-
-            JPanel overlayPanel = new JPanel(new GridLayout(overlayCount + filler, 1));
+            JPanel overlayPanel = new JPanel(new GridLayout(0, 1));
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
             addButton.addActionListener((ActionEvent evt) -> {
@@ -97,7 +93,7 @@ public class CustomOverlaysTab {
                 baseFrame.setVisible(true);
             });
 
-            for (int i = 0; i < overlayCount; i++) {
+            for (int i = 0; i < overlays.size(); i++) {
                 addOverlayRow(overlayPanel, overlays.get(i));
             }
         } catch (Exception ex) {
@@ -201,10 +197,10 @@ public class CustomOverlaysTab {
         tapUrlPrompt.applyTo(tapUrlField);
         tapUrlField.setText(overlayName == null ? "" : customOverlay.getTapUrl());
 
-        JTextField adqlQueryField = new JTextField(20);
+        JTextField adqlQueryField = new JTextField(32);
         overlayRow.add(adqlQueryField);
         adqlQueryField.setBackground(JColor.LIGHT_ORANGE.val);
-        TextPrompt adqlQueryPrompt = new TextPrompt("ADQL query");
+        TextPrompt adqlQueryPrompt = new TextPrompt("ADQL query (must contain these 3 keywords :ra, :dec, :radius)");
         adqlQueryPrompt.applyTo(adqlQueryField);
         adqlQueryField.setText(overlayName == null ? "" : customOverlay.getAdqlQuery());
 
@@ -215,6 +211,7 @@ public class CustomOverlaysTab {
 
         JButton saveOverlayButton = new JButton("Save");
         overlayRow.add(saveOverlayButton);
+        saveOverlayButton.setToolTipText(overlayNameField.getText());
         saveOverlayButton.addActionListener((ActionEvent evt) -> {
             int raColumnIndex = 0;
             int decColumnIndex = 0;
@@ -291,6 +288,7 @@ public class CustomOverlaysTab {
 
         JButton deleteOverlayButton = new JButton("Delete");
         overlayRow.add(deleteOverlayButton);
+        deleteOverlayButton.setToolTipText(overlayNameField.getText());
         deleteOverlayButton.addActionListener((ActionEvent evt) -> {
             String name = customOverlay.getName();
             if (name == null || !showConfirmDialog(baseFrame, "Do you really want to delete overlay " + name + "?")) {
