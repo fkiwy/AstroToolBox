@@ -4768,7 +4768,6 @@ public class ImageViewerTab {
                     .replace(":radius", roundTo7DecNZ(getFovDiagonal() / 2 / DEG_ARCSEC)) // must be replaced before "ra"
                     .replace(":ra", roundTo7DecNZ(targetRa))
                     .replace(":dec", roundTo7DecNZ(targetDec));
-            System.out.println(customOverlay.getTapUrl() + TAP_URL_PARAMS + adqlQuery);
             queryUrl = customOverlay.getTapUrl() + TAP_URL_PARAMS + encodeQuery(adqlQuery);
         }
         if (isCatalogSearch) {
@@ -4786,7 +4785,6 @@ public class ImageViewerTab {
         }
         try (Scanner scanner = (results == null) ? new Scanner(customOverlay.getFile()) : new Scanner(results)) {
             String[] columnNames = CSVParser.parseLine(scanner.nextLine());
-            System.out.println(Arrays.toString(columnNames));
             StringBuilder errors = new StringBuilder();
             int numberOfColumns = columnNames.length;
             int lastColumnIndex = numberOfColumns - 1;
@@ -4810,7 +4808,6 @@ public class ImageViewerTab {
             }
             while (scanner.hasNextLine()) {
                 String[] columnValues = CSVParser.parseLine(scanner.nextLine());
-                System.out.println(Arrays.toString(columnValues));
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));

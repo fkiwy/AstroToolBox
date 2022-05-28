@@ -254,13 +254,11 @@ public class CustomOverlaysTab {
                     }
                 }
             } else {
-                if (!tableNameField.getText().isEmpty()) {
-                    if (raColNameField.getText().isEmpty()) {
-                        errors.append("RA column name must not be empty.").append(LINE_SEP);
-                    }
-                    if (decColNameField.getText().isEmpty()) {
-                        errors.append("Dec column name must not be empty.").append(LINE_SEP);
-                    }
+                if (raColNameField.getText().isEmpty()) {
+                    errors.append("RA column name must not be empty.").append(LINE_SEP);
+                }
+                if (decColNameField.getText().isEmpty()) {
+                    errors.append("Dec column name must not be empty.").append(LINE_SEP);
                 }
                 if (!tapUrlField.getText().isEmpty()) {
                     if (adqlQueryField.getText().isEmpty()) {
