@@ -199,10 +199,16 @@ public class ToolboxHelper {
     }
 
     public static JLabel createHyperlink(String label, String uri) {
-        JLabel hyperlink = new JLabel(label);
-        hyperlink.setForeground(JColor.LINK_BLUE.val);
-        hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        hyperlink.addMouseListener(new MouseAdapter() {
+        return createHyperlink(new JLabel(label), uri);
+    }
+
+    public static JLabel createHyperlink(JLabel label, String uri) {
+        label.setForeground(JColor.LINK_BLUE.val);
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        if (label.getMouseListeners().length > 0) {
+            label.removeMouseListener(label.getMouseListeners()[0]);
+        }
+        label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -211,18 +217,8 @@ public class ToolboxHelper {
                     throw new RuntimeException(ex);
                 }
             }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                hyperlink.setText(html("<a href=''>" + label + "</a>"));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                hyperlink.setText(label);
-            }
         });
-        return hyperlink;
+        return label;
     }
 
     public static void showScrollableDialog(JFrame baseFrame, String title, String message) {

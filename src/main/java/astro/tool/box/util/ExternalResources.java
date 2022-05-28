@@ -48,10 +48,6 @@ public class ExternalResources {
         return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.max=" + maxRows + "&-out.add=_r&-sort=_r" + outAll;
     }
 
-    public static String getSpecificCatalogsUrl(String catalogName, double degRA, double degDE, double degRadius) {
-        return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=" + catalogName + "&-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.add=_r&-sort=_r";
-    }
-
     public static String getTygoFormUrl() {
         return "https://docs.google.com/forms/d/e/1FAIpQLScse_fHPVnudm2rPgouKRkq18BsBVx11jGqW5rc8mLqj2Lxpw/viewform?";
     }

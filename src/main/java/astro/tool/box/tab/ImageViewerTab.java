@@ -250,6 +250,7 @@ public class ImageViewerTab {
     private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
     private JRadioButton showCatalogsButton;
+    private JButton changeFovButton;
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
@@ -309,6 +310,10 @@ public class ImageViewerTab {
     private JTextField sizeField;
     private JTextField properMotionField;
     private JTextField differentSizeField;
+    private JTextField panstarrsField;
+    private JTextField aladinLiteField;
+    private JTextField wiseViewField;
+    private JTextField finderChartField;
     private JTextArea crosshairCoords;
     private JTextArea downloadLog;
     private JTable collectionTable;
@@ -1390,6 +1395,103 @@ public class ImageViewerTab {
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            //======================
+            // Tab: External sources
+            //======================
+            JPanel sourcesControlPanel = new JPanel(new GridLayout(rows, 1));
+            sourcesControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
+            sourcesControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+            String sourcesPanelName = "External sources";
+
+            JScrollPane sourcesScrollPanel = new JScrollPane(sourcesControlPanel);
+            sourcesScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
+            sourcesScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            controlTabs.add(sourcesPanelName, sourcesScrollPanel);
+
+            sourcesControlPanel.add(createHeaderLabel("Images"));
+
+            JPanel fovPanel = new JPanel(new GridLayout(1, 2));
+            sourcesControlPanel.add(fovPanel);
+            fovPanel.add(new JLabel());
+            fovPanel.add(new JLabel("FoV (arcsec)"));
+
+            fovPanel = new JPanel(new GridLayout(1, 2));
+            sourcesControlPanel.add(fovPanel);
+            JLabel panstarrsLabel = new JLabel("Pan-STARRS");
+            fovPanel.add(panstarrsLabel);
+            panstarrsField = new JTextField();
+            fovPanel.add(panstarrsField);
+
+            fovPanel = new JPanel(new GridLayout(1, 2));
+            sourcesControlPanel.add(fovPanel);
+            JLabel aladinLiteLabel = new JLabel("Aladin Lite");
+            fovPanel.add(aladinLiteLabel);
+            aladinLiteField = new JTextField();
+            fovPanel.add(aladinLiteField);
+
+            fovPanel = new JPanel(new GridLayout(1, 2));
+            sourcesControlPanel.add(fovPanel);
+            JLabel wiseViewLabel = new JLabel("WiseView");
+            fovPanel.add(wiseViewLabel);
+            wiseViewField = new JTextField();
+            fovPanel.add(wiseViewField);
+
+            fovPanel = new JPanel(new GridLayout(1, 2));
+            sourcesControlPanel.add(fovPanel);
+            JLabel finderChartLabel = new JLabel("IRSA Finder Chart");
+            fovPanel.add(finderChartLabel);
+            finderChartField = new JTextField();
+            fovPanel.add(finderChartField);
+
+            JLabel legacyViewerLabel = new JLabel("Legacy Sky Viewer");
+            sourcesControlPanel.add(legacyViewerLabel);
+
+            changeFovButton = new JButton("Change FoV");
+            changeFovButton.addActionListener((ActionEvent e) -> {
+                try {
+                    int panstarrsFOV = toInteger(panstarrsField.getText());
+                    int aladinLiteFOV = toInteger(aladinLiteField.getText());
+                    int wiseViewFOV = toInteger(wiseViewField.getText());
+                    int finderChartFOV = toInteger(finderChartField.getText());
+                    createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                    createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
+                    createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV));
+                    createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, "Invalid field of view!");
+                }
+            });
+            sourcesControlPanel.add(changeFovButton);
+
+            sourcesControlPanel.add(new JLabel());
+
+            sourcesControlPanel.add(createHeaderLabel("Databases"));
+
+            JLabel simbadLabel = new JLabel("SIMBAD");
+            sourcesControlPanel.add(simbadLabel);
+
+            JLabel vizierLabel = new JLabel("VizieR");
+            sourcesControlPanel.add(vizierLabel);
+
+            controlTabs.addChangeListener((ChangeEvent evt) -> {
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
+                int index = sourceTabbedPane.getSelectedIndex();
+                if (sourceTabbedPane.getTitleAt(index).equals(sourcesPanelName)) {
+                    int panstarrsFOV = toInteger(panstarrsField.getText());
+                    int aladinLiteFOV = toInteger(aladinLiteField.getText());
+                    int wiseViewFOV = toInteger(wiseViewField.getText());
+                    int finderChartFOV = toInteger(finderChartField.getText());
+                    createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                    createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
+                    createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV));
+                    createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
+                    createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
+                    createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
+                    createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
                 }
             });
 
@@ -5508,6 +5610,26 @@ public class ImageViewerTab {
 
     public JCheckBox getUkidssOverlay() {
         return ukidssOverlay;
+    }
+
+    public JTextField getPanstarrsField() {
+        return panstarrsField;
+    }
+
+    public JTextField getAladinLiteField() {
+        return aladinLiteField;
+    }
+
+    public JTextField getWiseViewField() {
+        return wiseViewField;
+    }
+
+    public JTextField getFinderChartField() {
+        return finderChartField;
+    }
+
+    public JButton getChangeFovButton() {
+        return changeFovButton;
     }
 
     public Timer getTimer() {

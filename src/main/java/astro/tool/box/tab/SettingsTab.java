@@ -87,12 +87,12 @@ public class SettingsTab {
     // Catalog search settings
     private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
     private static final String SEARCH_RADIUS = "searchRadius";
-    private static final String PANSTARRS_FOV = "panstarrsFOV";
-    private static final String ALADIN_LITE_FOV = "aladinLiteFOV";
-    private static final String WISE_VIEW_FOV = "wiseViewFOV";
-    private static final String FINDER_CHART_FOV = "finderChartFOV";
     private static final String USER_NAME = "userName";
     private static final String USER_EMAIL = "userEmail";
+    public static final String PANSTARRS_FOV = "panstarrsFOV";
+    public static final String ALADIN_LITE_FOV = "aladinLiteFOV";
+    public static final String WISE_VIEW_FOV = "wiseViewFOV";
+    public static final String FINDER_CHART_FOV = "finderChartFOV";
 
     private boolean copyCoordsToClipboard;
     private int searchRadius;
@@ -239,7 +239,7 @@ public class SettingsTab {
             // Catalog search settings
             JPanel catalogQuerySettings = new JPanel(new GridLayout(12, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Miscellaneous settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
             catalogQuerySettings.setPreferredSize(new Dimension(350, 325));
             containerPanel.add(catalogQuerySettings);
@@ -254,25 +254,19 @@ public class SettingsTab {
             String userEmail = USER_SETTINGS.getProperty(USER_EMAIL, "");
 
             catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
-            if (catalogQueryTab.getPanstarrsField() != null) {
-                catalogQueryTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
-                catalogQueryTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
-                catalogQueryTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
-                catalogQueryTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
-            }
-
             catalogQueryTab.setCopyCoordsToClipboard(copyCoordsToClipboard);
-            catalogQueryTab.setPanstarrsFOV(panstarrsFOV);
-            catalogQueryTab.setAladinLiteFOV(aladinLiteFOV);
-            catalogQueryTab.setWiseViewFOV(wiseViewFOV);
-            catalogQueryTab.setFinderChartFOV(finderChartFOV);
+
+            imageViewerTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
+            imageViewerTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
+            imageViewerTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
+            imageViewerTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
 
             catalogQuerySettings.add(new JLabel("Copy coordinates to clipboard: ", JLabel.RIGHT));
             JCheckBox clipboardCheckBox = new JCheckBox();
             clipboardCheckBox.setSelected(copyCoordsToClipboard);
             catalogQuerySettings.add(clipboardCheckBox);
 
-            catalogQuerySettings.add(new JLabel("Search radius: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Catalog search radius: ", JLabel.RIGHT));
             JTextField searchRadiusField = new JTextField(String.valueOf(searchRadius));
             catalogQuerySettings.add(searchRadiusField);
 
@@ -509,18 +503,13 @@ public class SettingsTab {
 
                 // Catalog search settings
                 catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
-                if (catalogQueryTab.getPanstarrsField() != null) {
-                    catalogQueryTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
-                    catalogQueryTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
-                    catalogQueryTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
-                    catalogQueryTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
-                }
-
                 catalogQueryTab.setCopyCoordsToClipboard(copyCoordsToClipboard);
-                catalogQueryTab.setPanstarrsFOV(panstarrsFOV);
-                catalogQueryTab.setAladinLiteFOV(aladinLiteFOV);
-                catalogQueryTab.setWiseViewFOV(wiseViewFOV);
-                catalogQueryTab.setFinderChartFOV(finderChartFOV);
+
+                imageViewerTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
+                imageViewerTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
+                imageViewerTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
+                imageViewerTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
+                imageViewerTab.getChangeFovButton().getActionListeners()[0].actionPerformed(null);
 
                 USER_SETTINGS.setProperty(COPY_COORDS_TO_CLIPBOARD, String.valueOf(copyCoordsToClipboard));
                 USER_SETTINGS.setProperty(SEARCH_RADIUS, searchRadiusField.getText());
