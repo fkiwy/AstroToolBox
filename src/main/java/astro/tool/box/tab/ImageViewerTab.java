@@ -76,6 +76,7 @@ import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.CSVParser;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -4754,13 +4755,25 @@ public class ImageViewerTab {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         List<CatalogEntry> catalogEntries = new ArrayList<>();
         String results = null;
+        String queryUrl = null;
         boolean isCatalogSearch = false;
         if (!customOverlay.getTableName().isEmpty()) {
             isCatalogSearch = true;
-            String vizieRUrl = createVizieRUrl(targetRa, targetDec, getFovDiagonal() / 2 / DEG_ARCSEC,
+            queryUrl = createVizieRUrl(targetRa, targetDec, getFovDiagonal() / 2 / DEG_ARCSEC,
                     customOverlay.getTableName(), customOverlay.getRaColName(), customOverlay.getDecColName());
+        }
+        if (!customOverlay.getTapUrl().isEmpty()) {
+            isCatalogSearch = true;
+            String adqlQuery = customOverlay.getAdqlQuery()
+                    .replace(":radius", roundTo7DecNZ(getFovDiagonal() / 2 / DEG_ARCSEC)) // must be replaced before "ra"
+                    .replace(":ra", roundTo7DecNZ(targetRa))
+                    .replace(":dec", roundTo7DecNZ(targetDec));
+            System.out.println(customOverlay.getTapUrl() + TAP_URL_PARAMS + adqlQuery);
+            queryUrl = customOverlay.getTapUrl() + TAP_URL_PARAMS + encodeQuery(adqlQuery);
+        }
+        if (isCatalogSearch) {
             try {
-                results = readResponse(establishHttpConnection(vizieRUrl), "VizieR");
+                results = readResponse(establishHttpConnection(queryUrl), customOverlay.getName());
                 if (results.isEmpty()) {
                     baseFrame.setCursor(Cursor.getDefaultCursor());
                     return null;
@@ -4771,14 +4784,9 @@ public class ImageViewerTab {
                 return null;
             }
         }
-        Scanner scanner = null;
-        try {
-            if (results == null) {
-                scanner = new Scanner(customOverlay.getFile());
-            } else {
-                scanner = new Scanner(results);
-            }
+        try (Scanner scanner = (results == null) ? new Scanner(customOverlay.getFile()) : new Scanner(results)) {
             String[] columnNames = CSVParser.parseLine(scanner.nextLine());
+            System.out.println(Arrays.toString(columnNames));
             StringBuilder errors = new StringBuilder();
             int numberOfColumns = columnNames.length;
             int lastColumnIndex = numberOfColumns - 1;
@@ -4802,6 +4810,7 @@ public class ImageViewerTab {
             }
             while (scanner.hasNextLine()) {
                 String[] columnValues = CSVParser.parseLine(scanner.nextLine());
+                System.out.println(Arrays.toString(columnValues));
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
@@ -4834,9 +4843,6 @@ public class ImageViewerTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
             customOverlay.setCatalogEntries(catalogEntries);
             baseFrame.setCursor(Cursor.getDefaultCursor());
         }

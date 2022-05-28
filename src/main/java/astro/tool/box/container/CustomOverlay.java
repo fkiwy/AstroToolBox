@@ -27,6 +27,10 @@ public class CustomOverlay {
 
     private String decColName;
 
+    private String tapUrl;
+
+    private String adqlQuery;
+
     private JCheckBox checkBox;
 
     private List<CatalogEntry> catalogEntries;
@@ -41,6 +45,8 @@ public class CustomOverlay {
         tableName = null;
         raColName = null;
         decColName = null;
+        tapUrl = null;
+        adqlQuery = null;
         checkBox = null;
         catalogEntries = null;
     }
@@ -55,12 +61,14 @@ public class CustomOverlay {
         data.append(file == null ? "" : file.getPath()).append(";");
         data.append(tableName).append(";");
         data.append(raColName).append(";");
-        data.append(decColName);
+        data.append(decColName).append(";");
+        data.append(tapUrl).append(";");
+        data.append(adqlQuery);
         return data.toString();
     }
 
     public void deserialize(String data) {
-        String[] values = data.split(";", 9);
+        String[] values = data.split(";", -1);
         name = values[0];
         color = new Color(Integer.valueOf(values[1]));
         shape = Shape.valueOf(values[2]);
@@ -72,6 +80,13 @@ public class CustomOverlay {
         tableName = values[6];
         raColName = values[7];
         decColName = values[8];
+        if (values.length > 9) {
+            tapUrl = values[9];
+            adqlQuery = values[10];
+        } else {
+            tapUrl = "";
+            adqlQuery = "";
+        }
     }
 
     public String getName() {
@@ -144,6 +159,22 @@ public class CustomOverlay {
 
     public void setDecColName(String decColName) {
         this.decColName = decColName;
+    }
+
+    public String getTapUrl() {
+        return tapUrl;
+    }
+
+    public void setTapUrl(String tapUrl) {
+        this.tapUrl = tapUrl;
+    }
+
+    public String getAdqlQuery() {
+        return adqlQuery;
+    }
+
+    public void setAdqlQuery(String adqlQuery) {
+        this.adqlQuery = adqlQuery;
     }
 
     public JCheckBox getCheckBox() {

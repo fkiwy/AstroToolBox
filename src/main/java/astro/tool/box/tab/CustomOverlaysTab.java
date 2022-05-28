@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import static java.lang.Math.max;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,8 +87,9 @@ public class CustomOverlaysTab {
             topPanel.add(addButton);
 
             int overlayCount = overlays.size();
+            int filler = max(25 - overlayCount, 0);
 
-            JPanel overlayPanel = new JPanel(new GridLayout(overlayCount + 30, 1));
+            JPanel overlayPanel = new JPanel(new GridLayout(overlayCount + filler, 1));
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
             addButton.addActionListener((ActionEvent evt) -> {
@@ -110,7 +112,7 @@ public class CustomOverlaysTab {
         String overlayName = customOverlay.getName();
         String tableName = customOverlay.getTableName();
 
-        JTextField overlayNameField = new JTextField(20);
+        JTextField overlayNameField = new JTextField(18);
         overlayRow.add(overlayNameField);
         TextPrompt overlayNamePrompt = new TextPrompt("Overlay name");
         overlayNamePrompt.applyTo(overlayNameField);
@@ -133,7 +135,7 @@ public class CustomOverlaysTab {
         Shape shape = customOverlay.getShape();
         overlayShapes.setSelectedItem(shape == null ? Shape.CIRCLE : shape);
 
-        JTextField fileNameField = new JTextField(25);
+        JTextField fileNameField = new JTextField(22);
         fileNameField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt fileNamePrompt = new TextPrompt("Select CSV file using \"Select file\" button");
         fileNamePrompt.applyTo(fileNameField);
@@ -157,40 +159,54 @@ public class CustomOverlaysTab {
 
         overlayRow.add(fileNameField);
 
-        JTextField raPositionField = new JTextField(10);
+        JTextField raPositionField = new JTextField(8);
         overlayRow.add(raPositionField);
         raPositionField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt raPositionPrompt = new TextPrompt("RA column #");
         raPositionPrompt.applyTo(raPositionField);
         raPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
 
-        JTextField decPositionField = new JTextField(10);
+        JTextField decPositionField = new JTextField(8);
         overlayRow.add(decPositionField);
         decPositionField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
         decPositionPrompt.applyTo(decPositionField);
         decPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
-        JTextField tableNameField = new JTextField(15);
+        JTextField tableNameField = new JTextField(12);
         overlayRow.add(tableNameField);
         tableNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt tableNamePrompt = new TextPrompt("Catalog table name");
         tableNamePrompt.applyTo(tableNameField);
         tableNameField.setText(overlayName == null ? "" : customOverlay.getTableName());
 
-        JTextField raColNameField = new JTextField(15);
+        JTextField raColNameField = new JTextField(10);
         overlayRow.add(raColNameField);
         raColNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt raColNamePrompt = new TextPrompt("RA column name");
         raColNamePrompt.applyTo(raColNameField);
         raColNameField.setText(overlayName == null ? "" : customOverlay.getRaColName());
 
-        JTextField decColNameField = new JTextField(15);
+        JTextField decColNameField = new JTextField(10);
         overlayRow.add(decColNameField);
         decColNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt decColNamePrompt = new TextPrompt("Dec column name");
         decColNamePrompt.applyTo(decColNameField);
         decColNameField.setText(overlayName == null ? "" : customOverlay.getDecColName());
+
+        JTextField tapUrlField = new JTextField(10);
+        overlayRow.add(tapUrlField);
+        tapUrlField.setBackground(JColor.LIGHT_ORANGE.val);
+        TextPrompt tapUrlPrompt = new TextPrompt("TAP access URL");
+        tapUrlPrompt.applyTo(tapUrlField);
+        tapUrlField.setText(overlayName == null ? "" : customOverlay.getTapUrl());
+
+        JTextField adqlQueryField = new JTextField(20);
+        overlayRow.add(adqlQueryField);
+        adqlQueryField.setBackground(JColor.LIGHT_ORANGE.val);
+        TextPrompt adqlQueryPrompt = new TextPrompt("ADQL query");
+        adqlQueryPrompt.applyTo(adqlQueryField);
+        adqlQueryField.setText(overlayName == null ? "" : customOverlay.getAdqlQuery());
 
         JLabel message = createMessageLabel();
         Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -209,13 +225,10 @@ public class CustomOverlaysTab {
             if (customOverlay.getColor() == null) {
                 errors.append("Overlay color must be specified.").append(LINE_SEP);
             }
-            if (customOverlay.getFile() == null && tableNameField.getText().isEmpty()) {
-                errors.append("CSV file or VizieR catalog must be specified.").append(LINE_SEP);
+            if (customOverlay.getFile() == null && tableNameField.getText().isEmpty() && tapUrlField.getText().isEmpty()) {
+                errors.append("Either a CSV file or a Catalog table name or a TAP access URL must be specified.").append(LINE_SEP);
             }
-            if (customOverlay.getFile() != null && !tableNameField.getText().isEmpty()) {
-                errors.append("Only either a CSV file or a VizieR catalog may be specified.").append(LINE_SEP);
-            }
-            if (tableNameField.getText().isEmpty()) {
+            if (tableNameField.getText().isEmpty() && tapUrlField.getText().isEmpty()) {
                 if (raPositionField.getText().isEmpty()) {
                     errors.append("RA position must not be empty.").append(LINE_SEP);
                 } else {
@@ -241,11 +254,18 @@ public class CustomOverlaysTab {
                     }
                 }
             } else {
-                if (raColNameField.getText().isEmpty()) {
-                    errors.append("RA column name must not be empty.").append(LINE_SEP);
+                if (!tableNameField.getText().isEmpty()) {
+                    if (raColNameField.getText().isEmpty()) {
+                        errors.append("RA column name must not be empty.").append(LINE_SEP);
+                    }
+                    if (decColNameField.getText().isEmpty()) {
+                        errors.append("Dec column name must not be empty.").append(LINE_SEP);
+                    }
                 }
-                if (decColNameField.getText().isEmpty()) {
-                    errors.append("Dec column name must not be empty.").append(LINE_SEP);
+                if (!tapUrlField.getText().isEmpty()) {
+                    if (adqlQueryField.getText().isEmpty()) {
+                        errors.append("ADQL query must not be empty.").append(LINE_SEP);
+                    }
                 }
             }
             if (errors.length() > 0) {
@@ -260,6 +280,8 @@ public class CustomOverlaysTab {
             customOverlay.setTableName(tableNameField.getText().trim());
             customOverlay.setRaColName(raColNameField.getText().trim());
             customOverlay.setDecColName(decColNameField.getText().trim());
+            customOverlay.setTapUrl(tapUrlField.getText().trim());
+            customOverlay.setAdqlQuery(adqlQueryField.getText().trim());
             fireCustomOverlaysListener();
             customOverlays.put(name, customOverlay);
             overlayNameField.setEditable(false);
@@ -289,6 +311,8 @@ public class CustomOverlaysTab {
             tableNameField.setText("");
             raColNameField.setText("");
             decColNameField.setText("");
+            tapUrlField.setText("");
+            adqlQueryField.setText("");
             customOverlay.init();
             overlayPanel.updateUI();
 
