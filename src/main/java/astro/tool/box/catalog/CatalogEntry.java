@@ -1,11 +1,11 @@
 package astro.tool.box.catalog;
 
+import static astro.tool.box.util.Constants.LINE_SEP;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.exception.ExtinctionException;
-import static astro.tool.box.util.Constants.LINE_SEP;
 import java.util.List;
 import java.util.Map;
 

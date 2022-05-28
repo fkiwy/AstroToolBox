@@ -182,15 +182,22 @@ public class SettingsTab {
             globalSettings.add(new JLabel("TAP provider for AllWISE, ", JLabel.RIGHT));
             globalSettings.add(new JLabel());
 
-            globalSettings.add(new JLabel("CatWISE, 2MASS and Gaia: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("CatWISE, 2MASS, Gaia, DES and VHS: ", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
 
-            JRadioButton vizierButton = new JRadioButton("VizieR", tapProvider.equals(TapProvider.VIZIER));
+            boolean isVizierTap = tapProvider.equals(TapProvider.VIZIER);
+            boolean isNoaoTap = tapProvider.equals(TapProvider.NOAO);
+
+            if (!isVizierTap && !isNoaoTap) {
+                isNoaoTap = true;
+            }
+
+            JRadioButton vizierButton = new JRadioButton("VizieR", isVizierTap);
             radioPanel.add(vizierButton);
 
-            JRadioButton noirlabButton = new JRadioButton("NOIRLab", tapProvider.equals(TapProvider.NOAO));
+            JRadioButton noirlabButton = new JRadioButton("NOIRLab", isNoaoTap);
             radioPanel.add(noirlabButton);
 
             ButtonGroup buttonGroup = new ButtonGroup();

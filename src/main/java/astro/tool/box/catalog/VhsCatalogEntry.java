@@ -5,6 +5,7 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.MiscUtils.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
@@ -111,22 +112,42 @@ public class VhsCatalogEntry implements CatalogEntry {
     public VhsCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = toLong(values[columns.get("SrcID")]);
-        ra = toDouble(values[columns.get("RAJ2000")]);
-        dec = toDouble(values[columns.get("DEJ2000")]);
-        objectType = toInteger(values[columns.get("Mclass")]);
-        y_ap3 = toDouble(values[columns.get("Yap3")]);
-        y_ap3_err = toDouble(values[columns.get("e_Yap3")]);
-        j_ap3 = toDouble(values[columns.get("Jap3")]);
-        j_ap3_err = toDouble(values[columns.get("e_Jap3")]);
-        h_ap3 = toDouble(values[columns.get("Hap3")]);
-        h_ap3_err = toDouble(values[columns.get("e_Hap3")]);
-        ks_ap3 = toDouble(values[columns.get("Ksap3")]);
-        ks_ap3_err = toDouble(values[columns.get("e_Ksap3")]);
-        y_j_pnt = toDouble(values[columns.get("Y-Jpnt")]);
-        j_h_pnt = toDouble(values[columns.get("J-Hpnt")]);
-        h_ks_pnt = toDouble(values[columns.get("H-Kspnt")]);
-        j_ks_pnt = toDouble(values[columns.get("J-Kspnt")]);
+        if (isVizierTAP()) {
+            sourceId = toLong(values[columns.get("SrcID")]);
+            ra = toDouble(values[columns.get("RAJ2000")]);
+            dec = toDouble(values[columns.get("DEJ2000")]);
+            objectType = toInteger(values[columns.get("Mclass")]);
+            y_ap3 = toDouble(values[columns.get("Yap3")]);
+            y_ap3_err = toDouble(values[columns.get("e_Yap3")]);
+            j_ap3 = toDouble(values[columns.get("Jap3")]);
+            j_ap3_err = toDouble(values[columns.get("e_Jap3")]);
+            h_ap3 = toDouble(values[columns.get("Hap3")]);
+            h_ap3_err = toDouble(values[columns.get("e_Hap3")]);
+            ks_ap3 = toDouble(values[columns.get("Ksap3")]);
+            ks_ap3_err = toDouble(values[columns.get("e_Ksap3")]);
+            y_j_pnt = toDouble(values[columns.get("Y-Jpnt")]);
+            j_h_pnt = toDouble(values[columns.get("J-Hpnt")]);
+            h_ks_pnt = toDouble(values[columns.get("H-Kspnt")]);
+            j_ks_pnt = toDouble(values[columns.get("J-Kspnt")]);
+        } else {
+            replaceNanValuesByZero(values);
+            sourceId = toLong(values[columns.get("sourceid")]);
+            ra = toDouble(values[columns.get("ra2000")]);
+            dec = toDouble(values[columns.get("dec2000")]);
+            objectType = toInteger(values[columns.get("mergedclass")]);
+            y_ap3 = toDouble(values[columns.get("yapermag3")]);
+            y_ap3_err = toDouble(values[columns.get("yapermag3err")]);
+            j_ap3 = toDouble(values[columns.get("japermag3")]);
+            j_ap3_err = toDouble(values[columns.get("japermag3err")]);
+            h_ap3 = toDouble(values[columns.get("hapermag3")]);
+            h_ap3_err = toDouble(values[columns.get("hapermag3err")]);
+            ks_ap3 = toDouble(values[columns.get("ksapermag3")]);
+            ks_ap3_err = toDouble(values[columns.get("ksapermag3err")]);
+            y_j_pnt = toDouble(values[columns.get("ymjpnt")]);
+            j_h_pnt = toDouble(values[columns.get("jmhpnt")]);
+            h_ks_pnt = toDouble(values[columns.get("hmkspnt")]);
+            j_ks_pnt = toDouble(values[columns.get("jmkspnt")]);
+        }
     }
 
     @Override
@@ -194,7 +215,34 @@ public class VhsCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogQueryUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/367/vhs_dr5", "RAJ2000", "DEJ2000");
+        if (isVizierTAP()) {
+            return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/367/vhs_dr5", "RAJ2000", "DEJ2000");
+        } else {
+            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+        }
+    }
+
+    private String createAltCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT sourceid,");
+        addRow(query, "       ra2000,");
+        addRow(query, "       dec2000,");
+        addRow(query, "       mergedclass,");
+        addRow(query, "       yapermag3,");
+        addRow(query, "       yapermag3err,");
+        addRow(query, "       japermag3,");
+        addRow(query, "       japermag3err,");
+        addRow(query, "       hapermag3,");
+        addRow(query, "       hapermag3err,");
+        addRow(query, "       ksapermag3,");
+        addRow(query, "       ksapermag3err,");
+        addRow(query, "       ymjpnt,");
+        addRow(query, "       jmhpnt,");
+        addRow(query, "       hmkspnt,");
+        addRow(query, "       jmkspnt");
+        addRow(query, "FROM   vhs_dr5.vhs_cat_v3");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra2000, dec2000, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
     }
 
     @Override

@@ -6,6 +6,7 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
+import static astro.tool.box.util.MiscUtils.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
@@ -145,31 +146,64 @@ public class DesCatalogEntry implements CatalogEntry {
     public DesCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        sourceId = values[columns.get("DES")];
-        ra = toDouble(values[columns.get("RA_ICRS")]);
-        dec = toDouble(values[columns.get("DE_ICRS")]);
-        g_ext = toDouble(values[columns.get("S/Gg")]);
-        r_ext = toDouble(values[columns.get("S/Gr")]);
-        i_ext = toDouble(values[columns.get("S/Gi")]);
-        z_ext = toDouble(values[columns.get("S/Gz")]);
-        y_ext = toDouble(values[columns.get("S/GY")]);
-        g_caut = toInteger(values[columns.get("gFlag")]);
-        r_caut = toInteger(values[columns.get("rFlag")]);
-        i_caut = toInteger(values[columns.get("iFlag")]);
-        z_caut = toInteger(values[columns.get("zFlag")]);
-        y_caut = toInteger(values[columns.get("yFlag")]);
-        g_mag = toDouble(values[columns.get("gmag")]);
-        g_err = toDouble(values[columns.get("e_gmag")]);
-        r_mag = toDouble(values[columns.get("rmag")]);
-        r_err = toDouble(values[columns.get("e_rmag")]);
-        i_mag = toDouble(values[columns.get("imag")]);
-        i_err = toDouble(values[columns.get("e_imag")]);
-        z_mag = toDouble(values[columns.get("zmag")]);
-        z_err = toDouble(values[columns.get("e_zmag")]);
-        y_mag = toDouble(values[columns.get("Ymag")]);
-        y_err = toDouble(values[columns.get("e_Ymag")]);
-        glon = toDouble(values[columns.get("GLON")]);
-        glat = toDouble(values[columns.get("GLAT")]);
+        if (isVizierTAP()) {
+            sourceId = values[columns.get("CoadID")];
+            ra = toDouble(values[columns.get("RA_ICRS")]);
+            dec = toDouble(values[columns.get("DE_ICRS")]);
+            g_ext = toDouble(values[columns.get("S/Gg")]);
+            r_ext = toDouble(values[columns.get("S/Gr")]);
+            i_ext = toDouble(values[columns.get("S/Gi")]);
+            z_ext = toDouble(values[columns.get("S/Gz")]);
+            y_ext = toDouble(values[columns.get("S/GY")]);
+            g_caut = toInteger(values[columns.get("gFlag")]);
+            r_caut = toInteger(values[columns.get("rFlag")]);
+            i_caut = toInteger(values[columns.get("iFlag")]);
+            z_caut = toInteger(values[columns.get("zFlag")]);
+            y_caut = toInteger(values[columns.get("yFlag")]);
+            g_mag = fixMagVal(toDouble(values[columns.get("gmag")]));
+            g_err = fixMagVal(toDouble(values[columns.get("e_gmag")]));
+            r_mag = fixMagVal(toDouble(values[columns.get("rmag")]));
+            r_err = fixMagVal(toDouble(values[columns.get("e_rmag")]));
+            i_mag = fixMagVal(toDouble(values[columns.get("imag")]));
+            i_err = fixMagVal(toDouble(values[columns.get("e_imag")]));
+            z_mag = fixMagVal(toDouble(values[columns.get("zmag")]));
+            z_err = fixMagVal(toDouble(values[columns.get("e_zmag")]));
+            y_mag = fixMagVal(toDouble(values[columns.get("Ymag")]));
+            y_err = fixMagVal(toDouble(values[columns.get("e_Ymag")]));
+            glon = fixMagVal(toDouble(values[columns.get("GLON")]));
+            glat = fixMagVal(toDouble(values[columns.get("GLAT")]));
+        } else {
+            replaceNanValuesByZero(values);
+            sourceId = values[columns.get("coadd_object_id")];
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            g_ext = toDouble(values[columns.get("class_star_g")]);
+            r_ext = toDouble(values[columns.get("class_star_r")]);
+            i_ext = toDouble(values[columns.get("class_star_y")]);
+            z_ext = toDouble(values[columns.get("class_star_z")]);
+            y_ext = toDouble(values[columns.get("class_star_y")]);
+            g_caut = toInteger(values[columns.get("flags_g")]);
+            r_caut = toInteger(values[columns.get("flags_r")]);
+            i_caut = toInteger(values[columns.get("flags_i")]);
+            z_caut = toInteger(values[columns.get("flags_z")]);
+            y_caut = toInteger(values[columns.get("flags_y")]);
+            g_mag = fixMagVal(toDouble(values[columns.get("mag_auto_g")]));
+            g_err = fixMagVal(toDouble(values[columns.get("magerr_auto_g")]));
+            r_mag = fixMagVal(toDouble(values[columns.get("mag_auto_r")]));
+            r_err = fixMagVal(toDouble(values[columns.get("magerr_auto_r")]));
+            i_mag = fixMagVal(toDouble(values[columns.get("mag_auto_i")]));
+            i_err = fixMagVal(toDouble(values[columns.get("magerr_auto_i")]));
+            z_mag = fixMagVal(toDouble(values[columns.get("mag_auto_z")]));
+            z_err = fixMagVal(toDouble(values[columns.get("magerr_auto_z")]));
+            y_mag = fixMagVal(toDouble(values[columns.get("mag_auto_y")]));
+            y_err = fixMagVal(toDouble(values[columns.get("magerr_auto_y")]));
+            glon = toDouble(values[columns.get("galactic_l")]);
+            glat = toDouble(values[columns.get("galactic_b")]);
+        }
+    }
+
+    private double fixMagVal(double mag) {
+        return mag > 98 ? 0 : mag;
     }
 
     @Override
@@ -262,7 +296,43 @@ public class DesCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogQueryUrl() {
-        return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/371/des_dr2", "RA_ICRS", "DE_ICRS");
+        if (isVizierTAP()) {
+            return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/371/des_dr2", "RA_ICRS", "DE_ICRS");
+        } else {
+            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+        }
+    }
+
+    private String createAltCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT coadd_object_id,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       class_star_g,");
+        addRow(query, "       class_star_r,");
+        addRow(query, "       class_star_y,");
+        addRow(query, "       class_star_z,");
+        addRow(query, "       class_star_y,");
+        addRow(query, "       flags_g,");
+        addRow(query, "       flags_r,");
+        addRow(query, "       flags_i,");
+        addRow(query, "       flags_z,");
+        addRow(query, "       flags_y,");
+        addRow(query, "       mag_auto_g,");
+        addRow(query, "       magerr_auto_g,");
+        addRow(query, "       mag_auto_r,");
+        addRow(query, "       magerr_auto_r,");
+        addRow(query, "       mag_auto_i,");
+        addRow(query, "       magerr_auto_i,");
+        addRow(query, "       mag_auto_z,");
+        addRow(query, "       magerr_auto_z,");
+        addRow(query, "       mag_auto_y,");
+        addRow(query, "       magerr_auto_y,");
+        addRow(query, "       galactic_l,");
+        addRow(query, "       galactic_b");
+        addRow(query, "FROM   des_dr2.main");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
     }
 
     @Override
