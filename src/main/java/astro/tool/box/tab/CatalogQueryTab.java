@@ -391,7 +391,7 @@ public class CatalogQueryTab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setPreferredSize(new Dimension(scrollPanel.getWidth(), BOTTOM_PANEL_HEIGHT));
+        scrollPanel.setPreferredSize(new Dimension(680, BOTTOM_PANEL_HEIGHT));
         bottomPanel.add(scrollPanel);
     }
 
@@ -428,7 +428,7 @@ public class CatalogQueryTab {
             container.setBorder(BorderFactory.createTitledBorder(
                     new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            container.setPreferredSize(new Dimension(container.getWidth(), BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(520, BOTTOM_PANEL_HEIGHT));
             container.add(new JScrollPane(spectralTypeTable));
 
             JPanel remarks = new JPanel(new GridLayout(0, 1));
