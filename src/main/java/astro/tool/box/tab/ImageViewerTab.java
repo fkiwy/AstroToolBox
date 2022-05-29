@@ -4867,9 +4867,9 @@ public class ImageViewerTab {
         if (!customOverlay.getTapUrl().isEmpty()) {
             isCatalogSearch = true;
             String adqlQuery = customOverlay.getAdqlQuery()
-                    .replace(":radius", roundTo7DecNZ(getFovDiagonal() / 2 / DEG_ARCSEC)) // must be replaced before "ra"
-                    .replace(":ra", roundTo7DecNZ(targetRa))
-                    .replace(":dec", roundTo7DecNZ(targetDec));
+                    .replace(":ra:", roundTo7DecNZ(targetRa))
+                    .replace(":dec:", roundTo7DecNZ(targetDec))
+                    .replace(":radius:", roundTo7DecNZ(getFovDiagonal() / 2 / DEG_ARCSEC));
             queryUrl = customOverlay.getTapUrl() + TAP_URL_PARAMS + encodeQuery(adqlQuery);
         }
         if (isCatalogSearch) {

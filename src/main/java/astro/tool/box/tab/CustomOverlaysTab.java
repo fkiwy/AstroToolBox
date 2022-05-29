@@ -198,10 +198,10 @@ public class CustomOverlaysTab {
         tapUrlPrompt.applyTo(tapUrlField);
         tapUrlField.setText(overlayName == null ? "" : customOverlay.getTapUrl());
 
-        JTextField adqlQueryField = new JTextField(32);
+        JTextField adqlQueryField = new JTextField(20);
         overlayRow.add(adqlQueryField);
         adqlQueryField.setBackground(JColor.LIGHT_ORANGE.val);
-        TextPrompt adqlQueryPrompt = new TextPrompt("ADQL query (must contain these 3 keywords :ra, :dec, :radius)");
+        TextPrompt adqlQueryPrompt = new TextPrompt("ADQL query");
         adqlQueryPrompt.applyTo(adqlQueryField);
         adqlQueryField.setText(overlayName == null ? "" : customOverlay.getAdqlQuery());
 
@@ -259,8 +259,17 @@ public class CustomOverlaysTab {
                     errors.append("Dec column name must not be empty.").append(LINE_SEP);
                 }
                 if (!tapUrlField.getText().isEmpty()) {
-                    if (adqlQueryField.getText().isEmpty()) {
+                    String adqlQuery = adqlQueryField.getText();
+                    if (adqlQuery.isEmpty()) {
                         errors.append("ADQL query must not be empty.").append(LINE_SEP);
+                    } else {
+
+                        boolean hasRa = adqlQuery.contains(":ra:");
+                        boolean hasDec = adqlQuery.contains(":dec:");
+                        boolean hasRadius = adqlQuery.contains(":radius:");
+                        if (!hasRa || !hasDec || !hasRadius) {
+                            errors.append("Your ADQL must contain the following 3 keywords, colons included! :ra:, :dec:, :radius: (e.g. CIRCLE('ICRS', :ra:, :dec:, :radius:)).").append(LINE_SEP);
+                        }
                     }
                 }
             }
