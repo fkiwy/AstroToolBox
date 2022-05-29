@@ -85,10 +85,12 @@ public class CustomOverlaysTab {
             JButton addButton = new JButton("Create new overlay");
             topPanel.add(addButton);
 
-            JPanel overlayPanel = new JPanel(new GridLayout(0, 1));
+            GridLayout layout = new GridLayout(25, 1);
+            JPanel overlayPanel = new JPanel(layout);
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
             addButton.addActionListener((ActionEvent evt) -> {
+                layout.setRows(layout.getRows() + 1);
                 addOverlayRow(overlayPanel, new CustomOverlay());
                 baseFrame.setVisible(true);
             });
