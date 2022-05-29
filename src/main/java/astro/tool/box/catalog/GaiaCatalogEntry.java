@@ -333,6 +333,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
     private String createAltProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createAltCatalogQuery());
+        addRow(query, "AND    pmra <> 'NaN' AND pmdec <> 'NaN'");
         addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
         return query.toString();
     }
