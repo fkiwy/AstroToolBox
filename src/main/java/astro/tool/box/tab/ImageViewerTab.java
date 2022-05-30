@@ -178,7 +178,9 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
+    public static final String RANGE_LABEL = "Pixel range (min, max): (%d, %d)";
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
+    public static final String WINDOW_LABEL = "Image stacking: %d year(s)";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
@@ -242,7 +244,9 @@ public class ImageViewerTab {
     private JPanel imagePanel;
     private JPanel rightPanel;
     private JLabel changeFovLabel;
+    private JLabel rangeLabel;
     private JLabel epochLabel;
+    private JLabel windowLabel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
     private JScrollPane rightScrollPanel;
@@ -251,9 +255,10 @@ public class ImageViewerTab {
     private JRadioButton desiCutouts;
     private JRadioButton showCatalogsButton;
     private JButton changeFovButton;
-    private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
+    private JCheckBox skipSingleScanDirections;
     private JCheckBox separateScanDirections;
+    private JCheckBox differenceImaging;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -302,10 +307,12 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
-    private JSlider contrastSlider;
+    private JSlider rangeSlider;
+    private JSlider contastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
+    private JSlider windowSlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -355,7 +362,8 @@ public class ImageViewerTab {
     private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
-    private int contrast;
+    private int clippingFactor;
+    private int windowSize;
     private int minValue;
     private int maxValue;
     private int speed = SPEED;
@@ -471,7 +479,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 30;
+            int rows = 32;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -524,17 +532,33 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Contrast:"));
+            rangeLabel = new JLabel(String.format(RANGE_LABEL, minValue, maxValue));
+            mainControlPanel.add(rangeLabel);
 
-            contrastSlider = new JSlider(0, 200, 0);
-            mainControlPanel.add(contrastSlider);
-            contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = 200 - contrastSlider.getValue();
+            rangeSlider = new JSlider(0, 20, 0);
+            mainControlPanel.add(rangeSlider);
+            rangeSlider.addChangeListener((ChangeEvent e) -> {
+                clippingFactor = rangeSlider.getMaximum() - rangeSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
                 createFlipbook();
+                rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
+                resetContastSlider();
+            });
+
+            mainControlPanel.add(new JLabel("Contrast:"));
+
+            contastSlider = new JSlider(0, 0, 0);
+            mainControlPanel.add(contastSlider);
+            contastSlider.addChangeListener((ChangeEvent e) -> {
+                maxValue = contastSlider.getMaximum() - contastSlider.getValue();
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                processImages();
             });
 
             JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
@@ -584,6 +608,28 @@ public class ImageViewerTab {
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
+                resetWindowSlider(selectedEpochs);
+                reloadImages = true;
+                createFlipbook();
+            });
+
+            int maxWindowSize = NUMBER_OF_WISEVIEW_EPOCHS;
+
+            windowLabel = new JLabel(String.format(WINDOW_LABEL, 1));
+            mainControlPanel.add(windowLabel);
+
+            windowSlider = new JSlider(JSlider.HORIZONTAL, 1, maxWindowSize, 1);
+            mainControlPanel.add(windowSlider);
+            windowSlider.setMajorTickSpacing(1);
+            windowSlider.setPaintTicks(true);
+            windowSlider.addChangeListener((ChangeEvent e) -> {
+                windowLabel.setText(String.format(WINDOW_LABEL, windowSlider.getValue()));
+                windowSize = windowSlider.getValue() - 1;
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                skipIntermediateEpochs.setSelected(false);
                 reloadImages = true;
                 createFlipbook();
             });
@@ -591,16 +637,32 @@ public class ImageViewerTab {
             skipIntermediateEpochs = new JCheckBox("Skip intermediate epochs", true);
             mainControlPanel.add(skipIntermediateEpochs);
             skipIntermediateEpochs.addActionListener((ActionEvent evt) -> {
-                if (!skipIntermediateEpochs.isSelected()) {
+                if (skipIntermediateEpochs.isSelected()) {
+                    resetWindowSlider(selectedEpochs);
+                } else {
                     loadImages = true;
                 }
+                createFlipbook();
+            });
+
+            skipSingleScanDirections = new JCheckBox("Skip single scan directions", true);
+            mainControlPanel.add(skipSingleScanDirections);
+            skipSingleScanDirections.addActionListener((ActionEvent evt) -> {
+                imagesW1.clear();
+                imagesW2.clear();
+                reloadImages = true;
                 createFlipbook();
             });
 
             separateScanDirections = new JCheckBox("Separate scan directions");
             mainControlPanel.add(separateScanDirections);
             separateScanDirections.addActionListener((ActionEvent evt) -> {
-                createFlipbook();
+                if (separateScanDirections.isSelected() && !skipSingleScanDirections.isSelected()) {
+                    skipSingleScanDirections.setSelected(true);
+                    skipSingleScanDirections.getActionListeners()[0].actionPerformed(null);
+                } else {
+                    createFlipbook();
+                }
             });
 
             differenceImaging = new JCheckBox("Difference imaging");
@@ -611,7 +673,7 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                resetContrastSlider();
+                resetWindowSlider(selectedEpochs);
                 createFlipbook();
             });
 
@@ -666,8 +728,9 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                resetContrastSlider();
+                resetRangeSlider();
                 createFlipbook();
+                resetContastSlider();
             });
 
             wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
@@ -675,6 +738,7 @@ public class ImageViewerTab {
             wiseviewCutouts.setToolTipText("WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
             wiseviewCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
+                resetWindowSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousSize = 0;
                 createFlipbook();
@@ -685,6 +749,7 @@ public class ImageViewerTab {
             unwiseCutouts.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+                resetWindowSlider(NUMBER_OF_UNWISE_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousSize = 0;
                 createFlipbook();
@@ -2282,15 +2347,36 @@ public class ImageViewerTab {
         epochSlider.setValue(numberOfNeoEpochs);
         epochSlider.addChangeListener(changeListener);
         selectedEpochs = numberOfEpochs;
+
     }
 
-    private void resetContrastSlider() {
-        int defaultContrast = desiCutouts.isSelected() ? 150 : 100;
-        ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
-        contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setValue(defaultContrast);
-        contrastSlider.addChangeListener(changeListener);
-        contrast = defaultContrast;
+    private void resetWindowSlider(int maxWindowSize) {
+        if (differenceImaging.isSelected()) {
+            maxWindowSize--;
+        }
+        windowLabel.setText(String.format(WINDOW_LABEL, 1));
+        ChangeListener changeListener = windowSlider.getChangeListeners()[0];
+        windowSlider.removeChangeListener(changeListener);
+        windowSlider.setMaximum(maxWindowSize);
+        windowSlider.setValue(1);
+        windowSlider.addChangeListener(changeListener);
+        windowSize = 0;
+    }
+
+    private void resetRangeSlider() {
+        int defaultContrast = desiCutouts.isSelected() ? 15 : 10;
+        ChangeListener changeListener = rangeSlider.getChangeListeners()[0];
+        rangeSlider.removeChangeListener(changeListener);
+        rangeSlider.setValue(defaultContrast);
+        rangeSlider.addChangeListener(changeListener);
+        clippingFactor = defaultContrast;
+    }
+
+    private void resetContastSlider() {
+        ChangeListener changeListener = contastSlider.getChangeListeners()[0];
+        contastSlider.removeChangeListener(changeListener);
+        contastSlider.setValue(contastSlider.getMaximum() / 2);
+        contastSlider.addChangeListener(changeListener);
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2452,7 +2538,8 @@ public class ImageViewerTab {
                 initCatalogEntries();
                 desiImage = null;
                 processedDesiImage = null;
-                resetContrastSlider();
+                resetRangeSlider();
+                resetContastSlider();
                 if (legacyImages) {
                     CompletableFuture.supplyAsync(() -> {
                         desiImage = fetchDesiImage(targetRa, targetDec, size);
@@ -2621,8 +2708,14 @@ public class ImageViewerTab {
             loadImages = false;
             reloadImages = false;
 
+            boolean sep = separateScanDirections.isSelected();
+            boolean skip = skipIntermediateEpochs.isSelected();
+            boolean diff = differenceImaging.isSelected();
+            boolean desi = desiCutouts.isSelected();
+
             List<Fits> band1Scan1Images = new ArrayList();
             List<Fits> band1Scan2Images = new ArrayList();
+
             for (int i = 0; i < epochCount && i < band1Images.size(); i++) {
                 if (i % 2 == 0) {
                     band1Scan1Images.add(band1Images.get(i));
@@ -2631,8 +2724,33 @@ public class ImageViewerTab {
                 }
             }
 
+            if (!skip && !desi) {
+                List<Fits> band1Scan1List = new ArrayList();
+                for (int i = 0; i < band1Scan1Images.size() - windowSize; i++) {
+                    Fits fits = band1Scan1Images.get(i);
+                    for (int j = 0; j < windowSize; j++) {
+                        fits = addImages(fits, band1Scan1Images.get(++i));
+                    }
+                    band1Scan1List.add(fits);
+
+                }
+                band1Scan1Images = band1Scan1List;
+
+                List<Fits> band1Scan2List = new ArrayList();
+                for (int i = 0; i < band1Scan2Images.size() - windowSize; i++) {
+                    Fits fits = band1Scan2Images.get(i);
+                    for (int j = 0; j < windowSize; j++) {
+                        fits = addImages(fits, band1Scan2Images.get(++i));
+                    }
+                    band1Scan2List.add(fits);
+
+                }
+                band1Scan2Images = band1Scan2List;
+            }
+
             List<Fits> band2Scan1Images = new ArrayList();
             List<Fits> band2Scan2Images = new ArrayList();
+
             for (int i = 0; i < epochCount && i < band2Images.size(); i++) {
                 if (i % 2 == 0) {
                     band2Scan1Images.add(band2Images.get(i));
@@ -2641,12 +2759,32 @@ public class ImageViewerTab {
                 }
             }
 
+            if (!skip && !desi) {
+                List<Fits> band2Scan1List = new ArrayList();
+                for (int i = 0; i < band2Scan1Images.size() - windowSize; i++) {
+                    Fits fits = band2Scan1Images.get(i);
+                    for (int j = 0; j < windowSize; j++) {
+                        fits = addImages(fits, band2Scan1Images.get(++i));
+                    }
+                    band2Scan1List.add(fits);
+
+                }
+                band2Scan1Images = band2Scan1List;
+
+                List<Fits> band2Scan2List = new ArrayList();
+                for (int i = 0; i < band2Scan2Images.size() - windowSize; i++) {
+                    Fits fits = band2Scan2Images.get(i);
+                    for (int j = 0; j < windowSize; j++) {
+                        fits = addImages(fits, band2Scan2Images.get(++i));
+                    }
+                    band2Scan2List.add(fits);
+
+                }
+                band2Scan2Images = band2Scan2List;
+            }
+
             List<Fits> band1GroupedImages = new ArrayList();
             List<Fits> band2GroupedImages = new ArrayList();
-
-            boolean sep = separateScanDirections.isSelected();
-            boolean skip = skipIntermediateEpochs.isSelected();
-            boolean diff = differenceImaging.isSelected();
 
             if (sep) {
                 if (diff) {
@@ -2810,6 +2948,12 @@ public class ImageViewerTab {
                 NumberPair refVal = getRefValues(flipbook.get(0));
                 minValue = (int) refVal.getX();
                 maxValue = (int) refVal.getY();
+                rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
+                ChangeListener changeListener = contastSlider.getChangeListeners()[0];
+                contastSlider.removeChangeListener(changeListener);
+                contastSlider.setMaximum(maxValue * 2);
+                contastSlider.setValue(maxValue);
+                contastSlider.addChangeListener(changeListener);
             }
 
             flipbookComplete = true;
@@ -3395,7 +3539,7 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    if (requestedEpochs.size() == 4) {
+                    if (skipIntermediateEpochs.isSelected()) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -3408,7 +3552,7 @@ public class ImageViewerTab {
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
                 } catch (FitsException ex) {
-                    if (requestedEpochs.size() == 4) {
+                    if (skipIntermediateEpochs.isSelected()) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for surrogates");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -3441,7 +3585,8 @@ public class ImageViewerTab {
                 .collect(Collectors.toList());
         List<List<ImageContainer>> groupedList = new ArrayList<>();
         List<ImageContainer> group = new ArrayList<>();
-        LocalDateTime date = containers.get(0).getDate();
+        ImageContainer imageContainer = containers.get(0);
+        LocalDateTime date = imageContainer.getDate();
         int prevYear = date.getYear();
         int prevMonth = date.getMonthValue();
         int prevNode = 1;
@@ -3449,6 +3594,7 @@ public class ImageViewerTab {
         int node2 = 0;
         boolean nodeChange = false;
         for (ImageContainer container : containers) {
+            imageContainer = container;
             date = container.getDate();
             int year = date.getYear();
             int month = date.getMonthValue();
@@ -3477,9 +3623,17 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (!skipIntermediateEpochs.isSelected() && (node1 == 0 || node2 == 0)) {
-                    writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
-                    groupedList.remove(groupedList.size() - 1);
+                if (skipSingleScanDirections.isSelected() && (node1 == 0 || node2 == 0)) {
+                    if (skipIntermediateEpochs.isSelected()) {
+                        images.clear();
+                        int requestedEpoch = container.getEpoch();
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for surrogates");
+                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                        return;
+                    } else {
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
+                        groupedList.remove(groupedList.size() - 1);
+                    }
                 }
                 node1 = 0;
                 node2 = 0;
@@ -3495,8 +3649,16 @@ public class ImageViewerTab {
             prevNode = node;
             writeLogEntry("year " + year + " | node " + node);
         }
-        if (!skipIntermediateEpochs.isSelected() && (node1 == 0 || node2 == 0)) {
-            writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
+        if (skipSingleScanDirections.isSelected() && (node1 == 0 || node2 == 0)) {
+            if (skipIntermediateEpochs.isSelected()) {
+                images.clear();
+                int requestedEpoch = imageContainer.getEpoch();
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for surrogates");
+                downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                return;
+            } else {
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
+            }
         } else {
             groupedList.add(group);
         }
@@ -3879,7 +4041,6 @@ public class ImageViewerTab {
         List<Double> outliersRemoved = data;
         int oldSize = 1;
         int newSize = 0;
-        double clippingFactor = contrast / 10;
         while (oldSize != newSize) {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
@@ -3936,6 +4097,7 @@ public class ImageViewerTab {
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
         if (unwiseCutouts.isSelected()) {
             imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
+            imageViewerTab.resetWindowSlider(NUMBER_OF_UNWISE_EPOCHS);
             imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
             imageViewerTab.getWiseCoadds().setSelected(true);
         }
