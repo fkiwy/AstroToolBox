@@ -188,7 +188,7 @@ public class SettingsTab {
             globalSettings.add(radioPanel);
 
             boolean isVizierTap = tapProvider.equals(TapProvider.VIZIER);
-            boolean isNoaoTap = tapProvider.equals(TapProvider.NOAO);
+            boolean isNoaoTap = tapProvider.equals(TapProvider.NOIRLAB);
 
             if (!isVizierTap && !isNoaoTap) {
                 isNoaoTap = true;

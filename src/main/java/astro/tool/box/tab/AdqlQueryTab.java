@@ -235,7 +235,7 @@ public class AdqlQueryTab {
                 jobId = null;
                 String response;
                 // Validate query
-                if (!TapProvider.NOAO.equals(getTapProvider())) {
+                if (!TapProvider.NOIRLAB.equals(getTapProvider())) {
                     try {
                         response = readResponse(establishHttpConnection(createValidatorUrl(encodeQuery(query))), "Query validator");
                         if (!response.isEmpty()) {
@@ -690,7 +690,7 @@ public class AdqlQueryTab {
                 return IRSA_TAP_URL;
             case VIZIER:
                 return VIZIER_BASE_URL;
-            case NOAO:
+            case NOIRLAB:
                 return NOAO_BASE_URL;
             default:
                 return null;
@@ -700,7 +700,7 @@ public class AdqlQueryTab {
     private String getJobIdentifier(String response) throws Exception {
         switch (getTapProvider()) {
             case IRSA:
-            case NOAO:
+            case NOIRLAB:
                 return parseXml(response, "uws:jobId");
             case VIZIER:
                 return parseXml(response, "jobId");
