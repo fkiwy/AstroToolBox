@@ -2732,7 +2732,6 @@ public class ImageViewerTab {
                         fits = addImages(fits, band1Scan1Images.get(++i));
                     }
                     band1Scan1List.add(fits);
-
                 }
                 band1Scan1Images = band1Scan1List;
 
@@ -2743,7 +2742,6 @@ public class ImageViewerTab {
                         fits = addImages(fits, band1Scan2Images.get(++i));
                     }
                     band1Scan2List.add(fits);
-
                 }
                 band1Scan2Images = band1Scan2List;
             }
@@ -2767,7 +2765,6 @@ public class ImageViewerTab {
                         fits = addImages(fits, band2Scan1Images.get(++i));
                     }
                     band2Scan1List.add(fits);
-
                 }
                 band2Scan1Images = band2Scan1List;
 
@@ -2778,7 +2775,6 @@ public class ImageViewerTab {
                         fits = addImages(fits, band2Scan2Images.get(++i));
                     }
                     band2Scan2List.add(fits);
-
                 }
                 band2Scan2Images = band2Scan2List;
             }
