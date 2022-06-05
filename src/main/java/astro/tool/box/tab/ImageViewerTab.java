@@ -3396,7 +3396,7 @@ public class ImageViewerTab {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
                     if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for surrogates");
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for substitutes");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
                     } else {
@@ -3409,7 +3409,7 @@ public class ImageViewerTab {
                     fits.close();
                 } catch (FitsException ex) {
                     if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for surrogates");
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for substitutes");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
                     } else {
@@ -3441,7 +3441,8 @@ public class ImageViewerTab {
                 .collect(Collectors.toList());
         List<List<ImageContainer>> groupedList = new ArrayList<>();
         List<ImageContainer> group = new ArrayList<>();
-        LocalDateTime date = containers.get(0).getDate();
+        ImageContainer imageContainer = containers.get(0);
+        LocalDateTime date = imageContainer.getDate();
         int prevYear = date.getYear();
         int prevMonth = date.getMonthValue();
         int prevNode = 1;
@@ -3449,6 +3450,7 @@ public class ImageViewerTab {
         int node2 = 0;
         boolean nodeChange = false;
         for (ImageContainer container : containers) {
+            imageContainer = container;
             date = container.getDate();
             int year = date.getYear();
             int month = date.getMonthValue();
@@ -3477,9 +3479,17 @@ public class ImageViewerTab {
                     node2++;
                 }
             } else {
-                if (!skipIntermediateEpochs.isSelected() && (node1 == 0 || node2 == 0)) {
-                    writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
-                    groupedList.remove(groupedList.size() - 1);
+                if (node1 == 0 || node2 == 0) {
+                    if (skipIntermediateEpochs.isSelected()) {
+                        images.clear();
+                        int requestedEpoch = container.getEpoch();
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for substitutes");
+                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                        return;
+                    } else {
+                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
+                        groupedList.remove(groupedList.size() - 1);
+                    }
                 }
                 node1 = 0;
                 node2 = 0;
@@ -3495,8 +3505,16 @@ public class ImageViewerTab {
             prevNode = node;
             writeLogEntry("year " + year + " | node " + node);
         }
-        if (!skipIntermediateEpochs.isSelected() && (node1 == 0 || node2 == 0)) {
-            writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single node)");
+        if (node1 == 0 || node2 == 0) {
+            if (skipIntermediateEpochs.isSelected()) {
+                images.clear();
+                int requestedEpoch = imageContainer.getEpoch();
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for substitutes");
+                downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                return;
+            } else {
+                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
+            }
         } else {
             groupedList.add(group);
         }
