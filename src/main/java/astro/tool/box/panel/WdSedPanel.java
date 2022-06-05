@@ -31,9 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.InputStream;
-import static java.lang.Math.abs;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -445,14 +443,13 @@ public class WdSedPanel extends JPanel {
             List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
             sedBands.forEach(band -> {
                 if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
-                    diffMags.add(abs(sedPhotometry.get(band) - bands.get(band)));
+                    diffMags.add(sedPhotometry.get(band) - bands.get(band));
                 }
             });
             if (diffMags.isEmpty()) {
                 showInfoDialog(null, "No photometry found for SED." + LINE_SEP + "Increasing the search radius may help.");
                 return;
             }
-            diffMags.sort(Comparator.naturalOrder());
             int totalMags = diffMags.size();
             double medianDiffMag = determineMedian(diffMags);
 
