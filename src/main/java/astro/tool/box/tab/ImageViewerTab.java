@@ -393,6 +393,7 @@ public class ImageViewerTab {
     private boolean allEpochsW1Loaded;
     private boolean allEpochsW2Loaded;
     private boolean moreImagesAvailable;
+    private boolean oneMoreImageAvailable;
     private boolean flipbookComplete;
     private boolean reloadImages;
     private boolean imageCutOff;
@@ -2434,6 +2435,7 @@ public class ImageViewerTab {
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
                 moreImagesAvailable = false;
+                oneMoreImageAvailable = false;
                 flipbookComplete = false;
                 hasException = false;
                 imageCutOff = false;
@@ -2525,6 +2527,12 @@ public class ImageViewerTab {
                         stream.close();
                         moreImagesAvailable = true;
                     } catch (IOException e) {
+                        try {
+                            InputStream stream = getImageData(1, numberOfEpochs);
+                            stream.close();
+                            oneMoreImageAvailable = true;
+                        } catch (IOException ex) {
+                        }
                     }
                 }
             }
@@ -2540,7 +2548,7 @@ public class ImageViewerTab {
                 epochCountW2 = 0;
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
-                int totalEpochs = selectedEpochs * 2;
+                int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
                 requestedEpochs = new ArrayList<>();
                 if (moreImagesAvailable) {
                     for (int i = 0; i < 100; i++) {
