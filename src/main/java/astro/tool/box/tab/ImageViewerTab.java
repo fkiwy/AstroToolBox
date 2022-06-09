@@ -3403,7 +3403,7 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    if (requestedEpochs.size() == 4) {
+                    if (skipIntermediateEpochs.isSelected()) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for substitutes");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -3416,7 +3416,7 @@ public class ImageViewerTab {
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
                 } catch (FitsException ex) {
-                    if (requestedEpochs.size() == 4) {
+                    if (skipIntermediateEpochs.isSelected()) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for substitutes");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
