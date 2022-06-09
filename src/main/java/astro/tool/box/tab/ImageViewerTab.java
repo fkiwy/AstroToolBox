@@ -241,16 +241,16 @@ public class ImageViewerTab {
 
     private JPanel imagePanel;
     private JPanel rightPanel;
-    private JLabel changeFovLabel;
-    private JLabel epochLabel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
-    private JScrollPane rightScrollPanel;
+    private JLabel epochLabel;
+    private JLabel changeFovLabel;
+    private JButton changeFovButton;
     private JRadioButton wiseviewCutouts;
     private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
     private JRadioButton showCatalogsButton;
-    private JButton changeFovButton;
+    private JScrollPane rightScrollPanel;
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
@@ -2286,12 +2286,11 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
-        int defaultContrast = desiCutouts.isSelected() ? 150 : 100;
+        contrast = desiCutouts.isSelected() ? 150 : 100;
         ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setValue(defaultContrast);
+        contrastSlider.setValue(contrast);
         contrastSlider.addChangeListener(changeListener);
-        contrast = defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2429,6 +2428,9 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            skipIntermediateEpochs.setEnabled(false);
+            separateScanDirections.setEnabled(false);
+            differenceImaging.setEnabled(false);
 
             if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
                 loadImages = true;
@@ -2452,13 +2454,12 @@ public class ImageViewerTab {
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
+                resetContrastSlider();
                 desiImage = null;
                 processedDesiImage = null;
-                resetContrastSlider();
                 if (legacyImages) {
                     CompletableFuture.supplyAsync(() -> {
                         desiImage = fetchDesiImage(targetRa, targetDec, size);
-                        processedDesiImage = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2467,7 +2468,6 @@ public class ImageViewerTab {
                 if (panstarrsImages) {
                     CompletableFuture.supplyAsync(() -> {
                         ps1Image = fetchPs1Image(targetRa, targetDec, size);
-                        processedPs1Image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2476,7 +2476,6 @@ public class ImageViewerTab {
                 if (ukidssImages) {
                     CompletableFuture.supplyAsync(() -> {
                         ukidssImage = fetchUkidssImage(targetRa, targetDec, size);
-                        processedUkidssImage = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2485,7 +2484,6 @@ public class ImageViewerTab {
                 if (vhsImages) {
                     CompletableFuture.supplyAsync(() -> {
                         vhsImage = fetchVhsImage(targetRa, targetDec, size);
-                        processedVhsImage = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2494,7 +2492,6 @@ public class ImageViewerTab {
                 if (sdssImages) {
                     CompletableFuture.supplyAsync(() -> {
                         sdssImage = fetchSdssImage(targetRa, targetDec, size);
-                        processedSdssImage = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2503,7 +2500,6 @@ public class ImageViewerTab {
                 if (dssImages) {
                     CompletableFuture.supplyAsync(() -> {
                         dssImage = fetchDssImage(targetRa, targetDec, size);
-                        processedDssImage = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
@@ -2652,8 +2648,8 @@ public class ImageViewerTab {
             List<Fits> band1GroupedImages = new ArrayList();
             List<Fits> band2GroupedImages = new ArrayList();
 
-            boolean sep = separateScanDirections.isSelected();
             boolean skip = skipIntermediateEpochs.isSelected();
+            boolean sep = separateScanDirections.isSelected();
             boolean diff = differenceImaging.isSelected();
 
             if (sep) {
@@ -2828,6 +2824,9 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
+            skipIntermediateEpochs.setEnabled(true);
+            separateScanDirections.setEnabled(true);
+            differenceImaging.setEnabled(true);
             if (waitCursor) {
                 baseFrame.setCursor(Cursor.getDefaultCursor());
                 coordsField.setCursor(Cursor.getDefaultCursor());
@@ -3011,7 +3010,7 @@ public class ImageViewerTab {
     public BufferedImage processImage(FlipbookComponent component) {
         BufferedImage image;
         if (wiseBand.equals(WiseBand.W1W2)) {
-            image = createComposite(component.getFits1(), component.getFits2());
+            image = createColorImage(component.getFits1(), component.getFits2());
         } else {
             image = createImage(component.getFits1() == null ? component.getFits2() : component.getFits1());
         }
@@ -3721,7 +3720,7 @@ public class ImageViewerTab {
         }
     }
 
-    private BufferedImage createComposite(Fits fits1, Fits fits2) {
+    private BufferedImage createColorImage(Fits fits1, Fits fits2) {
         try {
             ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
