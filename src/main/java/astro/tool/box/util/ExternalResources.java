@@ -16,10 +16,10 @@ public class ExternalResources {
     }
 
     // FoV in arcsec
-    public static String getWiseViewUrl(double degRA, double degDE, int fieldOfView) {
+    public static String getWiseViewUrl(double degRA, double degDE, int fieldOfView, int skip, int sep, int diff) {
         int zoom = 1500 / fieldOfView;
         zoom = zoom < 2 ? 2 : zoom;
-        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&zoom=" + zoom + "&band=3&speed=200&minbright=-50&maxbright=200&window=1.0&diff_window=1&linear=1&color=&border=0&gaia=0&invert=1&maxdyr=1&scandir=0&neowise=0&diff=0&outer_epochs=1&unique_window=1&smooth_scan=0&shift=0&pmra=0&pmdec=0&synth_a=0&synth_a_sub=0&synth_a_ra=&synth_a_dec=&synth_a_w1=&synth_a_w2=&synth_a_pmra=0&synth_a_pmdec=0&synth_a_mjd=&synth_b=0&synth_b_sub=0&synth_b_ra=&synth_b_dec=&synth_b_w1=&synth_b_w2=&synth_b_pmra=0&synth_b_pmdec=0&synth_b_mjd=";
+        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&zoom=" + zoom + "&band=3&speed=200&minbright=-50&maxbright=200&window=1.0&diff_window=1&linear=1&color=&border=0&gaia=0&invert=1&maxdyr=1&scandir=" + sep + "&neowise=0&diff=" + diff + "&outer_epochs=" + skip + "&unique_window=1&smooth_scan=" + diff + "&shift=0&pmra=0&pmdec=0&synth_a=0&synth_a_sub=0&synth_a_ra=&synth_a_dec=&synth_a_w1=&synth_a_w2=&synth_a_pmra=0&synth_a_pmdec=0&synth_a_mjd=&synth_b=0&synth_b_sub=0&synth_b_ra=&synth_b_dec=&synth_b_w1=&synth_b_w2=&synth_b_pmra=0&synth_b_pmdec=0&synth_b_mjd=";
     }
 
     // FoV in degrees
