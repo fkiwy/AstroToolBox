@@ -351,8 +351,6 @@ public class ImageViewerTab {
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
-    private int epochCountW1;
-    private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int contrast;
@@ -2544,8 +2542,6 @@ public class ImageViewerTab {
 
             if (loadImages || reloadImages) {
                 epochCount = 0;
-                epochCountW1 = 0;
-                epochCountW2 = 0;
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
                 int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
@@ -2585,17 +2581,13 @@ public class ImageViewerTab {
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
-                        epochCountW1 = epochCount;
                         break;
                     case W2:
                         downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
-                        epochCountW2 = epochCount;
                         break;
                     case W1W2:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
-                        epochCountW1 = epochCount;
                         downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
-                        epochCountW2 = epochCount;
                         break;
                 }
                 writeLogEntry("Ready.");
@@ -2607,10 +2599,6 @@ public class ImageViewerTab {
                     hasException = true;
                     return false;
                 }
-                if (epochCountW1 > 0 && epochCountW2 > 0) {
-                    epochCount = min(epochCountW1, epochCountW2);
-                }
-                epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
                 if (!skipIntermediateEpochs.isSelected() || moreImagesAvailable) {
                     epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
                 }
@@ -3441,8 +3429,39 @@ public class ImageViewerTab {
                 } else {
                     obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 }
+                String formatObsDate = obsDate.format(DATE_FORMATTER);
+
+                // Skip bad quality images
+                ImageData imageData = (ImageData) hdu.getData();
+                float[][] values = (float[][]) imageData.getData();
+                double yLength = values.length;
+                double xLength = yLength > 0 ? values[0].length : 0;
+                int zeroValues = 0;
+                for (int y = 0; y < yLength; y++) {
+                    for (int x = 0; x < xLength; x++) {
+                        try {
+                            if (values[y][x] == 0) {
+                                zeroValues++;
+                            }
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                }
+                double maxAllowed = xLength * yLength * 0.1;
+                if (zeroValues > maxAllowed) {
+                    if (skipIntermediateEpochs.isSelected()) {
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (bad image quality), looking for substitutes");
+                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                        return;
+                    } else {
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (bad image quality)");
+                        continue;
+                    }
+                }
+                // -------------------------------------------------------------
+
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
+                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > downloaded");
             }
         }
         if (images.isEmpty()) {
@@ -3530,9 +3549,7 @@ public class ImageViewerTab {
                 writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
             }
         } else {
-            if (skipIntermediateEpochs.isSelected()) {
-                groupedList.add(group);
-            }
+            groupedList.add(group);
         }
         writeLogEntry("Stacking ...");
         epochCount = 0;
