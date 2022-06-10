@@ -2432,7 +2432,7 @@ public class ImageViewerTab {
             separateScanDirections.setEnabled(false);
             differenceImaging.setEnabled(false);
 
-            if (size != previousSize || targetRa != previousRa || targetDec != previousDec) {
+            if (!isSameFoV(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
                 loadImages = true;
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
@@ -2455,49 +2455,49 @@ public class ImageViewerTab {
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
                 resetContrastSlider();
-                desiImage = null;
-                processedDesiImage = null;
                 if (legacyImages) {
+                    desiImage = null;
+                    processedDesiImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         desiImage = fetchDesiImage(targetRa, targetDec, size);
                         return null;
                     });
                 }
-                ps1Image = null;
-                processedPs1Image = null;
                 if (panstarrsImages) {
+                    ps1Image = null;
+                    processedPs1Image = null;
                     CompletableFuture.supplyAsync(() -> {
                         ps1Image = fetchPs1Image(targetRa, targetDec, size);
                         return null;
                     });
                 }
-                ukidssImage = null;
-                processedUkidssImage = null;
                 if (ukidssImages) {
+                    ukidssImage = null;
+                    processedUkidssImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         ukidssImage = fetchUkidssImage(targetRa, targetDec, size);
                         return null;
                     });
                 }
-                vhsImage = null;
-                processedVhsImage = null;
                 if (vhsImages) {
+                    vhsImage = null;
+                    processedVhsImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         vhsImage = fetchVhsImage(targetRa, targetDec, size);
                         return null;
                     });
                 }
-                sdssImage = null;
-                processedSdssImage = null;
                 if (sdssImages) {
+                    sdssImage = null;
+                    processedSdssImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         sdssImage = fetchSdssImage(targetRa, targetDec, size);
                         return null;
                     });
                 }
-                dssImage = null;
-                processedDssImage = null;
                 if (dssImages) {
+                    dssImage = null;
+                    processedDssImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         dssImage = fetchDssImage(targetRa, targetDec, size);
                         return null;
@@ -3991,7 +3991,7 @@ public class ImageViewerTab {
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
                 image = ImageIO.read(stream);
             }
-            return image;
+            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4027,7 +4027,7 @@ public class ImageViewerTab {
             int year_i = years.get("i").intValue();
             int year_y = years.get("y").intValue();
             year_ps1_y_i_g = getMeanEpoch(year_y, year_i, year_g);
-            return image;
+            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4047,7 +4047,7 @@ public class ImageViewerTab {
                 return null;
             }
             year_ukidss_k_h_j = nirImage.getYear();
-            return nirImage.getImage();
+            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4067,7 +4067,7 @@ public class ImageViewerTab {
                 return null;
             }
             year_vhs_k_h_j = nirImage.getYear();
-            return nirImage.getImage();
+            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4087,7 +4087,7 @@ public class ImageViewerTab {
             //int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
             //int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
             //year_sdss_z_g_u = getMeanEpoch(year_z, year_g, year_u);
-            return image;
+            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4101,10 +4101,14 @@ public class ImageViewerTab {
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
             //year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
             year_dss_2ir_1r_1b = year_2ir;
-            return image;
+            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    private boolean isSameFoV(double targetRa, double targetDec, double size, double previousRa, double previousDec, double previousSize) {
+        return targetRa == previousRa && targetDec == previousDec && size == previousSize;
     }
 
     private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
