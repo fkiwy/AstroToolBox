@@ -721,37 +721,37 @@ public class ImageViewerTab {
 
             mainControlPanel.add(createHeaderLabel("External resources"));
 
-            JPanel fovPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(fovPanel);
+            JPanel resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
             panstarrsLabel = new JLabel("Pan-STARRS");
-            fovPanel.add(panstarrsLabel);
+            resourcesPanel.add(panstarrsLabel);
             panstarrsField = new JTextField();
-            fovPanel.add(panstarrsField);
+            resourcesPanel.add(panstarrsField);
 
-            fovPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(fovPanel);
+            resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
             aladinLiteLabel = new JLabel("Aladin Lite");
-            fovPanel.add(aladinLiteLabel);
+            resourcesPanel.add(aladinLiteLabel);
             aladinLiteField = new JTextField();
-            fovPanel.add(aladinLiteField);
+            resourcesPanel.add(aladinLiteField);
 
-            fovPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(fovPanel);
+            resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
             wiseViewLabel = new JLabel("WiseView");
-            fovPanel.add(wiseViewLabel);
+            resourcesPanel.add(wiseViewLabel);
             wiseViewField = new JTextField();
-            fovPanel.add(wiseViewField);
+            resourcesPanel.add(wiseViewField);
 
-            fovPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(fovPanel);
+            resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
             finderChartLabel = new JLabel("IRSA Finder Chart");
-            fovPanel.add(finderChartLabel);
+            resourcesPanel.add(finderChartLabel);
             finderChartField = new JTextField();
-            fovPanel.add(finderChartField);
+            resourcesPanel.add(finderChartField);
 
-            fovPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(fovPanel);
-            fovPanel.add(new JLabel());
+            resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
+            resourcesPanel.add(new JLabel());
             changeFovButton = new JButton("Change FoV (\")");
             changeFovButton.addActionListener((ActionEvent e) -> {
                 try {
@@ -773,28 +773,28 @@ public class ImageViewerTab {
                     showErrorDialog(baseFrame, "Invalid field of view!");
                 }
             });
-            fovPanel.add(changeFovButton);
+            resourcesPanel.add(changeFovButton);
 
             legacyViewerLabel = new JLabel("Legacy Sky Viewer");
             mainControlPanel.add(legacyViewerLabel);
 
-            JPanel externalPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(externalPanel);
+            resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
 
             ukidssCutoutsLabel = new JLabel("UKIDSS cutouts");
-            externalPanel.add(ukidssCutoutsLabel);
+            resourcesPanel.add(ukidssCutoutsLabel);
 
             vhsCutoutsLabel = new JLabel("VHS cutouts");
-            externalPanel.add(vhsCutoutsLabel);
+            resourcesPanel.add(vhsCutoutsLabel);
 
-            externalPanel = new JPanel(new GridLayout(1, 2));
-            mainControlPanel.add(externalPanel);
+            resourcesPanel = new JPanel(new GridLayout(1, 2));
+            mainControlPanel.add(resourcesPanel);
 
             simbadLabel = new JLabel("SIMBAD");
-            externalPanel.add(simbadLabel);
+            resourcesPanel.add(simbadLabel);
 
             vizierLabel = new JLabel("VizieR");
-            externalPanel.add(vizierLabel);
+            resourcesPanel.add(vizierLabel);
 
             //======================
             // Tab: Catalog overlays
