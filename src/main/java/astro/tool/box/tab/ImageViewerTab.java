@@ -2429,7 +2429,6 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            epochSlider.setEnabled(false);
             skipIntermediateEpochs.setEnabled(false);
             separateScanDirections.setEnabled(false);
             differenceImaging.setEnabled(false);
@@ -2677,19 +2676,19 @@ public class ImageViewerTab {
                     }
                 } else {
                     // Band W1 -> Scan ASC
-                    for (int i = 0; i < band1Scan1Images.size() - (diff ? 1 : 0); i++) {
+                    for (int i = 0; i < band1Scan1Images.size(); i++) {
                         band1GroupedImages.add(band1Scan1Images.get(i));
                     }
                     // Band W1 -> Scan DESC
-                    for (int i = 0; i < band1Scan2Images.size() - (diff ? 1 : 0); i++) {
+                    for (int i = 0; i < band1Scan2Images.size(); i++) {
                         band1GroupedImages.add(band1Scan2Images.get(i));
                     }
                     // Band W2 -> Scan ASC
-                    for (int i = 0; i < band2Scan1Images.size() - (diff ? 1 : 0); i++) {
+                    for (int i = 0; i < band2Scan1Images.size(); i++) {
                         band2GroupedImages.add(band2Scan1Images.get(i));
                     }
                     // Band W2 -> Scan DESC
-                    for (int i = 0; i < band2Scan2Images.size() - (diff ? 1 : 0); i++) {
+                    for (int i = 0; i < band2Scan2Images.size(); i++) {
                         band2GroupedImages.add(band2Scan2Images.get(i));
                     }
                 }
@@ -2721,11 +2720,11 @@ public class ImageViewerTab {
                     }
                 } else {
                     // Band W1 -> Scan ASC+DESC
-                    for (int i = 0; i < band1Scan1Images.size() - (diff && !skip ? 1 : 0); i++) {
+                    for (int i = 0; i < band1Scan1Images.size(); i++) {
                         band1GroupedImages.add(addImages(band1Scan1Images.get(i), band1Scan2Images.get(i)));
                     }
                     // Band W2 -> Scan ASC+DESC
-                    for (int i = 0; i < band2Scan1Images.size() - (diff && !skip ? 1 : 0); i++) {
+                    for (int i = 0; i < band2Scan1Images.size(); i++) {
                         band2GroupedImages.add(addImages(band2Scan1Images.get(i), band2Scan2Images.get(i)));
                     }
                 }
@@ -2829,7 +2828,6 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
-            epochSlider.setEnabled(true);
             skipIntermediateEpochs.setEnabled(true);
             separateScanDirections.setEnabled(true);
             differenceImaging.setEnabled(true);
@@ -3532,7 +3530,9 @@ public class ImageViewerTab {
                 writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
             }
         } else {
-            groupedList.add(group);
+            if (skipIntermediateEpochs.isSelected()) {
+                groupedList.add(group);
+            }
         }
         writeLogEntry("Stacking ...");
         epochCount = 0;
