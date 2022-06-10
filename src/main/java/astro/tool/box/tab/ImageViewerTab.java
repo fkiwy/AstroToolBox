@@ -2286,11 +2286,12 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
-        contrast = desiCutouts.isSelected() ? 150 : 100;
+        int defaultContrast = desiCutouts.isSelected() ? 50 : 100;
         ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setValue(contrast);
+        contrastSlider.setValue(defaultContrast);
         contrastSlider.addChangeListener(changeListener);
+        contrast = 200 - defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2428,9 +2429,13 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            epochSlider.setEnabled(false);
             skipIntermediateEpochs.setEnabled(false);
             separateScanDirections.setEnabled(false);
             differenceImaging.setEnabled(false);
+            wiseviewCutouts.setEnabled(false);
+            unwiseCutouts.setEnabled(false);
+            desiCutouts.setEnabled(false);
 
             if (!isSameFoV(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
                 loadImages = true;
@@ -2824,9 +2829,13 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
+            epochSlider.setEnabled(true);
             skipIntermediateEpochs.setEnabled(true);
             separateScanDirections.setEnabled(true);
             differenceImaging.setEnabled(true);
+            wiseviewCutouts.setEnabled(true);
+            unwiseCutouts.setEnabled(true);
+            desiCutouts.setEnabled(true);
             if (waitCursor) {
                 baseFrame.setCursor(Cursor.getDefaultCursor());
                 coordsField.setCursor(Cursor.getDefaultCursor());
@@ -5559,14 +5568,6 @@ public class ImageViewerTab {
 
     public JTextField getProperMotionField() {
         return properMotionField;
-    }
-
-    public JSlider getEpochSlider() {
-        return epochSlider;
-    }
-
-    public JLabel getEpochLabel() {
-        return epochLabel;
     }
 
     public JRadioButton getWiseCoadds() {
