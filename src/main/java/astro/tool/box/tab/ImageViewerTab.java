@@ -484,7 +484,7 @@ public class ImageViewerTab {
             // Tab: Main controls
             //===================
             int rows = 36;
-            int controlPanelWidth = 255;
+            int controlPanelWidth = 250;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
@@ -718,10 +718,10 @@ public class ImageViewerTab {
 
             mainControlPanel.add(createHeaderLabel("Nearest BYW subjects"));
 
-            bywTopRow = new JPanel();
+            bywTopRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(bywTopRow);
 
-            bywBottomRow = new JPanel();
+            bywBottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainControlPanel.add(bywBottomRow);
 
             mainControlPanel.add(createHeaderLabel("External resources"));
