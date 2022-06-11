@@ -359,6 +359,8 @@ public class ImageViewerTab {
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
+    private int epochCountW1;
+    private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int contrast;
@@ -2552,6 +2554,8 @@ public class ImageViewerTab {
 
             if (loadImages || reloadImages) {
                 epochCount = 0;
+                epochCountW1 = 0;
+                epochCountW2 = 0;
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
                 int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
@@ -2591,13 +2595,17 @@ public class ImageViewerTab {
                 switch (wiseBand) {
                     case W1:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        epochCountW1 = epochCount;
                         break;
                     case W2:
                         downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        epochCountW2 = epochCount;
                         break;
                     case W1W2:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        epochCountW1 = epochCount;
                         downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
+                        epochCountW2 = epochCount;
                         break;
                 }
                 writeLogEntry("Ready.");
@@ -2609,6 +2617,10 @@ public class ImageViewerTab {
                     hasException = true;
                     return false;
                 }
+                if (epochCountW1 > 0 && epochCountW2 > 0) {
+                    epochCount = min(epochCountW1, epochCountW2);
+                }
+                epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
                 if (!skipIntermediateEpochs.isSelected() || moreImagesAvailable) {
                     epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
                 }
@@ -3407,7 +3419,7 @@ public class ImageViewerTab {
                 try {
                     fits = new Fits(getImageData(band, requestedEpoch));
                 } catch (IOException ex) {
-                    if (skipIntermediateEpochs.isSelected()) {
+                    if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for substitutes");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -3420,7 +3432,7 @@ public class ImageViewerTab {
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
                 } catch (FitsException ex) {
-                    if (skipIntermediateEpochs.isSelected()) {
+                    if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for substitutes");
                         downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
                         return;
@@ -3492,7 +3504,7 @@ public class ImageViewerTab {
                 }
             } else {
                 if (node1 == 0 || node2 == 0) {
-                    if (skipIntermediateEpochs.isSelected()) {
+                    if (requestedEpochs.size() == 4) {
                         images.clear();
                         int requestedEpoch = container.getEpoch();
                         writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for substitutes");
@@ -3518,7 +3530,7 @@ public class ImageViewerTab {
             writeLogEntry("year " + year + " | node " + node);
         }
         if (node1 == 0 || node2 == 0) {
-            if (skipIntermediateEpochs.isSelected()) {
+            if (requestedEpochs.size() == 4) {
                 images.clear();
                 int requestedEpoch = imageContainer.getEpoch();
                 writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for substitutes");
