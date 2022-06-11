@@ -3439,39 +3439,8 @@ public class ImageViewerTab {
                 } else {
                     obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
                 }
-                String formatObsDate = obsDate.format(DATE_FORMATTER);
-
-                // Skip bad quality images
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                double yLength = values.length;
-                double xLength = yLength > 0 ? values[0].length : 0;
-                int zeroValues = 0;
-                for (int y = 0; y < yLength; y++) {
-                    for (int x = 0; x < xLength; x++) {
-                        try {
-                            if (values[y][x] == 0) {
-                                zeroValues++;
-                            }
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                        }
-                    }
-                }
-                double maxAllowed = xLength * yLength * 0.1;
-                if (zeroValues > maxAllowed) {
-                    if (skipIntermediateEpochs.isSelected()) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (bad image quality), looking for substitutes");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                        return;
-                    } else {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (bad image quality)");
-                        continue;
-                    }
-                }
-                // -------------------------------------------------------------
-
                 images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > downloaded");
+                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
             }
         }
         if (images.isEmpty()) {
