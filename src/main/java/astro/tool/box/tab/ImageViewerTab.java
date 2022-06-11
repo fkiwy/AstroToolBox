@@ -182,6 +182,9 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
+    public static final int DEFAULT_WISE_CONTRAST = 100;
+    public static final int DEFAULT_DESI_CONTRAST = 50;
+    public static final int MAXIMUM_CONTRAST = 200;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -535,10 +538,10 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(0, 200, 0);
+            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = 200 - contrastSlider.getValue();
+                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -2269,12 +2272,12 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
-        int defaultContrast = desiCutouts.isSelected() ? 50 : 100;
+        int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
         ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
         contrastSlider.setValue(defaultContrast);
         contrastSlider.addChangeListener(changeListener);
-        contrast = 200 - defaultContrast;
+        contrast = MAXIMUM_CONTRAST - defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -3893,17 +3896,13 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value) {
-        value = normalize(value, min(minValue, maxValue), max(minValue, maxValue));
+        value = normalize(value, minValue, maxValue);
         return invertColors.isSelected() ? value : 1 - value;
     }
 
     private float normalize(float value, float minVal, float maxVal) {
-        if (value < minVal) {
-            value = minVal;
-        }
-        if (value > maxVal) {
-            value = maxVal;
-        }
+        value = value < minVal ? minVal : value;
+        value = value > maxVal ? maxVal : value;
         float newMinVal = 0, newMaxVal = 1;
         return (value - minVal) * ((newMaxVal - newMinVal) / (maxVal - minVal)) + newMinVal;
     }
