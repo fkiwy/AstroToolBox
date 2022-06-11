@@ -2417,6 +2417,27 @@ public class ImageViewerTab {
             unwiseCutouts.setEnabled(false);
             desiCutouts.setEnabled(false);
 
+            int panstarrsFOV = toInteger(panstarrsField.getText());
+            int aladinLiteFOV = toInteger(aladinLiteField.getText());
+            int wiseViewFOV = toInteger(wiseViewField.getText());
+            int finderChartFOV = toInteger(finderChartField.getText());
+            int defaultFOV = toInteger(sizeField.getText());
+            panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
+            aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
+            wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
+            finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
+            createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+            createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
+            createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
+                    separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
+            createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
+            createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
+            String fovSize = roundTo2DecNZ(defaultFOV / 60f);
+            createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+            createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+            createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
+            createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
+
             if (!isSameFoV(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
                 loadImages = true;
                 allEpochsW1Loaded = false;
@@ -2523,27 +2544,6 @@ public class ImageViewerTab {
                     }
                 }
             }
-
-            int panstarrsFOV = toInteger(panstarrsField.getText());
-            int aladinLiteFOV = toInteger(aladinLiteField.getText());
-            int wiseViewFOV = toInteger(wiseViewField.getText());
-            int finderChartFOV = toInteger(finderChartField.getText());
-            int defaultFOV = toInteger(sizeField.getText());
-            panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
-            aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
-            wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
-            finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-            createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
-            createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
-            createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
-                    separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
-            createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
-            createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
-            String fovSize = roundTo2DecNZ(defaultFOV / 60f);
-            createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-            createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-            createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
-            createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
 
             previousSize = size;
             previousRa = targetRa;
