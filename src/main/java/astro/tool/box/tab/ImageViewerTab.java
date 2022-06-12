@@ -2561,8 +2561,9 @@ public class ImageViewerTab {
                 epochCountW2 = 0;
                 band1Images = new ArrayList();
                 band2Images = new ArrayList();
-                int totalEpochs = selectedEpochs * 2 + (oneMoreImageAvailable ? 1 : 0);
                 requestedEpochs = new ArrayList<>();
+                int totalEpochs = selectedEpochs * 2;
+                int availableEpochs = totalEpochs + (oneMoreImageAvailable ? 1 : 0);
                 if (moreImagesAvailable) {
                     for (int i = 0; i < 100; i++) {
                         requestedEpochs.add(i);
@@ -2575,10 +2576,10 @@ public class ImageViewerTab {
                         }
                         requestedEpochs.add(0);
                         requestedEpochs.add(1);
-                        requestedEpochs.add(totalEpochs - 2);
-                        requestedEpochs.add(totalEpochs - 1);
+                        requestedEpochs.add(availableEpochs - 2);
+                        requestedEpochs.add(availableEpochs - 1);
                     } else {
-                        for (int i = 0; i < totalEpochs; i++) {
+                        for (int i = 0; i < availableEpochs; i++) {
                             requestedEpochs.add(i);
                         }
                     }
@@ -2625,7 +2626,6 @@ public class ImageViewerTab {
                 }
                 epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
                 if (!skipIntermediateEpochs.isSelected() || moreImagesAvailable) {
-                    totalEpochs = selectedEpochs * 2;
                     epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
                 }
             }
