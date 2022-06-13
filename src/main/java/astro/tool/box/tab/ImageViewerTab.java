@@ -316,7 +316,7 @@ public class ImageViewerTab {
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
     private JSlider rangeSlider;
-    private JSlider contastSlider;
+    private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -555,10 +555,10 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contastSlider = new JSlider(0, 0, 0);
-            mainControlPanel.add(contastSlider);
-            contastSlider.addChangeListener((ChangeEvent e) -> {
-                maxValue = contastSlider.getMaximum() - contastSlider.getValue();
+            contrastSlider = new JSlider(0, 0, 0);
+            mainControlPanel.add(contrastSlider);
+            contrastSlider.addChangeListener((ChangeEvent e) -> {
+                maxValue = contrastSlider.getMaximum() - contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -2850,11 +2850,11 @@ public class ImageViewerTab {
                 minValue = (int) refVal.getX();
                 maxValue = (int) refVal.getY();
                 rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
-                ChangeListener changeListener = contastSlider.getChangeListeners()[0];
-                contastSlider.removeChangeListener(changeListener);
-                contastSlider.setMaximum(maxValue * 2);
-                contastSlider.setValue(maxValue);
-                contastSlider.addChangeListener(changeListener);
+                ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
+                contrastSlider.removeChangeListener(changeListener);
+                contrastSlider.setMaximum(maxValue * 2);
+                contrastSlider.setValue(maxValue);
+                contrastSlider.addChangeListener(changeListener);
             }
 
             flipbookComplete = true;
