@@ -1,5 +1,18 @@
 ## Release notes
 
+### AstroToolBox v2.5.0
+- Added VISTA VHS DR6 and UKIDSS DR11 PLUS images
+- Added UKIDSS DR11 catalog including LAS, GCS, GPS, DXS & UDS surveys
+- Added photometric uncertainties to the spectral type estimation features (has to be enabled in the Settings tab)
+- Removed the Epoch slider from the Image Viewer
+- Added the following 3 checkboxes: "Skip intermediate epochs", "Separate scan directions", "Difference imaging"
+- Replaced the Main sequence lookup table by the latest version (version 2022.04.16)
+- Replaced DES DR1 by DR2
+- Replaced IRSA by NOIRLab as a backup TAP provider in the Settings tab
+- Added "TAP access URL" and "ADQL query" fields to the Custom Overlays tab
+- Moved the External Sources panel from the Catalog Search tab to the Image Viewer tab
+- Replaced Gaia EDR3 by DR3
+
 ### AstroToolBox v2.4.1
 - Fixed a bug in the DECaLS images download
 - Implemented a HttpGet to fetch the results from an async ADQL query
