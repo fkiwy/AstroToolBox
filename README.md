@@ -4,7 +4,7 @@
 
 [Download latest version](releases/executables/AstroToolBox-2.5.0.jar)
 
-[Download Gaia DR3 custom overlays](releases/executables/AstroToolBoxOverlays.txt)
+[Download Gaia DR3 custom overlays](releases/resources/AstroToolBoxOverlays.txt)
 
 [Download Gaia CMD data](releases/resources/Gaia%20CMD%20data.zip)
 
