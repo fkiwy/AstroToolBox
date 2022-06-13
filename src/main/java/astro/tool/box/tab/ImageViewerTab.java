@@ -177,6 +177,7 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
+    public static final String RANGE_LABEL = "Pixel range (min, max): (%d, %d)";
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
@@ -245,6 +246,7 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
+    private JLabel rangeLabel;
     private JLabel epochLabel;
     private JLabel panstarrsLabel;
     private JLabel aladinLiteLabel;
@@ -313,7 +315,8 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
-    private JSlider contrastSlider;
+    private JSlider rangeSlider;
+    private JSlider contastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -483,8 +486,8 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 36;
-            int controlPanelWidth = 250;
+            int rows = 38;
+            int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
             JPanel mainControlPanel = new JPanel(new GridLayout(rows, 1));
@@ -536,17 +539,31 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Contrast:"));
+            rangeLabel = new JLabel(String.format(RANGE_LABEL, minValue, maxValue));
+            mainControlPanel.add(rangeLabel);
 
-            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
-            mainControlPanel.add(contrastSlider);
-            contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
+            rangeSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
+            mainControlPanel.add(rangeSlider);
+            rangeSlider.addChangeListener((ChangeEvent e) -> {
+                contrast = MAXIMUM_CONTRAST - rangeSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
                 createFlipbook();
+            });
+
+            mainControlPanel.add(new JLabel("Contrast:"));
+
+            contastSlider = new JSlider(0, 0, 0);
+            mainControlPanel.add(contastSlider);
+            contastSlider.addChangeListener((ChangeEvent e) -> {
+                maxValue = contastSlider.getMaximum() - contastSlider.getValue();
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                processImages();
             });
 
             JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
@@ -2273,10 +2290,10 @@ public class ImageViewerTab {
 
     private void resetContrastSlider() {
         int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
-        ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
-        contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setValue(defaultContrast);
-        contrastSlider.addChangeListener(changeListener);
+        ChangeListener changeListener = rangeSlider.getChangeListeners()[0];
+        rangeSlider.removeChangeListener(changeListener);
+        rangeSlider.setValue(defaultContrast);
+        rangeSlider.addChangeListener(changeListener);
         contrast = MAXIMUM_CONTRAST - defaultContrast;
     }
 
@@ -2832,6 +2849,12 @@ public class ImageViewerTab {
                 NumberPair refVal = getRefValues(flipbook.get(0));
                 minValue = (int) refVal.getX();
                 maxValue = (int) refVal.getY();
+                rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
+                ChangeListener changeListener = contastSlider.getChangeListeners()[0];
+                contastSlider.removeChangeListener(changeListener);
+                contastSlider.setMaximum(maxValue * 2);
+                contastSlider.setValue(maxValue);
+                contastSlider.addChangeListener(changeListener);
             }
 
             flipbookComplete = true;
