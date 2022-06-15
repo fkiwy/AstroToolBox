@@ -130,6 +130,23 @@ public class PhotometricFunctions {
     }
 
     /**
+     * Calculate absolute magnitude from parallax error
+     *
+     * @param m (apparent magnitude)
+     * @param e_m (apparent magnitude error)
+     * @param p (parallax)
+     * @param e_p (parallax error)
+     * @return the absolute magnitude from parallax error
+     */
+    public static double calculateAbsoluteMagnitudeFromParallaxError(double m, double e_m, double p, double e_p) {
+        if (m == 0 || p == 0) {
+            return 0;
+        } else {
+            return sqrt(e_m * e_m + pow(-((1 / p * 5) / (1000 * log(10)) * -1000) * e_p, 2));
+        }
+    }
+
+    /**
      * Calculate absolute magnitude from distance
      *
      * @param apparentMagnitude (mag)

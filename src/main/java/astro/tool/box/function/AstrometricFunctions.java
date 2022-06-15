@@ -329,7 +329,7 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Convert a modified Julian date to local date and time
+     * Convert modified Julian date to local date and time
      *
      * @param mjd
      * @return the local date and time (UTC)
@@ -347,7 +347,7 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Convert local date and time to a modified Julian date
+     * Convert local date and time to modified Julian date
      *
      * @param dateTime
      * @return the modified Julian date
@@ -364,22 +364,21 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Convert modified Julian date to years
+     * Convert local date to years
      *
-     * @param mjd
+     * @param dateTime
      * @return years
      */
-    public static double convertMJDToYears(double mjd) {
-        LocalDate date = convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).toLocalDate();
-        long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), date);
+    public static double convertDateToYear(LocalDateTime dateTime) {
+        long days = ChronoUnit.DAYS.between(LocalDate.of(0, Month.JANUARY, 1), dateTime);
         return days / 365.2425;
     }
 
     /**
-     * Convert modified Julian date to calendar date
+     * Convert modified Julian date to local date
      *
      * @param mjd
-     * @return
+     * @return the local date
      */
     public static LocalDate convertMJDToDate(double mjd) {
         return convertMJDToDateTime(new BigDecimal(Double.toString(mjd))).toLocalDate();

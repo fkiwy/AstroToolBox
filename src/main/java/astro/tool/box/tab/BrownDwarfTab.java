@@ -2,7 +2,7 @@ package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
@@ -12,7 +12,7 @@ import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.DustExtinctionService;
 import astro.tool.box.service.SpectralTypeLookupService;
@@ -85,7 +85,7 @@ public class BrownDwarfTab {
 
             JPanel spectralTypePanel = new JPanel();
             spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             spectralTypePanel.setLayout(new BoxLayout(spectralTypePanel, BoxLayout.Y_AXIS));
             spectralTypePanel.setPreferredSize(new Dimension(500, 375));
@@ -93,7 +93,7 @@ public class BrownDwarfTab {
 
             JPanel distancePanel = new JPanel();
             distancePanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Distance evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Distance estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             distancePanel.setLayout(new BoxLayout(distancePanel, BoxLayout.Y_AXIS));
             distancePanel.setPreferredSize(new Dimension(500, 325));
@@ -157,7 +157,7 @@ public class BrownDwarfTab {
                     selectedEntry = selectedEntry.copy();
                     try {
                         selectedEntry.applyExtinctionCorrection(extinctionsByBand);
-                    } catch (NoExtinctionValuesException ex) {
+                    } catch (ExtinctionException ex) {
                         entryPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.RED));
                     }
                 } catch (Exception ex) {
@@ -189,7 +189,7 @@ public class BrownDwarfTab {
         resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(1).setPreferredWidth(120);
         columnModel.getColumn(2).setPreferredWidth(100);
         columnModel.getColumn(3).setPreferredWidth(100);
 
@@ -260,7 +260,7 @@ public class BrownDwarfTab {
         JPanel remarks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         remarks.setPreferredSize(new Dimension(500, 150));
         distancePanel.add(remarks);
-        remarks.add(new JLabel("Distance evaluation is performed using distance modulus for the following bands,"));
+        remarks.add(new JLabel("Distance estimates are performed using distance modulus for the following bands,"));
         remarks.add(new JLabel("if available: W1, W2, W3, J, H, K, g, r, i, z, y, G, RP"));
         remarks.add(new JLabel("Absolute magnitudes are from the M, L & T dwarfs lookup table."));
         baseFrame.setVisible(true);

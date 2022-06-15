@@ -1,12 +1,12 @@
 package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
-import astro.tool.box.main.TextPrompt;
+import astro.tool.box.component.TextPrompt;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -85,17 +85,17 @@ public class CustomOverlaysTab {
             JButton addButton = new JButton("Create new overlay");
             topPanel.add(addButton);
 
-            int overlayCount = overlays.size();
-
-            JPanel overlayPanel = new JPanel(new GridLayout(overlayCount + 30, 1));
+            GridLayout layout = new GridLayout(25, 1);
+            JPanel overlayPanel = new JPanel(layout);
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
             addButton.addActionListener((ActionEvent evt) -> {
+                layout.setRows(layout.getRows() + 1);
                 addOverlayRow(overlayPanel, new CustomOverlay());
                 baseFrame.setVisible(true);
             });
 
-            for (int i = 0; i < overlayCount; i++) {
+            for (int i = 0; i < overlays.size(); i++) {
                 addOverlayRow(overlayPanel, overlays.get(i));
             }
         } catch (Exception ex) {
@@ -109,8 +109,9 @@ public class CustomOverlaysTab {
 
         String overlayName = customOverlay.getName();
         String tableName = customOverlay.getTableName();
+        String tapUrl = customOverlay.getTapUrl();
 
-        JTextField overlayNameField = new JTextField(20);
+        JTextField overlayNameField = new JTextField(18);
         overlayRow.add(overlayNameField);
         TextPrompt overlayNamePrompt = new TextPrompt("Overlay name");
         overlayNamePrompt.applyTo(overlayNameField);
@@ -133,7 +134,7 @@ public class CustomOverlaysTab {
         Shape shape = customOverlay.getShape();
         overlayShapes.setSelectedItem(shape == null ? Shape.CIRCLE : shape);
 
-        JTextField fileNameField = new JTextField(25);
+        JTextField fileNameField = new JTextField(22);
         fileNameField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt fileNamePrompt = new TextPrompt("Select CSV file using \"Select file\" button");
         fileNamePrompt.applyTo(fileNameField);
@@ -157,40 +158,54 @@ public class CustomOverlaysTab {
 
         overlayRow.add(fileNameField);
 
-        JTextField raPositionField = new JTextField(10);
+        JTextField raPositionField = new JTextField(8);
         overlayRow.add(raPositionField);
         raPositionField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt raPositionPrompt = new TextPrompt("RA column #");
         raPositionPrompt.applyTo(raPositionField);
-        raPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
+        raPositionField.setText(overlayName == null || !tableName.isEmpty() || !tapUrl.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
 
-        JTextField decPositionField = new JTextField(10);
+        JTextField decPositionField = new JTextField(8);
         overlayRow.add(decPositionField);
         decPositionField.setBackground(JColor.LIGHT_GREEN.val);
         TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
         decPositionPrompt.applyTo(decPositionField);
-        decPositionField.setText(overlayName == null || !tableName.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
+        decPositionField.setText(overlayName == null || !tableName.isEmpty() || !tapUrl.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
-        JTextField tableNameField = new JTextField(15);
+        JTextField tableNameField = new JTextField(12);
         overlayRow.add(tableNameField);
         tableNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt tableNamePrompt = new TextPrompt("Catalog table name");
         tableNamePrompt.applyTo(tableNameField);
         tableNameField.setText(overlayName == null ? "" : customOverlay.getTableName());
 
-        JTextField raColNameField = new JTextField(15);
+        JTextField raColNameField = new JTextField(10);
         overlayRow.add(raColNameField);
         raColNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt raColNamePrompt = new TextPrompt("RA column name");
         raColNamePrompt.applyTo(raColNameField);
         raColNameField.setText(overlayName == null ? "" : customOverlay.getRaColName());
 
-        JTextField decColNameField = new JTextField(15);
+        JTextField decColNameField = new JTextField(10);
         overlayRow.add(decColNameField);
         decColNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt decColNamePrompt = new TextPrompt("Dec column name");
         decColNamePrompt.applyTo(decColNameField);
         decColNameField.setText(overlayName == null ? "" : customOverlay.getDecColName());
+
+        JTextField tapUrlField = new JTextField(10);
+        overlayRow.add(tapUrlField);
+        tapUrlField.setBackground(JColor.LIGHT_ORANGE.val);
+        TextPrompt tapUrlPrompt = new TextPrompt("TAP access URL");
+        tapUrlPrompt.applyTo(tapUrlField);
+        tapUrlField.setText(overlayName == null ? "" : customOverlay.getTapUrl());
+
+        JTextField adqlQueryField = new JTextField(20);
+        overlayRow.add(adqlQueryField);
+        adqlQueryField.setBackground(JColor.LIGHT_ORANGE.val);
+        TextPrompt adqlQueryPrompt = new TextPrompt("ADQL query");
+        adqlQueryPrompt.applyTo(adqlQueryField);
+        adqlQueryField.setText(overlayName == null ? "" : customOverlay.getAdqlQuery());
 
         JLabel message = createMessageLabel();
         Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -199,6 +214,7 @@ public class CustomOverlaysTab {
 
         JButton saveOverlayButton = new JButton("Save");
         overlayRow.add(saveOverlayButton);
+        saveOverlayButton.setToolTipText(overlayNameField.getText());
         saveOverlayButton.addActionListener((ActionEvent evt) -> {
             int raColumnIndex = 0;
             int decColumnIndex = 0;
@@ -209,13 +225,10 @@ public class CustomOverlaysTab {
             if (customOverlay.getColor() == null) {
                 errors.append("Overlay color must be specified.").append(LINE_SEP);
             }
-            if (customOverlay.getFile() == null && tableNameField.getText().isEmpty()) {
-                errors.append("CSV file or VizieR catalog must be specified.").append(LINE_SEP);
+            if (customOverlay.getFile() == null && tableNameField.getText().isEmpty() && tapUrlField.getText().isEmpty()) {
+                errors.append("Either a CSV file or a Catalog table name or a TAP access URL must be specified.").append(LINE_SEP);
             }
-            if (customOverlay.getFile() != null && !tableNameField.getText().isEmpty()) {
-                errors.append("Only either a CSV file or a VizieR catalog may be specified.").append(LINE_SEP);
-            }
-            if (tableNameField.getText().isEmpty()) {
+            if (tableNameField.getText().isEmpty() && tapUrlField.getText().isEmpty()) {
                 if (raPositionField.getText().isEmpty()) {
                     errors.append("RA position must not be empty.").append(LINE_SEP);
                 } else {
@@ -247,6 +260,20 @@ public class CustomOverlaysTab {
                 if (decColNameField.getText().isEmpty()) {
                     errors.append("Dec column name must not be empty.").append(LINE_SEP);
                 }
+                if (!tapUrlField.getText().isEmpty()) {
+                    String adqlQuery = adqlQueryField.getText();
+                    if (adqlQuery.isEmpty()) {
+                        errors.append("ADQL query must not be empty.").append(LINE_SEP);
+                    } else {
+
+                        boolean hasRa = adqlQuery.contains(":ra:");
+                        boolean hasDec = adqlQuery.contains(":dec:");
+                        boolean hasRadius = adqlQuery.contains(":radius:");
+                        if (!hasRa || !hasDec || !hasRadius) {
+                            errors.append("Your ADQL must contain the following 3 keywords, colons included! :ra:, :dec:, :radius: (e.g. CIRCLE('ICRS', :ra:, :dec:, :radius:)).").append(LINE_SEP);
+                        }
+                    }
+                }
             }
             if (errors.length() > 0) {
                 showErrorDialog(baseFrame, errors.toString());
@@ -260,6 +287,8 @@ public class CustomOverlaysTab {
             customOverlay.setTableName(tableNameField.getText().trim());
             customOverlay.setRaColName(raColNameField.getText().trim());
             customOverlay.setDecColName(decColNameField.getText().trim());
+            customOverlay.setTapUrl(tapUrlField.getText().trim());
+            customOverlay.setAdqlQuery(adqlQueryField.getText().trim());
             fireCustomOverlaysListener();
             customOverlays.put(name, customOverlay);
             overlayNameField.setEditable(false);
@@ -271,6 +300,7 @@ public class CustomOverlaysTab {
 
         JButton deleteOverlayButton = new JButton("Delete");
         overlayRow.add(deleteOverlayButton);
+        deleteOverlayButton.setToolTipText(overlayNameField.getText());
         deleteOverlayButton.addActionListener((ActionEvent evt) -> {
             String name = customOverlay.getName();
             if (name == null || !showConfirmDialog(baseFrame, "Do you really want to delete overlay " + name + "?")) {
@@ -289,6 +319,8 @@ public class CustomOverlaysTab {
             tableNameField.setText("");
             raColNameField.setText("");
             decColNameField.setText("");
+            tapUrlField.setText("");
+            adqlQueryField.setText("");
             customOverlay.init();
             overlayPanel.updateUI();
 

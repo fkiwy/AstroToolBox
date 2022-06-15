@@ -1,4 +1,4 @@
-package astro.tool.box.main;
+package astro.tool.box.container;
 
 import java.time.LocalDateTime;
 import nom.tam.fits.Fits;

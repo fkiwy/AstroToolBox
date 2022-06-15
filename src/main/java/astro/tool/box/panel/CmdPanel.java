@@ -2,7 +2,7 @@ package astro.tool.box.panel;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.Application.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
@@ -123,9 +123,9 @@ public class CmdPanel extends JPanel {
         coolingSequencesHe = new JCheckBox("DB");
         commandPanel.add(coolingSequencesHe);
 
-        JButton searchButton = new JButton("Create PDF");
-        commandPanel.add(searchButton);
-        searchButton.addActionListener((ActionEvent e) -> {
+        JButton createButton = new JButton("Create PDF");
+        commandPanel.add(createButton);
+        createButton.addActionListener((ActionEvent e) -> {
             try {
                 File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa()) + addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
                 createPDF(chart, tmpFile, 800, 700);

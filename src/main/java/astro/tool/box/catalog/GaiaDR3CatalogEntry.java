@@ -12,7 +12,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
 
-    public static final String CATALOG_NAME = "Gaia eDR3";
+    public static final String CATALOG_NAME = "Gaia DR3";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -76,6 +76,36 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     // Radial velocity error
     private double radvel_err;
 
+    // Effective temperature [K]
+    private double teff_gspphot;
+
+    // Surface gravity
+    private double logg_gspphot;
+
+    // Iron abundance (Fe/H) [dex]
+    private double mh_gspphot;
+
+    // Distance (Gaia) [pc]
+    private double distance_gspphot;
+
+    // Photometric variability flag
+    private String phot_variable_flag;
+
+    // Probability of being a quasar
+    private double classprob_dsc_combmod_quasar;
+
+    // Probability of being a galaxy
+    private double classprob_dsc_combmod_galaxy;
+
+    // Probability of being a star
+    private double classprob_dsc_combmod_star;
+
+    // Extinction in G band
+    private double ag_gspphot;
+
+    // Reddening E(G_BP - G_RP)
+    private double ebpminrp_gspphot;
+
     // Right ascension used for distance calculation
     private double targetRa;
 
@@ -125,8 +155,18 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         BP_G = toDouble(values[columns.get("bp_g")]);
         G_RP = toDouble(values[columns.get("g_rp")]);
         ruwe = toDouble(values[columns.get("ruwe")]);
-        radvel = toDouble(values[columns.get("dr2_radial_velocity")]);
-        radvel_err = toDouble(values[columns.get("dr2_radial_velocity_error")]);
+        radvel = toDouble(values[columns.get("radial_velocity")]);
+        radvel_err = toDouble(values[columns.get("radial_velocity_error")]);
+        teff_gspphot = toDouble(values[columns.get("teff_gspphot")]);
+        logg_gspphot = toDouble(values[columns.get("logg_gspphot")]);
+        mh_gspphot = toDouble(values[columns.get("mh_gspphot")]);
+        distance_gspphot = toDouble(values[columns.get("distance_gspphot")]);
+        phot_variable_flag = values[columns.get("phot_variable_flag")];
+        classprob_dsc_combmod_quasar = toDouble(values[columns.get("classprob_dsc_combmod_quasar")]);
+        classprob_dsc_combmod_galaxy = toDouble(values[columns.get("classprob_dsc_combmod_galaxy")]);
+        classprob_dsc_combmod_star = toDouble(values[columns.get("classprob_dsc_combmod_star")]);
+        ag_gspphot = toDouble(values[columns.get("ag_gspphot")]);
+        ebpminrp_gspphot = toDouble(values[columns.get("ebpminrp_gspphot")]);
     }
 
     @Override
@@ -155,6 +195,16 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("RUWE", roundTo3DecNZ(ruwe), Alignment.RIGHT, getDoubleComparator(), false));
         catalogElements.add(new CatalogElement("rad vel (km/s)", roundTo3DecNZ(radvel), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("rad vel err", roundTo3DecNZ(radvel_err), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("teff (K)", roundTo3DecNZ(teff_gspphot), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("log g", roundTo3DecNZ(logg_gspphot), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("Fe/H (dex)", roundTo3DecNZ(mh_gspphot), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("dist (Gaia)", roundTo3DecNZ(distance_gspphot), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("var. flag", phot_variable_flag, Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("quasar prob.", roundTo3DecNZ(classprob_dsc_combmod_quasar), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("galaxy prob.", roundTo3DecNZ(classprob_dsc_combmod_galaxy), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("star prob.", roundTo3DecNZ(classprob_dsc_combmod_star), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("extinct. in G band", roundTo3DecNZ(ag_gspphot), Alignment.RIGHT, getDoubleComparator()));
+        catalogElements.add(new CatalogElement("reddening E(BP-RP)", roundTo3DecNZ(ebpminrp_gspphot), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("dist (1/plx)", roundTo3DecNZ(getParallacticDistance()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("Absolute G (mag)", roundTo3DecNZ(getAbsoluteGmag()), Alignment.RIGHT, getDoubleComparator(), false, true));
         catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT, getDoubleComparator(), false, true));
@@ -165,7 +215,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 67 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
+        hash = 79 * hash + (int) (this.sourceId ^ (this.sourceId >>> 32));
         return hash;
     }
 
@@ -200,12 +250,12 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return ESAC_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         return ESAC_TAP_URL + encodeQuery(createProperMotionQuery());
     }
 
@@ -227,9 +277,19 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         addRow(query, "       bp_g,");
         addRow(query, "       g_rp,");
         addRow(query, "       ruwe,");
-        addRow(query, "       dr2_radial_velocity,");
-        addRow(query, "       dr2_radial_velocity_error");
-        addRow(query, "FROM   gaiaedr3.gaia_source");
+        addRow(query, "       radial_velocity,");
+        addRow(query, "       radial_velocity_error,");
+        addRow(query, "       teff_gspphot,");
+        addRow(query, "       logg_gspphot,");
+        addRow(query, "       mh_gspphot,");
+        addRow(query, "       distance_gspphot,");
+        addRow(query, "       phot_variable_flag,");
+        addRow(query, "       classprob_dsc_combmod_quasar,");
+        addRow(query, "       classprob_dsc_combmod_galaxy,");
+        addRow(query, "       classprob_dsc_combmod_star,");
+        addRow(query, "       ag_gspphot,");
+        addRow(query, "       ebpminrp_gspphot");
+        addRow(query, "FROM   gaiadr3.gaia_source");
         addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + "))");
         return query.toString();
     }
@@ -248,19 +308,85 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(dec) + "," + roundTo4Dec(plx) + "," + roundTo4Dec(plx_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo3Dec(Gmag) + "," + roundTo3Dec(BPmag) + "," + roundTo3Dec(RPmag) + "," + roundTo3Dec(BP_RP) + "," + roundTo3Dec(BP_G) + "," + roundTo3Dec(G_RP) + "," + roundTo3Dec(ruwe) + "," + roundTo3Dec(radvel) + "," + roundTo3Dec(radvel_err) + "," + roundTo3Dec(getParallacticDistance()) + "," + roundTo3Dec(getAbsoluteGmag()) + "," + roundTo3Dec(getTotalProperMotion()) + "," + roundTo3Dec(getTangentialVelocity()) + "," + roundTo3Dec(getTotalVelocity());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + sourceId + ","
+                + roundTo7Dec(ra) + ","
+                + roundTo7Dec(dec) + ","
+                + roundTo4Dec(plx) + ","
+                + roundTo4Dec(plx_err) + ","
+                + roundTo3Dec(pmra) + ","
+                + roundTo3Dec(pmra_err) + ","
+                + roundTo3Dec(pmdec) + ","
+                + roundTo3Dec(pmdec_err) + ","
+                + roundTo3Dec(Gmag) + ","
+                + roundTo3Dec(BPmag) + ","
+                + roundTo3Dec(RPmag) + ","
+                + roundTo3Dec(BP_RP) + ","
+                + roundTo3Dec(BP_G) + ","
+                + roundTo3Dec(G_RP) + ","
+                + roundTo3Dec(ruwe) + ","
+                + roundTo3Dec(radvel) + ","
+                + roundTo3Dec(radvel_err) + ","
+                + roundTo3Dec(teff_gspphot) + ","
+                + roundTo3Dec(logg_gspphot) + ","
+                + roundTo3Dec(mh_gspphot) + ","
+                + roundTo3Dec(distance_gspphot) + ","
+                + phot_variable_flag + ","
+                + roundTo3Dec(classprob_dsc_combmod_quasar) + ","
+                + roundTo3Dec(classprob_dsc_combmod_galaxy) + ","
+                + roundTo3Dec(classprob_dsc_combmod_star) + ","
+                + roundTo3Dec(ag_gspphot) + ","
+                + roundTo3Dec(ebpminrp_gspphot) + ","
+                + roundTo3Dec(getParallacticDistance()) + ","
+                + roundTo3Dec(getAbsoluteGmag()) + ","
+                + roundTo3Dec(getTotalProperMotion()) + ","
+                + roundTo3Dec(getTangentialVelocity()) + ","
+                + roundTo3Dec(getTotalVelocity());
         return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,dec,plx (mas),plx err,pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,G (mag),BP (mag),RP (mag),BP-RP,BP-G,G-RP,RUWE,rad vel (km/s),rad vel err,dist (1/plx),Absolute G (mag),tpm (mas/yr),tang vel (km/s),tot vel (km/s)";
+        String columnTitles = "dist (arcsec),"
+                + "source id,"
+                + "ra,"
+                + "dec,"
+                + "plx (mas),"
+                + "plx err,"
+                + "pmra (mas/yr),"
+                + "pmra err,"
+                + "pmdec (mas/yr),"
+                + "pmdec err,"
+                + "G (mag),"
+                + "BP (mag),"
+                + "RP (mag),"
+                + "BP-RP,"
+                + "BP-G,"
+                + "G-RP,"
+                + "RUWE,"
+                + "rad vel (km/s),"
+                + "rad vel err,"
+                + "teff (K),"
+                + "log g,"
+                + "Fe/H (dex),"
+                + "dist (Gaia),"
+                + "var. flag,"
+                + "quasar prob.,"
+                + "galaxy prob.,"
+                + "star prob.,"
+                + "extinct. in G band,"
+                + "reddening E(BP-RP),"
+                + "dist (1/plx),"
+                + "Absolute G (mag),"
+                + "tpm (mas/yr),"
+                + "tang vel (km/s),"
+                + "tot vel (km/s)";
         return columnTitles.split(",", -1);
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
-        throw new NoExtinctionValuesException();
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
+        throw new ExtinctionException();
     }
 
     @Override

@@ -1,13 +1,14 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -37,14 +38,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeListener;
 
 public class SettingsTab {
 
@@ -68,6 +67,8 @@ public class SettingsTab {
     public static final String PROXY_ADDRESS = "proxyAddress";
     public static final String PROXY_PORT = "proxyPort";
     public static final String USE_PROXY = "useProxy";
+    public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
+    public static final String PHOTOMETRIC_ERRORS = "photometricErrors";
     public static final String CUTOUT_SERVICE = "cutoutService";
     public static final String GAIA_CMD_PATH = "gaiaCmdPath";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
@@ -77,6 +78,8 @@ public class SettingsTab {
     private String proxyAddress;
     private int proxyPort;
     private boolean useProxy;
+    private boolean useSimbadMirror;
+    private boolean photometricErrors;
     private String cutoutService;
     private String gaiaCmdPath;
     private String objectCollectionPath;
@@ -84,12 +87,12 @@ public class SettingsTab {
     // Catalog search settings
     private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
     private static final String SEARCH_RADIUS = "searchRadius";
-    private static final String PANSTARRS_FOV = "panstarrsFOV";
-    private static final String ALADIN_LITE_FOV = "aladinLiteFOV";
-    private static final String WISE_VIEW_FOV = "wiseViewFOV";
-    private static final String FINDER_CHART_FOV = "finderChartFOV";
     private static final String USER_NAME = "userName";
     private static final String USER_EMAIL = "userEmail";
+    public static final String PANSTARRS_FOV = "panstarrsFOV";
+    public static final String ALADIN_LITE_FOV = "aladinLiteFOV";
+    public static final String WISE_VIEW_FOV = "wiseViewFOV";
+    public static final String FINDER_CHART_FOV = "finderChartFOV";
 
     private boolean copyCoordsToClipboard;
     private int searchRadius;
@@ -99,9 +102,7 @@ public class SettingsTab {
     private int finderChartFOV;
 
     // Image viewer settings
-    private static final String NUMBER_OF_EPOCHS = "numberOfEpochs";
     private static final String WISE_BAND = "wiseBand";
-    private static final String EPOCH = "epoch";
     private static final String SIZE = "imageSize";
     private static final String SPEED = "speed";
     private static final String ZOOM = "zoom";
@@ -110,12 +111,12 @@ public class SettingsTab {
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
     private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
+    private static final String UKIDSS_IMAGES = "ukidssImages";
+    private static final String VHS_IMAGES = "vhsImages";
     private static final String SDSS_IMAGES = "sdssImages";
     private static final String DSS_IMAGES = "dssImages";
 
-    private int numberOfEpochs;
     private WiseBand wiseBand;
-    private Epoch epoch;
     private int size;
     private int speed;
     private int zoom;
@@ -124,6 +125,8 @@ public class SettingsTab {
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
+    private boolean ukidssImages;
+    private boolean vhsImages;
     private boolean sdssImages;
     private boolean dssImages;
 
@@ -133,10 +136,7 @@ public class SettingsTab {
 
     private JPanel catalogPanel;
     private ActionListener actionListener;
-    private ChangeListener changeListener;
     private JComboBox wiseBandsBox;
-    private JComboBox epochsBox;
-    private JSlider epochSlider;
 
     public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
         this.baseFrame = baseFrame;
@@ -154,11 +154,11 @@ public class SettingsTab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(11, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(12, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(450, 300));
+            globalSettings.setPreferredSize(new Dimension(475, 325));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
@@ -167,6 +167,8 @@ public class SettingsTab {
             String port = USER_SETTINGS.getProperty(PROXY_PORT, "0");
             proxyPort = port.isEmpty() ? 0 : Integer.parseInt(port);
             useProxy = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_PROXY, "false"));
+            useSimbadMirror = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR, "false"));
+            photometricErrors = Boolean.parseBoolean(USER_SETTINGS.getProperty(PHOTOMETRIC_ERRORS, "false"));
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
             gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
@@ -177,23 +179,31 @@ public class SettingsTab {
             themes.setSelectedItem(lookAndFeel);
             globalSettings.add(themes);
 
-            globalSettings.add(new JLabel("TAP provider for AllWISE, ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("TAP provider for AllWISE, CatWISE, ", JLabel.RIGHT));
             globalSettings.add(new JLabel());
 
-            globalSettings.add(new JLabel("CatWISE, 2MASS and Gaia DR2: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("2MASS, Gaia, DES and VHS: ", JLabel.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
 
-            JRadioButton irsaButton = new JRadioButton("IRSA", tapProvider.equals(TapProvider.IRSA));
-            radioPanel.add(irsaButton);
+            boolean isVizierTap = tapProvider.equals(TapProvider.VIZIER);
+            boolean isNoaoTap = tapProvider.equals(TapProvider.NOIRLAB);
 
-            JRadioButton vizierButton = new JRadioButton("VizieR", tapProvider.equals(TapProvider.VIZIER));
+            if (!isVizierTap && !isNoaoTap) {
+                isNoaoTap = true;
+            }
+
+            JRadioButton vizierButton = new JRadioButton("VizieR", isVizierTap);
             radioPanel.add(vizierButton);
 
+            JRadioButton noirlabButton = new JRadioButton("NOIRLab", isNoaoTap);
+            radioPanel.add(noirlabButton);
+
             ButtonGroup buttonGroup = new ButtonGroup();
-            buttonGroup.add(irsaButton);
+
             buttonGroup.add(vizierButton);
+            buttonGroup.add(noirlabButton);
 
             globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
@@ -208,11 +218,21 @@ public class SettingsTab {
             useProxyCheckBox.setSelected(useProxy);
             globalSettings.add(useProxyCheckBox);
 
+            globalSettings.add(new JLabel("Use SIMBAD mirror: ", JLabel.RIGHT));
+            JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
+            useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
+            globalSettings.add(useSimbadMirrorCheckBox);
+
+            globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", JLabel.RIGHT));
+            JCheckBox photometricErrorsBox = new JCheckBox("Needs a restart after: Apply settings");
+            photometricErrorsBox.setSelected(photometricErrors);
+            globalSettings.add(photometricErrorsBox);
+
             globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
 
-            globalSettings.add(new JLabel("File location of Gaia CMD data (*): ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("File location of Gaia CMD data: ", JLabel.RIGHT));
             JTextField gaiaCmdPathField = new JTextField(gaiaCmdPath);
             globalSettings.add(gaiaCmdPathField);
 
@@ -224,11 +244,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(11, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(12, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), CatalogQueryTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Miscellaneous settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 300));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, 325));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -241,25 +261,19 @@ public class SettingsTab {
             String userEmail = USER_SETTINGS.getProperty(USER_EMAIL, "");
 
             catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
-            if (catalogQueryTab.getPanstarrsField() != null) {
-                catalogQueryTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
-                catalogQueryTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
-                catalogQueryTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
-                catalogQueryTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
-            }
-
             catalogQueryTab.setCopyCoordsToClipboard(copyCoordsToClipboard);
-            catalogQueryTab.setPanstarrsFOV(panstarrsFOV);
-            catalogQueryTab.setAladinLiteFOV(aladinLiteFOV);
-            catalogQueryTab.setWiseViewFOV(wiseViewFOV);
-            catalogQueryTab.setFinderChartFOV(finderChartFOV);
+
+            imageViewerTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
+            imageViewerTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
+            imageViewerTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
+            imageViewerTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
 
             catalogQuerySettings.add(new JLabel("Copy coordinates to clipboard: ", JLabel.RIGHT));
             JCheckBox clipboardCheckBox = new JCheckBox();
             clipboardCheckBox.setSelected(copyCoordsToClipboard);
             catalogQuerySettings.add(clipboardCheckBox);
 
-            catalogQuerySettings.add(new JLabel("Search radius: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Catalog search radius: ", JLabel.RIGHT));
             JTextField searchRadiusField = new JTextField(String.valueOf(searchRadius));
             catalogQuerySettings.add(searchRadiusField);
 
@@ -291,16 +305,14 @@ public class SettingsTab {
             catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(11, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(12, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 300));
+            imageViewerSettings.setPreferredSize(new Dimension(400, 325));
             containerPanel.add(imageViewerSettings);
 
-            numberOfEpochs = Integer.parseInt(USER_SETTINGS.getProperty(NUMBER_OF_EPOCHS, String.valueOf(ImageViewerTab.NUMBER_OF_EPOCHS)));
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
-            epoch = Epoch.valueOf(USER_SETTINGS.getProperty(EPOCH, ImageViewerTab.EPOCH.name()));
             size = Integer.parseInt(USER_SETTINGS.getProperty(SIZE, String.valueOf(ImageViewerTab.SIZE)));
             speed = Integer.parseInt(USER_SETTINGS.getProperty(SPEED, String.valueOf(ImageViewerTab.SPEED)));
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
@@ -309,6 +321,8 @@ public class SettingsTab {
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
             legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
+            ukidssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(UKIDSS_IMAGES, "true"));
+            vhsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(VHS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
             dssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(DSS_IMAGES, "true"));
 
@@ -318,57 +332,27 @@ public class SettingsTab {
             wiseBandsBox.setSelectedItem(wiseBand);
             wiseBandsBox.addActionListener(actionListener);
 
-            epochsBox = imageViewerTab.getEpochs();
-            actionListener = epochsBox.getActionListeners()[0];
-            epochsBox.removeActionListener(actionListener);
-            epochsBox.setSelectedItem(epoch);
-            epochsBox.addActionListener(actionListener);
-
             imageViewerTab.getSizeField().setText(String.valueOf(size));
             imageViewerTab.getSpeedSlider().setValue(speed);
             imageViewerTab.getZoomSlider().setValue(zoom);
             imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
             imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
-
-            imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
-            epochSlider = imageViewerTab.getEpochSlider();
-            changeListener = epochSlider.getChangeListeners()[0];
-            epochSlider.removeChangeListener(changeListener);
-            epochSlider.setMaximum(numberOfEpochs);
-            epochSlider.setValue(numberOfEpochs);
-            epochSlider.addChangeListener(changeListener);
-
-            if (Epoch.isSubtracted(epoch)) {
-                imageViewerTab.getBlurImages().setSelected(true);
-            } else {
-                imageViewerTab.getBlurImages().setSelected(false);
-            }
-
             imageViewerTab.setWiseBand(wiseBand);
-            imageViewerTab.setEpoch(epoch);
             imageViewerTab.setSize(size);
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
-            imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
             imageViewerTab.setAsyncDownloads(asyncDownloads);
             imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
+            imageViewerTab.setUkidssImages(ukidssImages);
+            imageViewerTab.setVhsImages(vhsImages);
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
-
-            imageViewerSettings.add(new JLabel("Survey epochs: ", JLabel.RIGHT));
-            JTextField numberOfEpochsField = new JTextField(String.valueOf(numberOfEpochs));
-            imageViewerSettings.add(numberOfEpochsField);
 
             imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
             JComboBox wiseBands = new JComboBox(WiseBand.values());
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
-
-            imageViewerSettings.add(new JLabel("Epochs: ", JLabel.RIGHT));
-            JComboBox epochs = new JComboBox(Epoch.values());
-            epochs.setSelectedItem(epoch);
-            imageViewerSettings.add(epochs);
 
             imageViewerSettings.add(new JLabel("Field of view (arcsec): ", JLabel.RIGHT));
             JTextField sizeField = new JTextField(String.valueOf(size));
@@ -406,6 +390,14 @@ public class SettingsTab {
             imageViewerSettings.add(new JLabel());
             downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
+            JCheckBox ukidssImagesCheckBox = new JCheckBox("UKIDSS", ukidssImages);
+            downloadPanel.add(ukidssImagesCheckBox);
+            JCheckBox vhsImagesCheckBox = new JCheckBox("VHS", vhsImages);
+            downloadPanel.add(vhsImagesCheckBox);
+
+            imageViewerSettings.add(new JLabel());
+            downloadPanel = new JPanel(new GridLayout(1, 2));
+            imageViewerSettings.add(downloadPanel);
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
             JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
@@ -416,7 +408,7 @@ public class SettingsTab {
 
             JPanel gridPanel = new JPanel(new GridLayout(2, 1));
             containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1210, 160));
+            gridPanel.setPreferredSize(new Dimension(1235, 160));
 
             // Catalogs
             catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -452,7 +444,7 @@ public class SettingsTab {
                 try {
                     // Global settings
                     lookAndFeel = (LookAndFeel) themes.getSelectedItem();
-                    tapProvider = irsaButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
+                    tapProvider = noirlabButton.isSelected() ? TapProvider.IRSA : TapProvider.VIZIER;
                     proxyAddress = proxyAddressField.getText();
                     String text = proxyPortField.getText();
                     proxyPort = text.isEmpty() ? 0 : Integer.parseInt(text);
@@ -471,6 +463,8 @@ public class SettingsTab {
                             return;
                         }
                     }
+                    useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    photometricErrors = photometricErrorsBox.isSelected();
 
                     // Catalog search settings
                     copyCoordsToClipboard = clipboardCheckBox.isSelected();
@@ -481,9 +475,7 @@ public class SettingsTab {
                     finderChartFOV = Integer.parseInt(finderChartFovField.getText());
 
                     // Image viewer settings
-                    numberOfEpochs = Integer.parseInt(numberOfEpochsField.getText());
                     wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                    epoch = (Epoch) epochs.getSelectedItem();
                     size = Integer.parseInt(sizeField.getText());
                     speed = Integer.parseInt(speedField.getText());
                     zoom = Integer.parseInt(zoomField.getText());
@@ -492,6 +484,8 @@ public class SettingsTab {
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
                     legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
+                    ukidssImages = ukidssImagesCheckBox.isSelected();
+                    vhsImages = vhsImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                     dssImages = dssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
@@ -508,24 +502,21 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(PROXY_ADDRESS, proxyAddressField.getText());
                 USER_SETTINGS.setProperty(PROXY_PORT, proxyPortField.getText());
                 USER_SETTINGS.setProperty(USE_PROXY, String.valueOf(useProxy));
+                USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
+                USER_SETTINGS.setProperty(PHOTOMETRIC_ERRORS, String.valueOf(photometricErrors));
                 USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
                 USER_SETTINGS.setProperty(GAIA_CMD_PATH, gaiaCmdPathField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings
                 catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
-                if (catalogQueryTab.getPanstarrsField() != null) {
-                    catalogQueryTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
-                    catalogQueryTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
-                    catalogQueryTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
-                    catalogQueryTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
-                }
-
                 catalogQueryTab.setCopyCoordsToClipboard(copyCoordsToClipboard);
-                catalogQueryTab.setPanstarrsFOV(panstarrsFOV);
-                catalogQueryTab.setAladinLiteFOV(aladinLiteFOV);
-                catalogQueryTab.setWiseViewFOV(wiseViewFOV);
-                catalogQueryTab.setFinderChartFOV(finderChartFOV);
+
+                imageViewerTab.getPanstarrsField().setText(String.valueOf(panstarrsFOV));
+                imageViewerTab.getAladinLiteField().setText(String.valueOf(aladinLiteFOV));
+                imageViewerTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
+                imageViewerTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
+                imageViewerTab.getChangeFovButton().getActionListeners()[0].actionPerformed(null);
 
                 USER_SETTINGS.setProperty(COPY_COORDS_TO_CLIPBOARD, String.valueOf(copyCoordsToClipboard));
                 USER_SETTINGS.setProperty(SEARCH_RADIUS, searchRadiusField.getText());
@@ -546,47 +537,24 @@ public class SettingsTab {
                 wiseBandsBox.setSelectedItem(wiseBand);
                 wiseBandsBox.addActionListener(actionListener);
 
-                epochsBox = imageViewerTab.getEpochs();
-                actionListener = epochsBox.getActionListeners()[0];
-                epochsBox.removeActionListener(actionListener);
-                epochsBox.setSelectedItem(epoch);
-                epochsBox.addActionListener(actionListener);
-
                 imageViewerTab.getSizeField().setText(String.valueOf(size));
                 imageViewerTab.getSpeedSlider().setValue(speed);
                 imageViewerTab.getZoomSlider().setValue(zoom);
                 imageViewerTab.getDifferentSizeField().setText(String.valueOf(differentSize));
                 imageViewerTab.getProperMotionField().setText(String.valueOf(properMotion));
-
-                imageViewerTab.getEpochLabel().setText(String.format(ImageViewerTab.EPOCH_LABEL, numberOfEpochs));
-                epochSlider = imageViewerTab.getEpochSlider();
-                changeListener = epochSlider.getChangeListeners()[0];
-                epochSlider.removeChangeListener(changeListener);
-                epochSlider.setMaximum(numberOfEpochs);
-                epochSlider.setValue(numberOfEpochs);
-                epochSlider.addChangeListener(changeListener);
-
-                if (Epoch.isSubtracted(epoch)) {
-                    imageViewerTab.getBlurImages().setSelected(true);
-                } else {
-                    imageViewerTab.getBlurImages().setSelected(false);
-                }
-
                 imageViewerTab.setWiseBand(wiseBand);
-                imageViewerTab.setEpoch(epoch);
                 imageViewerTab.setSize(size);
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
-                imageViewerTab.setNumberOfEpochs(numberOfEpochs * 2);
                 imageViewerTab.setAsyncDownloads(asyncDownloads);
                 imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
+                imageViewerTab.setUkidssImages(ukidssImages);
+                imageViewerTab.setVhsImages(vhsImages);
                 imageViewerTab.setSdssImages(sdssImages);
                 imageViewerTab.setDssImages(dssImages);
 
-                USER_SETTINGS.setProperty(NUMBER_OF_EPOCHS, numberOfEpochsField.getText());
                 USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
-                USER_SETTINGS.setProperty(EPOCH, epoch.name());
                 USER_SETTINGS.setProperty(SIZE, sizeField.getText());
                 USER_SETTINGS.setProperty(SPEED, speedField.getText());
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
@@ -595,6 +563,8 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
                 USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
+                USER_SETTINGS.setProperty(UKIDSS_IMAGES, String.valueOf(ukidssImages));
+                USER_SETTINGS.setProperty(VHS_IMAGES, String.valueOf(vhsImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
                 USER_SETTINGS.setProperty(DSS_IMAGES, String.valueOf(dssImages));
 
@@ -641,9 +611,6 @@ public class SettingsTab {
         boolean isFlatLaf = false;
         try {
             switch (lookAndFeel) {
-                case Java:
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                    break;
                 case OS:
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     break;
@@ -653,6 +620,14 @@ public class SettingsTab {
                     break;
                 case Flat_Dark:
                     UIManager.setLookAndFeel(new FlatDarkLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Darcula:
+                    UIManager.setLookAndFeel(new FlatDarculaLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_IntelliJ:
+                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
                     isFlatLaf = true;
                     break;
             }

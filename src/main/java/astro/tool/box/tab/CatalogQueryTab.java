@@ -2,9 +2,8 @@ package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ExternalResources.*;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.catalog.CatalogEntry;
@@ -16,7 +15,6 @@ import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.FileType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.LookupTable;
 import astro.tool.box.enumeration.ObjectType;
@@ -44,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.BorderFactory;
@@ -90,25 +89,15 @@ public class CatalogQueryTab {
     private JButton searchButton;
     private JTextField coordsField;
     private JTextField radiusField;
-    private JTextField panstarrsField;
-    private JTextField aladinLiteField;
-    private JTextField wiseViewField;
-    private JTextField finderChartField;
     private JTable collectionTable;
     private JTable currentTable;
 
     private CatalogEntry selectedEntry;
 
-    private boolean copyCoordsToClipboard;
-
-    private int panstarrsFOV;
-    private int aladinLiteFOV;
-    private int wiseViewFOV;
-    private int finderChartFOV;
-
     private double targetRa;
     private double targetDec;
     private double searchRadius;
+    private boolean copyCoordsToClipboard;
 
     public CatalogQueryTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
@@ -165,9 +154,6 @@ public class CatalogQueryTab {
             searchButton.requestFocus();
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -233,36 +219,45 @@ public class CatalogQueryTab {
                         removeAndRecreateCenterPanel();
                         removeAndRecreateBottomPanel();
 
-                        int count = 0;
-                        StringBuilder resultsPerCatalog = new StringBuilder();
-                        Iterator<String> iter = selectedCatalogs.listIterator();
-                        while (iter.hasNext()) {
-                            CatalogEntry catalogQuery = catalogInstances.get(iter.next());
-                            catalogQuery.setRa(targetRa);
-                            catalogQuery.setDec(targetDec);
-                            catalogQuery.setSearchRadius(searchRadius);
-                            int results = queryCatalog(catalogQuery);
-                            count += results;
-                            resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
-                            if (iter.hasNext()) {
-                                resultsPerCatalog.append("; ");
+                        CompletableFuture.supplyAsync(() -> {
+                            baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                            coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                            radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                            try {
+                                int count = 0;
+                                StringBuilder resultsPerCatalog = new StringBuilder();
+                                Iterator<String> iter = selectedCatalogs.listIterator();
+                                while (iter.hasNext()) {
+                                    CatalogEntry catalogQuery = catalogInstances.get(iter.next());
+                                    catalogQuery.setRa(targetRa);
+                                    catalogQuery.setDec(targetDec);
+                                    catalogQuery.setSearchRadius(searchRadius);
+                                    int results = queryCatalog(catalogQuery);
+                                    count += results;
+                                    resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
+                                    if (iter.hasNext()) {
+                                        resultsPerCatalog.append("; ");
+                                    }
+                                }
+                                String searchLabelText = "RA=" + targetRa + "° dec=" + targetDec + "° radius=" + searchRadius + " arcsec";
+                                if (count > 0) {
+                                    searchLabel.setText(count + " result(s) for " + searchLabelText + " (" + resultsPerCatalog + ")");
+                                } else {
+                                    searchLabel.setText("No results for " + searchLabelText);
+                                }
+                                baseFrame.setVisible(true);
+                            } catch (Exception ex) {
+                                showExceptionDialog(baseFrame, ex);
+                            } finally {
+                                baseFrame.setCursor(Cursor.getDefaultCursor());
+                                coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                                radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                             }
-                        }
-                        displayLinks(targetRa, targetDec, searchRadius);
-                        String searchLabelText = "RA=" + targetRa + "° dec=" + targetDec + "° radius=" + searchRadius + " arcsec";
-                        if (count > 0) {
-                            searchLabel.setText(count + " result(s) for " + searchLabelText + " (" + resultsPerCatalog + ")");
-                        } else {
-                            searchLabel.setText("No results for " + searchLabelText);
-                        }
-                        baseFrame.setVisible(true);
+                            return null;
+                        });
                     }
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
-                } finally {
-                    baseFrame.setCursor(Cursor.getDefaultCursor());
-                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                 }
             });
             topPanel.add(searchButton);
@@ -288,7 +283,6 @@ public class CatalogQueryTab {
                         removeAndRecreateBottomPanel();
                         displayCatalogDetails(selectedEntry);
                         displaySpectralTypes(selectedEntry);
-                        displayLinks(targetRa, targetDec, searchRadius);
                     }
                 }
             });
@@ -308,6 +302,7 @@ public class CatalogQueryTab {
         });
         if (!catalogEntries.isEmpty()) {
             displayCatalogResults(catalogEntries, catalogQuery.getSearchRadius());
+            baseFrame.setVisible(true);
         }
         return catalogEntries.size();
     }
@@ -339,9 +334,9 @@ public class CatalogQueryTab {
                 }
                 currentTable = catalogTable;
                 String sourceId = (String) catalogTable.getValueAt(catalogTable.getSelectedRow(), 1);
-                CatalogEntry selected = catalogEntries.stream().filter(entry -> {
-                    return entry.getSourceId().equals(sourceId);
-                }).findFirst().get();
+                CatalogEntry selected = catalogEntries.stream()
+                        .filter(entry -> entry.getSourceId().equals(sourceId))
+                        .findFirst().get();
                 if (selected != null) {
                     selectedEntry = selected;
                     removeAndRecreateBottomPanel();
@@ -350,7 +345,6 @@ public class CatalogQueryTab {
                     }
                     displayCatalogDetails(selected);
                     displaySpectralTypes(selected);
-                    displayLinks(selected.getRa(), selected.getDec(), degRadius);
                     baseFrame.setVisible(true);
                 }
             }
@@ -362,73 +356,6 @@ public class CatalogQueryTab {
                 new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
         centerPanel.add(catalogScrollPanel);
-    }
-
-    private void displayLinks(double degRA, double degDE, double degRadius) {
-        JPanel linkPanel = new JPanel(new GridLayout(17, 2));
-        linkPanel.setPreferredSize(new Dimension(300, BOTTOM_PANEL_HEIGHT));
-        linkPanel.setBorder(BorderFactory.createTitledBorder(
-                new LineBorder(Color.LIGHT_GRAY, 3), "External resources", TitledBorder.LEFT, TitledBorder.TOP
-        ));
-
-        linkPanel.add(new JLabel("Image viewers:"));
-        linkPanel.add(new JLabel("FoV (arcsec)"));
-        panstarrsField = new JTextField(String.valueOf(panstarrsFOV));
-        aladinLiteField = new JTextField(String.valueOf(aladinLiteFOV));
-        wiseViewField = new JTextField(String.valueOf(wiseViewFOV));
-        finderChartField = new JTextField(String.valueOf(finderChartFOV));
-        if (degDE >= -31) {
-            linkPanel.add(createHyperlink("Pan-STARRS", getPanstarrsUrl(degRA, degDE, panstarrsFOV, FileType.STACK)));
-            linkPanel.add(panstarrsField);
-        }
-        linkPanel.add(createHyperlink("Aladin Lite", getAladinLiteUrl(degRA, degDE, aladinLiteFOV)));
-        linkPanel.add(aladinLiteField);
-        linkPanel.add(createHyperlink("WiseView", getWiseViewUrl(degRA, degDE, wiseViewFOV)));
-        linkPanel.add(wiseViewField);
-        linkPanel.add(createHyperlink("IRSA Finder Chart", getFinderChartUrl(degRA, degDE, finderChartFOV)));
-        linkPanel.add(finderChartField);
-        linkPanel.add(createHyperlink("Legacy Sky Viewer", getLegacySkyViewerUrl(degRA, degDE, "unwise-neo6")));
-        JButton saveButton = new JButton("Change FoV");
-        saveButton.addActionListener((ActionEvent e) -> {
-            try {
-                panstarrsFOV = toInteger(panstarrsField.getText());
-                aladinLiteFOV = toInteger(aladinLiteField.getText());
-                wiseViewFOV = toInteger(wiseViewField.getText());
-                finderChartFOV = toInteger(finderChartField.getText());
-                bottomPanel.remove(linkPanel);
-                displayLinks(degRA, degDE, degRadius);
-                baseFrame.setVisible(true);
-            } catch (Exception ex) {
-                showErrorDialog(baseFrame, "Invalid field of view!");
-            }
-        });
-        linkPanel.add(saveButton);
-
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel("Databases:"));
-        linkPanel.add(createHyperlink("SIMBAD", getSimbadUrl(degRA, degDE, degRadius)));
-        linkPanel.add(new JLabel());
-        linkPanel.add(createHyperlink("VizieR", getVizierUrl(degRA, degDE, degRadius, 50, false)));
-
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel());
-        linkPanel.add(new JLabel("VizieR catalogs:"));
-        linkPanel.add(new JLabel());
-        linkPanel.add(createHyperlink("AllWISE", getSpecificCatalogsUrl("II/328/allwise", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("CatWISE2020", getSpecificCatalogsUrl("II/365/catwise", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("unWISE", getSpecificCatalogsUrl("II/363/unwise", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("2MASS", getSpecificCatalogsUrl("II/246/out", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("VHS DR5", getSpecificCatalogsUrl("II/367/vhs_dr5", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("SDSS DR12", getSpecificCatalogsUrl("V/147/sdss12", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Pan-STARRS DR1", getSpecificCatalogsUrl("II/349/ps1", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia eDR3", getSpecificCatalogsUrl("I/350/gaiaedr3", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia distances", getSpecificCatalogsUrl("I/352/gedr3dis", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia quasars & galaxies", getSpecificCatalogsUrl("VII/285/gdr2ext", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia Teff regression", getSpecificCatalogsUrl("J/AJ/158/93/table2", degRA, degDE, degRadius)));
-        linkPanel.add(createHyperlink("Gaia WD candidates", getSpecificCatalogsUrl("J/MNRAS/508/3877/maincat", degRA, degDE, degRadius)));
-
-        bottomPanel.add(linkPanel);
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
@@ -464,7 +391,7 @@ public class CatalogQueryTab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setPreferredSize(new Dimension(675, BOTTOM_PANEL_HEIGHT));
+        scrollPanel.setPreferredSize(new Dimension(680, BOTTOM_PANEL_HEIGHT));
         bottomPanel.add(scrollPanel);
     }
 
@@ -489,7 +416,7 @@ public class CatalogQueryTab {
             spectralTypeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             TableColumnModel columnModel = spectralTypeTable.getColumnModel();
             columnModel.getColumn(0).setPreferredWidth(50);
-            columnModel.getColumn(1).setPreferredWidth(100);
+            columnModel.getColumn(1).setPreferredWidth(120);
             columnModel.getColumn(2).setPreferredWidth(75);
             columnModel.getColumn(3).setPreferredWidth(50);
             columnModel.getColumn(4).setPreferredWidth(50);
@@ -499,9 +426,9 @@ public class CatalogQueryTab {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
             container.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            container.setPreferredSize(new Dimension(540, BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(520, BOTTOM_PANEL_HEIGHT));
             container.add(new JScrollPane(spectralTypeTable));
 
             JPanel remarks = new JPanel(new GridLayout(0, 1));
@@ -524,7 +451,7 @@ public class CatalogQueryTab {
                 }
             }
 
-            remarks.add(new JLabel("This feature uses Eric Mamajek's spectral type lookup table (version: 2021.03.02):"));
+            remarks.add(new JLabel(String.format("This feature uses Eric Mamajek's color-spectral type relations (version %s):", MAMAJEK_VERSION)));
             String hyperlink = "http://www.pas.rochester.edu/~emamajek/EEM_dwarf_UBVIJHK_colors_Teff.txt";
             remarks.add(createHyperlink("A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", hyperlink));
             remarks.add(new JLabel("The table is also available in the " + LookupTab.TAB_NAME + " tab: " + LookupTable.MAIN_SEQUENCE.name()));
@@ -619,6 +546,7 @@ public class CatalogQueryTab {
             JButton createSedButton = new JButton("SED");
             collectPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
+                createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
@@ -629,11 +557,13 @@ public class CatalogQueryTab {
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
+                createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
             JButton createWdSedButton = new JButton("WD SED");
             collectPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
+                createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame sedFrame = new JFrame();
                 sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                 sedFrame.setIconImage(getToolBoxImage());
@@ -644,6 +574,7 @@ public class CatalogQueryTab {
                 sedFrame.setAlwaysOnTop(false);
                 sedFrame.setResizable(true);
                 sedFrame.setVisible(true);
+                createWdSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
             if (catalogEntry instanceof GaiaCmd) {
@@ -706,22 +637,6 @@ public class CatalogQueryTab {
         return radiusField;
     }
 
-    public JTextField getPanstarrsField() {
-        return panstarrsField;
-    }
-
-    public JTextField getAladinLiteField() {
-        return aladinLiteField;
-    }
-
-    public JTextField getWiseViewField() {
-        return wiseViewField;
-    }
-
-    public JTextField getFinderChartField() {
-        return finderChartField;
-    }
-
     public JLabel getSearchLabel() {
         return searchLabel;
     }
@@ -736,22 +651,6 @@ public class CatalogQueryTab {
 
     public void setCopyCoordsToClipboard(boolean copyCoordsToClipboard) {
         this.copyCoordsToClipboard = copyCoordsToClipboard;
-    }
-
-    public void setPanstarrsFOV(int panstarrsFOV) {
-        this.panstarrsFOV = panstarrsFOV;
-    }
-
-    public void setAladinLiteFOV(int aladinLiteFOV) {
-        this.aladinLiteFOV = aladinLiteFOV;
-    }
-
-    public void setWiseViewFOV(int wiseViewFOV) {
-        this.wiseViewFOV = wiseViewFOV;
-    }
-
-    public void setFinderChartFOV(int finderChartFOV) {
-        this.finderChartFOV = finderChartFOV;
     }
 
 }

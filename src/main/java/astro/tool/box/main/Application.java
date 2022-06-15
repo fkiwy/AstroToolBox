@@ -2,7 +2,7 @@ package astro.tool.box.main;
 
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Version;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import astro.tool.box.tab.AdqlQueryTab;
@@ -90,6 +90,8 @@ public class Application {
         ImageSeriesTab imageSeriesTab = new ImageSeriesTab(baseFrame, tabbedPane, imageViewerTab);
         imageSeriesTab.init();
 
+        //FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
+        //finderChartTab.init();
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
         photoClassTab.init();
 
@@ -120,10 +122,14 @@ public class Application {
         SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
         settingsTab.init();
 
+        tabbedPane.setSelectedIndex(3);
+
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);
 
-        if (!versionLoaded) {
+        boolean checkVersion = Boolean.parseBoolean(getUserSetting("checkVersion", "true"));
+
+        if (!versionLoaded && checkVersion) {
             try {
                 String response = readResponse(establishHttpConnection(RELEASES_URL + "versions.txt"), PGM_NAME + " version file");
                 if (!response.isEmpty()) {

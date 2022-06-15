@@ -1,4 +1,4 @@
-package astro.tool.box.main;
+package astro.tool.box.util;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

@@ -17,6 +17,7 @@ public enum JColor {
     OLIVE(new java.awt.Color(102, 102, 51)),
     NAVY(new java.awt.Color(0, 143, 179)),
     SAND(new java.awt.Color(204, 153, 0)),
+    BLOOD(new java.awt.Color(204, 51, 0)),
     GRAY(java.awt.Color.GRAY),
     DARK_RED(java.awt.Color.RED.darker()),
     DARK_BLUE(java.awt.Color.BLUE.darker()),

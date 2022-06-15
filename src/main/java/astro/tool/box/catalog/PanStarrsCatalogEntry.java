@@ -13,7 +13,7 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -233,7 +233,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createPanStarrsUrl(raMean, decMean, searchRadius / DEG_ARCSEC);
     }
 
@@ -250,8 +250,8 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
-        throw new NoExtinctionValuesException();
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
+        throw new ExtinctionException();
     }
 
     @Override
@@ -273,6 +273,16 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         colors.put(Color.i_z_PS1, get_i_z());
         colors.put(Color.i_y_PS1, get_i_y());
         colors.put(Color.z_y_PS1, get_z_y());
+        colors.put(Color.e_g_r_PS1, get_g_r() - get_g_r_err());
+        colors.put(Color.e_r_i_PS1, get_r_i() - get_r_i_err());
+        colors.put(Color.e_i_z_PS1, get_i_z() - get_i_z_err());
+        colors.put(Color.e_i_y_PS1, get_i_y() - get_i_y_err());
+        colors.put(Color.e_z_y_PS1, get_z_y() - get_z_y_err());
+        colors.put(Color.E_g_r_PS1, get_g_r() + get_g_r_err());
+        colors.put(Color.E_r_i_PS1, get_r_i() + get_r_i_err());
+        colors.put(Color.E_i_z_PS1, get_i_z() + get_i_z_err());
+        colors.put(Color.E_i_y_PS1, get_i_y() + get_i_y_err());
+        colors.put(Color.E_z_y_PS1, get_z_y() + get_z_y_err());
         return colors;
     }
 
@@ -489,6 +499,46 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return zMeanPSFMag - yMeanPSFMag;
+        }
+    }
+
+    public double get_g_r_err() {
+        if (gMeanPSFMagErr == 0 || rMeanPSFMagErr == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(gMeanPSFMagErr, rMeanPSFMagErr);
+        }
+    }
+
+    public double get_r_i_err() {
+        if (rMeanPSFMagErr == 0 || iMeanPSFMagErr == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(rMeanPSFMagErr, iMeanPSFMagErr);
+        }
+    }
+
+    public double get_i_z_err() {
+        if (iMeanPSFMagErr == 0 || zMeanPSFMagErr == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(iMeanPSFMag, zMeanPSFMag);
+        }
+    }
+
+    public double get_i_y_err() {
+        if (iMeanPSFMagErr == 0 || yMeanPSFMagErr == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(iMeanPSFMagErr, yMeanPSFMagErr);
+        }
+    }
+
+    public double get_z_y_err() {
+        if (zMeanPSFMagErr == 0 || yMeanPSFMagErr == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(zMeanPSFMagErr, yMeanPSFMagErr);
         }
     }
 

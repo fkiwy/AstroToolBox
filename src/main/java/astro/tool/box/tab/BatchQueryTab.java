@@ -2,7 +2,7 @@ package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.BatchResult;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
@@ -61,7 +61,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class BatchQueryTab {
 
-    public static final String TAB_NAME = "Batch Query";
+    public static final String TAB_NAME = "Batch Search";
     private static final int MAX_SEARCH_RADIUS = 10;
     private static final int MAX_INPUT_ROWS = 50000;
 

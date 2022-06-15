@@ -12,8 +12,9 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.exception.NoExtinctionValuesException;
+import astro.tool.box.exception.ExtinctionException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,7 +56,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     private double pmdec_err;
 
     // Mean Modified Julian Date
-    private double mean_mjd;
+    private LocalDateTime mean_mjd;
 
     // Number of detections in all bands
     private int ndet;
@@ -149,41 +150,41 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         ra_err = toDouble(values[columns.get("raerr")]);
         dec = toDouble(values[columns.get("dec")]);
         dec_err = toDouble(values[columns.get("decerr")]);
-        pmra = toDouble(getFixedPM(values[columns.get("pmra")]));
-        pmra_err = toDouble(getFixedPM(values[columns.get("pmraerr")]));
-        pmdec = toDouble(getFixedPM(values[columns.get("pmdec")]));
-        pmdec_err = toDouble(getFixedPM(values[columns.get("pmdecerr")]));
+        pmra = toDouble(fixPmVal(values[columns.get("pmra")]));
+        pmra_err = toDouble(fixPmVal(values[columns.get("pmraerr")]));
+        pmdec = toDouble(fixPmVal(values[columns.get("pmdec")]));
+        pmdec_err = toDouble(fixPmVal(values[columns.get("pmdecerr")]));
         type = toDouble(values[columns.get("class_star")]);
-        mean_mjd = toDouble(values[columns.get("mjd")]);
+        mean_mjd = convertMJDToDateTime(new BigDecimal(values[columns.get("mjd")]));
         ndet = toInteger(values[columns.get("ndet")]);
         delta_mjd = toDouble(values[columns.get("deltamjd")]);
-        u_mag = getFixedMag(toDouble(values[columns.get("umag")]));
-        u_err = getFixedErr(toDouble(values[columns.get("uerr")]));
-        g_mag = getFixedMag(toDouble(values[columns.get("gmag")]));
-        g_err = getFixedErr(toDouble(values[columns.get("gerr")]));
-        r_mag = getFixedMag(toDouble(values[columns.get("rmag")]));
-        r_err = getFixedErr(toDouble(values[columns.get("rerr")]));
-        i_mag = getFixedMag(toDouble(values[columns.get("imag")]));
-        i_err = getFixedErr(toDouble(values[columns.get("ierr")]));
-        z_mag = getFixedMag(toDouble(values[columns.get("zmag")]));
-        z_err = getFixedErr(toDouble(values[columns.get("zerr")]));
-        y_mag = getFixedMag(toDouble(values[columns.get("ymag")]));
-        y_err = getFixedErr(toDouble(values[columns.get("yerr")]));
-        vr_mag = getFixedMag(toDouble(values[columns.get("vrmag")]));
-        vr_err = getFixedErr(toDouble(values[columns.get("vrerr")]));
+        u_mag = fixMagVal(toDouble(values[columns.get("umag")]));
+        u_err = fixMagErr(toDouble(values[columns.get("uerr")]));
+        g_mag = fixMagVal(toDouble(values[columns.get("gmag")]));
+        g_err = fixMagErr(toDouble(values[columns.get("gerr")]));
+        r_mag = fixMagVal(toDouble(values[columns.get("rmag")]));
+        r_err = fixMagErr(toDouble(values[columns.get("rerr")]));
+        i_mag = fixMagVal(toDouble(values[columns.get("imag")]));
+        i_err = fixMagErr(toDouble(values[columns.get("ierr")]));
+        z_mag = fixMagVal(toDouble(values[columns.get("zmag")]));
+        z_err = fixMagErr(toDouble(values[columns.get("zerr")]));
+        y_mag = fixMagVal(toDouble(values[columns.get("ymag")]));
+        y_err = fixMagErr(toDouble(values[columns.get("yerr")]));
+        vr_mag = fixMagVal(toDouble(values[columns.get("vrmag")]));
+        vr_err = fixMagErr(toDouble(values[columns.get("vrerr")]));
         glon = toDouble(values[columns.get("glon")]);
         glat = toDouble(values[columns.get("glat")]);
     }
 
-    private String getFixedPM(String pm) {
+    private String fixPmVal(String pm) {
         return "NaN".equals(pm) ? "0" : pm;
     }
 
-    private double getFixedMag(double mag) {
+    private double fixMagVal(double mag) {
         return mag > 99.9 ? 0 : mag;
     }
 
-    private double getFixedErr(double err) {
+    private double fixMagErr(double err) {
         return err > 9.9 ? 0 : err;
     }
 
@@ -205,7 +206,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("Galaxy-Star (0-1)", roundTo2DecNZ(type), Alignment.LEFT, getStringComparator()));
-        catalogElements.add(new CatalogElement("mean mjd", convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
+        catalogElements.add(new CatalogElement("mean mjd", mean_mjd.format(DATE_TIME_FORMATTER), Alignment.LEFT, getStringComparator()));
         catalogElements.add(new CatalogElement("detections", String.valueOf(ndet), Alignment.RIGHT, getIntegerComparator()));
         catalogElements.add(new CatalogElement("delta mjd", roundTo3DecNZ(delta_mjd), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("u (mag)", roundTo3DecNZ(u_mag), Alignment.RIGHT, getDoubleComparator()));
@@ -268,12 +269,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     @Override
-    public String getProperMotionQueryUrl() {
+    public String getMotionQueryUrl() {
         return NOAO_TAP_URL + encodeQuery(createProperMotionQuery());
     }
 
@@ -316,7 +317,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     private String createProperMotionQuery() {
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
-        addRow(query, "AND    class_star > 0.7");
+        addRow(query, "AND    class_star > 0.5");
         addRow(query, "AND    ndet > 3");
         addRow(query, "AND    deltamjd > 180");
         addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
@@ -330,19 +331,85 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnValues() {
-        String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + "," + roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra) + "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + "," + roundTo2DecNZ(type) + "," + convertMJDToDateTime(new BigDecimal(Double.toString(mean_mjd))).format(DATE_TIME_FORMATTER) + "," + ndet + "," + roundTo3Dec(delta_mjd) + "," + roundTo3Dec(u_mag) + "," + roundTo3Dec(u_err) + "," + roundTo3Dec(g_mag) + "," + roundTo3Dec(g_err) + "," + roundTo3Dec(r_mag) + "," + roundTo3Dec(r_err) + "," + roundTo3Dec(i_mag) + "," + roundTo3Dec(i_err) + "," + roundTo3Dec(z_mag) + "," + roundTo3Dec(z_err) + "," + roundTo3Dec(y_mag) + "," + roundTo3Dec(y_err) + "," + roundTo3Dec(vr_mag) + "," + roundTo3Dec(vr_err) + "," + roundTo3Dec(get_u_g()) + "," + roundTo3Dec(get_g_r()) + "," + roundTo3Dec(get_r_i()) + "," + roundTo3Dec(get_i_z()) + "," + roundTo3Dec(get_z_y()) + "," + roundTo3Dec(getTotalProperMotion());
+        String columnValues = roundTo3DecLZ(getTargetDistance()) + ","
+                + sourceId + ","
+                + roundTo7Dec(ra) + ","
+                + roundTo7Dec(ra_err) + ","
+                + roundTo7Dec(dec) + ","
+                + roundTo7Dec(dec_err) + ","
+                + roundTo3Dec(pmra) + ","
+                + roundTo3Dec(pmra_err) + ","
+                + roundTo3Dec(pmdec) + ","
+                + roundTo3Dec(pmdec_err) + ","
+                + roundTo2DecNZ(type) + ","
+                + mean_mjd.format(DATE_TIME_FORMATTER) + ","
+                + ndet + ","
+                + roundTo3Dec(delta_mjd) + ","
+                + roundTo3Dec(u_mag) + ","
+                + roundTo3Dec(u_err) + ","
+                + roundTo3Dec(g_mag) + ","
+                + roundTo3Dec(g_err) + ","
+                + roundTo3Dec(r_mag) + ","
+                + roundTo3Dec(r_err) + ","
+                + roundTo3Dec(i_mag) + ","
+                + roundTo3Dec(i_err) + ","
+                + roundTo3Dec(z_mag) + ","
+                + roundTo3Dec(z_err) + ","
+                + roundTo3Dec(y_mag) + ","
+                + roundTo3Dec(y_err) + ","
+                + roundTo3Dec(vr_mag) + ","
+                + roundTo3Dec(vr_err) + ","
+                + roundTo3Dec(get_u_g()) + ","
+                + roundTo3Dec(get_g_r()) + ","
+                + roundTo3Dec(get_r_i()) + ","
+                + roundTo3Dec(get_i_z()) + ","
+                + roundTo3Dec(get_z_y()) + ","
+                + roundTo3Dec(getTotalProperMotion());
         return columnValues.split(",", -1);
     }
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),source id,ra,ra err (arcsec),dec,dec err (arcsec),pmra (mas/yr),pmra err,pmdec (mas/yr),pmdec err,Galaxy-Star (0-1),mean mjd,detections,delta mjd,u (mag),u err,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,Y (mag),Y err,VR (mag),VR err,u-g,g-r,r-i,i-z,z-Y,tpm (mas/yr)";
+        String columnTitles = "dist (arcsec),"
+                + "source id,"
+                + "ra,"
+                + "ra err (arcsec),"
+                + "dec,"
+                + "dec err (arcsec),"
+                + "pmra (mas/yr),"
+                + "pmra err,"
+                + "pmdec (mas/yr),"
+                + "pmdec err,"
+                + "Galaxy-Star (0-1),"
+                + "mean mjd,"
+                + "detections,"
+                + "delta mjd,"
+                + "u (mag),"
+                + "u err,"
+                + "g (mag),"
+                + "g err,"
+                + "r (mag),"
+                + "r err,"
+                + "i (mag),"
+                + "i err,"
+                + "z (mag),"
+                + "z err,"
+                + "Y (mag),"
+                + "Y err,"
+                + "VR (mag),"
+                + "VR err,"
+                + "u-g,"
+                + "g-r,"
+                + "r-i,"
+                + "i-z,"
+                + "z-Y,"
+                + "tpm (mas/yr)";
         return columnTitles.split(",", -1);
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws NoExtinctionValuesException {
-        throw new NoExtinctionValuesException();
+    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
+        throw new ExtinctionException();
     }
 
     @Override
@@ -363,6 +430,14 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         colors.put(Color.r_i_NSC, get_r_i());
         colors.put(Color.i_z_NSC, get_i_z());
         colors.put(Color.z_Y_NSC, get_z_y());
+        colors.put(Color.e_g_r_NSC, get_g_r() - get_g_r_err());
+        colors.put(Color.e_r_i_NSC, get_r_i() - get_r_i_err());
+        colors.put(Color.e_i_z_NSC, get_i_z() - get_i_z_err());
+        colors.put(Color.e_z_Y_NSC, get_z_y() - get_z_y_err());
+        colors.put(Color.E_g_r_NSC, get_g_r() + get_g_r_err());
+        colors.put(Color.E_r_i_NSC, get_r_i() + get_r_i_err());
+        colors.put(Color.E_i_z_NSC, get_i_z() + get_i_z_err());
+        colors.put(Color.E_z_Y_NSC, get_z_y() + get_z_y_err());
         return colors;
     }
 
@@ -560,7 +635,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     public double getMeanEpoch() {
-        return convertMJDToYears(mean_mjd);
+        return convertDateToYear(mean_mjd);
     }
 
     public int getNdet() {
@@ -616,6 +691,46 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
             return 0;
         } else {
             return z_mag - y_mag;
+        }
+    }
+
+    public double get_u_g_err() {
+        if (u_err == 0 || g_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(u_err, g_err);
+        }
+    }
+
+    public double get_g_r_err() {
+        if (g_err == 0 || r_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(g_err, r_err);
+        }
+    }
+
+    public double get_r_i_err() {
+        if (r_err == 0 || i_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(r_err, i_err);
+        }
+    }
+
+    public double get_i_z_err() {
+        if (i_err == 0 || z_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(i_err, z_err);
+        }
+    }
+
+    public double get_z_y_err() {
+        if (z_err == 0 || y_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(z_err, y_err);
         }
     }
 

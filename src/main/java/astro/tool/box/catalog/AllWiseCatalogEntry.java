@@ -12,7 +12,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.TapProvider;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -146,39 +145,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     public AllWiseCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        if (TapProvider.IRSA.equals(getTapProvider())) {
-            sourceId = values[columns.get("designation")];
-            ra = toDouble(values[columns.get("ra")]);
-            dec = toDouble(values[columns.get("dec")]);
-            W1mag = toDouble(values[columns.get("w1mpro")]);
-            W1_err = toDouble(values[columns.get("w1sigmpro")]);
-            W2mag = toDouble(values[columns.get("w2mpro")]);
-            W2_err = toDouble(values[columns.get("w2sigmpro")]);
-            W3mag = toDouble(values[columns.get("w3mpro")]);
-            W3_err = toDouble(values[columns.get("w3sigmpro")]);
-            W4mag = toDouble(values[columns.get("w4mpro")]);
-            W4_err = toDouble(values[columns.get("w4sigmpro")]);
-            W1_snr = toDouble(values[columns.get("w1snr")]);
-            W2_snr = toDouble(values[columns.get("w2snr")]);
-            W3_snr = toDouble(values[columns.get("w3snr")]);
-            W4_snr = toDouble(values[columns.get("w4snr")]);
-            ra_pm = toDouble(values[columns.get("ra_pm")]);
-            dec_pm = toDouble(values[columns.get("dec_pm")]);
-            pmra = toDouble(values[columns.get("pmra")]);
-            pmra_err = toDouble(values[columns.get("sigpmra")]);
-            pmdec = toDouble(values[columns.get("pmdec")]);
-            pmdec_err = toDouble(values[columns.get("sigpmdec")]);
-            cc_flags = values[columns.get("cc_flags")];
-            ext_flg = toInteger(values[columns.get("ext_flg")]);
-            var_flg = values[columns.get("var_flg")];
-            ph_qual = values[columns.get("ph_qual")];
-            Jmag = toDouble(values[columns.get("j_m_2mass")]);
-            J_err = toDouble(values[columns.get("j_msig_2mass")]);
-            Hmag = toDouble(values[columns.get("h_m_2mass")]);
-            H_err = toDouble(values[columns.get("h_msig_2mass")]);
-            Kmag = toDouble(values[columns.get("k_m_2mass")]);
-            K_err = toDouble(values[columns.get("k_msig_2mass")]);
-        } else {
+        if (isVizierTAP()) {
             sourceId = values[columns.get("AllWISE")];
             ra = toDouble(values[columns.get("RAJ2000")]);
             dec = toDouble(values[columns.get("DEJ2000")]);
@@ -210,6 +177,39 @@ public class AllWiseCatalogEntry implements CatalogEntry {
             H_err = toDouble(values[columns.get("e_Hmag")]);
             Kmag = toDouble(values[columns.get("Kmag")]);
             K_err = toDouble(values[columns.get("e_Kmag")]);
+        } else {
+            replaceNanValuesByZero(values);
+            sourceId = values[columns.get("designation")];
+            ra = toDouble(values[columns.get("ra")]);
+            dec = toDouble(values[columns.get("dec")]);
+            W1mag = toDouble(values[columns.get("w1mpro")]);
+            W1_err = toDouble(values[columns.get("w1sigmpro")]);
+            W2mag = toDouble(values[columns.get("w2mpro")]);
+            W2_err = toDouble(values[columns.get("w2sigmpro")]);
+            W3mag = toDouble(values[columns.get("w3mpro")]);
+            W3_err = toDouble(values[columns.get("w3sigmpro")]);
+            W4mag = toDouble(values[columns.get("w4mpro")]);
+            W4_err = toDouble(values[columns.get("w4sigmpro")]);
+            W1_snr = toDouble(values[columns.get("w1snr")]);
+            W2_snr = toDouble(values[columns.get("w2snr")]);
+            W3_snr = toDouble(values[columns.get("w3snr")]);
+            W4_snr = toDouble(values[columns.get("w4snr")]);
+            ra_pm = toDouble(values[columns.get("ra_pm")]);
+            dec_pm = toDouble(values[columns.get("dec_pm")]);
+            pmra = toDouble(values[columns.get("pmra")]);
+            pmra_err = toDouble(values[columns.get("sigpmra")]);
+            pmdec = toDouble(values[columns.get("pmdec")]);
+            pmdec_err = toDouble(values[columns.get("sigpmdec")]);
+            cc_flags = values[columns.get("cc_flags")];
+            ext_flg = toInteger(values[columns.get("ext_flg")]);
+            var_flg = values[columns.get("var_flg")];
+            ph_qual = values[columns.get("ph_qual")];
+            Jmag = toDouble(values[columns.get("j_m_2mass")]);
+            J_err = toDouble(values[columns.get("j_msig_2mass")]);
+            Hmag = toDouble(values[columns.get("h_m_2mass")]);
+            H_err = toDouble(values[columns.get("h_msig_2mass")]);
+            Kmag = toDouble(values[columns.get("k_m_2mass")]);
+            K_err = toDouble(values[columns.get("k_msig_2mass")]);
         }
     }
 
@@ -342,12 +342,50 @@ public class AllWiseCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
-        if (TapProvider.IRSA.equals(getTapProvider())) {
-            return createIrsaUrl(ra, dec, searchRadius / DEG_ARCSEC, "allwise_p3as_psd");
-        } else {
+    public String getCatalogQueryUrl() {
+        if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/328/allwise", "RAJ2000", "DEJ2000");
+        } else {
+            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
+    }
+
+    private String createAltCatalogQuery() {
+        StringBuilder query = new StringBuilder();
+        addRow(query, "SELECT designation,");
+        addRow(query, "       ra,");
+        addRow(query, "       dec,");
+        addRow(query, "       w1mpro,");
+        addRow(query, "       w1sigmpro,");
+        addRow(query, "       w2mpro,");
+        addRow(query, "       w2sigmpro,");
+        addRow(query, "       w3mpro,");
+        addRow(query, "       w3sigmpro,");
+        addRow(query, "       w4mpro,");
+        addRow(query, "       w4sigmpro,");
+        addRow(query, "       w1snr,");
+        addRow(query, "       w2snr,");
+        addRow(query, "       w3snr,");
+        addRow(query, "       w4snr,");
+        addRow(query, "       ra_pm,");
+        addRow(query, "       dec_pm,");
+        addRow(query, "       pmra,");
+        addRow(query, "       sigpmra,");
+        addRow(query, "       pmdec,");
+        addRow(query, "       sigpmdec,");
+        addRow(query, "       cc_flags,");
+        addRow(query, "       ext_flg,");
+        addRow(query, "       var_flg,");
+        addRow(query, "       ph_qual,");
+        addRow(query, "       j_m_2mass,");
+        addRow(query, "       j_msig_2mass,");
+        addRow(query, "       h_m_2mass,");
+        addRow(query, "       h_msig_2mass,");
+        addRow(query, "       k_m_2mass,");
+        addRow(query, "       k_msig_2mass");
+        addRow(query, "FROM   allwise.source");
+        addRow(query, "WHERE  't'=q3c_radial_query(ra, dec, " + ra + ", " + dec + ", " + searchRadius / DEG_ARCSEC + ")");
+        return query.toString();
     }
 
     @Override
@@ -415,6 +453,20 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         colors.put(Color.H_K, getH_K());
         colors.put(Color.J_K, getJ_K());
         colors.put(Color.K_W1, getK_W1());
+        colors.put(Color.e_W1_W2, getW1_W2() - getW1_W2_err());
+        colors.put(Color.e_W1_W3, getW1_W3() - getW1_W3_err());
+        colors.put(Color.e_W1_W4, getW1_W4() - getW1_W4_err());
+        colors.put(Color.e_J_H, getJ_H() - getJ_H_err());
+        colors.put(Color.e_H_K, getH_K() - getH_K_err());
+        colors.put(Color.e_J_K, getJ_K() - getJ_K_err());
+        colors.put(Color.e_K_W1, getK_W1() - getK_W1_err());
+        colors.put(Color.E_W1_W2, getW1_W2() + getW1_W2_err());
+        colors.put(Color.E_W1_W3, getW1_W3() + getW1_W3_err());
+        colors.put(Color.E_W1_W4, getW1_W4() + getW1_W4_err());
+        colors.put(Color.E_J_H, getJ_H() + getJ_H_err());
+        colors.put(Color.E_H_K, getH_K() + getH_K_err());
+        colors.put(Color.E_J_K, getJ_K() + getJ_K_err());
+        colors.put(Color.E_K_W1, getK_W1() + getK_W1_err());
         return colors;
     }
 
@@ -680,6 +732,86 @@ public class AllWiseCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             return Jmag - W2mag;
+        }
+    }
+
+    public double getW1_W2_err() {
+        if (W1_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W2_err);
+        }
+    }
+
+    public double getW1_W3_err() {
+        if (W1_err == 0 || W3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W3_err);
+        }
+    }
+
+    public double getW1_W4_err() {
+        if (W1_err == 0 || W4_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W1_err, W4_err);
+        }
+    }
+
+    public double getW2_W3_err() {
+        if (W2_err == 0 || W3_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W2_err, W3_err);
+        }
+    }
+
+    public double getW3_W4_err() {
+        if (W3_err == 0 || W4_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(W3_err, W4_err);
+        }
+    }
+
+    public double getJ_H_err() {
+        if (J_err == 0 || H_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, H_err);
+        }
+    }
+
+    public double getH_K_err() {
+        if (H_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(H_err, K_err);
+        }
+    }
+
+    public double getJ_K_err() {
+        if (J_err == 0 || K_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, K_err);
+        }
+    }
+
+    public double getK_W1_err() {
+        if (K_err == 0 || W1_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(K_err, W1_err);
+        }
+    }
+
+    public double getJ_W2_err() {
+        if (J_err == 0 || W2_err == 0) {
+            return 0;
+        } else {
+            return calculateAddSubError(J_err, W2_err);
         }
     }
 

@@ -1,13 +1,13 @@
 package astro.tool.box.tab;
 
-import astro.tool.box.container.Couple;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
 import static astro.tool.box.util.ExternalResources.*;
+import astro.tool.box.container.Couple;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseCatalogEntry;
@@ -23,15 +23,15 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.enumeration.Epoch;
 import astro.tool.box.enumeration.FileType;
-import astro.tool.box.main.FlipbookComponent;
+import astro.tool.box.container.FlipbookComponent;
+import astro.tool.box.container.NirImage;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.Counter;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -46,11 +46,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -80,6 +79,14 @@ public class ImageSeriesTab {
     private final Map<String, CatalogEntry> catalogInstances;
     private final CatalogQueryService catalogQueryService;
 
+    private List<Couple<String, NirImage>> timeSeries;
+    private List<Couple<String, BufferedImage>> desiImages;
+    private List<Couple<String, BufferedImage>> wiseImages;
+
+    private Timer timeSeriesTimer;
+    private Timer desiTimeSeriesTimer;
+    private Timer wiseTimeSeriesTimer;
+
     private JPanel mainPanel;
     private JPanel topPanel;
     private JPanel centerPanel;
@@ -90,11 +97,6 @@ public class ImageSeriesTab {
     private JTextField fovField;
     private JTable currentTable;
 
-    private Timer infraredTimeSeriesTimer;
-    private Timer opticalTimeSeriesTimer;
-    private Timer decalsTimeSeriesTimer;
-    private Timer wiseTimeSeriesTimer;
-
     private TwoMassCatalogEntry twoMassEntry;
     private AllWiseCatalogEntry allWiseEntry;
     private SdssCatalogEntry sdssEntry;
@@ -102,6 +104,7 @@ public class ImageSeriesTab {
     private GaiaDR3CatalogEntry gaiaDR3Entry;
     private CatWiseCatalogEntry catWiseEntry;
     private NoirlabCatalogEntry noirlabEntry;
+    private UkidssCatalogEntry ukidssEntry;
 
     private double targetRa;
     private double targetDec;
@@ -200,9 +203,11 @@ public class ImageSeriesTab {
                     if (targetRa == prevTargetRa && targetDec == prevTargetDec && fieldOfView == prevFieldOfView) {
                         return;
                     }
-                    infraredTimeSeriesTimer = null;
-                    opticalTimeSeriesTimer = null;
-                    decalsTimeSeriesTimer = null;
+                    timeSeries = new ArrayList<>();
+                    desiImages = new ArrayList<>();
+                    wiseImages = new ArrayList<>();
+                    timeSeriesTimer = null;
+                    desiTimeSeriesTimer = null;
                     wiseTimeSeriesTimer = null;
                     if (centerPanel.getComponentCount() > 0) {
                         centerPanel.removeAll();
@@ -217,6 +222,7 @@ public class ImageSeriesTab {
                     gaiaDR3Entry = null;
                     catWiseEntry = null;
                     noirlabEntry = null;
+                    ukidssEntry = null;
                     prevTargetRa = targetRa;
                     prevTargetDec = targetDec;
                     prevFieldOfView = fieldOfView;
@@ -237,21 +243,13 @@ public class ImageSeriesTab {
                         sizeField.setText(String.valueOf(fieldOfView));
                         sizeField.addActionListener(actionListener);
                         imageViewerTab.getZoomSlider().setValue(250);
-                        imageViewerTab.getEpochs().setSelectedItem(Epoch.YEAR);
+                        imageViewerTab.getSkipIntermediateEpochs().setSelected(false);
+                        imageViewerTab.createFlipbook();
 
                         CompletableFuture.supplyAsync(() -> {
                             try {
                                 setWaitCursor();
-                                displayDssImages(targetRa, targetDec, fieldOfView);
-                                display2MassImages(targetRa, targetDec, fieldOfView);
-                                displaySdssImages(targetRa, targetDec, fieldOfView);
-                                displaySpitzerImages(targetRa, targetDec, fieldOfView);
-                                displayAllwiseImages(targetRa, targetDec, fieldOfView);
-                                displayPs1Images(targetRa, targetDec, fieldOfView);
-                                displayDecalsImages(targetRa, targetDec, fieldOfView);
-                                displayTimeSeries(targetRa, targetDec, fieldOfView);
-                                displayDecalsTimeSeries(targetRa, targetDec, fieldOfView);
-                                displayWiseTimeSeries();
+                                displayImages(targetRa, targetDec, fieldOfView);
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
                                 showExceptionDialog(baseFrame, ex);
@@ -320,8 +318,9 @@ public class ImageSeriesTab {
                                 if (noirlabEntry != null && noirlabEntry.getNdet() >= 5 && noirlabEntry.getDelta_mjd() >= 180) {
                                     addProperMotionEntry(noirlabEntry, resultRows);
                                 }
+                                addProperMotionEntry(ukidssEntry, resultRows);
                                 if (!resultRows.isEmpty()) {
-                                    String[] columns = new String[]{"Proper motion origin (*)", "source 1", "dist. from target (arcsec)", "source 2", "dist. from target (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
+                                    String[] columns = new String[]{"Proper motion origin", "source 1", "dist. from target (arcsec)", "source 2", "dist. from target (arcsec)", "tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error", "pmDE error"};
                                     Object[][] rows = new Object[][]{};
                                     JTable resultTable = new JTable(resultRows.toArray(rows), columns);
                                     resultTable.setAutoCreateRowSorter(true);
@@ -345,6 +344,8 @@ public class ImageSeriesTab {
                                                 activateSelectedCatalogOverlay(imageViewerTab, catWiseEntry);
                                             } else if (label.contains(NoirlabCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, noirlabEntry);
+                                            } else if (label.contains(UkidssCatalogEntry.CATALOG_NAME)) {
+                                                activateSelectedCatalogOverlay(imageViewerTab, ukidssEntry);
                                             }
                                             tabbedPane.setSelectedIndex(3);
                                         }
@@ -380,8 +381,9 @@ public class ImageSeriesTab {
                                     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
                                     container.add(new JScrollPane(resultTable));
                                     JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                                    messagePanel.add(new JLabel(red("(*) Please check that all the sources listed above correspond to the same object!")));
-                                    messagePanel.add(new JLabel("Clicking on any row above will take you to the Image Viewer with the appropriate overlays enabled."));
+                                    messagePanel.add(new JLabel(red("Warning:")));
+                                    messagePanel.add(new JLabel("The entries listed above do not necessarily belong to the same object."));
+                                    messagePanel.add(new JLabel("Clicking on an entry will take you to the Image Viewer with the appropriate overlays enabled."));
                                     container.add(messagePanel);
                                     bottomPanel.addTab("Proper motions", container);
                                     bottomPanel.setSelectedIndex(bottomPanel.getTabCount() - 1);
@@ -419,14 +421,11 @@ public class ImageSeriesTab {
     }
 
     private void restartTimers() {
-        if (infraredTimeSeriesTimer != null) {
-            infraredTimeSeriesTimer.restart();
+        if (timeSeriesTimer != null) {
+            timeSeriesTimer.restart();
         }
-        if (opticalTimeSeriesTimer != null) {
-            opticalTimeSeriesTimer.restart();
-        }
-        if (decalsTimeSeriesTimer != null) {
-            decalsTimeSeriesTimer.restart();
+        if (desiTimeSeriesTimer != null) {
+            desiTimeSeriesTimer.restart();
         }
         if (wiseTimeSeriesTimer != null) {
             wiseTimeSeriesTimer.restart();
@@ -434,14 +433,11 @@ public class ImageSeriesTab {
     }
 
     private void stopTimers() {
-        if (infraredTimeSeriesTimer != null) {
-            infraredTimeSeriesTimer.stop();
+        if (timeSeriesTimer != null) {
+            timeSeriesTimer.stop();
         }
-        if (opticalTimeSeriesTimer != null) {
-            opticalTimeSeriesTimer.stop();
-        }
-        if (decalsTimeSeriesTimer != null) {
-            decalsTimeSeriesTimer.stop();
+        if (desiTimeSeriesTimer != null) {
+            desiTimeSeriesTimer.stop();
         }
         if (wiseTimeSeriesTimer != null) {
             wiseTimeSeriesTimer.stop();
@@ -461,7 +457,7 @@ public class ImageSeriesTab {
     }
 
     private void addProperMotionEntry(ProperMotionCatalog entry, List<String[]> resultRows) {
-        if (entry != null) {
+        if (entry != null && entry.getTotalProperMotion() > 0) {
             double tpm = entry.getTotalProperMotion();
             double pmRa = entry.getPmra();
             double pmDec = entry.getPmdec();
@@ -477,33 +473,46 @@ public class ImageSeriesTab {
         }
     }
 
-    private void displayDssImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DSS"));
+    private void displayImages(double targetRa, double targetDec, int size) throws Exception {
+        JPanel bandPanel;
+
+        // ______________________________
+        //           DSS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
+        int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
+        int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
+        int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
+        int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
+        //int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
+        int year_2ir_1r_1b = year_2ir;
+
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss1_blue"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 B", year_1b)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss1_red"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 R", year_1r)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss2ukstu_blue"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 B", year_2b)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss2ukstu_red"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 R", year_2r)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "poss2ukstu_ir"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR", year_2ir)));
+            timeSeries.add(new Couple(getImageLabel("DSS IR", year_2ir), new NirImage(year_2ir, image)));
         }
         image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "dss2IR-dss1Red-dss1Blue"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR-R-B", year_2ir_1r_1b)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -511,27 +520,33 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void display2MassImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("2MASS"));
+        // ______________________________
+        //           2MASS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_j = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=j");
+        int year_h = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=h");
+        int year_k = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=k");
+        int year_k_h_j = getMeanEpoch(year_k, year_h, year_j);
 
-        BufferedImage image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "J"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS J", year_j)));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "H"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS H", year_h)));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "K"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K", year_k)));
+            timeSeries.add(new Couple(getImageLabel("2MASS K", year_k), new NirImage(year_k, image)));
         }
         image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "K-H-J"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K-H-J", year_k_h_j)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -539,35 +554,43 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void displaySdssImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("SDSS"));
+        // ______________________________
+        //           SDSS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_u = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
+        int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
+        int year_r = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=r");
+        int year_i = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=i");
+        int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
+        int year_z_g_u = getMeanEpoch(year_z, year_g, year_u);
 
-        BufferedImage image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "u"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS u", year_u)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "g"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS g", year_g)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "r"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS r", year_r)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "i"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS i", year_i)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "z"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z", year_z)));
+            timeSeries.add(new Couple(getImageLabel("SDSS z", year_z), new NirImage(year_z, image)));
         }
         image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "z-g-u"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z-g-u", year_z_g_u)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -575,35 +598,43 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void displaySpitzerImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("Spitzer (SEIP)"));
+        // ______________________________
+        //           Spitzer
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_ch1 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1");
+        int year_ch2 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2");
+        int year_ch3 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3");
+        int year_ch4 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4");
+        int year_mips24 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24");
+        int year_ch3_ch2_ch1 = getMeanEpoch(year_ch3, year_ch2, year_ch1);
 
-        BufferedImage image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC1"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC1", year_ch1)));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC2"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC2", year_ch2)));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC3"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3", year_ch3)));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "IRAC4"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC4", year_ch4)));
+            timeSeries.add(new Couple(getImageLabel("IIRAC4", year_ch4), new NirImage(SPITZER_EPOCH, image)));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "MIPS24"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("MIPS24", year_mips24)));
         }
         image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "3-color"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3-2-1", year_ch3_ch2_ch1)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -611,31 +642,38 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void displayAllwiseImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("AllWISE"));
+        // ______________________________
+        //           WISE
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        int year_w1 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=1");
+        int year_w2 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
+        int year_w3 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=3");
+        int year_w4 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=4");
+        int year_w4_w2_w1 = getMeanEpoch(year_w4, year_w2, year_w1);
 
-        BufferedImage image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W1"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("WISE W1", year_w1)));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W2"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("WISE W2", year_w2)));
+            timeSeries.add(new Couple(getImageLabel("WISE W2", year_w2), new NirImage(ALLWISE_EPOCH, image)));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W3"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("WISE W3", year_w3)));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W4"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4", year_w4)));
         }
         image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "W4-W2-W1"));
+            bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4-W2-W1", year_w4_w2_w1)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
@@ -643,201 +681,139 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void displayPs1Images(double targetRa, double targetDec, int size) throws Exception {
-        // Fetch file names for Pan-STARRS filters
-        SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
-        if (imageInfos.isEmpty()) {
-            return;
-        }
-
-        // Fetch images for Pan-STARRS filters
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("Pan-STARRS"));
-
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size), "g"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size), "r"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size), "i"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size), "z"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size), "y"));
-        bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size), "y-i-g"));
-
-        if (bandPanel.getComponentCount() > 0) {
-            bandPanel.add(buildLinkPanel(getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP), "WARP images"));
-            centerPanel.add(bandPanel);
-            baseFrame.setVisible(true);
-            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-        }
-    }
-
-    private void displayDecalsImages(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DECaLS"));
-
-        BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "g");
-        if (image != null) {
-            image = convertToGray(image);
-            bandPanel.add(buildImagePanel(image, "g"));
-        }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "r");
-        if (image != null) {
-            image = convertToGray(image);
-            bandPanel.add(buildImagePanel(image, "r"));
-        }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "z");
-        if (image != null) {
-            image = convertToGray(image);
-            bandPanel.add(buildImagePanel(image, "z"));
-        }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "g-r-z"));
-        }
-
-        if (bandPanel.getComponentCount() > 0) {
-            bandPanel.add(buildLinkPanel(getLegacySingleExposuresUrl(targetRa, targetDec, "ls-dr9"), "Single exposures"));
-            centerPanel.add(bandPanel);
-            baseFrame.setVisible(true);
-            scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-        }
-    }
-
-    private void displayTimeSeries(double targetRa, double targetDec, int size) throws Exception {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("Cross survey time series", Color.RED));
-
-        List<Couple<String, BufferedImage>> infraredImageList = new ArrayList<>();
-        List<Couple<String, BufferedImage>> opticalImageList = new ArrayList<>();
-
-        BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DSS"));
-            image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
-            if (image != null) {
-                infraredImageList.add(new Couple("DSS2 - IR", image));
+        // ______________________________
+        //           UKIDSS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        if (targetDec > -5) {
+            Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+            if (!images.isEmpty()) {
+                bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                for (Entry<String, NirImage> entry : images.entrySet()) {
+                    String band = entry.getKey();
+                    NirImage nirImage = entry.getValue();
+                    image = nirImage.getImage();
+                    int year = nirImage.getYear();
+                    bandPanel.add(buildImagePanel(image, getImageLabel(UKIDSS_LABEL + " " + band, year)));
+                    if (band.equals("K")) {
+                        timeSeries.add(new Couple(getImageLabel(UKIDSS_LABEL + " " + band, year), new NirImage(year, image)));
+                    }
+                }
+                if (bandPanel.getComponentCount() > 0) {
+                    centerPanel.add(bandPanel);
+                    baseFrame.setVisible(true);
+                    scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+                }
             }
         }
-        image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "2MASS"));
-            image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
-            if (image != null) {
-                infraredImageList.add(new Couple("2MASS - K", image));
+
+        // ______________________________
+        //           VHS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        if (targetDec < 5) {
+            Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
+            if (!images.isEmpty()) {
+                bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                for (Entry<String, NirImage> entry : images.entrySet()) {
+                    String band = entry.getKey();
+                    NirImage nirImage = entry.getValue();
+                    image = nirImage.getImage();
+                    int year = nirImage.getYear();
+                    bandPanel.add(buildImagePanel(image, getImageLabel(VHS_LABEL + " " + band, year)));
+                    if (band.equals("K")) {
+                        timeSeries.add(new Couple(getImageLabel(VHS_LABEL + " " + band, year), new NirImage(year, image)));
+                    }
+                }
+                if (bandPanel.getComponentCount() > 0) {
+                    centerPanel.add(bandPanel);
+                    baseFrame.setVisible(true);
+                    scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+                }
             }
         }
-        image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "SDSS"));
-            opticalImageList.add(new Couple("SDSS", image));
-        }
-        image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "Spitzer"));
-            image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
-            if (image != null) {
-                infraredImageList.add(new Couple("Spitzer - CH4", image));
-            }
-        }
-        image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "AllWISE"));
-            image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
-            if (image != null) {
-                infraredImageList.add(new Couple("WISE - W2", image));
-            }
-        }
-        SortedMap<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
+
+        // ______________________________
+        //           Pan-STARRS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
         if (!imageInfos.isEmpty()) {
-            image = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size);
-            bandPanel.add(buildImagePanel(image, "Pan-STARRS"));
-            opticalImageList.add(new Couple("Pan-STARRS", image));
+            Map<String, Double> years = getPs1Epochs(targetRa, targetDec);
+            year_g = years.get("g").intValue();
+            year_r = years.get("r").intValue();
+            year_i = years.get("i").intValue();
+            year_z = years.get("z").intValue();
+            int year_y = years.get("y").intValue();
+            int year_y_i_g = getMeanEpoch(year_y, year_i, year_g);
+
+            bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), getImageLabel("PS1 g", year_g)));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), getImageLabel("PS1 r", year_r)));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), getImageLabel("PS1 i", year_i)));
+            bandPanel.add(buildImagePanel(image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
+            timeSeries.add(new Couple(getImageLabel("PS1 z", year_z), new NirImage(year_z, image)));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
+            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
+
+            if (bandPanel.getComponentCount() > 0) {
+                bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP)));
+                centerPanel.add(bandPanel);
+                baseFrame.setVisible(true);
+                scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+            }
         }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "g-r-z");
+
+        // ______________________________
+        //           DESI LS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
         if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS"));
-            opticalImageList.add(new Couple("DECaLS", image));
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g", DESI_LS_DR_LABEL)));
         }
-
-        infraredTimeSeriesTimer = new Timer(500, null);
-        createTimeSeriesTimer(bandPanel, infraredImageList, infraredTimeSeriesTimer);
-
-        opticalTimeSeriesTimer = new Timer(500, null);
-        createTimeSeriesTimer(bandPanel, opticalImageList, opticalTimeSeriesTimer);
-
-        JPanel buttonPanel = buildButtonPanel("Save as GIF");
-        bandPanel.add(buttonPanel);
-
-        if (infraredImageList.size() > 1) {
-            JButton saveInfraredButton = new JButton("Infrared series");
-            buttonPanel.add(saveInfraredButton);
-            saveInfraredButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    saveAnimatedGif(infraredImageList, buttonPanel);
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
+        image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS r", DESI_LS_DR_LABEL)));
         }
-
-        if (opticalImageList.size() > 1) {
-            JButton saveOpticalButton = new JButton("Optical series");
-            buttonPanel.add(saveOpticalButton);
-            saveOpticalButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    saveAnimatedGif(opticalImageList, buttonPanel);
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
+        image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS z", DESI_LS_DR_LABEL)));
+            timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+        }
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g-r-z", DESI_LS_DR_LABEL)));
         }
 
         if (bandPanel.getComponentCount() > 0) {
+            bandPanel.add(createHyperlink("Single exposures", getLegacySingleExposuresUrl(targetRa, targetDec, DESI_LS_DR_PARAM)));
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void displayDecalsTimeSeries(double targetRa, double targetDec, int size) {
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("DECaLS time series", Color.RED));
+        // ________________________________________
+        //           Cross survey time series
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
-
-        BufferedImage image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr5");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
-            imageList.add(new Couple("DECaLS DR5", image));
-        }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "decals-dr7");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
-            imageList.add(new Couple("DECaLS DR7", image));
-        }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr8");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "LS DR8"));
-            imageList.add(new Couple("LS DR8", image));
-        }
-        image = retrieveDecalsImage(targetRa, targetDec, size, "grz", "ls-dr9");
-        if (image != null) {
-            bandPanel.add(buildImagePanel(image, "LS DR9"));
-            imageList.add(new Couple("LS DR9", image));
+        timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+        List<Couple<String, BufferedImage>> imageList = new ArrayList();
+        for (Couple<String, NirImage> couple : timeSeries) {
+            bandPanel.add(buildImagePanel(couple.getB().getImage(), couple.getA()));
+            imageList.add(new Couple(couple.getA(), couple.getB().getImage()));
         }
 
-        if (imageList.size() > 2) {
-            decalsTimeSeriesTimer = new Timer(500, null);
-            createTimeSeriesTimer(bandPanel, imageList, decalsTimeSeriesTimer);
+        timeSeriesTimer = new Timer(500, null);
+        createTimeSeriesTimer(bandPanel, imageList, timeSeriesTimer);
 
-            JPanel buttonPanel = buildButtonPanel("Save as GIF");
-            bandPanel.add(buttonPanel);
-
-            JButton saveButton = new JButton("DECaLS series");
-            buttonPanel.add(saveButton);
+        if (timeSeries.size() > 1) {
+            JButton saveButton = new JButton("Save as GIF");
+            bandPanel.add(saveButton);
             saveButton.addActionListener((ActionEvent evt) -> {
                 try {
-                    saveAnimatedGif(imageList, buttonPanel);
+                    saveAnimatedGif(imageList, saveButton);
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
@@ -849,45 +825,84 @@ public class ImageSeriesTab {
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
         }
-    }
 
-    private void displayWiseTimeSeries() throws Exception {
-        FlipbookComponent[] flipbook = imageViewerTab.getFlipbook();
-        if (flipbook == null) {
-            return;
+        // ________________________________________
+        //           DESI LS time series
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "decals-dr5");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
+            desiImages.add(new Couple("DECaLS DR5", image));
+        }
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "decals-dr7");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
+            desiImages.add(new Couple("DECaLS DR7", image));
+        }
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr8");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "LS DR8"));
+            desiImages.add(new Couple("LS DR8", image));
+        }
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr9");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "LS DR9"));
+            desiImages.add(new Couple("LS DR9", image));
         }
 
-        JPanel bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bandPanel.setBorder(createEmptyBorder("WISE time series", Color.RED));
-
-        List<Couple<String, BufferedImage>> imageList = new ArrayList<>();
-
-        for (FlipbookComponent component : flipbook) {
-            BufferedImage image = imageViewerTab.processImage(component);
-            bandPanel.add(buildImagePanel(image, component.getTitle()));
-            imageList.add(new Couple(component.getTitle(), image));
+        if (desiImages.size() > 2) {
+            desiTimeSeriesTimer = new Timer(500, null);
+            createTimeSeriesTimer(bandPanel, desiImages, desiTimeSeriesTimer);
+            JButton saveButton = new JButton("Save as GIF");
+            bandPanel.add(saveButton);
+            saveButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    saveAnimatedGif(desiImages, saveButton);
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
         }
-
-        wiseTimeSeriesTimer = new Timer(500, null);
-        createTimeSeriesTimer(bandPanel, imageList, wiseTimeSeriesTimer);
-
-        JPanel buttonPanel = buildButtonPanel("Save as GIF");
-        bandPanel.add(buttonPanel);
-
-        JButton saveButton = new JButton("WISE series");
-        buttonPanel.add(saveButton);
-        saveButton.addActionListener((ActionEvent evt) -> {
-            try {
-                saveAnimatedGif(imageList, buttonPanel);
-            } catch (Exception ex) {
-                showExceptionDialog(baseFrame, ex);
-            }
-        });
 
         if (bandPanel.getComponentCount() > 0) {
             centerPanel.add(bandPanel);
             baseFrame.setVisible(true);
             scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+        }
+
+        // ________________________________________
+        //           WISE time series
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
+        if (flipbook != null) {
+            bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+            for (FlipbookComponent component : flipbook) {
+                image = imageViewerTab.processImage(component);
+                bandPanel.add(buildImagePanel(image, component.getTitle()));
+                wiseImages.add(new Couple(component.getTitle(), image));
+            }
+
+            wiseTimeSeriesTimer = new Timer(500, null);
+            createTimeSeriesTimer(bandPanel, wiseImages, wiseTimeSeriesTimer);
+
+            JButton saveButton = new JButton("Save as GIF");
+            bandPanel.add(saveButton);
+            saveButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    saveAnimatedGif(wiseImages, saveButton);
+                } catch (Exception ex) {
+                    showExceptionDialog(baseFrame, ex);
+                }
+            });
+
+            if (bandPanel.getComponentCount() > 0) {
+                centerPanel.add(bandPanel);
+                baseFrame.setVisible(true);
+                scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+            }
         }
     }
 
@@ -911,23 +926,10 @@ public class ImageSeriesTab {
         }
     }
 
-    private JPanel buildImagePanel(BufferedImage image, String imageHeader) {
+    private JPanel buildImagePanel(BufferedImage image, String imageLabel) {
+        JLabel label = addTextToImage(image, imageLabel);
         JPanel panel = new JPanel();
-        panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(new JLabel(new ImageIcon(drawCenterShape(image))));
-        return panel;
-    }
-
-    private JPanel buildLinkPanel(String link, String imageHeader) {
-        JPanel panel = new JPanel();
-        panel.setBorder(createEtchedBorder(imageHeader));
-        panel.add(createHyperlink("Display in web browser", link));
-        return panel;
-    }
-
-    private JPanel buildButtonPanel(String imageHeader) {
-        JPanel panel = new JPanel();
-        panel.setBorder(createEtchedBorder(imageHeader));
+        panel.add(label);
         return panel;
     }
 
@@ -963,6 +965,9 @@ public class ImageSeriesTab {
                         break;
                     case NoirlabCatalogEntry.CATALOG_NAME:
                         noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
+                        break;
+                    case UkidssCatalogEntry.CATALOG_NAME:
+                        ukidssEntry = (UkidssCatalogEntry) nearestEntry;
                         break;
                 }
             }
@@ -1058,6 +1063,9 @@ public class ImageSeriesTab {
                 break;
             case DesCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getDesOverlay().setSelected(true);
+                break;
+            case UkidssCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getUkidssOverlay().setSelected(true);
                 break;
         }
     }

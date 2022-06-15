@@ -16,15 +16,15 @@ public class ExternalResources {
     }
 
     // FoV in arcsec
-    public static String getWiseViewUrl(double degRA, double degDE, int fieldOfView) {
+    public static String getWiseViewUrl(double degRA, double degDE, int fieldOfView, int skip, int sep, int diff) {
         int zoom = 1500 / fieldOfView;
         zoom = zoom < 2 ? 2 : zoom;
-        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&zoom=" + zoom + "&band=3&speed=200&minbright=-50&maxbright=200&window=1.0&diff_window=1&linear=1&color=&border=0&gaia=0&invert=1&maxdyr=1&scandir=0&neowise=0&diff=0&outer_epochs=1&unique_window=1&smooth_scan=0&shift=0&pmra=0&pmdec=0&synth_a=0&synth_a_sub=0&synth_a_ra=&synth_a_dec=&synth_a_w1=&synth_a_w2=&synth_a_pmra=0&synth_a_pmdec=0&synth_a_mjd=&synth_b=0&synth_b_sub=0&synth_b_ra=&synth_b_dec=&synth_b_w1=&synth_b_w2=&synth_b_pmra=0&synth_b_pmdec=0&synth_b_mjd=";
+        return "http://byw.tools/wiseview#ra=" + degRA + "&dec=" + degDE + "&size=" + fieldOfView + "&zoom=" + zoom + "&band=3&speed=200&minbright=-50&maxbright=200&window=1.0&diff_window=1&linear=1&color=&border=0&gaia=0&invert=1&maxdyr=1&scandir=" + sep + "&neowise=0&diff=" + diff + "&outer_epochs=" + skip + "&unique_window=1&smooth_scan=" + diff + "&shift=0&pmra=0&pmdec=0&synth_a=0&synth_a_sub=0&synth_a_ra=&synth_a_dec=&synth_a_w1=&synth_a_w2=&synth_a_pmra=0&synth_a_pmdec=0&synth_a_mjd=&synth_b=0&synth_b_sub=0&synth_b_ra=&synth_b_dec=&synth_b_w1=&synth_b_w2=&synth_b_pmra=0&synth_b_pmdec=0&synth_b_mjd=";
     }
 
     // FoV in degrees
     public static String getFinderChartUrl(double degRA, double degDE, int fieldOfView) {
-        return "https://irsa.ipac.caltech.edu/applications/finderchart/?__action=table.search&request=%7B%22startIdx%22:0,%22pageSize%22:100,%22id%22:%22QueryFinderChartWeb%22,%22tbl_id%22:%22results%22,%22UserTargetWorldPt%22:%22" + degRA + ";" + degDE + ";EQ_J2000%22,%22imageSizeAndUnit%22:%22" + fieldOfView / DEG_ARCSEC + "%22,%22thumbnail_size%22:%22192%22,%22selectImage%22:%22dss,sdss,2mass,wise%22,%22searchCatalog%22:%22no%22,%22ckgDSS%22:%22dss1Blue,dss1Red,dss2Blue,dss2Red,dss2IR%22,%22ckgSDSS%22:%22u,g,r,z%22,%22ckg2MASS%22:%22j,h,k%22,%22ckgWISE%22:%22w1,w2,w3,w4%22,%22imageSearchOptions%22:%22closed%22,%22META_INFO%22:%7B%22title%22:%22QueryFinderChartWeb%22,%22tbl_id%22:%22results%22%7D%7D&options=%7B%22tbl_group%22:%22results%22,%22removable%22:false,%22showTitle%22:false,%22pageSize%22:100%7D";
+        return "https://irsa.ipac.caltech.edu/applications/finderchart/?__action=table.search&request=%7B%22startIdx%22%3A0%2C%22pageSize%22%3A100%2C%22id%22%3A%22QueryFinderChartWeb%22%2C%22tbl_id%22%3A%22upload-table-id%22%2C%22UserTargetWorldPt%22%3A%22" + degRA + "%3B" + degDE + "%3BEQ_J2000%22%2C%22imageSizeAndUnit%22%3A%22" + fieldOfView / DEG_ARCSEC + "%22%2C%22thumbnail_size%22%3A%22192%22%2C%22selectImage%22%3A%22wise%2C2mass%2Csdss%2Cseip%2Cdss%22%2C%22searchCatalog%22%3A%22no%22%2C%22ckgDSS%22%3A%22dss1Blue%2Cdss1Red%2Cdss2Blue%2Cdss2Red%2Cdss2IR%22%2C%22ckgSDSS%22%3A%22u%2Cg%2Cr%2Cz%2Ci%22%2C%22ckg2MASS%22%3A%22j%2Ch%2Ck%22%2C%22ckgWISE%22%3A%22w1%2Cw2%2Cw3%2Cw4%22%2C%22ckgSEIP%22%3A%22irac1%2Cirac2%2Cirac3%2Cirac4%2Cmips24%22%2C%22imageSearchOptions%22%3A%22closed%22%2C%22META_INFO%22%3A%7B%22title%22%3A%22QueryFinderChartWeb%22%2C%22tbl_id%22%3A%22upload-table-id%22%7D%7D&options=%7B%22tbl_group%22%3A%22upload-table-id%22%2C%22removable%22%3Afalse%2C%22showTitle%22%3Afalse%2C%22pageSize%22%3A100%7D";
     }
 
     public static String getLegacySkyViewerUrl(double degRA, double degDE, String layer) {
@@ -46,10 +46,6 @@ public class ExternalResources {
     public static String getVizierUrl(double degRA, double degDE, double degRadius, int maxRows, boolean allColumns) {
         String outAll = allColumns ? "&-out.all" : "";
         return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.max=" + maxRows + "&-out.add=_r&-sort=_r" + outAll;
-    }
-
-    public static String getSpecificCatalogsUrl(String catalogName, double degRA, double degDE, double degRadius) {
-        return "http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=" + catalogName + "&-c=" + degRA + "%20" + degDE + "&-c.rs=" + degRadius + "&-out.add=_r&-sort=_r";
     }
 
     public static String getTygoFormUrl() {

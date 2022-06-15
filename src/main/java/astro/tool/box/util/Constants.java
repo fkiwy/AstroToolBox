@@ -10,6 +10,10 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
+
+    public static final String VHS_SURVEY_URL = "http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=tilestack";
+
     public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
     public static final String NOAO_BASE_URL = "https://datalab.noirlab.edu/tap";
@@ -36,6 +40,22 @@ public class Constants {
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
+    public static final String UKIDSS_LABEL = "UKIDSS";
+
+    public static final String VHS_LABEL = "VHS";
+
+    public static final int SPITZER_EPOCH = 2003;
+
+    public static final int ALLWISE_EPOCH = 2010;
+
+    public static final int DESI_LS_EPOCH = 2019;
+
+    public static final String DESI_LS_DR_LABEL = "DR9";
+
+    public static final String DESI_LS_DR_PARAM = "ls-dr9";
+
+    public static final String MAMAJEK_VERSION = "2022.04.16";
+
     public static final String LINE_BREAK = "<br/>";
 
     public static final String LINE_SEP = System.lineSeparator();
@@ -47,6 +67,8 @@ public class Constants {
     public static final String SPLIT_CHAR_REPLACEMENT = ";";
 
     public static final String REGEXP_SPACES = "\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
+
+    public static final double PIXEL_SCALE_WISE = 2.75;
 
     public static final double PIXEL_SCALE_DECAM = 0.25;
 

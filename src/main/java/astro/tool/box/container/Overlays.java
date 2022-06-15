@@ -18,17 +18,17 @@ public class Overlays {
         TWOMASS,
         TESS,
         DES,
+        UKIDSS,
         SSO,
         PM_GAIA_DR2,
         PM_GAIA_DR3,
-        PM_NOIR_LAB,
-        PM_CAT_WISE,
+        PM_NOIRLAB,
+        PM_CATWISE,
+        PM_UKIDSS,
         GHOSTS,
         LATENTS,
         HALOS,
-        SPIKES,
-        ESTSPT,
-        POTBD
+        SPIKES
     }
 
     private boolean simbad;
@@ -46,17 +46,17 @@ public class Overlays {
     private boolean twomass;
     private boolean tess;
     private boolean des;
+    private boolean ukidss;
     private boolean sso;
     private boolean pmgaiadr2;
     private boolean pmgaiadr3;
     private boolean pmnoirlab;
     private boolean pmcatwise;
+    private boolean pmukidss;
     private boolean ghosts;
     private boolean latents;
     private boolean halos;
     private boolean spikes;
-    private boolean estspt;
-    private boolean potbd;
 
     public String serialize() {
         StringBuilder overlays = new StringBuilder();
@@ -105,6 +105,9 @@ public class Overlays {
         if (des) {
             overlays.append(ID.DES).append(",");
         }
+        if (ukidss) {
+            overlays.append(ID.UKIDSS).append(",");
+        }
         if (sso) {
             overlays.append(ID.SSO).append(",");
         }
@@ -115,10 +118,13 @@ public class Overlays {
             overlays.append(ID.PM_GAIA_DR3).append(",");
         }
         if (pmnoirlab) {
-            overlays.append(ID.PM_NOIR_LAB).append(",");
+            overlays.append(ID.PM_NOIRLAB).append(",");
         }
         if (pmcatwise) {
-            overlays.append(ID.PM_CAT_WISE).append(",");
+            overlays.append(ID.PM_CATWISE).append(",");
+        }
+        if (pmukidss) {
+            overlays.append(ID.PM_UKIDSS).append(",");
         }
         if (ghosts) {
             overlays.append(ID.GHOSTS).append(",");
@@ -131,12 +137,6 @@ public class Overlays {
         }
         if (spikes) {
             overlays.append(ID.SPIKES).append(",");
-        }
-        if (estspt) {
-            overlays.append(ID.ESTSPT).append(",");
-        }
-        if (potbd) {
-            overlays.append(ID.POTBD).append(",");
         }
         if (overlays.length() > 0) {
             overlays.setLength(overlays.lastIndexOf(","));
@@ -190,6 +190,9 @@ public class Overlays {
         if (overlays.contains(ID.DES.name())) {
             des = true;
         }
+        if (overlays.contains(ID.UKIDSS.name())) {
+            ukidss = true;
+        }
         if (overlays.contains(ID.SSO.name())) {
             sso = true;
         }
@@ -199,11 +202,14 @@ public class Overlays {
         if (overlays.contains(ID.PM_GAIA_DR3.name())) {
             pmgaiadr3 = true;
         }
-        if (overlays.contains(ID.PM_NOIR_LAB.name())) {
+        if (overlays.contains(ID.PM_NOIRLAB.name())) {
             pmnoirlab = true;
         }
-        if (overlays.contains(ID.PM_CAT_WISE.name())) {
+        if (overlays.contains(ID.PM_CATWISE.name())) {
             pmcatwise = true;
+        }
+        if (overlays.contains(ID.PM_UKIDSS.name())) {
+            pmukidss = true;
         }
         if (overlays.contains(ID.GHOSTS.name())) {
             ghosts = true;
@@ -216,12 +222,6 @@ public class Overlays {
         }
         if (overlays.contains(ID.SPIKES.name())) {
             spikes = true;
-        }
-        if (overlays.contains(ID.ESTSPT.name())) {
-            estspt = true;
-        }
-        if (overlays.contains(ID.POTBD.name())) {
-            potbd = true;
         }
     }
 
@@ -345,6 +345,14 @@ public class Overlays {
         this.des = des;
     }
 
+    public boolean isUkidss() {
+        return ukidss;
+    }
+
+    public void setUkidss(boolean ukidss) {
+        this.ukidss = ukidss;
+    }
+
     public boolean isSso() {
         return sso;
     }
@@ -385,6 +393,14 @@ public class Overlays {
         this.pmcatwise = pmcatwise;
     }
 
+    public boolean isPmukidss() {
+        return pmukidss;
+    }
+
+    public void setPmukidss(boolean pmukidss) {
+        this.pmukidss = pmukidss;
+    }
+
     public boolean isGhosts() {
         return ghosts;
     }
@@ -415,22 +431,6 @@ public class Overlays {
 
     public void setSpikes(boolean spikes) {
         this.spikes = spikes;
-    }
-
-    public boolean isEstspt() {
-        return estspt;
-    }
-
-    public void setEstspt(boolean estspt) {
-        this.estspt = estspt;
-    }
-
-    public boolean isPotbd() {
-        return potbd;
-    }
-
-    public void setPotbd(boolean potbd) {
-        this.potbd = potbd;
     }
 
 }

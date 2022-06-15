@@ -1,5 +1,7 @@
 package astro.tool.box.main;
 
+import astro.tool.box.util.GifSequencer;
+import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.tab.SettingsTab.*;
@@ -24,9 +26,13 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.component.TranslucentLabel;
+import astro.tool.box.container.MjdEpoch;
+import astro.tool.box.container.NirImage;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.Alignment;
@@ -61,8 +67,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -77,6 +87,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -84,13 +95,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -123,15 +134,16 @@ import org.jfree.chart.JFreeChart;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class ModuleHelper {
+public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.4.1";
+    public static final String PGM_VERSION = "2.5.0";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
+    public static final String INFO_ICON = "&#128712";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -140,16 +152,16 @@ public class ModuleHelper {
     public static int BASE_FRAME_HEIGHT = 875;
 
     public static Image getToolBoxImage() {
-        ImageIcon icon = new ImageIcon(ModuleHelper.class.getResource("/icons/toolbox.png"));
+        ImageIcon icon = new ImageIcon(ToolboxHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();
     }
 
     public static ImageIcon getInfoIcon() {
-        return new ImageIcon(ModuleHelper.class.getResource("/icons/info.png"));
+        return new ImageIcon(ToolboxHelper.class.getResource("/icons/info.png"));
     }
 
     public static Map<String, CatalogEntry> getCatalogInstances() {
-        Map<String, CatalogEntry> catalogInstances = new LinkedHashMap<>();
+        Map<String, CatalogEntry> catalogInstances = new LinkedHashMap();
 
         // Plug in catalogs here
         SimbadCatalogEntry simbadCatalogEntry = new SimbadCatalogEntry();
@@ -180,15 +192,23 @@ public class ModuleHelper {
         catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
         DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
         catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
+        UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
+        catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
 
         return catalogInstances;
     }
 
     public static JLabel createHyperlink(String label, String uri) {
-        JLabel hyperlink = new JLabel(label);
-        hyperlink.setForeground(JColor.LINK_BLUE.val);
-        hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        hyperlink.addMouseListener(new MouseAdapter() {
+        return createHyperlink(new JLabel(label), uri);
+    }
+
+    public static JLabel createHyperlink(JLabel label, String uri) {
+        label.setForeground(JColor.LINK_BLUE.val);
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        if (label.getMouseListeners().length > 0) {
+            label.removeMouseListener(label.getMouseListeners()[0]);
+        }
+        label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -197,18 +217,8 @@ public class ModuleHelper {
                     throw new RuntimeException(ex);
                 }
             }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                hyperlink.setText(html("<a href=''>" + label + "</a>"));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                hyperlink.setText(label);
-            }
         });
-        return hyperlink;
+        return label;
     }
 
     public static void showScrollableDialog(JFrame baseFrame, String title, String message) {
@@ -441,7 +451,7 @@ public class ModuleHelper {
     }
 
     public static TableRowSorter createCatalogTableSorter(DefaultTableModel defaultTableModel, CatalogEntry entry) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        TableRowSorter<TableModel> sorter = new TableRowSorter(defaultTableModel);
         List<CatalogElement> elements = entry.getCatalogElements();
         for (int i = 0; i < elements.size(); i++) {
             sorter.setComparator(i, elements.get(i).getComparator());
@@ -467,7 +477,7 @@ public class ModuleHelper {
     }
 
     public static TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel, List<String[]> rows) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>();
+        TableRowSorter<TableModel> sorter = new TableRowSorter();
         addComparatorsToTableSorter(sorter, defaultTableModel, rows);
         return sorter;
     }
@@ -487,7 +497,7 @@ public class ModuleHelper {
     }
 
     private static Map<Integer, BasicDataType> determineBasicTypes(List<String[]> rows) {
-        Map<Integer, BasicDataType> types = new HashMap<>();
+        Map<Integer, BasicDataType> types = new HashMap();
         rows.forEach((row) -> {
             for (int i = 0; i < row.length; i++) {
                 String columnValue = row[i];
@@ -568,7 +578,7 @@ public class ModuleHelper {
     }
 
     public static TableRowSorter createResultTableSorter(DefaultTableModel defaultTableModel) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(defaultTableModel);
+        TableRowSorter<TableModel> sorter = new TableRowSorter(defaultTableModel);
         int i = 0;
         sorter.setComparator(i++, getIntegerComparator());
         sorter.setComparator(i++, getIntegerComparator());
@@ -589,7 +599,7 @@ public class ModuleHelper {
 
     public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors, SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
         List<LookupResult> results = spectralTypeLookupService.lookup(colors);
-        List<String> spectralTypes = new ArrayList<>();
+        List<String> spectralTypes = new ArrayList();
         results.forEach(entry -> {
             String spectralType = entry.getSpt();
             if (includeColors) {
@@ -723,7 +733,7 @@ public class ModuleHelper {
     public static String copyObjectInfo(CatalogEntry catalogEntry, List<LookupResult> mainSequenceResults, List<LookupResult> brownDwarfsResults, DistanceLookupService distanceLookupService) {
         StringBuilder toCopy = new StringBuilder();
         toCopy.append(catalogEntry.getEntryData());
-        toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type evaluation:");
+        toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type estimates:");
         if (mainSequenceResults != null) {
             toCopy.append(LINE_SEP).append("* Main sequence table:");
             mainSequenceResults.forEach(entry -> {
@@ -735,7 +745,7 @@ public class ModuleHelper {
             brownDwarfsResults.forEach(entry -> {
                 toCopy.append(LINE_SEP).append("  + ").append(entry.getColorKey().val).append(" = ").append(roundTo3DecNZ(entry.getColorValue())).append(" -> ").append(entry.getSpt());
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(entry.getSpt(), catalogEntry.getBands());
-                toCopy.append(LINE_SEP).append("      Distance evaluation for ").append(entry.getSpt()).append(":");
+                toCopy.append(LINE_SEP).append("      Distance estimates for ").append(entry.getSpt()).append(":");
                 distanceResults.forEach(result -> {
                     toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ").append(roundTo3DecNZ(result.getBandValue())).append(" -> ").append(roundTo3DecNZ(result.getDistance())).append(" pc");
                 });
@@ -814,26 +824,8 @@ public class ModuleHelper {
         return null;
     }
 
-    public static BufferedImage zoom(BufferedImage image, int zoom) {
-        zoom = zoom == 0 ? 1 : zoom;
-        Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
-        BufferedImage zoomedImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-        Graphics graphics = zoomedImage.createGraphics();
-        graphics.drawImage(scaledImage, 0, 0, null);
-        graphics.dispose();
-        return zoomedImage;
-    }
-
-    public static BufferedImage convertToGray(BufferedImage colorImage) {
-        BufferedImage grayImage = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        Graphics graphics = grayImage.getGraphics();
-        graphics.drawImage(colorImage, 0, 0, null);
-        graphics.dispose();
-        return grayImage;
-    }
-
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
-        List<JLabel> subjects = new ArrayList<>();
+        List<JLabel> subjects = new ArrayList();
         try {
             String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
             String response = readResponse(establishHttpConnection(url), "Zooniverse");
@@ -849,9 +841,92 @@ public class ModuleHelper {
         return subjects;
     }
 
+    public static BufferedImage getHipsToFits(double targetRa, double targetDec, int size, String survey, String band) {
+        BufferedImage bi;
+        String ra = "" + targetRa;
+        String dec = targetDec > 0 ? "+" + targetDec : "" + targetDec;
+        String imageUrl = String.format("https://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips=%s/%s&width=300&height=300&fov=%s&projection=TAN&coordsys=icrs&rotation_angle=0.0&ra=%s&dec=%s&format=jpg", survey, band, roundTo6DecNZ(size / 3600f), ra, dec);
+        try {
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            bi = ImageIO.read(stream);
+            if (isNullImage(bi)) {
+                bi = null;
+            }
+        } catch (IOException ex) {
+            bi = null;
+        }
+        return bi;
+    }
+
+    private static boolean isNullImage(BufferedImage image) {
+        int xmin = image.getMinX();
+        int ymin = image.getMinY();
+
+        int ymax = ymin + image.getHeight();
+        int xmax = xmin + image.getWidth();
+
+        int pixelCount = 0;
+        int blackCount = 0;
+        int whiteCount = 0;
+
+        for (int i = xmin; i < xmax; i++) {
+            for (int j = ymin; j < ymax; j++) {
+                int pixel = image.getRGB(i, j);
+                if (pixel == -16777216) {
+                    blackCount++;
+                }
+                if (pixel == -1) {
+                    whiteCount++;
+                }
+                pixelCount++;
+            }
+        }
+        return blackCount > pixelCount * 0.5 || whiteCount > pixelCount * 0.5;
+    }
+
+    public static String getImageLabel(String text, int epoch) {
+        return text + (epoch > 0 ? " " + epoch : "");
+    }
+
+    public static String getImageLabel(String text, String epoch) {
+        return text + " " + epoch;
+    }
+
+    public static int getMeanEpoch(int... epochs) {
+        int sum = 0;
+        int i = 0;
+        for (int epoch : epochs) {
+            if (epoch != 0) {
+                sum += epoch;
+                i++;
+            }
+        }
+        return i == 0 ? i : sum / i;
+    }
+
+    public static int getEpoch(double targetRa, double targetDec, double size, String survey, String band) {
+        try {
+            String downloadUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
+            String response = readResponse(establishHttpConnection(downloadUrl), "IRSA");
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("obsdate")) {
+                        String[] parts = line.split("<obsdate>");
+                        parts = parts[1].split("-");
+                        return Integer.valueOf(parts[0]);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+        }
+        return 0;
+    }
+
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
         BufferedImage bi;
-        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=large&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
+        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -862,33 +937,96 @@ public class ModuleHelper {
         return bi;
     }
 
-    public static SortedMap<String, String> getPs1FileNames(double targetRa, double targetDec) throws IOException {
-        SortedMap<String, String> fileNames = new TreeMap<>();
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
-        String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
-        try (Scanner scanner = new Scanner(response)) {
-            String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-            int filter = 0;
-            int fileName = 0;
-            for (int i = 0; i < columnNames.length; i++) {
-                if (columnNames[i].equals("filter")) {
-                    filter = i;
+    public static int getPs1Epoch(double targetRa, double targetDec, String filters) {
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, filters);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int mjd = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("mjd")) {
+                        mjd = i;
+                        break;
+                    }
                 }
-                if (columnNames[i].equals("filename")) {
-                    fileName = i;
+                int i = 0;
+                double epoch = 0;
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    epoch += toDouble(columnValues[mjd]);
+                    i++;
+                }
+                return convertMJDToDate(epoch / i).get(ChronoField.YEAR);
+            }
+        } catch (Exception ex) {
+        }
+        return 0;
+    }
+
+    public static Map<String, Double> getPs1Epochs(double targetRa, double targetDec) {
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&type=warp&sep=comma", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int filter = 0;
+                int mjd = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filter")) {
+                        filter = i;
+                    }
+                    if (columnNames[i].equals("mjd")) {
+                        mjd = i;
+                    }
+                }
+                List<MjdEpoch> epochs = new ArrayList();
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    String band = columnValues[filter];
+                    double epoch = toDouble(columnValues[mjd]);
+                    epochs.add(new MjdEpoch(band, convertMJDToDate(epoch).get(ChronoField.YEAR)));
+
+                }
+                return epochs.stream().collect(Collectors.groupingBy(MjdEpoch::getBand, Collectors.averagingInt(MjdEpoch::getEpoch)));
+
+            }
+        } catch (Exception ex) {
+        }
+        return new HashMap();
+    }
+
+    public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) {
+        Map<String, String> fileNames = new LinkedHashMap();
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int filter = 0;
+                int fileName = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filter")) {
+                        filter = i;
+                    }
+                    if (columnNames[i].equals("filename")) {
+                        fileName = i;
+                    }
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    fileNames.put(columnValues[filter], columnValues[fileName]);
                 }
             }
-            while (scanner.hasNextLine()) {
-                String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
-                fileNames.put(columnValues[filter], columnValues[fileName]);
-            }
+        } catch (Exception ex) {
+            writeErrorLog(ex);
         }
         return fileNames;
     }
 
-    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size) {
+    public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size, boolean invert) {
         BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames, targetRa, targetDec, size * 4, 256);
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
@@ -899,12 +1037,12 @@ public class ModuleHelper {
         return bi;
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band) {
-        return retrieveDecalsImage(targetRa, targetDec, size, band, "ls-dr9");
+    public static BufferedImage retrieveDesiImage(double targetRa, double targetDec, int size, String band, boolean invert) {
+        return retrieveDesiImage(targetRa, targetDec, size, band, invert, DESI_LS_DR_PARAM);
     }
 
-    public static BufferedImage retrieveDecalsImage(double targetRa, double targetDec, int size, String band, String layer) {
-        BufferedImage bi;
+    public static BufferedImage retrieveDesiImage(double targetRa, double targetDec, int size, String band, boolean invert, String layer) {
+        BufferedImage image;
         if (band == null) {
             band = "";
         }
@@ -915,20 +1053,240 @@ public class ModuleHelper {
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-            bi = ImageIO.read(stream);
-            bi = zoom(bi, 256);
+            image = ImageIO.read(stream);
+            if (invert) {
+                image = convertToGray(image);
+                image = invertImage(image);
+            }
+            image = zoomImage(image, 256);
         } catch (IOException ex) {
-            bi = null;
+            image = null;
         }
-        return bi;
+        return image;
+    }
+
+    public static Map<String, NirImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size, String surveyUrl, String surveyLabel) throws Exception {
+        String imageSize = roundTo2DecNZ(size / 60f);
+        List<NirImage> nirImages = new ArrayList();
+        String[] filterIds = new String[]{"2", "3", "4", "5"};
+        for (String filterId : filterIds) {
+            String downloadUrl = String.format(surveyUrl, targetRa, targetDec, filterId, imageSize, imageSize);
+            String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
+            int i = 0;
+            String imageUrl = "";
+            String extNo = "";
+            String year = "";
+            try (Scanner scanner = new Scanner(response)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.contains("href")) {
+                        String[] parts = line.split("href=\"");
+                        parts = parts[1].split("\"");
+                        imageUrl = parts[0].replace("getImage", "getJImage");
+                        parts = line.split("extNo=");
+                        parts = parts[1].split("&");
+                        extNo = parts[0];
+                        i = 1;
+                    }
+                    if (i == 7) {
+                        try {
+                            String[] parts = line.split("<td nowrap>");
+                            parts = parts[1].split("-");
+                            year = parts[0];
+                        } catch (Exception ex) {
+                            year = "2010";
+                        }
+                        break;
+                    }
+                    if (i > 0) {
+                        i++;
+                    }
+                }
+            }
+            if (!imageUrl.isEmpty()) {
+                nirImages.add(new NirImage(filterId, extNo, Integer.valueOf(year), imageUrl));
+            }
+        }
+        Map<String, NirImage> images = new LinkedHashMap();
+        if (nirImages.isEmpty()) {
+            return images;
+        }
+        for (NirImage nirImage : nirImages) {
+            String band = getBand(nirImage.getFilderId());
+            String extNo = nirImage.getExtNo();
+            String imageUrl = nirImage.getImageUrl();
+            try {
+                HttpURLConnection connection = establishHttpConnection(imageUrl);
+                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                BufferedImage image = ImageIO.read(stream);
+                int width = image.getWidth();
+                int height = image.getHeight();
+                int offset = 2;
+                if (width > height + offset || width < height - offset) {
+                    return new LinkedHashMap();
+                }
+                if (surveyLabel.equals(UKIDSS_LABEL)) {
+                    // Rotate image
+                    switch (extNo) {
+                        case "1":
+                            image = rotateImage(image, 1);
+                            break;
+                        case "2":
+                            // No rotation necessary
+                            break;
+                        case "3":
+                            image = rotateImage(image, 3);
+                            break;
+                        case "4":
+                            image = rotateImage(image, 2);
+                            break;
+                    }
+                }
+                // Flip image
+                image = flipImage(image);
+                nirImage.setImage(image);
+                images.put(band, nirImage);
+            } catch (IOException ex) {
+            }
+        }
+        NirImage nir1 = images.get("K");
+        NirImage nir2 = images.get("H");
+        NirImage nir3 = images.get("J");
+        if (nir1 != null && nir2 != null && nir3 != null) {
+            BufferedImage i1 = nir1.getImage();
+            BufferedImage i2 = nir2.getImage();
+            BufferedImage i3 = nir3.getImage();
+            int y1 = nir1.getYear();
+            int y2 = nir2.getYear();
+            int y3 = nir3.getYear();
+            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
+            NirImage nirImage = new NirImage(getMeanEpoch(y1, y2, y3), colorImage);
+            images.put("K-H-J", nirImage);
+        } else if (nir1 != null && nir3 != null) {
+            BufferedImage i1 = nir1.getImage();
+            BufferedImage i3 = nir3.getImage();
+            int y1 = nir1.getYear();
+            int y3 = nir3.getYear();
+            BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
+            NirImage nirImage = new NirImage(getMeanEpoch(y1, y3), colorImage);
+            images.put("K-J", nirImage);
+        }
+        return images;
+    }
+
+    private static String getBand(String filterId) {
+        switch (filterId) {
+            case "2":
+                return "Y";
+            case "3":
+                return "J";
+            case "4":
+                return "H";
+            case "5":
+                return "K";
+            default:
+                return "?";
+        }
+    }
+
+    public static BufferedImage copyImage(BufferedImage bufferImage) {
+        ColorModel colorModel = bufferImage.getColorModel();
+        WritableRaster raster = bufferImage.copyData(null);
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+    }
+
+    public static BufferedImage zoomImage(BufferedImage image, int zoom) {
+        zoom = zoom == 0 ? 1 : zoom;
+        Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
+        BufferedImage zoomedImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics graphics = zoomedImage.createGraphics();
+        graphics.drawImage(scaledImage, 0, 0, null);
+        graphics.dispose();
+        return zoomedImage;
+    }
+
+    public static BufferedImage invertImage(BufferedImage image) {
+        BufferedImage invertedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                int rgb = image.getRGB(x, y);
+                Color c = new Color(rgb, true);
+                c = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
+                invertedImage.setRGB(x, y, c.getRGB());
+            }
+        }
+        return invertedImage;
+    }
+
+    public static BufferedImage flipImage(BufferedImage image) {
+        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+        tx.translate(0, -image.getHeight(null));
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(image, null);
+    }
+
+    public static BufferedImage rotateImage(BufferedImage image, int numberOfQuadrants) {
+        if (numberOfQuadrants == 0) {
+            return image;
+        }
+        AffineTransform tx = AffineTransform.getQuadrantRotateInstance(numberOfQuadrants, image.getWidth() / 2, image.getHeight() / 2);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+        return op.filter(image, null);
+    }
+
+    public static BufferedImage convertToGray(BufferedImage colorImage) {
+        BufferedImage grayImage = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics graphics = grayImage.getGraphics();
+        graphics.drawImage(colorImage, 0, 0, null);
+        graphics.dispose();
+        return grayImage;
+    }
+
+    public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2) {
+        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < colorImage.getWidth(); x++) {
+            for (int y = 0; y < colorImage.getHeight(); y++) {
+                try {
+                    int rgb1 = i1.getRGB(x, y);
+                    int rgb2 = i2.getRGB(x, y);
+                    Color c1 = new Color(rgb1, true);
+                    Color c2 = new Color(rgb2, true);
+                    Color color = new Color(c1.getRed(), (c1.getRed() + c2.getRed()) / 2, c2.getRed());
+                    colorImage.setRGB(x, y, color.getRGB());
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+        return colorImage;
+    }
+
+    public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
+        BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < colorImage.getWidth(); x++) {
+            for (int y = 0; y < colorImage.getHeight(); y++) {
+                try {
+                    int rgb1 = i1.getRGB(x, y);
+                    int rgb2 = i2.getRGB(x, y);
+                    int rgb3 = i3.getRGB(x, y);
+                    Color c1 = new Color(rgb1, true);
+                    Color c2 = new Color(rgb2, true);
+                    Color c3 = new Color(rgb3, true);
+                    Color color = new Color(c1.getRed(), c2.getRed(), c3.getRed());
+                    colorImage.setRGB(x, y, color.getRGB());
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+        return colorImage;
     }
 
     public static BufferedImage drawCenterShape(BufferedImage image) {
-        image = zoom(image, 200);
+        image = zoomImage(image, 175);
         double x = image.getWidth() / 2;
         double y = image.getHeight() / 2;
         Graphics g = image.getGraphics();
-        Drawable drawable = new Circle(x, y, 20, Color.YELLOW);
+        Drawable drawable = new Circle(x, y, 30, Color.RED);
         drawable.draw(g);
         return image;
     }
@@ -957,7 +1315,22 @@ public class ModuleHelper {
         return sw.toString();
     }
 
-    public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, JPanel container) throws Exception {
+    public static JLabel addTextToImage(BufferedImage image, String text) {
+        return addTextToImage(new JLabel(new ImageIcon(drawCenterShape(image))), text);
+    }
+
+    public static JLabel addTextToImage(JLabel background, String text) {
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+        JLabel label = new TranslucentLabel(text);
+        label.setFont(label.getFont().deriveFont(10f));
+        label.setBackground(new Color(255, 255, 255, 200));
+        label.setBorder(new EmptyBorder(0, 3, 0, 3));
+        label.setForeground(Color.BLACK);
+        background.add(label);
+        return background;
+    }
+
+    public static void saveAnimatedGif(List<Couple<String, BufferedImage>> imageList, Component container) throws Exception {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new FileTypeFilter(".gif", ".gif files"));
         int returnVal = fileChooser.showSaveDialog(container);

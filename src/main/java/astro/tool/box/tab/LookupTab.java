@@ -1,10 +1,10 @@
 package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.LookupTable;
-import astro.tool.box.main.FixedTable;
+import astro.tool.box.component.FixedTable;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -62,7 +62,7 @@ public class LookupTab {
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = "Main sequence lookup table - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek)";
+                        tableName = String.format("Main sequence lookup table - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)", MAMAJEK_VERSION);
                         break;
                     case MLT_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";

@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class GaiaWDCatalogEntry implements CatalogEntry {
 
-    public static final String CATALOG_NAME = "Gaia eDR3 WD";
+    public static final String CATALOG_NAME = "Gaia EDR3 WD";
 
     // Unique source identifier (unique within a particular Data Release)
     private long sourceId;
@@ -259,7 +259,7 @@ public class GaiaWDCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public String getCatalogUrl() {
+    public String getCatalogQueryUrl() {
         return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "J/MNRAS/508/3877/maincat", "RA_ICRS", "DE_ICRS");
     }
 

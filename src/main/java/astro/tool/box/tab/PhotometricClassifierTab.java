@@ -2,7 +2,7 @@ package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.ClassificationResult;
@@ -11,7 +11,9 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.SpectralType;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
+import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.WhiteDwarf;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.LookupResult;
@@ -84,16 +86,10 @@ public class PhotometricClassifierTab {
     private JButton searchButton;
     private JTextField coordsField;
     private JTextField radiusField;
-    private JTable mainSequenceResultTable;
-    private JTable brownDwarfsResultTable;
 
     private double targetRa;
     private double targetDec;
     private double searchRadius;
-
-    private double prevTargetRa;
-    private double prevTargetDec;
-    private double prevSearchRadius;
 
     private Set<String> matchedColors;
 
@@ -112,6 +108,11 @@ public class PhotometricClassifierTab {
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
         catalogInstances = getCatalogInstances();
+
+        // Catalogs to be removed from the classification
+        catalogInstances.remove(GaiaWDCatalogEntry.CATALOG_NAME);
+        catalogInstances.remove(TessCatalogEntry.CATALOG_NAME);
+
         catalogQueryService = new CatalogQueryService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
@@ -160,10 +161,9 @@ public class PhotometricClassifierTab {
             topPanel.add(searchButton);
             searchButton.addActionListener((ActionEvent e) -> {
                 try {
-                    if (bottomPanel.getComponentCount() > 0) {
-                        bottomPanel.removeAll();
-                        baseFrame.setVisible(true);
-                    }
+                    centerPanel.removeAll();
+                    bottomPanel.removeAll();
+                    baseFrame.setVisible(true);
                     String coords = coordsField.getText();
                     if (coords.isEmpty()) {
                         showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -198,6 +198,9 @@ public class PhotometricClassifierTab {
                     }
                     try {
                         searchRadius = Double.valueOf(radius);
+                        if (searchRadius < 0) {
+                            errorMessages.add("Radius must not be smaller than 0.");
+                        }
                         if (searchRadius > 100) {
                             errorMessages.add("Radius must not be larger than 100 arcsec.");
                         }
@@ -219,35 +222,27 @@ public class PhotometricClassifierTab {
                                 sptOccurrencesSimbad = new HashMap();
                                 classifierListMainSequence = new ArrayList();
                                 classifierListBrownDwarfs = new ArrayList();
-                                if (targetRa == prevTargetRa && targetDec == prevTargetDec && searchRadius == prevSearchRadius) {
-                                    performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, mainSequenceResultTable);
-                                    performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, brownDwarfsResultTable);
-                                } else {
-                                    if (centerPanel.getComponentCount() > 0) {
-                                        centerPanel.removeAll();
-                                        baseFrame.setVisible(true);
-                                    }
-                                    catalogEntries = new ArrayList<>();
-                                    List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
-                                    for (CatalogEntry catalogEntry : catalogInstances.values()) {
-                                        if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
-                                            catalogEntry.setRa(targetRa);
-                                            catalogEntry.setDec(targetDec);
-                                            catalogEntry.setSearchRadius(searchRadius);
-                                            List<CatalogEntry> results = performQuery(catalogEntry);
-                                            if (results != null) {
-                                                catalogEntries.addAll(results);
-                                            }
+                                catalogEntries = new ArrayList<>();
+                                List<String> selectedCatalogs = getSelectedCatalogs(catalogInstances);
+                                for (CatalogEntry catalogEntry : catalogInstances.values()) {
+                                    if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
+                                        catalogEntry.setRa(targetRa);
+                                        catalogEntry.setDec(targetDec);
+                                        catalogEntry.setSearchRadius(searchRadius);
+                                        List<CatalogEntry> results = performQuery(catalogEntry);
+                                        if (results != null) {
+                                            catalogEntries.addAll(results);
                                         }
                                     }
-                                    prevTargetRa = targetRa;
-                                    prevTargetDec = targetDec;
-                                    prevSearchRadius = searchRadius;
-                                    List<ClassificationResult> classificationResults;
-                                    classificationResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, null);
-                                    mainSequenceResultTable = displayQueryResults(classificationResults, "Main sequence spectral type evaluation", JColor.DARK_GREEN.val);
-                                    classificationResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
-                                    brownDwarfsResultTable = displayQueryResults(classificationResults, "M, L & T dwarfs spectral type evaluation", JColor.BROWN.val);
+                                }
+                                List<ClassificationResult> classificationResults;
+                                classificationResults = performSpectralTypeLookup(mainSequenceLookupService, catalogEntries, sptOccurrencesMainSequence, classifierListMainSequence, null);
+                                if (!classificationResults.isEmpty()) {
+                                    displayQueryResults(classificationResults, "Main sequence spectral type estimates", JColor.DARK_GREEN.val);
+                                }
+                                classificationResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
+                                if (!classificationResults.isEmpty()) {
+                                    displayQueryResults(classificationResults, "M, L & T dwarfs spectral type estimates", JColor.BROWN.val);
                                 }
                                 displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
                                 displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
@@ -495,7 +490,7 @@ public class PhotometricClassifierTab {
             });
         });
 
-        String titles = "catalog,spectral type,color,value, reference value, source id";
+        String titles = "catalog,spectral type,color,value,reference value,source id";
         String[] columns = titles.split(",", -1);
         Object[][] rows = new Object[][]{};
         DefaultTableModel defaultTableModel = new DefaultTableModel(occurrences.toArray(rows), columns);
@@ -506,6 +501,7 @@ public class PhotometricClassifierTab {
         resultTable.setRowSorter(createResultTableSorter(defaultTableModel, occurrences));
         TableColumnModel columnModel = resultTable.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(120);
+        columnModel.getColumn(2).setPreferredWidth(80);
         columnModel.getColumn(4).setPreferredWidth(100);
         columnModel.getColumn(5).setPreferredWidth(150);
 

@@ -1,7 +1,7 @@
 package astro.tool.box.tab;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
@@ -75,7 +75,7 @@ public class WhiteDwarfTab {
 
             JPanel resultPanel = new JPanel();
             resultPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Effective temperature evaluation", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(), "Effective temperature estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
             resultPanel.setPreferredSize(new Dimension(600, 700));

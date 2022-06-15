@@ -1,6 +1,6 @@
 package astro.tool.box.util;
 
-import static astro.tool.box.main.ModuleHelper.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.enumeration.TapProvider;
@@ -30,7 +30,11 @@ public class MiscUtils {
         SPECTRAL_TYPES.put(spt + i + ".5", j + .5);
     }
 
-    public static TapProvider getTapProvider() {
+    public static boolean isVizierTAP() {
+        return TapProvider.VIZIER.equals(getTapProvider());
+    }
+
+    private static TapProvider getTapProvider() {
         return TapProvider.valueOf(getUserSetting(TAP_PROVIDER, DEFAULT_TAP_PROVIDER));
     }
 
@@ -62,13 +66,15 @@ public class MiscUtils {
         return str.substring(1, str.length() - 1);
     }
 
-    /**
-     * This method will add elements to an array and return the resulting array
-     *
-     * @param arr
-     * @param elements
-     * @return
-     */
+    public static void replaceNanValuesByZero(String[] values) {
+        for (int i = 0; i < values.length; i++) {
+            String value = values[i];
+            if ("NaN".equals(value) || "Infinity".equals(value) || "-Infinity".equals(value)) {
+                values[i] = "0";
+            }
+        }
+    }
+
     public static Object[] addToArray(Object[] arr, Object... elements) {
         Object[] tempArr = new Object[arr.length + elements.length];
         System.arraycopy(arr, 0, tempArr, 0, arr.length);

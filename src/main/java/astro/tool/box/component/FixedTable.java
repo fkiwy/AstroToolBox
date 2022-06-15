@@ -1,4 +1,4 @@
-package astro.tool.box.main;
+package astro.tool.box.component;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
