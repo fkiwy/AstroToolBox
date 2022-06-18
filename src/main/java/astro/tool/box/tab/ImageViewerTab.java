@@ -21,7 +21,7 @@ import astro.tool.box.catalog.CatWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseRejectEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.GaiaCatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaCmd;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
@@ -3161,7 +3161,7 @@ public class ImageViewerTab {
             if (gaiaEntries == null) {
                 gaiaEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    gaiaEntries = fetchCatalogEntries(new GaiaCatalogEntry());
+                    gaiaEntries = fetchCatalogEntries(new GaiaDR2CatalogEntry());
                     processImages();
                     return null;
                 });
@@ -3334,7 +3334,7 @@ public class ImageViewerTab {
             if (gaiaTpmEntries == null) {
                 gaiaTpmEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaCatalogEntry());
+                    gaiaTpmEntries = fetchTpmCatalogEntries(new GaiaDR2CatalogEntry());
                     processImages();
                     return null;
                 });
@@ -5220,7 +5220,7 @@ public class ImageViewerTab {
             double pmDec = catalogEntry.getPmdec();
 
             double numberOfYears = 0;
-            if (catalogEntry instanceof GaiaCatalogEntry) {
+            if (catalogEntry instanceof GaiaDR2CatalogEntry) {
                 numberOfYears = GAIADR2_ALLWISE_EPOCH_DIFF;
             }
             if (catalogEntry instanceof GaiaDR3CatalogEntry) {

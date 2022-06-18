@@ -565,7 +565,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (W1_err == 0 || W2_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W2_err);
+            return calculateAdditionError(W1_err, W2_err);
         }
     }
 

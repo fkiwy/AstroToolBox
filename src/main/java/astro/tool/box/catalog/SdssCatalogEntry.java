@@ -524,9 +524,9 @@ public class SdssCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((u_err - ABOffset.u.val), (g_err - ABOffset.g.val));
+                return calculateAdditionError((u_err - ABOffset.u.val), (g_err - ABOffset.g.val));
             } else {
-                return calculateAddSubError(u_err, g_err);
+                return calculateAdditionError(u_err, g_err);
             }
         }
     }
@@ -536,9 +536,9 @@ public class SdssCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((g_err - ABOffset.g.val), (r_err - ABOffset.r.val));
+                return calculateAdditionError((g_err - ABOffset.g.val), (r_err - ABOffset.r.val));
             } else {
-                return calculateAddSubError(g_err, r_err);
+                return calculateAdditionError(g_err, r_err);
             }
         }
     }
@@ -548,9 +548,9 @@ public class SdssCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((r_err - ABOffset.r.val), (i_err - ABOffset.i.val));
+                return calculateAdditionError((r_err - ABOffset.r.val), (i_err - ABOffset.i.val));
             } else {
-                return calculateAddSubError(r_err, i_err);
+                return calculateAdditionError(r_err, i_err);
             }
         }
     }
@@ -560,9 +560,9 @@ public class SdssCatalogEntry implements CatalogEntry {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((i_err - ABOffset.i.val), (z_err - ABOffset.z.val));
+                return calculateAdditionError((i_err - ABOffset.i.val), (z_err - ABOffset.z.val));
             } else {
-                return calculateAddSubError(i_err, z_err);
+                return calculateAdditionError(i_err, z_err);
             }
         }
     }

@@ -12,7 +12,7 @@ import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.GaiaCatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
@@ -961,7 +961,7 @@ public class FinderChartTab {
             case SimbadCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getSimbadOverlay().setSelected(true);
                 break;
-            case GaiaCatalogEntry.CATALOG_NAME:
+            case GaiaDR2CatalogEntry.CATALOG_NAME:
                 imageViewerTab.getGaiaOverlay().setSelected(true);
                 break;
             case GaiaDR3CatalogEntry.CATALOG_NAME:

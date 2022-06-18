@@ -698,7 +698,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (u_err == 0 || g_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(u_err, g_err);
+            return calculateAdditionError(u_err, g_err);
         }
     }
 
@@ -706,7 +706,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (g_err == 0 || r_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(g_err, r_err);
+            return calculateAdditionError(g_err, r_err);
         }
     }
 
@@ -714,7 +714,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (r_err == 0 || i_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(r_err, i_err);
+            return calculateAdditionError(r_err, i_err);
         }
     }
 
@@ -722,7 +722,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (i_err == 0 || z_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(i_err, z_err);
+            return calculateAdditionError(i_err, z_err);
         }
     }
 
@@ -730,7 +730,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (z_err == 0 || y_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(z_err, y_err);
+            return calculateAdditionError(z_err, y_err);
         }
     }
 

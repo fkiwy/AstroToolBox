@@ -6,7 +6,7 @@ import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import static astro.tool.box.util.MiscUtils.*;
 import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.GaiaCatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
@@ -505,7 +505,7 @@ public class AdqlQueryTab {
                     String query = textEditor.getText();
                     if (query.isEmpty() || query.contains("Find all comovers")) {
                         CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                        if (selectedEntry != null && (selectedEntry instanceof GaiaCatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
+                        if (selectedEntry != null && (selectedEntry instanceof GaiaDR2CatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
                             tapProvider.setSelectedItem(TapProvider.IRSA);
                             String comoverQuery = createComoverQuery();
                             comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));

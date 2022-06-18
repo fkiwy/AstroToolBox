@@ -739,7 +739,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (W1_err == 0 || W2_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W2_err);
+            return calculateAdditionError(W1_err, W2_err);
         }
     }
 
@@ -747,7 +747,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (W1_err == 0 || W3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W3_err);
+            return calculateAdditionError(W1_err, W3_err);
         }
     }
 
@@ -755,7 +755,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (W1_err == 0 || W4_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W4_err);
+            return calculateAdditionError(W1_err, W4_err);
         }
     }
 
@@ -763,7 +763,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (W2_err == 0 || W3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W2_err, W3_err);
+            return calculateAdditionError(W2_err, W3_err);
         }
     }
 
@@ -771,7 +771,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (W3_err == 0 || W4_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W3_err, W4_err);
+            return calculateAdditionError(W3_err, W4_err);
         }
     }
 
@@ -779,7 +779,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (J_err == 0 || H_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, H_err);
+            return calculateAdditionError(J_err, H_err);
         }
     }
 
@@ -787,7 +787,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (H_err == 0 || K_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(H_err, K_err);
+            return calculateAdditionError(H_err, K_err);
         }
     }
 
@@ -795,7 +795,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (J_err == 0 || K_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, K_err);
+            return calculateAdditionError(J_err, K_err);
         }
     }
 
@@ -803,7 +803,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (K_err == 0 || W1_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(K_err, W1_err);
+            return calculateAdditionError(K_err, W1_err);
         }
     }
 
@@ -811,7 +811,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (J_err == 0 || W2_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, W2_err);
+            return calculateAdditionError(J_err, W2_err);
         }
     }
 

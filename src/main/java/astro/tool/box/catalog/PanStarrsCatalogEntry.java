@@ -506,7 +506,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (gMeanPSFMagErr == 0 || rMeanPSFMagErr == 0) {
             return 0;
         } else {
-            return calculateAddSubError(gMeanPSFMagErr, rMeanPSFMagErr);
+            return calculateAdditionError(gMeanPSFMagErr, rMeanPSFMagErr);
         }
     }
 
@@ -514,7 +514,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (rMeanPSFMagErr == 0 || iMeanPSFMagErr == 0) {
             return 0;
         } else {
-            return calculateAddSubError(rMeanPSFMagErr, iMeanPSFMagErr);
+            return calculateAdditionError(rMeanPSFMagErr, iMeanPSFMagErr);
         }
     }
 
@@ -522,7 +522,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (iMeanPSFMagErr == 0 || zMeanPSFMagErr == 0) {
             return 0;
         } else {
-            return calculateAddSubError(iMeanPSFMag, zMeanPSFMag);
+            return calculateAdditionError(iMeanPSFMag, zMeanPSFMag);
         }
     }
 
@@ -530,7 +530,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (iMeanPSFMagErr == 0 || yMeanPSFMagErr == 0) {
             return 0;
         } else {
-            return calculateAddSubError(iMeanPSFMagErr, yMeanPSFMagErr);
+            return calculateAdditionError(iMeanPSFMagErr, yMeanPSFMagErr);
         }
     }
 
@@ -538,7 +538,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (zMeanPSFMagErr == 0 || yMeanPSFMagErr == 0) {
             return 0;
         } else {
-            return calculateAddSubError(zMeanPSFMagErr, yMeanPSFMagErr);
+            return calculateAdditionError(zMeanPSFMagErr, yMeanPSFMagErr);
         }
     }
 
