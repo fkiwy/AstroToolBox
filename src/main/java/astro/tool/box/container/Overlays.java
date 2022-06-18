@@ -22,9 +22,9 @@ public class Overlays {
         SSO,
         PM_GAIA_DR2,
         PM_GAIA_DR3,
-        PM_NOIRLAB,
-        PM_CATWISE,
-        PM_UKIDSS,
+        PM_NOIR_LAB,
+        PM_CAT_WISE,
+        PM_UK_IDSS,
         GHOSTS,
         LATENTS,
         HALOS,
@@ -118,13 +118,13 @@ public class Overlays {
             overlays.append(ID.PM_GAIA_DR3).append(",");
         }
         if (pmnoirlab) {
-            overlays.append(ID.PM_NOIRLAB).append(",");
+            overlays.append(ID.PM_NOIR_LAB).append(",");
         }
         if (pmcatwise) {
-            overlays.append(ID.PM_CATWISE).append(",");
+            overlays.append(ID.PM_CAT_WISE).append(",");
         }
         if (pmukidss) {
-            overlays.append(ID.PM_UKIDSS).append(",");
+            overlays.append(ID.PM_UK_IDSS).append(",");
         }
         if (ghosts) {
             overlays.append(ID.GHOSTS).append(",");
@@ -202,13 +202,13 @@ public class Overlays {
         if (overlays.contains(ID.PM_GAIA_DR3.name())) {
             pmgaiadr3 = true;
         }
-        if (overlays.contains(ID.PM_NOIRLAB.name())) {
+        if (overlays.contains(ID.PM_NOIR_LAB.name())) {
             pmnoirlab = true;
         }
-        if (overlays.contains(ID.PM_CATWISE.name())) {
+        if (overlays.contains(ID.PM_CAT_WISE.name())) {
             pmcatwise = true;
         }
-        if (overlays.contains(ID.PM_UKIDSS.name())) {
+        if (overlays.contains(ID.PM_UK_IDSS.name())) {
             pmukidss = true;
         }
         if (overlays.contains(ID.GHOSTS.name())) {
