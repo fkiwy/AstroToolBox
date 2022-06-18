@@ -1040,7 +1040,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (BP_err == 0 || RP_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(BP_err, RP_err);
+            return calculateAdditionError(BP_err, RP_err);
         }
     }
 
@@ -1048,7 +1048,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (G_err == 0 || RP_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(G_err, RP_err);
+            return calculateAdditionError(G_err, RP_err);
         }
     }
 
@@ -1056,7 +1056,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (BP_err == 0 || G_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(BP_err, G_err);
+            return calculateAdditionError(BP_err, G_err);
         }
     }
 
@@ -1065,9 +1065,9 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((u_err - ABOffset.u.val), (g_err - ABOffset.g.val));
+                return calculateAdditionError((u_err - ABOffset.u.val), (g_err - ABOffset.g.val));
             } else {
-                return calculateAddSubError(u_err, g_err);
+                return calculateAdditionError(u_err, g_err);
             }
         }
     }
@@ -1077,9 +1077,9 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((g_err - ABOffset.g.val), (r_err - ABOffset.r.val));
+                return calculateAdditionError((g_err - ABOffset.g.val), (r_err - ABOffset.r.val));
             } else {
-                return calculateAddSubError(g_err, r_err);
+                return calculateAdditionError(g_err, r_err);
             }
         }
     }
@@ -1089,9 +1089,9 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((r_err - ABOffset.r.val), (i_err - ABOffset.i.val));
+                return calculateAdditionError((r_err - ABOffset.r.val), (i_err - ABOffset.i.val));
             } else {
-                return calculateAddSubError(r_err, i_err);
+                return calculateAdditionError(r_err, i_err);
             }
         }
     }
@@ -1101,9 +1101,9 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
             return 0;
         } else {
             if (toVega) {
-                return calculateAddSubError((i_err - ABOffset.i.val), (z_err - ABOffset.z.val));
+                return calculateAdditionError((i_err - ABOffset.i.val), (z_err - ABOffset.z.val));
             } else {
-                return calculateAddSubError(i_err, z_err);
+                return calculateAdditionError(i_err, z_err);
             }
         }
     }
@@ -1112,7 +1112,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (W1_err == 0 || W2_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W2_err);
+            return calculateAdditionError(W1_err, W2_err);
         }
     }
 
@@ -1120,7 +1120,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (W1_err == 0 || W3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W3_err);
+            return calculateAdditionError(W1_err, W3_err);
         }
     }
 
@@ -1128,7 +1128,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (W1_err == 0 || W4_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W1_err, W4_err);
+            return calculateAdditionError(W1_err, W4_err);
         }
     }
 
@@ -1136,7 +1136,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (W2_err == 0 || W3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W2_err, W3_err);
+            return calculateAdditionError(W2_err, W3_err);
         }
     }
 
@@ -1144,7 +1144,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (W3_err == 0 || W4_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(W3_err, W4_err);
+            return calculateAdditionError(W3_err, W4_err);
         }
     }
 
@@ -1152,7 +1152,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (J_err == 0 || H_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, H_err);
+            return calculateAdditionError(J_err, H_err);
         }
     }
 
@@ -1160,7 +1160,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (H_err == 0 || K_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(H_err, K_err);
+            return calculateAdditionError(H_err, K_err);
         }
     }
 
@@ -1168,7 +1168,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (J_err == 0 || K_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, K_err);
+            return calculateAdditionError(J_err, K_err);
         }
     }
 
@@ -1176,7 +1176,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (K_err == 0 || W1_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(K_err, W1_err);
+            return calculateAdditionError(K_err, W1_err);
         }
     }
 
@@ -1184,7 +1184,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
         if (J_err == 0 || W2_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, W2_err);
+            return calculateAdditionError(J_err, W2_err);
         }
     }
 

@@ -578,7 +578,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         if (J_err == 0 || H_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, H_err);
+            return calculateAdditionError(J_err, H_err);
         }
     }
 
@@ -586,7 +586,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         if (H_err == 0 || K_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(H_err, K_err);
+            return calculateAdditionError(H_err, K_err);
         }
     }
 
@@ -594,7 +594,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         if (J_err == 0 || K_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(J_err, K_err);
+            return calculateAdditionError(J_err, K_err);
         }
     }
 

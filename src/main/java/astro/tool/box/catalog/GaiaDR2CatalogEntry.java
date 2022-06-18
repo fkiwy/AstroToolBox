@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
+public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
 
     public static final String CATALOG_NAME = "Gaia DR2";
 
@@ -118,10 +118,10 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
 
     private String[] values;
 
-    public GaiaCatalogEntry() {
+    public GaiaDR2CatalogEntry() {
     }
 
-    public GaiaCatalogEntry(Map<String, Integer> columns, String[] values) {
+    public GaiaDR2CatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
         if (isVizierTAP()) {
@@ -175,7 +175,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
 
     @Override
     public CatalogEntry copy() {
-        return new GaiaCatalogEntry(columns, values);
+        return new GaiaDR2CatalogEntry(columns, values);
     }
 
     @Override
@@ -229,13 +229,13 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GaiaCatalogEntry other = (GaiaCatalogEntry) obj;
+        final GaiaDR2CatalogEntry other = (GaiaDR2CatalogEntry) obj;
         return this.sourceId == other.sourceId;
     }
 
     @Override
     public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new GaiaCatalogEntry(columns, values);
+        return new GaiaDR2CatalogEntry(columns, values);
     }
 
     @Override
@@ -641,7 +641,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
         if (BP_err == 0 || RP_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(BP_err, RP_err);
+            return calculateAdditionError(BP_err, RP_err);
         }
     }
 
@@ -649,7 +649,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
         if (G_err == 0 || RP_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(G_err, RP_err);
+            return calculateAdditionError(G_err, RP_err);
         }
     }
 
@@ -657,7 +657,7 @@ public class GaiaCatalogEntry implements CatalogEntry, ProperMotionQuery, Proper
         if (BP_err == 0 || G_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(BP_err, G_err);
+            return calculateAdditionError(BP_err, G_err);
         }
     }
 

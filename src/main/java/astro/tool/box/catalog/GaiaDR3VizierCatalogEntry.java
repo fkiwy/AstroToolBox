@@ -660,7 +660,7 @@ public class GaiaDR3VizierCatalogEntry implements CatalogEntry, ProperMotionQuer
         if (BP_err == 0 || RP_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(BP_err, RP_err);
+            return calculateAdditionError(BP_err, RP_err);
         }
     }
 
@@ -668,7 +668,7 @@ public class GaiaDR3VizierCatalogEntry implements CatalogEntry, ProperMotionQuer
         if (G_err == 0 || RP_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(G_err, RP_err);
+            return calculateAdditionError(G_err, RP_err);
         }
     }
 
@@ -676,7 +676,7 @@ public class GaiaDR3VizierCatalogEntry implements CatalogEntry, ProperMotionQuer
         if (BP_err == 0 || G_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(BP_err, G_err);
+            return calculateAdditionError(BP_err, G_err);
         }
     }
 

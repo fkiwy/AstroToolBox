@@ -654,7 +654,7 @@ public class DesCatalogEntry implements CatalogEntry {
         if (g_err == 0 || r_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(g_err, r_err);
+            return calculateAdditionError(g_err, r_err);
         }
     }
 
@@ -662,7 +662,7 @@ public class DesCatalogEntry implements CatalogEntry {
         if (r_err == 0 || i_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(r_err, i_err);
+            return calculateAdditionError(r_err, i_err);
         }
     }
 
@@ -670,7 +670,7 @@ public class DesCatalogEntry implements CatalogEntry {
         if (i_err == 0 || z_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(i_err, z_err);
+            return calculateAdditionError(i_err, z_err);
         }
     }
 
@@ -678,7 +678,7 @@ public class DesCatalogEntry implements CatalogEntry {
         if (z_err == 0 || y_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(z_err, y_err);
+            return calculateAdditionError(z_err, y_err);
         }
     }
 

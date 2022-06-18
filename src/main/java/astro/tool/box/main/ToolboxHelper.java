@@ -17,7 +17,7 @@ import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.GaiaCatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
@@ -137,7 +137,7 @@ import org.json.JSONObject;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.5.0";
+    public static final String PGM_VERSION = "2.5.1";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
@@ -172,7 +172,7 @@ public class ToolboxHelper {
         catalogInstances.put(catWiseCatalogEntry.getCatalogName(), catWiseCatalogEntry);
         UnWiseCatalogEntry unWiseCatalogEntry = new UnWiseCatalogEntry();
         catalogInstances.put(unWiseCatalogEntry.getCatalogName(), unWiseCatalogEntry);
-        GaiaCatalogEntry gaiaCatalogEntry = new GaiaCatalogEntry();
+        GaiaDR2CatalogEntry gaiaCatalogEntry = new GaiaDR2CatalogEntry();
         catalogInstances.put(gaiaCatalogEntry.getCatalogName(), gaiaCatalogEntry);
         GaiaDR3CatalogEntry gaiaDR3CatalogEntry = new GaiaDR3CatalogEntry();
         catalogInstances.put(gaiaDR3CatalogEntry.getCatalogName(), gaiaDR3CatalogEntry);

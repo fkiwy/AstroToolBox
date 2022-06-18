@@ -741,7 +741,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         if (j_ap3_err == 0 || h_ap3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(j_ap3_err, h_ap3_err);
+            return calculateAdditionError(j_ap3_err, h_ap3_err);
         }
     }
 
@@ -749,7 +749,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         if (h_ap3_err == 0 || ks_ap3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(h_ap3_err, ks_ap3_err);
+            return calculateAdditionError(h_ap3_err, ks_ap3_err);
         }
     }
 
@@ -757,7 +757,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         if (j_ap3_err == 0 || ks_ap3_err == 0) {
             return 0;
         } else {
-            return calculateAddSubError(j_ap3_err, ks_ap3_err);
+            return calculateAdditionError(j_ap3_err, ks_ap3_err);
         }
     }
 

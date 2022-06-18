@@ -155,7 +155,9 @@ public class Application {
                             versionMessage = version.getMessage();
                         }
                     }
-                    if (!currentVersion.equals(latestVersion)) {
+                    int latestVersion_num = Integer.parseInt(latestVersion.replace(".", ""));
+                    int currentVersion_num = Integer.parseInt(currentVersion.replace(".", ""));
+                    if (currentVersion_num < latestVersion_num) {
                         long remainingDays = DAYS.between(referenceDate, releaseDate);
                         showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays, versionMessage);
                         if (referenceDate.isEqual(releaseDate) || referenceDate.isAfter(releaseDate)) {

@@ -444,7 +444,7 @@ public class AstrometricFunctions {
      * @param ae (parallax error)
      * @return the distance error
      */
-    public static double calculateParallacticDistanceError(double a, double ae) {
+    public static double calculateDistanceError(double a, double ae) {
         return sqrt(pow((1000 / (a * a)) * ae, 2));
     }
 
@@ -490,7 +490,7 @@ public class AstrometricFunctions {
      * @param be (error Value)
      * @return the addition/subtraction error
      */
-    public static double calculateAddSubError(double ae, double be) {
+    public static double calculateAdditionError(double ae, double be) {
         return sqrt(ae * ae + be * be);
     }
 
