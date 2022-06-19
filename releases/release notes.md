@@ -1,5 +1,8 @@
 ## Release notes
 
+### AstroToolBox v2.5.1
+- Fixed a bug in the deserialization of the saved proper motion overlays
+
 ### AstroToolBox v2.5.0
 - Added VISTA VHS DR6 and UKIDSS DR11 PLUS images
 - Added UKIDSS DR11 catalog including LAS, GCS, GPS, DXS & UDS surveys
