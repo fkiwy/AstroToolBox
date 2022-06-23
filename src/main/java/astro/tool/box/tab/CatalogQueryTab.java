@@ -301,13 +301,13 @@ public class CatalogQueryTab {
             catalogEntry.loadCatalogElements();
         });
         if (!catalogEntries.isEmpty()) {
-            displayCatalogResults(catalogEntries, catalogQuery.getSearchRadius());
+            displayCatalogResults(catalogEntries);
             baseFrame.setVisible(true);
         }
         return catalogEntries.size();
     }
 
-    private void displayCatalogResults(List<CatalogEntry> catalogEntries, double degRadius) {
+    private void displayCatalogResults(List<CatalogEntry> catalogEntries) {
         selectedEntry = null;
         List<Object[]> list = new ArrayList<>();
         catalogEntries.forEach(entry -> {
@@ -639,10 +639,6 @@ public class CatalogQueryTab {
 
     public JLabel getSearchLabel() {
         return searchLabel;
-    }
-
-    public CatalogEntry getSelectedEntry() {
-        return selectedEntry;
     }
 
     public void setCollectionTable(JTable collectionTable) {

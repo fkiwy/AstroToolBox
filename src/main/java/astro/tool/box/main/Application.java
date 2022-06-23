@@ -90,7 +90,7 @@ public class Application {
         VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
         vizierCatalogsTab.init();
 
-        AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
+        AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane);
         adqlQueryTab.init();
 
         BatchQueryTab batchQueryTab = new BatchQueryTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
