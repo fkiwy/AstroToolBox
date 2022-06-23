@@ -4031,7 +4031,7 @@ public class ImageViewerTab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(3);
+        application.getTabbedPane().setSelectedIndex(1);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);

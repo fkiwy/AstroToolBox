@@ -347,7 +347,7 @@ public class ImageSeriesTab {
                                             } else if (label.contains(UkidssCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, ukidssEntry);
                                             }
-                                            tabbedPane.setSelectedIndex(3);
+                                            tabbedPane.setSelectedIndex(1);
                                         }
                                     });
                                     TableColumnModel columnModel = resultTable.getColumnModel();
@@ -1006,7 +1006,7 @@ public class ImageSeriesTab {
                 }).findFirst().get();
                 if (selected != null) {
                     activateSelectedCatalogOverlay(imageViewerTab, selected);
-                    tabbedPane.setSelectedIndex(3);
+                    tabbedPane.setSelectedIndex(1);
                 }
             }
         });
