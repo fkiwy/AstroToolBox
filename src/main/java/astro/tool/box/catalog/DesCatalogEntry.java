@@ -405,11 +405,6 @@ public class DesCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
-    }
-
-    @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
         bands.put(Band.g, new NumberPair(g_mag, g_err));

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class UnWiseCatalogEntry implements CatalogEntry {
+public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "unWISE";
 

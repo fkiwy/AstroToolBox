@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact {
+public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact, Extinction {
 
     public static final String CATALOG_NAME = "CatWISE2020";
 

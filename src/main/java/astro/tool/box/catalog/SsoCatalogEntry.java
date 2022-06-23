@@ -280,11 +280,6 @@ public class SsoCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
-    }
-
-    @Override
     public Map<Band, NumberPair> getBands() {
         return new LinkedHashMap<>();
     }

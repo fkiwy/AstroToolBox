@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SdssCatalogEntry implements CatalogEntry {
+public class SdssCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "SDSS DR16";
 

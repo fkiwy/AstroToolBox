@@ -290,19 +290,6 @@ public class VhsCatalogEntry implements CatalogEntry {
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        if (j_ap3 != 0) {
-            j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
-        }
-        if (h_ap3 != 0) {
-            h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
-        }
-        if (ks_ap3 != 0) {
-            ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
-        }
-    }
-
-    @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
         bands.put(Band.J, new NumberPair(j_ap3, j_ap3_err));

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class SimbadCatalogEntry implements CatalogEntry {
+public class SimbadCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "SIMBAD";
 

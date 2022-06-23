@@ -412,11 +412,6 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
-    }
-
-    @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
         bands.put(Band.G, new NumberPair(Gmag, 0));

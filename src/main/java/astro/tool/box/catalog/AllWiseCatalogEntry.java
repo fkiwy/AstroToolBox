@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class AllWiseCatalogEntry implements CatalogEntry {
+public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "AllWISE";
 

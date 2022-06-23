@@ -5,6 +5,8 @@ import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.MiscUtils.*;
 import astro.tool.box.container.ClassificationResult;
 import astro.tool.box.container.ClassifierData;
 import astro.tool.box.container.NumberPair;
@@ -22,8 +24,6 @@ import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import astro.tool.box.util.MiscUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -369,10 +369,10 @@ public class PhotometricClassifierTab {
     private JTable displayQueryResults(List<ClassificationResult> classificationResults, String title, Color borderColor) {
         List<Object[]> resultRows = new ArrayList<>();
         classificationResults.forEach(entry -> {
-            resultRows.add(MiscUtils.addToArray(new Boolean[]{Boolean.FALSE}, entry.getColumnValues()));
+            resultRows.add(addToArray(new Boolean[]{Boolean.FALSE}, entry.getColumnValues()));
         });
         ClassificationResult result = classificationResults.get(0);
-        Object[] columns = MiscUtils.addToArray(new String[]{"Remove from classification"}, result.getColumnTitles());
+        Object[] columns = addToArray(new String[]{"Remove from classification"}, result.getColumnTitles());
         Object[][] array = new Object[][]{};
         Object[][] rows = resultRows.toArray(array);
         DefaultTableModel defaultTableModel = new DefaultTableModel(rows, columns);
@@ -432,7 +432,7 @@ public class PhotometricClassifierTab {
     private void displayClassification(Map<String, Integer> sptOccurrences, String title, Color borderColor) {
         List<SpectralType> spectralTypes = new ArrayList();
         sptOccurrences.entrySet().forEach(entry -> {
-            Double sptNum = MiscUtils.SPECTRAL_TYPES.get(entry.getKey());
+            Double sptNum = SPECTRAL_TYPES.get(entry.getKey());
             spectralTypes.add(new SpectralType(entry.getKey(), entry.getValue(), sptNum == null ? -1 : sptNum));
         });
         spectralTypes.sort(Comparator
@@ -470,7 +470,7 @@ public class PhotometricClassifierTab {
 
     private void displayClassifierData(List<ClassifierData> classifierList, String title, Color borderColor) {
         classifierList.forEach(entry -> {
-            Double sptNum = MiscUtils.SPECTRAL_TYPES.get(entry.getSpectralType());
+            Double sptNum = SPECTRAL_TYPES.get(entry.getSpectralType());
             entry.setSptNum(sptNum == null ? -1 : sptNum);
         });
         classifierList.sort(Comparator

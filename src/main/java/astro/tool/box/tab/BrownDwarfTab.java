@@ -150,22 +150,7 @@ public class BrownDwarfTab {
                     entryPanel.add(createLabel(WD_WARNING, JColor.RED));
                 }
             }
-            if (dustExtinction.isSelected()) {
-                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                try {
-                    Map<String, Double> extinctionsByBand = dustExtinctionService.getExtinctionsByBand(selectedEntry.getRa(), selectedEntry.getDec(), 2.0);
-                    selectedEntry = selectedEntry.copy();
-                    try {
-                        selectedEntry.applyExtinctionCorrection(extinctionsByBand);
-                    } catch (ExtinctionException ex) {
-                        entryPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.RED));
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                } finally {
-                    baseFrame.setCursor(Cursor.getDefaultCursor());
-                }
-            }
+            
             List<LookupResult> results = spectralTypeLookupService.lookup(selectedEntry.getColors(true));
             displaySpectralTypes(results, spectralTypePanel, distancePanel);
         }
