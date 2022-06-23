@@ -442,6 +442,7 @@ public class ImageViewerTab {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         catalogQueryService = new CatalogQueryService();
+        dustExtinctionService = new DustExtinctionService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -456,7 +457,6 @@ public class ImageViewerTab {
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(brownDwarfLookupEntries);
             distanceLookupService = new DistanceLookupService(brownDwarfLookupEntries);
-            dustExtinctionService = new DustExtinctionService();
         }
         overlays = new Overlays();
         overlays.deserialize(getUserSetting(OVERLAYS_KEY, overlays.serialize()));
