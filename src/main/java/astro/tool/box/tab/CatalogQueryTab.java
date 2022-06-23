@@ -411,7 +411,7 @@ public class CatalogQueryTab {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
             container.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(Color.LIGHT_GRAY, 3), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                    new LineBorder(catalogEntry.getCatalogColor(), 3), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
             ));
             container.setPreferredSize(new Dimension(550, BOTTOM_PANEL_HEIGHT));
 
@@ -448,7 +448,6 @@ public class CatalogQueryTab {
 
             JPanel toolsPanel = new JPanel();
             toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
-            toolsPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
             container.add(toolsPanel);
 
             JPanel collectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -664,7 +663,7 @@ public class CatalogQueryTab {
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Main sequence spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), "Main sequence", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
@@ -708,7 +707,7 @@ public class CatalogQueryTab {
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "M, L & T dwarfs spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), "M, L & T dwarfs", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
