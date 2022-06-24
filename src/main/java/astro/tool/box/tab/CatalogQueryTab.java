@@ -657,13 +657,14 @@ public class CatalogQueryTab {
                 currentTable = spectralTypeTable;
                 String spt = (String) spectralTypeTable.getValueAt(spectralTypeTable.getSelectedRow(), 0);
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(spt, catalogEntry.getBands());
-                createDistanceEstimatesPanel(distanceResults, spt);
+                createDistanceEstimatesPanel(distanceResults, spt, catalogEntry.getCatalogColor());
             }
         });
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Main sequence", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html("Main sequence spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
@@ -701,19 +702,20 @@ public class CatalogQueryTab {
                 currentTable = spectralTypeTable;
                 String spt = (String) spectralTypeTable.getValueAt(spectralTypeTable.getSelectedRow(), 0);
                 List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(spt, catalogEntry.getBands());
-                createDistanceEstimatesPanel(distanceResults, spt);
+                createDistanceEstimatesPanel(distanceResults, spt, catalogEntry.getCatalogColor());
             }
         });
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "M, L & T dwarfs", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html("M, L & T dwarfs spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
     }
 
-    private void createDistanceEstimatesPanel(List<DistanceLookupResult> results, String spt) {
+    private void createDistanceEstimatesPanel(List<DistanceLookupResult> results, String spt, Color color) {
         List<String[]> distances = new ArrayList<>();
         results.forEach(entry -> {
             String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
@@ -743,7 +745,7 @@ public class CatalogQueryTab {
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.setBorder(new LineBorder(Color.LIGHT_GRAY, 3));
+        container.setBorder(new LineBorder(color, 3));
         container.add(distancePanel);
 
         JFrame detailsFrame = new JFrame();

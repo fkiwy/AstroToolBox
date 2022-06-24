@@ -5597,8 +5597,9 @@ public class ImageViewerTab {
         });
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Main sequence spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html("Main sequence spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
@@ -5641,8 +5642,9 @@ public class ImageViewerTab {
         });
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "M, L & T dwarfs spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html("M, L & T dwarfs spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
