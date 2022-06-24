@@ -4,7 +4,6 @@ import astro.tool.box.container.StringPair;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.lookup.WhiteDwarfLookupEntry;
 import astro.tool.box.enumeration.Color;
 import static java.lang.Math.*;
 import java.util.ArrayList;
@@ -36,12 +35,7 @@ public class PhotometricFunctions {
             minEntry = maxEntry;
             maxEntry = tempEntry;
         }
-        double offset;
-        if (minEntry instanceof WhiteDwarfLookupEntry) {
-            offset = 0.05;
-        } else {
-            offset = 0.5;
-        }
+        double offset = 0.5;
         double avgColorValue = (minColorValue + maxColorValue) / 2;
         if (colorValue >= minColorValue && colorValue < avgColorValue && colorValue <= minColorValue + offset) {
             return new LookupResult(
@@ -51,8 +45,6 @@ public class PhotometricFunctions {
                     minEntry.getTeff(),
                     minEntry.getRsun(),
                     minEntry.getMsun(),
-                    minEntry.getLogG(),
-                    minEntry.getAge(),
                     minColorValue,
                     abs(colorValue - minColorValue)
             );
@@ -64,42 +56,12 @@ public class PhotometricFunctions {
                     maxEntry.getTeff(),
                     maxEntry.getRsun(),
                     maxEntry.getMsun(),
-                    maxEntry.getLogG(),
-                    maxEntry.getAge(),
                     maxColorValue,
                     abs(colorValue - maxColorValue)
             );
         } else {
             return null;
         }
-    }
-
-    /**
-     * Evaluate temperature
-     *
-     * @param colorKey
-     * @param colorValue
-     * @param teff
-     * @param logG
-     * @param msun
-     * @param minEntry
-     * @param maxEntry
-     * @return the temperature
-     */
-    public static LookupResult evaluateTemperature(Color colorKey, double colorValue, double teff, double logG, double msun, SpectralTypeLookup minEntry, SpectralTypeLookup maxEntry) {
-        double teffError = 1000;
-        if (teff != 0 && (teff < minEntry.getTeff() - teffError || teff > maxEntry.getTeff() + teffError)) {
-            return null;
-        }
-        double logGError = 0.5;
-        if (logG != 0 && (logG < minEntry.getLogG() - logGError || logG > maxEntry.getLogG() + logGError)) {
-            return null;
-        }
-        double msunError = 0.5;
-        if (msun != 0 && (msun < minEntry.getMsun() - msunError || msun > maxEntry.getMsun() + msunError)) {
-            return null;
-        }
-        return evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
     }
 
     /**

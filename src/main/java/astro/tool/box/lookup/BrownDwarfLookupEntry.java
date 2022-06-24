@@ -7,7 +7,7 @@ import astro.tool.box.enumeration.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BrownDwarfLookupEntry implements MainSequenceLookup {
+public class BrownDwarfLookupEntry implements SpectralTypeLookup {
 
     // Spectral type
     private final String spt;
@@ -185,16 +185,6 @@ public class BrownDwarfLookupEntry implements MainSequenceLookup {
     @Override
     public double getMsun() {
         return 0;
-    }
-
-    @Override
-    public double getLogG() {
-        return 0;
-    }
-
-    @Override
-    public String getAge() {
-        return "";
     }
 
     public Map<Band, Double> getMagnitudes() {

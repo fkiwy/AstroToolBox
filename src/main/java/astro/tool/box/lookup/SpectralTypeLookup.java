@@ -13,10 +13,6 @@ public interface SpectralTypeLookup {
 
     double getMsun();
 
-    double getLogG();
-
-    String getAge();
-
     Map<Color, Double> getColors();
 
 }
