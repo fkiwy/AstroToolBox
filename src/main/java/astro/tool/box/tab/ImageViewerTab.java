@@ -182,15 +182,14 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String RANGE_LABEL = "Pixel range (min, max): (%d, %d)";
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_CONTRAST = 100;
-    public static final int DEFAULT_DESI_CONTRAST = 50;
-    public static final int MAXIMUM_CONTRAST = 200;
+    public static final int DEFAULT_WISE_CONTRAST = 1000;
+    public static final int DEFAULT_DESI_CONTRAST = 500;
+    public static final int MAXIMUM_CONTRAST = 2000;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -252,7 +251,6 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
-    private JLabel rangeLabel;
     private JLabel epochLabel;
     private JLabel panstarrsLabel;
     private JLabel aladinLiteLabel;
@@ -273,6 +271,7 @@ public class ImageViewerTab {
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
+    private JCheckBox resetContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -321,7 +320,6 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
-    private JSlider rangeSlider;
     private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
@@ -494,7 +492,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 38;
+            int rows = 36;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -547,31 +545,17 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            rangeLabel = new JLabel(String.format(RANGE_LABEL, minValue, maxValue));
-            mainControlPanel.add(rangeLabel);
+            mainControlPanel.add(new JLabel("Contrast:"));
 
-            rangeSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
-            mainControlPanel.add(rangeSlider);
-            rangeSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = MAXIMUM_CONTRAST - rangeSlider.getValue();
+            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
+            mainControlPanel.add(contrastSlider);
+            contrastSlider.addChangeListener((ChangeEvent e) -> {
+                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
                 createFlipbook();
-            });
-
-            mainControlPanel.add(new JLabel("Contrast:"));
-
-            contrastSlider = new JSlider(0, 0, 0);
-            mainControlPanel.add(contrastSlider);
-            contrastSlider.addChangeListener((ChangeEvent e) -> {
-                maxValue = contrastSlider.getMaximum() - contrastSlider.getValue();
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                processImages();
             });
 
             JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
@@ -652,6 +636,15 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            resetContrast = new JCheckBox("Auto-reset contrast", true);
+            mainControlPanel.add(resetContrast);
+            resetContrast.addActionListener((ActionEvent evt) -> {
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
+                    createFlipbook();
+                }
+            });
+
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
             mainControlPanel.add(settingsPanel);
 
@@ -694,18 +687,6 @@ public class ImageViewerTab {
             showCrosshairs = new JCheckBox(html("Crosshairs " + INFO_ICON));
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
-
-            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
-            mainControlPanel.add(resetDefaultsButton);
-            resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-                if (differenceImaging.isSelected()) {
-                    blurImages.setSelected(true);
-                } else {
-                    blurImages.setSelected(false);
-                }
-                resetContrastSlider();
-                createFlipbook();
-            });
 
             wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
             mainControlPanel.add(wiseviewCutouts);
@@ -2297,11 +2278,14 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
+        if (!resetContrast.isSelected()) {
+            return;
+        }
         int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
-        ChangeListener changeListener = rangeSlider.getChangeListeners()[0];
-        rangeSlider.removeChangeListener(changeListener);
-        rangeSlider.setValue(defaultContrast);
-        rangeSlider.addChangeListener(changeListener);
+        ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
+        contrastSlider.removeChangeListener(changeListener);
+        contrastSlider.setValue(defaultContrast);
+        contrastSlider.addChangeListener(changeListener);
         contrast = MAXIMUM_CONTRAST - defaultContrast;
     }
 
@@ -2857,12 +2841,6 @@ public class ImageViewerTab {
                 NumberPair refVal = getRefValues(flipbook.get(0));
                 minValue = (int) refVal.getX();
                 maxValue = (int) refVal.getY();
-                rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
-                ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
-                contrastSlider.removeChangeListener(changeListener);
-                contrastSlider.setMaximum(maxValue * 2);
-                contrastSlider.setValue(maxValue);
-                contrastSlider.addChangeListener(changeListener);
             }
 
             flipbookComplete = true;
@@ -3983,7 +3961,7 @@ public class ImageViewerTab {
         List<Double> outliersRemoved = data;
         int oldSize = 1;
         int newSize = 0;
-        double clippingFactor = contrast / 10;
+        double clippingFactor = contrast / 100f;
         while (oldSize != newSize) {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
