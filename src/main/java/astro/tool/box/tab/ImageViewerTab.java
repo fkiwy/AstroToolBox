@@ -5287,10 +5287,10 @@ public class ImageViewerTab {
         if (simpleLayout) {
             maxRows = rows > 30 ? rows : 30;
         } else {
-            maxRows = rows > 19 ? rows : 19;
+            maxRows = rows > 20 ? rows : 20;
         }
 
-        JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
+        JPanel detailPanel = new JPanel(new GridLayout(0, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -5310,9 +5310,9 @@ public class ImageViewerTab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setPreferredSize(new Dimension(650, 330));
-        scrollPanel.setMinimumSize(new Dimension(650, 330));
-        //scrollPanel.setMaximumSize(new Dimension(650, 330));
+        scrollPanel.setPreferredSize(new Dimension(675, 350));
+        scrollPanel.setMinimumSize(new Dimension(675, 350));
+        //scrollPanel.setMaximumSize(new Dimension(650, 350));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -5526,7 +5526,7 @@ public class ImageViewerTab {
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        detailsFrame.setSize(650, 650);
+        detailsFrame.setSize(675, 675);
         detailsFrame.setLocation(windowShift, windowShift);
         detailsFrame.setAlwaysOnTop(false);
         detailsFrame.setResizable(true);

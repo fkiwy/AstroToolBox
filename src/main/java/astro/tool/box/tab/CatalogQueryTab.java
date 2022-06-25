@@ -377,14 +377,11 @@ public class CatalogQueryTab {
         int remainder = size % 2;
         rows += remainder;
 
-        int maxRows = rows > 19 ? rows : 19;
+        int maxRows = rows > 20 ? rows : 20;
 
-        JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
+        JPanel detailPanel = new JPanel(new GridLayout(0, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
-                new LineBorder(selectedEntry.getCatalogColor(), 3),
-                selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)",
-                TitledBorder.LEFT,
-                TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), selectedEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         catalogElements.forEach(element -> {
@@ -401,8 +398,8 @@ public class CatalogQueryTab {
         }
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
-        scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
+        scrollPanel.setBorder(new LineBorder(selectedEntry.getCatalogColor(), 3));
+        scrollPanel.setPreferredSize(new Dimension(675, BOTTOM_PANEL_HEIGHT));
         bottomPanel.add(scrollPanel);
     }
 
@@ -410,9 +407,7 @@ public class CatalogQueryTab {
         try {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-            container.setBorder(BorderFactory.createTitledBorder(
-                    new LineBorder(catalogEntry.getCatalogColor(), 3), "Spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
-            ));
+            container.setBorder(new LineBorder(selectedEntry.getCatalogColor(), 3));
             container.setPreferredSize(new Dimension(550, BOTTOM_PANEL_HEIGHT));
 
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
