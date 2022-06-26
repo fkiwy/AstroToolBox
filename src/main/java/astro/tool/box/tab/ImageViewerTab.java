@@ -320,6 +320,7 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
+    private JSlider brightnessSlider;
     private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
@@ -374,6 +375,7 @@ public class ImageViewerTab {
     private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
+    private int brightness;
     private int contrast;
     private int minValue;
     private int maxValue;
@@ -492,7 +494,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 36;
+            int rows = 39;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -542,6 +544,19 @@ public class ImageViewerTab {
                     }
                 }
                 loadImages = true;
+                createFlipbook();
+            });
+
+            mainControlPanel.add(new JLabel("Brightness:"));
+
+            brightnessSlider = new JSlider(0, 200, 0);
+            mainControlPanel.add(brightnessSlider);
+            brightnessSlider.addChangeListener((ChangeEvent e) -> {
+                brightness = brightnessSlider.getValue();
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
                 createFlipbook();
             });
 
@@ -632,11 +647,10 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                resetContrastSlider();
                 createFlipbook();
             });
 
-            resetContrast = new JCheckBox("Auto-reset contrast", true);
+            resetContrast = new JCheckBox("Auto-reset brightness & contrast", true);
             mainControlPanel.add(resetContrast);
             resetContrast.addActionListener((ActionEvent evt) -> {
                 if (resetContrast.isSelected()) {
@@ -687,6 +701,18 @@ public class ImageViewerTab {
             showCrosshairs = new JCheckBox(html("Crosshairs " + INFO_ICON));
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
+
+            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
+            mainControlPanel.add(resetDefaultsButton);
+            resetDefaultsButton.addActionListener((ActionEvent evt) -> {
+                if (differenceImaging.isSelected()) {
+                    blurImages.setSelected(true);
+                } else {
+                    blurImages.setSelected(false);
+                }
+                resetContrastSlider();
+                createFlipbook();
+            });
 
             wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
             mainControlPanel.add(wiseviewCutouts);
@@ -2281,8 +2307,15 @@ public class ImageViewerTab {
         if (!resetContrast.isSelected()) {
             return;
         }
+
+        ChangeListener changeListener = brightnessSlider.getChangeListeners()[0];
+        brightnessSlider.removeChangeListener(changeListener);
+        brightnessSlider.setValue(0);
+        brightnessSlider.addChangeListener(changeListener);
+        brightness = 0;
+
         int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
-        ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
+        changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
         contrastSlider.setValue(defaultContrast);
         contrastSlider.addChangeListener(changeListener);
@@ -2424,35 +2457,36 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            skipIntermediateEpochs.setEnabled(false);
-            separateScanDirections.setEnabled(false);
-            differenceImaging.setEnabled(false);
-            wiseviewCutouts.setEnabled(false);
-            unwiseCutouts.setEnabled(false);
-            desiCutouts.setEnabled(false);
-
-            int panstarrsFOV = toInteger(panstarrsField.getText());
-            int aladinLiteFOV = toInteger(aladinLiteField.getText());
-            int wiseViewFOV = toInteger(wiseViewField.getText());
-            int finderChartFOV = toInteger(finderChartField.getText());
-            int defaultFOV = toInteger(sizeField.getText());
-            panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
-            aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
-            wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
-            finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-            createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
-            createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
-            createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
-                    separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
-            createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
-            createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
-            String fovSize = roundTo2DecNZ(defaultFOV / 60f);
-            createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-            createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-            createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
-            createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
 
             if (!isSameFoV(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
+                skipIntermediateEpochs.setEnabled(false);
+                separateScanDirections.setEnabled(false);
+                differenceImaging.setEnabled(false);
+                wiseviewCutouts.setEnabled(false);
+                unwiseCutouts.setEnabled(false);
+                desiCutouts.setEnabled(false);
+
+                int panstarrsFOV = toInteger(panstarrsField.getText());
+                int aladinLiteFOV = toInteger(aladinLiteField.getText());
+                int wiseViewFOV = toInteger(wiseViewField.getText());
+                int finderChartFOV = toInteger(finderChartField.getText());
+                int defaultFOV = toInteger(sizeField.getText());
+                panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
+                aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
+                wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
+                finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
+                createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
+                createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
+                        separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
+                createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
+                createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
+                String fovSize = roundTo2DecNZ(defaultFOV / 60f);
+                createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+                createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+                createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
+                createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
+
                 loadImages = true;
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
@@ -3957,7 +3991,8 @@ public class ImageViewerTab {
                 }
             }
         }
-        List<Double> minOutliersRemoved = removeOutliers(data, 1, 100);
+        double lowPercentile = brightness / 100f;
+        List<Double> minOutliersRemoved = removeOutliers(data, lowPercentile, 100);
         List<Double> outliersRemoved = data;
         int oldSize = 1;
         int newSize = 0;
@@ -3973,7 +4008,7 @@ public class ImageViewerTab {
                 newSize = outliersRemoved.size();
             }
         }
-        double lowerBound = differenceImaging.isSelected() ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
+        double lowerBound = differenceImaging.isSelected() || brightness == 0 ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
         double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
