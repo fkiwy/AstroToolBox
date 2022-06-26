@@ -61,6 +61,7 @@ import astro.tool.box.enumeration.StatType;
 import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
+import astro.tool.box.panel.CcdPanel;
 import astro.tool.box.panel.ReferencesPanel;
 import astro.tool.box.panel.SedPanel;
 import astro.tool.box.panel.WdSedPanel;
@@ -185,7 +186,7 @@ public class ImageViewerTab {
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
+    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int DEFAULT_WISE_CONTRAST = 1000;
     public static final int DEFAULT_DESI_CONTRAST = 500;
@@ -5477,16 +5478,16 @@ public class ImageViewerTab {
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                JFrame sedFrame = new JFrame();
-                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                sedFrame.setIconImage(getToolBoxImage());
-                sedFrame.setTitle("SED");
-                sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
-                sedFrame.setSize(1000, 900);
-                sedFrame.setLocation(0, 0);
-                sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(true);
-                sedFrame.setVisible(true);
+                JFrame frame = new JFrame();
+                frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                frame.setIconImage(getToolBoxImage());
+                frame.setTitle("SED");
+                frame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+                frame.setSize(1000, 900);
+                frame.setLocation(0, 0);
+                frame.setAlwaysOnTop(false);
+                frame.setResizable(true);
+                frame.setVisible(true);
                 createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
@@ -5494,36 +5495,61 @@ public class ImageViewerTab {
             buttonPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                JFrame sedFrame = new JFrame();
-                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                sedFrame.setIconImage(getToolBoxImage());
-                sedFrame.setTitle("WD SED");
-                sedFrame.add(new WdSedPanel(catalogQueryService, catalogEntry, baseFrame));
-                sedFrame.setSize(1000, 900);
-                sedFrame.setLocation(0, 0);
-                sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(true);
-                sedFrame.setVisible(true);
+                JFrame frame = new JFrame();
+                frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                frame.setIconImage(getToolBoxImage());
+                frame.setTitle("WD SED");
+                frame.add(new WdSedPanel(catalogQueryService, catalogEntry, baseFrame));
+                frame.setSize(1000, 900);
+                frame.setLocation(0, 0);
+                frame.setAlwaysOnTop(false);
+                frame.setResizable(true);
+                frame.setVisible(true);
                 createWdSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
+            JButton createCcdButton = new JButton("WISE CCD");
+            buttonPanel.add(createCcdButton);
+            createCcdButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    JFrame frame = new JFrame();
+                    frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    frame.setIconImage(getToolBoxImage());
+                    frame.setTitle("WISE CCD");
+                    frame.add(new CcdPanel(catalogQueryService, catalogEntry, baseFrame));
+                    frame.setSize(1000, 900);
+                    frame.setLocation(0, 0);
+                    frame.setAlwaysOnTop(false);
+                    frame.setResizable(true);
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, ex.getMessage());
+                } finally {
+                    createCcdButton.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
             if (catalogEntry instanceof GaiaCmd) {
-                JButton createCmdButton = new JButton("CMD");
-                buttonPanel.add(createCmdButton);
+                JButton createCmdButton = new JButton("Gaia CMD");
+                collectPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
                     try {
-                        JFrame sedFrame = new JFrame();
-                        sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                        sedFrame.setIconImage(getToolBoxImage());
-                        sedFrame.setTitle("CMD");
-                        sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                        sedFrame.setSize(1000, 900);
-                        sedFrame.setLocation(0, 0);
-                        sedFrame.setAlwaysOnTop(false);
-                        sedFrame.setResizable(true);
-                        sedFrame.setVisible(true);
+                        createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        JFrame frame = new JFrame();
+                        frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                        frame.setIconImage(getToolBoxImage());
+                        frame.setTitle("Gaia CMD");
+                        frame.add(new CmdPanel((GaiaCmd) catalogEntry));
+                        frame.setSize(1000, 900);
+                        frame.setLocation(0, 0);
+                        frame.setAlwaysOnTop(false);
+                        frame.setResizable(true);
+                        frame.setVisible(true);
                     } catch (Exception ex) {
                         showErrorDialog(baseFrame, ex.getMessage());
+                    } finally {
+                        createCmdButton.setCursor(Cursor.getDefaultCursor());
                     }
                 });
             }

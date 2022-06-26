@@ -325,11 +325,15 @@ public class WdSedPanel extends JPanel {
         }
 
         if (sedPhotometry.get(Band.J) == 0 && sedPhotometry.get(Band.H) == 0 && sedPhotometry.get(Band.K) == 0) {
-            VhsCatalogEntry vhsEntry = new VhsCatalogEntry();
-            vhsEntry.setRa(catalogEntry.getRa());
-            vhsEntry.setDec(catalogEntry.getDec());
-            vhsEntry.setSearchRadius(searchRadius);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+            CatalogEntry retrievedEntry = null;
+            VhsCatalogEntry vhsEntry;
+            if (catalogEntry.getDec() < 5) {
+                vhsEntry = new VhsCatalogEntry();
+                vhsEntry.setRa(catalogEntry.getRa());
+                vhsEntry.setDec(catalogEntry.getDec());
+                vhsEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+            }
             if (retrievedEntry != null) {
                 vhsEntry = (VhsCatalogEntry) retrievedEntry;
                 seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
@@ -343,11 +347,14 @@ public class WdSedPanel extends JPanel {
                 sedPhotometry.put(Band.H, vhsEntry.getHmag());
                 sedPhotometry.put(Band.K, vhsEntry.getKmag());
             } else {
-                UkidssCatalogEntry ukidssEntry = new UkidssCatalogEntry();
-                ukidssEntry.setRa(catalogEntry.getRa());
-                ukidssEntry.setDec(catalogEntry.getDec());
-                ukidssEntry.setSearchRadius(searchRadius);
-                retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
+                UkidssCatalogEntry ukidssEntry;
+                if (catalogEntry.getDec() > -5) {
+                    ukidssEntry = new UkidssCatalogEntry();
+                    ukidssEntry.setRa(catalogEntry.getRa());
+                    ukidssEntry.setDec(catalogEntry.getDec());
+                    ukidssEntry.setSearchRadius(searchRadius);
+                    retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
+                }
                 if (retrievedEntry != null) {
                     ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
                     seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId()).append(" ");

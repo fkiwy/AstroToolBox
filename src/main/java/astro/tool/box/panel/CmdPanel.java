@@ -335,7 +335,7 @@ public class CmdPanel extends JPanel {
             item.setShape(targetShape);
             itemCollection.add(item);
         }
-        if (targetLabel != null) {
+        if (targetCollection.getSeriesCount() > 0) {
             LegendItem item = new LegendItem(targetLabel, Color.RED);
             item.setShape(targetShape);
             itemCollection.add(item);
