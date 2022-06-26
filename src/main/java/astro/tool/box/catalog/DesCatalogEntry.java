@@ -15,7 +15,6 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
