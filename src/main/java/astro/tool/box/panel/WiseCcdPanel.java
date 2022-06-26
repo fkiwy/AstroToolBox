@@ -50,7 +50,7 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class CcdPanel extends JPanel {
+public class WiseCcdPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
@@ -85,7 +85,7 @@ public class CcdPanel extends JPanel {
 
     private StringBuilder seriesLabel;
 
-    public CcdPanel(CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) throws IOException {
+    public WiseCcdPanel(CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) throws IOException {
         this.catalogQueryService = catalogQueryService;
         this.baseFrame = baseFrame;
 

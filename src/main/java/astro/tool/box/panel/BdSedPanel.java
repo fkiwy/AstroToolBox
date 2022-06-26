@@ -59,7 +59,7 @@ import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class SedPanel extends JPanel {
+public class BdSedPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
@@ -79,7 +79,7 @@ public class SedPanel extends JPanel {
     private Map<Band, String> sedCatalogs;
     private StringBuilder sedDataPoints;
 
-    public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) {
+    public BdSedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
         this.catalogQueryService = catalogQueryService;
         this.baseFrame = baseFrame;

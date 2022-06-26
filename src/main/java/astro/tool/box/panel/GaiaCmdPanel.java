@@ -50,7 +50,7 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class CmdPanel extends JPanel {
+public class GaiaCmdPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
@@ -80,7 +80,7 @@ public class CmdPanel extends JPanel {
 
     private String targetLabel;
 
-    public CmdPanel(GaiaCmd catalogEntry) throws IOException {
+    public GaiaCmdPanel(GaiaCmd catalogEntry) throws IOException {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
