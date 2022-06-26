@@ -4009,7 +4009,7 @@ public class ImageViewerTab {
                 newSize = outliersRemoved.size();
             }
         }
-        double lowerBound = differenceImaging.isSelected() || brightness == 0 ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
+        double lowerBound = differenceImaging.isSelected() ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
         double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }

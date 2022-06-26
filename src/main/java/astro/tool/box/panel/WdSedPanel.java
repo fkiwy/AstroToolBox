@@ -371,7 +371,7 @@ public class WdSedPanel extends JPanel {
                     TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                     twoMassEntry.setRa(catalogEntry.getRa());
                     twoMassEntry.setDec(catalogEntry.getDec());
-                    twoMassEntry.setSearchRadius(searchRadius);
+                    twoMassEntry.setSearchRadius(searchRadius * 2);
                     retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
                     if (retrievedEntry != null) {
                         twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
