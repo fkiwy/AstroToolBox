@@ -197,7 +197,7 @@ public class SettingsTab {
             JRadioButton vizierButton = new JRadioButton("VizieR", isVizierTap);
             radioPanel.add(vizierButton);
 
-            JRadioButton noirlabButton = new JRadioButton("NOIRLab", isNoaoTap);
+            JRadioButton noirlabButton = new JRadioButton("Other", isNoaoTap);
             radioPanel.add(noirlabButton);
 
             ButtonGroup buttonGroup = new ButtonGroup();
