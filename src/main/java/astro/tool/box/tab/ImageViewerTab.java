@@ -63,7 +63,7 @@ import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
 import astro.tool.box.panel.WiseCcdPanel;
 import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.BdSedPanel;
+import astro.tool.box.panel.SedPanel;
 import astro.tool.box.panel.WdSedPanel;
 import astro.tool.box.shape.Arrow;
 import astro.tool.box.shape.Circle;
@@ -3977,10 +3977,10 @@ public class ImageViewerTab {
     }
 
     private float normalize(float value, float minVal, float maxVal) {
-        value = value < minVal ? minVal : value;
-        value = value > maxVal ? maxVal : value;
-        float newMinVal = 0, newMaxVal = 1;
-        return (value - minVal) * ((newMaxVal - newMinVal) / (maxVal - minVal)) + newMinVal;
+        value = max(value, minVal);
+        value = min(value, maxVal);
+        float lowerBound = 0, upperBound = 1;
+        return (value - minVal) * ((upperBound - lowerBound) / (maxVal - minVal)) + lowerBound;
     }
 
     private NumberPair determineRefValues(float[][] values) {
@@ -5346,9 +5346,7 @@ public class ImageViewerTab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setPreferredSize(new Dimension(675, 350));
         scrollPanel.setMinimumSize(new Dimension(675, 350));
-        //scrollPanel.setMaximumSize(new Dimension(650, 350));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -5482,7 +5480,7 @@ public class ImageViewerTab {
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
-                frame.add(new BdSedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+                frame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
                 frame.setSize(1000, 900);
                 frame.setLocation(0, 0);
                 frame.setAlwaysOnTop(false);

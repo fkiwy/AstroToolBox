@@ -23,7 +23,7 @@ import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.panel.WiseCcdPanel;
 import astro.tool.box.panel.GaiaCmdPanel;
 import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.BdSedPanel;
+import astro.tool.box.panel.SedPanel;
 import astro.tool.box.panel.WdSedPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
@@ -536,7 +536,7 @@ public class CatalogQueryTab {
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
-                frame.add(new BdSedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+                frame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
                 frame.setSize(1000, 900);
                 frame.setLocation(0, 0);
                 frame.setAlwaysOnTop(false);
