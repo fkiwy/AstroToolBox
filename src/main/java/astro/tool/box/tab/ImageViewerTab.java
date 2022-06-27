@@ -550,7 +550,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Brightness:"));
 
-            brightnessSlider = new JSlider(0, 200, 0);
+            brightnessSlider = new JSlider(0, 5000, 0);
             mainControlPanel.add(brightnessSlider);
             brightnessSlider.addChangeListener((ChangeEvent e) -> {
                 brightness = brightnessSlider.getValue();
