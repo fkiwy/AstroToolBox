@@ -453,6 +453,11 @@ public class AdqlQueryTab {
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
                     String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
+                    if (TapProvider.ESAC.equals(getTapProvider())) {
+                        // Transform mutliple lines to single lines
+                        result = result.replace("\n\"\r\n", "").replace("\n\"", "[br]").replace("\r\n", " ").replace("[br]", "\n\"");
+                    }
+
                     catalogPanel = new JPanel(new GridLayout(1, 2));
                     centerPanel.add(catalogPanel);
 
@@ -634,28 +639,15 @@ public class AdqlQueryTab {
     }
 
     private String getTapProviderUrl() {
-        switch (getTapProvider()) {
-            case IRSA:
-                return IRSA_TAP_URL;
-            case VIZIER:
-                return VIZIER_BASE_URL;
-            case NOIRLAB:
-                return NOAO_BASE_URL;
-            default:
-                return null;
-        }
+        return getTapProvider().val;
     }
 
     private String getJobIdentifier(String response) throws Exception {
-        switch (getTapProvider()) {
-            case IRSA:
-            case NOIRLAB:
-                return parseXml(response, "uws:jobId");
-            case VIZIER:
-                return parseXml(response, "jobId");
-            default:
-                return null;
+        String id = parseXml(response, "jobId");
+        if (id.isEmpty()) {
+            id = parseXml(response, "uws:jobId");
         }
+        return id;
     }
 
     private String getErrorMessage(String response) throws Exception {

@@ -298,7 +298,7 @@ public class DesCatalogEntry implements CatalogEntry {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/371/des_dr2", "RA_ICRS", "DE_ICRS");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 

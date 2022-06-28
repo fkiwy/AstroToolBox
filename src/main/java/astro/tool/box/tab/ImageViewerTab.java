@@ -2459,7 +2459,7 @@ public class ImageViewerTab {
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            if (!isSameFoV(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
+            if (!isSameTarget(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
                 skipIntermediateEpochs.setEnabled(false);
                 separateScanDirections.setEnabled(false);
                 differenceImaging.setEnabled(false);
@@ -4085,7 +4085,7 @@ public class ImageViewerTab {
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
                 image = ImageIO.read(stream);
             }
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4121,7 +4121,7 @@ public class ImageViewerTab {
             int year_i = years.get("i").intValue();
             int year_y = years.get("y").intValue();
             year_ps1_y_i_g = getMeanEpoch(year_y, year_i, year_g);
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4141,7 +4141,7 @@ public class ImageViewerTab {
                 return null;
             }
             year_ukidss_k_h_j = nirImage.getYear();
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4161,7 +4161,7 @@ public class ImageViewerTab {
                 return null;
             }
             year_vhs_k_h_j = nirImage.getYear();
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4181,7 +4181,7 @@ public class ImageViewerTab {
             //int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
             //int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
             //year_sdss_z_g_u = getMeanEpoch(year_z, year_g, year_u);
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4195,14 +4195,10 @@ public class ImageViewerTab {
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
             //year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
             year_dss_2ir_1r_1b = year_2ir;
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
-    }
-
-    private boolean isSameFoV(double targetRa, double targetDec, double size, double previousRa, double previousDec, double previousSize) {
-        return targetRa == previousRa && targetDec == previousDec && size == previousSize;
     }
 
     private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {

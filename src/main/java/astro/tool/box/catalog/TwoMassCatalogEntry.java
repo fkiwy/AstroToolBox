@@ -308,7 +308,7 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/246/out", "RAJ2000", "DEJ2000");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 

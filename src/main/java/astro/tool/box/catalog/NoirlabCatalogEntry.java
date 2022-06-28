@@ -269,12 +269,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String getCatalogQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
+        return NOIRLAB_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     @Override
     public String getMotionQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createProperMotionQuery());
+        return NOIRLAB_TAP_URL + encodeQuery(createProperMotionQuery());
     }
 
     private String createCatalogQuery() {

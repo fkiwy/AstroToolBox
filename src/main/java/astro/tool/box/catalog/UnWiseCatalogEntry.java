@@ -164,7 +164,7 @@ public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
 
     @Override
     public String getCatalogQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
+        return NOIRLAB_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     private String createCatalogQuery() {

@@ -280,7 +280,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 catalogQuery = createCatalogQueryUDS();
                 break;
         }
-        return NOAO_TAP_URL + encodeQuery(catalogQuery);
+        return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
     }
 
     @Override
@@ -304,7 +304,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 catalogQuery = createProperMotionQuery(queryBuilder);
                 break;
         }
-        return NOAO_TAP_URL + encodeQuery(catalogQuery);
+        return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
     }
 
     private String createCatalogQueryLAS() {

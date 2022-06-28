@@ -218,7 +218,7 @@ public class VhsCatalogEntry implements CatalogEntry {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/367/vhs_dr5", "RAJ2000", "DEJ2000");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 

@@ -340,6 +340,10 @@ public class ToolboxHelper {
         );
     }
 
+    public static boolean isSameTarget(double targetRa, double targetDec, double size, double previousRa, double previousDec, double previousSize) {
+        return targetRa == previousRa && targetDec == previousDec && size == previousSize;
+    }
+
     public static NumberPair getCoordinates(String coords) {
         coords = coords.replace('−', '-');
         Pattern pattern = Pattern.compile(".*[a-zA-Z]+.*");

@@ -252,7 +252,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (isVizierTAP()) {
             return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 
@@ -261,7 +261,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (isVizierTAP()) {
             return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltProperMotionQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltProperMotionQuery());
         }
     }
 
