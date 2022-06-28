@@ -1,7 +1,8 @@
 package astro.tool.box.util;
 
-import com.opencsv.CSVParserBuilder;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CSVParser {
 
@@ -16,8 +17,7 @@ public class CSVParser {
         return parseLine(cvsLine, separators, DEFAULT_QUOTE);
     }
 
-    public static String[] parseLine(String cvsLine, char valueSeparator, char stringDelimiter) {
-        /*
+    public static String[] parseLine(String cvsLine, char separators, char customQuote) {
         List<String> result = new ArrayList<>();
         if (cvsLine == null || cvsLine.isEmpty()) {
             return new String[0];
@@ -67,16 +67,6 @@ public class CSVParser {
         result.add(curVal.toString());
         result = result.stream().map(String::trim).collect(Collectors.toList());
         return result.toArray(new String[result.size()]);
-         */
-        com.opencsv.CSVParser parser = new CSVParserBuilder()
-                .withSeparator(valueSeparator)
-                .withQuoteChar(stringDelimiter)
-                .build();
-        try {
-            return parser.parseLineMulti(cvsLine);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
 }
