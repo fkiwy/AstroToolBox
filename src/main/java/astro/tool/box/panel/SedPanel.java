@@ -88,7 +88,7 @@ public class SedPanel extends JPanel {
         this.baseFrame = baseFrame;
 
         photSearchRadius = new JTextField("5", 3);
-        maxTemplateOffset = new JTextField("0.5", 3);
+        maxTemplateOffset = new JTextField("0.3", 3);
         spectralTypes = new JComboBox(SpectralType.values());
         bestMatch = new JCheckBox("Best match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
