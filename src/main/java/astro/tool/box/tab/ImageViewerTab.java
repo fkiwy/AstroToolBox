@@ -2305,10 +2305,6 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
-        if (!resetContrast.isSelected()) {
-            return;
-        }
-
         ChangeListener changeListener = brightnessSlider.getChangeListeners()[0];
         brightnessSlider.removeChangeListener(changeListener);
         brightnessSlider.setValue(0);
@@ -2509,7 +2505,9 @@ public class ImageViewerTab {
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
-                resetContrastSlider();
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
+                }
                 if (legacyImages) {
                     desiImage = null;
                     processedDesiImage = null;
