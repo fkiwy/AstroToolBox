@@ -188,6 +188,8 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
+    public static final int DEFAULT_WISE_BRIGHTNESS = 0;
+    public static final int DEFAULT_DESI_BRIGHTNESS = 100;
     public static final int DEFAULT_WISE_CONTRAST = 1000;
     public static final int DEFAULT_DESI_CONTRAST = 500;
     public static final int MAXIMUM_CONTRAST = 2000;
@@ -2305,11 +2307,14 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
-        ChangeListener changeListener = brightnessSlider.getChangeListeners()[0];
+        ChangeListener changeListener;
+
+        int defaultBrightness = desiCutouts.isSelected() ? DEFAULT_DESI_BRIGHTNESS : DEFAULT_WISE_BRIGHTNESS;
+        changeListener = brightnessSlider.getChangeListeners()[0];
         brightnessSlider.removeChangeListener(changeListener);
-        brightnessSlider.setValue(0);
+        brightnessSlider.setValue(defaultBrightness);
         brightnessSlider.addChangeListener(changeListener);
-        brightness = 0;
+        brightness = defaultBrightness;
 
         int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
         changeListener = contrastSlider.getChangeListeners()[0];
