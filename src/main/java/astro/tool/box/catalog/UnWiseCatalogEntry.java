@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class UnWiseCatalogEntry implements CatalogEntry {
+public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "unWISE";
 
@@ -164,7 +164,7 @@ public class UnWiseCatalogEntry implements CatalogEntry {
 
     @Override
     public String getCatalogQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
+        return NOIRLAB_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     private String createCatalogQuery() {

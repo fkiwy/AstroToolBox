@@ -29,7 +29,7 @@ import javax.swing.table.TableRowSorter;
 
 public class LookupTab {
 
-    public static final String TAB_NAME = "Lookup Tables";
+    public static final String TAB_NAME = "Photometric Relations";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -52,7 +52,7 @@ public class LookupTab {
             JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.add(filePanel);
 
-            filePanel.add(new JLabel("Lookup table:"));
+            filePanel.add(new JLabel("Relations table:"));
 
             JComboBox lookupTables = new JComboBox(LookupTable.values());
             filePanel.add(lookupTables);
@@ -62,19 +62,15 @@ public class LookupTab {
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = String.format("Main sequence lookup table - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)", MAMAJEK_VERSION);
+                        tableName = String.format("Main sequence stars - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)", MAMAJEK_VERSION);
                         break;
                     case MLT_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
-                        tableName = "M, L & T dwarfs lookup table - Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)";
+                        tableName = "M, L & T dwarfs - Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)";
                         break;
-                    case WHITE_DWARFS_PURE_H:
-                        fileName = "/WhiteDwarfPureHLookupTable.csv";
-                        tableName = "White dwarfs pure H lookup table - Gaia photometry for white dwarfs (Carrasco et al. 2014)";
-                        break;
-                    case WHITE_DWARFS_PURE_HE:
-                        fileName = "/WhiteDwarfPureHeLookupTable.csv";
-                        tableName = "White dwarfs pure He lookup table - Gaia photometry for white dwarfs (Carrasco et al. 2014)";
+                    case WHITE_DWARFS:
+                        fileName = "/WhiteDwarfLookupTable.csv";
+                        tableName = "White dwarfs - Evolutionary cooling sequences from http://www.astro.umontreal.ca/~bergeron/CoolingModels (Bédard et al., 2020)";
                         break;
                 }
                 removeAndRecreateCenterPanel(mainPanel);
@@ -93,7 +89,6 @@ public class LookupTab {
     private void readFileContents(InputStream input, String tableName) {
         try (Scanner scanner = new Scanner(input)) {
             String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
-            int numberOfColumns = columnNames.length;
             List<String[]> rows = new ArrayList<>();
             while (scanner.hasNextLine()) {
                 String[] columnValues = scanner.nextLine().split(",", -1);

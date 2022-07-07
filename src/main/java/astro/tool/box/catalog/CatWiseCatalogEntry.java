@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact {
+public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact, Extinction {
 
     public static final String CATALOG_NAME = "CatWISE2020";
 
@@ -243,7 +243,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (isVizierTAP()) {
             return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 
@@ -252,7 +252,7 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (isVizierTAP()) {
             return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltProperMotionQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltProperMotionQuery());
         }
     }
 

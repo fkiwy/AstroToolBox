@@ -15,7 +15,6 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -299,7 +298,7 @@ public class DesCatalogEntry implements CatalogEntry {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/371/des_dr2", "RA_ICRS", "DE_ICRS");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 
@@ -402,11 +401,6 @@ public class DesCatalogEntry implements CatalogEntry {
                 + "i-z,"
                 + "z-Y";
         return columnTitles.split(",", -1);
-    }
-
-    @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
     }
 
     @Override

@@ -8,8 +8,9 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceHelper.*;
 import static astro.tool.box.util.ExternalResources.*;
+import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.util.ServiceHelper.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.Couple;
 import astro.tool.box.container.CustomOverlay;
@@ -21,6 +22,7 @@ import astro.tool.box.catalog.CatWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseRejectEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.DesCatalogEntry;
+import astro.tool.box.catalog.Extinction;
 import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaCmd;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
@@ -49,14 +51,17 @@ import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.main.Application;
-import astro.tool.box.panel.CmdPanel;
+import astro.tool.box.panel.GaiaCmdPanel;
 import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.container.ComponentInfo;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.enumeration.StatType;
+import astro.tool.box.exception.ExtinctionException;
+import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
+import astro.tool.box.panel.WiseCcdPanel;
 import astro.tool.box.panel.ReferencesPanel;
 import astro.tool.box.panel.SedPanel;
 import astro.tool.box.panel.WdSedPanel;
@@ -72,11 +77,11 @@ import astro.tool.box.shape.Triangle;
 import astro.tool.box.shape.XCross;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.DustExtinctionService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.CSVParser;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -160,6 +165,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultCaret;
 import nom.tam.fits.Fits;
@@ -177,15 +183,16 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String RANGE_LABEL = "Pixel range (min, max): (%d, %d)";
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 8;
+    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_CONTRAST = 100;
-    public static final int DEFAULT_DESI_CONTRAST = 50;
-    public static final int MAXIMUM_CONTRAST = 200;
+    public static final int DEFAULT_WISE_BRIGHTNESS = 0;
+    public static final int DEFAULT_DESI_BRIGHTNESS = 100;
+    public static final int DEFAULT_WISE_CONTRAST = 1000;
+    public static final int DEFAULT_DESI_CONTRAST = 500;
+    public static final int MAXIMUM_CONTRAST = 2000;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -217,6 +224,7 @@ public class ImageViewerTab {
     private final SpectralTypeLookupService mainSequenceSpectralTypeLookupService;
     private final SpectralTypeLookupService brownDwarfsSpectralTypeLookupService;
     private final DistanceLookupService distanceLookupService;
+    private final DustExtinctionService dustExtinctionService;
     private final List<SpectralTypeLookup> brownDwarfLookupEntries;
     private final Overlays overlays;
     private List<CatalogEntry> simbadEntries;
@@ -246,7 +254,6 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
-    private JLabel rangeLabel;
     private JLabel epochLabel;
     private JLabel panstarrsLabel;
     private JLabel aladinLiteLabel;
@@ -267,6 +274,7 @@ public class ImageViewerTab {
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
+    private JCheckBox resetContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -315,7 +323,7 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
-    private JSlider rangeSlider;
+    private JSlider brightnessSlider;
     private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
@@ -331,6 +339,7 @@ public class ImageViewerTab {
     private JTextArea crosshairCoords;
     private JTextArea downloadLog;
     private JTable collectionTable;
+    private JTable currentTable;
     private Timer timer;
 
     private BufferedImage wiseImage;
@@ -369,6 +378,7 @@ public class ImageViewerTab {
     private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
+    private int brightness;
     private int contrast;
     private int minValue;
     private int maxValue;
@@ -435,6 +445,7 @@ public class ImageViewerTab {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         catalogQueryService = new CatalogQueryService();
+        dustExtinctionService = new DustExtinctionService();
         InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -486,7 +497,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 38;
+            int rows = 39;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -539,13 +550,12 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            rangeLabel = new JLabel(String.format(RANGE_LABEL, minValue, maxValue));
-            mainControlPanel.add(rangeLabel);
+            mainControlPanel.add(new JLabel("Brightness:"));
 
-            rangeSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
-            mainControlPanel.add(rangeSlider);
-            rangeSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = MAXIMUM_CONTRAST - rangeSlider.getValue();
+            brightnessSlider = new JSlider(0, 5000, 0);
+            mainControlPanel.add(brightnessSlider);
+            brightnessSlider.addChangeListener((ChangeEvent e) -> {
+                brightness = brightnessSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -555,15 +565,15 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(0, 0, 0);
+            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
-                maxValue = contrastSlider.getMaximum() - contrastSlider.getValue();
+                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                processImages();
+                createFlipbook();
             });
 
             JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
@@ -640,8 +650,16 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                resetContrastSlider();
                 createFlipbook();
+            });
+
+            resetContrast = new JCheckBox("Auto-reset brightness & contrast", true);
+            mainControlPanel.add(resetContrast);
+            resetContrast.addActionListener((ActionEvent evt) -> {
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
+                    createFlipbook();
+                }
             });
 
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
@@ -2289,11 +2307,20 @@ public class ImageViewerTab {
     }
 
     private void resetContrastSlider() {
+        ChangeListener changeListener;
+
+        int defaultBrightness = desiCutouts.isSelected() ? DEFAULT_DESI_BRIGHTNESS : DEFAULT_WISE_BRIGHTNESS;
+        changeListener = brightnessSlider.getChangeListeners()[0];
+        brightnessSlider.removeChangeListener(changeListener);
+        brightnessSlider.setValue(defaultBrightness);
+        brightnessSlider.addChangeListener(changeListener);
+        brightness = defaultBrightness;
+
         int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
-        ChangeListener changeListener = rangeSlider.getChangeListeners()[0];
-        rangeSlider.removeChangeListener(changeListener);
-        rangeSlider.setValue(defaultContrast);
-        rangeSlider.addChangeListener(changeListener);
+        changeListener = contrastSlider.getChangeListeners()[0];
+        contrastSlider.removeChangeListener(changeListener);
+        contrastSlider.setValue(defaultContrast);
+        contrastSlider.addChangeListener(changeListener);
         contrast = MAXIMUM_CONTRAST - defaultContrast;
     }
 
@@ -2432,35 +2459,36 @@ public class ImageViewerTab {
             baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            skipIntermediateEpochs.setEnabled(false);
-            separateScanDirections.setEnabled(false);
-            differenceImaging.setEnabled(false);
-            wiseviewCutouts.setEnabled(false);
-            unwiseCutouts.setEnabled(false);
-            desiCutouts.setEnabled(false);
 
-            int panstarrsFOV = toInteger(panstarrsField.getText());
-            int aladinLiteFOV = toInteger(aladinLiteField.getText());
-            int wiseViewFOV = toInteger(wiseViewField.getText());
-            int finderChartFOV = toInteger(finderChartField.getText());
-            int defaultFOV = toInteger(sizeField.getText());
-            panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
-            aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
-            wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
-            finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-            createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
-            createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
-            createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
-                    separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
-            createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
-            createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
-            String fovSize = roundTo2DecNZ(defaultFOV / 60f);
-            createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-            createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-            createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
-            createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
+            if (!isSameTarget(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
+                skipIntermediateEpochs.setEnabled(false);
+                separateScanDirections.setEnabled(false);
+                differenceImaging.setEnabled(false);
+                wiseviewCutouts.setEnabled(false);
+                unwiseCutouts.setEnabled(false);
+                desiCutouts.setEnabled(false);
 
-            if (!isSameFoV(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
+                int panstarrsFOV = toInteger(panstarrsField.getText());
+                int aladinLiteFOV = toInteger(aladinLiteField.getText());
+                int wiseViewFOV = toInteger(wiseViewField.getText());
+                int finderChartFOV = toInteger(finderChartField.getText());
+                int defaultFOV = toInteger(sizeField.getText());
+                panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
+                aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
+                wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
+                finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
+                createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
+                createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
+                        separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
+                createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
+                createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
+                String fovSize = roundTo2DecNZ(defaultFOV / 60f);
+                createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+                createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+                createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
+                createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
+
                 loadImages = true;
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
@@ -2482,7 +2510,9 @@ public class ImageViewerTab {
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
-                resetContrastSlider();
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
+                }
                 if (legacyImages) {
                     desiImage = null;
                     processedDesiImage = null;
@@ -2849,12 +2879,6 @@ public class ImageViewerTab {
                 NumberPair refVal = getRefValues(flipbook.get(0));
                 minValue = (int) refVal.getX();
                 maxValue = (int) refVal.getY();
-                rangeLabel.setText(String.format(RANGE_LABEL, minValue, maxValue));
-                ChangeListener changeListener = contrastSlider.getChangeListeners()[0];
-                contrastSlider.removeChangeListener(changeListener);
-                contrastSlider.setMaximum(maxValue * 2);
-                contrastSlider.setValue(maxValue);
-                contrastSlider.addChangeListener(changeListener);
             }
 
             flipbookComplete = true;
@@ -3956,10 +3980,10 @@ public class ImageViewerTab {
     }
 
     private float normalize(float value, float minVal, float maxVal) {
-        value = value < minVal ? minVal : value;
-        value = value > maxVal ? maxVal : value;
-        float newMinVal = 0, newMaxVal = 1;
-        return (value - minVal) * ((newMaxVal - newMinVal) / (maxVal - minVal)) + newMinVal;
+        value = max(value, minVal);
+        value = min(value, maxVal);
+        float lowerBound = 0, upperBound = 1;
+        return (value - minVal) * ((upperBound - lowerBound) / (maxVal - minVal)) + lowerBound;
     }
 
     private NumberPair determineRefValues(float[][] values) {
@@ -3971,11 +3995,12 @@ public class ImageViewerTab {
                 }
             }
         }
-        List<Double> minOutliersRemoved = removeOutliers(data, 1, 100);
+        double lowPercentile = brightness / 100f;
+        List<Double> minOutliersRemoved = removeOutliers(data, lowPercentile, 100);
         List<Double> outliersRemoved = data;
         int oldSize = 1;
         int newSize = 0;
-        double clippingFactor = contrast / 10;
+        double clippingFactor = contrast / 100f;
         while (oldSize != newSize) {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
@@ -4023,7 +4048,7 @@ public class ImageViewerTab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(3);
+        application.getTabbedPane().setSelectedIndex(1);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);
@@ -4063,7 +4088,7 @@ public class ImageViewerTab {
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
                 image = ImageIO.read(stream);
             }
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4099,7 +4124,7 @@ public class ImageViewerTab {
             int year_i = years.get("i").intValue();
             int year_y = years.get("y").intValue();
             year_ps1_y_i_g = getMeanEpoch(year_y, year_i, year_g);
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4119,7 +4144,7 @@ public class ImageViewerTab {
                 return null;
             }
             year_ukidss_k_h_j = nirImage.getYear();
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4139,7 +4164,7 @@ public class ImageViewerTab {
                 return null;
             }
             year_vhs_k_h_j = nirImage.getYear();
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4159,7 +4184,7 @@ public class ImageViewerTab {
             //int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
             //int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
             //year_sdss_z_g_u = getMeanEpoch(year_z, year_g, year_u);
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
@@ -4173,14 +4198,10 @@ public class ImageViewerTab {
             int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
             //year_dss_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
             year_dss_2ir_1r_1b = year_2ir;
-            return isSameFoV(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
         } catch (Exception ex) {
             return null;
         }
-    }
-
-    private boolean isSameFoV(double targetRa, double targetDec, double size, double previousRa, double previousDec, double previousSize) {
-        return targetRa == previousRa && targetDec == previousDec && size == previousSize;
     }
 
     private void displayDssImages(double targetRa, double targetDec, int size, Counter counter) {
@@ -5273,7 +5294,7 @@ public class ImageViewerTab {
             double radius = getOverlaySize() / 2;
             if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
-                displayCatalogPanel(catalogEntry, color);
+                displayCatalogPanel(catalogEntry, color, true);
             }
         });
     }
@@ -5283,12 +5304,12 @@ public class ImageViewerTab {
             double radius = getOverlaySize() / 2;
             if (catalogEntry.getPixelRa() > x - radius && catalogEntry.getPixelRa() < x + radius
                     && catalogEntry.getPixelDec() > y - radius && catalogEntry.getPixelDec() < y + radius) {
-                displayCatalogPanel(catalogEntry, color);
+                displayCatalogPanel(catalogEntry, color, true);
             }
         });
     }
 
-    private void displayCatalogPanel(CatalogEntry catalogEntry, Color color) {
+    private void displayCatalogPanel(CatalogEntry catalogEntry, Color color, boolean addExtinctionCheckbox) {
         boolean simpleLayout = catalogEntry instanceof GenericCatalogEntry || catalogEntry instanceof SsoCatalogEntry;
         List<CatalogElement> catalogElements = catalogEntry.getCatalogElements();
 
@@ -5301,10 +5322,10 @@ public class ImageViewerTab {
         if (simpleLayout) {
             maxRows = rows > 30 ? rows : 30;
         } else {
-            maxRows = rows > 19 ? rows : 19;
+            maxRows = rows > 20 ? rows : 20;
         }
 
-        JPanel detailPanel = new JPanel(new GridLayout(maxRows, 4));
+        JPanel detailPanel = new JPanel(new GridLayout(0, 4));
         detailPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), catalogEntry.getCatalogName() + " entry (Computed values are shown in green; (*) Further info: mouse pointer)", TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -5324,9 +5345,7 @@ public class ImageViewerTab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setPreferredSize(new Dimension(650, 330));
-        scrollPanel.setMinimumSize(new Dimension(650, 330));
-        //scrollPanel.setMaximumSize(new Dimension(650, 330));
+        scrollPanel.setMinimumSize(new Dimension(675, 350));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -5336,7 +5355,7 @@ public class ImageViewerTab {
         if (!simpleLayout) {
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             if (!mainSequenceResults.isEmpty()) {
-                container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
+                container.add(createMainSequenceSpectralTypePanel(mainSequenceResults, catalogEntry, color));
                 if (catalogEntry instanceof AllWiseCatalogEntry) {
                     AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
                     if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
@@ -5356,10 +5375,10 @@ public class ImageViewerTab {
             }
             List<LookupResult> brownDwarfsResults = brownDwarfsSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             if (!brownDwarfsResults.isEmpty()) {
-                container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults));
+                container.add(createBrownDwarfsSpectralTypePanel(brownDwarfsResults, catalogEntry, color));
             }
             if (mainSequenceResults.isEmpty() && brownDwarfsResults.isEmpty()) {
-                container.add(createMainSequenceSpectralTypePanel(mainSequenceResults));
+                container.add(createMainSequenceSpectralTypePanel(mainSequenceResults, catalogEntry, color));
                 JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 messagePanel.add(createLabel("No colors available / No match", JColor.RED));
                 container.add(messagePanel);
@@ -5456,16 +5475,16 @@ public class ImageViewerTab {
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                JFrame sedFrame = new JFrame();
-                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                sedFrame.setIconImage(getToolBoxImage());
-                sedFrame.setTitle("SED");
-                sedFrame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
-                sedFrame.setSize(1000, 900);
-                sedFrame.setLocation(0, 0);
-                sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(true);
-                sedFrame.setVisible(true);
+                JFrame frame = new JFrame();
+                frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                frame.setIconImage(getToolBoxImage());
+                frame.setTitle("SED");
+                frame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+                frame.setSize(1000, 900);
+                frame.setLocation(0, 0);
+                frame.setAlwaysOnTop(false);
+                frame.setResizable(true);
+                frame.setVisible(true);
                 createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
@@ -5473,36 +5492,88 @@ public class ImageViewerTab {
             buttonPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                JFrame sedFrame = new JFrame();
-                sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                sedFrame.setIconImage(getToolBoxImage());
-                sedFrame.setTitle("WD SED");
-                sedFrame.add(new WdSedPanel(catalogQueryService, catalogEntry, baseFrame));
-                sedFrame.setSize(1000, 900);
-                sedFrame.setLocation(0, 0);
-                sedFrame.setAlwaysOnTop(false);
-                sedFrame.setResizable(true);
-                sedFrame.setVisible(true);
+                JFrame frame = new JFrame();
+                frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                frame.setIconImage(getToolBoxImage());
+                frame.setTitle("WD SED");
+                frame.add(new WdSedPanel(catalogQueryService, catalogEntry, baseFrame));
+                frame.setSize(1000, 900);
+                frame.setLocation(0, 0);
+                frame.setAlwaysOnTop(false);
+                frame.setResizable(true);
+                frame.setVisible(true);
                 createWdSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
+            JButton createCcdButton = new JButton("WISE CCD");
+            buttonPanel.add(createCcdButton);
+            createCcdButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    JFrame frame = new JFrame();
+                    frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    frame.setIconImage(getToolBoxImage());
+                    frame.setTitle("WISE CCD");
+                    frame.add(new WiseCcdPanel(catalogQueryService, catalogEntry, baseFrame));
+                    frame.setSize(1000, 900);
+                    frame.setLocation(0, 0);
+                    frame.setAlwaysOnTop(false);
+                    frame.setResizable(true);
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, ex.getMessage());
+                } finally {
+                    createCcdButton.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
             if (catalogEntry instanceof GaiaCmd) {
-                JButton createCmdButton = new JButton("CMD");
-                buttonPanel.add(createCmdButton);
+                JButton createCmdButton = new JButton("Gaia CMD");
+                collectPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
                     try {
-                        JFrame sedFrame = new JFrame();
-                        sedFrame.addWindowListener(getChildWindowAdapter(baseFrame));
-                        sedFrame.setIconImage(getToolBoxImage());
-                        sedFrame.setTitle("CMD");
-                        sedFrame.add(new CmdPanel((GaiaCmd) catalogEntry));
-                        sedFrame.setSize(1000, 900);
-                        sedFrame.setLocation(0, 0);
-                        sedFrame.setAlwaysOnTop(false);
-                        sedFrame.setResizable(true);
-                        sedFrame.setVisible(true);
+                        createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        JFrame frame = new JFrame();
+                        frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                        frame.setIconImage(getToolBoxImage());
+                        frame.setTitle("Gaia CMD");
+                        frame.add(new GaiaCmdPanel((GaiaCmd) catalogEntry));
+                        frame.setSize(1000, 900);
+                        frame.setLocation(0, 0);
+                        frame.setAlwaysOnTop(false);
+                        frame.setResizable(true);
+                        frame.setVisible(true);
                     } catch (Exception ex) {
                         showErrorDialog(baseFrame, ex.getMessage());
+                    } finally {
+                        createCmdButton.setCursor(Cursor.getDefaultCursor());
+                    }
+                });
+            }
+
+            if (addExtinctionCheckbox && catalogEntry instanceof Extinction) {
+                final Extinction selectedEntry = (Extinction) catalogEntry.copy();
+                JPanel extinctionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                toolsPanel.add(extinctionPanel);
+                JCheckBox dustExtinction = new JCheckBox("Apply extinction correction for bands u, g, r, i, z, J, H, K, W1 & W2 (Schlafly & Finkbeiner, 2011)");
+                extinctionPanel.add(dustExtinction);
+                dustExtinction.addActionListener((ActionEvent evt) -> {
+                    if (dustExtinction.isSelected()) {
+                        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        try {
+                            Map<String, Double> extinctionsByBand = dustExtinctionService.getExtinctionsByBand(selectedEntry.getRa(), selectedEntry.getDec(), 2.0);
+                            try {
+                                selectedEntry.applyExtinctionCorrection(extinctionsByBand);
+                                selectedEntry.loadCatalogElements();
+                                displayCatalogPanel(selectedEntry, color, false);
+                            } catch (ExtinctionException ex) {
+                                extinctionPanel.add(createLabel("No extinction values for " + selectedEntry.getCatalogName() + " bands.", JColor.RED));
+                            }
+                        } catch (Exception ex) {
+                            showExceptionDialog(baseFrame, ex);
+                        } finally {
+                            baseFrame.setCursor(Cursor.getDefaultCursor());
+                        }
                     }
                 });
             }
@@ -5513,7 +5584,7 @@ public class ImageViewerTab {
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        detailsFrame.setSize(650, 650);
+        detailsFrame.setSize(675, 675);
         detailsFrame.setLocation(windowShift, windowShift);
         detailsFrame.setAlwaysOnTop(false);
         detailsFrame.setResizable(true);
@@ -5521,7 +5592,7 @@ public class ImageViewerTab {
         windowShift += 10;
     }
 
-    private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results) {
+    private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results, CatalogEntry catalogEntry, Color color) {
         List<String[]> spectralTypes = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
@@ -5546,15 +5617,31 @@ public class ImageViewerTab {
         columnModel.getColumn(5).setPreferredWidth(75);
         columnModel.getColumn(6).setPreferredWidth(75);
 
+        spectralTypeTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if (!e.getValueIsAdjusting()) {
+                if (currentTable != null && currentTable != spectralTypeTable) {
+                    try {
+                        currentTable.clearSelection();
+                    } catch (Exception ex) {
+                    }
+                }
+                currentTable = spectralTypeTable;
+                String spt = (String) spectralTypeTable.getValueAt(spectralTypeTable.getSelectedRow(), 0);
+                List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(spt, catalogEntry.getBands());
+                createDistanceEstimatesPanel(distanceResults, spt, color);
+            }
+        });
+
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Main sequence spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html("Main sequence spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
     }
 
-    private JScrollPane createBrownDwarfsSpectralTypePanel(List<LookupResult> results) {
+    private JScrollPane createBrownDwarfsSpectralTypePanel(List<LookupResult> results, CatalogEntry catalogEntry, Color color) {
         List<String[]> spectralTypes = new ArrayList<>();
         results.forEach(entry -> {
             String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
@@ -5575,12 +5662,74 @@ public class ImageViewerTab {
         columnModel.getColumn(2).setPreferredWidth(75);
         columnModel.getColumn(3).setPreferredWidth(50);
 
+        spectralTypeTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if (!e.getValueIsAdjusting()) {
+                if (currentTable != null && currentTable != spectralTypeTable) {
+                    try {
+                        currentTable.clearSelection();
+                    } catch (Exception ex) {
+                    }
+                }
+                currentTable = spectralTypeTable;
+                String spt = (String) spectralTypeTable.getValueAt(spectralTypeTable.getSelectedRow(), 0);
+                List<DistanceLookupResult> distanceResults = distanceLookupService.lookup(spt, catalogEntry.getBands());
+                createDistanceEstimatesPanel(distanceResults, spt, color);
+            }
+        });
+
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
+        spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "M, L & T dwarfs spectral type estimates", TitledBorder.LEFT, TitledBorder.TOP
+                BorderFactory.createEtchedBorder(), html("M, L & T dwarfs spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
 
         return spectralTypePanel;
+    }
+
+    private void createDistanceEstimatesPanel(List<DistanceLookupResult> results, String spt, Color color) {
+        List<String[]> distances = new ArrayList<>();
+        results.forEach(entry -> {
+            String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
+            String distance = roundTo3Dec(entry.getDistance());
+            if (entry.getDistanceError() > 0) {
+                distance += "±" + roundTo3Dec(entry.getDistanceError());
+            }
+            String resutValues = distance + "," + matchedBand;
+            distances.add(resutValues.split(",", -1));
+        });
+
+        String titles = "distance (pc),matched bands";
+        String[] columns = titles.split(",", -1);
+        Object[][] rows = new Object[][]{};
+        JTable distanceTable = new JTable(distances.toArray(rows), columns);
+        alignResultColumns(distanceTable, distances);
+        distanceTable.setAutoCreateRowSorter(true);
+        distanceTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = distanceTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(100);
+        columnModel.getColumn(1).setPreferredWidth(100);
+
+        JScrollPane distancePanel = new JScrollPane(distanceTable);
+        distancePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Spectral type: " + spt, TitledBorder.LEFT, TitledBorder.TOP
+        ));
+
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setBorder(new LineBorder(color, 3));
+        container.add(distancePanel);
+
+        JFrame detailsFrame = new JFrame();
+        detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
+        detailsFrame.setIconImage(getToolBoxImage());
+        detailsFrame.setTitle("Photometric distance estimates");
+        detailsFrame.add(container);
+        detailsFrame.setSize(500, 300);
+        detailsFrame.setLocation(windowShift, windowShift);
+        detailsFrame.setAlwaysOnTop(true);
+        detailsFrame.setResizable(true);
+        detailsFrame.setVisible(true);
+        windowShift += 10;
     }
 
     private double getFovDiagonal() {

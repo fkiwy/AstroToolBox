@@ -6,7 +6,7 @@ import astro.tool.box.enumeration.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpectralTypeLookupEntry implements MainSequenceLookup {
+public class SpectralTypeLookupEntry implements SpectralTypeLookup {
 
     // Spectral type
     private final String spt;
@@ -38,7 +38,6 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
         // 2MASS
         //colors.put(Color.J_H, toDouble(values[18]));
         //colors.put(Color.H_K, toDouble(values[19]));
-
         // WISE
         //colors.put(Color.K_W1, toDouble(values[20]));
         colors.put(Color.W1_W2, toDouble(values[21]));
@@ -64,7 +63,6 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
             //colors.put(Color.e_H_K, toDouble(values[19]));
             //colors.put(Color.E_J_H, toDouble(values[18]));
             //colors.put(Color.E_H_K, toDouble(values[19]));
-
             // WISE
             //colors.put(Color.e_K_W1, toDouble(values[20]));
             colors.put(Color.e_W1_W2, toDouble(values[21]));
@@ -106,16 +104,6 @@ public class SpectralTypeLookupEntry implements MainSequenceLookup {
     @Override
     public double getMsun() {
         return msun;
-    }
-
-    @Override
-    public double getLogG() {
-        return 0;
-    }
-
-    @Override
-    public String getAge() {
-        return "";
     }
 
     @Override

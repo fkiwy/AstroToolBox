@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GaiaWDCatalogEntry implements CatalogEntry {
+public class GaiaWDCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "Gaia EDR3 WD";
 

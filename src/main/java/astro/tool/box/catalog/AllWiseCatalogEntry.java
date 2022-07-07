@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class AllWiseCatalogEntry implements CatalogEntry {
+public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "AllWISE";
 
@@ -346,7 +346,7 @@ public class AllWiseCatalogEntry implements CatalogEntry {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/328/allwise", "RAJ2000", "DEJ2000");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 

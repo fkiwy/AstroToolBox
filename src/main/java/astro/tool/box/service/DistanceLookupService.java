@@ -23,6 +23,7 @@ public class DistanceLookupService {
         if (spt == null || apparentMagnitudes.isEmpty()) {
             return results;
         }
+        spt = spt.replace("V", "");
         Map<Band, Double> absoluteMagnitudes = null;
         Map<Band, Double> absoluteMagnitudesErrors = null;
         for (SpectralTypeLookup lookupEntry : entries) {

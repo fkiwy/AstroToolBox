@@ -5,7 +5,6 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.exception.ExtinctionException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +21,6 @@ public interface CatalogEntry {
     }
 
     CatalogEntry copy();
-
-    void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException;
 
     CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 

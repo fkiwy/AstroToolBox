@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TessCatalogEntry implements CatalogEntry, WhiteDwarf {
+public class TessCatalogEntry implements CatalogEntry, WhiteDwarf, Extinction {
 
     public static final String CATALOG_NAME = "TESS Input Catalog";
 

@@ -280,7 +280,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 catalogQuery = createCatalogQueryUDS();
                 break;
         }
-        return NOAO_TAP_URL + encodeQuery(catalogQuery);
+        return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
     }
 
     @Override
@@ -304,7 +304,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 catalogQuery = createProperMotionQuery(queryBuilder);
                 break;
         }
-        return NOAO_TAP_URL + encodeQuery(catalogQuery);
+        return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
     }
 
     private String createCatalogQueryLAS() {
@@ -500,19 +500,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
                 + "J-Ks,"
                 + "tpm (mas/yr)";
         return columnTitles.split(",", -1);
-    }
-
-    @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        if (j_ap3 != 0) {
-            j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
-        }
-        if (h_ap3 != 0) {
-            h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
-        }
-        if (ks_ap3 != 0) {
-            ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
-        }
     }
 
     @Override

@@ -7,7 +7,6 @@ import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import astro.tool.box.tab.AdqlQueryTab;
 import astro.tool.box.tab.BatchQueryTab;
-import astro.tool.box.tab.BrownDwarfTab;
 import astro.tool.box.tab.CatalogQueryTab;
 import astro.tool.box.tab.CustomOverlaysTab;
 import astro.tool.box.tab.FileBrowserTab;
@@ -19,7 +18,6 @@ import astro.tool.box.tab.SettingsTab;
 import astro.tool.box.tab.ImageSeriesTab;
 import astro.tool.box.tab.ToolTab;
 import astro.tool.box.tab.VizierCatalogsTab;
-import astro.tool.box.tab.WhiteDwarfTab;
 import astro.tool.box.util.CSVParser;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -78,12 +76,6 @@ public class Application {
         catalogQueryTab = new CatalogQueryTab(baseFrame, tabbedPane);
         catalogQueryTab.init();
 
-        BrownDwarfTab brownDwarfTab = new BrownDwarfTab(baseFrame, tabbedPane, catalogQueryTab);
-        brownDwarfTab.init();
-
-        WhiteDwarfTab whiteDwarfTab = new WhiteDwarfTab(baseFrame, tabbedPane, catalogQueryTab);
-        whiteDwarfTab.init();
-
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
         imageViewerTab.init();
 
@@ -98,7 +90,7 @@ public class Application {
         VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
         vizierCatalogsTab.init();
 
-        AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane, catalogQueryTab);
+        AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane);
         adqlQueryTab.init();
 
         BatchQueryTab batchQueryTab = new BatchQueryTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
@@ -122,7 +114,7 @@ public class Application {
         SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
         settingsTab.init();
 
-        tabbedPane.setSelectedIndex(3);
+        tabbedPane.setSelectedIndex(1);
 
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);

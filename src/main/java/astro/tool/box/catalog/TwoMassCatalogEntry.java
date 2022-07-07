@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class TwoMassCatalogEntry implements CatalogEntry {
+public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
 
     public static final String CATALOG_NAME = "2MASS";
 
@@ -308,7 +308,7 @@ public class TwoMassCatalogEntry implements CatalogEntry {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/246/out", "RAJ2000", "DEJ2000");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 

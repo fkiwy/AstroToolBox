@@ -218,7 +218,7 @@ public class VhsCatalogEntry implements CatalogEntry {
         if (isVizierTAP()) {
             return createVizieRUrl(ra, dec, searchRadius / DEG_ARCSEC, "II/367/vhs_dr5", "RAJ2000", "DEJ2000");
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 
@@ -287,19 +287,6 @@ public class VhsCatalogEntry implements CatalogEntry {
                 + "H-Ks,"
                 + "J-Ks";
         return columnTitles.split(",", -1);
-    }
-
-    @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) {
-        if (j_ap3 != 0) {
-            j_ap3 = j_ap3 - extinctionsByBand.get(TWO_MASS_J);
-        }
-        if (h_ap3 != 0) {
-            h_ap3 = h_ap3 - extinctionsByBand.get(TWO_MASS_H);
-        }
-        if (ks_ap3 != 0) {
-            ks_ap3 = ks_ap3 - extinctionsByBand.get(TWO_MASS_K);
-        }
     }
 
     @Override

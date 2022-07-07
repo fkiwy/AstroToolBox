@@ -12,7 +12,6 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.exception.ExtinctionException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -270,12 +269,12 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String getCatalogQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createCatalogQuery());
+        return NOIRLAB_TAP_URL + encodeQuery(createCatalogQuery());
     }
 
     @Override
     public String getMotionQueryUrl() {
-        return NOAO_TAP_URL + encodeQuery(createProperMotionQuery());
+        return NOIRLAB_TAP_URL + encodeQuery(createProperMotionQuery());
     }
 
     private String createCatalogQuery() {
@@ -318,7 +317,7 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         StringBuilder query = new StringBuilder();
         addRow(query, createCatalogQuery());
         addRow(query, "AND    class_star > 0.5");
-        addRow(query, "AND    ndet > 3");
+        addRow(query, "AND    ndet > 2");
         addRow(query, "AND    deltamjd > 180");
         addRow(query, "AND    SQRT(pmra * pmra + pmdec * pmdec) >= " + tpm);
         return query.toString();
@@ -405,11 +404,6 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
                 + "z-Y,"
                 + "tpm (mas/yr)";
         return columnTitles.split(",", -1);
-    }
-
-    @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
     }
 
     @Override

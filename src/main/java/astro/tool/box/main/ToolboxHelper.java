@@ -137,13 +137,14 @@ import org.json.JSONObject;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "2.5.1";
+    public static final String PGM_VERSION = "2.6.0";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
-    public static final String INFO_ICON = "&#128712";
+    public static final String INFO_ICON = "<span style='color:red'>&#128712</span>";
+    public static final String PHOT_DIST_INFO = "Clicking on a table row displays photometric distance estimates for the specified spectral type.";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
     private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
@@ -337,6 +338,10 @@ public class ToolboxHelper {
         return BorderFactory.createTitledBorder(
                 BorderFactory.createEmptyBorder(), boderTitle, TitledBorder.LEFT, TitledBorder.TOP, null, titleColor
         );
+    }
+
+    public static boolean isSameTarget(double targetRa, double targetDec, double size, double previousRa, double previousDec, double previousSize) {
+        return targetRa == previousRa && targetDec == previousDec && size == previousSize;
     }
 
     public static NumberPair getCoordinates(String coords) {

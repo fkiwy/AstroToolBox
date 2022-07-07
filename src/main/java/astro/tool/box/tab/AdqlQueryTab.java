@@ -5,9 +5,6 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import static astro.tool.box.util.MiscUtils.*;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.enumeration.TapProvider;
@@ -49,7 +46,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -86,7 +82,6 @@ public class AdqlQueryTab {
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
-    private final CatalogQueryTab catalogQueryTab;
 
     private JPanel centerPanel;
     private JPanel catalogPanel;
@@ -107,10 +102,9 @@ public class AdqlQueryTab {
 
     private DocumentBuilder builder;
 
-    public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab) {
+    public AdqlQueryTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
-        this.catalogQueryTab = catalogQueryTab;
     }
 
     public void init() {
@@ -459,6 +453,11 @@ public class AdqlQueryTab {
                 String encodedQuery = query.replaceAll(" +", "%20");
                 try {
                     String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)), QUERY_SERVICE);
+                    if (TapProvider.ESAC.equals(getTapProvider())) {
+                        // Transform mutliple lines to single lines
+                        result = result.replace("\n\"\r\n", "").replace("\n\"", "[br]").replace("\r\n", " ").replace("[br]", "\n\"");
+                    }
+
                     catalogPanel = new JPanel(new GridLayout(1, 2));
                     centerPanel.add(catalogPanel);
 
@@ -495,26 +494,6 @@ public class AdqlQueryTab {
                     showExceptionDialog(baseFrame, ex);
                 } finally {
                     browseButton.setCursor(Cursor.getDefaultCursor());
-                }
-            });
-
-            tabbedPane.addChangeListener((ChangeEvent evt) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
-                int index = sourceTabbedPane.getSelectedIndex();
-                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
-                    String query = textEditor.getText();
-                    if (query.isEmpty() || query.contains("Find all comovers")) {
-                        CatalogEntry selectedEntry = catalogQueryTab.getSelectedEntry();
-                        if (selectedEntry != null && (selectedEntry instanceof GaiaDR2CatalogEntry || selectedEntry instanceof GaiaDR3CatalogEntry)) {
-                            tapProvider.setSelectedItem(TapProvider.IRSA);
-                            String comoverQuery = createComoverQuery();
-                            comoverQuery = comoverQuery.replace("[RA]", roundTo7DecNZ(selectedEntry.getRa()));
-                            comoverQuery = comoverQuery.replace("[DE]", roundTo7DecNZ(selectedEntry.getDec()));
-                            comoverQuery = comoverQuery.replace("[PMRA]", roundTo3DecNZ(selectedEntry.getPmra()));
-                            comoverQuery = comoverQuery.replace("[PMDE]", roundTo3DecNZ(selectedEntry.getPmdec()));
-                            textEditor.setText(comoverQuery);
-                        }
-                    }
                 }
             });
 
@@ -631,31 +610,6 @@ public class AdqlQueryTab {
         return resultScrollPanel;
     }
 
-    private String createComoverQuery() {
-        StringBuilder query = new StringBuilder();
-        addRow(query, "-- Find all comovers in Gaia within a radius of one degree, having proper motions within +/- 10% of the target's ones");
-        addRow(query, "SELECT ra AS RA,");
-        addRow(query, "       dec AS dec,");
-        addRow(query, "       source_id AS source_id,");
-        addRow(query, "       parallax AS plx,");
-        addRow(query, "       pmra AS pmRA,");
-        addRow(query, "       pmdec AS pmdec,");
-        addRow(query, "       phot_g_mean_mag AS G,");
-        addRow(query, "       phot_bp_mean_mag AS BP,");
-        addRow(query, "       phot_rp_mean_mag AS RP,");
-        addRow(query, "       phot_g_mean_mag - phot_rp_mean_mag AS \"G-RP\",");
-        addRow(query, "       bp_rp AS \"BP-RP\",");
-        addRow(query, "       radial_velocity AS RV,");
-        addRow(query, "       teff_val AS Teff,");
-        addRow(query, "       radius_val AS Radius,");
-        addRow(query, "       lum_val AS Lum");
-        addRow(query, "FROM   gaia_dr2_source");
-        addRow(query, "WHERE  1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', [RA], [DE], 1))");
-        addRow(query, "AND   (pmra  BETWEEN [PMRA] - 10 AND [PMRA] + 10");
-        addRow(query, "AND    pmdec BETWEEN [PMDE] - 10 AND [PMDE] + 10)");
-        return query.toString();
-    }
-
     private String createSynchQueryUrl(String query) {
         return getTapProviderUrl() + "/sync?request=doQuery&lang=ADQL&format=csv&query=" + query;
     }
@@ -685,28 +639,15 @@ public class AdqlQueryTab {
     }
 
     private String getTapProviderUrl() {
-        switch (getTapProvider()) {
-            case IRSA:
-                return IRSA_TAP_URL;
-            case VIZIER:
-                return VIZIER_BASE_URL;
-            case NOIRLAB:
-                return NOAO_BASE_URL;
-            default:
-                return null;
-        }
+        return getTapProvider().val;
     }
 
     private String getJobIdentifier(String response) throws Exception {
-        switch (getTapProvider()) {
-            case IRSA:
-            case NOIRLAB:
-                return parseXml(response, "uws:jobId");
-            case VIZIER:
-                return parseXml(response, "jobId");
-            default:
-                return null;
+        String id = parseXml(response, "jobId");
+        if (id.isEmpty()) {
+            id = parseXml(response, "uws:jobId");
         }
+        return id;
     }
 
     private String getErrorMessage(String response) throws Exception {

@@ -12,7 +12,6 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -253,7 +252,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (isVizierTAP()) {
             return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltCatalogQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltCatalogQuery());
         }
     }
 
@@ -262,7 +261,7 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (isVizierTAP()) {
             return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
         } else {
-            return NOAO_TAP_URL + encodeQuery(createAltProperMotionQuery());
+            return NOIRLAB_TAP_URL + encodeQuery(createAltProperMotionQuery());
         }
     }
 
@@ -409,11 +408,6 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
                 + "tang vel (km/s),"
                 + "tot vel (km/s)";
         return columnTitles.split(",", -1);
-    }
-
-    @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
     }
 
     @Override

@@ -13,7 +13,6 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import astro.tool.box.exception.ExtinctionException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -247,11 +246,6 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
     public String[] getColumnTitles() {
         String columnTitles = "dist (arcsec),source id,object name,quality flag,ra,ra err (arcsec),dec,dec err (arcsec),mean observ. time,detections,g (mag),g err,r (mag),r err,i (mag),i err,z (mag),z err,y (mag),y err,g-r,r-i,i-z,z-y";
         return columnTitles.split(",", -1);
-    }
-
-    @Override
-    public void applyExtinctionCorrection(Map<String, Double> extinctionsByBand) throws ExtinctionException {
-        throw new ExtinctionException();
     }
 
     @Override
