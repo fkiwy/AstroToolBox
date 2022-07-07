@@ -2,7 +2,7 @@
 
 <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
-[Download latest version](releases/executables/AstroToolBox-2.5.0.jar)
+[Download latest version](releases/executables/AstroToolBox-2.6.0.jar)
 
 [Download Gaia DR3 custom overlays](releases/resources/AstroToolBoxOverlays.txt)
 
