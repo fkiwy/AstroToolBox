@@ -11,7 +11,6 @@ import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -85,12 +85,11 @@ public class CustomOverlaysTab {
             JButton addButton = new JButton("Create new overlay");
             topPanel.add(addButton);
 
-            GridLayout layout = new GridLayout(25, 1);
-            JPanel overlayPanel = new JPanel(layout);
+            JPanel overlayPanel = new JPanel();
+            overlayPanel.setLayout(new BoxLayout(overlayPanel, BoxLayout.Y_AXIS));
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
             addButton.addActionListener((ActionEvent evt) -> {
-                layout.setRows(layout.getRows() + 1);
                 addOverlayRow(overlayPanel, new CustomOverlay());
                 baseFrame.setVisible(true);
             });
