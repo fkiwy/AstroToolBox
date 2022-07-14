@@ -188,7 +188,7 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_BRIGHTNESS = 0;
+    public static final int DEFAULT_WISE_BRIGHTNESS = 100;
     public static final int DEFAULT_DESI_BRIGHTNESS = 100;
     public static final int DEFAULT_WISE_CONTRAST = 1000;
     public static final int DEFAULT_DESI_CONTRAST = 500;
@@ -647,8 +647,13 @@ public class ImageViewerTab {
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
                     blurImages.setSelected(true);
+                    brightnessSlider.setEnabled(false);
                 } else {
                     blurImages.setSelected(false);
+                    brightnessSlider.setEnabled(true);
+                }
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
                 }
                 createFlipbook();
             });
