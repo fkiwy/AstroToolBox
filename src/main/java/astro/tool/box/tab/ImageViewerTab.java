@@ -2934,34 +2934,27 @@ public class ImageViewerTab {
     }
 
     private NumberPair getRefValues(FlipbookComponent component) throws Exception {
+        double minVal = 0;
+        double maxVal = 0;
         Fits fits;
-        int divisor = 0;
-        int minValW1 = 0;
-        int maxValW1 = 0;
         fits = component.getFits1();
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             NumberPair refValues = determineRefValues(values);
-            minValW1 = (int) refValues.getX();
-            maxValW1 = (int) refValues.getY();
-            divisor++;
+            minVal = refValues.getX();
+            maxVal = refValues.getY();
         }
-        int minValW2 = 0;
-        int maxValW2 = 0;
         fits = component.getFits2();
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             NumberPair refValues = determineRefValues(values);
-            minValW2 = (int) refValues.getX();
-            maxValW2 = (int) refValues.getY();
-            divisor++;
+            minVal = refValues.getX();
+            maxVal = refValues.getY();
         }
-        int minVal = (minValW1 + minValW2) / divisor;
-        int maxVal = (maxValW1 + maxValW2) / divisor;
         return new NumberPair(minVal, maxVal);
     }
 
@@ -4000,12 +3993,13 @@ public class ImageViewerTab {
                 }
             }
         }
+        double mean = calculateMean(data);
         double lowPercentile = brightness / 100f;
         List<Double> minOutliersRemoved = removeOutliers(data, lowPercentile, 100);
         List<Double> outliersRemoved = data;
         int oldSize = 1;
         int newSize = 0;
-        double clippingFactor = contrast / 100f;
+        double clippingFactor = (mean > 150 ? contrast / 2 : contrast) / 100f;
         while (oldSize != newSize) {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
