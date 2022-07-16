@@ -2934,28 +2934,28 @@ public class ImageViewerTab {
     }
 
     private NumberPair getRefValues(FlipbookComponent component) throws Exception {
-        double minVal = 0;
-        double maxVal = 0;
         Fits fits;
-        fits = component.getFits1();
-        if (fits != null) {
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values = (float[][]) imageData.getData();
-            NumberPair refValues = determineRefValues(values);
-            minVal = refValues.getX();
-            maxVal = refValues.getY();
-        }
         fits = component.getFits2();
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             NumberPair refValues = determineRefValues(values);
-            minVal = refValues.getX();
-            maxVal = refValues.getY();
+            double minVal = refValues.getX();
+            double maxVal = refValues.getY();
+            return new NumberPair(minVal, maxVal);
         }
-        return new NumberPair(minVal, maxVal);
+        fits = component.getFits1();
+        if (fits != null) {
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+            NumberPair refValues = determineRefValues(values);
+            double minVal = refValues.getX();
+            double maxVal = refValues.getY();
+            return new NumberPair(minVal, maxVal);
+        }
+        return null;
     }
 
     private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
