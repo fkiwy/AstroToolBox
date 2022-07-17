@@ -5,6 +5,7 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.tab.SettingsTab.*;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.enumeration.TapProvider;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import javax.swing.BoxLayout;
@@ -75,8 +77,6 @@ public class AdqlQueryTab {
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
     private static final String AVAILABLE_TABLES = "Available tables";
-    private static final String JOB_ID = "jobId";
-    private static final String ASYNC_TAP_PROVIDER = "asyncTapProvider";
     private static final TapProvider DEFAULT_TAP_PROVIDER = TapProvider.VIZIER;
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
@@ -88,6 +88,7 @@ public class AdqlQueryTab {
     private JTextField statusField;
     private JTextField elapsedTime;
     private JComboBox tapProvider;
+    private JComboBox jobIds;
     private TableRowSorter<TableModel> catalogTableSorter;
     private TableRowSorter<TableModel> catalogColumnSorter;
 
@@ -262,9 +263,7 @@ public class AdqlQueryTab {
                             params = new ArrayList<>();
                             params.add(new BasicNameValuePair("PHASE", "RUN"));
                             response = doPost(createStatusUrl(jobId), params);
-                            SettingsTab.setUserSetting(JOB_ID, jobId);
-                            SettingsTab.setUserSetting(ASYNC_TAP_PROVIDER, getTapProvider().name());
-                            SettingsTab.saveSettings();
+                            addJobId(jobId, getTapProvider());
                         } catch (Exception ex) {
                             stopClock();
                             initStatus();
@@ -392,8 +391,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("PHASE", "ABORT"));
                     doPost(createStatusUrl(jobId), params);
-                    SettingsTab.setUserSetting(JOB_ID, "");
-                    SettingsTab.saveSettings();
+                    removeJobId(jobId, getTapProvider());
                     showInfoDialog(baseFrame, "Query aborted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -415,8 +413,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("ACTION", "DELETE"));
                     doPost(createDeleteUrl(jobId), params);
-                    SettingsTab.setUserSetting(JOB_ID, "");
-                    SettingsTab.saveSettings();
+                    removeJobId(jobId, getTapProvider());
                     showInfoDialog(baseFrame, "Query deleted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -425,24 +422,34 @@ public class AdqlQueryTab {
 
             firstRow.add(message);
 
-            JButton resumeButton = new JButton("Resume query");
-            secondRow.add(resumeButton);
-            resumeButton.addActionListener((ActionEvent evt) -> {
-                jobId = SettingsTab.getUserSetting(JOB_ID, "");
-                if (!jobId.isEmpty()) {
-                    String provider = SettingsTab.getUserSetting(ASYNC_TAP_PROVIDER, DEFAULT_TAP_PROVIDER.name());
-                    tapProvider.setSelectedItem(TapProvider.valueOf(provider));
-                    statusField.setText("Resuming ...");
-                    statusField.setBackground(JColor.LIGHT_NAVY.val);
-                    startClock();
-                }
-            });
-
             secondRow.add(new JLabel("TAP provider:"));
 
             tapProvider = new JComboBox(TapProvider.values());
             secondRow.add(tapProvider);
             tapProvider.setSelectedItem(DEFAULT_TAP_PROVIDER);
+            tapProvider.addActionListener((ActionEvent evt) -> {
+                refreshJobIdList();
+            });
+
+            secondRow.add(new JLabel("Job ids for selected TAP provider:"));
+
+            String[] ids = retrieveJobIds(getTapProvider());
+            jobIds = new JComboBox(ids);
+            secondRow.add(jobIds);
+            jobIds.addActionListener((ActionEvent evt) -> {
+                jobId = (String) jobIds.getSelectedItem();
+            });
+
+            JButton resumeButton = new JButton("Resume query");
+            secondRow.add(resumeButton);
+            resumeButton.addActionListener((ActionEvent evt) -> {
+                jobId = (String) jobIds.getSelectedItem();
+                if (jobId != null && !jobId.isEmpty()) {
+                    statusField.setText("Resuming ...");
+                    statusField.setBackground(JColor.LIGHT_NAVY.val);
+                    startClock();
+                }
+            });
 
             JButton browseButton = new JButton("Browse tables");
             secondRow.add(browseButton);
@@ -500,6 +507,53 @@ public class AdqlQueryTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void addJobId(String id, TapProvider provider) {
+        List<String> ids = retrieveJobIdsAsList(provider);
+        if (!ids.contains(id)) {
+            ids.add(0, id);
+            saveJobIds(ids, provider);
+        }
+    }
+
+    private void removeJobId(String id, TapProvider provider) {
+        List<String> ids = retrieveJobIdsAsList(provider);
+        if (ids.contains(id)) {
+            ids.remove(id);
+            saveJobIds(ids, provider);
+        }
+    }
+
+    private void saveJobIds(List<String> ids, TapProvider provider) {
+        setUserSetting(provider.name(), String.join(",", ids));
+        saveSettings();
+        refreshJobIdList();
+    }
+
+    private String[] retrieveJobIds(TapProvider provider) {
+        String ids = getUserSetting(provider.name(), "");
+        if (ids.isEmpty()) {
+            return new String[0];
+        } else {
+            return ids.split(",", -1);
+        }
+    }
+
+    private List<String> retrieveJobIdsAsList(TapProvider provider) {
+        List<String> ids = new ArrayList();
+        ids.addAll(Arrays.asList(retrieveJobIds(provider)));
+        return ids;
+    }
+
+    private void refreshJobIdList() {
+        jobIds.removeAllItems();
+        String[] ids = retrieveJobIds(getTapProvider());
+        if (ids.length > 0) {
+            for (String id : ids) {
+                jobIds.addItem(id);
+            }
         }
     }
 
