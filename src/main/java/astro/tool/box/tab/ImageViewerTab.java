@@ -4012,18 +4012,18 @@ public class ImageViewerTab {
     }
 
     private NumberPair determineRefValues(float[][] values) {
-        List<Double> data = new ArrayList<>();
+        List<Double> imageData = new ArrayList<>();
         for (float[] row : values) {
             for (float value : row) {
                 if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
-                    data.add((double) value);
+                    imageData.add((double) value);
                 }
             }
         }
-        double mean = calculateMean(data);
+        double mean = calculateMean(imageData);
         double lowPercentile = brightness / 100f;
-        List<Double> minOutliersRemoved = removeOutliers(data, lowPercentile, 100);
-        List<Double> outliersRemoved = data;
+        List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
+        List<Double> outliersRemoved = imageData;
         int oldSize = 1;
         int newSize = 0;
         double clippingFactor = (mean > 150 ? contrast / 2 : contrast) / 100f;
@@ -4031,12 +4031,10 @@ public class ImageViewerTab {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
             if (outliersRemoved.isEmpty()) {
-                outliersRemoved = data;
-                clippingFactor++;
-                newSize = -1;
-            } else {
-                newSize = outliersRemoved.size();
+                outliersRemoved = imageData;
+                clippingFactor += 0.1;
             }
+            newSize = outliersRemoved.size();
         }
         double lowerBound = differenceImaging.isSelected() ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
         double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
