@@ -342,6 +342,7 @@ public class SettingsTab {
             imageViewerTab.setSpeed(speed);
             imageViewerTab.setZoom(zoom);
             imageViewerTab.setAsyncDownloads(asyncDownloads);
+            enableStopDownloadButton();
             imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
             imageViewerTab.setUkidssImages(ukidssImages);
@@ -547,6 +548,7 @@ public class SettingsTab {
                 imageViewerTab.setSpeed(speed);
                 imageViewerTab.setZoom(zoom);
                 imageViewerTab.setAsyncDownloads(asyncDownloads);
+                enableStopDownloadButton();
                 imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
                 imageViewerTab.setUkidssImages(ukidssImages);
@@ -595,6 +597,14 @@ public class SettingsTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(settingsPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void enableStopDownloadButton() {
+        if (asyncDownloads) {
+            imageViewerTab.getStopDownloadButton().setEnabled(true);
+        } else {
+            imageViewerTab.getStopDownloadButton().setEnabled(false);
         }
     }
 

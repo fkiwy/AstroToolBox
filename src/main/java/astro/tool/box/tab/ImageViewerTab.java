@@ -266,6 +266,7 @@ public class ImageViewerTab {
     private JLabel vizierLabel;
     private JLabel changeFovLabel;
     private JButton changeFovButton;
+    private JButton stopDownloadButton;
     private JRadioButton wiseviewCutouts;
     private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
@@ -418,6 +419,7 @@ public class ImageViewerTab {
     private boolean allEpochsW2Loaded;
     private boolean moreImagesAvailable;
     private boolean oneMoreImageAvailable;
+    private boolean stopDownloadProcess;
     private boolean flipbookComplete;
     private boolean reloadImages;
     private boolean imageCutOff;
@@ -497,7 +499,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 39;
+            int rows = 40;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -720,6 +722,13 @@ public class ImageViewerTab {
                 }
                 resetContrastSlider();
                 createFlipbook();
+            });
+
+            stopDownloadButton = new JButton("Stop images download process");
+            mainControlPanel.add(stopDownloadButton);
+            stopDownloadButton.addActionListener((ActionEvent evt) -> {
+                stopDownloadProcess = true;
+                enableAll();
             });
 
             wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
@@ -2409,6 +2418,7 @@ public class ImageViewerTab {
         try {
             timer.stop();
             timerStopped = true;
+            stopDownloadProcess = false;
             String coords = coordsField.getText();
             if (coords.isEmpty()) {
                 showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -2659,12 +2669,20 @@ public class ImageViewerTab {
                         break;
                     case W1W2:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        if (stopDownloadProcess) {
+                            break;
+                        }
                         epochCountW1 = epochCount;
                         downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
                         epochCountW2 = epochCount;
                         break;
                 }
-                writeLogEntry("Ready.");
+                if (stopDownloadProcess) {
+                    writeLogEntry("Download process stopped.");
+                    return false;
+                } else {
+                    writeLogEntry("Ready.");
+                }
                 if (asyncDownloads) {
                     downloadLog.setCaretPosition(0);
                 }
@@ -2691,7 +2709,6 @@ public class ImageViewerTab {
                     allEpochsW2Loaded = true;
                 }
             }
-
             loadImages = false;
             reloadImages = false;
 
@@ -2894,19 +2911,23 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
-            skipIntermediateEpochs.setEnabled(true);
-            separateScanDirections.setEnabled(true);
-            differenceImaging.setEnabled(true);
-            wiseviewCutouts.setEnabled(true);
-            unwiseCutouts.setEnabled(true);
-            desiCutouts.setEnabled(true);
-            if (waitCursor) {
-                baseFrame.setCursor(Cursor.getDefaultCursor());
-                coordsField.setCursor(Cursor.getDefaultCursor());
-                sizeField.setCursor(Cursor.getDefaultCursor());
-            }
+            enableAll();
         }
         return true;
+    }
+
+    private void enableAll() {
+        skipIntermediateEpochs.setEnabled(true);
+        separateScanDirections.setEnabled(true);
+        differenceImaging.setEnabled(true);
+        wiseviewCutouts.setEnabled(true);
+        unwiseCutouts.setEnabled(true);
+        desiCutouts.setEnabled(true);
+        if (waitCursor) {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+            coordsField.setCursor(Cursor.getDefaultCursor());
+            sizeField.setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     private ComponentInfo getComponentInfo(boolean sep, boolean skip, int half, int i) {
@@ -3446,6 +3467,9 @@ public class ImageViewerTab {
             retrieveDesiImages(band, images);
         } else {
             for (int i = 0; i < requestedEpochs.size(); i++) {
+                if (stopDownloadProcess) {
+                    return;
+                }
                 int requestedEpoch = requestedEpochs.get(i);
                 String imageKey = band + "_" + requestedEpoch;
                 ImageContainer container = images.get(imageKey);
@@ -3756,6 +3780,9 @@ public class ImageViewerTab {
     }
 
     private boolean downloadDesiCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
+        if (stopDownloadProcess) {
+            return true;
+        }
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
@@ -5771,6 +5798,10 @@ public class ImageViewerTab {
 
     public JSlider getZoomSlider() {
         return zoomSlider;
+    }
+
+    public JButton getStopDownloadButton() {
+        return stopDownloadButton;
     }
 
     public JTextField getDifferentSizeField() {
