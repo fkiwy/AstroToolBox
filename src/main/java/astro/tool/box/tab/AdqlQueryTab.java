@@ -77,7 +77,8 @@ public class AdqlQueryTab {
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
     private static final String AVAILABLE_TABLES = "Available tables";
-    private static final TapProvider DEFAULT_TAP_PROVIDER = TapProvider.VIZIER;
+    private static final String ADQL_TAP_PROVIDER = "adqlTapProvider";
+    private static final String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -426,9 +427,11 @@ public class AdqlQueryTab {
 
             tapProvider = new JComboBox(TapProvider.values());
             secondRow.add(tapProvider);
-            tapProvider.setSelectedItem(DEFAULT_TAP_PROVIDER);
+            tapProvider.setSelectedItem(TapProvider.valueOf(getUserSetting(ADQL_TAP_PROVIDER, DEFAULT_TAP_PROVIDER)));
             tapProvider.addActionListener((ActionEvent evt) -> {
                 refreshJobIdList();
+                setUserSetting(ADQL_TAP_PROVIDER, getTapProvider().name());
+                saveSettings();
             });
 
             secondRow.add(new JLabel("Job ids for selected TAP provider:"));
@@ -438,6 +441,17 @@ public class AdqlQueryTab {
             secondRow.add(jobIds);
             jobIds.addActionListener((ActionEvent evt) -> {
                 jobId = (String) jobIds.getSelectedItem();
+            });
+
+            // Must also be initialized when the GUI is built
+            jobId = (String) jobIds.getSelectedItem();
+
+            JButton removeButton = new JButton("Remove job ids");
+            secondRow.add(removeButton);
+            removeButton.addActionListener((ActionEvent evt) -> {
+                if (showConfirmDialog(baseFrame, "Do you really want to remove all job ids?")) {
+                    removeAllJobIds(getTapProvider());
+                }
             });
 
             JButton resumeButton = new JButton("Resume query");
@@ -526,8 +540,18 @@ public class AdqlQueryTab {
         }
     }
 
+    private void removeAllJobIds(TapProvider provider) {
+        saveJobIds(null, provider);
+    }
+
     private void saveJobIds(List<String> ids, TapProvider provider) {
-        setUserSetting(provider.name(), String.join(",", ids));
+        String idList;
+        if (ids == null || ids.isEmpty()) {
+            idList = "";
+        } else {
+            idList = String.join(",", ids);
+        }
+        setUserSetting(provider.name(), idList);
         saveSettings();
         refreshJobIdList();
     }

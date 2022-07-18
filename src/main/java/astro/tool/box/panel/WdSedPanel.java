@@ -11,7 +11,9 @@ import astro.tool.box.container.SedReferences;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.DesCatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.catalog.NoirlabCatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
@@ -331,6 +333,56 @@ public class WdSedPanel extends JPanel {
                 sedPhotometry.put(Band.BP, gaiaEntry.getBPmag());
                 sedPhotometry.put(Band.G, gaiaEntry.getGmag());
                 sedPhotometry.put(Band.RP, gaiaEntry.getRPmag());
+            } else {
+                DesCatalogEntry desEntry = new DesCatalogEntry();
+                desEntry.setRa(catalogEntry.getRa());
+                desEntry.setDec(catalogEntry.getDec());
+                desEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(desEntry, catalogQueryService, baseFrame);
+                if (retrievedEntry == null) {
+                    NoirlabCatalogEntry noirlabEntry = new NoirlabCatalogEntry();
+                    noirlabEntry.setRa(catalogEntry.getRa());
+                    noirlabEntry.setDec(catalogEntry.getDec());
+                    noirlabEntry.setSearchRadius(searchRadius);
+                    retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryService, baseFrame);
+                    if (retrievedEntry != null) {
+                        noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
+                        seriesLabel.append(noirlabEntry.getCatalogName()).append(": ").append(noirlabEntry.getSourceId()).append(" ");
+                        sedCatalogs.put(Band.g, noirlabEntry.getCatalogName());
+                        sedCatalogs.put(Band.r, noirlabEntry.getCatalogName());
+                        sedCatalogs.put(Band.i, noirlabEntry.getCatalogName());
+                        sedCatalogs.put(Band.z, noirlabEntry.getCatalogName());
+                        sedCatalogs.put(Band.y, noirlabEntry.getCatalogName());
+                        sedReferences.put(Band.g, new SedReferences(3631, 0.472));
+                        sedReferences.put(Band.r, new SedReferences(3631, 0.6415));
+                        sedReferences.put(Band.i, new SedReferences(3631, 0.7835));
+                        sedReferences.put(Band.z, new SedReferences(3631, 0.926));
+                        sedReferences.put(Band.y, new SedReferences(3631, 1.0095));
+                        sedPhotometry.put(Band.g, noirlabEntry.get_g_mag());
+                        sedPhotometry.put(Band.r, noirlabEntry.get_r_mag());
+                        sedPhotometry.put(Band.i, noirlabEntry.get_i_mag());
+                        sedPhotometry.put(Band.z, noirlabEntry.get_z_mag());
+                        sedPhotometry.put(Band.y, noirlabEntry.get_y_mag());
+                    }
+                } else {
+                    desEntry = (DesCatalogEntry) retrievedEntry;
+                    seriesLabel.append(desEntry.getCatalogName()).append(": ").append(desEntry.getSourceId()).append(" ");
+                    sedCatalogs.put(Band.g, desEntry.getCatalogName());
+                    sedCatalogs.put(Band.r, desEntry.getCatalogName());
+                    sedCatalogs.put(Band.i, desEntry.getCatalogName());
+                    sedCatalogs.put(Band.z, desEntry.getCatalogName());
+                    sedCatalogs.put(Band.y, desEntry.getCatalogName());
+                    sedReferences.put(Band.g, new SedReferences(3631, 0.472));
+                    sedReferences.put(Band.r, new SedReferences(3631, 0.6415));
+                    sedReferences.put(Band.i, new SedReferences(3631, 0.7835));
+                    sedReferences.put(Band.z, new SedReferences(3631, 0.926));
+                    sedReferences.put(Band.y, new SedReferences(3631, 1.0095));
+                    sedPhotometry.put(Band.g, desEntry.get_g_mag());
+                    sedPhotometry.put(Band.r, desEntry.get_r_mag());
+                    sedPhotometry.put(Band.i, desEntry.get_i_mag());
+                    sedPhotometry.put(Band.z, desEntry.get_z_mag());
+                    sedPhotometry.put(Band.y, desEntry.get_y_mag());
+                }
             }
         }
 
