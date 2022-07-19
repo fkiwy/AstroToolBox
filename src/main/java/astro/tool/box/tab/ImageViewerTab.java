@@ -1545,10 +1545,11 @@ public class ImageViewerTab {
                     staticView.setSelected(false);
 
                     FlipbookComponent component = flipbook.get(imageNumber);
-                    wiseImage = addCrosshairs(component.getImage());
-                    if (wiseImage == null) {
+                    BufferedImage image = component.getImage();
+                    if (image == null) {
                         return;
                     }
+                    wiseImage = addCrosshairs(image);
                     ImageIcon icon = new ImageIcon(wiseImage);
                     String regularLabel = desiCutouts.isSelected() ? "DECaLS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
