@@ -320,14 +320,14 @@ public class AdqlQueryTab {
             elapsedTime.setEditable(false);
             firstRow.add(elapsedTime);
 
-            JButton fetchButton = new JButton("Fetch results");
-            firstRow.add(fetchButton);
-            fetchButton.addActionListener((ActionEvent evt) -> {
+            JButton displayButton = new JButton("Display result");
+            firstRow.add(displayButton);
+            displayButton.addActionListener((ActionEvent evt) -> {
                 if (jobId == null) {
                     showInfoDialog(baseFrame, "No query submitted!");
                     return;
                 }
-                fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                displayButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
                     jobStatus = doGet(createStatusUrl(jobId));
@@ -352,28 +352,50 @@ public class AdqlQueryTab {
                     }
                 } catch (Exception ex) {
                     initStatus();
-                    showInfoDialog(baseFrame, "No results to fetch!");
+                    showInfoDialog(baseFrame, "No result to display!");
                 } finally {
-                    fetchButton.setCursor(Cursor.getDefaultCursor());
+                    displayButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
-            JButton exportButton = new JButton("Export results");
-            firstRow.add(exportButton);
-            exportButton.addActionListener((ActionEvent evt) -> {
-                if (queryResults == null || queryResults.isEmpty()) {
-                    showInfoDialog(baseFrame, "No results to export!");
-                } else {
-                    try {
+            JButton downloadButton = new JButton("Download result");
+            firstRow.add(downloadButton);
+            downloadButton.addActionListener((ActionEvent evt) -> {
+                if (jobId == null) {
+                    showInfoDialog(baseFrame, "No query submitted!");
+                    return;
+                }
+                displayButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                removeResultPanel();
+                try {
+                    jobStatus = doGet(createStatusUrl(jobId));
+                    statusField.setText(jobStatus);
+                    statusField.setBackground(getStatusColor(jobStatus).val);
+                    if (jobStatus.equals(JobStatus.PENDING.toString())) {
+                        showInfoDialog(baseFrame, "Query is still pending!");
+                    } else if (jobStatus.equals(JobStatus.QUEUED.toString())) {
+                        showInfoDialog(baseFrame, "Query is still queued!");
+                    } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
+                        showInfoDialog(baseFrame, "Query is still running!");
+                    } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
+                        queryResults = doGet(createResultUrl(jobId));
                         File tmpFile = File.createTempFile("AstroToolBox_", ".csv");
                         try (FileWriter writer = new FileWriter(tmpFile)) {
                             writer.write(queryResults);
                         }
                         Desktop.getDesktop().open(tmpFile);
-                    } catch (Exception ex) {
-                        showExceptionDialog(baseFrame, ex);
+                    } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
+                        String response = doGet(createErrorUrl(jobId));
+                        String errorMessage = getErrorMessage(response);
+                        showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
+                    } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
+                        showInfoDialog(baseFrame, "Query was aborted!");
                     }
-
+                } catch (Exception ex) {
+                    initStatus();
+                    showInfoDialog(baseFrame, "No result to download!");
+                } finally {
+                    displayButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
