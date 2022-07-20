@@ -365,7 +365,7 @@ public class AdqlQueryTab {
                     showInfoDialog(baseFrame, "No query submitted!");
                     return;
                 }
-                displayButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                downloadButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
                     jobStatus = doGet(createStatusUrl(jobId));
@@ -395,7 +395,7 @@ public class AdqlQueryTab {
                     initStatus();
                     showInfoDialog(baseFrame, "No result to download!");
                 } finally {
-                    displayButton.setCursor(Cursor.getDefaultCursor());
+                    downloadButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
