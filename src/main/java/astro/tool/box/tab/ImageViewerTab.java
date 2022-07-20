@@ -5058,10 +5058,11 @@ public class ImageViewerTab {
             while (scanner.hasNextLine()) {
                 String[] columnValues = CSVParser.parseLine(scanner.nextLine());
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
-                NumberPair pair = getCoordinates(columnValues[raColumnIndex] + " " + columnValues[decColumnIndex]);
-                catalogEntry.setRa(pair.getX());
-                catalogEntry.setDec(pair.getY());
-
+                catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
+                catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
+                //NumberPair pair = getCoordinates(columnValues[raColumnIndex] + " " + columnValues[decColumnIndex]);
+                //catalogEntry.setRa(pair.getX());
+                //catalogEntry.setDec(pair.getY());
                 NumberPair coords;
                 double radius = size * pixelScale / 2 / DEG_ARCSEC;
 
