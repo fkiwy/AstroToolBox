@@ -349,6 +349,8 @@ public class AdqlQueryTab {
                         showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
+                    } else {
+                        displayNoResultAvailable();
                     }
                 } catch (Exception ex) {
                     initStatus();
@@ -390,6 +392,8 @@ public class AdqlQueryTab {
                         showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
+                    } else {
+                        displayNoResultAvailable();
                     }
                 } catch (Exception ex) {
                     initStatus();
@@ -544,6 +548,13 @@ public class AdqlQueryTab {
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
+    }
+
+    private void displayNoResultAvailable() {
+        statusField.setText(null);
+        statusField.setBackground(elapsedTime.getBackground());
+        showInfoDialog(baseFrame, "No result available!");
+        writeMessageLog("No ADQL result available. Reason: " + jobStatus);
     }
 
     private void addJobId(String id, TapProvider provider) {
