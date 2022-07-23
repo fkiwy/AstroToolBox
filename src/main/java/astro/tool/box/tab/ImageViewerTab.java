@@ -2628,7 +2628,7 @@ public class ImageViewerTab {
                 int totalEpochs = selectedEpochs * 2;
                 int availableEpochs = totalEpochs + (oneMoreImageAvailable ? 1 : 0);
                 if (moreImagesAvailable) {
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < 1000; i++) {
                         requestedEpochs.add(i);
                     }
                 } else {
@@ -4021,13 +4021,10 @@ public class ImageViewerTab {
                 }
             }
         }
-        double mean = calculateMean(imageData);
-        double lowPercentile = brightness / 100f;
-        List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
+        int oldSize = 1, newSize = 0;
+        double mean = calculateMean(removeOutliers(imageData, 1, 99));
+        double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
         List<Double> outliersRemoved = imageData;
-        int oldSize = 1;
-        int newSize = 0;
-        double clippingFactor = (mean > 150 ? contrast / 2 : contrast) / 100f;
         while (oldSize != newSize) {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
@@ -4037,7 +4034,14 @@ public class ImageViewerTab {
             }
             newSize = outliersRemoved.size();
         }
-        double lowerBound = differenceImaging.isSelected() ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
+        double lowerBound;
+        if (differenceImaging.isSelected()) {
+            lowerBound = outliersRemoved.get(0);
+        } else {
+            double lowPercentile = brightness / 100f;
+            List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
+            lowerBound = minOutliersRemoved.get(0);
+        }
         double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
