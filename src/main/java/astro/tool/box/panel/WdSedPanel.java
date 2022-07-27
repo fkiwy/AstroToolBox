@@ -93,7 +93,7 @@ public class WdSedPanel extends JPanel {
 
         photSearchRadius = new JTextField("5", 3);
         maxTemplateOffset = new JTextField("0.1", 3);
-        bestMatch = new JCheckBox("Best match", true);
+        bestMatch = new JCheckBox("Closest match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
         removeButton = new JButton("Remove all templates");
 
