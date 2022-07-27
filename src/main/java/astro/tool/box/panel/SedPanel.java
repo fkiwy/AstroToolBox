@@ -90,7 +90,7 @@ public class SedPanel extends JPanel {
         photSearchRadius = new JTextField("5", 3);
         maxTemplateOffset = new JTextField("0.3", 3);
         spectralTypes = new JComboBox(SpectralType.values());
-        bestMatch = new JCheckBox("Best match", true);
+        bestMatch = new JCheckBox("Closest match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
         removeButton = new JButton("Remove all templates");
 
@@ -282,36 +282,36 @@ public class SedPanel extends JPanel {
         sedPhotometry.put(Band.K, allWiseEntry.getKmag());
 
         if (allWiseEntry.getSourceId() == null) {
-            UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
-            unWiseEntry.setRa(catalogEntry.getRa());
-            unWiseEntry.setDec(catalogEntry.getDec());
-            unWiseEntry.setSearchRadius(searchRadius);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
+            CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
+            catWiseEntry.setRa(catalogEntry.getRa());
+            catWiseEntry.setDec(catalogEntry.getDec());
+            catWiseEntry.setSearchRadius(searchRadius);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
             if (retrievedEntry == null) {
-                CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
-                catWiseEntry.setRa(catalogEntry.getRa());
-                catWiseEntry.setDec(catalogEntry.getDec());
-                catWiseEntry.setSearchRadius(searchRadius);
-                retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
+                UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
+                unWiseEntry.setRa(catalogEntry.getRa());
+                unWiseEntry.setDec(catalogEntry.getDec());
+                unWiseEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
                 if (retrievedEntry != null) {
-                    catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
-                    seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
-                    sedCatalogs.put(Band.W1, CatWiseCatalogEntry.CATALOG_NAME);
-                    sedCatalogs.put(Band.W2, CatWiseCatalogEntry.CATALOG_NAME);
+                    unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
+                    seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId()).append(" ");
+                    sedCatalogs.put(Band.W1, UnWiseCatalogEntry.CATALOG_NAME);
+                    sedCatalogs.put(Band.W2, UnWiseCatalogEntry.CATALOG_NAME);
                     sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
                     sedReferences.put(Band.W2, new SedReferences(171.79, 4.6));
-                    sedPhotometry.put(Band.W1, catWiseEntry.getW1mag());
-                    sedPhotometry.put(Band.W2, catWiseEntry.getW2mag());
+                    sedPhotometry.put(Band.W1, unWiseEntry.getW1mag());
+                    sedPhotometry.put(Band.W2, unWiseEntry.getW2mag());
                 }
             } else {
-                unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
-                seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId()).append(" ");
-                sedCatalogs.put(Band.W1, UnWiseCatalogEntry.CATALOG_NAME);
-                sedCatalogs.put(Band.W2, UnWiseCatalogEntry.CATALOG_NAME);
+                catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
+                seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
+                sedCatalogs.put(Band.W1, CatWiseCatalogEntry.CATALOG_NAME);
+                sedCatalogs.put(Band.W2, CatWiseCatalogEntry.CATALOG_NAME);
                 sedReferences.put(Band.W1, new SedReferences(309.54, 3.4));
                 sedReferences.put(Band.W2, new SedReferences(171.79, 4.6));
-                sedPhotometry.put(Band.W1, unWiseEntry.getW1mag());
-                sedPhotometry.put(Band.W2, unWiseEntry.getW2mag());
+                sedPhotometry.put(Band.W1, catWiseEntry.getW1mag());
+                sedPhotometry.put(Band.W2, catWiseEntry.getW2mag());
             }
         }
 

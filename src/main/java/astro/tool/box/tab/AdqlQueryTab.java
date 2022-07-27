@@ -214,10 +214,10 @@ public class AdqlQueryTab {
             JButton runButton = new JButton("Run query");
             firstRow.add(runButton);
             runButton.addActionListener((ActionEvent evt) -> {
-                if (jobStatus != null && (jobStatus.equals(JobStatus.PENDING.toString()) || jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
-                    showErrorDialog(baseFrame, "Query is still running!");
-                    return;
-                }
+                //if (jobStatus != null && (jobStatus.equals(JobStatus.PENDING.toString()) || jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
+                //    showErrorDialog(baseFrame, "Query is still running!");
+                //    return;
+                //}
                 String query = textEditor.getText();
                 if (query.isEmpty()) {
                     showErrorDialog(baseFrame, "No query to run!");
