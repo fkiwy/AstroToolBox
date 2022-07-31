@@ -30,8 +30,10 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -651,11 +653,25 @@ public class SedPanel extends JPanel {
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
+        // Date point shape of object to estimate
+        double size = 6.0;
+        double delta = size / 2.0;
+        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
+
         //XYSplineRenderer renderer = new XYSplineRenderer(100);
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setSeriesShape(0, shape);
         renderer.setSeriesPaint(0, Color.BLACK);
         renderer.setSeriesStroke(0, new BasicStroke(2));
         renderer.setSeriesToolTipGenerator(0, addToolTips());
+
+        // Date point shape of templates
+        size = 8.0;
+        delta = size / 2.0;
+        shape = new Ellipse2D.Double(-delta, -delta, size, size);
+        for (int i = 1; i < plot.getSeriesCount(); i++) {
+            renderer.setSeriesShape(i, shape);
+        }
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);
