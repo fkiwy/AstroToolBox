@@ -385,13 +385,13 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Verify if proper motion is faulty
+     * Check if proper motion is spurious
      *
      * @param value
      * @param error
-     * @return true if proper motion is faulty
+     * @return true if proper motion is spurious
      */
-    public static boolean isProperMotionFaulty(double value, double error) {
+    public static boolean isProperMotionSpurious(double value, double error) {
         value = Math.abs(value);
         return error > value * 0.5;
     }
