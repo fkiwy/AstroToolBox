@@ -57,6 +57,7 @@ import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYDataItem;
@@ -119,6 +120,7 @@ public class SedPanel extends JPanel {
         photSearchRadius.addActionListener((ActionEvent e) -> {
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+            setSeriesShape(chart);
             XYPlot plot = chart.getXYPlot();
             plot.getRenderer().setSeriesToolTipGenerator(0, addToolTips());
         });
@@ -128,6 +130,7 @@ public class SedPanel extends JPanel {
         maxTemplateOffset.addActionListener((ActionEvent e) -> {
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+            setSeriesShape(chart);
         });
 
         commandPanel.add(new JLabel("SED templates: ", JLabel.RIGHT));
@@ -141,6 +144,7 @@ public class SedPanel extends JPanel {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, false);
+            setSeriesShape(chart);
         });
 
         commandPanel.add(bestMatch);
@@ -148,6 +152,7 @@ public class SedPanel extends JPanel {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+            setSeriesShape(chart);
         });
 
         commandPanel.add(overplotTemplates);
@@ -155,6 +160,7 @@ public class SedPanel extends JPanel {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+            setSeriesShape(chart);
         });
 
         commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -165,6 +171,7 @@ public class SedPanel extends JPanel {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
             createSed(catalogEntry, collection, true);
+            setSeriesShape(chart);
         });
 
         JButton createButton = new JButton("Create PDF");
@@ -664,16 +671,11 @@ public class SedPanel extends JPanel {
         renderer.setSeriesPaint(0, Color.BLACK);
         renderer.setSeriesStroke(0, new BasicStroke(2));
         renderer.setSeriesToolTipGenerator(0, addToolTips());
+        plot.setRenderer(renderer);
 
         // Date point shape of templates
-        size = 8.0;
-        delta = size / 2.0;
-        shape = new Ellipse2D.Double(-delta, -delta, size, size);
-        for (int i = 1; i < plot.getSeriesCount(); i++) {
-            renderer.setSeriesShape(i, shape);
-        }
+        setSeriesShape(chart);
 
-        plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.WHITE);
         plot.setRangeGridlinesVisible(true);
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
@@ -690,6 +692,17 @@ public class SedPanel extends JPanel {
         chart.getTitle().setFont(titleFont);
 
         return chart;
+    }
+
+    private void setSeriesShape(JFreeChart chart) {
+        XYPlot plot = chart.getXYPlot();
+        XYItemRenderer renderer = plot.getRenderer();
+        double size = 8.0;
+        double delta = size / 2.0;
+        Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
+        for (int i = 1; i < plot.getSeriesCount(); i++) {
+            renderer.setSeriesShape(i, shape);
+        }
     }
 
     private CustomXYToolTipGenerator addToolTips() {
