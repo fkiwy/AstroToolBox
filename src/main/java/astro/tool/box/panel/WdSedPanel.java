@@ -675,7 +675,7 @@ public class WdSedPanel extends JPanel {
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
-        // Date point shape of object to estimate
+        // Data point shape of object to estimate
         double size = 6.0;
         double delta = size / 2.0;
         Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
@@ -688,7 +688,7 @@ public class WdSedPanel extends JPanel {
         renderer.setSeriesToolTipGenerator(0, addToolTips());
         plot.setRenderer(renderer);
 
-        // Date point shape of templates
+        // Data point shape of templates
         setSeriesShape(chart);
 
         plot.setBackgroundPaint(Color.WHITE);

@@ -459,6 +459,27 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     }
 
     @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (Gmag != 0) {
+            mags.append(roundTo3DecNZ(Gmag)).append(",").append(roundTo3DecNZ(G_err)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (BPmag != 0) {
+            mags.append(roundTo3DecNZ(BPmag)).append(",").append(roundTo3DecNZ(BP_err)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (RPmag != 0) {
+            mags.append(roundTo3DecNZ(RPmag)).append(",").append(roundTo3DecNZ(RP_err)).append(",");
+        } else {
+            mags.append(",");
+        }
+        return mags.toString();
+    }
+
+    @Override
     public String getSourceId() {
         return String.valueOf(sourceId);
     }
@@ -653,6 +674,18 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         } else {
             return calculateAdditionError(BP_err, G_err);
         }
+    }
+
+    public double getGmag() {
+        return Gmag;
+    }
+
+    public double getBPmag() {
+        return BPmag;
+    }
+
+    public double getRPmag() {
+        return RPmag;
     }
 
 }

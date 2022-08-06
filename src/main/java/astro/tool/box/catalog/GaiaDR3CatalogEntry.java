@@ -586,6 +586,18 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         colors.put(Color.G_RP, G_RP);
         colors.put(Color.BP_RP, BP_RP);
         colors.put(Color.BP_G, BP_G);
+        colors.put(Color.e_M_G, getAbsoluteGmag() - getAbsoluteGmagError());
+        colors.put(Color.e_M_BP, getAbsoluteBPmag() - getAbsoluteBPmagError());
+        colors.put(Color.e_M_RP, getAbsoluteRPmag() - getAbsoluteRPmagError());
+        colors.put(Color.e_G_RP, G_RP - getG_RP_err());
+        colors.put(Color.e_BP_RP, BP_RP - getBP_RP_err());
+        colors.put(Color.e_BP_G, BP_G - getBP_G_err());
+        colors.put(Color.E_M_G, getAbsoluteGmag() + getAbsoluteGmagError());
+        colors.put(Color.E_M_BP, getAbsoluteBPmag() + getAbsoluteBPmagError());
+        colors.put(Color.E_M_RP, getAbsoluteRPmag() + getAbsoluteRPmagError());
+        colors.put(Color.E_G_RP, G_RP + getG_RP_err());
+        colors.put(Color.E_BP_RP, BP_RP + getBP_RP_err());
+        colors.put(Color.E_BP_G, BP_G + getBP_G_err());
         return colors;
     }
 
@@ -608,17 +620,17 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     public String getPhotometry() {
         StringBuilder mags = new StringBuilder();
         if (Gmag != 0) {
-            mags.append(roundTo3DecNZ(Gmag)).append(",");
+            mags.append(roundTo3DecNZ(Gmag)).append(",").append(roundTo3DecNZ(G_err)).append(",");
         } else {
             mags.append(",");
         }
         if (BPmag != 0) {
-            mags.append(roundTo3DecNZ(BPmag)).append(",");
+            mags.append(roundTo3DecNZ(BPmag)).append(",").append(roundTo3DecNZ(BP_err)).append(",");
         } else {
             mags.append(",");
         }
         if (RPmag != 0) {
-            mags.append(roundTo3DecNZ(RPmag)).append(",");
+            mags.append(roundTo3DecNZ(RPmag)).append(",").append(roundTo3DecNZ(RP_err)).append(",");
         } else {
             mags.append(",");
         }
@@ -789,6 +801,18 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
     }
 
+    public double getAbsoluteGmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(Gmag, G_err, plx, plx_err);
+    }
+
+    public double getAbsoluteRPmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(RPmag, RP_err, plx, plx_err);
+    }
+
+    public double getAbsoluteBPmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(BPmag, BP_err, plx, plx_err);
+    }
+
     @Override
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
@@ -802,6 +826,30 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public double getG_RP() {
         return G_RP;
+    }
+
+    public double getBP_RP_err() {
+        if (BP_err == 0 || RP_err == 0) {
+            return 0;
+        } else {
+            return calculateAdditionError(BP_err, RP_err);
+        }
+    }
+
+    public double getG_RP_err() {
+        if (G_err == 0 || RP_err == 0) {
+            return 0;
+        } else {
+            return calculateAdditionError(G_err, RP_err);
+        }
+    }
+
+    public double getBP_G_err() {
+        if (BP_err == 0 || G_err == 0) {
+            return 0;
+        } else {
+            return calculateAdditionError(BP_err, G_err);
+        }
     }
 
     public double getGmag() {

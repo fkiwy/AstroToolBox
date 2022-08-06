@@ -137,6 +137,7 @@ public class SedPanel extends JPanel {
         commandPanel.add(spectralTypes);
         spectralTypes.addActionListener((ActionEvent e) -> {
             addReferenceSeds(sedPhotometry, collection);
+            setSeriesShape(chart);
         });
 
         commandPanel.add(removeButton);
@@ -538,9 +539,9 @@ public class SedPanel extends JPanel {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
             Map<Band, Double> bands = entry.getMagnitudes();
             String spectralType = entry.getSpt();
-            if ("M0M1M2M3M4M5".contains(spectralType)) {
-                continue;
-            }
+            //if ("M0M1M2M3M4M5".contains(spectralType)) {
+            //    continue;
+            //}
             List<Double> diffMags = new ArrayList();
             Band.getSedBands().forEach(band -> {
                 if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
@@ -660,7 +661,7 @@ public class SedPanel extends JPanel {
         xAxis.setLabelFont(labelFont);
         yAxis.setLabelFont(labelFont);
 
-        // Date point shape of object to estimate
+        // Data point shape of object to estimate
         double size = 6.0;
         double delta = size / 2.0;
         Shape shape = new Ellipse2D.Double(-delta, -delta, size, size);
@@ -673,7 +674,7 @@ public class SedPanel extends JPanel {
         renderer.setSeriesToolTipGenerator(0, addToolTips());
         plot.setRenderer(renderer);
 
-        // Date point shape of templates
+        // Data point shape of templates
         setSeriesShape(chart);
 
         plot.setBackgroundPaint(Color.WHITE);
