@@ -413,9 +413,9 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
-        bands.put(Band.G, new NumberPair(Gmag, 0));
-        bands.put(Band.BP, new NumberPair(BPmag, 0));
-        bands.put(Band.RP, new NumberPair(RPmag, 0));
+        bands.put(Band.G, new NumberPair(Gmag, G_err));
+        bands.put(Band.BP, new NumberPair(BPmag, BP_err));
+        bands.put(Band.RP, new NumberPair(RPmag, RP_err));
         return bands;
     }
 
