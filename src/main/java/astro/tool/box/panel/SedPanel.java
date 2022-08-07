@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
+import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -544,7 +545,7 @@ public class SedPanel extends JPanel {
             //}
             List<Double> diffMags = new ArrayList();
             Band.getSedBands().forEach(band -> {
-                if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
+                if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
                     double diffMag = sedPhotometry.get(band) - bands.get(band);
                     diffMags.add(diffMag);
                 }
@@ -558,9 +559,9 @@ public class SedPanel extends JPanel {
             if (bestMatch.isSelected()) {
                 List<Double> correctedDiffMags = new ArrayList();
                 Band.getSedBands().forEach(band -> {
-                    if (sedPhotometry.get(band) != 0 && bands.get(band) != null) {
+                    if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
                         double correctedDiffMag = sedPhotometry.get(band) - medianDiffMag - bands.get(band);
-                        correctedDiffMags.add(Math.abs(correctedDiffMag));
+                        correctedDiffMags.add(abs(correctedDiffMag));
                     }
                 });
                 meanDiffMag = calculateMean(correctedDiffMags);
@@ -576,7 +577,7 @@ public class SedPanel extends JPanel {
                             selectedMags++;
                         }
                     }
-                    if (selectedMags >= totalMags - (totalMags <= 5 ? 1 : 2)) {
+                    if (selectedMags >= round(totalMags * 0.8)) { // totalMags - 20% of totalMags)
                         if (bestMatch.isSelected()) {
                             matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
                         } else {

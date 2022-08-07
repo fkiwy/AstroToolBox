@@ -210,6 +210,9 @@ public class PhotometricFunctions {
      * @return the photometric distance error
      */
     public static double calculatePhotometricDistanceError(double a, double ae, double b, double be) {
+        if (ae == 0 || be == 0) {
+            return 0;
+        }
         return sqrt(
                 pow(((log(10) * pow(10, ((a - b + 5) / 5))) / 5) * ae, 2)
                 + pow(((pow(10, ((a - b + 5) / 5)) * -1) / 5) * log(10) * be, 2)
