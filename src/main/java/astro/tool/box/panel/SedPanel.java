@@ -74,7 +74,6 @@ public class SedPanel extends JPanel {
     private final JFrame baseFrame;
 
     private final JTextField photSearchRadius;
-    private final JTextField maxTemplateOffset;
     private final JComboBox spectralTypes;
     private final JButton removeButton;
     private final JCheckBox bestMatch;
@@ -93,7 +92,6 @@ public class SedPanel extends JPanel {
         this.baseFrame = baseFrame;
 
         photSearchRadius = new JTextField("5", 3);
-        maxTemplateOffset = new JTextField("0.3", 3);
         spectralTypes = new JComboBox(SpectralType.values());
         removeButton = new JButton("Remove all templates");
         bestMatch = new JCheckBox("Closest match", true);
@@ -124,14 +122,6 @@ public class SedPanel extends JPanel {
             setSeriesShape(chart);
             XYPlot plot = chart.getXYPlot();
             plot.getRenderer().setSeriesToolTipGenerator(0, addToolTips());
-        });
-
-        commandPanel.add(new JLabel("Maximum template offset"));
-        commandPanel.add(maxTemplateOffset);
-        maxTemplateOffset.addActionListener((ActionEvent e) -> {
-            collection.removeAllSeries();
-            createSed(catalogEntry, collection, true);
-            setSeriesShape(chart);
         });
 
         commandPanel.add(new JLabel("SED templates: ", JLabel.RIGHT));
@@ -210,7 +200,6 @@ public class SedPanel extends JPanel {
 
     private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection, boolean addReferenceSeds) {
         photSearchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        maxTemplateOffset.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         removeButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         bestMatch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         overplotTemplates.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -281,9 +270,9 @@ public class SedPanel extends JPanel {
         sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
         sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
         add2Massferences();
-        sedPhotometry.put(Band.J, allWiseEntry.getJmag());
-        sedPhotometry.put(Band.H, allWiseEntry.getHmag());
-        sedPhotometry.put(Band.K, allWiseEntry.getKmag());
+        sedPhotometry.put(Band.J, allWiseEntry.getJ_err() == 0 ? 0 : allWiseEntry.getJmag());
+        sedPhotometry.put(Band.H, allWiseEntry.getH_err() == 0 ? 0 : allWiseEntry.getHmag());
+        sedPhotometry.put(Band.K, allWiseEntry.getK_err() == 0 ? 0 : allWiseEntry.getKmag());
 
         // WISE
         sedCatalogs.put(Band.W1, AllWiseCatalogEntry.CATALOG_NAME);
@@ -291,10 +280,10 @@ public class SedPanel extends JPanel {
         sedCatalogs.put(Band.W3, AllWiseCatalogEntry.CATALOG_NAME);
         //sedCatalogs.put(Band.W4, AllWiseCatalogEntry.CATALOG_NAME);
         addWiseReferences();
-        sedPhotometry.put(Band.W1, allWiseEntry.getW1mag());
-        sedPhotometry.put(Band.W2, allWiseEntry.getW2mag());
-        sedPhotometry.put(Band.W3, allWiseEntry.getW3mag());
-        //sedPhotometry.put(Band.W4, allWiseEntry.getW4mag());
+        sedPhotometry.put(Band.W1, allWiseEntry.getW1_err() == 0 ? 0 : allWiseEntry.getW1mag());
+        sedPhotometry.put(Band.W2, allWiseEntry.getW2_err() == 0 ? 0 : allWiseEntry.getW2mag());
+        sedPhotometry.put(Band.W3, allWiseEntry.getW3_err() == 0 ? 0 : allWiseEntry.getW3mag());
+        //sedPhotometry.put(Band.W4, allWiseEntry.getW4_err() == 0 ? 0 : allWiseEntry.getW4mag());
 
         if ("0".equals(panStarrsEntry.getSourceId())) {
             DesCatalogEntry desEntry = new DesCatalogEntry();
@@ -413,9 +402,9 @@ public class SedPanel extends JPanel {
                         sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
                         sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
                         add2Massferences();
-                        sedPhotometry.put(Band.J, twoMassEntry.getJmag());
-                        sedPhotometry.put(Band.H, twoMassEntry.getHmag());
-                        sedPhotometry.put(Band.K, twoMassEntry.getKmag());
+                        sedPhotometry.put(Band.J, twoMassEntry.getJ_err() == 0 ? 0 : twoMassEntry.getJmag());
+                        sedPhotometry.put(Band.H, twoMassEntry.getH_err() == 0 ? 0 : twoMassEntry.getHmag());
+                        sedPhotometry.put(Band.K, twoMassEntry.getK_err() == 0 ? 0 : twoMassEntry.getKmag());
                     }
                 }
             }
@@ -496,7 +485,6 @@ public class SedPanel extends JPanel {
         }
 
         photSearchRadius.setCursor(Cursor.getDefaultCursor());
-        maxTemplateOffset.setCursor(Cursor.getDefaultCursor());
         removeButton.setCursor(Cursor.getDefaultCursor());
         bestMatch.setCursor(Cursor.getDefaultCursor());
         overplotTemplates.setCursor(Cursor.getDefaultCursor());
@@ -540,9 +528,6 @@ public class SedPanel extends JPanel {
             BrownDwarfLookupEntry entry = (BrownDwarfLookupEntry) lookupEntry;
             Map<Band, Double> bands = entry.getMagnitudes();
             String spectralType = entry.getSpt();
-            //if ("M0M1M2M3M4M5".contains(spectralType)) {
-            //    continue;
-            //}
             List<Double> diffMags = new ArrayList();
             Band.getSedBands().forEach(band -> {
                 if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
@@ -555,44 +540,29 @@ public class SedPanel extends JPanel {
                 return;
             }
             double medianDiffMag = determineMedian(diffMags);
-            double meanDiffMag = 0;
-            if (bestMatch.isSelected()) {
-                List<Double> correctedDiffMags = new ArrayList();
-                Band.getSedBands().forEach(band -> {
-                    if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
-                        double correctedDiffMag = sedPhotometry.get(band) - medianDiffMag - bands.get(band);
-                        correctedDiffMags.add(abs(correctedDiffMag));
-                    }
-                });
-                meanDiffMag = calculateMean(correctedDiffMags);
-            }
+            List<Double> correctedDiffMags = new ArrayList();
+            Band.getSedBands().forEach(band -> {
+                if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
+                    double correctedDiffMag = sedPhotometry.get(band) - medianDiffMag - bands.get(band);
+                    correctedDiffMags.add(abs(correctedDiffMag));
+                }
+            });
+            double meanDiffMag = calculateMean(correctedDiffMags);
             SpectralType selectedType = (SpectralType) spectralTypes.getSelectedItem();
             if (selectedType.equals(SpectralType.SELECT)) {
-                int totalMags = diffMags.size();
-                if (totalMags >= 4) {
-                    double offset = toDouble(maxTemplateOffset.getText());
-                    int selectedMags = 0;
-                    for (Double diffMag : diffMags) {
-                        if (diffMag >= medianDiffMag - offset && diffMag <= medianDiffMag + offset) {
-                            selectedMags++;
-                        }
-                    }
-                    if (selectedMags >= round(totalMags * 0.8)) { // totalMags - 20% of totalMags)
-                        if (bestMatch.isSelected()) {
-                            matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
-                        } else {
-                            createReferenceSed(spectralType, collection, medianDiffMag);
-                        }
-                    }
-                }
+                matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
             } else if (selectedType.equals(SpectralType.valueOf(spectralType))) {
                 createReferenceSed(spectralType, collection, medianDiffMag);
                 return;
             }
         }
-        if (bestMatch.isSelected() && !matches.isEmpty()) {
-            matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
-            SedBestMatch match = matches.get(0);
+        if (matches.isEmpty()) {
+            return;
+        }
+        matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
+        int j = bestMatch.isSelected() ? 1 : 3;
+        for (int i = 0; i < j; i++) {
+            SedBestMatch match = matches.get(i);
             createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
         }
     }

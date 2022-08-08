@@ -843,4 +843,32 @@ public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
         return Kmag;
     }
 
+    public double getW1_err() {
+        return W1_err;
+    }
+
+    public double getW2_err() {
+        return W2_err;
+    }
+
+    public double getW3_err() {
+        return W3_err;
+    }
+
+    public double getW4_err() {
+        return W4_err;
+    }
+
+    public double getJ_err() {
+        return J_err;
+    }
+
+    public double getH_err() {
+        return H_err;
+    }
+
+    public double getK_err() {
+        return K_err;
+    }
+
 }

@@ -610,4 +610,16 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
         return Kmag;
     }
 
+    public double getJ_err() {
+        return J_err;
+    }
+
+    public double getH_err() {
+        return H_err;
+    }
+
+    public double getK_err() {
+        return K_err;
+    }
+
 }
