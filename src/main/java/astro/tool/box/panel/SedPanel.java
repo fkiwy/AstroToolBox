@@ -21,6 +21,7 @@ import astro.tool.box.container.SedBestMatch;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.enumeration.Band;
+import astro.tool.box.enumeration.Sed;
 import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.service.CatalogQueryService;
 import java.awt.BasicStroke;
@@ -356,9 +357,9 @@ public class SedPanel extends JPanel {
                 if (commonReferences.isSelected()) {
                     add2Massferences();
                 } else {
-                    sedReferences.put(Band.J, new SedReferences(1533.54, 1.252483));
-                    sedReferences.put(Band.H, new SedReferences(1015.62, 1.643245));
-                    sedReferences.put(Band.K, new SedReferences(659.1, 2.152152));
+                    sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
+                    sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
+                    sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
                 }
                 sedPhotometry.put(Band.J, vhsEntry.getJmag());
                 sedPhotometry.put(Band.H, vhsEntry.getHmag());
@@ -382,9 +383,9 @@ public class SedPanel extends JPanel {
                     if (commonReferences.isSelected()) {
                         add2Massferences();
                     } else {
-                        sedReferences.put(Band.J, new SedReferences(1534.75, 1.2483));
-                        sedReferences.put(Band.H, new SedReferences(1022.87, 1.6313));
-                        sedReferences.put(Band.K, new SedReferences(632.56, 2.201));
+                        sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
+                        sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
+                        sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
                     }
                     sedPhotometry.put(Band.J, ukidssEntry.getJmag());
                     sedPhotometry.put(Band.H, ukidssEntry.getHmag());
@@ -494,32 +495,32 @@ public class SedPanel extends JPanel {
     }
 
     private void addDecamReferences() {
-        sedReferences.put(Band.g, new SedReferences(3631, 0.480849));
-        sedReferences.put(Band.r, new SedReferences(3631, 0.641765));
-        sedReferences.put(Band.i, new SedReferences(3631, 0.781458));
-        sedReferences.put(Band.z, new SedReferences(3631, 0.916885));
-        sedReferences.put(Band.y, new SedReferences(3631, 0.989611));
+        sedReferences.put(Band.g, new SedReferences(Sed.DECAM_G.zeropoint, Sed.DECAM_G.wavelenth));
+        sedReferences.put(Band.r, new SedReferences(Sed.DECAM_R.zeropoint, Sed.DECAM_R.wavelenth));
+        sedReferences.put(Band.i, new SedReferences(Sed.DECAM_I.zeropoint, Sed.DECAM_I.wavelenth));
+        sedReferences.put(Band.z, new SedReferences(Sed.DECAM_Z.zeropoint, Sed.DECAM_Z.wavelenth));
+        sedReferences.put(Band.y, new SedReferences(Sed.DECAM_Y.zeropoint, Sed.DECAM_Y.wavelenth));
     }
 
     private void addPanStarrsReferences() {
-        sedReferences.put(Band.g, new SedReferences(3631, 0.484911));
-        sedReferences.put(Band.r, new SedReferences(3631, 0.62012));
-        sedReferences.put(Band.i, new SedReferences(3631, 0.753496));
-        sedReferences.put(Band.z, new SedReferences(3631, 0.86742));
-        sedReferences.put(Band.y, new SedReferences(3631, 0.962779));
+        sedReferences.put(Band.g, new SedReferences(Sed.PS1_G.zeropoint, Sed.PS1_G.wavelenth));
+        sedReferences.put(Band.r, new SedReferences(Sed.PS1_R.zeropoint, Sed.PS1_R.wavelenth));
+        sedReferences.put(Band.i, new SedReferences(Sed.PS1_I.zeropoint, Sed.PS1_I.wavelenth));
+        sedReferences.put(Band.z, new SedReferences(Sed.PS1_Z.zeropoint, Sed.PS1_Z.wavelenth));
+        sedReferences.put(Band.y, new SedReferences(Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
     }
 
     private void add2Massferences() {
-        sedReferences.put(Band.J, new SedReferences(1594, 1.235));
-        sedReferences.put(Band.H, new SedReferences(1024, 1.662));
-        sedReferences.put(Band.K, new SedReferences(666.8, 2.159));
+        sedReferences.put(Band.J, new SedReferences(Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
+        sedReferences.put(Band.H, new SedReferences(Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
+        sedReferences.put(Band.K, new SedReferences(Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
     }
 
     private void addWiseReferences() {
-        sedReferences.put(Band.W1, new SedReferences(309.54, 3.3526));
-        sedReferences.put(Band.W2, new SedReferences(171.79, 4.6028));
-        sedReferences.put(Band.W3, new SedReferences(31.67, 11.5608));
-        //sedReferences.put(Band.W4, new SedReferences(8.36, 22.0883));
+        sedReferences.put(Band.W1, new SedReferences(Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
+        sedReferences.put(Band.W2, new SedReferences(Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
+        sedReferences.put(Band.W3, new SedReferences(Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
+        //sedReferences.put(Band.W4, new SedReferences(Sed.WISE_W4.zeropoint, Sed.WISE_W4.wavelenth));
     }
 
     private void addReferenceSeds(Map<Band, Double> sedPhotometry, XYSeriesCollection collection) {
@@ -576,17 +577,17 @@ public class SedPanel extends JPanel {
             medianDiffMag = 0;
         }
         XYSeries series = new XYSeries(spectralType);
-        series.add(0.484911, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, 3631, 0.484911));
-        series.add(0.62012, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, 3631, 0.62012));
-        series.add(0.753496, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, 3631, 0.753496));
-        series.add(0.86742, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, 3631, 0.86742));
-        series.add(0.962779, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, 3631, 0.962779));
-        series.add(1.235, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J) + medianDiffMag, 1594, 1.235));
-        series.add(1.662, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.H) + medianDiffMag, 1024, 1.662));
-        series.add(2.159, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K) + medianDiffMag, 666.8, 2.159));
-        series.add(3.3526, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, 309.54, 3.3526));
-        series.add(4.6028, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, 171.79, 4.6028));
-        series.add(11.5608, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, 31.67, 11.5608));
+        series.add(Sed.PS1_G.wavelenth, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, Sed.PS1_G.zeropoint, Sed.PS1_G.wavelenth));
+        series.add(Sed.PS1_R.wavelenth, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, Sed.PS1_R.zeropoint, Sed.PS1_R.wavelenth));
+        series.add(Sed.PS1_I.wavelenth, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, Sed.PS1_I.zeropoint, Sed.PS1_I.wavelenth));
+        series.add(Sed.PS1_Z.wavelenth, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, Sed.PS1_Z.zeropoint, Sed.PS1_Z.wavelenth));
+        series.add(Sed.PS1_Y.wavelenth, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
+        series.add(Sed.MASS_J.wavelenth, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J) + medianDiffMag, Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
+        series.add(Sed.MASS_H.wavelenth, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.H) + medianDiffMag, Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
+        series.add(Sed.MASS_K.wavelenth, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K) + medianDiffMag, Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
+        series.add(Sed.WISE_W1.wavelenth, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
+        series.add(Sed.WISE_W2.wavelenth, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
+        series.add(Sed.WISE_W3.wavelenth, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
 
         sedDataPoints.append(spectralType).append(":").append(LINE_SEP);
         for (Object item : series.getItems()) {
