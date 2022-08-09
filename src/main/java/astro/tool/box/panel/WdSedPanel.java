@@ -96,7 +96,7 @@ public class WdSedPanel extends JPanel {
         this.baseFrame = baseFrame;
 
         photSearchRadius = new JTextField("5", 3);
-        removeButton = new JButton("Remove all templates");
+        removeButton = new JButton("Remove templates");
         bestMatch = new JCheckBox("Closest match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
         commonReferences = new JCheckBox("Use common zero points & wavelengths per band", false);
@@ -170,7 +170,7 @@ public class WdSedPanel extends JPanel {
             }
         });
 
-        JButton dataButton = new JButton("Get SED data points");
+        JButton dataButton = new JButton("Show SED data points");
         commandPanel.add(dataButton);
         dataButton.addActionListener((ActionEvent e) -> {
             showScrollableDialog(baseFrame, "SED data points", sedDataPoints.toString());
