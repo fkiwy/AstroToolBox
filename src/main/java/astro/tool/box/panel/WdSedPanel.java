@@ -294,9 +294,9 @@ public class WdSedPanel extends JPanel {
                 sedCatalogs.put(Band.BP, gaiaEntry.getCatalogName());
                 sedCatalogs.put(Band.G, gaiaEntry.getCatalogName());
                 sedCatalogs.put(Band.RP, gaiaEntry.getCatalogName());
-                sedReferences.put(Band.BP, new SedReferences(3552, 0.504));
-                sedReferences.put(Band.G, new SedReferences(3229, 0.582));
-                sedReferences.put(Band.RP, new SedReferences(2555, 0.762));
+                sedReferences.put(Band.BP, new SedReferences(3552.01, 0.510971));
+                sedReferences.put(Band.G, new SedReferences(3228.75, 0.621759));
+                sedReferences.put(Band.RP, new SedReferences(2554.95, 0.776902));
                 sedPhotometry.put(Band.BP, gaiaEntry.getBPmag());
                 sedPhotometry.put(Band.G, gaiaEntry.getGmag());
                 sedPhotometry.put(Band.RP, gaiaEntry.getRPmag());
@@ -588,22 +588,22 @@ public class WdSedPanel extends JPanel {
         }
         XYSeries series = new XYSeries(spectralType);
         if (useGaiaPhotometry) {
-            series.add(0.504, magnitudes.get(Band.BP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.BP) + medianDiffMag, 3552.01, 0.504));
-            series.add(0.582, magnitudes.get(Band.G) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.G) + medianDiffMag, 3228.75, 0.582));
-            series.add(0.762, magnitudes.get(Band.RP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.RP) + medianDiffMag, 2554.95, 0.762));
+            series.add(0.510971, magnitudes.get(Band.BP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.BP) + medianDiffMag, 3552.01, 0.510971));
+            series.add(0.621759, magnitudes.get(Band.G) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.G) + medianDiffMag, 3228.75, 0.621759));
+            series.add(0.776902, magnitudes.get(Band.RP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.RP) + medianDiffMag, 2554.95, 0.776902));
         } else {
-            series.add(0.481, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, 3631, 0.481));
-            series.add(0.617, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, 3631, 0.617));
-            series.add(0.752, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, 3631, 0.752));
-            series.add(0.866, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, 3631, 0.866));
-            series.add(0.962, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, 3631, 0.962));
+            series.add(0.484911, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, 3631, 0.484911));
+            series.add(0.62012, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, 3631, 0.62012));
+            series.add(0.753496, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, 3631, 0.753496));
+            series.add(0.86742, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, 3631, 0.86742));
+            series.add(0.962779, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, 3631, 0.962779));
         }
         series.add(1.235, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J) + medianDiffMag, 1594, 1.235));
         series.add(1.662, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.H) + medianDiffMag, 1024, 1.662));
-        series.add(2.159, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K) + medianDiffMag, 666.7, 2.159));
-        series.add(3.4, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, 309.54, 3.4));
-        series.add(4.6, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, 171.79, 4.6));
-        series.add(12, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, 31.676, 12));
+        series.add(2.159, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K) + medianDiffMag, 666.8, 2.159));
+        series.add(3.3526, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, 309.54, 3.3526));
+        series.add(4.6028, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, 171.79, 4.6028));
+        series.add(11.5608, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, 31.67, 11.5608));
 
         sedDataPoints.append(spectralType).append(":").append(LINE_SEP);
         for (Object item : series.getItems()) {
