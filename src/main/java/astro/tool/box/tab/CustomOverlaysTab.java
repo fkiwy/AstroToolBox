@@ -10,6 +10,7 @@ import astro.tool.box.component.TextPrompt;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -34,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
 
 public class CustomOverlaysTab {
 
@@ -46,6 +48,8 @@ public class CustomOverlaysTab {
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
     private final ImageViewerTab imageViewerTab;
+
+    private boolean allOverlaysDisplayed;
 
     public CustomOverlaysTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -82,21 +86,29 @@ public class CustomOverlaysTab {
             JLabel topRowLabel = new JLabel(html("You can either use a local CSV file <span style='background:#CCFFCC'>(green fields)</span> or a VizieR catalog <span style='background:#FFFFCC'>(yellow fields)</span> to create an overlay:"));
             topPanel.add(topRowLabel);
 
-            JButton addButton = new JButton("Create new overlay");
-            topPanel.add(addButton);
-
             JPanel overlayPanel = new JPanel();
             overlayPanel.setLayout(new BoxLayout(overlayPanel, BoxLayout.Y_AXIS));
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
+            JButton addButton = new JButton("Create new overlay");
+            topPanel.add(addButton);
             addButton.addActionListener((ActionEvent evt) -> {
                 addOverlayRow(overlayPanel, new CustomOverlay());
                 baseFrame.setVisible(true);
             });
 
-            for (int i = 0; i < overlays.size(); i++) {
-                addOverlayRow(overlayPanel, overlays.get(i));
-            }
+            tabbedPane.addChangeListener((ChangeEvent evt) -> {
+                baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
+                int index = sourceTabbedPane.getSelectedIndex();
+                if (allOverlaysDisplayed == false && sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
+                    for (int i = 0; i < overlays.size(); i++) {
+                        addOverlayRow(overlayPanel, overlays.get(i));
+                    }
+                    allOverlaysDisplayed = true;
+                }
+                baseFrame.setCursor(Cursor.getDefaultCursor());
+            });
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
