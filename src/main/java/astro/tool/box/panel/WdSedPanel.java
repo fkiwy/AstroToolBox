@@ -245,9 +245,6 @@ public class WdSedPanel extends JPanel {
             seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId()).append(" ");
         }
 
-        //=================================================================================================================================//
-        // All wavelengths (λref) and zero points (ZPν) are from the SVO Filter Profile Service (http://svo2.cab.inta-csic.es/theory/fps/) //
-        //=================================================================================================================================//
         // Pan-STARRS
         sedCatalogs.put(Band.g, panStarrsEntry.getCatalogName());
         sedCatalogs.put(Band.r, panStarrsEntry.getCatalogName());
@@ -560,7 +557,7 @@ public class WdSedPanel extends JPanel {
             List<Double> correctedDiffMags = new ArrayList();
             for (double diffMag : diffMags) {
                 double correctedDiffMag = diffMag - medianDiffMag;
-                if (abs(correctedDiffMag) < 1) {
+                if (abs(correctedDiffMag) < 3) {
                     correctedDiffMags.add(abs(correctedDiffMag));
                 }
             }
@@ -571,7 +568,7 @@ public class WdSedPanel extends JPanel {
             matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
         }
         if (matches.isEmpty()) {
-            showInfoDialog(null, "No photometry found for SED." + LINE_SEP + "Increasing the search radius may help.");
+            showInfoDialog(null, "No match found for retrieved photometry.");
             return;
         }
         matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
