@@ -49,7 +49,7 @@ public class CustomOverlaysTab {
     private final JTabbedPane tabbedPane;
     private final ImageViewerTab imageViewerTab;
 
-    private boolean allOverlaysDisplayed;
+    private boolean allOverlaysCreated;
 
     public CustomOverlaysTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
@@ -101,11 +101,11 @@ public class CustomOverlaysTab {
                 baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
-                if (allOverlaysDisplayed == false && sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
+                if (allOverlaysCreated == false && sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
                     for (int i = 0; i < overlays.size(); i++) {
                         addOverlayRow(overlayPanel, overlays.get(i));
                     }
-                    allOverlaysDisplayed = true;
+                    allOverlaysCreated = true;
                 }
                 baseFrame.setCursor(Cursor.getDefaultCursor());
             });
