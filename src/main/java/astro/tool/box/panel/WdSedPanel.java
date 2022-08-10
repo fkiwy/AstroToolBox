@@ -553,7 +553,7 @@ public class WdSedPanel extends JPanel {
                     diffMags.add(diffMag);
                 }
             });
-            if (diffMags.size() < 2) {
+            if (diffMags.size() < 3) {
                 continue;
             }
             double medianDiffMag = determineMedian(diffMags);
@@ -564,7 +564,7 @@ public class WdSedPanel extends JPanel {
                     correctedDiffMags.add(abs(correctedDiffMag));
                 }
             }
-            if (correctedDiffMags.size() < 2) {
+            if (correctedDiffMags.size() < 3) {
                 continue;
             }
             double meanDiffMag = calculateMean(correctedDiffMags);
