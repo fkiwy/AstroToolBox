@@ -748,4 +748,24 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         return y_mag;
     }
 
+    public double get_g_err() {
+        return g_err;
+    }
+
+    public double get_r_err() {
+        return r_err;
+    }
+
+    public double get_i_err() {
+        return i_err;
+    }
+
+    public double get_z_err() {
+        return z_err;
+    }
+
+    public double get_y_err() {
+        return y_err;
+    }
+
 }

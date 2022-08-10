@@ -252,8 +252,8 @@ public class WdSedPanel extends JPanel {
         sedCatalogs.put(Band.z, panStarrsEntry.getCatalogName());
         sedCatalogs.put(Band.y, panStarrsEntry.getCatalogName());
         addPanStarrsReferences();
-        sedPhotometry.put(Band.g, panStarrsEntry.get_g_err() == 0 ? 0 : panStarrsEntry.get_g_mag());
-        sedPhotometry.put(Band.r, panStarrsEntry.get_r_err() == 0 ? 0 : panStarrsEntry.get_r_mag());
+        sedPhotometry.put(Band.g, panStarrsEntry.get_g_err() == 0 || panStarrsEntry.get_g_err() > 0.1 ? 0 : panStarrsEntry.get_g_mag());
+        sedPhotometry.put(Band.r, panStarrsEntry.get_r_err() == 0 || panStarrsEntry.get_r_err() > 0.1 ? 0 : panStarrsEntry.get_r_mag());
         sedPhotometry.put(Band.i, panStarrsEntry.get_i_err() == 0 ? 0 : panStarrsEntry.get_i_mag());
         sedPhotometry.put(Band.z, panStarrsEntry.get_z_err() == 0 ? 0 : panStarrsEntry.get_z_mag());
         sedPhotometry.put(Band.y, panStarrsEntry.get_y_err() == 0 ? 0 : panStarrsEntry.get_y_mag());
@@ -323,8 +323,8 @@ public class WdSedPanel extends JPanel {
                         } else {
                             addDecamReferences();
                         }
-                        sedPhotometry.put(Band.g, noirlabEntry.get_g_mag());
-                        sedPhotometry.put(Band.r, noirlabEntry.get_r_mag());
+                        sedPhotometry.put(Band.g, noirlabEntry.get_g_err() > 0.1 ? 0 : noirlabEntry.get_g_mag());
+                        sedPhotometry.put(Band.r, noirlabEntry.get_r_err() > 0.1 ? 0 : noirlabEntry.get_r_mag());
                         sedPhotometry.put(Band.i, noirlabEntry.get_i_mag());
                         sedPhotometry.put(Band.z, noirlabEntry.get_z_mag());
                         sedPhotometry.put(Band.y, noirlabEntry.get_y_mag());
@@ -342,8 +342,8 @@ public class WdSedPanel extends JPanel {
                     } else {
                         addDecamReferences();
                     }
-                    sedPhotometry.put(Band.g, desEntry.get_g_mag());
-                    sedPhotometry.put(Band.r, desEntry.get_r_mag());
+                    sedPhotometry.put(Band.g, desEntry.get_g_err() > 0.1 ? 0 : desEntry.get_g_mag());
+                    sedPhotometry.put(Band.r, desEntry.get_r_err() > 0.1 ? 0 : desEntry.get_r_mag());
                     sedPhotometry.put(Band.i, desEntry.get_i_mag());
                     sedPhotometry.put(Band.z, desEntry.get_z_mag());
                     sedPhotometry.put(Band.y, desEntry.get_y_mag());
@@ -550,18 +550,16 @@ public class WdSedPanel extends JPanel {
                     diffMags.add(diffMag);
                 }
             });
-            if (diffMags.size() < 3) {
+            if (diffMags.size() < 2) {
                 continue;
             }
             double medianDiffMag = determineMedian(diffMags);
             List<Double> correctedDiffMags = new ArrayList();
             for (double diffMag : diffMags) {
                 double correctedDiffMag = diffMag - medianDiffMag;
-                if (abs(correctedDiffMag) < 3) {
-                    correctedDiffMags.add(abs(correctedDiffMag));
-                }
+                correctedDiffMags.add(abs(correctedDiffMag));
             }
-            if (correctedDiffMags.size() < 3) {
+            if (correctedDiffMags.size() < 2) {
                 continue;
             }
             double meanDiffMag = calculateMean(correctedDiffMags);
