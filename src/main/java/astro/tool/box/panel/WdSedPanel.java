@@ -558,12 +558,15 @@ public class WdSedPanel extends JPanel {
             }
             double medianDiffMag = determineMedian(diffMags);
             List<Double> correctedDiffMags = new ArrayList();
-            Band.getSedBands().forEach(band -> {
-                if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
-                    double correctedDiffMag = sedPhotometry.get(band) - medianDiffMag - bands.get(band);
+            for (double diffMag : diffMags) {
+                double correctedDiffMag = diffMag - medianDiffMag;
+                if (abs(correctedDiffMag) < 1) {
                     correctedDiffMags.add(abs(correctedDiffMag));
                 }
-            });
+            }
+            if (correctedDiffMags.size() < 2) {
+                continue;
+            }
             double meanDiffMag = calculateMean(correctedDiffMags);
             matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
         }
