@@ -98,7 +98,7 @@ public class WdSedPanel extends JPanel {
 
         photSearchRadius = new JTextField("5", 3);
         removeButton = new JButton("Remove templates");
-        bestMatch = new JCheckBox("Closest match", true);
+        bestMatch = new JCheckBox("Best match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
         commonReferences = new JCheckBox("Use common zero points & wavelengths per band", false);
 
@@ -252,8 +252,8 @@ public class WdSedPanel extends JPanel {
         sedCatalogs.put(Band.z, panStarrsEntry.getCatalogName());
         sedCatalogs.put(Band.y, panStarrsEntry.getCatalogName());
         addPanStarrsReferences();
-        sedPhotometry.put(Band.g, panStarrsEntry.get_g_err() == 0 || panStarrsEntry.get_g_err() > 0.1 ? 0 : panStarrsEntry.get_g_mag());
-        sedPhotometry.put(Band.r, panStarrsEntry.get_r_err() == 0 || panStarrsEntry.get_r_err() > 0.1 ? 0 : panStarrsEntry.get_r_mag());
+        sedPhotometry.put(Band.g, panStarrsEntry.get_g_err() == 0 ? 0 : panStarrsEntry.get_g_mag());
+        sedPhotometry.put(Band.r, panStarrsEntry.get_r_err() == 0 ? 0 : panStarrsEntry.get_r_mag());
         sedPhotometry.put(Band.i, panStarrsEntry.get_i_err() == 0 ? 0 : panStarrsEntry.get_i_mag());
         sedPhotometry.put(Band.z, panStarrsEntry.get_z_err() == 0 ? 0 : panStarrsEntry.get_z_mag());
         sedPhotometry.put(Band.y, panStarrsEntry.get_y_err() == 0 ? 0 : panStarrsEntry.get_y_mag());
@@ -323,8 +323,8 @@ public class WdSedPanel extends JPanel {
                         } else {
                             addDecamReferences();
                         }
-                        sedPhotometry.put(Band.g, noirlabEntry.get_g_err() > 0.1 ? 0 : noirlabEntry.get_g_mag());
-                        sedPhotometry.put(Band.r, noirlabEntry.get_r_err() > 0.1 ? 0 : noirlabEntry.get_r_mag());
+                        sedPhotometry.put(Band.g, noirlabEntry.get_g_mag());
+                        sedPhotometry.put(Band.r, noirlabEntry.get_r_mag());
                         sedPhotometry.put(Band.i, noirlabEntry.get_i_mag());
                         sedPhotometry.put(Band.z, noirlabEntry.get_z_mag());
                         sedPhotometry.put(Band.y, noirlabEntry.get_y_mag());
@@ -342,8 +342,8 @@ public class WdSedPanel extends JPanel {
                     } else {
                         addDecamReferences();
                     }
-                    sedPhotometry.put(Band.g, desEntry.get_g_err() > 0.1 ? 0 : desEntry.get_g_mag());
-                    sedPhotometry.put(Band.r, desEntry.get_r_err() > 0.1 ? 0 : desEntry.get_r_mag());
+                    sedPhotometry.put(Band.g, desEntry.get_g_mag());
+                    sedPhotometry.put(Band.r, desEntry.get_r_mag());
                     sedPhotometry.put(Band.i, desEntry.get_i_mag());
                     sedPhotometry.put(Band.z, desEntry.get_z_mag());
                     sedPhotometry.put(Band.y, desEntry.get_y_mag());
@@ -550,28 +550,30 @@ public class WdSedPanel extends JPanel {
                     diffMags.add(diffMag);
                 }
             });
-            if (diffMags.size() < 2) {
+            if (diffMags.size() < 5) {
                 continue;
             }
             double medianDiffMag = determineMedian(diffMags);
             List<Double> correctedDiffMags = new ArrayList();
             for (double diffMag : diffMags) {
-                double correctedDiffMag = diffMag - medianDiffMag;
-                correctedDiffMags.add(abs(correctedDiffMag));
+                double correctedDiffMag = abs(diffMag - medianDiffMag);
+                if (correctedDiffMag < 0.5) {
+                    correctedDiffMags.add(correctedDiffMag);
+                }
             }
-            if (correctedDiffMags.size() < 2) {
+            if (correctedDiffMags.size() < 5) {
                 continue;
             }
             double meanDiffMag = calculateMean(correctedDiffMags);
             matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
         }
-        if (matches.isEmpty()) {
-            showInfoDialog(null, "No match found for retrieved photometry.");
+        if (bestMatch.isSelected() && matches.isEmpty()) {
+            showInfoDialog(null, "No match found.");
             return;
         }
         matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
         int j = bestMatch.isSelected() ? 1 : 3;
-        for (int i = 0; i < j; i++) {
+        for (int i = 0; i < j && i < matches.size(); i++) {
             SedBestMatch match = matches.get(i);
             createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
         }

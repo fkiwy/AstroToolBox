@@ -14,11 +14,6 @@ public class SedBestMatch {
         this.meanDiffMag = meanDiffMag;
     }
 
-    @Override
-    public String toString() {
-        return "SedBestMatch{" + "spt=" + spt + ", medianDiffMag=" + medianDiffMag + ", meanDiffMag=" + meanDiffMag + '}';
-    }
-
     public String getSpt() {
         return spt;
     }
