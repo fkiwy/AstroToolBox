@@ -211,8 +211,8 @@ public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
     @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
-        bands.put(Band.W1, new NumberPair(mag_w1_vg, 0));
-        bands.put(Band.W2, new NumberPair(mag_w2_vg, 0));
+        bands.put(Band.W1, new NumberPair(mag_w1_vg, 0.1));
+        bands.put(Band.W2, new NumberPair(mag_w2_vg, 0.1));
         return bands;
     }
 
