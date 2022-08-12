@@ -760,4 +760,16 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         return ks_ap3;
     }
 
+    public double getJ_err() {
+        return j_ap3_err;
+    }
+
+    public double getH_err() {
+        return h_ap3_err;
+    }
+
+    public double getK_err() {
+        return ks_ap3_err;
+    }
+
 }

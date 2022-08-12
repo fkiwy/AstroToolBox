@@ -271,12 +271,10 @@ public class WdSedPanel extends JPanel {
         sedCatalogs.put(Band.W1, allWiseEntry.getCatalogName());
         sedCatalogs.put(Band.W2, allWiseEntry.getCatalogName());
         sedCatalogs.put(Band.W3, allWiseEntry.getCatalogName());
-        //sedCatalogs.put(Band.W4, allWiseEntry.getCatalogName());
         addWiseReferences();
         sedPhotometry.put(Band.W1, allWiseEntry.getW1_err() == 0 ? 0 : allWiseEntry.getW1mag());
         sedPhotometry.put(Band.W2, allWiseEntry.getW2_err() == 0 ? 0 : allWiseEntry.getW2mag());
         sedPhotometry.put(Band.W3, allWiseEntry.getW3_err() == 0 ? 0 : allWiseEntry.getW3mag());
-        //sedPhotometry.put(Band.W4, allWiseEntry.getW4_err() == 0 ? 0 : allWiseEntry.getW4mag());
 
         useGaiaPhotometry = false;
         if ("0".equals(panStarrsEntry.getSourceId())) {
@@ -534,7 +532,6 @@ public class WdSedPanel extends JPanel {
         sedReferences.put(Band.W1, new SedReferences(Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
         sedReferences.put(Band.W2, new SedReferences(Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
         sedReferences.put(Band.W3, new SedReferences(Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
-        //sedReferences.put(Band.W4, new SedReferences(Sed.WISE_W4.zeropoint, Sed.WISE_W4.wavelenth));
     }
 
     private void addReferenceSeds(Map<Band, Double> sedPhotometry, XYSeriesCollection collection) {
@@ -550,24 +547,31 @@ public class WdSedPanel extends JPanel {
                     diffMags.add(diffMag);
                 }
             });
-            if (diffMags.size() < 5) {
-                continue;
+            if (diffMags.isEmpty()) {
+                showInfoDialog(null, "No photometry found.");
+                return;
             }
             double medianDiffMag = determineMedian(diffMags);
+            int totalMags = diffMags.size();
+            if (totalMags < 6) {
+                continue;
+            }
+            int selectedMags = 0;
             List<Double> correctedDiffMags = new ArrayList();
-            for (double diffMag : diffMags) {
+            for (Double diffMag : diffMags) {
                 double correctedDiffMag = abs(diffMag - medianDiffMag);
-                if (correctedDiffMag < 0.5) {
-                    correctedDiffMags.add(correctedDiffMag);
+                correctedDiffMags.add(correctedDiffMag);
+                if (correctedDiffMag < 0.3) {
+                    selectedMags++;
                 }
             }
-            if (correctedDiffMags.size() < 5) {
+            if (selectedMags < totalMags - 2) {
                 continue;
             }
             double meanDiffMag = calculateMean(correctedDiffMags);
             matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
         }
-        if (bestMatch.isSelected() && matches.isEmpty()) {
+        if (matches.isEmpty()) {
             showInfoDialog(null, "No match found.");
             return;
         }

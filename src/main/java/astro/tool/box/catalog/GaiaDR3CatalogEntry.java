@@ -864,4 +864,16 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         return RPmag;
     }
 
+    public double getG_err() {
+        return G_err;
+    }
+
+    public double getBP_err() {
+        return BP_err;
+    }
+
+    public double getRP_err() {
+        return RP_err;
+    }
+
 }
