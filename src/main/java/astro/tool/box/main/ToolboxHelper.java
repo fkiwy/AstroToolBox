@@ -152,6 +152,8 @@ public class ToolboxHelper {
     public static int BASE_FRAME_WIDTH = 1275;
     public static int BASE_FRAME_HEIGHT = 875;
 
+    public static int BUFFER_SIZE = 8 * 1024;
+
     public static Image getToolBoxImage() {
         ImageIcon icon = new ImageIcon(ToolboxHelper.class.getResource("/icons/toolbox.png"));
         return icon.getImage();
@@ -853,7 +855,7 @@ public class ToolboxHelper {
         String imageUrl = String.format("https://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips=%s/%s&width=300&height=300&fov=%s&projection=TAN&coordsys=icrs&rotation_angle=0.0&ra=%s&dec=%s&format=jpg", survey, band, roundTo6DecNZ(size / 3600f), ra, dec);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             bi = ImageIO.read(stream);
             if (isNullImage(bi)) {
                 bi = null;
@@ -934,7 +936,7 @@ public class ToolboxHelper {
         String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             bi = ImageIO.read(stream);
         } catch (IOException ex) {
             bi = null;
@@ -1034,7 +1036,7 @@ public class ToolboxHelper {
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             bi = ImageIO.read(stream);
         } catch (IOException ex) {
             bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
@@ -1057,7 +1059,7 @@ public class ToolboxHelper {
         String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s", targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             image = ImageIO.read(stream);
             if (invert) {
                 image = convertToGray(image);
@@ -1122,7 +1124,7 @@ public class ToolboxHelper {
             String imageUrl = nirImage.getImageUrl();
             try {
                 HttpURLConnection connection = establishHttpConnection(imageUrl);
-                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
                 BufferedImage image = ImageIO.read(stream);
                 int width = image.getWidth();
                 int height = image.getHeight();
