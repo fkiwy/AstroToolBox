@@ -2990,31 +2990,6 @@ public class ImageViewerTab {
         return new ComponentInfo(totalEpochs, epoch, scan);
     }
 
-    private NumberPair getRefValues(FlipbookComponent component) throws Exception {
-        Fits fits;
-        fits = component.getFits2();
-        if (fits != null) {
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values = (float[][]) imageData.getData();
-            NumberPair refValues = determineRefValues(values);
-            double minVal = refValues.getX();
-            double maxVal = refValues.getY();
-            return new NumberPair(minVal, maxVal);
-        }
-        fits = component.getFits1();
-        if (fits != null) {
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values = (float[][]) imageData.getData();
-            NumberPair refValues = determineRefValues(values);
-            double minVal = refValues.getX();
-            double maxVal = refValues.getY();
-            return new NumberPair(minVal, maxVal);
-        }
-        return null;
-    }
-
     private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
         NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
         double fromRa = fromCoords.getX();
@@ -4045,19 +4020,6 @@ public class ImageViewerTab {
         value = min(value, maxVal);
         float lowerBound = 0, upperBound = 1;
         return (value - minVal) * ((upperBound - lowerBound) / (maxVal - minVal)) + lowerBound;
-    }
-
-    private NumberPair determineRefValues(float[][] values) {
-        double lowerBound;
-        double upperBound;
-        if (differenceImaging.isSelected()) {
-            lowerBound = brightness - 100;
-            upperBound = contrast - 200;
-        } else {
-            lowerBound = brightness;
-            upperBound = contrast;
-        }
-        return new NumberPair(lowerBound, upperBound);
     }
 
     private boolean openNewCatalogSearch(double targetRa, double targetDec) {
