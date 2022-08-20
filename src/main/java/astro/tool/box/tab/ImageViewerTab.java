@@ -3,7 +3,6 @@ package astro.tool.box.tab;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.function.StatisticFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
@@ -57,7 +56,6 @@ import astro.tool.box.container.ComponentInfo;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
-import astro.tool.box.enumeration.StatType;
 import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
@@ -189,11 +187,6 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_BRIGHTNESS = 100;
-    public static final int DEFAULT_DESI_BRIGHTNESS = 100;
-    public static final int DEFAULT_WISE_CONTRAST = 1000;
-    public static final int DEFAULT_DESI_CONTRAST = 500;
-    public static final int MAXIMUM_CONTRAST = 2000;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -325,6 +318,7 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
+    private JSlider scaleSlider;
     private JSlider brightnessSlider;
     private JSlider contrastSlider;
     private JSlider speedSlider;
@@ -380,6 +374,7 @@ public class ImageViewerTab {
     private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
+    private int scale;
     private int brightness;
     private int contrast;
     private int minValue;
@@ -500,7 +495,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 40;
+            int rows = 42;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -553,9 +548,23 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            mainControlPanel.add(new JLabel("Scale (crowded regions):"));
+
+            scaleSlider = new JSlider();
+            mainControlPanel.add(scaleSlider);
+            scaleSlider.addChangeListener((ChangeEvent e) -> {
+                scale = scaleSlider.getValue();
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                resetContrastSlider();
+                createFlipbook();
+            });
+
             mainControlPanel.add(new JLabel("Brightness:"));
 
-            brightnessSlider = new JSlider(0, 5000, 0);
+            brightnessSlider = new JSlider();
             mainControlPanel.add(brightnessSlider);
             brightnessSlider.addChangeListener((ChangeEvent e) -> {
                 brightness = brightnessSlider.getValue();
@@ -568,10 +577,11 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
+            contrastSlider = new JSlider();
+            contrastSlider.setInverted(true);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
+                contrast = contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -650,10 +660,8 @@ public class ImageViewerTab {
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
                     blurImages.setSelected(true);
-                    brightnessSlider.setEnabled(false);
                 } else {
                     blurImages.setSelected(false);
-                    brightnessSlider.setEnabled(true);
                 }
                 if (resetContrast.isSelected()) {
                     resetContrastSlider();
@@ -721,6 +729,7 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
+                resetScaleSlider();
                 resetContrastSlider();
                 createFlipbook();
             });
@@ -2318,22 +2327,51 @@ public class ImageViewerTab {
         selectedEpochs = numberOfEpochs;
     }
 
+    private void resetScaleSlider() {
+        ChangeListener changeListener;
+
+        int defaultScale = 1;
+        int defaultScaleMin = 1;
+        int defaultScaleMax = 100;
+        changeListener = scaleSlider.getChangeListeners()[0];
+        scaleSlider.removeChangeListener(changeListener);
+        scaleSlider.setMinimum(defaultScaleMin);
+        scaleSlider.setMaximum(defaultScaleMax);
+        scaleSlider.setValue(defaultScale);
+        scaleSlider.addChangeListener(changeListener);
+        scale = defaultScale;
+    }
+
     private void resetContrastSlider() {
         ChangeListener changeListener;
 
-        int defaultBrightness = desiCutouts.isSelected() ? DEFAULT_DESI_BRIGHTNESS : DEFAULT_WISE_BRIGHTNESS;
+        int x = 100 * scale / 2;
+        int y = 200 * scale / 2;
+
+        int defaultBrightness = 0 - x;
+        int defaultBrightnessMin = defaultBrightness - y;
+        int defaultBrightnessMax = defaultBrightness + y;
         changeListener = brightnessSlider.getChangeListeners()[0];
         brightnessSlider.removeChangeListener(changeListener);
+        brightnessSlider.setMinimum(defaultBrightnessMin);
+        brightnessSlider.setMaximum(defaultBrightnessMax);
         brightnessSlider.setValue(defaultBrightness);
         brightnessSlider.addChangeListener(changeListener);
         brightness = defaultBrightness;
 
-        int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
+        x = 100 * scale;
+        y = 400 * scale;
+
+        int defaultContrast = 200 + x;
+        int defaultContrastMin = defaultContrast - y;
+        int defaultContrastMax = defaultContrast + y;
         changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
+        contrastSlider.setMinimum(defaultContrastMin);
+        contrastSlider.setMaximum(defaultContrastMax);
         contrastSlider.setValue(defaultContrast);
         contrastSlider.addChangeListener(changeListener);
-        contrast = MAXIMUM_CONTRAST - defaultContrast;
+        contrast = defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2524,6 +2562,7 @@ public class ImageViewerTab {
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
                 if (resetContrast.isSelected()) {
+                    resetScaleSlider();
                     resetContrastSlider();
                 }
                 if (legacyImages) {
@@ -2893,14 +2932,13 @@ public class ImageViewerTab {
                     }
                     break;
             }
-
-            int count = flipbook.size();
-            if (count > 0) {
-                NumberPair refVal = getRefValues(flipbook.get(0));
-                minValue = (int) refVal.getX();
-                maxValue = (int) refVal.getY();
+            if (differenceImaging.isSelected()) {
+                minValue = brightness - 100;
+                maxValue = contrast - 200;
+            } else {
+                minValue = brightness;
+                maxValue = contrast;
             }
-
             flipbookComplete = true;
             processImages();
             timer.restart();
@@ -4010,36 +4048,15 @@ public class ImageViewerTab {
     }
 
     private NumberPair determineRefValues(float[][] values) {
-        List<Double> imageData = new ArrayList<>();
-        for (float[] row : values) {
-            for (float value : row) {
-                if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
-                    imageData.add((double) value);
-                }
-            }
-        }
-        int oldSize = 1, newSize = 0;
-        double mean = calculateMean(removeOutliers(imageData, 1, 99));
-        double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
-        List<Double> outliersRemoved = imageData;
-        while (oldSize != newSize) {
-            oldSize = newSize;
-            outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
-            if (outliersRemoved.isEmpty()) {
-                outliersRemoved = imageData;
-                clippingFactor += 0.1;
-            }
-            newSize = outliersRemoved.size();
-        }
         double lowerBound;
+        double upperBound;
         if (differenceImaging.isSelected()) {
-            lowerBound = outliersRemoved.get(0);
+            lowerBound = brightness - 100;
+            upperBound = contrast - 200;
         } else {
-            double lowPercentile = brightness / 100f;
-            List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
-            lowerBound = minOutliersRemoved.get(0);
+            lowerBound = brightness;
+            upperBound = contrast;
         }
-        double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
 
