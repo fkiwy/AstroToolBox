@@ -182,6 +182,9 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
+    public static final String SCALE_LABEL = "Min/Max scale: %d";
+    public static final String MIN_LABEL = "Min pixel value: %d";
+    public static final String MAX_LABEL = "Max pixel value: %d";
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
@@ -248,6 +251,9 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
+    private JLabel scaleLabel;
+    private JLabel minLabel;
+    private JLabel maxLabel;
     private JLabel epochLabel;
     private JLabel panstarrsLabel;
     private JLabel aladinLiteLabel;
@@ -269,7 +275,7 @@ public class ImageViewerTab {
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
-    private JCheckBox resetContrast;
+    private JCheckBox resetMinMax;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -319,8 +325,8 @@ public class ImageViewerTab {
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
     private JSlider scaleSlider;
-    private JSlider brightnessSlider;
-    private JSlider contrastSlider;
+    private JSlider minSlider;
+    private JSlider maxSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -375,10 +381,8 @@ public class ImageViewerTab {
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int scale;
-    private int brightness;
-    private int contrast;
-    private int minValue;
-    private int maxValue;
+    private int min;
+    private int max;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -548,26 +552,30 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Scale (crowded regions):"));
+            scaleLabel = new JLabel(String.format(SCALE_LABEL, 0));
+            mainControlPanel.add(scaleLabel);
 
             scaleSlider = new JSlider();
             mainControlPanel.add(scaleSlider);
             scaleSlider.addChangeListener((ChangeEvent e) -> {
                 scale = scaleSlider.getValue();
+                scaleLabel.setText(String.format(SCALE_LABEL, scale));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                resetContrastSlider();
+                resetMinMaxSliders();
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Brightness:"));
+            minLabel = new JLabel(String.format(MIN_LABEL, 0));
+            mainControlPanel.add(minLabel);
 
-            brightnessSlider = new JSlider();
-            mainControlPanel.add(brightnessSlider);
-            brightnessSlider.addChangeListener((ChangeEvent e) -> {
-                brightness = brightnessSlider.getValue();
+            minSlider = new JSlider();
+            mainControlPanel.add(minSlider);
+            minSlider.addChangeListener((ChangeEvent e) -> {
+                min = minSlider.getValue();
+                minLabel.setText(String.format(MIN_LABEL, min));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -575,13 +583,14 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Contrast:"));
+            maxLabel = new JLabel(String.format(MAX_LABEL, 0));
+            mainControlPanel.add(maxLabel);
 
-            contrastSlider = new JSlider();
-            contrastSlider.setInverted(true);
-            mainControlPanel.add(contrastSlider);
-            contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = contrastSlider.getValue();
+            maxSlider = new JSlider();
+            mainControlPanel.add(maxSlider);
+            maxSlider.addChangeListener((ChangeEvent e) -> {
+                max = maxSlider.getValue();
+                maxLabel.setText(String.format(MAX_LABEL, max));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -663,17 +672,15 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                if (resetContrast.isSelected()) {
-                    resetContrastSlider();
-                }
+                resetMinMaxSliders();
                 createFlipbook();
             });
 
-            resetContrast = new JCheckBox("Auto-reset brightness & contrast", true);
-            mainControlPanel.add(resetContrast);
-            resetContrast.addActionListener((ActionEvent evt) -> {
-                if (resetContrast.isSelected()) {
-                    resetContrastSlider();
+            resetMinMax = new JCheckBox("Auto-reset min/max", true);
+            mainControlPanel.add(resetMinMax);
+            resetMinMax.addActionListener((ActionEvent evt) -> {
+                if (resetMinMax.isSelected()) {
+                    resetMinMaxSliders();
                     createFlipbook();
                 }
             });
@@ -730,11 +737,11 @@ public class ImageViewerTab {
                     blurImages.setSelected(false);
                 }
                 resetScaleSlider();
-                resetContrastSlider();
+                resetMinMaxSliders();
                 createFlipbook();
             });
 
-            stopDownloadButton = new JButton("Stop images download process");
+            stopDownloadButton = new JButton("Stop image downloading process");
             mainControlPanel.add(stopDownloadButton);
             stopDownloadButton.addActionListener((ActionEvent evt) -> {
                 stopDownloadProcess = true;
@@ -2333,6 +2340,7 @@ public class ImageViewerTab {
         int defaultScale = 1;
         int defaultScaleMin = 1;
         int defaultScaleMax = 100;
+        scaleLabel.setText(String.format(SCALE_LABEL, defaultScale));
         changeListener = scaleSlider.getChangeListeners()[0];
         scaleSlider.removeChangeListener(changeListener);
         scaleSlider.setMinimum(defaultScaleMin);
@@ -2342,36 +2350,43 @@ public class ImageViewerTab {
         scale = defaultScale;
     }
 
-    private void resetContrastSlider() {
+    private void resetMinMaxSliders() {
         ChangeListener changeListener;
 
         int x = 100 * scale / 2;
         int y = 200 * scale / 2;
 
-        int defaultBrightness = 0 - x;
-        int defaultBrightnessMin = defaultBrightness - y;
-        int defaultBrightnessMax = defaultBrightness + y;
-        changeListener = brightnessSlider.getChangeListeners()[0];
-        brightnessSlider.removeChangeListener(changeListener);
-        brightnessSlider.setMinimum(defaultBrightnessMin);
-        brightnessSlider.setMaximum(defaultBrightnessMax);
-        brightnessSlider.setValue(defaultBrightness);
-        brightnessSlider.addChangeListener(changeListener);
-        brightness = defaultBrightness;
+        int defaultMin = 0 - x;
+        int defaultMinMin = defaultMin - y;
+        int defaultMinMax = defaultMin + y;
+        minLabel.setText(String.format(MIN_LABEL, defaultMin));
+        changeListener = minSlider.getChangeListeners()[0];
+        minSlider.removeChangeListener(changeListener);
+        minSlider.setMinimum(defaultMinMin);
+        minSlider.setMaximum(defaultMinMax);
+        minSlider.setValue(defaultMin);
+        minSlider.addChangeListener(changeListener);
+        min = defaultMin;
 
         x = 100 * scale;
         y = 400 * scale;
 
-        int defaultContrast = 200 + x;
-        int defaultContrastMin = defaultContrast - y;
-        int defaultContrastMax = defaultContrast + y;
-        changeListener = contrastSlider.getChangeListeners()[0];
-        contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setMinimum(defaultContrastMin);
-        contrastSlider.setMaximum(defaultContrastMax);
-        contrastSlider.setValue(defaultContrast);
-        contrastSlider.addChangeListener(changeListener);
-        contrast = defaultContrast;
+        int defaultMax = 200 + x;
+        int defaultMaxMin = defaultMax - y;
+        int defaultMaxMax = defaultMax + y;
+        maxLabel.setText(String.format(MAX_LABEL, defaultMax));
+        changeListener = maxSlider.getChangeListeners()[0];
+        maxSlider.removeChangeListener(changeListener);
+        maxSlider.setMinimum(defaultMaxMin);
+        maxSlider.setMaximum(defaultMaxMax);
+        maxSlider.setValue(defaultMax);
+        maxSlider.addChangeListener(changeListener);
+        max = defaultMax;
+
+        if (differenceImaging.isSelected()) {
+            min -= 100;
+            max -= 200;
+        }
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2561,9 +2576,9 @@ public class ImageViewerTab {
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
-                if (resetContrast.isSelected()) {
+                if (resetMinMax.isSelected()) {
                     resetScaleSlider();
-                    resetContrastSlider();
+                    resetMinMaxSliders();
                 }
                 if (legacyImages) {
                     desiImage = null;
@@ -2931,13 +2946,6 @@ public class ImageViewerTab {
                         ));
                     }
                     break;
-            }
-            if (differenceImaging.isSelected()) {
-                minValue = brightness - 100;
-                maxValue = contrast - 200;
-            } else {
-                minValue = brightness;
-                maxValue = contrast;
             }
             flipbookComplete = true;
             processImages();
@@ -4011,7 +4019,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value) {
-        value = normalize(value, minValue, maxValue);
+        value = normalize(value, min, max);
         return invertColors.isSelected() ? value : 1 - value;
     }
 
