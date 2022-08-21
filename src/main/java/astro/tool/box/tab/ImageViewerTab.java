@@ -676,7 +676,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            resetMinMax = new JCheckBox("Auto-reset min/max", true);
+            resetMinMax = new JCheckBox("Auto-reset min/max values", true);
             mainControlPanel.add(resetMinMax);
             resetMinMax.addActionListener((ActionEvent evt) -> {
                 if (resetMinMax.isSelected()) {
@@ -2337,17 +2337,15 @@ public class ImageViewerTab {
     private void resetScaleSlider() {
         ChangeListener changeListener;
 
-        int defaultScale = 1;
-        int defaultScaleMin = 1;
-        int defaultScaleMax = 100;
-        scaleLabel.setText(String.format(SCALE_LABEL, defaultScale));
+        int scaleValue = 1;
+        scaleLabel.setText(String.format(SCALE_LABEL, scaleValue));
         changeListener = scaleSlider.getChangeListeners()[0];
         scaleSlider.removeChangeListener(changeListener);
-        scaleSlider.setMinimum(defaultScaleMin);
-        scaleSlider.setMaximum(defaultScaleMax);
-        scaleSlider.setValue(defaultScale);
+        scaleSlider.setMinimum(1);
+        scaleSlider.setMaximum(100);
+        scaleSlider.setValue(scaleValue);
         scaleSlider.addChangeListener(changeListener);
-        scale = defaultScale;
+        scale = scaleValue;
     }
 
     private void resetMinMaxSliders() {
@@ -2356,32 +2354,28 @@ public class ImageViewerTab {
         int x = 100 * scale / 2;
         int y = 200 * scale / 2;
 
-        int defaultMin = 0 - x;
-        int defaultMinMin = defaultMin - y;
-        int defaultMinMax = defaultMin + y;
-        minLabel.setText(String.format(MIN_LABEL, defaultMin));
+        int minValue = 0 - x;
+        minLabel.setText(String.format(MIN_LABEL, minValue));
         changeListener = minSlider.getChangeListeners()[0];
         minSlider.removeChangeListener(changeListener);
-        minSlider.setMinimum(defaultMinMin);
-        minSlider.setMaximum(defaultMinMax);
-        minSlider.setValue(defaultMin);
+        minSlider.setMinimum(minValue - y);
+        minSlider.setMaximum(minValue + y);
+        minSlider.setValue(minValue);
         minSlider.addChangeListener(changeListener);
-        min = defaultMin;
+        min = minValue;
 
         x = 100 * scale;
         y = 400 * scale;
 
-        int defaultMax = 200 + x;
-        int defaultMaxMin = defaultMax - y;
-        int defaultMaxMax = defaultMax + y;
-        maxLabel.setText(String.format(MAX_LABEL, defaultMax));
+        int maxValue = 200 + x;
+        maxLabel.setText(String.format(MAX_LABEL, maxValue));
         changeListener = maxSlider.getChangeListeners()[0];
         maxSlider.removeChangeListener(changeListener);
-        maxSlider.setMinimum(defaultMaxMin);
-        maxSlider.setMaximum(defaultMaxMax);
-        maxSlider.setValue(defaultMax);
+        maxSlider.setMinimum(maxValue - y);
+        maxSlider.setMaximum(maxValue + y);
+        maxSlider.setValue(maxValue);
         maxSlider.addChangeListener(changeListener);
-        max = defaultMax;
+        max = maxValue;
 
         if (differenceImaging.isSelected()) {
             min -= 100;
