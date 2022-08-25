@@ -325,7 +325,6 @@ public class PhotometricClassifierTab {
                 String nearest = roundTo3Dec(entry.getNearest());
                 String matchedColor = colorKey + "=" + colorValue;
                 String spectralType = entry.getSpt();
-                //spectralType = spectralType.replace("V", "");
                 addOccurrence(new ClassifierData(catalogName, colorKey, colorValue, spectralType, nearest, sourceId), sptOccurrences, classifierList, resultTable);
                 spectralType += ": " + matchedColor + "; ";
                 spectralTypes.add(spectralType);
