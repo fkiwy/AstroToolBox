@@ -3,6 +3,7 @@ package astro.tool.box.tab;
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
+import static astro.tool.box.function.StatisticFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
@@ -56,6 +57,7 @@ import astro.tool.box.container.ComponentInfo;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
+import astro.tool.box.enumeration.StatType;
 import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
@@ -182,14 +184,16 @@ import org.apache.commons.compress.utils.IOUtils;
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String SCALE_LABEL = "Min/Max scale: %d";
-    public static final String MIN_LABEL = "Min pixel value: %d";
-    public static final String MAX_LABEL = "Max pixel value: %d";
     public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
+    public static final int DEFAULT_WISE_BRIGHTNESS = 100;
+    public static final int DEFAULT_DESI_BRIGHTNESS = 100;
+    public static final int DEFAULT_WISE_CONTRAST = 1000;
+    public static final int DEFAULT_DESI_CONTRAST = 500;
+    public static final int MAXIMUM_CONTRAST = 2000;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -251,9 +255,6 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
-    private JLabel scaleLabel;
-    private JLabel minLabel;
-    private JLabel maxLabel;
     private JLabel epochLabel;
     private JLabel panstarrsLabel;
     private JLabel aladinLiteLabel;
@@ -275,7 +276,7 @@ public class ImageViewerTab {
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
-    private JCheckBox resetMinMax;
+    private JCheckBox resetContrast;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -324,9 +325,8 @@ public class ImageViewerTab {
     private JCheckBox imageSeriesPdf;
     private JCheckBox drawCrosshairs;
     private JComboBox wiseBands;
-    private JSlider scaleSlider;
-    private JSlider minSlider;
-    private JSlider maxSlider;
+    private JSlider brightnessSlider;
+    private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider epochSlider;
@@ -380,9 +380,10 @@ public class ImageViewerTab {
     private int epochCountW2;
     private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
     private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
-    private int scale;
-    private int min;
-    private int max;
+    private int brightness;
+    private int contrast;
+    private int minValue;
+    private int maxValue;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -499,7 +500,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 42;
+            int rows = 40;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -552,30 +553,12 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            scaleLabel = new JLabel(String.format(SCALE_LABEL, 0));
-            mainControlPanel.add(scaleLabel);
+            mainControlPanel.add(new JLabel("Brightness:"));
 
-            scaleSlider = new JSlider();
-            mainControlPanel.add(scaleSlider);
-            scaleSlider.addChangeListener((ChangeEvent e) -> {
-                scale = scaleSlider.getValue();
-                scaleLabel.setText(String.format(SCALE_LABEL, scale));
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                resetMinMaxSliders();
-                createFlipbook();
-            });
-
-            minLabel = new JLabel(String.format(MIN_LABEL, 0));
-            mainControlPanel.add(minLabel);
-
-            minSlider = new JSlider();
-            mainControlPanel.add(minSlider);
-            minSlider.addChangeListener((ChangeEvent e) -> {
-                min = minSlider.getValue();
-                minLabel.setText(String.format(MIN_LABEL, min));
+            brightnessSlider = new JSlider(0, 5000, 0);
+            mainControlPanel.add(brightnessSlider);
+            brightnessSlider.addChangeListener((ChangeEvent e) -> {
+                brightness = brightnessSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -583,14 +566,12 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            maxLabel = new JLabel(String.format(MAX_LABEL, 0));
-            mainControlPanel.add(maxLabel);
+            mainControlPanel.add(new JLabel("Contrast:"));
 
-            maxSlider = new JSlider();
-            mainControlPanel.add(maxSlider);
-            maxSlider.addChangeListener((ChangeEvent e) -> {
-                max = maxSlider.getValue();
-                maxLabel.setText(String.format(MAX_LABEL, max));
+            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
+            mainControlPanel.add(contrastSlider);
+            contrastSlider.addChangeListener((ChangeEvent e) -> {
+                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -669,18 +650,22 @@ public class ImageViewerTab {
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
                     blurImages.setSelected(true);
+                    brightnessSlider.setEnabled(false);
                 } else {
                     blurImages.setSelected(false);
+                    brightnessSlider.setEnabled(true);
                 }
-                resetMinMaxSliders();
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
+                }
                 createFlipbook();
             });
 
-            resetMinMax = new JCheckBox("Auto-reset min/max values", true);
-            mainControlPanel.add(resetMinMax);
-            resetMinMax.addActionListener((ActionEvent evt) -> {
-                if (resetMinMax.isSelected()) {
-                    resetMinMaxSliders();
+            resetContrast = new JCheckBox("Auto-reset brightness & contrast", true);
+            mainControlPanel.add(resetContrast);
+            resetContrast.addActionListener((ActionEvent evt) -> {
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
                     createFlipbook();
                 }
             });
@@ -736,8 +721,7 @@ public class ImageViewerTab {
                 } else {
                     blurImages.setSelected(false);
                 }
-                resetScaleSlider();
-                resetMinMaxSliders();
+                resetContrastSlider();
                 createFlipbook();
             });
 
@@ -838,7 +822,7 @@ public class ImageViewerTab {
                     createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
                     createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
                     createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
-                            separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0, min, max));
+                            separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
                     createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid field of view!");
@@ -2334,53 +2318,22 @@ public class ImageViewerTab {
         selectedEpochs = numberOfEpochs;
     }
 
-    private void resetScaleSlider() {
+    private void resetContrastSlider() {
         ChangeListener changeListener;
 
-        int scaleValue = 1;
-        scaleLabel.setText(String.format(SCALE_LABEL, scaleValue));
-        changeListener = scaleSlider.getChangeListeners()[0];
-        scaleSlider.removeChangeListener(changeListener);
-        scaleSlider.setMinimum(1);
-        scaleSlider.setMaximum(100);
-        scaleSlider.setValue(scaleValue);
-        scaleSlider.addChangeListener(changeListener);
-        scale = scaleValue;
-    }
+        int defaultBrightness = desiCutouts.isSelected() ? DEFAULT_DESI_BRIGHTNESS : DEFAULT_WISE_BRIGHTNESS;
+        changeListener = brightnessSlider.getChangeListeners()[0];
+        brightnessSlider.removeChangeListener(changeListener);
+        brightnessSlider.setValue(defaultBrightness);
+        brightnessSlider.addChangeListener(changeListener);
+        brightness = defaultBrightness;
 
-    private void resetMinMaxSliders() {
-        ChangeListener changeListener;
-
-        int x = 100 * scale / 2;
-        int y = 200 * scale / 2;
-
-        int minValue = 0 - x;
-        minLabel.setText(String.format(MIN_LABEL, minValue));
-        changeListener = minSlider.getChangeListeners()[0];
-        minSlider.removeChangeListener(changeListener);
-        minSlider.setMinimum(minValue - y);
-        minSlider.setMaximum(minValue + y);
-        minSlider.setValue(minValue);
-        minSlider.addChangeListener(changeListener);
-        min = minValue;
-
-        x = 100 * scale;
-        y = 400 * scale;
-
-        int maxValue = 200 + x;
-        maxLabel.setText(String.format(MAX_LABEL, maxValue));
-        changeListener = maxSlider.getChangeListeners()[0];
-        maxSlider.removeChangeListener(changeListener);
-        maxSlider.setMinimum(maxValue - y);
-        maxSlider.setMaximum(maxValue + y);
-        maxSlider.setValue(maxValue);
-        maxSlider.addChangeListener(changeListener);
-        max = maxValue;
-
-        if (differenceImaging.isSelected()) {
-            min -= 100;
-            max -= 200;
-        }
+        int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
+        changeListener = contrastSlider.getChangeListeners()[0];
+        contrastSlider.removeChangeListener(changeListener);
+        contrastSlider.setValue(defaultContrast);
+        contrastSlider.addChangeListener(changeListener);
+        contrast = MAXIMUM_CONTRAST - defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2520,12 +2473,6 @@ public class ImageViewerTab {
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            int defaultFOV = toInteger(sizeField.getText());
-            int wiseViewFOV = toInteger(wiseViewField.getText());
-            wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
-            createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
-                    separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0, min, max));
-
             if (!isSameTarget(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
                 skipIntermediateEpochs.setEnabled(false);
                 separateScanDirections.setEnabled(false);
@@ -2536,12 +2483,17 @@ public class ImageViewerTab {
 
                 int panstarrsFOV = toInteger(panstarrsField.getText());
                 int aladinLiteFOV = toInteger(aladinLiteField.getText());
+                int wiseViewFOV = toInteger(wiseViewField.getText());
                 int finderChartFOV = toInteger(finderChartField.getText());
+                int defaultFOV = toInteger(sizeField.getText());
                 panstarrsFOV = panstarrsFOV == 0 ? defaultFOV : panstarrsFOV;
                 aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
+                wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
                 finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
                 createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
                 createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
+                createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
+                        separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
                 createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
                 createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
                 String fovSize = roundTo2DecNZ(defaultFOV / 60f);
@@ -2571,11 +2523,8 @@ public class ImageViewerTab {
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
-                if (resetMinMax.isSelected()) {
-                    resetScaleSlider();
-                    resetMinMaxSliders();
-                    createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
-                            separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0, min, max));
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
                 }
                 if (legacyImages) {
                     desiImage = null;
@@ -2944,6 +2893,14 @@ public class ImageViewerTab {
                     }
                     break;
             }
+
+            int count = flipbook.size();
+            if (count > 0) {
+                NumberPair refVal = getRefValues(flipbook.get(0));
+                minValue = (int) refVal.getX();
+                maxValue = (int) refVal.getY();
+            }
+
             flipbookComplete = true;
             processImages();
             timer.restart();
@@ -2993,6 +2950,31 @@ public class ImageViewerTab {
         }
         totalEpochs += epoch * 2 + (i > 0 ? EPOCH_GAP : 0);
         return new ComponentInfo(totalEpochs, epoch, scan);
+    }
+
+    private NumberPair getRefValues(FlipbookComponent component) throws Exception {
+        Fits fits;
+        fits = component.getFits2();
+        if (fits != null) {
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+            NumberPair refValues = determineRefValues(values);
+            double minVal = refValues.getX();
+            double maxVal = refValues.getY();
+            return new NumberPair(minVal, maxVal);
+        }
+        fits = component.getFits1();
+        if (fits != null) {
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+            NumberPair refValues = determineRefValues(values);
+            double minVal = refValues.getX();
+            double maxVal = refValues.getY();
+            return new NumberPair(minVal, maxVal);
+        }
+        return null;
     }
 
     private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
@@ -4016,7 +3998,7 @@ public class ImageViewerTab {
     }
 
     private float processPixel(float value) {
-        value = normalize(value, min, max);
+        value = normalize(value, minValue, maxValue);
         return invertColors.isSelected() ? value : 1 - value;
     }
 
@@ -4025,6 +4007,43 @@ public class ImageViewerTab {
         value = min(value, maxVal);
         float lowerBound = 0, upperBound = 1;
         return (value - minVal) * ((upperBound - lowerBound) / (maxVal - minVal)) + lowerBound;
+    }
+
+    private NumberPair determineRefValues(float[][] values) {
+        List<Double> imageData = new ArrayList<>();
+        for (float[] row : values) {
+            for (float value : row) {
+                if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
+                    imageData.add((double) value);
+                }
+            }
+        }
+        List<Double> outliersRemoved = removeOutliers(imageData, 1, 99);
+        double mean = calculateMean(outliersRemoved);
+        //double std = calculateStandardDeviation(outliersRemoved);
+        //double clippingFactor = (std / mean < 5 ? contrast / 2 : contrast) / 100f;
+        double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
+        outliersRemoved = imageData;
+        int oldSize = 1, newSize = 0;
+        while (oldSize != newSize) {
+            oldSize = newSize;
+            outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
+            if (outliersRemoved.isEmpty()) {
+                outliersRemoved = imageData;
+                clippingFactor += 0.1;
+            }
+            newSize = outliersRemoved.size();
+        }
+        double lowerBound;
+        if (differenceImaging.isSelected()) {
+            lowerBound = outliersRemoved.get(0);
+        } else {
+            double lowPercentile = brightness / 100f;
+            List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
+            lowerBound = minOutliersRemoved.get(0);
+        }
+        double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
+        return new NumberPair(lowerBound, upperBound);
     }
 
     private boolean openNewCatalogSearch(double targetRa, double targetDec) {
