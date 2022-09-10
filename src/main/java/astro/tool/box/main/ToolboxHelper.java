@@ -1159,7 +1159,17 @@ public class ToolboxHelper {
         NirImage nir1 = images.get("K");
         NirImage nir2 = images.get("H");
         NirImage nir3 = images.get("J");
-        if (nir1 != null && nir2 != null && nir3 != null) {
+        if (surveyLabel.equals(UKIDSS_LABEL)) {
+            if (nir1 != null && nir2 != null) {
+                BufferedImage i1 = nir1.getImage();
+                BufferedImage i2 = nir2.getImage();
+                int y1 = nir1.getYear();
+                int y2 = nir2.getYear();
+                BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2));
+                NirImage nirImage = new NirImage(getMeanEpoch(y1, y2), colorImage);
+                images.put("K-H", nirImage);
+            }
+        } else if (nir1 != null && nir2 != null && nir3 != null) {
             BufferedImage i1 = nir1.getImage();
             BufferedImage i2 = nir2.getImage();
             BufferedImage i3 = nir3.getImage();

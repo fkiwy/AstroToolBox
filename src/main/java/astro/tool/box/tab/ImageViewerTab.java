@@ -4167,7 +4167,7 @@ public class ImageViewerTab {
             Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
             NirImage nirImage = nirImages.get("K-H-J");
             if (nirImage == null) {
-                nirImage = nirImages.get("K-J");
+                nirImage = nirImages.get("K-H");
             }
             if (nirImage == null) {
                 return null;
