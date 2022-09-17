@@ -4020,8 +4020,6 @@ public class ImageViewerTab {
         }
         List<Double> outliersRemoved = removeOutliers(imageData, 1, 99);
         double mean = calculateMean(outliersRemoved);
-        //double std = calculateStandardDeviation(outliersRemoved);
-        //double clippingFactor = (std / mean < 5 ? contrast / 2 : contrast) / 100f;
         double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
         outliersRemoved = imageData;
         int oldSize = 1, newSize = 0;
