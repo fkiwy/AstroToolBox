@@ -4020,6 +4020,8 @@ public class ImageViewerTab {
         }
         List<Double> outliersRemoved = removeOutliers(imageData, 1, 99);
         double mean = calculateMean(outliersRemoved);
+        //double std = calculateStandardDeviation(outliersRemoved);
+        //double clippingFactor = (std / mean < 5 ? contrast / 2 : contrast) / 100f;
         double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
         outliersRemoved = imageData;
         int oldSize = 1, newSize = 0;
@@ -4165,7 +4167,7 @@ public class ImageViewerTab {
             Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
             NirImage nirImage = nirImages.get("K-H-J");
             if (nirImage == null) {
-                nirImage = nirImages.get("K-H");
+                nirImage = nirImages.get("K-J");
             }
             if (nirImage == null) {
                 return null;

@@ -1033,7 +1033,7 @@ public class ToolboxHelper {
 
     public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size, boolean invert) {
         BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=95.0&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
@@ -1159,20 +1159,14 @@ public class ToolboxHelper {
         NirImage nir1 = images.get("K");
         NirImage nir2 = images.get("H");
         NirImage nir3 = images.get("J");
-        if (surveyLabel.equals(UKIDSS_LABEL)) {
-            if (nir1 != null && nir2 != null) {
-                BufferedImage i1 = nir1.getImage();
-                BufferedImage i2 = nir2.getImage();
-                int y1 = nir1.getYear();
-                int y2 = nir2.getYear();
-                BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2));
-                NirImage nirImage = new NirImage(getMeanEpoch(y1, y2), colorImage);
-                images.put("K-H", nirImage);
-            }
-        } else if (nir1 != null && nir2 != null && nir3 != null) {
+        if (nir1 != null && nir2 != null && nir3 != null) {
             BufferedImage i1 = nir1.getImage();
             BufferedImage i2 = nir2.getImage();
             BufferedImage i3 = nir3.getImage();
+            int width = i3.getWidth();
+            int height = i3.getHeight();
+            i1 = resizeImage(i1, width, height);
+            i2 = resizeImage(i2, width, height);
             int y1 = nir1.getYear();
             int y2 = nir2.getYear();
             int y3 = nir3.getYear();
@@ -1182,6 +1176,9 @@ public class ToolboxHelper {
         } else if (nir1 != null && nir3 != null) {
             BufferedImage i1 = nir1.getImage();
             BufferedImage i3 = nir3.getImage();
+            int width = i3.getWidth();
+            int height = i3.getHeight();
+            i1 = resizeImage(i1, width, height);
             int y1 = nir1.getYear();
             int y3 = nir3.getYear();
             BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
@@ -1215,7 +1212,11 @@ public class ToolboxHelper {
 
     public static BufferedImage zoomImage(BufferedImage image, int zoom) {
         zoom = zoom == 0 ? 1 : zoom;
-        Image scaledImage = image.getScaledInstance(zoom, zoom, Image.SCALE_DEFAULT);
+        return resizeImage(image, zoom, zoom);
+    }
+
+    private static BufferedImage resizeImage(BufferedImage image, int width, int height) {
+        Image scaledImage = image.getScaledInstance(width, height, Image.SCALE_DEFAULT);
         BufferedImage zoomedImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics graphics = zoomedImage.createGraphics();
         graphics.drawImage(scaledImage, 0, 0, null);
