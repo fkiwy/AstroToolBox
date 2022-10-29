@@ -2,4 +2,5 @@
 2.3.8,false,2021,12,1,""
 2.4.0,false,2022,1,11,""
 2.4.1,false,2022,1,16,"Version 2.4.1 fixes a bug introduced with version 2.4.0 regarding the download of DECaLS images."
-2.5.0,true,2022,6,15,""
+2.5.0,false,2022,6,15,""
+3.0.0,true,2022,10,29,""
