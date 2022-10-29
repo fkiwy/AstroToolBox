@@ -1,13 +1,18 @@
 ## Release notes
 
-### AstroToolBox v2.6.0
+### AstroToolBox v3.0.0
 - Moved photometric distance estimates and extinction corrections to the Object details panel of the Image Viewer and Catalog Search
 - Removed Brown Dwarf and White Dwarf tabs from AstroToolBox
 - Replaced the "Pixel range" slider in the Image Viewer by the "Brightness" slider
 - Added WISE CCD (Color-Color Diagram: J-W2 vs. W1-W2) accessible via Object details panel (button "WISE CCD")
-- Added the "Best match" checkbox to the SED panels
 - Fixed a bug in the Photometric Classifier
 - Enabled NEOWISE 8 cutouts in the Image Viewer
+- Added job id list per TAP provider
+- Added "Remove job ids" button to the ADQL Query tab
+- Added "Stop images download process" button to the Image Viewer
+- Added the "Best match" checkbox to the SED fitting tool
+- Added the "Use common zero points & wavelengths per band" checkbox to the SED fitting tool
+- Removed the "Altogether" results from the Photometric Classifier
 
 ### AstroToolBox v2.5.1
 - Fixed a bug in the deserialization of the saved proper motion overlays
