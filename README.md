@@ -2,7 +2,7 @@
 
 <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
-[Download latest version](releases/executables/AstroToolBox-2.6.0.jar)
+[Download latest version](releases/executables/AstroToolBox-3.3.0.jar)
 
 [Download Gaia DR3 custom overlays](releases/resources/AstroToolBoxOverlays.txt)
 
@@ -56,6 +56,9 @@
 
 ### Gaia CMD with overplotted Montreal Cooling Sequences 
 ![CMD](images/Gaia%20CMD%20WD.png)
+
+### Color-Color Diagram J-W2 vs. W1-W2
+![CCD](images/WISE%20CCD.png)
 
 ## MIT License
 
