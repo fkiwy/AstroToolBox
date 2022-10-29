@@ -188,9 +188,9 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("W1 snr", roundTo1DecNZ(W1_snr), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("W2 snr", roundTo1DecNZ(W2_snr), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo2DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("pmra err", roundTo2DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
+        catalogElements.add(new CatalogElement("pmra err", roundTo2DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionSpurious(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo2DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("pmdec err", roundTo2DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
+        catalogElements.add(new CatalogElement("pmdec err", roundTo2DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionSpurious(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("plx PM desc-asc (mas)", roundTo1DecNZ(par_pm), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx PM desc-asc err", roundTo1DecNZ(par_pmsig), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("plx stat. sol. (mas)", roundTo1DecNZ(par_stat), Alignment.RIGHT, getDoubleComparator()));
@@ -575,6 +575,14 @@ public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     public double getW2mag() {
         return W2mag;
+    }
+
+    public double getW1_err() {
+        return W1_err;
+    }
+
+    public double getW2_err() {
+        return W2_err;
     }
 
 }

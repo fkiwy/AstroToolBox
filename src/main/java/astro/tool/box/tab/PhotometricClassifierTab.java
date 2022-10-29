@@ -99,7 +99,6 @@ public class PhotometricClassifierTab {
 
     private Set<String> matchedColors;
 
-    private Map<String, Integer> sptOccurrencesAltogether;
     private Map<String, Integer> sptOccurrencesMainSequence;
     private Map<String, Integer> sptOccurrencesBrownDwarfs;
     private Map<String, Integer> sptOccurrencesSimbad;
@@ -225,7 +224,6 @@ public class PhotometricClassifierTab {
                             try {
                                 setWaitCursor();
                                 matchedColors = new HashSet();
-                                sptOccurrencesAltogether = new HashMap();
                                 sptOccurrencesMainSequence = new HashMap();
                                 sptOccurrencesBrownDwarfs = new HashMap();
                                 sptOccurrencesSimbad = new HashMap();
@@ -257,7 +255,6 @@ public class PhotometricClassifierTab {
                                     classificationResults = performSpectralTypeLookup(brownDwarfsLookupService, catalogEntries, sptOccurrencesBrownDwarfs, classifierListBrownDwarfs, null);
                                     brownDwarfsResultTable = displayQueryResults(classificationResults, "M, L & T dwarfs spectral type estimates", JColor.BROWN.val);
                                 }
-                                displayClassification(sptOccurrencesAltogether, "Photometric classification: Altogether", Color.RED);
                                 displayClassification(sptOccurrencesMainSequence, "Photometric classification: Main sequence", JColor.DARK_GREEN.val);
                                 displayClassification(sptOccurrencesBrownDwarfs, "Photometric classification: M, L & T dwarfs", JColor.BROWN.val);
                                 displayClassifierData(classifierListMainSequence, "Colors used for classification: Main sequence", JColor.DARK_GREEN.val);
@@ -328,7 +325,6 @@ public class PhotometricClassifierTab {
                 String nearest = roundTo3Dec(entry.getNearest());
                 String matchedColor = colorKey + "=" + colorValue;
                 String spectralType = entry.getSpt();
-                spectralType = spectralType.replace("V", "");
                 addOccurrence(new ClassifierData(catalogName, colorKey, colorValue, spectralType, nearest, sourceId), sptOccurrences, classifierList, resultTable);
                 spectralType += ": " + matchedColor + "; ";
                 spectralTypes.add(spectralType);
@@ -545,8 +541,6 @@ public class PhotometricClassifierTab {
         }
         Integer occurrences = sptOccurrences.get(spectralType);
         sptOccurrences.put(spectralType, occurrences == null ? 1 : occurrences + 1);
-        occurrences = sptOccurrencesAltogether.get(spectralType);
-        sptOccurrencesAltogether.put(spectralType, occurrences == null ? 1 : occurrences + 1);
         matchedColors.add(matchedColor);
         classifierList.add(classifierData);
     }

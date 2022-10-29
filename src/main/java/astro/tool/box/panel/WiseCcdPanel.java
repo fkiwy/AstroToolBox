@@ -161,28 +161,28 @@ public class WiseCcdPanel extends JPanel {
         }
 
         if (allWiseEntry.getSourceId() == null) {
-            UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
-            unWiseEntry.setRa(catalogEntry.getRa());
-            unWiseEntry.setDec(catalogEntry.getDec());
-            unWiseEntry.setSearchRadius(searchRadius);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
+            CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
+            catWiseEntry.setRa(catalogEntry.getRa());
+            catWiseEntry.setDec(catalogEntry.getDec());
+            catWiseEntry.setSearchRadius(searchRadius);
+            CatalogEntry retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
             if (retrievedEntry == null) {
-                CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
-                catWiseEntry.setRa(catalogEntry.getRa());
-                catWiseEntry.setDec(catalogEntry.getDec());
-                catWiseEntry.setSearchRadius(searchRadius);
-                retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
+                UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
+                unWiseEntry.setRa(catalogEntry.getRa());
+                unWiseEntry.setDec(catalogEntry.getDec());
+                unWiseEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
                 if (retrievedEntry != null) {
-                    catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
-                    seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
-                    W1mag = catWiseEntry.getW1mag();
-                    W2mag = catWiseEntry.getW2mag();
+                    unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
+                    seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId()).append(" ");
+                    W1mag = unWiseEntry.getW1mag();
+                    W2mag = unWiseEntry.getW2mag();
                 }
             } else {
-                unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
-                seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId()).append(" ");
-                W1mag = unWiseEntry.getW1mag();
-                W2mag = unWiseEntry.getW2mag();
+                catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
+                seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId()).append(" ");
+                W1mag = catWiseEntry.getW1mag();
+                W2mag = catWiseEntry.getW2mag();
             }
         }
 

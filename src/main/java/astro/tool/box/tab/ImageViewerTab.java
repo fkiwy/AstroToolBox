@@ -159,6 +159,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -188,7 +189,7 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_BRIGHTNESS = 0;
+    public static final int DEFAULT_WISE_BRIGHTNESS = 100;
     public static final int DEFAULT_DESI_BRIGHTNESS = 100;
     public static final int DEFAULT_WISE_CONTRAST = 1000;
     public static final int DEFAULT_DESI_CONTRAST = 500;
@@ -266,6 +267,7 @@ public class ImageViewerTab {
     private JLabel vizierLabel;
     private JLabel changeFovLabel;
     private JButton changeFovButton;
+    private JButton stopDownloadButton;
     private JRadioButton wiseviewCutouts;
     private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
@@ -418,6 +420,7 @@ public class ImageViewerTab {
     private boolean allEpochsW2Loaded;
     private boolean moreImagesAvailable;
     private boolean oneMoreImageAvailable;
+    private boolean stopDownloadProcess;
     private boolean flipbookComplete;
     private boolean reloadImages;
     private boolean imageCutOff;
@@ -497,7 +500,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 39;
+            int rows = 40;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -647,8 +650,13 @@ public class ImageViewerTab {
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
                     blurImages.setSelected(true);
+                    brightnessSlider.setEnabled(false);
                 } else {
                     blurImages.setSelected(false);
+                    brightnessSlider.setEnabled(true);
+                }
+                if (resetContrast.isSelected()) {
+                    resetContrastSlider();
                 }
                 createFlipbook();
             });
@@ -715,6 +723,13 @@ public class ImageViewerTab {
                 }
                 resetContrastSlider();
                 createFlipbook();
+            });
+
+            stopDownloadButton = new JButton("Stop image downloading process");
+            mainControlPanel.add(stopDownloadButton);
+            stopDownloadButton.addActionListener((ActionEvent evt) -> {
+                stopDownloadProcess = true;
+                enableAll();
             });
 
             wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
@@ -1531,10 +1546,11 @@ public class ImageViewerTab {
                     staticView.setSelected(false);
 
                     FlipbookComponent component = flipbook.get(imageNumber);
-                    wiseImage = addCrosshairs(component.getImage());
-                    if (wiseImage == null) {
+                    BufferedImage image = component.getImage();
+                    if (image == null) {
                         return;
                     }
+                    wiseImage = addCrosshairs(image);
                     ImageIcon icon = new ImageIcon(wiseImage);
                     String regularLabel = desiCutouts.isSelected() ? "DECaLS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
@@ -1659,236 +1675,232 @@ public class ImageViewerTab {
                             }
                             double newRa = pointerCoords.getX();
                             double newDec = pointerCoords.getY();
-                            switch (evt.getButton()) {
-                                case MouseEvent.BUTTON3:
-                                    CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
-                                    break;
-                                case MouseEvent.BUTTON2:
-                                    if (drawCrosshairs.isSelected()) {
-                                        double crosshairX = mouseX * 1.0 / zoom;
-                                        double crosshairY = mouseY * 1.0 / zoom;
-                                        double radius = 0.01;
-                                        boolean removed = false;
-                                        ListIterator<NumberPair> iter = crosshairs.listIterator();
-                                        while (iter.hasNext()) {
-                                            NumberPair pixelCoords = iter.next();
-                                            if (pixelCoords.getX() > crosshairX - radius && pixelCoords.getX() < crosshairX + radius
-                                                    && pixelCoords.getY() > crosshairY - radius && pixelCoords.getY() < crosshairY + radius) {
-                                                iter.remove();
-                                                removed = true;
-                                            }
+                            if (SwingUtilities.isRightMouseButton(evt)) {
+                                CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
+                            } else if (SwingUtilities.isMiddleMouseButton(evt)) {
+                                if (drawCrosshairs.isSelected()) {
+                                    double crosshairX = mouseX * 1.0 / zoom;
+                                    double crosshairY = mouseY * 1.0 / zoom;
+                                    double radius = 0.01;
+                                    boolean removed = false;
+                                    ListIterator<NumberPair> iter = crosshairs.listIterator();
+                                    while (iter.hasNext()) {
+                                        NumberPair pixelCoords = iter.next();
+                                        if (pixelCoords.getX() > crosshairX - radius && pixelCoords.getX() < crosshairX + radius
+                                                && pixelCoords.getY() > crosshairY - radius && pixelCoords.getY() < crosshairY + radius) {
+                                            iter.remove();
+                                            removed = true;
                                         }
-                                        if (!removed) {
-                                            crosshairs.add(new NumberPair(crosshairX, crosshairY));
+                                    }
+                                    if (!removed) {
+                                        crosshairs.add(new NumberPair(crosshairX, crosshairY));
+                                    }
+                                    StringBuilder sb = new StringBuilder();
+                                    for (int i = 0; i < crosshairs.size(); i++) {
+                                        NumberPair crosshair = crosshairs.get(i);
+                                        NumberPair c = toWorldCoordinates(
+                                                (int) round(crosshair.getX() * zoom),
+                                                (int) round(crosshair.getY() * zoom)
+                                        );
+                                        sb.append(i + 1).append(". ");
+                                        sb.append(roundTo7Dec(c.getX()));
+                                        sb.append(" ");
+                                        sb.append(roundTo7Dec(c.getY()));
+                                        sb.append(LINE_SEP_TEXT_AREA);
+                                    }
+                                    crosshairCoords.setText(sb.toString());
+                                } else {
+                                    if (imageSeriesPdf.isSelected()) {
+                                        CompletableFuture.supplyAsync(() -> new ImageSeriesPdf(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
+                                    } else if (animatedTimeSeries.isSelected()) {
+                                        if (imageCount == 0) {
+                                            displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
                                         }
-                                        StringBuilder sb = new StringBuilder();
-                                        for (int i = 0; i < crosshairs.size(); i++) {
-                                            NumberPair crosshair = crosshairs.get(i);
-                                            NumberPair c = toWorldCoordinates(
-                                                    (int) round(crosshair.getX() * zoom),
-                                                    (int) round(crosshair.getY() * zoom)
-                                            );
-                                            sb.append(i + 1).append(". ");
-                                            sb.append(roundTo7Dec(c.getX()));
-                                            sb.append(" ");
-                                            sb.append(roundTo7Dec(c.getY()));
-                                            sb.append(LINE_SEP_TEXT_AREA);
-                                        }
-                                        crosshairCoords.setText(sb.toString());
                                     } else {
-                                        if (imageSeriesPdf.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> new ImageSeriesPdf(newRa, newDec, fieldOfView, getImageViewer()).create(baseFrame));
-                                        } else if (animatedTimeSeries.isSelected()) {
-                                            if (imageCount == 0) {
-                                                displayAnimatedTimeSeries(newRa, newDec, fieldOfView);
+                                        CompletableFuture.supplyAsync(() -> {
+                                            int numberOfPanels = 0;
+                                            if (dssImageSeries.isSelected()) {
+                                                numberOfPanels++;
                                             }
-                                        } else {
-                                            CompletableFuture.supplyAsync(() -> {
-                                                int numberOfPanels = 0;
-                                                if (dssImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (twoMassImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (sdssImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (spitzerImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (allwiseImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (ukidssImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (vhsImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (panstarrsImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (legacyImageSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                if (staticTimeSeries.isSelected()) {
-                                                    numberOfPanels++;
-                                                }
-                                                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                                                int screenHeight = screenSize.height;
-                                                int verticalSpacing;
-                                                int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
-                                                if (totalPanelHeight > screenHeight) {
-                                                    verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels);
-                                                } else {
-                                                    verticalSpacing = PANEL_HEIGHT;
-                                                }
-                                                Counter counter = new Counter(verticalSpacing);
-                                                if (dssImageSeries.isSelected()) {
-                                                    displayDssImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (twoMassImageSeries.isSelected()) {
-                                                    display2MassImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (sdssImageSeries.isSelected()) {
-                                                    displaySdssImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (spitzerImageSeries.isSelected()) {
-                                                    displaySpitzerImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (allwiseImageSeries.isSelected()) {
-                                                    displayAllwiseImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (ukidssImageSeries.isSelected()) {
-                                                    displayUkidssImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (vhsImageSeries.isSelected()) {
-                                                    displayVhsImages(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (panstarrsImageSeries.isSelected()) {
-                                                    displayPs1Images(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                if (legacyImageSeries.isSelected()) {
-                                                    displayDesiImages(targetRa, targetDec, fieldOfView, counter);
-                                                }
-                                                if (staticTimeSeries.isSelected()) {
-                                                    displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
-                                                }
-                                                return null;
-                                            });
-                                        }
-                                    }
-                                    break;
-                                default:
-                                    int count = 0;
-                                    if (simbadOverlay.isSelected() && simbadEntries != null) {
-                                        showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
-                                        count++;
-                                    }
-                                    if (allWiseOverlay.isSelected() && allWiseEntries != null) {
-                                        showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
-                                        count++;
-                                    }
-                                    if (catWiseOverlay.isSelected() && catWiseEntries != null) {
-                                        showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
-                                        count++;
-                                    }
-                                    if (unWiseOverlay.isSelected() && unWiseEntries != null) {
-                                        showCatalogInfo(unWiseEntries, mouseX, mouseY, JColor.MINT.val);
-                                        count++;
-                                    }
-                                    if (gaiaOverlay.isSelected() && gaiaEntries != null) {
-                                        showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
-                                        count++;
-                                    }
-                                    if (gaiaDR3Overlay.isSelected() && gaiaDR3Entries != null) {
-                                        showCatalogInfo(gaiaDR3Entries, mouseX, mouseY, Color.CYAN.darker());
-                                        count++;
-                                    }
-                                    if (noirlabOverlay.isSelected() && noirlabEntries != null) {
-                                        showCatalogInfo(noirlabEntries, mouseX, mouseY, JColor.NAVY.val);
-                                        count++;
-                                    }
-                                    if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
-                                        showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
-                                        count++;
-                                    }
-                                    if (sdssOverlay.isSelected() && sdssEntries != null) {
-                                        showCatalogInfo(sdssEntries, mouseX, mouseY, JColor.STEEL.val);
-                                        count++;
-                                    }
-                                    if (spectrumOverlay.isSelected() && sdssEntries != null) {
-                                        showSpectrumInfo(sdssEntries, mouseX, mouseY);
-                                        count++;
-                                    }
-                                    if (vhsOverlay.isSelected() && vhsEntries != null) {
-                                        showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
-                                        count++;
-                                    }
-                                    if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
-                                        showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
-                                        count++;
-                                    }
-                                    if (twoMassOverlay.isSelected() && twoMassEntries != null) {
-                                        showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
-                                        count++;
-                                    }
-                                    if (tessOverlay.isSelected() && tessEntries != null) {
-                                        showCatalogInfo(tessEntries, mouseX, mouseY, JColor.LILAC.val);
-                                        count++;
-                                    }
-                                    if (desOverlay.isSelected() && desEntries != null) {
-                                        showCatalogInfo(desEntries, mouseX, mouseY, JColor.SAND.val);
-                                        count++;
-                                    }
-                                    if (ukidssOverlay.isSelected() && ukidssEntries != null) {
-                                        showCatalogInfo(ukidssEntries, mouseX, mouseY, JColor.BLOOD.val);
-                                        count++;
-                                    }
-                                    if (ssoOverlay.isSelected() && ssoEntries != null) {
-                                        showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
-                                        count++;
-                                    }
-                                    if (useCustomOverlays.isSelected()) {
-                                        for (CustomOverlay customOverlay : customOverlays.values()) {
-                                            if (customOverlay.getCheckBox().isSelected()) {
-                                                showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY, customOverlay.getColor());
-                                                count++;
+                                            if (twoMassImageSeries.isSelected()) {
+                                                numberOfPanels++;
                                             }
+                                            if (sdssImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (spitzerImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (allwiseImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (ukidssImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (vhsImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (panstarrsImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (legacyImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            if (staticTimeSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
+                                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                            int screenHeight = screenSize.height;
+                                            int verticalSpacing;
+                                            int totalPanelHeight = numberOfPanels * PANEL_HEIGHT;
+                                            if (totalPanelHeight > screenHeight) {
+                                                verticalSpacing = PANEL_HEIGHT - (totalPanelHeight - screenHeight) / (numberOfPanels);
+                                            } else {
+                                                verticalSpacing = PANEL_HEIGHT;
+                                            }
+                                            Counter counter = new Counter(verticalSpacing);
+                                            if (dssImageSeries.isSelected()) {
+                                                displayDssImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (twoMassImageSeries.isSelected()) {
+                                                display2MassImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (sdssImageSeries.isSelected()) {
+                                                displaySdssImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (spitzerImageSeries.isSelected()) {
+                                                displaySpitzerImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (allwiseImageSeries.isSelected()) {
+                                                displayAllwiseImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (ukidssImageSeries.isSelected()) {
+                                                displayUkidssImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (vhsImageSeries.isSelected()) {
+                                                displayVhsImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (panstarrsImageSeries.isSelected()) {
+                                                displayPs1Images(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (legacyImageSeries.isSelected()) {
+                                                displayDesiImages(targetRa, targetDec, fieldOfView, counter);
+                                            }
+                                            if (staticTimeSeries.isSelected()) {
+                                                displayStaticTimeSeries(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            return null;
+                                        });
+                                    }
+                                }
+                            } else if (SwingUtilities.isLeftMouseButton(evt)) {
+                                int count = 0;
+                                if (simbadOverlay.isSelected() && simbadEntries != null) {
+                                    showCatalogInfo(simbadEntries, mouseX, mouseY, Color.RED);
+                                    count++;
+                                }
+                                if (allWiseOverlay.isSelected() && allWiseEntries != null) {
+                                    showCatalogInfo(allWiseEntries, mouseX, mouseY, Color.GREEN.darker());
+                                    count++;
+                                }
+                                if (catWiseOverlay.isSelected() && catWiseEntries != null) {
+                                    showCatalogInfo(catWiseEntries, mouseX, mouseY, Color.MAGENTA);
+                                    count++;
+                                }
+                                if (unWiseOverlay.isSelected() && unWiseEntries != null) {
+                                    showCatalogInfo(unWiseEntries, mouseX, mouseY, JColor.MINT.val);
+                                    count++;
+                                }
+                                if (gaiaOverlay.isSelected() && gaiaEntries != null) {
+                                    showCatalogInfo(gaiaEntries, mouseX, mouseY, Color.CYAN.darker());
+                                    count++;
+                                }
+                                if (gaiaDR3Overlay.isSelected() && gaiaDR3Entries != null) {
+                                    showCatalogInfo(gaiaDR3Entries, mouseX, mouseY, Color.CYAN.darker());
+                                    count++;
+                                }
+                                if (noirlabOverlay.isSelected() && noirlabEntries != null) {
+                                    showCatalogInfo(noirlabEntries, mouseX, mouseY, JColor.NAVY.val);
+                                    count++;
+                                }
+                                if (panStarrsOverlay.isSelected() && panStarrsEntries != null) {
+                                    showCatalogInfo(panStarrsEntries, mouseX, mouseY, JColor.BROWN.val);
+                                    count++;
+                                }
+                                if (sdssOverlay.isSelected() && sdssEntries != null) {
+                                    showCatalogInfo(sdssEntries, mouseX, mouseY, JColor.STEEL.val);
+                                    count++;
+                                }
+                                if (spectrumOverlay.isSelected() && sdssEntries != null) {
+                                    showSpectrumInfo(sdssEntries, mouseX, mouseY);
+                                    count++;
+                                }
+                                if (vhsOverlay.isSelected() && vhsEntries != null) {
+                                    showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
+                                    count++;
+                                }
+                                if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
+                                    showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
+                                    count++;
+                                }
+                                if (twoMassOverlay.isSelected() && twoMassEntries != null) {
+                                    showCatalogInfo(twoMassEntries, mouseX, mouseY, JColor.ORANGE.val);
+                                    count++;
+                                }
+                                if (tessOverlay.isSelected() && tessEntries != null) {
+                                    showCatalogInfo(tessEntries, mouseX, mouseY, JColor.LILAC.val);
+                                    count++;
+                                }
+                                if (desOverlay.isSelected() && desEntries != null) {
+                                    showCatalogInfo(desEntries, mouseX, mouseY, JColor.SAND.val);
+                                    count++;
+                                }
+                                if (ukidssOverlay.isSelected() && ukidssEntries != null) {
+                                    showCatalogInfo(ukidssEntries, mouseX, mouseY, JColor.BLOOD.val);
+                                    count++;
+                                }
+                                if (ssoOverlay.isSelected() && ssoEntries != null) {
+                                    showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
+                                    count++;
+                                }
+                                if (useCustomOverlays.isSelected()) {
+                                    for (CustomOverlay customOverlay : customOverlays.values()) {
+                                        if (customOverlay.getCheckBox().isSelected()) {
+                                            showCatalogInfo(customOverlay.getCatalogEntries(), mouseX, mouseY, customOverlay.getColor());
+                                            count++;
                                         }
                                     }
-                                    if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
-                                        showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
-                                        count++;
+                                }
+                                if (gaiaProperMotion.isSelected() && gaiaTpmEntries != null) {
+                                    showPMInfo(gaiaTpmEntries, mouseX, mouseY, Color.CYAN.darker());
+                                    count++;
+                                }
+                                if (gaiaDR3ProperMotion.isSelected() && gaiaDR3TpmEntries != null) {
+                                    showPMInfo(gaiaDR3TpmEntries, mouseX, mouseY, Color.CYAN.darker());
+                                    count++;
+                                }
+                                if (noirlabProperMotion.isSelected() && noirlabTpmEntries != null) {
+                                    showPMInfo(noirlabTpmEntries, mouseX, mouseY, JColor.NAVY.val);
+                                    count++;
+                                }
+                                if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
+                                    showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
+                                    count++;
+                                }
+                                if (ukidssProperMotion.isSelected() && ukidssTpmEntries != null) {
+                                    showPMInfo(ukidssTpmEntries, mouseX, mouseY, JColor.BLOOD.val);
+                                    count++;
+                                }
+                                if (count == 0) {
+                                    if (showCrosshairs.isSelected()) {
+                                        copyCoordsToClipboard(newRa, newDec);
+                                    } else if (showCatalogsButton.isSelected()) {
+                                        CompletableFuture.supplyAsync(() -> openNewCatalogSearch(newRa, newDec));
+                                    } else {
+                                        coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
+                                        createFlipbook();
                                     }
-                                    if (gaiaDR3ProperMotion.isSelected() && gaiaDR3TpmEntries != null) {
-                                        showPMInfo(gaiaDR3TpmEntries, mouseX, mouseY, Color.CYAN.darker());
-                                        count++;
-                                    }
-                                    if (noirlabProperMotion.isSelected() && noirlabTpmEntries != null) {
-                                        showPMInfo(noirlabTpmEntries, mouseX, mouseY, JColor.NAVY.val);
-                                        count++;
-                                    }
-                                    if (catWiseProperMotion.isSelected() && catWiseTpmEntries != null) {
-                                        showPMInfo(catWiseTpmEntries, mouseX, mouseY, Color.MAGENTA);
-                                        count++;
-                                    }
-                                    if (ukidssProperMotion.isSelected() && ukidssTpmEntries != null) {
-                                        showPMInfo(ukidssTpmEntries, mouseX, mouseY, JColor.BLOOD.val);
-                                        count++;
-                                    }
-                                    if (count == 0) {
-                                        if (showCrosshairs.isSelected()) {
-                                            copyCoordsToClipboard(newRa, newDec);
-                                        } else if (showCatalogsButton.isSelected()) {
-                                            CompletableFuture.supplyAsync(() -> openNewCatalogSearch(newRa, newDec));
-                                        } else {
-                                            coordsField.setText(roundTo7DecNZ(newRa) + " " + roundTo7DecNZ(newDec));
-                                            createFlipbook();
-                                        }
-                                    }
-                                    break;
+                                }
                             }
                         }
 
@@ -2404,6 +2416,7 @@ public class ImageViewerTab {
         try {
             timer.stop();
             timerStopped = true;
+            stopDownloadProcess = false;
             String coords = coordsField.getText();
             if (coords.isEmpty()) {
                 showErrorDialog(baseFrame, "Coordinates must not be empty!");
@@ -2612,7 +2625,7 @@ public class ImageViewerTab {
                 int totalEpochs = selectedEpochs * 2;
                 int availableEpochs = totalEpochs + (oneMoreImageAvailable ? 1 : 0);
                 if (moreImagesAvailable) {
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < 1000; i++) {
                         requestedEpochs.add(i);
                     }
                 } else {
@@ -2654,12 +2667,20 @@ public class ImageViewerTab {
                         break;
                     case W1W2:
                         downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        if (stopDownloadProcess) {
+                            break;
+                        }
                         epochCountW1 = epochCount;
                         downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
                         epochCountW2 = epochCount;
                         break;
                 }
-                writeLogEntry("Ready.");
+                if (stopDownloadProcess) {
+                    writeLogEntry("Download process stopped.");
+                    return false;
+                } else {
+                    writeLogEntry("Ready.");
+                }
                 if (asyncDownloads) {
                     downloadLog.setCaretPosition(0);
                 }
@@ -2686,7 +2707,6 @@ public class ImageViewerTab {
                     allEpochsW2Loaded = true;
                 }
             }
-
             loadImages = false;
             reloadImages = false;
 
@@ -2889,19 +2909,23 @@ public class ImageViewerTab {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
         } finally {
-            skipIntermediateEpochs.setEnabled(true);
-            separateScanDirections.setEnabled(true);
-            differenceImaging.setEnabled(true);
-            wiseviewCutouts.setEnabled(true);
-            unwiseCutouts.setEnabled(true);
-            desiCutouts.setEnabled(true);
-            if (waitCursor) {
-                baseFrame.setCursor(Cursor.getDefaultCursor());
-                coordsField.setCursor(Cursor.getDefaultCursor());
-                sizeField.setCursor(Cursor.getDefaultCursor());
-            }
+            enableAll();
         }
         return true;
+    }
+
+    private void enableAll() {
+        skipIntermediateEpochs.setEnabled(true);
+        separateScanDirections.setEnabled(true);
+        differenceImaging.setEnabled(true);
+        wiseviewCutouts.setEnabled(true);
+        unwiseCutouts.setEnabled(true);
+        desiCutouts.setEnabled(true);
+        if (waitCursor) {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+            coordsField.setCursor(Cursor.getDefaultCursor());
+            sizeField.setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     private ComponentInfo getComponentInfo(boolean sep, boolean skip, int half, int i) {
@@ -2930,34 +2954,27 @@ public class ImageViewerTab {
 
     private NumberPair getRefValues(FlipbookComponent component) throws Exception {
         Fits fits;
-        int divisor = 0;
-        int minValW1 = 0;
-        int maxValW1 = 0;
-        fits = component.getFits1();
-        if (fits != null) {
-            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
-            float[][] values = (float[][]) imageData.getData();
-            NumberPair refValues = determineRefValues(values);
-            minValW1 = (int) refValues.getX();
-            maxValW1 = (int) refValues.getY();
-            divisor++;
-        }
-        int minValW2 = 0;
-        int maxValW2 = 0;
         fits = component.getFits2();
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             NumberPair refValues = determineRefValues(values);
-            minValW2 = (int) refValues.getX();
-            maxValW2 = (int) refValues.getY();
-            divisor++;
+            double minVal = refValues.getX();
+            double maxVal = refValues.getY();
+            return new NumberPair(minVal, maxVal);
         }
-        int minVal = (minValW1 + minValW2) / divisor;
-        int maxVal = (maxValW1 + maxValW2) / divisor;
-        return new NumberPair(minVal, maxVal);
+        fits = component.getFits1();
+        if (fits != null) {
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] values = (float[][]) imageData.getData();
+            NumberPair refValues = determineRefValues(values);
+            double minVal = refValues.getX();
+            double maxVal = refValues.getY();
+            return new NumberPair(minVal, maxVal);
+        }
+        return null;
     }
 
     private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
@@ -3448,6 +3465,9 @@ public class ImageViewerTab {
             retrieveDesiImages(band, images);
         } else {
             for (int i = 0; i < requestedEpochs.size(); i++) {
+                if (stopDownloadProcess) {
+                    return;
+                }
                 int requestedEpoch = requestedEpochs.get(i);
                 String imageKey = band + "_" + requestedEpoch;
                 ImageContainer container = images.get(imageKey);
@@ -3726,7 +3746,7 @@ public class ImageViewerTab {
             }
             String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, targetRa, targetDec, size, band);
             try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
-                    InputStream bi = new BufferedInputStream(fi);
+                    InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE);
                     InputStream gzi = new GzipCompressorInputStream(bi);
                     ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
                 ArchiveEntry entry;
@@ -3758,6 +3778,9 @@ public class ImageViewerTab {
     }
 
     private boolean downloadDesiCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
+        if (stopDownloadProcess) {
+            return true;
+        }
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
@@ -3987,32 +4010,38 @@ public class ImageViewerTab {
     }
 
     private NumberPair determineRefValues(float[][] values) {
-        List<Double> data = new ArrayList<>();
+        List<Double> imageData = new ArrayList<>();
         for (float[] row : values) {
             for (float value : row) {
                 if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
-                    data.add((double) value);
+                    imageData.add((double) value);
                 }
             }
         }
-        double lowPercentile = brightness / 100f;
-        List<Double> minOutliersRemoved = removeOutliers(data, lowPercentile, 100);
-        List<Double> outliersRemoved = data;
-        int oldSize = 1;
-        int newSize = 0;
-        double clippingFactor = contrast / 100f;
+        List<Double> outliersRemoved = removeOutliers(imageData, 1, 99);
+        double mean = calculateMean(outliersRemoved);
+        //double std = calculateStandardDeviation(outliersRemoved);
+        //double clippingFactor = (std / mean < 5 ? contrast / 2 : contrast) / 100f;
+        double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
+        outliersRemoved = imageData;
+        int oldSize = 1, newSize = 0;
         while (oldSize != newSize) {
             oldSize = newSize;
             outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
             if (outliersRemoved.isEmpty()) {
-                outliersRemoved = data;
-                clippingFactor++;
-                newSize = -1;
-            } else {
-                newSize = outliersRemoved.size();
+                outliersRemoved = imageData;
+                clippingFactor += 0.1;
             }
+            newSize = outliersRemoved.size();
         }
-        double lowerBound = differenceImaging.isSelected() ? outliersRemoved.get(0) : minOutliersRemoved.get(0);
+        double lowerBound;
+        if (differenceImaging.isSelected()) {
+            lowerBound = outliersRemoved.get(0);
+        } else {
+            double lowPercentile = brightness / 100f;
+            List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
+            lowerBound = minOutliersRemoved.get(0);
+        }
         double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
     }
@@ -4085,7 +4114,7 @@ public class ImageViewerTab {
             String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=grz&layer=%s", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_LS_DR_PARAM);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
-            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
                 image = ImageIO.read(stream);
             }
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
@@ -4116,7 +4145,7 @@ public class ImageViewerTab {
             imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
-            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
                 image = ImageIO.read(stream);
             }
             Map<String, Double> years = getPs1Epochs(targetRa, targetDec);
@@ -4176,7 +4205,7 @@ public class ImageViewerTab {
             String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * pixelScale / resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
-            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
                 image = ImageIO.read(stream);
             }
             //BufferedImage image = retrieveImage(targetRa, targetDec, (int) round(size * pixelScale), "sdss", "file_type=colorimage");
@@ -5035,7 +5064,9 @@ public class ImageViewerTab {
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
-
+                //NumberPair pair = getCoordinates(columnValues[raColumnIndex] + " " + columnValues[decColumnIndex]);
+                //catalogEntry.setRa(pair.getX());
+                //catalogEntry.setDec(pair.getY());
                 NumberPair coords;
                 double radius = size * pixelScale / 2 / DEG_ARCSEC;
 
@@ -5103,7 +5134,7 @@ public class ImageViewerTab {
             String spectrumUrl = SDSS_BASE_URL + "/en/get/specById.ashx?ID=" + SDSSCatalogEntry.getSpecObjID();
             HttpURLConnection connection = establishHttpConnection(spectrumUrl);
             BufferedImage spectrum;
-            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream())) {
+            try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
                 spectrum = ImageIO.read(stream);
             }
             if (spectrum != null) {
@@ -5772,6 +5803,10 @@ public class ImageViewerTab {
 
     public JSlider getZoomSlider() {
         return zoomSlider;
+    }
+
+    public JButton getStopDownloadButton() {
+        return stopDownloadButton;
     }
 
     public JTextField getDifferentSizeField() {

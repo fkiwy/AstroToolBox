@@ -308,6 +308,13 @@ public class AstrometricFunctions {
         );
     }
 
+    /**
+     * Convert equatorial to galactic coordinates
+     *
+     * @param raEquatorial (deg)
+     * @param decEquatorial (deg)
+     * @return the galactic coordinates (deg)
+     */
     public static NumberPair convertToGalacticCoords(double raEquatorial, double decEquatorial) {
         double ra = toRadians(raEquatorial);
         double dec = toRadians(decEquatorial);
@@ -385,15 +392,28 @@ public class AstrometricFunctions {
     }
 
     /**
-     * Verify if proper motion is faulty
+     * Check if proper motion is spurious
      *
      * @param value
      * @param error
-     * @return true if proper motion is faulty
+     * @return true if proper motion is spurious
      */
-    public static boolean isProperMotionFaulty(double value, double error) {
-        value = Math.abs(value);
-        return error > value * 0.5;
+    public static boolean isProperMotionSpurious(double value, double error) {
+        return abs(value) / error < 2;
+    }
+
+    /**
+     * Check if proper motion is erroneous
+     *
+     * @param pmra
+     * @param e_pmra
+     * @param pmdec
+     * @param e_pmdec
+     * @return true if proper motion is erroneous
+     */
+    public static boolean isProperMotionErroneous(double pmra, double e_pmra, double pmdec, double e_pmdec) {
+        // chi-square of motion metric
+        return pow(pmra / e_pmra, 2) + pow(pmdec / e_pmdec, 2) > 27;
     }
 
     /**
@@ -405,7 +425,7 @@ public class AstrometricFunctions {
      */
     public static double calculateChanceAlignmentProbability(int properMotionMatches, double seperation) {
         // sky = 41252.96125 deg^2
-        return (properMotionMatches / 41252.96125) * pow(seperation / DEG_ARCSEC, 2) * Math.PI;
+        return (properMotionMatches / 41252.96125) * pow(seperation / DEG_ARCSEC, 2) * PI;
     }
 
     /**

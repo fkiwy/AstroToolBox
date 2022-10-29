@@ -66,7 +66,7 @@ public class LookupTab {
                         break;
                     case MLT_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";
-                        tableName = "M, L & T dwarfs - Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)";
+                        tableName = "M, L & T dwarfs - Skrzypek et al. (2015), Skrzypek et al. (2016), Deacon et al. (2016), Best et al. (2018), Carnero Rosell et al. (2019) and Kiman et al. (2019)";
                         break;
                     case WHITE_DWARFS:
                         fileName = "/WhiteDwarfLookupTable.csv";

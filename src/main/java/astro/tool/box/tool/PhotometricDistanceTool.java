@@ -53,11 +53,27 @@ public class PhotometricDistanceTool {
             JButton calculateButton = new JButton("Calculate");
             calculateButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double distance = calculatePhotometricDistance(
-                            toDouble(apparentMagnitudeField.getText()),
-                            toDouble(absoluteMagnitudeField.getText())
-                    );
-                    resultField.setText(roundTo3DecNZ(distance));
+                    double apparentMagnitude = 0;
+                    double apparentMagnitudeError = 0;
+                    double absoluteMagnitude = 0;
+                    double absoluteMagnitudeError = 0;
+                    if (apparentMagnitudeField.getText().contains(" ")) {
+                        String[] apparentMagnitudeData = apparentMagnitudeField.getText().split(" ");
+                        apparentMagnitude = toDouble(apparentMagnitudeData[0]);
+                        apparentMagnitudeError = toDouble(apparentMagnitudeData[1]);
+                    }
+                    if (absoluteMagnitudeField.getText().contains(" ")) {
+                        String[] absoluteMagnitudeData = absoluteMagnitudeField.getText().split(" ");
+                        absoluteMagnitude = toDouble(absoluteMagnitudeData[0]);
+                        absoluteMagnitudeError = toDouble(absoluteMagnitudeData[1]);
+                    }
+                    double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
+                    double distanceError = calculatePhotometricDistanceError(apparentMagnitude, apparentMagnitudeError, absoluteMagnitude, absoluteMagnitudeError);
+                    String result = roundTo3DecNZ(distance);
+                    if (distanceError != 0) {
+                        result += "±" + roundTo3DecNZ(distanceError);
+                    }
+                    resultField.setText(result);
                 } catch (Exception ex) {
                     showErrorDialog(baseFrame, "Invalid input!");
                 }

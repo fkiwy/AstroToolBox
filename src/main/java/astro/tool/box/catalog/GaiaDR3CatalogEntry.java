@@ -265,9 +265,9 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("plx err", roundTo4DecNZ(plx_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
+        catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionSpurious(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
+        catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionSpurious(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("G err", roundTo3DecNZ(G_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP (mag)", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
@@ -571,9 +571,9 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
-        bands.put(Band.G, new NumberPair(Gmag, 0));
-        bands.put(Band.BP, new NumberPair(BPmag, 0));
-        bands.put(Band.RP, new NumberPair(RPmag, 0));
+        bands.put(Band.G, new NumberPair(Gmag, G_err));
+        bands.put(Band.BP, new NumberPair(BPmag, BP_err));
+        bands.put(Band.RP, new NumberPair(RPmag, RP_err));
         return bands;
     }
 
@@ -586,6 +586,18 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         colors.put(Color.G_RP, G_RP);
         colors.put(Color.BP_RP, BP_RP);
         colors.put(Color.BP_G, BP_G);
+        colors.put(Color.e_M_G, getAbsoluteGmag() - getAbsoluteGmagError());
+        colors.put(Color.e_M_BP, getAbsoluteBPmag() - getAbsoluteBPmagError());
+        colors.put(Color.e_M_RP, getAbsoluteRPmag() - getAbsoluteRPmagError());
+        colors.put(Color.e_G_RP, G_RP - getG_RP_err());
+        colors.put(Color.e_BP_RP, BP_RP - getBP_RP_err());
+        colors.put(Color.e_BP_G, BP_G - getBP_G_err());
+        colors.put(Color.E_M_G, getAbsoluteGmag() + getAbsoluteGmagError());
+        colors.put(Color.E_M_BP, getAbsoluteBPmag() + getAbsoluteBPmagError());
+        colors.put(Color.E_M_RP, getAbsoluteRPmag() + getAbsoluteRPmagError());
+        colors.put(Color.E_G_RP, G_RP + getG_RP_err());
+        colors.put(Color.E_BP_RP, BP_RP + getBP_RP_err());
+        colors.put(Color.E_BP_G, BP_G + getBP_G_err());
         return colors;
     }
 
@@ -608,17 +620,17 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     public String getPhotometry() {
         StringBuilder mags = new StringBuilder();
         if (Gmag != 0) {
-            mags.append(roundTo3DecNZ(Gmag)).append(",");
+            mags.append(roundTo3DecNZ(Gmag)).append(",").append(roundTo3DecNZ(G_err)).append(",");
         } else {
             mags.append(",");
         }
         if (BPmag != 0) {
-            mags.append(roundTo3DecNZ(BPmag)).append(",");
+            mags.append(roundTo3DecNZ(BPmag)).append(",").append(roundTo3DecNZ(BP_err)).append(",");
         } else {
             mags.append(",");
         }
         if (RPmag != 0) {
-            mags.append(roundTo3DecNZ(RPmag)).append(",");
+            mags.append(roundTo3DecNZ(RPmag)).append(",").append(roundTo3DecNZ(RP_err)).append(",");
         } else {
             mags.append(",");
         }
@@ -789,6 +801,18 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         return calculateAbsoluteMagnitudeFromParallax(BPmag, plx);
     }
 
+    public double getAbsoluteGmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(Gmag, G_err, plx, plx_err);
+    }
+
+    public double getAbsoluteRPmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(RPmag, RP_err, plx, plx_err);
+    }
+
+    public double getAbsoluteBPmagError() {
+        return calculateAbsoluteMagnitudeFromParallaxError(BPmag, BP_err, plx, plx_err);
+    }
+
     @Override
     public double getAbsoluteGmag() {
         return calculateAbsoluteMagnitudeFromParallax(Gmag, plx);
@@ -804,6 +828,30 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         return G_RP;
     }
 
+    public double getBP_RP_err() {
+        if (BP_err == 0 || RP_err == 0) {
+            return 0;
+        } else {
+            return calculateAdditionError(BP_err, RP_err);
+        }
+    }
+
+    public double getG_RP_err() {
+        if (G_err == 0 || RP_err == 0) {
+            return 0;
+        } else {
+            return calculateAdditionError(G_err, RP_err);
+        }
+    }
+
+    public double getBP_G_err() {
+        if (BP_err == 0 || G_err == 0) {
+            return 0;
+        } else {
+            return calculateAdditionError(BP_err, G_err);
+        }
+    }
+
     public double getGmag() {
         return Gmag;
     }
@@ -814,6 +862,18 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     public double getRPmag() {
         return RPmag;
+    }
+
+    public double getG_err() {
+        return G_err;
+    }
+
+    public double getBP_err() {
+        return BP_err;
+    }
+
+    public double getRP_err() {
+        return RP_err;
     }
 
 }

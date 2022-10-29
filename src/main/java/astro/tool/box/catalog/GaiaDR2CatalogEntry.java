@@ -186,9 +186,9 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         catalogElements.add(new CatalogElement("plx (mas)", roundTo4DecNZ(plx), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("plx err", roundTo4DecNZ(plx_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmra, pmra_err)));
+        catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionSpurious(pmra, pmra_err)));
         catalogElements.add(new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator(), true));
-        catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionFaulty(pmdec, pmdec_err)));
+        catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT, getDoubleComparator(), false, false, isProperMotionSpurious(pmdec, pmdec_err)));
         catalogElements.add(new CatalogElement("G (mag)", roundTo3DecNZ(Gmag), Alignment.RIGHT, getDoubleComparator(), true));
         catalogElements.add(new CatalogElement("G err", roundTo3DecNZ(G_err), Alignment.RIGHT, getDoubleComparator()));
         catalogElements.add(new CatalogElement("BP (mag)", roundTo3DecNZ(BPmag), Alignment.RIGHT, getDoubleComparator()));
@@ -413,9 +413,9 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
     @Override
     public Map<Band, NumberPair> getBands() {
         Map<Band, NumberPair> bands = new LinkedHashMap<>();
-        bands.put(Band.G, new NumberPair(Gmag, 0));
-        bands.put(Band.BP, new NumberPair(BPmag, 0));
-        bands.put(Band.RP, new NumberPair(RPmag, 0));
+        bands.put(Band.G, new NumberPair(Gmag, G_err));
+        bands.put(Band.BP, new NumberPair(BPmag, BP_err));
+        bands.put(Band.RP, new NumberPair(RPmag, RP_err));
         return bands;
     }
 
@@ -454,6 +454,27 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         }
         if (RPmag != 0) {
             mags.append("RP=").append(roundTo3DecNZ(RPmag)).append(" ");
+        }
+        return mags.toString();
+    }
+
+    @Override
+    public String getPhotometry() {
+        StringBuilder mags = new StringBuilder();
+        if (Gmag != 0) {
+            mags.append(roundTo3DecNZ(Gmag)).append(",").append(roundTo3DecNZ(G_err)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (BPmag != 0) {
+            mags.append(roundTo3DecNZ(BPmag)).append(",").append(roundTo3DecNZ(BP_err)).append(",");
+        } else {
+            mags.append(",");
+        }
+        if (RPmag != 0) {
+            mags.append(roundTo3DecNZ(RPmag)).append(",").append(roundTo3DecNZ(RP_err)).append(",");
+        } else {
+            mags.append(",");
         }
         return mags.toString();
     }
@@ -653,6 +674,30 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         } else {
             return calculateAdditionError(BP_err, G_err);
         }
+    }
+
+    public double getGmag() {
+        return Gmag;
+    }
+
+    public double getBPmag() {
+        return BPmag;
+    }
+
+    public double getRPmag() {
+        return RPmag;
+    }
+
+    public double getG_err() {
+        return G_err;
+    }
+
+    public double getBP_err() {
+        return BP_err;
+    }
+
+    public double getRP_err() {
+        return RP_err;
     }
 
 }

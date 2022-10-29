@@ -434,7 +434,7 @@ public class ImageSeriesPdf {
             document.add(new Paragraph("(*) Uses color-spectral type relations from Eric Mamajek's Modern Mean Dwarf Stellar Color & Effective Temperature Sequence", SMALL_FONT));
 
             document.add(createCatalogEntriesTable(brownDwarfsLookupService, catalogEntries, "M, L & T dwarfs spectral type estimates (*)", null));
-            document.add(new Paragraph("(*) Uses color-spectral type relations from Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019)", SMALL_FONT));
+            document.add(new Paragraph("(*) Uses color-spectral type relations from Skrzypek et al. (2015), Skrzypek et al. (2016), Deacon et al. (2016), Best et al. (2018), Carnero Rosell et al. (2019) and Kiman et al. (2019)", SMALL_FONT));
 
             document.close();
 

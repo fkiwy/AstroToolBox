@@ -5,6 +5,7 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import static astro.tool.box.util.ServiceHelper.*;
 import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.tab.SettingsTab.*;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.enumeration.TapProvider;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import javax.swing.BoxLayout;
@@ -75,9 +77,8 @@ public class AdqlQueryTab {
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
     private static final String AVAILABLE_TABLES = "Available tables";
-    private static final String JOB_ID = "jobId";
-    private static final String ASYNC_TAP_PROVIDER = "asyncTapProvider";
-    private static final TapProvider DEFAULT_TAP_PROVIDER = TapProvider.VIZIER;
+    private static final String ADQL_TAP_PROVIDER = "adqlTapProvider";
+    private static final String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -88,6 +89,7 @@ public class AdqlQueryTab {
     private JTextField statusField;
     private JTextField elapsedTime;
     private JComboBox tapProvider;
+    private JComboBox jobIds;
     private TableRowSorter<TableModel> catalogTableSorter;
     private TableRowSorter<TableModel> catalogColumnSorter;
 
@@ -212,10 +214,10 @@ public class AdqlQueryTab {
             JButton runButton = new JButton("Run query");
             firstRow.add(runButton);
             runButton.addActionListener((ActionEvent evt) -> {
-                if (jobStatus != null && (jobStatus.equals(JobStatus.PENDING.toString()) || jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
-                    showErrorDialog(baseFrame, "Query is still running!");
-                    return;
-                }
+                //if (jobStatus != null && (jobStatus.equals(JobStatus.PENDING.toString()) || jobStatus.equals(JobStatus.QUEUED.toString()) || jobStatus.equals(JobStatus.EXECUTING.toString()))) {
+                //    showErrorDialog(baseFrame, "Query is still running!");
+                //    return;
+                //}
                 String query = textEditor.getText();
                 if (query.isEmpty()) {
                     showErrorDialog(baseFrame, "No query to run!");
@@ -262,9 +264,7 @@ public class AdqlQueryTab {
                             params = new ArrayList<>();
                             params.add(new BasicNameValuePair("PHASE", "RUN"));
                             response = doPost(createStatusUrl(jobId), params);
-                            SettingsTab.setUserSetting(JOB_ID, jobId);
-                            SettingsTab.setUserSetting(ASYNC_TAP_PROVIDER, getTapProvider().name());
-                            SettingsTab.saveSettings();
+                            addJobId(jobId, getTapProvider());
                         } catch (Exception ex) {
                             stopClock();
                             initStatus();
@@ -320,14 +320,14 @@ public class AdqlQueryTab {
             elapsedTime.setEditable(false);
             firstRow.add(elapsedTime);
 
-            JButton fetchButton = new JButton("Fetch results");
-            firstRow.add(fetchButton);
-            fetchButton.addActionListener((ActionEvent evt) -> {
+            JButton displayButton = new JButton("Display result");
+            firstRow.add(displayButton);
+            displayButton.addActionListener((ActionEvent evt) -> {
                 if (jobId == null) {
                     showInfoDialog(baseFrame, "No query submitted!");
                     return;
                 }
-                fetchButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                displayButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 removeResultPanel();
                 try {
                     jobStatus = doGet(createStatusUrl(jobId));
@@ -349,31 +349,57 @@ public class AdqlQueryTab {
                         showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
                     } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
                         showInfoDialog(baseFrame, "Query was aborted!");
+                    } else {
+                        displayNoResultAvailable();
                     }
                 } catch (Exception ex) {
                     initStatus();
-                    showInfoDialog(baseFrame, "No results to fetch!");
+                    showInfoDialog(baseFrame, "No result to display!");
                 } finally {
-                    fetchButton.setCursor(Cursor.getDefaultCursor());
+                    displayButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
-            JButton exportButton = new JButton("Export results");
-            firstRow.add(exportButton);
-            exportButton.addActionListener((ActionEvent evt) -> {
-                if (queryResults == null || queryResults.isEmpty()) {
-                    showInfoDialog(baseFrame, "No results to export!");
-                } else {
-                    try {
+            JButton downloadButton = new JButton("Download result");
+            firstRow.add(downloadButton);
+            downloadButton.addActionListener((ActionEvent evt) -> {
+                if (jobId == null) {
+                    showInfoDialog(baseFrame, "No query submitted!");
+                    return;
+                }
+                downloadButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                removeResultPanel();
+                try {
+                    jobStatus = doGet(createStatusUrl(jobId));
+                    statusField.setText(jobStatus);
+                    statusField.setBackground(getStatusColor(jobStatus).val);
+                    if (jobStatus.equals(JobStatus.PENDING.toString())) {
+                        showInfoDialog(baseFrame, "Query is still pending!");
+                    } else if (jobStatus.equals(JobStatus.QUEUED.toString())) {
+                        showInfoDialog(baseFrame, "Query is still queued!");
+                    } else if (jobStatus.equals(JobStatus.EXECUTING.toString())) {
+                        showInfoDialog(baseFrame, "Query is still running!");
+                    } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
+                        queryResults = doGet(createResultUrl(jobId));
                         File tmpFile = File.createTempFile("AstroToolBox_", ".csv");
                         try (FileWriter writer = new FileWriter(tmpFile)) {
                             writer.write(queryResults);
                         }
                         Desktop.getDesktop().open(tmpFile);
-                    } catch (Exception ex) {
-                        showExceptionDialog(baseFrame, ex);
+                    } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
+                        String response = doGet(createErrorUrl(jobId));
+                        String errorMessage = getErrorMessage(response);
+                        showScrollableErrorDialog(baseFrame, errorMessage.isEmpty() ? response : errorMessage);
+                    } else if (jobStatus.equals(JobStatus.ABORTED.toString())) {
+                        showInfoDialog(baseFrame, "Query was aborted!");
+                    } else {
+                        displayNoResultAvailable();
                     }
-
+                } catch (Exception ex) {
+                    initStatus();
+                    showInfoDialog(baseFrame, "No result to download!");
+                } finally {
+                    downloadButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -392,8 +418,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("PHASE", "ABORT"));
                     doPost(createStatusUrl(jobId), params);
-                    SettingsTab.setUserSetting(JOB_ID, "");
-                    SettingsTab.saveSettings();
+                    removeJobId(jobId, getTapProvider());
                     showInfoDialog(baseFrame, "Query aborted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -415,8 +440,7 @@ public class AdqlQueryTab {
                     List<NameValuePair> params = new ArrayList<>();
                     params.add(new BasicNameValuePair("ACTION", "DELETE"));
                     doPost(createDeleteUrl(jobId), params);
-                    SettingsTab.setUserSetting(JOB_ID, "");
-                    SettingsTab.saveSettings();
+                    removeJobId(jobId, getTapProvider());
                     showInfoDialog(baseFrame, "Query deleted!");
                 } catch (Exception ex) {
                     showExceptionDialog(baseFrame, ex);
@@ -425,24 +449,47 @@ public class AdqlQueryTab {
 
             firstRow.add(message);
 
+            secondRow.add(new JLabel("TAP provider:"));
+
+            tapProvider = new JComboBox(TapProvider.values());
+            secondRow.add(tapProvider);
+            tapProvider.setSelectedItem(TapProvider.valueOf(getUserSetting(ADQL_TAP_PROVIDER, DEFAULT_TAP_PROVIDER)));
+            tapProvider.addActionListener((ActionEvent evt) -> {
+                refreshJobIdList();
+                setUserSetting(ADQL_TAP_PROVIDER, getTapProvider().name());
+                saveSettings();
+            });
+
+            secondRow.add(new JLabel("Job ids for selected TAP provider:"));
+
+            String[] ids = retrieveJobIds(getTapProvider());
+            jobIds = new JComboBox(ids);
+            secondRow.add(jobIds);
+            jobIds.addActionListener((ActionEvent evt) -> {
+                jobId = (String) jobIds.getSelectedItem();
+            });
+
+            // Must also be initialized when the GUI is built
+            jobId = (String) jobIds.getSelectedItem();
+
+            JButton removeButton = new JButton("Remove job ids");
+            secondRow.add(removeButton);
+            removeButton.addActionListener((ActionEvent evt) -> {
+                if (showConfirmDialog(baseFrame, "Do you really want to remove all job ids?")) {
+                    removeAllJobIds(getTapProvider());
+                }
+            });
+
             JButton resumeButton = new JButton("Resume query");
             secondRow.add(resumeButton);
             resumeButton.addActionListener((ActionEvent evt) -> {
-                jobId = SettingsTab.getUserSetting(JOB_ID, "");
-                if (!jobId.isEmpty()) {
-                    String provider = SettingsTab.getUserSetting(ASYNC_TAP_PROVIDER, DEFAULT_TAP_PROVIDER.name());
-                    tapProvider.setSelectedItem(TapProvider.valueOf(provider));
+                jobId = (String) jobIds.getSelectedItem();
+                if (jobId != null && !jobId.isEmpty()) {
                     statusField.setText("Resuming ...");
                     statusField.setBackground(JColor.LIGHT_NAVY.val);
                     startClock();
                 }
             });
-
-            secondRow.add(new JLabel("TAP provider:"));
-
-            tapProvider = new JComboBox(TapProvider.values());
-            secondRow.add(tapProvider);
-            tapProvider.setSelectedItem(DEFAULT_TAP_PROVIDER);
 
             JButton browseButton = new JButton("Browse tables");
             secondRow.add(browseButton);
@@ -500,6 +547,70 @@ public class AdqlQueryTab {
             tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void displayNoResultAvailable() {
+        statusField.setText(null);
+        statusField.setBackground(elapsedTime.getBackground());
+        showInfoDialog(baseFrame, "No result available!");
+        writeMessageLog("No ADQL result available. Reason: " + jobStatus);
+    }
+
+    private void addJobId(String id, TapProvider provider) {
+        List<String> ids = retrieveJobIdsAsList(provider);
+        if (!ids.contains(id)) {
+            ids.add(0, id);
+            saveJobIds(ids, provider);
+        }
+    }
+
+    private void removeJobId(String id, TapProvider provider) {
+        List<String> ids = retrieveJobIdsAsList(provider);
+        if (ids.contains(id)) {
+            ids.remove(id);
+            saveJobIds(ids, provider);
+        }
+    }
+
+    private void removeAllJobIds(TapProvider provider) {
+        saveJobIds(null, provider);
+    }
+
+    private void saveJobIds(List<String> ids, TapProvider provider) {
+        String idList;
+        if (ids == null || ids.isEmpty()) {
+            idList = "";
+        } else {
+            idList = String.join(",", ids);
+        }
+        setUserSetting(provider.name(), idList);
+        saveSettings();
+        refreshJobIdList();
+    }
+
+    private String[] retrieveJobIds(TapProvider provider) {
+        String ids = getUserSetting(provider.name(), "");
+        if (ids.isEmpty()) {
+            return new String[0];
+        } else {
+            return ids.split(",", -1);
+        }
+    }
+
+    private List<String> retrieveJobIdsAsList(TapProvider provider) {
+        List<String> ids = new ArrayList();
+        ids.addAll(Arrays.asList(retrieveJobIds(provider)));
+        return ids;
+    }
+
+    private void refreshJobIdList() {
+        jobIds.removeAllItems();
+        String[] ids = retrieveJobIds(getTapProvider());
+        if (ids.length > 0) {
+            for (String id : ids) {
+                jobIds.addItem(id);
+            }
         }
     }
 

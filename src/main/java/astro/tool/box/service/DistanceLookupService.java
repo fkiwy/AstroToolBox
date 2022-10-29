@@ -48,11 +48,11 @@ public class DistanceLookupService {
             double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
             double apparentMagnitudeError = entry.getValue().getY();
             double absoluteMagnitudeError = absoluteMagnitudesErrors.get(entry.getKey());
-            //if (absoluteMagnitudeError == 0) {
-            //    absoluteMagnitudeError = absoluteMagnitude * 0.03;
-            //}
-            double distanceError;
             if (absoluteMagnitudeError == 0) {
+                absoluteMagnitudeError = 0.5;
+            }
+            double distanceError;
+            if (apparentMagnitudeError == 0) {
                 distanceError = 0;
             } else {
                 distanceError = calculatePhotometricDistanceError(apparentMagnitude, apparentMagnitudeError, absoluteMagnitude, absoluteMagnitudeError);
