@@ -3540,7 +3540,7 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                double maxAllowed = xLength * yLength * 0.1;
+                double maxAllowed = xLength * yLength * 0.5;
                 if (zeroValues > maxAllowed) {
                     if (requestedEpochs.size() == 4) {
                         writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (poor image quality), looking for substitutes");
