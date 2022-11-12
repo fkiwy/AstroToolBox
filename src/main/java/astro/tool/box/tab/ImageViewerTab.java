@@ -418,8 +418,7 @@ public class ImageViewerTab {
     private boolean loadImages;
     private boolean allEpochsW1Loaded;
     private boolean allEpochsW2Loaded;
-    private boolean moreImagesAvailable;
-    private boolean oneMoreImageAvailable;
+    private boolean moreEpochsAvailable;
     private boolean stopDownloadProcess;
     private boolean flipbookComplete;
     private boolean reloadImages;
@@ -2473,6 +2472,8 @@ public class ImageViewerTab {
             coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             sizeField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+            int additionalEpochs = 0;
+
             if (!isSameTarget(targetRa, targetDec, size, previousRa, previousDec, previousSize)) {
                 skipIntermediateEpochs.setEnabled(false);
                 separateScanDirections.setEnabled(false);
@@ -2505,8 +2506,7 @@ public class ImageViewerTab {
                 loadImages = true;
                 allEpochsW1Loaded = false;
                 allEpochsW2Loaded = false;
-                moreImagesAvailable = false;
-                oneMoreImageAvailable = false;
+                moreEpochsAvailable = false;
                 flipbookComplete = false;
                 hasException = false;
                 imageCutOff = false;
@@ -2595,15 +2595,16 @@ public class ImageViewerTab {
                     }
                 }
                 if (wiseviewCutouts.isSelected()) {
+                    int maxEpochs = numberOfEpochs + 6;
                     try {
-                        InputStream stream = getImageData(1, numberOfEpochs + 6);
-                        stream.close();
-                        moreImagesAvailable = true;
+                        getImageData(1, maxEpochs).close();
+                        moreEpochsAvailable = true;
                     } catch (IOException e) {
                         try {
-                            InputStream stream = getImageData(1, numberOfEpochs);
-                            stream.close();
-                            oneMoreImageAvailable = true;
+                            for (int i = numberOfEpochs; i < maxEpochs; i++) {
+                                getImageData(1, i).close();
+                                additionalEpochs++;
+                            }
                         } catch (IOException ex) {
                         }
                     }
@@ -2623,12 +2624,12 @@ public class ImageViewerTab {
                 band2Images = new ArrayList();
                 requestedEpochs = new ArrayList<>();
                 int totalEpochs = selectedEpochs * 2;
-                int availableEpochs = totalEpochs + (oneMoreImageAvailable ? 1 : 0);
-                if (moreImagesAvailable) {
+                if (moreEpochsAvailable) {
                     for (int i = 0; i < 1000; i++) {
                         requestedEpochs.add(i);
                     }
                 } else {
+                    int availableEpochs = totalEpochs + additionalEpochs;
                     if (skipIntermediateEpochs.isSelected()) {
                         if (reloadImages) {
                             imagesW1.clear();
@@ -2693,7 +2694,7 @@ public class ImageViewerTab {
                     epochCount = min(epochCountW1, epochCountW2);
                 }
                 epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
-                if (!skipIntermediateEpochs.isSelected() || moreImagesAvailable) {
+                if (!skipIntermediateEpochs.isSelected() || moreEpochsAvailable) {
                     epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
                 }
             }
