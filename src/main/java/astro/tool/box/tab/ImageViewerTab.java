@@ -3373,7 +3373,6 @@ public class ImageViewerTab {
             writeLogEntry("No images found for band " + band + ".");
             return;
         }
-        writeLogEntry("Downloading ...");
         if (desiCutouts.isSelected()) {
             retrieveDesiImages(band, images);
         } else {
@@ -3466,9 +3465,9 @@ public class ImageViewerTab {
         List<ImageContainer> containers = images.values().stream()
                 .sorted(Comparator.comparing(ImageContainer::getEpoch))
                 .collect(Collectors.toList());
+        extractHeaderInfo(containers.get(0).getImage());
         for (ImageContainer container : containers) {
             Fits fits = container.getImage();
-            extractHeaderInfo(fits);
             addImage(band, fits);
             epochCount++;
         }
