@@ -327,6 +327,7 @@ public class ImageViewerTab {
     private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
+    private JSlider groupSlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -377,6 +378,7 @@ public class ImageViewerTab {
     private int contrast;
     private int minValue;
     private int maxValue;
+    private int group;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -481,7 +483,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 38;
+            int rows = 40;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -589,6 +591,25 @@ public class ImageViewerTab {
                     return;
                 }
                 processImages();
+            });
+
+            JLabel groupLabel = new JLabel(String.format("Group images: %d", group));
+            mainControlPanel.add(groupLabel);
+
+            groupSlider = new JSlider(0, NUMBER_OF_WISEVIEW_EPOCHS, 0);
+            mainControlPanel.add(groupSlider);
+            groupSlider.addChangeListener((ChangeEvent e) -> {
+                group = groupSlider.getValue();
+                groupLabel.setText(String.format("Group images: %d", group));
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                if (skipIntermediateEpochs.isSelected()) {
+                    skipIntermediateEpochs.setSelected(false);
+                    loadImages = true;
+                }
+                createFlipbook();
             });
 
             skipIntermediateEpochs = new JCheckBox("Skip intermediate epochs", true);
@@ -2715,12 +2736,19 @@ public class ImageViewerTab {
                 }
             }
 
-            List<Fits> band1GroupedImages = new ArrayList();
-            List<Fits> band2GroupedImages = new ArrayList();
-
             boolean skip = skipIntermediateEpochs.isSelected();
             boolean sep = separateScanDirections.isSelected();
             boolean diff = differenceImaging.isSelected();
+
+            if (!skip && wiseviewCutouts.isSelected()) {
+                band1Scan1Images = groupImages(band1Scan1Images);
+                band1Scan2Images = groupImages(band1Scan2Images);
+                band2Scan1Images = groupImages(band2Scan1Images);
+                band2Scan2Images = groupImages(band2Scan2Images);
+            }
+
+            List<Fits> band1GroupedImages = new ArrayList();
+            List<Fits> band2GroupedImages = new ArrayList();
 
             if (sep) {
                 if (diff) {
@@ -2847,6 +2875,57 @@ public class ImageViewerTab {
             enableAll();
         }
         return true;
+    }
+
+    private List<Fits> groupImages(List<Fits> images) {
+        if (group == 0) {
+            return images;
+        }
+        try {
+            List<Fits> list = new ArrayList();
+            Fits fits = images.get(0);
+            int j = 0;
+            for (int i = 1; i < images.size(); i++) {
+                if (j < group) {
+                    fits = addImages(fits, images.get(i));
+                    j++;
+                } else {
+                    list.add(average(fits, j));
+                    fits = images.get(i);
+                    j = 0;
+                }
+            }
+            if (j > 0) {
+                list.add(average(fits, j + 1));
+            }
+            if (list.isEmpty()) {
+                group--;
+                return groupImages(images);
+            }
+            return list;
+        } catch (Exception ex) {
+            return images;
+        }
+    }
+
+    private Fits average(Fits fits, int numberOfImages) throws Exception {
+        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
+        ImageData imageData = (ImageData) imageHDU.getData();
+        float[][] values = (float[][]) imageData.getData();
+
+        float[][] averagedValues = new float[naxis2][naxis1];
+        for (int i = 0; i < naxis2; i++) {
+            for (int j = 0; j < naxis1; j++) {
+                try {
+                    averagedValues[i][j] = values[i][j] / numberOfImages;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+
+        Fits result = new Fits();
+        result.addHDU(FitsFactory.hduFactory(averagedValues));
+        return result;
     }
 
     private void enableAll() {
@@ -3414,7 +3493,7 @@ public class ImageViewerTab {
                 }
                 if (skipIntermediateEpochs.isSelected()) {
                     if (forward != null && forward != epoch.getForward()) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | forwarded");
+                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | skipped");
                         images.clear();
                         downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
                         return;
