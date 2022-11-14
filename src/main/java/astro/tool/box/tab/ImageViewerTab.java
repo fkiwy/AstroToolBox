@@ -198,6 +198,7 @@ public class ImageViewerTab {
     public static final int PANEL_WIDTH = 180;
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 6;
+    public static final int QUALITY = 50;
     public static final int SPEED = 200;
     public static final int ZOOM = 500;
     public static final int SIZE = 100;
@@ -328,6 +329,7 @@ public class ImageViewerTab {
     private JSlider speedSlider;
     private JSlider zoomSlider;
     private JSlider groupSlider;
+    private JSlider qualitySlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -379,6 +381,7 @@ public class ImageViewerTab {
     private int minValue;
     private int maxValue;
     private int group;
+    private int quality = QUALITY;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -483,7 +486,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 40;
+            int rows = 42;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -609,6 +612,22 @@ public class ImageViewerTab {
                     skipIntermediateEpochs.setSelected(false);
                     loadImages = true;
                 }
+                createFlipbook();
+            });
+
+            JLabel qualityLabel = new JLabel(String.format("Image quality threshold: %d", quality));
+            mainControlPanel.add(qualityLabel);
+
+            qualitySlider = new JSlider(0, 100, 50);
+            mainControlPanel.add(qualitySlider);
+            qualitySlider.addChangeListener((ChangeEvent e) -> {
+                quality = qualitySlider.getValue();
+                qualityLabel.setText(String.format("Image quality threshold: %d", quality));
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                previousSize = -1;
                 createFlipbook();
             });
 
@@ -3463,7 +3482,7 @@ public class ImageViewerTab {
                 String imageKey = band + "_" + requestedEpoch;
                 ImageContainer container = images.get(imageKey);
                 if (container != null) {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
+                    writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | cached");
                     continue;
                 }
                 if (unwiseCutouts.isSelected()) {
@@ -3476,7 +3495,7 @@ public class ImageViewerTab {
                             header.addValue("FORWARD", epoch.getForward(), "Scan direction");
                             header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
                             images.put(imageKey, new ImageContainer(requestedEpoch, fits));
-                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatDate(epoch.getMjdmean()) + " | downloaded");
+                            writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + formatDate(epoch.getMjdmean()) + " | downloaded");
                             continue;
                         }
                     }
@@ -3488,18 +3507,8 @@ public class ImageViewerTab {
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
                 } catch (IOException ex) {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + ex.getMessage());
+                    writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + ex.getMessage());
                     break;
-                }
-                if (skipIntermediateEpochs.isSelected()) {
-                    if (forward != null && forward != epoch.getForward()) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | skipped");
-                        images.clear();
-                        downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
-                        return;
-                    } else {
-                        forward = null;
-                    }
                 }
                 double mjdmean;
                 Header header = hdu.getHeader();
@@ -3511,6 +3520,16 @@ public class ImageViewerTab {
                 header.addValue("FORWARD", epoch.getForward(), "Scan direction");
                 header.addValue("MJDMEAN", mjdmean, "Mean MJD");
                 String meanObsDate = formatDate(mjdmean);
+                if (skipIntermediateEpochs.isSelected()) {
+                    if (forward != null && forward != epoch.getForward()) {
+                        writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (bad scan direction)");
+                        images.clear();
+                        downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
+                        return;
+                    } else {
+                        forward = null;
+                    }
+                }
                 // Skip poor quality images
                 ImageData imageData = (ImageData) hdu.getData();
                 float[][] data = (float[][]) imageData.getData();
@@ -3524,8 +3543,9 @@ public class ImageViewerTab {
                         }
                     }
                 }
-                if (zeros > x * y * 0.1) {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " | skipped");
+                double threshold = quality * 0.01;
+                if (zeros > x * y * threshold) {
+                    writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
                     if (skipIntermediateEpochs.isSelected()) {
                         images.clear();
                         downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
@@ -3535,7 +3555,7 @@ public class ImageViewerTab {
                     }
                 } // end skip
                 images.put(imageKey, new ImageContainer(requestedEpoch, fits));
-                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
+                writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | downloaded");
             }
         }
         if (images.isEmpty()) {
@@ -3663,9 +3683,9 @@ public class ImageViewerTab {
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | already downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
             requestedEpoch++;
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | already downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
             requestedEpoch++;
             return true;
         }
