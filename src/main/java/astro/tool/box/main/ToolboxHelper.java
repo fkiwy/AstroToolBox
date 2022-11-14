@@ -33,6 +33,7 @@ import astro.tool.box.catalog.WhiteDwarf;
 import astro.tool.box.component.TranslucentLabel;
 import astro.tool.box.container.MjdEpoch;
 import astro.tool.box.container.NirImage;
+import astro.tool.box.container.Tiles;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.Alignment;
@@ -46,6 +47,7 @@ import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
+import com.google.gson.Gson;
 import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -829,6 +831,12 @@ public class ToolboxHelper {
             showExceptionDialog(baseFrame, ex);
         }
         return null;
+    }
+
+    public static Tiles getWiseTiles(double degRA, double degDE) throws IOException {
+        String url = String.format("http://byw.tools/tiles?ra=%f&dec=%f", degRA, degDE);
+        String response = readResponse(establishHttpConnection(url), "WiseView");
+        return new Gson().fromJson(response, Tiles.class);
     }
 
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
