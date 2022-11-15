@@ -3865,13 +3865,13 @@ public class ImageViewerTab {
             }
         }
 
-        Fits result = new Fits();
-        result.addHDU(FitsFactory.hduFactory(averagedValues));
+        fits = new Fits();
+        fits.addHDU(FitsFactory.hduFactory(averagedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
         header.addValue("SURVEY", survey, "Data release");
-        return result;
+        return fits;
     }
 
     private void enhanceImage(Fits fits, int enhanceFactor) throws Exception {
