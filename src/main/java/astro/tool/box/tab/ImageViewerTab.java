@@ -198,7 +198,6 @@ public class ImageViewerTab {
     public static final int PANEL_WIDTH = 180;
     public static final int ROW_HEIGHT = 25;
     public static final int EPOCH_GAP = 6;
-    public static final int QUALITY = 50;
     public static final int SPEED = 200;
     public static final int ZOOM = 500;
     public static final int SIZE = 100;
@@ -276,6 +275,7 @@ public class ImageViewerTab {
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
     private JCheckBox resetContrast;
+    private JCheckBox skipImages;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -328,8 +328,7 @@ public class ImageViewerTab {
     private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
-    private JSlider groupSlider;
-    private JSlider qualitySlider;
+    private JSlider stackSlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -371,6 +370,7 @@ public class ImageViewerTab {
     private double pixelScale = PIXEL_SCALE_WISE;
     private int fieldOfView = 30;
     private int shapeSize = 5;
+    private int stackSize = 1;
     private int imageNumber;
     private int imageCount;
     private int windowShift;
@@ -380,8 +380,6 @@ public class ImageViewerTab {
     private int contrast;
     private int minValue;
     private int maxValue;
-    private int group;
-    private int quality = QUALITY;
     private int speed = SPEED;
     private int zoom = ZOOM;
     private int size = SIZE;
@@ -486,7 +484,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 42;
+            int rows = 41;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -596,14 +594,14 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel groupLabel = new JLabel(String.format("Group images: %d", group));
-            mainControlPanel.add(groupLabel);
+            JLabel stackLabel = new JLabel(String.format("Images per blink: %d", stackSize));
+            mainControlPanel.add(stackLabel);
 
-            groupSlider = new JSlider(0, NUMBER_OF_WISEVIEW_EPOCHS, 0);
-            mainControlPanel.add(groupSlider);
-            groupSlider.addChangeListener((ChangeEvent e) -> {
-                group = groupSlider.getValue();
-                groupLabel.setText(String.format("Group images: %d", group));
+            stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
+            mainControlPanel.add(stackSlider);
+            stackSlider.addChangeListener((ChangeEvent e) -> {
+                stackSize = stackSlider.getValue();
+                stackLabel.setText(String.format("Images per blink: %d", stackSize));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -612,22 +610,6 @@ public class ImageViewerTab {
                     skipIntermediateEpochs.setSelected(false);
                     loadImages = true;
                 }
-                createFlipbook();
-            });
-
-            JLabel qualityLabel = new JLabel(String.format("Image quality threshold: %d", quality));
-            mainControlPanel.add(qualityLabel);
-
-            qualitySlider = new JSlider(0, 100, 50);
-            mainControlPanel.add(qualitySlider);
-            qualitySlider.addChangeListener((ChangeEvent e) -> {
-                quality = qualitySlider.getValue();
-                qualityLabel.setText(String.format("Image quality threshold: %d", quality));
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                previousSize = -1;
                 createFlipbook();
             });
 
@@ -678,6 +660,13 @@ public class ImageViewerTab {
                     resetContrastSlider();
                     createFlipbook();
                 }
+            });
+
+            skipImages = new JCheckBox("Skip poor quality images", true);
+            mainControlPanel.add(skipImages);
+            skipImages.addActionListener((ActionEvent evt) -> {
+                previousSize = -1;
+                createFlipbook();
             });
 
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
@@ -1542,8 +1531,9 @@ public class ImageViewerTab {
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
-                    if (flipbook == null) {
-                        return;
+                    if (flipbook == null || flipbook.isEmpty()) {
+                       enableAll();
+                       return;
                     }
                     if (imageNumber < 0) {
                         imageNumber = flipbook.size() - 1;
@@ -2760,10 +2750,10 @@ public class ImageViewerTab {
             boolean diff = differenceImaging.isSelected();
 
             if (!skip && wiseviewCutouts.isSelected()) {
-                band1Scan1Images = groupImages(band1Scan1Images);
-                band1Scan2Images = groupImages(band1Scan2Images);
-                band2Scan1Images = groupImages(band2Scan1Images);
-                band2Scan2Images = groupImages(band2Scan2Images);
+                band1Scan1Images = stackImages(band1Scan1Images, stackSize - 1);
+                band1Scan2Images = stackImages(band1Scan2Images, stackSize - 1);
+                band2Scan1Images = stackImages(band2Scan1Images, stackSize - 1);
+                band2Scan2Images = stackImages(band2Scan2Images, stackSize - 1);
             }
 
             List<Fits> band1GroupedImages = new ArrayList();
@@ -2896,8 +2886,8 @@ public class ImageViewerTab {
         return true;
     }
 
-    private List<Fits> groupImages(List<Fits> images) {
-        if (group == 0) {
+    private List<Fits> stackImages(List<Fits> images, int stackSize) {
+        if (stackSize == 0) {
             return images;
         }
         try {
@@ -2905,7 +2895,7 @@ public class ImageViewerTab {
             Fits fits = images.get(0);
             int j = 0;
             for (int i = 1; i < images.size(); i++) {
-                if (j < group) {
+                if (j < stackSize) {
                     fits = addImages(fits, images.get(i));
                     j++;
                 } else {
@@ -2918,8 +2908,8 @@ public class ImageViewerTab {
                 list.add(average(fits, j + 1));
             }
             if (list.isEmpty()) {
-                group--;
-                return groupImages(images);
+                stackSize--;
+                return stackImages(images, stackSize);
             }
             return list;
         } catch (Exception ex) {
@@ -3510,30 +3500,30 @@ public class ImageViewerTab {
                         forward = null;
                     }
                 }
-                // Skip poor quality images
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] data = (float[][]) imageData.getData();
-                double y = data.length;
-                double x = y > 0 ? data[0].length : 0;
-                int zeros = 0;
-                for (int i = 0; i < y; i++) {
-                    for (int j = 0; j < x; j++) {
-                        if (data[i][j] == 0) {
-                            zeros++;
+                if (skipImages.isSelected()) {
+                    ImageData imageData = (ImageData) hdu.getData();
+                    float[][] data = (float[][]) imageData.getData();
+                    double y = data.length;
+                    double x = y > 0 ? data[0].length : 0;
+                    int zeros = 0;
+                    for (int i = 0; i < y; i++) {
+                        for (int j = 0; j < x; j++) {
+                            if (data[i][j] == 0) {
+                                zeros++;
+                            }
+                        }
+                    }
+                    if (zeros > x * y * 0.5) {
+                        writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
+                        if (skipIntermediateEpochs.isSelected()) {
+                            images.clear();
+                            downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
+                            return;
+                        } else {
+                            continue;
                         }
                     }
                 }
-                double threshold = quality * 0.01;
-                if (zeros > x * y * threshold) {
-                    writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
-                    if (skipIntermediateEpochs.isSelected()) {
-                        images.clear();
-                        downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
-                        return;
-                    } else {
-                        continue;
-                    }
-                } // end skip
                 images.put(imageKey, new ImageContainer(requestedEpoch, fits));
                 writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | downloaded");
             }
