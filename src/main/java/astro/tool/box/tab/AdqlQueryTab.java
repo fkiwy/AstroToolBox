@@ -10,6 +10,10 @@ import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.JobStatus;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.util.CSVParser;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -65,8 +69,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -235,11 +237,13 @@ public class AdqlQueryTab {
                     try {
                         response = readResponse(establishHttpConnection(createValidatorUrl(encodeQuery(query))), "Query validator");
                         if (!response.isEmpty()) {
-                            JSONObject obj = new JSONObject(response);
-                            String validation = obj.getString("validation");
+                            JsonElement jelement = JsonParser.parseString​(response).getAsJsonObject();
+                            JsonObject jobject = jelement.getAsJsonObject();
+                            String validation = jobject.get("validation").getAsString();
                             if (!validation.equals("ok")) {
-                                JSONArray arr = obj.getJSONArray("errors");
-                                String errorMessage = arr.getJSONObject(0).getString("message");
+                                JsonArray jarray = jobject.getAsJsonArray("errors");
+                                jobject = jarray.get(0).getAsJsonObject();
+                                String errorMessage = jobject.get("message").getAsString();
                                 showErrorDialog(baseFrame, errorMessage);
                                 initStatus();
                                 return;
@@ -746,7 +750,7 @@ public class AdqlQueryTab {
     }
 
     private String createValidatorUrl(String query) {
-        return "https://cdsportal.u-strasbg.fr/adqltuto/adqlvalidate?query=" + query;
+        return "http://cdsportal.u-strasbg.fr/adqltuto/adqlvalidate?query=" + query;
     }
 
     private String getTapProviderUrl() {

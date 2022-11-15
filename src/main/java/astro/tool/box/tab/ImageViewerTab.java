@@ -2927,26 +2927,6 @@ public class ImageViewerTab {
         }
     }
 
-    private Fits average(Fits fits, int numberOfImages) throws Exception {
-        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-        ImageData imageData = (ImageData) imageHDU.getData();
-        float[][] values = (float[][]) imageData.getData();
-
-        float[][] averagedValues = new float[naxis2][naxis1];
-        for (int i = 0; i < naxis2; i++) {
-            for (int j = 0; j < naxis1; j++) {
-                try {
-                    averagedValues[i][j] = values[i][j] / numberOfImages;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                }
-            }
-        }
-
-        Fits result = new Fits();
-        result.addHDU(FitsFactory.hduFactory(averagedValues));
-        return result;
-    }
-
     private void enableAll() {
         if (!differenceImaging.isSelected()) {
             skipIntermediateEpochs.setEnabled(true);
@@ -3799,13 +3779,13 @@ public class ImageViewerTab {
         ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
         Header header = hdu.getHeader();
         String survey = header.getStringValue("SURVEY");
-        double mjdmean1 = header.getDoubleValue("MJDMEAN");
+        double mjdmin = header.getDoubleValue("MJDMEAN");
         ImageData imageData = (ImageData) hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
         header = hdu.getHeader();
-        double mjdmean2 = header.getDoubleValue("MJDMEAN");
+        double mjdmax = header.getDoubleValue("MJDMEAN");
         imageData = (ImageData) hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
@@ -3827,7 +3807,7 @@ public class ImageViewerTab {
         fits.addHDU(FitsFactory.hduFactory(addedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
-        double mjdmean = (mjdmean1 + mjdmean2) / 2;
+        double mjdmean = (mjdmin + mjdmax) / 2;
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
         header.addValue("SURVEY", survey, "Data release");
         return fits;
@@ -3837,13 +3817,13 @@ public class ImageViewerTab {
         ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
         Header header = hdu.getHeader();
         String survey = header.getStringValue("SURVEY");
-        double mjdmean1 = header.getDoubleValue("MJDMEAN");
+        double mjdmin = header.getDoubleValue("MJDMEAN");
         ImageData imageData = (ImageData) hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
         header = hdu.getHeader();
-        double mjdmean2 = header.getDoubleValue("MJDMEAN");
+        double mjdmax = header.getDoubleValue("MJDMEAN");
         imageData = (ImageData) hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
@@ -3861,10 +3841,37 @@ public class ImageViewerTab {
         fits.addHDU(FitsFactory.hduFactory(subtractedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
-        double mjdmean = (mjdmean1 + mjdmean2) / 2;
+        double mjdmean = (mjdmin + mjdmax) / 2;
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
         header.addValue("SURVEY", survey, "Data release");
         return fits;
+    }
+
+    private Fits average(Fits fits, int numberOfImages) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        Header header = hdu.getHeader();
+        String survey = header.getStringValue("SURVEY");
+        double mjdmean = header.getDoubleValue("MJDMEAN");
+        ImageData imageData = (ImageData) hdu.getData();
+        float[][] values = (float[][]) imageData.getData();
+
+        float[][] averagedValues = new float[naxis2][naxis1];
+        for (int i = 0; i < naxis2; i++) {
+            for (int j = 0; j < naxis1; j++) {
+                try {
+                    averagedValues[i][j] = values[i][j] / numberOfImages;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                }
+            }
+        }
+
+        Fits result = new Fits();
+        result.addHDU(FitsFactory.hduFactory(averagedValues));
+        hdu = (ImageHDU) fits.getHDU(0);
+        header = hdu.getHeader();
+        header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+        header.addValue("SURVEY", survey, "Data release");
+        return result;
     }
 
     private void enhanceImage(Fits fits, int enhanceFactor) throws Exception {
