@@ -2887,7 +2887,7 @@ public class ImageViewerTab {
     }
 
     private List<Fits> stackImages(List<Fits> images, int stackSize) {
-        if (stackSize == 0) {
+        if (stackSize < 2) {
             return images;
         }
         try {
