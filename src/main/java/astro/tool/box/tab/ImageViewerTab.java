@@ -71,7 +71,6 @@ import astro.tool.box.shape.Circle;
 import astro.tool.box.shape.Cross;
 import astro.tool.box.shape.CrossHair;
 import astro.tool.box.shape.Diamond;
-import astro.tool.box.shape.Disk;
 import astro.tool.box.shape.Drawable;
 import astro.tool.box.shape.Square;
 import astro.tool.box.shape.Triangle;
@@ -308,7 +307,6 @@ public class ImageViewerTab {
     private JCheckBox noirlabProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox ukidssProperMotion;
-    private JCheckBox showProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImageSeries;
     private JCheckBox twoMassImageSeries;
@@ -1083,12 +1081,6 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            showProperMotion = new JCheckBox("Show motion as moving dots");
-            overlaysControlPanel.add(showProperMotion);
-            showProperMotion.addActionListener((ActionEvent evt) -> {
-                processImages();
-            });
-
             JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts " + INFO_ICON));
             overlaysControlPanel.add(artifactsLabel);
             artifactsLabel.setToolTipText(html(""
@@ -1532,8 +1524,8 @@ public class ImageViewerTab {
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
                     if (flipbook == null || flipbook.isEmpty()) {
-                       enableAll();
-                       return;
+                        enableAll();
+                        return;
                     }
                     if (imageNumber < 0) {
                         imageNumber = flipbook.size() - 1;
@@ -2956,18 +2948,6 @@ public class ImageViewerTab {
             return new NumberPair(minVal, maxVal);
         }
         return null;
-    }
-
-    private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
-        NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-        double fromRa = fromCoords.getX();
-        double fromDec = fromCoords.getY();
-
-        NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
-        double toRa = toCoords.getX();
-        double toDec = toCoords.getY();
-
-        return new NumberPair(toRa, toDec);
     }
 
     private void processImages() {
@@ -5197,33 +5177,26 @@ public class ImageViewerTab {
                 numberOfYears = ((UkidssCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
-            if (showProperMotion.isSelected()) {
-                NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, NUMBER_OF_WISEVIEW_EPOCHS * 2);
-                NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
-                Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
-                disk.draw(image.getGraphics());
-            } else {
-                NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-                double fromRa = fromCoords.getX();
-                double fromDec = fromCoords.getY();
+            NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+            double fromRa = fromCoords.getX();
+            double fromDec = fromCoords.getY();
 
-                NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
-                double fromX = fromPoint.getX();
-                double fromY = fromPoint.getY();
+            NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
+            double fromX = fromPoint.getX();
+            double fromY = fromPoint.getY();
 
-                numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
+            numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
 
-                NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
-                double toRa = toCoords.getX();
-                double toDec = toCoords.getY();
+            NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
+            double toRa = toCoords.getX();
+            double toDec = toCoords.getY();
 
-                NumberPair toPoint = toPixelCoordinates(toRa, toDec);
-                double toX = toPoint.getX();
-                double toY = toPoint.getY();
+            NumberPair toPoint = toPixelCoordinates(toRa, toDec);
+            double toX = toPoint.getX();
+            double toY = toPoint.getY();
 
-                Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
-                arrow.draw(graphics);
-            }
+            Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
+            arrow.draw(graphics);
         });
     }
 
