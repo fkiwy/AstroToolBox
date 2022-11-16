@@ -2750,10 +2750,10 @@ public class ImageViewerTab {
             boolean diff = differenceImaging.isSelected();
 
             if (!skip && wiseviewCutouts.isSelected()) {
-                band1Scan1Images = stackImages(band1Scan1Images, stackSize - 1);
-                band1Scan2Images = stackImages(band1Scan2Images, stackSize - 1);
-                band2Scan1Images = stackImages(band2Scan1Images, stackSize - 1);
-                band2Scan2Images = stackImages(band2Scan2Images, stackSize - 1);
+                band1Scan1Images = stackImages(band1Scan1Images, stackSize);
+                band1Scan2Images = stackImages(band1Scan2Images, stackSize);
+                band2Scan1Images = stackImages(band2Scan1Images, stackSize);
+                band2Scan2Images = stackImages(band2Scan2Images, stackSize);
             }
 
             List<Fits> band1GroupedImages = new ArrayList();
@@ -2893,7 +2893,7 @@ public class ImageViewerTab {
         try {
             List<Fits> list = new ArrayList();
             Fits fits = images.get(0);
-            int j = 0;
+            int j = 1;
             for (int i = 1; i < images.size(); i++) {
                 if (j < stackSize) {
                     fits = addImages(fits, images.get(i));
@@ -2901,11 +2901,11 @@ public class ImageViewerTab {
                 } else {
                     list.add(average(fits, j));
                     fits = images.get(i);
-                    j = 0;
+                    j = 1;
                 }
             }
-            if (j > 0) {
-                list.add(average(fits, j + 1));
+            if (j > 1) {
+                list.add(average(fits, j));
             }
             if (list.isEmpty()) {
                 stackSize--;
