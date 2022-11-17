@@ -407,8 +407,9 @@ public class ImageSeriesPdf {
             // WISE time series
             images = new ArrayList<>();
             List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
-            for (FlipbookComponent component : flipbook) {
-                images.add(new Couple(component.getTitle(), imageViewerTab.processImage(component)));
+            for (int i = 0; i < flipbook.size(); i++) {
+                FlipbookComponent component = flipbook.get(i);
+                images.add(new Couple(component.getTitle(), imageViewerTab.processImage(component, i)));
             }
 
             createPdfTable(images, writer, document);

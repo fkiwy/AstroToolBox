@@ -71,6 +71,7 @@ import astro.tool.box.shape.Circle;
 import astro.tool.box.shape.Cross;
 import astro.tool.box.shape.CrossHair;
 import astro.tool.box.shape.Diamond;
+import astro.tool.box.shape.Disk;
 import astro.tool.box.shape.Drawable;
 import astro.tool.box.shape.Square;
 import astro.tool.box.shape.Triangle;
@@ -307,6 +308,7 @@ public class ImageViewerTab {
     private JCheckBox noirlabProperMotion;
     private JCheckBox catWiseProperMotion;
     private JCheckBox ukidssProperMotion;
+    private JCheckBox showProperMotion;
     private JCheckBox useCustomOverlays;
     private JCheckBox dssImageSeries;
     private JCheckBox twoMassImageSeries;
@@ -1081,6 +1083,12 @@ public class ImageViewerTab {
                 processImages();
             });
 
+            showProperMotion = new JCheckBox("Show motion as moving dots");
+            overlaysControlPanel.add(showProperMotion);
+            showProperMotion.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+
             JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts " + INFO_ICON));
             overlaysControlPanel.add(artifactsLabel);
             artifactsLabel.setToolTipText(html(""
@@ -1507,9 +1515,9 @@ public class ImageViewerTab {
                         File file = fileChooser.getSelectedFile();
                         file = new File(file.getPath() + ".gif");
                         BufferedImage[] imageSet = new BufferedImage[flipbook.size()];
-                        int i = 0;
-                        for (FlipbookComponent component : flipbook) {
-                            imageSet[i++] = addCrosshairs(processImage(component));
+                        for (int i = 0; i < flipbook.size(); i++) {
+                            FlipbookComponent component = flipbook.get(i);
+                            imageSet[i] = addCrosshairs(processImage(component, i));
                         }
                         if (imageSet.length > 0) {
                             GifSequencer sequencer = new GifSequencer();
@@ -2973,9 +2981,10 @@ public class ImageViewerTab {
             return;
         }
         timer.stop();
-        flipbook.forEach(component -> {
-            component.setImage(processImage(component));
-        });
+        for (int i = 0; i < flipbook.size(); i++) {
+            FlipbookComponent component = flipbook.get(i);
+            component.setImage(processImage(component, i));
+        }
         timer.restart();
     }
 
@@ -3012,8 +3021,9 @@ public class ImageViewerTab {
     private void createStaticBook() {
         timer.stop();
         JPanel grid = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        for (FlipbookComponent component : flipbook) {
-            BufferedImage image = addCrosshairs(processImage(component));
+        for (int i = 0; i < flipbook.size(); i++) {
+            FlipbookComponent component = flipbook.get(i);
+            BufferedImage image = addCrosshairs(processImage(component, i));
             JScrollPane scrollPanel = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), component.getTitle()));
             grid.add(scrollPanel);
         }
@@ -3053,7 +3063,7 @@ public class ImageViewerTab {
         baseFrame.setVisible(true);
     }
 
-    public BufferedImage processImage(FlipbookComponent component) {
+    public BufferedImage processImage(FlipbookComponent component, int epoch) {
         BufferedImage image;
         if (wiseBand.equals(WiseBand.W1W2)) {
             image = createColorImage(component.getFits1(), component.getFits2());
@@ -3062,7 +3072,7 @@ public class ImageViewerTab {
         }
         image = zoomImage(image, zoom);
         image = flipImage(image);
-        addOverlaysAndPMVectors(image);
+        addOverlaysAndPMVectors(image, epoch);
         return image;
     }
 
@@ -3110,7 +3120,7 @@ public class ImageViewerTab {
         return image;
     }
 
-    private void addOverlaysAndPMVectors(BufferedImage image) {
+    private void addOverlaysAndPMVectors(BufferedImage image, int epoch) {
         if (simbadOverlay.isSelected()) {
             if (simbadEntries == null) {
                 simbadEntries = Collections.emptyList();
@@ -3341,7 +3351,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker());
+                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), epoch);
             }
         }
         if (gaiaDR3ProperMotion.isSelected()) {
@@ -3353,7 +3363,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker());
+                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), epoch);
             }
         }
         if (noirlabProperMotion.isSelected()) {
@@ -3365,7 +3375,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val);
+                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, epoch);
             }
         }
         if (catWiseProperMotion.isSelected()) {
@@ -3377,7 +3387,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA);
+                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, epoch);
             }
         }
         if (ukidssProperMotion.isSelected()) {
@@ -3389,7 +3399,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val);
+                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, epoch);
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
@@ -5145,9 +5155,9 @@ public class ImageViewerTab {
         });
     }
 
-    private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color) {
+    private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color, double flipbookIndex) {  // flipbookIndex has to be a double!
         Graphics graphics = image.getGraphics();
-        catalogEntries.forEach(catalogEntry -> {
+        for (CatalogEntry catalogEntry : catalogEntries) {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
@@ -5177,27 +5187,54 @@ public class ImageViewerTab {
                 numberOfYears = ((UkidssCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
-            NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-            double fromRa = fromCoords.getX();
-            double fromDec = fromCoords.getY();
+            if (showProperMotion.isSelected()) {
+                double flipbookSize = flipbook.size() - 1;
+                if (separateScanDirections.isSelected() && !skipIntermediateEpochs.isSelected()) {
+                    flipbookSize /= 2;
+                    if (flipbookIndex > flipbookSize) {
+                        flipbookIndex -= flipbookSize;
+                    }
+                }
+                double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISEVIEW_EPOCHS * 2;
+                NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
+                NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
+                Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
+                disk.draw(image.getGraphics());
+            } else {
+                NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+                double fromRa = fromCoords.getX();
+                double fromDec = fromCoords.getY();
 
-            NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
-            double fromX = fromPoint.getX();
-            double fromY = fromPoint.getY();
+                NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
+                double fromX = fromPoint.getX();
+                double fromY = fromPoint.getY();
 
-            numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
+                numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
 
-            NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
-            double toRa = toCoords.getX();
-            double toDec = toCoords.getY();
+                NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
+                double toRa = toCoords.getX();
+                double toDec = toCoords.getY();
 
-            NumberPair toPoint = toPixelCoordinates(toRa, toDec);
-            double toX = toPoint.getX();
-            double toY = toPoint.getY();
+                NumberPair toPoint = toPixelCoordinates(toRa, toDec);
+                double toX = toPoint.getX();
+                double toY = toPoint.getY();
 
-            Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
-            arrow.draw(graphics);
-        });
+                Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
+                arrow.draw(graphics);
+            }
+        }
+    }
+
+    private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, double totalEpochs) {
+        NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+        double fromRa = fromCoords.getX();
+        double fromDec = fromCoords.getY();
+
+        NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
+        double toRa = toCoords.getX();
+        double toDec = toCoords.getY();
+
+        return new NumberPair(toRa, toDec);
     }
 
     private void showPMInfo(List<CatalogEntry> catalogEntries, int x, int y, Color color) {

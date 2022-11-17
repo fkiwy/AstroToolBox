@@ -879,8 +879,9 @@ public class ImageSeriesTab {
         if (flipbook != null) {
             bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-            for (FlipbookComponent component : flipbook) {
-                image = imageViewerTab.processImage(component);
+            for (int i = 0; i < flipbook.size(); i++) {
+                FlipbookComponent component = flipbook.get(i);
+                image = imageViewerTab.processImage(component, i);
                 bandPanel.add(buildImagePanel(image, component.getTitle()));
                 wiseImages.add(new Couple(component.getTitle(), image));
             }
