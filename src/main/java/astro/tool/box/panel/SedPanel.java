@@ -531,10 +531,6 @@ public class SedPanel extends JPanel {
                     diffMags.add(diffMag);
                 }
             });
-            if (diffMags.isEmpty()) {
-                showInfoDialog(null, "No photometry found.");
-                return;
-            }
             double medianDiffMag = determineMedian(diffMags);
             if (selectedType.equals(SpectralType.SELECT)) {
                 int totalMags = diffMags.size();

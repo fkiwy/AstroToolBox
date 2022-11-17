@@ -2811,12 +2811,20 @@ public class ImageViewerTab {
                 if (!band1GroupedImages.isEmpty()) {
                     groupedImages = new ArrayList();
                     groupedImages.add(band1GroupedImages.get(0));
+                    if (sep) {
+                        groupedImages.add(band1GroupedImages.get(1));
+                        groupedImages.add(band1GroupedImages.get(band1GroupedImages.size() - 2));
+                    }
                     groupedImages.add(band1GroupedImages.get(band1GroupedImages.size() - 1));
                     band1GroupedImages = groupedImages;
                 }
                 if (!band2GroupedImages.isEmpty()) {
                     groupedImages = new ArrayList();
                     groupedImages.add(band2GroupedImages.get(0));
+                    if (sep) {
+                        groupedImages.add(band2GroupedImages.get(1));
+                        groupedImages.add(band2GroupedImages.get(band2GroupedImages.size() - 2));
+                    }
                     groupedImages.add(band2GroupedImages.get(band2GroupedImages.size() - 1));
                     band2GroupedImages = groupedImages;
                 }

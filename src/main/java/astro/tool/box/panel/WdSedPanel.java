@@ -547,10 +547,6 @@ public class WdSedPanel extends JPanel {
                     diffMags.add(diffMag);
                 }
             });
-            if (diffMags.isEmpty()) {
-                showInfoDialog(null, "No photometry found.");
-                return;
-            }
             double medianDiffMag = determineMedian(diffMags);
             int totalMags = diffMags.size();
             if (totalMags < 6) {
