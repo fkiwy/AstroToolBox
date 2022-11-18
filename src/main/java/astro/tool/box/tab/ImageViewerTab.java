@@ -356,13 +356,17 @@ public class ImageViewerTab {
     private BufferedImage processedVhsImage;
     private BufferedImage processedSdssImage;
     private BufferedImage processedDssImage;
-    private Map<String, ImageContainer> imagesW1 = new HashMap<>();
-    private Map<String, ImageContainer> imagesW2 = new HashMap<>();
+    private Map<String, ImageContainer> imagesW1 = new HashMap();
+    private Map<String, ImageContainer> imagesW2 = new HashMap();
+    private Map<String, ImageContainer> imagesW1All = new HashMap();
+    private Map<String, ImageContainer> imagesW2All = new HashMap();
+    private Map<String, ImageContainer> imagesW1Ends = new HashMap();
+    private Map<String, ImageContainer> imagesW2Ends = new HashMap();
     private Map<String, CustomOverlay> customOverlays;
-    private List<NumberPair> crosshairs;
-    private List<Fits> band1Images;
-    private List<Fits> band2Images;
-    private List<FlipbookComponent> flipbook;
+    private List<NumberPair> crosshairs = new ArrayList();
+    private List<Fits> band1Images = new ArrayList();
+    private List<Fits> band2Images = new ArrayList();
+    private List<FlipbookComponent> flipbook = new ArrayList();
     private ImageViewerTab imageViewer;
 
     private Tile tile;
@@ -412,8 +416,6 @@ public class ImageViewerTab {
     private double previousDec;
 
     private boolean loadImages;
-    private boolean allEpochsW1Loaded;
-    private boolean allEpochsW2Loaded;
     private boolean stopDownloadProcess;
     private boolean flipbookComplete;
     private boolean imageCutOff;
@@ -521,18 +523,7 @@ public class ImageViewerTab {
             mainControlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
-                WiseBand previousBand = wiseBand;
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                if (WiseBand.W1.equals(previousBand) && !WiseBand.W1.equals(wiseBand)) {
-                    if (loadImages && allEpochsW1Loaded) {
-                        imagesW1.clear();
-                    }
-                }
-                if (WiseBand.W2.equals(previousBand) && !WiseBand.W2.equals(wiseBand)) {
-                    if (loadImages && allEpochsW2Loaded) {
-                        imagesW2.clear();
-                    }
-                }
                 loadImages = true;
                 createFlipbook();
             });
@@ -616,9 +607,20 @@ public class ImageViewerTab {
             skipIntermediateEpochs = new JCheckBox("Skip intermediate epochs", true);
             mainControlPanel.add(skipIntermediateEpochs);
             skipIntermediateEpochs.addActionListener((ActionEvent evt) -> {
-                if (!skipIntermediateEpochs.isSelected()) {
-                    loadImages = true;
+                if (skipIntermediateEpochs.isSelected()) {
+                    imagesW1.clear();
+                    imagesW2.clear();
+                    imagesW1.putAll(imagesW1Ends);
+                    imagesW2.putAll(imagesW2Ends);
+                } else {
+                    if (!imagesW1All.isEmpty()) {
+                        imagesW1.putAll(imagesW1All);
+                    }
+                    if (!imagesW2All.isEmpty()) {
+                        imagesW2.putAll(imagesW2All);
+                    }
                 }
+                loadImages = true;
                 createFlipbook();
             });
 
@@ -693,7 +695,7 @@ public class ImageViewerTab {
             staticView = new JCheckBox("Static view");
             settingsPanel.add(staticView);
             staticView.addActionListener((ActionEvent evt) -> {
-                if (flipbook != null) {
+                if (!flipbook.isEmpty()) {
                     if (staticView.isSelected()) {
                         createStaticBook();
                     } else {
@@ -1531,7 +1533,7 @@ public class ImageViewerTab {
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
-                    if (flipbook == null || flipbook.isEmpty()) {
+                    if (flipbook.isEmpty()) {
                         enableAll();
                         return;
                     }
@@ -2066,7 +2068,7 @@ public class ImageViewerTab {
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
-                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && flipbook != null) {
+                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && !flipbook.isEmpty()) {
                     if (!staticView.isSelected()) {
                         createFlipbook();
                         timer.restart();
@@ -2087,14 +2089,14 @@ public class ImageViewerTab {
 
                 @Override
                 public void windowDeactivated(WindowEvent e) {
-                    if (flipbook != null) {
+                    if (!flipbook.isEmpty()) {
                         timer.stop();
                     }
                 }
 
                 @Override
                 public void windowActivated(WindowEvent e) {
-                    if (flipbook != null && !staticView.isSelected() && !hasException && !timerStopped) {
+                    if (!flipbook.isEmpty() && !staticView.isSelected() && !hasException && !timerStopped) {
                         timer.restart();
                     }
                 }
@@ -2490,14 +2492,16 @@ public class ImageViewerTab {
                 createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
 
                 loadImages = true;
-                allEpochsW1Loaded = false;
-                allEpochsW2Loaded = false;
                 flipbookComplete = false;
                 hasException = false;
                 imageCutOff = false;
-                imagesW1 = new HashMap();
-                imagesW2 = new HashMap();
-                crosshairs = new ArrayList();
+                imagesW1.clear();
+                imagesW2.clear();
+                imagesW1All.clear();
+                imagesW2All.clear();
+                imagesW1Ends.clear();
+                imagesW2Ends.clear();
+                crosshairs.clear();
                 crosshairCoords.setText("");
                 naxis1 = naxis2 = size;
                 pointerX = pointerY = 0;
@@ -2606,8 +2610,8 @@ public class ImageViewerTab {
 
             if (loadImages) {
                 epochCount = 0;
-                band1Images = new ArrayList();
-                band2Images = new ArrayList();
+                band1Images.clear();
+                band2Images.clear();
                 imagePanel.removeAll();
                 rightPanel.removeAll();
                 if (asyncDownloads) {
@@ -2698,7 +2702,7 @@ public class ImageViewerTab {
                     writeLogEntry("Download process stopped.");
                     return false;
                 } else {
-                    writeLogEntry("Ready.");
+                    writeLogEntry("Finished.");
                 }
                 if (asyncDownloads) {
                     downloadLog.setCaretPosition(0);
@@ -2707,16 +2711,6 @@ public class ImageViewerTab {
                     showInfoDialog(baseFrame, "No images found for the given coordinates.");
                     hasException = true;
                     return false;
-                }
-            }
-            if (WiseBand.W1.equals(wiseBand) || WiseBand.W1W2.equals(wiseBand)) {
-                if (!skipIntermediateEpochs.isSelected()) {
-                    allEpochsW1Loaded = true;
-                }
-            }
-            if (WiseBand.W2.equals(wiseBand) || WiseBand.W1W2.equals(wiseBand)) {
-                if (!skipIntermediateEpochs.isSelected()) {
-                    allEpochsW2Loaded = true;
                 }
             }
             loadImages = false;
@@ -2830,7 +2824,7 @@ public class ImageViewerTab {
                 }
             }
 
-            flipbook = new ArrayList();
+            flipbook.clear();
 
             boolean desi = desiCutouts.isSelected();
 
@@ -2843,7 +2837,7 @@ public class ImageViewerTab {
                                 null,
                                 desi ? "r" : "W1",
                                 desi ? getDataRelease(fits) : getMeanObsDate(fits),
-                                i == 0
+                                isFirstEpoch(fits)
                         ));
                     }
                     break;
@@ -2855,7 +2849,7 @@ public class ImageViewerTab {
                                 fits,
                                 desi ? "z" : "W2",
                                 desi ? getDataRelease(fits) : getMeanObsDate(fits),
-                                i == 0
+                                isFirstEpoch(fits)
                         ));
                     }
                     break;
@@ -2868,7 +2862,7 @@ public class ImageViewerTab {
                                 fits2,
                                 desi ? "r+z" : "W1+W2",
                                 desi ? getDataRelease(fits1) : getMeanObsDate(fits1),
-                                i == 0
+                                isFirstEpoch(fits1)
                         ));
                     }
                     break;
@@ -2892,6 +2886,12 @@ public class ImageViewerTab {
             enableAll();
         }
         return true;
+    }
+
+    private boolean isFirstEpoch(Fits fits) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        long firstEpoch = hdu.getHeader().getLongValue("FEPOCH");
+        return firstEpoch == 1;
     }
 
     private List<Fits> stackImages(List<Fits> images, int stackSize) {
@@ -2985,7 +2985,7 @@ public class ImageViewerTab {
         if (dssImage != null) {
             processedDssImage = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
         }
-        if (flipbook == null || !flipbookComplete) {
+        if (flipbook.isEmpty() || !flipbookComplete) {
             return;
         }
         timer.stop();
@@ -3529,26 +3529,32 @@ public class ImageViewerTab {
         if (images.isEmpty()) {
             return;
         }
+        if (skipIntermediateEpochs.isSelected()) {
+            imagesW1Ends.clear();
+            imagesW2Ends.clear();
+            imagesW1Ends.putAll(imagesW1);
+            imagesW2Ends.putAll(imagesW2);
+        } else {
+            imagesW1All.clear();
+            imagesW2All.clear();
+            imagesW1All.putAll(imagesW1);
+            imagesW2All.putAll(imagesW2);
+        }
         List<ImageContainer> containers = images.values().stream()
                 .sorted(Comparator.comparing(ImageContainer::getEpoch))
                 .collect(Collectors.toList());
-        extractHeaderInfo(containers.get(0).getImage());
-        for (ImageContainer container : containers) {
-            Fits fits = container.getImage();
-            addImage(band, fits);
-            epochCount++;
-        }
+        extractHeaderInfo(containers.get(0).getImage()); // Must be the first image in the list
+        containers.stream().map(ImageContainer::getImage).forEach(i -> addImage(band, i));
+        epochCount = containers.size();
     }
 
     private List<Epoch> provideAlternateEpochs(int requestedEpoch, List<Epoch> epochs) {
-        int last = epochs.size() - 1;
-        int min = epochs.get(0).getEpoch();
-        int max = epochs.get(last).getEpoch();
-        int mean = (min + max) / 2;
+        int mean = epochs.size() / 2;
         if (requestedEpoch < mean) {
             epochs.get(0).setEpoch(epochs.get(0).getEpoch() + 1);
             epochs.get(1).setEpoch(epochs.get(1).getEpoch() + 1);
         } else {
+            int last = epochs.size() - 1;
             epochs.get(last - 1).setEpoch(epochs.get(last - 1).getEpoch() - 1);
             epochs.get(last).setEpoch(epochs.get(last).getEpoch() - 1);
         }
@@ -3583,6 +3589,7 @@ public class ImageViewerTab {
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             Header header = hdu.getHeader();
+            header.addValue("FEPOCH", 1, "First epoch");
             if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
                 imageCutOff = true;
             }
@@ -3767,13 +3774,15 @@ public class ImageViewerTab {
         ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
         Header header = hdu.getHeader();
         String survey = header.getStringValue("SURVEY");
-        double mjdmin = header.getDoubleValue("MJDMEAN");
+        double mjdmean1 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch1 = header.getLongValue("FEPOCH");
         ImageData imageData = (ImageData) hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
         header = hdu.getHeader();
-        double mjdmax = header.getDoubleValue("MJDMEAN");
+        double mjdmean2 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch2 = header.getLongValue("FEPOCH");
         imageData = (ImageData) hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
@@ -3795,9 +3804,10 @@ public class ImageViewerTab {
         fits.addHDU(FitsFactory.hduFactory(addedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
-        double mjdmean = (mjdmin + mjdmax) / 2;
+        double mjdmean = (mjdmean1 + mjdmean2) / 2;
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
         header.addValue("SURVEY", survey, "Data release");
+        header.addValue("FEPOCH", firstEpoch1 > 0 || firstEpoch2 > 0 ? 1 : 0, "First epoch");
         return fits;
     }
 
@@ -3805,13 +3815,15 @@ public class ImageViewerTab {
         ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
         Header header = hdu.getHeader();
         String survey = header.getStringValue("SURVEY");
-        double mjdmin = header.getDoubleValue("MJDMEAN");
+        double mjdmean1 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch1 = header.getLongValue("FEPOCH");
         ImageData imageData = (ImageData) hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
         header = hdu.getHeader();
-        double mjdmax = header.getDoubleValue("MJDMEAN");
+        double mjdmean2 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch2 = header.getLongValue("FEPOCH");
         imageData = (ImageData) hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
@@ -3829,9 +3841,10 @@ public class ImageViewerTab {
         fits.addHDU(FitsFactory.hduFactory(subtractedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
-        double mjdmean = (mjdmin + mjdmax) / 2;
+        double mjdmean = (mjdmean1 + mjdmean2) / 2;
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
         header.addValue("SURVEY", survey, "Data release");
+        header.addValue("FEPOCH", firstEpoch1 > 0 || firstEpoch2 > 0 ? 1 : 0, "First epoch");
         return fits;
     }
 
@@ -3840,6 +3853,7 @@ public class ImageViewerTab {
         Header header = hdu.getHeader();
         String survey = header.getStringValue("SURVEY");
         double mjdmean = header.getDoubleValue("MJDMEAN");
+        long firstEpoch = header.getLongValue("FEPOCH");
         ImageData imageData = (ImageData) hdu.getData();
         float[][] values = (float[][]) imageData.getData();
 
@@ -3859,6 +3873,7 @@ public class ImageViewerTab {
         header = hdu.getHeader();
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
         header.addValue("SURVEY", survey, "Data release");
+        header.addValue("FEPOCH", firstEpoch, "First epoch");
         return fits;
     }
 
