@@ -58,7 +58,6 @@ import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.container.Tile;
-import astro.tool.box.enumeration.StatType;
 import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
@@ -188,11 +187,10 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_BRIGHTNESS = 100;
-    public static final int DEFAULT_DESI_BRIGHTNESS = 100;
-    public static final int DEFAULT_WISE_CONTRAST = 1000;
-    public static final int DEFAULT_DESI_CONTRAST = 500;
-    public static final int MAXIMUM_CONTRAST = 2000;
+    public static final int DEFAULT_WISE_BRIGHTNESS = 70;
+    public static final int DEFAULT_DESI_BRIGHTNESS = 70;
+    public static final int DEFAULT_WISE_CONTRAST = 50;
+    public static final int DEFAULT_DESI_CONTRAST = 50;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -530,7 +528,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Brightness:"));
 
-            brightnessSlider = new JSlider(0, 5000, 0);
+            brightnessSlider = new JSlider(1, 99, DEFAULT_WISE_BRIGHTNESS);
             mainControlPanel.add(brightnessSlider);
             brightnessSlider.addChangeListener((ChangeEvent e) -> {
                 brightness = brightnessSlider.getValue();
@@ -543,10 +541,10 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
+            contrastSlider = new JSlider(1, 99, DEFAULT_WISE_CONTRAST);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
+                contrast = contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -599,7 +597,11 @@ public class ImageViewerTab {
                 }
                 if (skipIntermediateEpochs.isSelected()) {
                     skipIntermediateEpochs.setSelected(false);
+                    skipIntermediateEpochs.setEnabled(false);
                     loadImages = true;
+                }
+                if (stackSize == 1) {
+                    skipIntermediateEpochs.setEnabled(true);
                 }
                 createFlipbook();
             });
@@ -634,19 +636,14 @@ public class ImageViewerTab {
             mainControlPanel.add(differenceImaging);
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
-                    if (skipIntermediateEpochs.isSelected()) {
-                        skipIntermediateEpochs.setSelected(false);
-                        loadImages = true;
-                    }
                     separateScanDirections.setSelected(true);
                     blurImages.setSelected(true);
                     brightnessSlider.setEnabled(false);
-                    skipIntermediateEpochs.setEnabled(false);
                     separateScanDirections.setEnabled(false);
                 } else {
+                    separateScanDirections.setSelected(false);
                     blurImages.setSelected(false);
                     brightnessSlider.setEnabled(true);
-                    skipIntermediateEpochs.setEnabled(true);
                     separateScanDirections.setEnabled(true);
                 }
                 if (resetContrast.isSelected()) {
@@ -2322,7 +2319,7 @@ public class ImageViewerTab {
         contrastSlider.removeChangeListener(changeListener);
         contrastSlider.setValue(defaultContrast);
         contrastSlider.addChangeListener(changeListener);
-        contrast = MAXIMUM_CONTRAST - defaultContrast;
+        contrast = defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2739,11 +2736,11 @@ public class ImageViewerTab {
                 }
             }
 
-            boolean skip = skipIntermediateEpochs.isSelected();
             boolean sep = separateScanDirections.isSelected();
             boolean diff = differenceImaging.isSelected();
+            boolean desi = desiCutouts.isSelected();
 
-            if (!skip && wiseviewCutouts.isSelected()) {
+            if (wiseviewCutouts.isSelected()) {
                 band1Scan1Images = stackImages(band1Scan1Images, stackSize);
                 band1Scan2Images = stackImages(band1Scan2Images, stackSize);
                 band2Scan1Images = stackImages(band2Scan1Images, stackSize);
@@ -2800,33 +2797,7 @@ public class ImageViewerTab {
                 }
             }
 
-            if (skip) {
-                List<Fits> groupedImages;
-                if (!band1GroupedImages.isEmpty()) {
-                    groupedImages = new ArrayList();
-                    groupedImages.add(band1GroupedImages.get(0));
-                    if (sep) {
-                        groupedImages.add(band1GroupedImages.get(1));
-                        groupedImages.add(band1GroupedImages.get(band1GroupedImages.size() - 2));
-                    }
-                    groupedImages.add(band1GroupedImages.get(band1GroupedImages.size() - 1));
-                    band1GroupedImages = groupedImages;
-                }
-                if (!band2GroupedImages.isEmpty()) {
-                    groupedImages = new ArrayList();
-                    groupedImages.add(band2GroupedImages.get(0));
-                    if (sep) {
-                        groupedImages.add(band2GroupedImages.get(1));
-                        groupedImages.add(band2GroupedImages.get(band2GroupedImages.size() - 2));
-                    }
-                    groupedImages.add(band2GroupedImages.get(band2GroupedImages.size() - 1));
-                    band2GroupedImages = groupedImages;
-                }
-            }
-
             flipbook.clear();
-
-            boolean desi = desiCutouts.isSelected();
 
             switch (wiseBand) {
                 case W1:
@@ -2926,8 +2897,12 @@ public class ImageViewerTab {
     }
 
     private void enableAll() {
-        if (!differenceImaging.isSelected()) {
+        if (stackSize == 1) {
             skipIntermediateEpochs.setEnabled(true);
+        } else {
+            skipIntermediateEpochs.setEnabled(false);
+        }
+        if (!differenceImaging.isSelected()) {
             separateScanDirections.setEnabled(true);
         }
         differenceImaging.setEnabled(true);
@@ -3939,31 +3914,27 @@ public class ImageViewerTab {
                 }
             }
         }
-        List<Double> outliersRemoved = removeOutliers(imageData, 1, 99);
-        double mean = calculateMean(outliersRemoved);
-        //double std = calculateStandardDeviation(outliersRemoved);
-        //double clippingFactor = (std / mean < 5 ? contrast / 2 : contrast) / 100f;
-        double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
-        outliersRemoved = imageData;
-        int oldSize = 1, newSize = 0;
-        while (oldSize != newSize) {
-            oldSize = newSize;
-            outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
-            if (outliersRemoved.isEmpty()) {
-                outliersRemoved = imageData;
-                clippingFactor += 0.1;
-            }
-            newSize = outliersRemoved.size();
-        }
+
+        double med = determineMedian(imageData);
+        List<Double> data = imageData.stream().map(v -> abs(v - med)).collect(Collectors.toList());
+        double mad = determineMedian(data);
+
         double lowerBound;
+        double upperBound;
+
         if (differenceImaging.isSelected()) {
+            List<Double> outliersRemoved = removeOutliers(imageData, contrast / 10f, 100 - contrast / 5f);
             lowerBound = outliersRemoved.get(0);
+            upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         } else {
-            double lowPercentile = brightness / 100f;
-            List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
-            lowerBound = minOutliersRemoved.get(0);
+            List<Double> outliersRemoved = removeOutliers(imageData, 1, 1);
+            double min = outliersRemoved.get(0);
+            double max = outliersRemoved.get(outliersRemoved.size() - 1);
+            double dev = max - min;
+            lowerBound = med - ((100 - brightness) / 10f) * mad;
+            upperBound = med + ((100 - contrast) / 10f) * dev;
         }
-        double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
+
         return new NumberPair(lowerBound, upperBound);
     }
 
