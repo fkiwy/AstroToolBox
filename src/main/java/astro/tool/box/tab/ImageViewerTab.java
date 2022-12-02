@@ -528,7 +528,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Brightness:"));
 
-            brightnessSlider = new JSlider(1, 99, DEFAULT_WISE_BRIGHTNESS);
+            brightnessSlider = new JSlider(1, 100, DEFAULT_WISE_BRIGHTNESS);
             mainControlPanel.add(brightnessSlider);
             brightnessSlider.addChangeListener((ChangeEvent e) -> {
                 brightness = brightnessSlider.getValue();
@@ -541,7 +541,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(1, 99, DEFAULT_WISE_CONTRAST);
+            contrastSlider = new JSlider(1, 100, DEFAULT_WISE_CONTRAST);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
                 contrast = contrastSlider.getValue();
@@ -3923,7 +3923,7 @@ public class ImageViewerTab {
         double upperBound;
 
         if (differenceImaging.isSelected()) {
-            List<Double> outliersRemoved = removeOutliers(imageData, contrast / 10f, 100 - contrast / 5f);
+            List<Double> outliersRemoved = removeOutliers(imageData, contrast / 10f, 100 - contrast / 10f);
             lowerBound = outliersRemoved.get(0);
             upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         } else {
