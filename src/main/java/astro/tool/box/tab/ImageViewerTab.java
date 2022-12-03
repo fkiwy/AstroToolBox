@@ -187,10 +187,6 @@ public class ImageViewerTab {
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_BRIGHTNESS = 70;
-    public static final int DEFAULT_DESI_BRIGHTNESS = 70;
-    public static final int DEFAULT_WISE_CONTRAST = 50;
-    public static final int DEFAULT_DESI_CONTRAST = 50;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -528,7 +524,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Brightness:"));
 
-            brightnessSlider = new JSlider(1, 100, DEFAULT_WISE_BRIGHTNESS);
+            brightnessSlider = new JSlider(1, 100, 1);
             mainControlPanel.add(brightnessSlider);
             brightnessSlider.addChangeListener((ChangeEvent e) -> {
                 brightness = brightnessSlider.getValue();
@@ -541,7 +537,7 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(1, 100, DEFAULT_WISE_CONTRAST);
+            contrastSlider = new JSlider(1, 100, 50);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
                 contrast = contrastSlider.getValue();
@@ -2307,19 +2303,17 @@ public class ImageViewerTab {
     private void resetContrastSlider() {
         ChangeListener changeListener;
 
-        int defaultBrightness = desiCutouts.isSelected() ? DEFAULT_DESI_BRIGHTNESS : DEFAULT_WISE_BRIGHTNESS;
+        brightness = 1;
         changeListener = brightnessSlider.getChangeListeners()[0];
         brightnessSlider.removeChangeListener(changeListener);
-        brightnessSlider.setValue(defaultBrightness);
+        brightnessSlider.setValue(brightness);
         brightnessSlider.addChangeListener(changeListener);
-        brightness = defaultBrightness;
 
-        int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
+        contrast = 50;
         changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setValue(defaultContrast);
+        contrastSlider.setValue(contrast);
         contrastSlider.addChangeListener(changeListener);
-        contrast = defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -3914,28 +3908,32 @@ public class ImageViewerTab {
                 }
             }
         }
-
-        double med = determineMedian(imageData);
-        List<Double> data = imageData.stream().map(v -> abs(v - med)).collect(Collectors.toList());
-        double mad = determineMedian(data);
-
+        imageData.sort(Comparator.naturalOrder());
         double lowerBound;
         double upperBound;
-
         if (differenceImaging.isSelected()) {
-            List<Double> outliersRemoved = removeOutliers(imageData, contrast / 10f, 100 - contrast / 10f);
-            lowerBound = outliersRemoved.get(0);
-            upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
+            NumberPair limits = determineLimits(imageData, contrast / 10f, 100 - contrast / 10f);
+            lowerBound = limits.getX();
+            upperBound = limits.getY();
         } else {
-            List<Double> outliersRemoved = removeOutliers(imageData, 1, 1);
-            double min = outliersRemoved.get(0);
-            double max = outliersRemoved.get(outliersRemoved.size() - 1);
+            NumberPair limits = determineLimits(imageData, brightness, 1);
+            lowerBound = limits.getX();
+            limits = determineLimits(imageData, 1, 1);
+            double min = limits.getX();
+            double max = limits.getY();
             double dev = max - min;
-            lowerBound = med - ((100 - brightness) / 10f) * mad;
+            double med = determineMedian(imageData);
             upperBound = med + ((100 - contrast) / 10f) * dev;
         }
-
         return new NumberPair(lowerBound, upperBound);
+    }
+
+    public static NumberPair determineLimits(List<Double> values, double lowPercentile, double highPercentile) {
+        int size = values.size();
+        int half = size / 2;
+        int min = (int) (half * lowPercentile / 100);
+        int max = (int) (half * (100 - highPercentile) / 100);
+        return new NumberPair(values.get(min), values.get(size - max));
     }
 
     private boolean openNewCatalogSearch(double targetRa, double targetDec) {
