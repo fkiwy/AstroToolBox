@@ -851,6 +851,11 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(image, "LS DR9"));
             desiImages.add(new Couple("LS DR9", image));
         }
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr10");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "LS DR10"));
+            desiImages.add(new Couple("LS DR10", image));
+        }
 
         if (desiImages.size() > 2) {
             desiTimeSeriesTimer = new Timer(500, null);

@@ -1615,7 +1615,7 @@ public class ImageViewerTab {
 
                     // SDSS image
                     if (processedSdssImage != null) {
-                        surveyImages.add(new Couple("SDSS 1998-2009", new NirImage(2000, processedSdssImage)));
+                        surveyImages.add(new Couple(SDSS_LABEL, new NirImage(2000, processedSdssImage)));
                     }
 
                     // DSS image
@@ -3006,32 +3006,32 @@ public class ImageViewerTab {
         }
         if (desiImage != null) {
             BufferedImage image = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECaLS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel("LS", DESI_LS_DR_LABEL)));
             grid.add(pane);
         }
         if (ps1Image != null) {
             BufferedImage image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "PS1"));
-            grid.add(pane);
-        }
-        if (ukidssImage != null) {
-            BufferedImage image = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "UKIDSS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel("PS1", year_ps1_y_i_g)));
             grid.add(pane);
         }
         if (vhsImage != null) {
             BufferedImage image = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "VHS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel(VHS_LABEL, year_vhs_k_h_j)));
+            grid.add(pane);
+        }
+        if (ukidssImage != null) {
+            BufferedImage image = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel(UKIDSS_LABEL, year_ukidss_k_h_j)));
             grid.add(pane);
         }
         if (sdssImage != null) {
             BufferedImage image = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "SDSS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), SDSS_LABEL));
             grid.add(pane);
         }
         if (dssImage != null) {
             BufferedImage image = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DSS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel("DSS", year_dss_2ir_1r_1b)));
             grid.add(pane);
         }
         imagePanel.removeAll();
@@ -3616,8 +3616,9 @@ public class ImageViewerTab {
         if (!firstEpochDownloaded || !skipIntermediateEpochs.isSelected()) {
             downloadDesiCutouts(2, band, images, "decals-dr7");
             downloadDesiCutouts(4, band, images, "ls-dr8");
+            downloadDesiCutouts(6, band, images, "ls-dr9");
         }
-        downloadDesiCutouts(6, band, images, "ls-dr9");
+        downloadDesiCutouts(8, band, images, "ls-dr10");
     }
 
     private boolean downloadDesiCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey) throws Exception {
@@ -3630,7 +3631,6 @@ public class ImageViewerTab {
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
             requestedEpoch++;
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
-            requestedEpoch++;
             return true;
         }
         String selectedBand = band == 1 ? "r" : "z";
@@ -3660,7 +3660,6 @@ public class ImageViewerTab {
             imageKey = band + "_" + requestedEpoch;
             images.put(imageKey, new ImageContainer(requestedEpoch, fits2));
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " | downloaded");
-            requestedEpoch++;
 
             return true;
         } catch (IOException | FitsException ex) {

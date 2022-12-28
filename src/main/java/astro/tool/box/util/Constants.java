@@ -42,6 +42,8 @@ public class Constants {
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
+    public static final String SDSS_LABEL = "SDSS 1998-2009";
+
     public static final String UKIDSS_LABEL = "UKIDSS";
 
     public static final String VHS_LABEL = "VHS";
@@ -52,9 +54,9 @@ public class Constants {
 
     public static final int DESI_LS_EPOCH = 2019;
 
-    public static final String DESI_LS_DR_LABEL = "DR9";
+    public static final String DESI_LS_DR_LABEL = "DR10";
 
-    public static final String DESI_LS_DR_PARAM = "ls-dr9";
+    public static final String DESI_LS_DR_PARAM = "ls-dr10";
 
     public static final String MAMAJEK_VERSION = "2022.04.16";
 
