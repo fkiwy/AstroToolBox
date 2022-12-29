@@ -579,14 +579,14 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel stackLabel = new JLabel(String.format("Images per blink: %d", stackSize));
+            JLabel stackLabel = new JLabel(String.format("Epochs per blink: %d", stackSize));
             mainControlPanel.add(stackLabel);
 
             stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
             mainControlPanel.add(stackSlider);
             stackSlider.addChangeListener((ChangeEvent e) -> {
                 stackSize = stackSlider.getValue();
-                stackLabel.setText(String.format("Images per blink: %d", stackSize));
+                stackLabel.setText(String.format("Epochs per blink: %d", stackSize));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -3932,7 +3932,7 @@ public class ImageViewerTab {
         int half = size / 2;
         int min = (int) (half * lowPercentile / 100);
         int max = (int) (half * (100 - highPercentile) / 100);
-        return new NumberPair(values.get(min), values.get(size - max));
+        return new NumberPair(values.get(min), values.get((size - 1) - max));
     }
 
     private boolean openNewCatalogSearch(double targetRa, double targetDec) {
