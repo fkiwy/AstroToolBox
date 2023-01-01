@@ -263,6 +263,7 @@ public class ImageViewerTab {
     private JRadioButton wiseviewCutouts;
     private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
+    private JRadioButton ps1Cutouts;
     private JRadioButton showCatalogsButton;
     private JScrollPane rightScrollPanel;
     private JCheckBox differenceImaging;
@@ -480,7 +481,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 41;
+            int rows = 42;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -753,10 +754,20 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
+            ps1Cutouts = new JRadioButton(html("PS1 Warp images " + INFO_ICON));
+            mainControlPanel.add(ps1Cutouts);
+            ps1Cutouts.setToolTipText("These are cutouts from the Pan-STARRS1 DR2 Warp images. For further details, see https://outerspace.stsci.edu/display/PANSTARRS/PS1+Warp+images");
+            ps1Cutouts.addActionListener((ActionEvent evt) -> {
+                pixelScale = PIXEL_SCALE_PS1;
+                previousSize = 0;
+                createFlipbook();
+            });
+
             ButtonGroup cutoutGroup = new ButtonGroup();
             cutoutGroup.add(wiseviewCutouts);
             cutoutGroup.add(unwiseCutouts);
             cutoutGroup.add(desiCutouts);
+            cutoutGroup.add(ps1Cutouts);
 
             mainControlPanel.add(createHeaderLabel("Nearest BYW subjects"));
 
@@ -1584,7 +1595,15 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    regularLabel = desiCutouts.isSelected() ? "DECaLS" : "WISE";
+
+                    if (desiCutouts.isSelected()) {
+                        regularLabel = "DECaLS";
+                    } else if (ps1Cutouts.isSelected()) {
+                        regularLabel = "PS1";
+                    } else {
+                        regularLabel = "WISE";
+                    }
+
                     addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
                     List<Couple<String, NirImage>> surveyImages = new ArrayList();
@@ -2431,7 +2450,7 @@ public class ImageViewerTab {
             }
             try {
                 size = (int) ceil(toInteger(sizeField.getText()) / pixelScale);
-                if (desiCutouts.isSelected()) {
+                if (desiCutouts.isSelected() || ps1Cutouts.isSelected()) {
                     if (size > 1200) {
                         errorMessages.add("Field of view must not be larger than 300 arcsec.");
                     }
@@ -2460,6 +2479,7 @@ public class ImageViewerTab {
                 wiseviewCutouts.setEnabled(false);
                 unwiseCutouts.setEnabled(false);
                 desiCutouts.setEnabled(false);
+                ps1Cutouts.setEnabled(false);
 
                 int panstarrsFOV = toInteger(panstarrsField.getText());
                 int aladinLiteFOV = toInteger(aladinLiteField.getText());
@@ -2734,7 +2754,7 @@ public class ImageViewerTab {
             boolean diff = differenceImaging.isSelected();
             boolean desi = desiCutouts.isSelected();
 
-            if (wiseviewCutouts.isSelected()) {
+            if (wiseviewCutouts.isSelected() || ps1Cutouts.isSelected()) {
                 band1Scan1Images = stackImages(band1Scan1Images, stackSize);
                 band1Scan2Images = stackImages(band1Scan2Images, stackSize);
                 band2Scan1Images = stackImages(band2Scan1Images, stackSize);
@@ -2819,7 +2839,9 @@ public class ImageViewerTab {
                     }
                     break;
                 case W1W2:
-                    for (int i = 0; i < band1GroupedImages.size(); i++) {
+                    int size1 = band1GroupedImages.size();
+                    int size2 = band2GroupedImages.size();
+                    for (int i = 0; i < min(size1, size2); i++) {
                         Fits fits1 = band1GroupedImages.get(i);
                         Fits fits2 = band2GroupedImages.get(i);
                         flipbook.add(new FlipbookComponent(
@@ -2903,6 +2925,7 @@ public class ImageViewerTab {
         wiseviewCutouts.setEnabled(true);
         unwiseCutouts.setEnabled(true);
         desiCutouts.setEnabled(true);
+        ps1Cutouts.setEnabled(true);
         if (waitCursor) {
             baseFrame.setCursor(Cursor.getDefaultCursor());
             coordsField.setCursor(Cursor.getDefaultCursor());
@@ -3410,6 +3433,8 @@ public class ImageViewerTab {
         }
         if (desiCutouts.isSelected()) {
             retrieveDesiImages(band, images);
+        } else if (ps1Cutouts.isSelected()) {
+            retrievePs1Images(band, images);
         } else {
             for (Epoch epoch : epochs) {
                 if (stopDownloadProcess) {
@@ -3562,10 +3587,17 @@ public class ImageViewerTab {
             if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
                 imageCutOff = true;
             }
-            crval1 = header.getDoubleValue("CRVAL1");
-            crval2 = header.getDoubleValue("CRVAL2");
-            crpix1 = header.getDoubleValue("CRPIX1");
-            crpix2 = header.getDoubleValue("CRPIX2");
+            if (ps1Cutouts.isSelected()) {
+                crval1 = targetRa;
+                crval2 = targetDec;
+                crpix1 = size / 2f + 1.5;
+                crpix2 = size / 2f + 1.5;
+            } else {
+                crval1 = header.getDoubleValue("CRVAL1");
+                crval2 = header.getDoubleValue("CRVAL2");
+                crpix1 = header.getDoubleValue("CRPIX1");
+                crpix2 = header.getDoubleValue("CRPIX2");
+            }
             naxis1 = size;
             naxis2 = size;
         }
@@ -3664,6 +3696,97 @@ public class ImageViewerTab {
             return true;
         } catch (IOException | FitsException ex) {
             return false;
+        }
+    }
+
+    private void retrievePs1Images(int band, Map<String, ImageContainer> images) throws Exception {
+        List<String> fileNames = new ArrayList();
+        String selectedBand = band == 1 ? "z" : "y";
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, selectedBand);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int fileName = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filename")) {
+                        fileName = i;
+                    }
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    fileNames.add(columnValues[fileName]);
+                }
+            }
+        } catch (Exception ex) {
+            writeErrorLog(ex);
+        }
+        int i = 0;
+        for (String fileName : fileNames) {
+            downloadPs1Cutouts(i, band, images, fileName);
+            i += 2;
+        }
+    }
+
+    private void downloadPs1Cutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String fileName) throws Exception {
+        if (stopDownloadProcess) {
+            return;
+        }
+        String imageKey = band + "_" + requestedEpoch;
+        ImageContainer container = images.get(imageKey);
+        if (container != null) {
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
+            requestedEpoch++;
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
+            return;
+        }
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?ra=%f&dec=%f&size=%d&red=%s&format=fits", targetRa, targetDec, size, fileName);
+        try {
+            // Ascending scan
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            Fits fits = new Fits(connection.getInputStream());
+            Header header = fits.getHDU(0).getHeader();
+            double mjdmean = header.getDoubleValue("MJD-OBS");
+            String meanObsDate = formatDate(mjdmean);
+
+            // Skip bad quality images
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] data = (float[][]) imageData.getData();
+            double y = data.length;
+            double x = y > 0 ? data[0].length : 0;
+            int zeros = 0;
+            for (int i = 0; i < y; i++) {
+                for (int j = 0; j < x; j++) {
+                    float value = data[i][j];
+                    if (value == 0 || Float.toString(value).equals("NaN")) {
+                        zeros++;
+                    }
+                }
+            }
+            if (zeros > x * y * 0.1) {
+                writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
+                return;
+            }
+
+            header.addValue("FORWARD", 0, "Scan direction");
+            header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+            // enhanceImage(fits, 1000);
+            fits.close();
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits));
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
+            requestedEpoch++;
+
+            // Descending scan
+            Fits fits2 = new Fits();
+            fits2.addHDU(FitsFactory.hduFactory(fits.getHDU(0).getData().getData()));
+            header = fits2.getHDU(0).getHeader();
+            header.addValue("FORWARD", 1, "Scan direction");
+            header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+            imageKey = band + "_" + requestedEpoch;
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits2));
+            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
+        } catch (IOException | FitsException ex) {
         }
     }
 
@@ -3981,6 +4104,10 @@ public class ImageViewerTab {
         if (desiCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDesiCutouts().setSelected(true);
+        }
+        if (ps1Cutouts.isSelected()) {
+            imageViewerTab.setPixelScale(PIXEL_SCALE_PS1);
+            imageViewerTab.getPs1Cutouts().setSelected(true);
         }
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.setQuadrantCount(quadrantCount);
@@ -5680,7 +5807,7 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize(int scale) {
-        double factor = desiCutouts.isSelected() ? 0.35 : 0.15;
+        double factor = desiCutouts.isSelected() || ps1Cutouts.isSelected() ? 0.35 : 0.15;
         double overlaySize = scale * factor * zoom * sqrt(size) / size;
         return max(5, min(overlaySize, 15));
     }
@@ -5731,6 +5858,10 @@ public class ImageViewerTab {
 
     public JRadioButton getDesiCutouts() {
         return desiCutouts;
+    }
+
+    public JRadioButton getPs1Cutouts() {
+        return ps1Cutouts;
     }
 
     public JCheckBox getSkipIntermediateEpochs() {

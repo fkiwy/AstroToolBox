@@ -76,6 +76,8 @@ public class Constants {
 
     public static final double PIXEL_SCALE_DECAM = 0.25;
 
+    public static final double PIXEL_SCALE_PS1 = 0.25;
+
     // Dust extinction bandpass keys
     public static final String SDSS_U = "SDSS u";
     public static final String SDSS_G = "SDSS g";
