@@ -512,7 +512,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Band:"));
+            mainControlPanel.add(new JLabel("Bands:"));
 
             wiseBands = new JComboBox(WiseBand.values());
             mainControlPanel.add(wiseBands);

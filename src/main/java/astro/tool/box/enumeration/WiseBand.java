@@ -10,4 +10,21 @@ public enum WiseBand {
         this.val = val;
     }
 
+    @Override
+    public String toString() {
+        String label = "";
+        switch (val) {
+            case 1:
+                label = "Band 1";
+                break;
+            case 2:
+                label = "Band 2";
+                break;
+            case 12:
+                label = "Merged bands (1+2)";
+                break;
+        }
+        return label;
+    }
+
 }
