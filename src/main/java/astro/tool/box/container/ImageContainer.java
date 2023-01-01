@@ -8,9 +8,12 @@ public class ImageContainer {
 
     private final Fits image;
 
-    public ImageContainer(int epoch, Fits image) {
+    private final boolean skip;
+
+    public ImageContainer(int epoch, Fits image, boolean skip) {
         this.epoch = epoch;
         this.image = image;
+        this.skip = skip;
     }
 
     public int getEpoch() {
@@ -19,6 +22,10 @@ public class ImageContainer {
 
     public Fits getImage() {
         return image;
+    }
+
+    public boolean isSkip() {
+        return skip;
     }
 
 }

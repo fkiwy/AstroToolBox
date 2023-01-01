@@ -270,7 +270,7 @@ public class ImageViewerTab {
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
     private JCheckBox resetContrast;
-    private JCheckBox skipImages;
+    private JCheckBox skipBadImages;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -580,14 +580,14 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel stackLabel = new JLabel(String.format("Epochs per blink: %d", stackSize));
+            JLabel stackLabel = new JLabel(String.format("Images per blink: %d", stackSize));
             mainControlPanel.add(stackLabel);
 
             stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
             mainControlPanel.add(stackSlider);
             stackSlider.addChangeListener((ChangeEvent e) -> {
                 stackSize = stackSlider.getValue();
-                stackLabel.setText(String.format("Epochs per blink: %d", stackSize));
+                stackLabel.setText(String.format("Images per blink: %d", stackSize));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -658,9 +658,9 @@ public class ImageViewerTab {
                 }
             });
 
-            skipImages = new JCheckBox("Skip poor quality images", true);
-            mainControlPanel.add(skipImages);
-            skipImages.addActionListener((ActionEvent evt) -> {
+            skipBadImages = new JCheckBox("Skip poor quality images", true);
+            mainControlPanel.add(skipBadImages);
+            skipBadImages.addActionListener((ActionEvent evt) -> {
                 previousSize = -1;
                 createFlipbook();
             });
@@ -2753,6 +2753,7 @@ public class ImageViewerTab {
             boolean sep = separateScanDirections.isSelected();
             boolean diff = differenceImaging.isSelected();
             boolean desi = desiCutouts.isSelected();
+            boolean ps1 = ps1Cutouts.isSelected();
 
             if (wiseviewCutouts.isSelected() || ps1Cutouts.isSelected()) {
                 band1Scan1Images = stackImages(band1Scan1Images, stackSize);
@@ -2813,32 +2814,54 @@ public class ImageViewerTab {
 
             flipbook.clear();
 
+            String band;
             switch (wiseBand) {
                 case W1:
+                    if (desi) {
+                        band = "DECaLS r";
+                    } else if (ps1) {
+                        band = "PS1 r";
+                    } else {
+                        band = "W1";
+                    }
                     for (int i = 0; i < band1GroupedImages.size(); i++) {
                         Fits fits = band1GroupedImages.get(i);
                         flipbook.add(new FlipbookComponent(
                                 fits,
                                 null,
-                                desi ? "r" : "W1",
+                                band,
                                 desi ? getDataRelease(fits) : getMeanObsDate(fits),
                                 isFirstEpoch(fits)
                         ));
                     }
                     break;
                 case W2:
+                    if (desi) {
+                        band = "DECaLS z";
+                    } else if (ps1) {
+                        band = "PS1 y";
+                    } else {
+                        band = "W2";
+                    }
                     for (int i = 0; i < band2GroupedImages.size(); i++) {
                         Fits fits = band2GroupedImages.get(i);
                         flipbook.add(new FlipbookComponent(
                                 null,
                                 fits,
-                                desi ? "z" : "W2",
+                                band,
                                 desi ? getDataRelease(fits) : getMeanObsDate(fits),
                                 isFirstEpoch(fits)
                         ));
                     }
                     break;
                 case W1W2:
+                    if (desi) {
+                        band = "DECaLS r+z";
+                    } else if (ps1) {
+                        band = "PS1 r+y";
+                    } else {
+                        band = "W1+W2";
+                    }
                     int size1 = band1GroupedImages.size();
                     int size2 = band2GroupedImages.size();
                     for (int i = 0; i < min(size1, size2); i++) {
@@ -2847,7 +2870,7 @@ public class ImageViewerTab {
                         flipbook.add(new FlipbookComponent(
                                 fits1,
                                 fits2,
-                                desi ? "r+z" : "W1+W2",
+                                band,
                                 desi ? getDataRelease(fits1) : getMeanObsDate(fits1),
                                 isFirstEpoch(fits1)
                         ));
@@ -3456,7 +3479,7 @@ public class ImageViewerTab {
                             Header header = fits.getHDU(0).getHeader();
                             header.addValue("FORWARD", epoch.getForward(), "Scan direction");
                             header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
-                            images.put(imageKey, new ImageContainer(requestedEpoch, fits));
+                            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
                             writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + formatDate(epoch.getMjdmean()) + " | downloaded");
                             continue;
                         }
@@ -3492,31 +3515,32 @@ public class ImageViewerTab {
                         forward = null;
                     }
                 }
-                if (skipImages.isSelected()) {
+                if (skipBadImages.isSelected()) {
                     ImageData imageData = (ImageData) hdu.getData();
                     float[][] data = (float[][]) imageData.getData();
                     double y = data.length;
                     double x = y > 0 ? data[0].length : 0;
-                    int zeros = 0;
+                    int badPixels = 0;
                     for (int i = 0; i < y; i++) {
                         for (int j = 0; j < x; j++) {
                             if (data[i][j] == 0) {
-                                zeros++;
+                                badPixels++;
                             }
                         }
                     }
-                    if (zeros > x * y * 0.5) {
+                    if (badPixels > x * y * 0.5) {
                         writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
                         if (skipIntermediateEpochs.isSelected()) {
                             images.clear();
                             downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
                             return;
                         } else {
+                            images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
                             continue;
                         }
                     }
                 }
-                images.put(imageKey, new ImageContainer(requestedEpoch, fits));
+                images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
                 writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | downloaded");
             }
         }
@@ -3535,8 +3559,12 @@ public class ImageViewerTab {
             imagesW2All.putAll(imagesW2);
         }
         List<ImageContainer> containers = images.values().stream()
+                .filter(v -> !v.isSkip())
                 .sorted(Comparator.comparing(ImageContainer::getEpoch))
                 .collect(Collectors.toList());
+        if (containers.isEmpty()) {
+            return;
+        }
         extractHeaderInfo(containers.get(0).getImage()); // Must be the first image in the list
         containers.stream().map(ImageContainer::getImage).forEach(i -> addImage(band, i));
         epochCount = containers.size();
@@ -3678,7 +3706,7 @@ public class ImageViewerTab {
             header.addValue("SURVEY", survey, "Data release");
             enhanceImage(fits, 1000);
             fits.close();
-            images.put(imageKey, new ImageContainer(requestedEpoch, fits));
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " | downloaded");
             requestedEpoch++;
 
@@ -3690,7 +3718,7 @@ public class ImageViewerTab {
             header.addValue("MJDMEAN", 55256.0, "Mean MJD");
             header.addValue("SURVEY", survey, "Data release");
             imageKey = band + "_" + requestedEpoch;
-            images.put(imageKey, new ImageContainer(requestedEpoch, fits2));
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits2, false));
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " | downloaded");
 
             return true;
@@ -3701,7 +3729,7 @@ public class ImageViewerTab {
 
     private void retrievePs1Images(int band, Map<String, ImageContainer> images) throws Exception {
         List<String> fileNames = new ArrayList();
-        String selectedBand = band == 1 ? "z" : "y";
+        String selectedBand = band == 1 ? "r" : "y";
         try {
             String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, selectedBand);
             String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
@@ -3749,31 +3777,39 @@ public class ImageViewerTab {
             double mjdmean = header.getDoubleValue("MJD-OBS");
             String meanObsDate = formatDate(mjdmean);
 
-            // Skip bad quality images
+            // Skip bad images
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
             ImageData imageData = (ImageData) hdu.getData();
             float[][] data = (float[][]) imageData.getData();
             double y = data.length;
             double x = y > 0 ? data[0].length : 0;
-            int zeros = 0;
+            int badPixels = 0;
             for (int i = 0; i < y; i++) {
                 for (int j = 0; j < x; j++) {
                     float value = data[i][j];
                     if (value == 0 || Float.toString(value).equals("NaN")) {
-                        zeros++;
+                        badPixels++;
                     }
                 }
             }
-            if (zeros > x * y * 0.1) {
+            double rate;
+            if (skipBadImages.isSelected()) {
+                rate = 0.1;
+            } else {
+                rate = 0.5;
+            }
+            if (badPixels > x * y * rate) {
                 writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
+                images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
                 return;
             }
+            // End
 
             header.addValue("FORWARD", 0, "Scan direction");
             header.addValue("MJDMEAN", mjdmean, "Mean MJD");
             // enhanceImage(fits, 1000);
             fits.close();
-            images.put(imageKey, new ImageContainer(requestedEpoch, fits));
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
             requestedEpoch++;
 
@@ -3784,7 +3820,7 @@ public class ImageViewerTab {
             header.addValue("FORWARD", 1, "Scan direction");
             header.addValue("MJDMEAN", mjdmean, "Mean MJD");
             imageKey = band + "_" + requestedEpoch;
-            images.put(imageKey, new ImageContainer(requestedEpoch, fits2));
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits2, false));
             writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
         } catch (IOException | FitsException ex) {
         }
