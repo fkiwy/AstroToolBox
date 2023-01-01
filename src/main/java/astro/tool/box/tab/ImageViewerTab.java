@@ -512,7 +512,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            mainControlPanel.add(new JLabel("Bands:"));
+            mainControlPanel.add(new JLabel("Band:"));
 
             wiseBands = new JComboBox(WiseBand.values());
             mainControlPanel.add(wiseBands);
@@ -3615,17 +3615,10 @@ public class ImageViewerTab {
             if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
                 imageCutOff = true;
             }
-            if (ps1Cutouts.isSelected()) {
-                crval1 = targetRa;
-                crval2 = targetDec;
-                crpix1 = size / 2f + 1.5;
-                crpix2 = size / 2f + 1.5;
-            } else {
-                crval1 = header.getDoubleValue("CRVAL1");
-                crval2 = header.getDoubleValue("CRVAL2");
-                crpix1 = header.getDoubleValue("CRPIX1");
-                crpix2 = header.getDoubleValue("CRPIX2");
-            }
+            crval1 = header.getDoubleValue("CRVAL1");
+            crval2 = header.getDoubleValue("CRVAL2");
+            crpix1 = header.getDoubleValue("CRPIX1");
+            crpix2 = header.getDoubleValue("CRPIX2");
             naxis1 = size;
             naxis2 = size;
         }
@@ -3799,7 +3792,8 @@ public class ImageViewerTab {
                 rate = 0.5;
             }
             if (badPixels > x * y * rate) {
-                writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
+                String reason = skipBadImages.isSelected() ? "(poor quality image)" : "(> 50% blank image)";
+                writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped " + reason);
                 images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
                 return;
             }

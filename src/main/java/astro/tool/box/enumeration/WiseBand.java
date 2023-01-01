@@ -15,13 +15,13 @@ public enum WiseBand {
         String label = "";
         switch (val) {
             case 1:
-                label = "Band 1";
+                label = "1";
                 break;
             case 2:
-                label = "Band 2";
+                label = "2";
                 break;
             case 12:
-                label = "Merged bands (1+2)";
+                label = "1+2";
                 break;
         }
         return label;
