@@ -3780,7 +3780,7 @@ public class ImageViewerTab {
             for (int i = 0; i < y; i++) {
                 for (int j = 0; j < x; j++) {
                     float value = data[i][j];
-                    if (value == 0 || Float.toString(value).equals("NaN")) {
+                    if (isBadPixel(value)) {
                         badPixels++;
                     }
                 }
@@ -3820,6 +3820,10 @@ public class ImageViewerTab {
         }
     }
 
+    private boolean isBadPixel(float value) {
+        return value == 0 || Float.toString(value).equals("NaN");
+    }
+    
     private BufferedImage createImage(Fits fits) {
         try {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
@@ -3913,8 +3917,8 @@ public class ImageViewerTab {
                 try {
                     float value1 = values1[i][j];
                     float value2 = values2[i][j];
-                    value1 = value1 == 0 ? value2 : value1;
-                    value2 = value2 == 0 ? value1 : value2;
+                    value1 = isBadPixel(value1) ? value2 : value1;
+                    value2 = isBadPixel(value2) ? value1 : value2;
                     addedValues[i][j] = value1 + value2;
                 } catch (ArrayIndexOutOfBoundsException ex) {
                 }
