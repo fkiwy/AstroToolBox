@@ -3681,9 +3681,7 @@ public class ImageViewerTab {
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
-            requestedEpoch++;
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | cached");
             return true;
         }
         String selectedBand = band == 1 ? "r" : "z";
@@ -3700,7 +3698,7 @@ public class ImageViewerTab {
             enhanceImage(fits, 1000);
             fits.close();
             images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " | downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | " + survey + " | downloaded");
             requestedEpoch++;
 
             // Descending scan
@@ -3712,7 +3710,6 @@ public class ImageViewerTab {
             header.addValue("SURVEY", survey, "Data release");
             imageKey = band + "_" + requestedEpoch;
             images.put(imageKey, new ImageContainer(requestedEpoch, fits2, false));
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " | downloaded");
 
             return true;
         } catch (IOException | FitsException ex) {
@@ -3756,9 +3753,7 @@ public class ImageViewerTab {
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
-            requestedEpoch++;
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | cached");
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | cached");
             return;
         }
         String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?ra=%f&dec=%f&size=%d&red=%s&format=fits", targetRa, targetDec, size, fileName);
@@ -3792,8 +3787,8 @@ public class ImageViewerTab {
                 rate = 0.5;
             }
             if (badPixels > x * y * rate) {
-                String reason = skipBadImages.isSelected() ? "(poor quality image)" : "(> 50% blank image)";
-                writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped " + reason);
+                String reason = skipBadImages.isSelected() ? "(poor quality image)" : "(mostly blank image)";
+                writeLogEntry("band " + band + " | epoch " + requestedEpoch / 2 + " | " + meanObsDate + " | skipped " + reason);
                 images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
                 return;
             }
@@ -3801,10 +3796,9 @@ public class ImageViewerTab {
 
             header.addValue("FORWARD", 0, "Scan direction");
             header.addValue("MJDMEAN", mjdmean, "Mean MJD");
-            // enhanceImage(fits, 1000);
             fits.close();
             images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | " + meanObsDate + " | downloaded");
             requestedEpoch++;
 
             // Descending scan
@@ -3815,7 +3809,6 @@ public class ImageViewerTab {
             header.addValue("MJDMEAN", mjdmean, "Mean MJD");
             imageKey = band + "_" + requestedEpoch;
             images.put(imageKey, new ImageContainer(requestedEpoch, fits2, false));
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + meanObsDate + " | downloaded");
         } catch (IOException | FitsException ex) {
         }
     }
@@ -3823,7 +3816,7 @@ public class ImageViewerTab {
     private boolean isBadPixel(float value) {
         return value == 0 || Float.toString(value).equals("NaN");
     }
-    
+
     private BufferedImage createImage(Fits fits) {
         try {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
