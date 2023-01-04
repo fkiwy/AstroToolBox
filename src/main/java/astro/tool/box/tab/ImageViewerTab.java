@@ -580,25 +580,22 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            JLabel stackLabel = new JLabel(String.format("Images per blink: %d", stackSize));
+            String stackText = "Images per blink: %d";
+            JLabel stackLabel = new JLabel(String.format(stackText, stackSize));
             mainControlPanel.add(stackLabel);
 
             stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
             mainControlPanel.add(stackSlider);
             stackSlider.addChangeListener((ChangeEvent e) -> {
                 stackSize = stackSlider.getValue();
-                stackLabel.setText(String.format("Images per blink: %d", stackSize));
+                stackLabel.setText(String.format(stackText, stackSize));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
                 if (skipIntermediateEpochs.isSelected()) {
                     skipIntermediateEpochs.setSelected(false);
-                    skipIntermediateEpochs.setEnabled(false);
                     loadImages = true;
-                }
-                if (stackSize == 1) {
-                    skipIntermediateEpochs.setEnabled(true);
                 }
                 createFlipbook();
             });
@@ -611,6 +608,14 @@ public class ImageViewerTab {
                     imagesW2.clear();
                     imagesW1.putAll(imagesW1Ends);
                     imagesW2.putAll(imagesW2Ends);
+                    if (stackSlider.getValue() > 1) {
+                        ChangeListener actionListener = stackSlider.getChangeListeners()[0];
+                        stackSlider.removeChangeListener(actionListener);
+                        stackSlider.setValue(1);
+                        stackSlider.addChangeListener(actionListener);
+                        stackSize = 1;
+                        stackLabel.setText(String.format(stackText, stackSize));
+                    }
                 } else {
                     if (!imagesW1All.isEmpty()) {
                         imagesW1.putAll(imagesW1All);
@@ -2936,11 +2941,7 @@ public class ImageViewerTab {
     }
 
     private void enableAll() {
-        if (stackSize == 1) {
-            skipIntermediateEpochs.setEnabled(true);
-        } else {
-            skipIntermediateEpochs.setEnabled(false);
-        }
+        skipIntermediateEpochs.setEnabled(true);
         if (!differenceImaging.isSelected()) {
             separateScanDirections.setEnabled(true);
         }
