@@ -59,6 +59,7 @@ import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.container.Tile;
 import astro.tool.box.exception.ExtinctionException;
+import astro.tool.box.function.StatisticFunctions;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
 import astro.tool.box.panel.WiseCcdPanel;
@@ -82,6 +83,7 @@ import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.CSVParser;
 import astro.tool.box.util.Counter;
 import astro.tool.box.util.FileTypeFilter;
+import astro.tool.box.util.ServiceHelper;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -131,6 +133,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.*;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -179,6 +182,9 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.data.grid.DataGrid;
+import org.data.grid.DataPlot;
+import org.data.grid.StringLineReader;
 
 public class ImageViewerTab {
 
@@ -434,14 +440,14 @@ public class ImageViewerTab {
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                 return new SpectralTypeLookupEntry(line.split(",", -1));
-            }).collect(Collectors.toList());
+            }).collect(toList());
             mainSequenceSpectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             brownDwarfLookupEntries = stream.skip(1).map(line -> {
                 return new BrownDwarfLookupEntry(line.split(",", -1));
-            }).collect(Collectors.toList());
+            }).collect(toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(brownDwarfLookupEntries);
             distanceLookupService = new DistanceLookupService(brownDwarfLookupEntries);
         }
@@ -2640,8 +2646,8 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
-                List<Epoch> epochsW1 = tile.getEpochs().stream().filter(e -> (e.getBand() == 1)).collect(Collectors.toList());
-                List<Epoch> epochsW2 = tile.getEpochs().stream().filter(e -> (e.getBand() == 2)).collect(Collectors.toList());
+                List<Epoch> epochsW1 = tile.getEpochs().stream().filter(e -> (e.getBand() == 1)).collect(toList());
+                List<Epoch> epochsW2 = tile.getEpochs().stream().filter(e -> (e.getBand() == 2)).collect(toList());
                 if (skipIntermediateEpochs.isSelected()) {
                     List<Epoch> tempEpochs;
 
@@ -3562,7 +3568,7 @@ public class ImageViewerTab {
         List<ImageContainer> containers = images.values().stream()
                 .filter(v -> !v.isSkip())
                 .sorted(Comparator.comparing(ImageContainer::getEpoch))
-                .collect(Collectors.toList());
+                .collect(toList());
         if (containers.isEmpty()) {
             return;
         }
@@ -3653,7 +3659,7 @@ public class ImageViewerTab {
                     IOUtils.readFully(ti, buf);
                     entries.put(entry.getSize(), buf);
                 }
-                List<Long> sizes = entries.keySet().stream().collect(Collectors.toList());
+                List<Long> sizes = entries.keySet().stream().collect(toList());
                 sizes.sort(Comparator.reverseOrder());
                 long largest = sizes.get(0);
                 return new ByteArrayInputStream(entries.get(largest));
@@ -5645,6 +5651,77 @@ public class ImageViewerTab {
                 });
             }
 
+            JButton createLcButton = new JButton("WISE LC");
+            collectPanel.add(createLcButton);
+            createLcButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    double radius = 5;
+                    double ra = catalogEntry.getRa();
+                    double dec = catalogEntry.getDec();
+
+                    String queryUrl = ServiceHelper.createIrsaUrl(ra, dec, radius / DEG_ARCSEC, "allwise_p3as_mep");
+                    String response = readResponse(establishHttpConnection(queryUrl), "AllWISE");
+                    DataGrid grid = new DataGrid(new StringLineReader(response));
+                    grid.process(d -> (getTimeBin(d.get("mjd"))), "time");
+
+                    List<Double> w1 = grid.extractColumnValues("w1mpro_ep");
+                    List<Double> w2 = grid.extractColumnValues("w2mpro_ep");
+                    List<Double> time = grid.extractColumnValues("time");
+
+                    queryUrl = ServiceHelper.createIrsaUrl(ra, dec, radius / DEG_ARCSEC, "neowiser_p1bs_psd");
+                    response = readResponse(establishHttpConnection(queryUrl), "NeoWISE");
+                    grid = new DataGrid(new StringLineReader(response));
+                    grid.process(d -> (getTimeBin(d.get("mjd"))), "time");
+
+                    w1.addAll(grid.extractColumnValues("w1mpro"));
+                    w2.addAll(grid.extractColumnValues("w2mpro"));
+                    time.addAll(grid.extractColumnValues("time"));
+
+                    List<NumberPair> w1Data = new ArrayList();
+                    for (int i = 0; i < w1.size(); i++) {
+                        w1Data.add(new NumberPair(time.get(i), w1.get(i)));
+                    }
+
+                    Map<Double, Double> w1Median = w1Data.stream().collect(
+                            groupingBy(NumberPair::getX,
+                                    Collectors.collectingAndThen(Collectors.toList(),
+                                            e -> StatisticFunctions.determineMedian(e.stream().map(NumberPair::getY).collect(Collectors.toList()))
+                                    )
+                            )
+                    );
+
+                    List<NumberPair> w2Data = new ArrayList();
+                    for (int i = 0; i < w2.size(); i++) {
+                        w2Data.add(new NumberPair(time.get(i), w2.get(i)));
+                    }
+
+                    Map<Double, Double> w2Median = w2Data.stream().collect(
+                            groupingBy(NumberPair::getX,
+                                    Collectors.collectingAndThen(Collectors.toList(),
+                                            e -> StatisticFunctions.determineMedian(e.stream().map(NumberPair::getY).collect(Collectors.toList()))
+                                    )
+                            )
+                    );
+
+                    new DataPlot("WISE light curves")
+                            .gridlines()
+                            .xAxis("Year")
+                            .yAxis("Magnitude (mag)")
+                            .yAxisInverted(true)
+                            .line("W2 median", new ArrayList(w2Median.keySet()), new ArrayList(w2Median.values()), Color.RED, true)
+                            .line("W1 median", new ArrayList(w1Median.keySet()), new ArrayList(w1Median.values()), Color.BLUE, true)
+                            .scatter("W2", time, w2, Color.PINK)
+                            .scatter("W1", time, w1, Color.CYAN)
+                            .show(1000, 800, baseFrame);
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, ex.getMessage());
+                } finally {
+                    createLcButton.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
             if (addExtinctionCheckbox && catalogEntry instanceof Extinction) {
                 final Extinction selectedEntry = (Extinction) catalogEntry.copy();
                 JPanel extinctionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -5684,6 +5761,14 @@ public class ImageViewerTab {
         detailsFrame.setResizable(true);
         detailsFrame.setVisible(true);
         windowShift += 10;
+    }
+
+    private double getTimeBin(double mjd) {
+        LocalDateTime dt = convertMJDToDateTime(new BigDecimal(mjd));
+        int year = dt.getYear();
+        int month = dt.getMonth().getValue();
+        double monthBin = month > 6 ? 0.5 : 0.0;
+        return year + monthBin;
     }
 
     private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results, CatalogEntry catalogEntry, Color color) {
