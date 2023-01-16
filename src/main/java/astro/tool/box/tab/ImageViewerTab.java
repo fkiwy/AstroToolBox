@@ -45,7 +45,7 @@ import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.FileType;
+import astro.tool.box.enumeration.ImageType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
@@ -58,6 +58,7 @@ import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.container.Tile;
+import astro.tool.box.enumeration.StatType;
 import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.function.StatisticFunctions;
 import astro.tool.box.lookup.DistanceLookupResult;
@@ -121,6 +122,7 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -182,9 +184,7 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.data.grid.DataGrid;
-import org.data.grid.DataPlot;
-import org.data.grid.StringLineReader;
+import astro.tool.box.panel.JPlot;
 
 public class ImageViewerTab {
 
@@ -833,7 +833,7 @@ public class ImageViewerTab {
                     aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
                     wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
                     finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-                    createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                    createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, ImageType.STACK));
                     createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
                     createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
                             separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
@@ -1998,7 +1998,7 @@ public class ImageViewerTab {
                             @Override
                             public void mousePressed(MouseEvent evt) {
                                 try {
-                                    Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView, FileType.STACK_AND_WARP)));
+                                    Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView, ImageType.STACK_AND_WARP)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2501,7 +2501,7 @@ public class ImageViewerTab {
                 aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
                 wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
                 finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-                createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, ImageType.STACK));
                 createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
                 createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
                         separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
@@ -5663,60 +5663,118 @@ public class ImageViewerTab {
 
                     String queryUrl = ServiceHelper.createIrsaUrl(ra, dec, radius / DEG_ARCSEC, "allwise_p3as_mep");
                     String response = readResponse(establishHttpConnection(queryUrl), "AllWISE");
-                    DataGrid grid = new DataGrid(new StringLineReader(response));
-                    grid.process(d -> (getTimeBin(d.get("mjd"))), "time");
 
-                    List<Double> w1 = grid.extractColumnValues("w1mpro_ep");
-                    List<Double> w2 = grid.extractColumnValues("w2mpro_ep");
-                    List<Double> time = grid.extractColumnValues("time");
+                    List<List<Double>> table = new ArrayList();
+                    try (Scanner scanner = new Scanner(response)) {
+                        String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                        int col1 = 0;
+                        int col2 = 0;
+                        int col3 = 0;
+                        for (int i = 0; i < columnNames.length; i++) {
+                            if (columnNames[i].equals("w1mpro_ep")) {
+                                col1 = i;
+                            }
+                            if (columnNames[i].equals("w2mpro_ep")) {
+                                col2 = i;
+                            }
+                            if (columnNames[i].equals("mjd")) {
+                                col3 = i;
+                            }
+                        }
+                        while (scanner.hasNextLine()) {
+                            String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                            String w1 = columnValues[col1];
+                            String w2 = columnValues[col2];
+                            if (w1.isEmpty() || w2.isEmpty()) {
+                                continue;
+                            }
+                            double mjd = Double.valueOf(columnValues[col3]);
+                            List<Double> row = new ArrayList();
+                            row.add(Double.valueOf(w1));
+                            row.add(Double.valueOf(w2));
+                            row.add(getObsTime(mjd));
+                            row.add((double) round(getObsTime(mjd) / 0.5));
+                            table.add(row);
+                        }
+                    }
 
                     queryUrl = ServiceHelper.createIrsaUrl(ra, dec, radius / DEG_ARCSEC, "neowiser_p1bs_psd");
                     response = readResponse(establishHttpConnection(queryUrl), "NeoWISE");
-                    grid = new DataGrid(new StringLineReader(response));
-                    grid.process(d -> (getTimeBin(d.get("mjd"))), "time");
+                    try (Scanner scanner = new Scanner(response)) {
+                        String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                        int col1 = 0;
+                        int col2 = 0;
+                        int col3 = 0;
+                        for (int i = 0; i < columnNames.length; i++) {
+                            if (columnNames[i].equals("w1mpro")) {
+                                col1 = i;
+                            }
+                            if (columnNames[i].equals("w2mpro")) {
+                                col2 = i;
+                            }
+                            if (columnNames[i].equals("mjd")) {
+                                col3 = i;
+                            }
+                        }
+                        while (scanner.hasNextLine()) {
+                            String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                            String w1 = columnValues[col1];
+                            String w2 = columnValues[col2];
+                            if (w1.isEmpty() || w2.isEmpty()) {
+                                continue;
+                            }
+                            double mjd = Double.valueOf(columnValues[col3]);
+                            List<Double> row = new ArrayList();
+                            row.add(Double.valueOf(w1));
+                            row.add(Double.valueOf(w2));
+                            row.add(getObsTime(mjd));
+                            row.add((double) round(getObsTime(mjd) / 0.5));
+                            table.add(row);
+                        }
+                    }
 
-                    w1.addAll(grid.extractColumnValues("w1mpro"));
-                    w2.addAll(grid.extractColumnValues("w2mpro"));
-                    time.addAll(grid.extractColumnValues("time"));
+                    List<Double> w1 = table.stream().map(v -> v.get(0)).collect(Collectors.toList());
+                    List<Double> w2 = table.stream().map(v -> v.get(1)).collect(Collectors.toList());
+                    List<Double> timeBin = table.stream().map(v -> v.get(3)).collect(Collectors.toList());
 
                     List<NumberPair> w1Data = new ArrayList();
                     for (int i = 0; i < w1.size(); i++) {
-                        w1Data.add(new NumberPair(time.get(i), w1.get(i)));
+                        w1Data.add(new NumberPair(timeBin.get(i), w1.get(i)));
                     }
 
                     Map<Double, Double> w1Median = w1Data.stream().collect(
-                            groupingBy(NumberPair::getX,
-                                    Collectors.collectingAndThen(Collectors.toList(),
-                                            e -> StatisticFunctions.determineMedian(e.stream().map(NumberPair::getY).collect(Collectors.toList()))
-                                    )
-                            )
+                            groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e)))
                     );
 
                     List<NumberPair> w2Data = new ArrayList();
                     for (int i = 0; i < w2.size(); i++) {
-                        w2Data.add(new NumberPair(time.get(i), w2.get(i)));
+                        w2Data.add(new NumberPair(timeBin.get(i), w2.get(i)));
                     }
 
                     Map<Double, Double> w2Median = w2Data.stream().collect(
-                            groupingBy(NumberPair::getX,
-                                    Collectors.collectingAndThen(Collectors.toList(),
-                                            e -> StatisticFunctions.determineMedian(e.stream().map(NumberPair::getY).collect(Collectors.toList()))
-                                    )
-                            )
+                            groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e)))
                     );
 
-                    new DataPlot("WISE light curves")
+                    table = removeOutliers(table, 0, 3, StatType.MEAN);
+                    table = removeOutliers(table, 1, 3, StatType.MEAN);
+
+                    w1 = table.stream().map(v -> v.get(0)).collect(Collectors.toList());
+                    w2 = table.stream().map(v -> v.get(1)).collect(Collectors.toList());
+                    List<Double> obsTime = table.stream().map(v -> v.get(2)).collect(Collectors.toList());
+
+                    new JPlot("WISE light curves")
                             .gridlines()
                             .xAxis("Year")
+                            .xAxisNumberFormat(new DecimalFormat("#.#"))
                             .yAxis("Magnitude (mag)")
                             .yAxisInverted(true)
-                            .line("W2 median", new ArrayList(w2Median.keySet()), new ArrayList(w2Median.values()), Color.RED, true)
-                            .line("W1 median", new ArrayList(w1Median.keySet()), new ArrayList(w1Median.values()), Color.BLUE, true)
-                            .scatter("W2", time, w2, Color.PINK)
-                            .scatter("W1", time, w1, Color.CYAN)
+                            .line("W2 median", w2Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w2Median.values()), Color.RED, true)
+                            .line("W1 median", w1Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w1Median.values()), Color.BLUE, true)
+                            .scatter("W2", obsTime, w2, Color.PINK)
+                            .scatter("W1", obsTime, w1, Color.CYAN)
                             .show(1000, 800, baseFrame);
                 } catch (Exception ex) {
-                    showErrorDialog(baseFrame, ex.getMessage());
+                    showExceptionDialog(baseFrame, ex);
                 } finally {
                     createLcButton.setCursor(Cursor.getDefaultCursor());
                 }
@@ -5763,12 +5821,22 @@ public class ImageViewerTab {
         windowShift += 10;
     }
 
-    private double getTimeBin(double mjd) {
+    private double getMedian(List<NumberPair> pairs) {
+        List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
+        List<Double> clipped = removeOutliers(values, 1, StatType.MEAN);
+        double median = StatisticFunctions.determineMedian(clipped);
+        if (median == 0) {
+            median = StatisticFunctions.determineMedian(values);
+        }
+        return median;
+    }
+
+    private double getObsTime(double mjd) {
         LocalDateTime dt = convertMJDToDateTime(new BigDecimal(mjd));
         int year = dt.getYear();
-        int month = dt.getMonth().getValue();
-        double monthBin = month > 6 ? 0.5 : 0.0;
-        return year + monthBin;
+        double day = dt.getDayOfYear();
+        double days = dt.toLocalDate().isLeapYear() ? 366 : 365;
+        return year + (day / days);
     }
 
     private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results, CatalogEntry catalogEntry, Color color) {

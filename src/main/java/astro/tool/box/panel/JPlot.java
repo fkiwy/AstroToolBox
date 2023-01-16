@@ -1,7 +1,8 @@
-package org.data.grid;
+package astro.tool.box.panel;
 
-import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
-import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.enumeration.FileType.*;
+import astro.tool.box.enumeration.FileType;
 import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
@@ -20,6 +21,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -38,7 +40,7 @@ import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class DataPlot {
+public class JPlot {
 
     private static final String TEMP_FILE_PREFIX = "DataPlot_";
 
@@ -62,7 +64,7 @@ public class DataPlot {
 
     private int index = -1;
 
-    public DataPlot(String title) {
+    public JPlot(String title) {
         this.title = title;
         deleteTempFiles();
         chart = ChartFactory.createXYLineChart(title, "", "", null);
@@ -71,22 +73,22 @@ public class DataPlot {
         plot.setBackgroundPaint(Color.WHITE);
     }
 
-    public DataPlot backgroundColor(Color color) {
+    public JPlot backgroundColor(Color color) {
         plot.setBackgroundPaint(color);
         return this;
     }
 
-    public DataPlot gridlines() {
+    public JPlot gridlines() {
         gridlines(Color.LIGHT_GRAY, 0.5f);
         return this;
     }
 
-    public DataPlot ignoreZeroValues(boolean ignoreZeroValues) {
+    public JPlot ignoreZeroValues(boolean ignoreZeroValues) {
         this.ignoreZeroValues = ignoreZeroValues;
         return this;
     }
 
-    public DataPlot gridlines(Color color, float thickness) {
+    public JPlot gridlines(Color color, float thickness) {
         plot.setRangeGridlinesVisible(true);
         plot.setRangeGridlinePaint(color);
         plot.setRangeGridlineStroke(new BasicStroke(thickness));
@@ -105,11 +107,11 @@ public class DataPlot {
     //
     //
     //
-    public DataPlot xAxis(String axisLabel) {
+    public JPlot xAxis(String axisLabel) {
         return xAxis(axisLabel, false);
     }
 
-    public DataPlot xAxis(String axisLabel, boolean logarithmicScale) {
+    public JPlot xAxis(String axisLabel, boolean logarithmicScale) {
         if (logarithmicScale) {
             xLogAxis = new LogAxis(axisLabel);
             plot.setDomainAxis(xLogAxis);
@@ -122,7 +124,16 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot xAxisInverted(boolean inverted) {
+    public JPlot xAxisNumberFormat(NumberFormat format) {
+        if (logarithmicScale) {
+            xLogAxis.setNumberFormatOverride(format);
+        } else {
+            xLinearAxis.setNumberFormatOverride(format);
+        }
+        return this;
+    }
+
+    public JPlot xAxisInverted(boolean inverted) {
         if (logarithmicScale) {
             xLogAxis.setInverted(inverted);
         } else {
@@ -131,7 +142,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot xAxisRange(double from, double to) {
+    public JPlot xAxisRange(double from, double to) {
         if (logarithmicScale) {
             xLogAxis.setRange(from, to);
         } else {
@@ -140,7 +151,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot xAxisLowerBound(double lowerBound) {
+    public JPlot xAxisLowerBound(double lowerBound) {
         if (logarithmicScale) {
             xLogAxis.setAutoRangeMinimumSize(lowerBound);
         } else {
@@ -149,7 +160,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot xAxisTickInterval(double tickInterval) {
+    public JPlot xAxisTickInterval(double tickInterval) {
         if (logarithmicScale) {
             xLogAxis.setTickUnit(new NumberTickUnit(tickInterval));
         } else {
@@ -158,11 +169,11 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot yAxis(String axisLabel) {
+    public JPlot yAxis(String axisLabel) {
         return yAxis(axisLabel, false);
     }
 
-    public DataPlot yAxis(String axisLabel, boolean logarithmicScale) {
+    public JPlot yAxis(String axisLabel, boolean logarithmicScale) {
         if (logarithmicScale) {
             yLogAxis = new LogAxis(axisLabel);
             plot.setRangeAxis(yLogAxis);
@@ -175,7 +186,16 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot yAxisInverted(boolean inverted) {
+    public JPlot yAxisNumberFormat(NumberFormat format) {
+        if (logarithmicScale) {
+            yLogAxis.setNumberFormatOverride(format);
+        } else {
+            yLinearAxis.setNumberFormatOverride(format);
+        }
+        return this;
+    }
+
+    public JPlot yAxisInverted(boolean inverted) {
         if (logarithmicScale) {
             yLogAxis.setInverted(inverted);
         } else {
@@ -184,7 +204,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot yAxisRange(double from, double to) {
+    public JPlot yAxisRange(double from, double to) {
         if (logarithmicScale) {
             yLogAxis.setRange(from, to);
         } else {
@@ -193,7 +213,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot yAxisLowerBound(double lowerBound) {
+    public JPlot yAxisLowerBound(double lowerBound) {
         if (logarithmicScale) {
             yLogAxis.setAutoRangeMinimumSize(lowerBound);
         } else {
@@ -202,7 +222,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot yAxisTickInterval(double tickInterval) {
+    public JPlot yAxisTickInterval(double tickInterval) {
         if (logarithmicScale) {
             yLogAxis.setTickUnit(new NumberTickUnit(tickInterval));
         } else {
@@ -211,7 +231,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot scatter(String legendEntry, List<Double> x, List<Double> y, Color color) {
+    public JPlot scatter(String legendEntry, List<Double> x, List<Double> y, Color color) {
         index++;
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, false);
@@ -220,7 +240,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
+    public JPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
         index++;
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, true);
@@ -229,7 +249,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
+    public JPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
         index++;
         XYSplineRenderer renderer = new XYSplineRenderer(100);
         renderer.setSeriesLinesVisible(0, true);
@@ -238,7 +258,7 @@ public class DataPlot {
         return this;
     }
 
-    public DataPlot save(String filePath, FileType fileType, int width, int height) {
+    public JPlot save(String filePath, FileType fileType, int width, int height) {
         try {
             File file = new File(addExtension(filePath, fileType));
             savePlot(file, fileType, width, height);
@@ -248,7 +268,7 @@ public class DataPlot {
         }
     }
 
-    public DataPlot show(int width, int height, FileType fileType) {
+    public JPlot show(int width, int height, FileType fileType) {
         try {
             File file = File.createTempFile(TEMP_FILE_PREFIX, fileType.val);
             savePlot(file, fileType, width, height);

@@ -15,11 +15,11 @@ public class StatisticFunctions {
      * Remove outliers from a list of values using sigma clipping
      *
      * @param values
-     * @param clippingFactor (to multiply with standard deviation)
+     * @param numberOfStds (to multiply with standard deviation)
      * @param statType (StatType.MEAN or StatType.MEDIAN)
      * @return the sanitized list
      */
-    public static List<Double> removeOutliers(List<Double> values, double clippingFactor, StatType statType) {
+    public static List<Double> removeOutliers(List<Double> values, double numberOfStds, StatType statType) {
         double avg;
         if (StatType.MEAN.equals(statType)) {
             avg = calculateMean(values);
@@ -28,7 +28,21 @@ public class StatisticFunctions {
         }
         double std = calculateStandardDeviation(values);
         return values.stream()
-                .filter(val -> isNoOutlier(val, avg, std * clippingFactor))
+                .filter(val -> isNoOutlier(val, avg, std * numberOfStds))
+                .collect(Collectors.toList());
+    }
+
+    public static List<List<Double>> removeOutliers(List<List<Double>> table, int columnIndex, double numberOfStds, StatType statType) {
+        List<Double> values = table.stream().map(v -> v.get(columnIndex)).collect(Collectors.toList());
+        double avg;
+        if (StatType.MEAN.equals(statType)) {
+            avg = calculateMean(values);
+        } else {
+            avg = determineMedian(values);
+        }
+        double std = calculateStandardDeviation(values);
+        return table.stream()
+                .filter(v -> isNoOutlier(v.get(columnIndex), avg, std * numberOfStds))
                 .collect(Collectors.toList());
     }
 

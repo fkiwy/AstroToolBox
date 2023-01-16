@@ -1,12 +1,12 @@
 package astro.tool.box.util;
 
-import astro.tool.box.enumeration.FileType;
+import astro.tool.box.enumeration.ImageType;
 import static astro.tool.box.util.ConversionFactors.*;
 
 public class ExternalResources {
 
     // FoV in arcsec
-    public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView, FileType fileType) {
+    public static String getPanstarrsUrl(double degRA, double degDE, int fieldOfView, ImageType fileType) {
         return "https://ps1images.stsci.edu/cgi-bin/ps1cutouts?pos=" + degRA + "%20" + degDE + "&filter=color&filetypes=" + fileType.val + "&size=" + fieldOfView * 4 + "&output_size=256&autoscale=99.8";
     }
 

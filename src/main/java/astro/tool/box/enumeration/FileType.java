@@ -2,7 +2,7 @@ package astro.tool.box.enumeration;
 
 public enum FileType {
 
-    STACK("stack"), WARP("warp"), STACK_AND_WARP("stack,warp");
+    JPEG(".jpg"), PNG(".png"), PDF(".pdf");
 
     public String val;
 

@@ -26,7 +26,7 @@ import astro.tool.box.catalog.TwoMassCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.enumeration.FileType;
+import astro.tool.box.enumeration.ImageType;
 import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.service.CatalogQueryService;
@@ -756,7 +756,7 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
 
             if (bandPanel.getComponentCount() > 0) {
-                bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP)));
+                bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, ImageType.WARP)));
                 centerPanel.add(bandPanel);
                 baseFrame.setVisible(true);
                 scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
