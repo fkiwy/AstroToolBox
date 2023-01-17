@@ -5746,6 +5746,19 @@ public class ImageViewerTab {
                             groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e)))
                     );
 
+                    Map<Double, Double> w1Error = w1Data.stream().collect(
+                            groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getError(e)))
+                    );
+
+                    List<Double> w1Values = new ArrayList(w1Median.values());
+                    List<Double> w1Errors = new ArrayList(w1Error.values());
+                    List<Double> w1MedianUpperError = new ArrayList();
+                    List<Double> w1MedianLowerError = new ArrayList();
+                    for (int i = 0; i < w1Values.size(); i++) {
+                        w1MedianUpperError.add(w1Values.get(i) + w1Errors.get(i));
+                        w1MedianLowerError.add(w1Values.get(i) - w1Errors.get(i));
+                    }
+
                     List<NumberPair> w2Data = new ArrayList();
                     for (int i = 0; i < w2.size(); i++) {
                         w2Data.add(new NumberPair(timeBin.get(i), w2.get(i)));
@@ -5754,6 +5767,19 @@ public class ImageViewerTab {
                     Map<Double, Double> w2Median = w2Data.stream().collect(
                             groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e)))
                     );
+
+                    Map<Double, Double> w2Error = w2Data.stream().collect(
+                            groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getError(e)))
+                    );
+
+                    List<Double> w2Values = new ArrayList(w2Median.values());
+                    List<Double> w2Errors = new ArrayList(w2Error.values());
+                    List<Double> w2MedianUpperError = new ArrayList();
+                    List<Double> w2MedianLowerError = new ArrayList();
+                    for (int i = 0; i < w2Values.size(); i++) {
+                        w2MedianUpperError.add(w2Values.get(i) + w2Errors.get(i));
+                        w2MedianLowerError.add(w2Values.get(i) - w2Errors.get(i));
+                    }
 
                     table = removeOutliers(table, 0, 3, StatType.MEAN);
                     table = removeOutliers(table, 1, 3, StatType.MEAN);
@@ -5769,7 +5795,11 @@ public class ImageViewerTab {
                             .yAxis("Magnitude (mag)")
                             .yAxisInverted(true)
                             .line("W2 median", w2Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w2Median.values()), Color.RED, true)
+                            .line("W2 error", w2Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w2MedianLowerError, Color.LIGHT_GRAY, false)
+                            .line(null, w2Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w2MedianUpperError, Color.LIGHT_GRAY, false)
                             .line("W1 median", w1Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w1Median.values()), Color.BLUE, true)
+                            .line("W1 error", w1Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w1MedianLowerError, Color.LIGHT_GRAY, false)
+                            .line(null, w1Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w1MedianUpperError, Color.LIGHT_GRAY, false)
                             .scatter("W2", obsTime, w2, Color.PINK)
                             .scatter("W1", obsTime, w1, Color.CYAN)
                             .show(1000, 800, baseFrame);
@@ -5823,12 +5853,18 @@ public class ImageViewerTab {
 
     private double getMedian(List<NumberPair> pairs) {
         List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
-        List<Double> clipped = removeOutliers(values, 1, StatType.MEAN);
+        List<Double> clipped = removeOutliers(values, 3, StatType.MEAN);
         double median = StatisticFunctions.determineMedian(clipped);
         if (median == 0) {
             median = StatisticFunctions.determineMedian(values);
         }
         return median;
+    }
+
+    private double getError(List<NumberPair> pairs) {
+        List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
+        List<Double> clipped = removeOutliers(values, 3, StatType.MEAN);
+        return StatisticFunctions.calculateStandardError(clipped);
     }
 
     private double getObsTime(double mjd) {

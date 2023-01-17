@@ -90,10 +90,10 @@ public class StatisticFunctions {
      * @return the median
      */
     public static double determineMedian(List<Double> values) {
-        values.sort(Comparator.naturalOrder());
         if (values.isEmpty()) {
             return 0;
         }
+        values.sort(Comparator.naturalOrder());
         int size = values.size();
         int half = size / 2 - 1;
         half = half < 0 ? 0 : half;
