@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +84,7 @@ public class WiseCcdPanel extends JPanel {
 
     private StringBuilder seriesLabel;
 
-    public WiseCcdPanel(CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) throws IOException {
+    public WiseCcdPanel(CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.catalogQueryService = catalogQueryService;
         this.baseFrame = baseFrame;
 

@@ -232,29 +232,47 @@ public class JPlot {
     }
 
     public JPlot scatter(String legendEntry, List<Double> x, List<Double> y, Color color) {
-        index++;
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesLinesVisible(0, false);
-        renderer.setSeriesShapesVisible(0, true);
-        addRenderer(legendEntry, x, y, color, renderer);
+        return scatter(legendEntry, x, y, color, true);
+    }
+
+    public JPlot scatter(String legendEntry, List<Double> x, List<Double> y, Color color, boolean plot) {
+        if (plot) {
+            index++;
+            XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+            renderer.setSeriesLinesVisible(0, false);
+            renderer.setSeriesShapesVisible(0, true);
+            addRenderer(legendEntry, x, y, color, renderer);
+        }
         return this;
     }
 
     public JPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
-        index++;
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesLinesVisible(0, true);
-        renderer.setSeriesShapesVisible(0, showDataPoints);
-        addRenderer(legendEntry, x, y, color, renderer);
+        return line(legendEntry, x, y, color, showDataPoints, true);
+    }
+    
+    public JPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints, boolean plot) {
+        if (plot) {
+            index++;
+            XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+            renderer.setSeriesLinesVisible(0, true);
+            renderer.setSeriesShapesVisible(0, showDataPoints);
+            addRenderer(legendEntry, x, y, color, renderer);
+        }
         return this;
     }
 
     public JPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
-        index++;
-        XYSplineRenderer renderer = new XYSplineRenderer(100);
-        renderer.setSeriesLinesVisible(0, true);
-        renderer.setSeriesShapesVisible(0, showDataPoints);
-        addRenderer(legendEntry, x, y, color, renderer);
+        return curve(legendEntry, x, y, color, showDataPoints, true);
+    }
+    
+    public JPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints, boolean plot) {
+        if (plot) {
+            index++;
+            XYSplineRenderer renderer = new XYSplineRenderer(100);
+            renderer.setSeriesLinesVisible(0, true);
+            renderer.setSeriesShapesVisible(0, showDataPoints);
+            addRenderer(legendEntry, x, y, color, renderer);
+        }
         return this;
     }
 
@@ -401,6 +419,10 @@ public class JPlot {
         for (File file : files) {
             file.delete();
         }
+    }
+
+    public JFreeChart getChart() {
+        return chart;
     }
 
 }

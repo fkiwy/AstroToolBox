@@ -19,7 +19,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +79,7 @@ public class GaiaCmdPanel extends JPanel {
 
     private String targetLabel;
 
-    public GaiaCmdPanel(GaiaCmd catalogEntry) throws IOException {
+    public GaiaCmdPanel(GaiaCmd catalogEntry) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
