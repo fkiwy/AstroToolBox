@@ -206,9 +206,13 @@ public class WiseLcPanel extends JPanel {
     }
 
     private void createPlot() {
-        List<Double> w1 = data.stream().map(v -> v.get(0)).collect(Collectors.toList());
-        List<Double> w2 = data.stream().map(v -> v.get(1)).collect(Collectors.toList());
-        List<Double> timeBin = data.stream().map(v -> v.get(3)).collect(Collectors.toList());
+        List<List<Double>> list;
+        list = removeOutliers(data, 0, 3, StatType.MEAN);
+        list = removeOutliers(list, 1, 3, StatType.MEAN);
+
+        List<Double> w1 = list.stream().map(v -> v.get(0)).collect(Collectors.toList());
+        List<Double> w2 = list.stream().map(v -> v.get(1)).collect(Collectors.toList());
+        List<Double> timeBin = list.stream().map(v -> v.get(3)).collect(Collectors.toList());
 
         List<NumberPair> w1Data = new ArrayList();
         for (int i = 0; i < w1.size(); i++) {
@@ -254,10 +258,6 @@ public class WiseLcPanel extends JPanel {
             w2MedianLowerError.add(w2Values.get(i) - w2Errors.get(i));
         }
 
-        List<List<Double>> list;
-        list = removeOutliers(data, 0, 3, StatType.MEAN);
-        list = removeOutliers(list, 1, 3, StatType.MEAN);
-
         w1 = list.stream().map(v -> v.get(0)).collect(Collectors.toList());
         w2 = list.stream().map(v -> v.get(1)).collect(Collectors.toList());
         List<Double> obsTime = list.stream().map(v -> v.get(2)).collect(Collectors.toList());
@@ -296,18 +296,12 @@ public class WiseLcPanel extends JPanel {
 
     private double getMedian(List<NumberPair> pairs) {
         List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
-        List<Double> clipped = removeOutliers(values, 3, StatType.MEAN);
-        double median = StatisticFunctions.determineMedian(clipped);
-        if (median == 0) {
-            median = StatisticFunctions.determineMedian(values);
-        }
-        return median;
+        return StatisticFunctions.determineMedian(values);
     }
 
     private double getError(List<NumberPair> pairs) {
         List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
-        List<Double> clipped = removeOutliers(values, 3, StatType.MEAN);
-        return StatisticFunctions.calculateStandardError(clipped);
+        return StatisticFunctions.calculateStandardError(values);
     }
 
     private double getObsTime(double mjd) {
