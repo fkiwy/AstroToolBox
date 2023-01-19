@@ -44,9 +44,10 @@ import org.jfree.chart.JFreeChart;
 public class WiseLcPanel extends JPanel {
 
     private final JTextField photSearchRadius;
-    private final JCheckBox w1LightCurve;
-    private final JCheckBox w2LightCurve;
-    private final JCheckBox errorBars;
+    private final JCheckBox w1Phot;
+    private final JCheckBox w2Phot;
+    private final JCheckBox curves;
+    private final JCheckBox errors;
 
     private JFreeChart chart;
 
@@ -74,23 +75,30 @@ public class WiseLcPanel extends JPanel {
             }
         });
 
-        w1LightCurve = new JCheckBox("W1", true);
-        commandPanel.add(w1LightCurve);
-        w1LightCurve.addActionListener((ActionEvent e) -> {
+        w1Phot = new JCheckBox("W1", true);
+        commandPanel.add(w1Phot);
+        w1Phot.addActionListener((ActionEvent e) -> {
             remove(0);
             createPlot();
         });
 
-        w2LightCurve = new JCheckBox("W2", true);
-        commandPanel.add(w2LightCurve);
-        w2LightCurve.addActionListener((ActionEvent e) -> {
+        w2Phot = new JCheckBox("W2", true);
+        commandPanel.add(w2Phot);
+        w2Phot.addActionListener((ActionEvent e) -> {
             remove(0);
             createPlot();
         });
 
-        errorBars = new JCheckBox("Errors", true);
-        commandPanel.add(errorBars);
-        errorBars.addActionListener((ActionEvent e) -> {
+        curves = new JCheckBox("Curves", true);
+        commandPanel.add(curves);
+        curves.addActionListener((ActionEvent e) -> {
+            remove(0);
+            createPlot();
+        });
+        
+        errors = new JCheckBox("Errors", true);
+        commandPanel.add(errors);
+        errors.addActionListener((ActionEvent e) -> {
             remove(0);
             createPlot();
         });
@@ -262,9 +270,10 @@ public class WiseLcPanel extends JPanel {
         w2 = list.stream().map(v -> v.get(1)).collect(Collectors.toList());
         List<Double> obsTime = list.stream().map(v -> v.get(2)).collect(Collectors.toList());
 
-        boolean curves1 = w1LightCurve.isSelected();
-        boolean curves2 = w2LightCurve.isSelected();
-        boolean errors = errorBars.isSelected();
+        boolean w1Phot = this.w1Phot.isSelected();
+        boolean w2Phot = this.w2Phot.isSelected();
+        boolean curves = this.curves.isSelected();
+        boolean errors = this.errors.isSelected();
 
         JPlot plot = new JPlot("WISE light curves")
                 .gridlines()
@@ -272,14 +281,14 @@ public class WiseLcPanel extends JPanel {
                 .xAxisNumberFormat(new DecimalFormat("#.#"))
                 .yAxis("Magnitude (mag)")
                 .yAxisInverted(true)
-                .line("W2 median", w2Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w2Median.values()), Color.RED, true, curves2)
-                .line("W2 error", w2Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w2MedianLowerError, Color.LIGHT_GRAY, false, curves2 && errors)
-                .line(null, w2Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w2MedianUpperError, Color.LIGHT_GRAY, false, curves2 && errors)
-                .line("W1 median", w1Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w1Median.values()), Color.BLUE, true, curves1)
-                .line("W1 error", w1Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w1MedianLowerError, Color.LIGHT_GRAY, false, curves1 && errors)
-                .line(null, w1Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w1MedianUpperError, Color.LIGHT_GRAY, false, curves1 && errors)
-                .scatter("W2", obsTime, w2, Color.PINK, curves2)
-                .scatter("W1", obsTime, w1, Color.CYAN, curves1);
+                .line("W2 median", w2Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w2Median.values()), Color.RED, true, w2Phot && curves)
+                .line("W2 error", w2Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w2MedianLowerError, Color.LIGHT_GRAY, false, w2Phot && curves && errors)
+                .line(null, w2Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w2MedianUpperError, Color.LIGHT_GRAY, false, w2Phot && curves && errors)
+                .line("W1 median", w1Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), new ArrayList(w1Median.values()), Color.BLUE, true, w1Phot && curves)
+                .line("W1 error", w1Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w1MedianLowerError, Color.LIGHT_GRAY, false, w1Phot && curves && errors)
+                .line(null, w1Error.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList()), w1MedianUpperError, Color.LIGHT_GRAY, false, w1Phot && curves && errors)
+                .scatter("W2", obsTime, w2, Color.PINK, w2Phot)
+                .scatter("W1", obsTime, w1, Color.CYAN, w1Phot);
 
         chart = plot.getChart();
         ChartPanel chartPanel = new ChartPanel(chart) {
