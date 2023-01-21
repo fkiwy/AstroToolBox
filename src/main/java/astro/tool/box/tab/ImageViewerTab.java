@@ -5601,7 +5601,7 @@ public class ImageViewerTab {
             });
 
             JButton createCcdButton = new JButton("WISE CCD");
-            buttonPanel.add(createCcdButton);
+            collectPanel.add(createCcdButton);
             createCcdButton.addActionListener((ActionEvent evt) -> {
                 try {
                     createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -5619,6 +5619,28 @@ public class ImageViewerTab {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createCcdButton.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
+            JButton createLcButton = new JButton("WISE LC");
+            collectPanel.add(createLcButton);
+            createLcButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    JFrame frame = new JFrame();
+                    frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    frame.setIconImage(getToolBoxImage());
+                    frame.setTitle("WISE light curves");
+                    frame.add(new WiseLcPanel(catalogEntry, baseFrame));
+                    frame.setSize(1000, 900);
+                    frame.setLocation(0, 0);
+                    frame.setAlwaysOnTop(false);
+                    frame.setResizable(true);
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, ex.getMessage());
+                } finally {
+                    createLcButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -5645,28 +5667,6 @@ public class ImageViewerTab {
                     }
                 });
             }
-
-            JButton createLcButton = new JButton("WISE LC");
-            collectPanel.add(createLcButton);
-            createLcButton.addActionListener((ActionEvent evt) -> {
-                try {
-                    createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    JFrame frame = new JFrame();
-                    frame.addWindowListener(getChildWindowAdapter(baseFrame));
-                    frame.setIconImage(getToolBoxImage());
-                    frame.setTitle("WISE light curves");
-                    frame.add(new WiseLcPanel(catalogEntry, baseFrame));
-                    frame.setSize(1000, 900);
-                    frame.setLocation(0, 0);
-                    frame.setAlwaysOnTop(false);
-                    frame.setResizable(true);
-                    frame.setVisible(true);
-                } catch (Exception ex) {
-                    showErrorDialog(baseFrame, ex.getMessage());
-                } finally {
-                    createLcButton.setCursor(Cursor.getDefaultCursor());
-                }
-            });
 
             if (addExtinctionCheckbox && catalogEntry instanceof Extinction) {
                 final Extinction selectedEntry = (Extinction) catalogEntry.copy();
