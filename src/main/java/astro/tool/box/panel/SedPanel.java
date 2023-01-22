@@ -325,11 +325,11 @@ public class SedPanel extends JPanel {
                 } else {
                     addDecamReferences();
                 }
-                sedPhotometry.put(Band.g, desEntry.get_g_mag());
-                sedPhotometry.put(Band.r, desEntry.get_r_mag());
-                sedPhotometry.put(Band.i, desEntry.get_i_mag());
-                sedPhotometry.put(Band.z, desEntry.get_z_mag());
-                sedPhotometry.put(Band.y, desEntry.get_y_mag());
+                sedPhotometry.put(Band.g, desEntry.get_g_caut() > 0 ? 0 : desEntry.get_g_mag());
+                sedPhotometry.put(Band.r, desEntry.get_r_caut() > 0 ? 0 : desEntry.get_r_mag());
+                sedPhotometry.put(Band.i, desEntry.get_i_caut() > 0 ? 0 : desEntry.get_i_mag());
+                sedPhotometry.put(Band.z, desEntry.get_z_caut() > 0 ? 0 : desEntry.get_z_mag());
+                sedPhotometry.put(Band.y, desEntry.get_y_caut() > 0 ? 0 : desEntry.get_y_mag());
             }
         }
 

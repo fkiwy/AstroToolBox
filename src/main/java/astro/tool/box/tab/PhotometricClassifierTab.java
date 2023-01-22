@@ -260,7 +260,7 @@ public class PhotometricClassifierTab {
                                 displayClassifierData(classifierListMainSequence, "Colors used for classification: Main sequence", JColor.DARK_GREEN.val);
                                 displayClassifierData(classifierListBrownDwarfs, "Colors used for classification: M, L & T dwarfs", JColor.BROWN.val);
                                 if (!sptOccurrencesSimbad.isEmpty()) {
-                                    displayClassification(sptOccurrencesSimbad, "SIMBAD object type", Color.LIGHT_GRAY);
+                                    displayClassification(sptOccurrencesSimbad, "SIMBAD object type", Color.RED);
                                 }
                                 baseFrame.setVisible(true);
                             } catch (Exception ex) {
