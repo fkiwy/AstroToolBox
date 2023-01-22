@@ -43,7 +43,8 @@ import org.jfree.chart.JFreeChart;
 
 public class WiseLcPanel extends JPanel {
 
-    private final JTextField photSearchRadius;
+    private final JTextField searchRadius;
+    private final JTextField numberOfStds;
     private final JCheckBox w1Phot;
     private final JCheckBox w2Phot;
     private final JCheckBox curves;
@@ -60,10 +61,10 @@ public class WiseLcPanel extends JPanel {
 
         commandPanel.add(new JLabel("Photometry search radius"));
 
-        photSearchRadius = new JTextField("5", 3);
-        commandPanel.add(photSearchRadius);
-        photSearchRadius.addActionListener((ActionEvent e) -> {
-            photSearchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        searchRadius = new JTextField("5", 3);
+        commandPanel.add(searchRadius);
+        searchRadius.addActionListener((ActionEvent e) -> {
+            searchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             remove(0);
             try {
                 collectPhotometry(catalogEntry);
@@ -71,8 +72,17 @@ public class WiseLcPanel extends JPanel {
             } catch (IOException ex) {
                 showExceptionDialog(baseFrame, ex);
             } finally {
-                photSearchRadius.setCursor(Cursor.getDefaultCursor());
+                searchRadius.setCursor(Cursor.getDefaultCursor());
             }
+        });
+
+        commandPanel.add(new JLabel("Number of std deviations"));
+
+        numberOfStds = new JTextField("3", 2);
+        commandPanel.add(numberOfStds);
+        numberOfStds.addActionListener((ActionEvent e) -> {
+            remove(0);
+            createPlot();
         });
 
         w1Phot = new JCheckBox("W1", true);
@@ -95,7 +105,7 @@ public class WiseLcPanel extends JPanel {
             remove(0);
             createPlot();
         });
-        
+
         errors = new JCheckBox("Errors", true);
         commandPanel.add(errors);
         errors.addActionListener((ActionEvent e) -> {
@@ -136,7 +146,7 @@ public class WiseLcPanel extends JPanel {
     }
 
     private void collectPhotometry(CatalogEntry catalogEntry) throws IOException {
-        double radius = toDouble(photSearchRadius.getText());;
+        double radius = toDouble(searchRadius.getText());
         double ra = catalogEntry.getRa();
         double dec = catalogEntry.getDec();
 
@@ -215,8 +225,9 @@ public class WiseLcPanel extends JPanel {
 
     private void createPlot() {
         List<List<Double>> list;
-        list = removeOutliers(data, 0, 3, StatType.MEAN);
-        list = removeOutliers(list, 1, 3, StatType.MEAN);
+        double stds = toDouble(numberOfStds.getText());
+        list = removeOutliers(data, 0, stds, StatType.MEAN);
+        list = removeOutliers(list, 1, stds, StatType.MEAN);
 
         List<Double> w1 = list.stream().map(v -> v.get(0)).collect(Collectors.toList());
         List<Double> w2 = list.stream().map(v -> v.get(1)).collect(Collectors.toList());
