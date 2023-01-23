@@ -13,6 +13,7 @@ import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.SpectralType;
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
@@ -115,6 +116,7 @@ public class PhotometricClassifierTab {
         catalogInstances = getCatalogInstances();
 
         // Catalogs to be removed from the classification
+        catalogInstances.remove(GaiaDR2CatalogEntry.CATALOG_NAME);
         catalogInstances.remove(GaiaWDCatalogEntry.CATALOG_NAME);
         catalogInstances.remove(TessCatalogEntry.CATALOG_NAME);
 
