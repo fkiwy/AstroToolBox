@@ -24,8 +24,10 @@
 #### Pan-STARRS WARP image blinks
 ![Object details](images/PS1%20WARP%20image%20blinks.gif)
 
-#### Object details
-![Object details](images/Object%20details.png)
+#### Same binary in DECaLS, PS1 and WISE imagery
+![Binary DECaLS](images/Binary%20DECaLS.gif)
+![Binary PS1](images/Binary%20PS1.gif)
+![Binary WISE](images/Binary%20WISE.gif)
 
 ### Image Series
 ![Image Series](images/Image%20Series.png)
@@ -33,8 +35,8 @@
 ### Photometric Classifier
 ![Photometric Classifier](images/Photometric%20Classifier.png)
 
-### ADQL Query
-![ADQL Query](images/ADQL%20Query.png)
+### VizieR Catalogs
+![VizieR Catalogs](images/VizieR%20Catalogs.png)
 
 ### ADQL Query
 ![ADQL Query](images/ADQL%20Query.png)
@@ -51,23 +53,32 @@
 ### Calculators & Converters
 ![Calculators & Converters](images/Calculators%20&%20Converters.png)
 
+### Photometric Relations
+![Photometric Relations](images/Photometric%20Relations.png)
+
 ### SIMBAD Measurements & References
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
+### Object details
+![Object details](images/Object%20details.png)
+
 ### SED fitting for ultra-cool dwarfs
-![SED](images/SED.png)
+![UC SED](images/SED.png)
 
 ### SED fitting for white dwarfs
-![SED](images/WD%20SED.png)
+![WD SED](images/WD%20SED.png)
 
 ### Gaia CMD with overplotted M0-M9 spectral types
-![CMD](images/Gaia%20CMD%20RD.png)
+![Gaia CMD](images/Gaia%20CMD%20RD.png)
 
 ### Gaia CMD with overplotted Montreal Cooling Sequences 
-![CMD](images/Gaia%20CMD%20WD.png)
+![Gaia CMD](images/Gaia%20CMD%20WD.png)
 
 ### Color-Color Diagram J-W2 vs. W1-W2
-![CCD](images/WISE%20CCD.png)
+![WISE CCD](images/WISE%20CCD.png)
+
+### WISE light curves (AllWISE Multiepoch Photometry & NEOWISE-R Single Exposure - L1b)
+![WISE LC](images/WISE%20light%20curves.png)
 
 ## MIT License
 
