@@ -1,5 +1,15 @@
 ## Release notes
 
+### AstroToolBox v3.1.0
+- Improved the image downloading process
+- Removed "NEOWISE years" slider
+- Added "Images per blink" slider
+- Added "Skip poor quality images" checkbox
+- Changed contrast settings
+- Added LS DR10 images
+- Added PS1 DR2 warp cutout blinks
+- Added WISE light curves
+
 ### AstroToolBox v3.0.0
 - Moved photometric distance estimates and extinction corrections to the Object details panel of the Image Viewer and Catalog Search
 - Removed Brown Dwarf and White Dwarf tabs from AstroToolBox
