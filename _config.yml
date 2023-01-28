@@ -1,4 +1,1 @@
-theme: minima
-
-minima:
-  skin: dark
+remote_theme: panthera-jekyll
