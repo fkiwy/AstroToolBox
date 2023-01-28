@@ -20,7 +20,7 @@ The toolset also includes an ADQL query interface (IRSA, VizieR, NOAO) and a bat
 
 In addition, the tool has a file browser linked to the image viewer, which makes it possible to check a large list of objects in a convenient way. Interesting finds can be saved in an object collection for later use. The tool also offers a number of handy astrometric calculators and converters.
 
-<a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
+AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
 [Download latest version](releases/executables/AstroToolBox-3.0.0.jar)
 
