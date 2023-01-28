@@ -70,7 +70,6 @@ public class SettingsTab {
     public static final String USE_SIMBAD_MIRROR = "useSimbadMirror";
     public static final String PHOTOMETRIC_ERRORS = "photometricErrors";
     public static final String CUTOUT_SERVICE = "cutoutService";
-    public static final String GAIA_CMD_PATH = "gaiaCmdPath";
     public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
 
     private LookAndFeel lookAndFeel;
@@ -81,7 +80,6 @@ public class SettingsTab {
     private boolean useSimbadMirror;
     private boolean photometricErrors;
     private String cutoutService;
-    private String gaiaCmdPath;
     private String objectCollectionPath;
 
     // Catalog search settings
@@ -153,12 +151,15 @@ public class SettingsTab {
             JPanel containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
+            int panelHeight = 300;
+            int gridRows = 11;
+
             // Global settings
-            JPanel globalSettings = new JPanel(new GridLayout(12, 2));
+            JPanel globalSettings = new JPanel(new GridLayout(gridRows, 2));
             globalSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Global Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            globalSettings.setPreferredSize(new Dimension(475, 325));
+            globalSettings.setPreferredSize(new Dimension(475, panelHeight));
             containerPanel.add(globalSettings);
 
             lookAndFeel = LookAndFeel.valueOf(USER_SETTINGS.getProperty(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
@@ -170,7 +171,6 @@ public class SettingsTab {
             useSimbadMirror = Boolean.parseBoolean(USER_SETTINGS.getProperty(USE_SIMBAD_MIRROR, "false"));
             photometricErrors = Boolean.parseBoolean(USER_SETTINGS.getProperty(PHOTOMETRIC_ERRORS, "false"));
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
-            gaiaCmdPath = USER_SETTINGS.getProperty(GAIA_CMD_PATH, "");
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
             globalSettings.add(new JLabel("Look & Feel: ", JLabel.RIGHT));
@@ -224,17 +224,13 @@ public class SettingsTab {
             globalSettings.add(useSimbadMirrorCheckBox);
 
             globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", JLabel.RIGHT));
-            JCheckBox photometricErrorsBox = new JCheckBox("Needs a restart after: Apply settings");
+            JCheckBox photometricErrorsBox = new JCheckBox("Needs a restart after 'Apply settings'");
             photometricErrorsBox.setSelected(photometricErrors);
             globalSettings.add(photometricErrorsBox);
 
             globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
-
-            globalSettings.add(new JLabel("File location of Gaia CMD data: ", JLabel.RIGHT));
-            JTextField gaiaCmdPathField = new JTextField(gaiaCmdPath);
-            globalSettings.add(gaiaCmdPathField);
 
             globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
@@ -244,11 +240,11 @@ public class SettingsTab {
             globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
 
             // Catalog search settings
-            JPanel catalogQuerySettings = new JPanel(new GridLayout(12, 2));
+            JPanel catalogQuerySettings = new JPanel(new GridLayout(gridRows, 2));
             catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Miscellaneous settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            catalogQuerySettings.setPreferredSize(new Dimension(350, 325));
+            catalogQuerySettings.setPreferredSize(new Dimension(350, panelHeight));
             containerPanel.add(catalogQuerySettings);
 
             copyCoordsToClipboard = Boolean.parseBoolean(USER_SETTINGS.getProperty(COPY_COORDS_TO_CLIPBOARD, "true"));
@@ -301,15 +297,15 @@ public class SettingsTab {
             JTextField userEmailField = new JTextField(userEmail);
             catalogQuerySettings.add(userEmailField);
 
-            catalogQuerySettings.add(new JLabel("(*) Name & email only for auto", JLabel.RIGHT));
-            catalogQuerySettings.add(new JLabel("matic TYGO form filling", JLabel.LEFT));
+            catalogQuerySettings.add(new JLabel("(*) Required only for automatic", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel(" BYW-TYGO form filling", JLabel.LEFT));
 
             // Image viewer settings
-            JPanel imageViewerSettings = new JPanel(new GridLayout(12, 2));
+            JPanel imageViewerSettings = new JPanel(new GridLayout(gridRows, 2));
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, 325));
+            imageViewerSettings.setPreferredSize(new Dimension(400, panelHeight));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
@@ -506,7 +502,6 @@ public class SettingsTab {
                 USER_SETTINGS.setProperty(USE_SIMBAD_MIRROR, String.valueOf(useSimbadMirror));
                 USER_SETTINGS.setProperty(PHOTOMETRIC_ERRORS, String.valueOf(photometricErrors));
                 USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
-                USER_SETTINGS.setProperty(GAIA_CMD_PATH, gaiaCmdPathField.getText());
                 USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
                 // Catalog search settings

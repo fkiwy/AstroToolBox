@@ -3,7 +3,6 @@ package astro.tool.box.panel;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.Application.*;
 import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.catalog.GaiaCmd;
@@ -18,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -431,12 +429,8 @@ public class GaiaCmdPanel extends JPanel {
         if (CMD_DATA != null) {
             return;
         }
-        String gaiaCmdPath = getUserSetting(GAIA_CMD_PATH);
-        if (gaiaCmdPath == null || gaiaCmdPath.isEmpty()) {
-            throw new RuntimeException("Specify file location of Gaia CMD data in the Settings tab.");
-        }
-        File objectCollectionFile = new File(gaiaCmdPath);
-        try (Scanner scanner = new Scanner(objectCollectionFile)) {
+        InputStream input = getClass().getResourceAsStream("/Gaia CMD sample.csv");
+        try (Scanner scanner = new Scanner(input)) {
             scanner.nextLine();
             CMD_DATA = new ArrayList();
             while (scanner.hasNextLine()) {
@@ -446,8 +440,6 @@ public class GaiaCmdPanel extends JPanel {
                 double z = toDouble(columnValues[2]);
                 CMD_DATA.add(new NumberTriplet(x, y, z));
             }
-        } catch (FileNotFoundException ex) {
-            throw new RuntimeException(ex.getMessage());
         }
     }
 
