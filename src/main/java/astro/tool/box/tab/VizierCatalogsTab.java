@@ -37,7 +37,7 @@ import javax.swing.text.Document;
 
 public class VizierCatalogsTab {
 
-    private static final String TAB_NAME = "VizieR catalogs";
+    private static final String TAB_NAME = "VizieR Catalogs";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
