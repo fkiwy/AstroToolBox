@@ -18,14 +18,23 @@
 ### Image Viewer
 ![Image Viewer](images/Image%20Viewer.png)
 
-#### WISEA J085510.74-071442.5: WISE coadds (epochs 2010 & 2014-2020) plus AllWISE overlays (green circles)
+#### WISE image blinks plus AllWISE overlays (green circles)
 ![WISEA J085510.74-071442.5](images/WISEA%20J085510.74-071442.5.gif)
+
+#### Pan-STARRS WARP image blinks
+![Object details](images/PS1%20WARP%20image%20blinks.gif)
+
+#### Object details
+![Object details](images/Object%20details.png)
 
 ### Image Series
 ![Image Series](images/Image%20Series.png)
 
 ### Photometric Classifier
 ![Photometric Classifier](images/Photometric%20Classifier.png)
+
+### ADQL Query
+![ADQL Query](images/ADQL%20Query.png)
 
 ### ADQL Query
 ![ADQL Query](images/ADQL%20Query.png)
