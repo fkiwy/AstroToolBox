@@ -24,8 +24,6 @@ In addition, the tool has a file browser linked to the image viewer, which makes
 
 [Download latest version](releases/executables/AstroToolBox-3.0.0.jar)
 
-[Download Gaia DR3 custom overlays](releases/resources/AstroToolBoxOverlays.txt)
-
 [View release notes](releases/release%20notes.md)
 
 ## Screenshots
