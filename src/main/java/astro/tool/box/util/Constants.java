@@ -34,13 +34,15 @@ public class Constants {
 
     public static final String PANSTARRS_BASE_URL = "https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr2/mean.csv";
 
-    public static final String SDSS_BASE_URL = "http://skyserver.sdss.org/dr16";
+    public static final String SDSS_BASE_URL = "https://skyserver.sdss.org/dr16";
 
     public static final String IRSA_BASE_URL = "https://irsa.ipac.caltech.edu/SCS";
 
     public static final String IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP";
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
+
+    public static final String SDSS_LABEL = "SDSS 1998-2009";
 
     public static final String UKIDSS_LABEL = "UKIDSS";
 
@@ -52,9 +54,9 @@ public class Constants {
 
     public static final int DESI_LS_EPOCH = 2019;
 
-    public static final String DESI_LS_DR_LABEL = "DR9";
+    public static final String DESI_LS_DR_LABEL = "DR10";
 
-    public static final String DESI_LS_DR_PARAM = "ls-dr9";
+    public static final String DESI_LS_DR_PARAM = "ls-dr10";
 
     public static final String MAMAJEK_VERSION = "2022.04.16";
 
@@ -73,6 +75,8 @@ public class Constants {
     public static final double PIXEL_SCALE_WISE = 2.75;
 
     public static final double PIXEL_SCALE_DECAM = 0.25;
+
+    public static final double PIXEL_SCALE_PS1 = 0.25;
 
     // Dust extinction bandpass keys
     public static final String SDSS_U = "SDSS u";

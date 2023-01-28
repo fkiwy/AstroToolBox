@@ -10,4 +10,21 @@ public enum WiseBand {
         this.val = val;
     }
 
+    @Override
+    public String toString() {
+        String label = "";
+        switch (val) {
+            case 1:
+                label = "1";
+                break;
+            case 2:
+                label = "2";
+                break;
+            case 12:
+                label = "1+2";
+                break;
+        }
+        return label;
+    }
+
 }

@@ -26,7 +26,7 @@ import astro.tool.box.catalog.TwoMassCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.enumeration.FileType;
+import astro.tool.box.enumeration.ImageType;
 import astro.tool.box.container.FlipbookComponent;
 import astro.tool.box.container.NirImage;
 import astro.tool.box.service.CatalogQueryService;
@@ -756,7 +756,7 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
 
             if (bandPanel.getComponentCount() > 0) {
-                bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, FileType.WARP)));
+                bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, ImageType.WARP)));
                 centerPanel.add(bandPanel);
                 baseFrame.setVisible(true);
                 scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
@@ -851,6 +851,11 @@ public class ImageSeriesTab {
             bandPanel.add(buildImagePanel(image, "LS DR9"));
             desiImages.add(new Couple("LS DR9", image));
         }
+        image = retrieveDesiImage(targetRa, targetDec, size, "grz", false, "ls-dr10");
+        if (image != null) {
+            bandPanel.add(buildImagePanel(image, "LS DR10"));
+            desiImages.add(new Couple("LS DR10", image));
+        }
 
         if (desiImages.size() > 2) {
             desiTimeSeriesTimer = new Timer(500, null);
@@ -879,8 +884,9 @@ public class ImageSeriesTab {
         if (flipbook != null) {
             bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-            for (FlipbookComponent component : flipbook) {
-                image = imageViewerTab.processImage(component);
+            for (int i = 0; i < flipbook.size(); i++) {
+                FlipbookComponent component = flipbook.get(i);
+                image = imageViewerTab.processImage(component, i);
                 bandPanel.add(buildImagePanel(image, component.getTitle()));
                 wiseImages.add(new Couple(component.getTitle(), image));
             }

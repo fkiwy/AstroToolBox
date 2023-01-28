@@ -1,32 +1,31 @@
 package astro.tool.box.container;
 
-import java.time.LocalDateTime;
 import nom.tam.fits.Fits;
 
 public class ImageContainer {
 
     private final int epoch;
 
-    private final LocalDateTime date;
-
     private final Fits image;
 
-    public ImageContainer(int epoch, LocalDateTime date, Fits image) {
+    private final boolean skip;
+
+    public ImageContainer(int epoch, Fits image, boolean skip) {
         this.epoch = epoch;
-        this.date = date;
         this.image = image;
+        this.skip = skip;
     }
 
     public int getEpoch() {
         return epoch;
     }
 
-    public LocalDateTime getDate() {
-        return date;
-    }
-
     public Fits getImage() {
         return image;
+    }
+
+    public boolean isSkip() {
+        return skip;
     }
 
 }

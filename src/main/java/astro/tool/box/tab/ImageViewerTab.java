@@ -45,7 +45,7 @@ import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.FileType;
+import astro.tool.box.enumeration.ImageType;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.ObjectType;
 import astro.tool.box.enumeration.Shape;
@@ -53,11 +53,11 @@ import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.main.Application;
 import astro.tool.box.panel.GaiaCmdPanel;
 import astro.tool.box.container.FlipbookComponent;
-import astro.tool.box.container.ComponentInfo;
+import astro.tool.box.container.Epoch;
 import astro.tool.box.util.GifSequencer;
 import astro.tool.box.container.ImageContainer;
 import astro.tool.box.container.NirImage;
-import astro.tool.box.enumeration.StatType;
+import astro.tool.box.container.Tile;
 import astro.tool.box.exception.ExtinctionException;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
@@ -120,7 +120,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -131,7 +130,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.*;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -180,20 +179,15 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import astro.tool.box.panel.WiseLcPanel;
 
 public class ImageViewerTab {
 
     public static final String TAB_NAME = "Image Viewer";
-    public static final String EPOCH_LABEL = "NEOWISE years: %d";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
-    public static final int DEFAULT_WISE_BRIGHTNESS = 100;
-    public static final int DEFAULT_DESI_BRIGHTNESS = 100;
-    public static final int DEFAULT_WISE_CONTRAST = 1000;
-    public static final int DEFAULT_DESI_CONTRAST = 500;
-    public static final int MAXIMUM_CONTRAST = 2000;
     public static final int WINDOW_SPACING = 25;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
@@ -255,7 +249,6 @@ public class ImageViewerTab {
     private JPanel rightPanel;
     private JPanel bywTopRow;
     private JPanel bywBottomRow;
-    private JLabel epochLabel;
     private JLabel panstarrsLabel;
     private JLabel aladinLiteLabel;
     private JLabel wiseViewLabel;
@@ -271,12 +264,14 @@ public class ImageViewerTab {
     private JRadioButton wiseviewCutouts;
     private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
+    private JRadioButton ps1Cutouts;
     private JRadioButton showCatalogsButton;
     private JScrollPane rightScrollPanel;
     private JCheckBox differenceImaging;
     private JCheckBox skipIntermediateEpochs;
     private JCheckBox separateScanDirections;
     private JCheckBox resetContrast;
+    private JCheckBox skipBadImages;
     private JCheckBox blurImages;
     private JCheckBox invertColors;
     private JCheckBox borderFirst;
@@ -329,7 +324,7 @@ public class ImageViewerTab {
     private JSlider contrastSlider;
     private JSlider speedSlider;
     private JSlider zoomSlider;
-    private JSlider epochSlider;
+    private JSlider stackSlider;
     private JTextField coordsField;
     private JTextField sizeField;
     private JTextField properMotionField;
@@ -357,29 +352,30 @@ public class ImageViewerTab {
     private BufferedImage processedVhsImage;
     private BufferedImage processedSdssImage;
     private BufferedImage processedDssImage;
-    private Map<String, ImageContainer> imagesW1 = new HashMap<>();
-    private Map<String, ImageContainer> imagesW2 = new HashMap<>();
+    private Map<String, ImageContainer> imagesW1 = new HashMap();
+    private Map<String, ImageContainer> imagesW2 = new HashMap();
+    private Map<String, ImageContainer> imagesW1All = new HashMap();
+    private Map<String, ImageContainer> imagesW2All = new HashMap();
+    private Map<String, ImageContainer> imagesW1Ends = new HashMap();
+    private Map<String, ImageContainer> imagesW2Ends = new HashMap();
     private Map<String, CustomOverlay> customOverlays;
-    private List<Integer> requestedEpochs;
-    private List<NumberPair> crosshairs;
-    private List<Fits> band1Images;
-    private List<Fits> band2Images;
-    private List<FlipbookComponent> flipbook;
+    private List<NumberPair> crosshairs = new ArrayList();
+    private List<Fits> band1Images = new ArrayList();
+    private List<Fits> band2Images = new ArrayList();
+    private List<FlipbookComponent> flipbook = new ArrayList();
     private ImageViewerTab imageViewer;
 
+    private Tile tile;
     private WiseBand wiseBand = WISE_BAND;
     private double pixelScale = PIXEL_SCALE_WISE;
     private int fieldOfView = 30;
     private int shapeSize = 5;
+    private int stackSize = 1;
     private int imageNumber;
     private int imageCount;
     private int windowShift;
     private int quadrantCount;
     private int epochCount;
-    private int epochCountW1;
-    private int epochCountW2;
-    private int numberOfEpochs = NUMBER_OF_WISEVIEW_EPOCHS * 2;
-    private int selectedEpochs = NUMBER_OF_WISEVIEW_EPOCHS;
     private int brightness;
     private int contrast;
     private int minValue;
@@ -416,13 +412,8 @@ public class ImageViewerTab {
     private double previousDec;
 
     private boolean loadImages;
-    private boolean allEpochsW1Loaded;
-    private boolean allEpochsW2Loaded;
-    private boolean moreImagesAvailable;
-    private boolean oneMoreImageAvailable;
     private boolean stopDownloadProcess;
     private boolean flipbookComplete;
-    private boolean reloadImages;
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
@@ -435,15 +426,6 @@ public class ImageViewerTab {
     private boolean dssImages;
     private boolean waitCursor = true;
 
-    public static final Map<Integer, Integer> WISE_EPOCHS = new HashMap();
-
-    static {
-        WISE_EPOCHS.put(0, 2010);
-        for (int i = 1; i < NUMBER_OF_WISEVIEW_EPOCHS; i++) {
-            WISE_EPOCHS.put(i, 2013 + i);
-        }
-    }
-
     public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
@@ -453,14 +435,14 @@ public class ImageViewerTab {
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                 return new SpectralTypeLookupEntry(line.split(",", -1));
-            }).collect(Collectors.toList());
+            }).collect(toList());
             mainSequenceSpectralTypeLookupService = new SpectralTypeLookupService(entries);
         }
         input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
         try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
             brownDwarfLookupEntries = stream.skip(1).map(line -> {
                 return new BrownDwarfLookupEntry(line.split(",", -1));
-            }).collect(Collectors.toList());
+            }).collect(toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(brownDwarfLookupEntries);
             distanceLookupService = new DistanceLookupService(brownDwarfLookupEntries);
         }
@@ -500,7 +482,7 @@ public class ImageViewerTab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 40;
+            int rows = 42;
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -537,25 +519,14 @@ public class ImageViewerTab {
             mainControlPanel.add(wiseBands);
             wiseBands.setSelectedItem(wiseBand);
             wiseBands.addActionListener((ActionEvent evt) -> {
-                WiseBand previousBand = wiseBand;
                 wiseBand = (WiseBand) wiseBands.getSelectedItem();
-                if (WiseBand.W1.equals(previousBand) && !WiseBand.W1.equals(wiseBand)) {
-                    if (loadImages && allEpochsW1Loaded) {
-                        imagesW1.clear();
-                    }
-                }
-                if (WiseBand.W2.equals(previousBand) && !WiseBand.W2.equals(wiseBand)) {
-                    if (loadImages && allEpochsW2Loaded) {
-                        imagesW2.clear();
-                    }
-                }
                 loadImages = true;
                 createFlipbook();
             });
 
             mainControlPanel.add(new JLabel("Brightness:"));
 
-            brightnessSlider = new JSlider(0, 5000, 0);
+            brightnessSlider = new JSlider(1, 100, 1);
             mainControlPanel.add(brightnessSlider);
             brightnessSlider.addChangeListener((ChangeEvent e) -> {
                 brightness = brightnessSlider.getValue();
@@ -568,10 +539,10 @@ public class ImageViewerTab {
 
             mainControlPanel.add(new JLabel("Contrast:"));
 
-            contrastSlider = new JSlider(0, MAXIMUM_CONTRAST, 0);
+            contrastSlider = new JSlider(1, 100, 50);
             mainControlPanel.add(contrastSlider);
             contrastSlider.addChangeListener((ChangeEvent e) -> {
-                contrast = MAXIMUM_CONTRAST - contrastSlider.getValue();
+                contrast = contrastSlider.getValue();
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -610,32 +581,51 @@ public class ImageViewerTab {
                 processImages();
             });
 
-            int numberOfNeoEpochs = NUMBER_OF_WISEVIEW_EPOCHS - 1;
+            String stackText = "Images per blink: %d";
+            JLabel stackLabel = new JLabel(String.format(stackText, stackSize));
+            mainControlPanel.add(stackLabel);
 
-            epochLabel = new JLabel(String.format(EPOCH_LABEL, numberOfNeoEpochs));
-            mainControlPanel.add(epochLabel);
-
-            epochSlider = new JSlider(JSlider.HORIZONTAL, 1, numberOfNeoEpochs, numberOfNeoEpochs);
-            mainControlPanel.add(epochSlider);
-            epochSlider.setMajorTickSpacing(1);
-            epochSlider.setPaintTicks(true);
-            epochSlider.addChangeListener((ChangeEvent e) -> {
-                epochLabel.setText(String.format(EPOCH_LABEL, epochSlider.getValue()));
-                selectedEpochs = epochSlider.getValue() + 1;
+            stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
+            mainControlPanel.add(stackSlider);
+            stackSlider.addChangeListener((ChangeEvent e) -> {
+                stackSize = stackSlider.getValue();
+                stackLabel.setText(String.format(stackText, stackSize));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
-                reloadImages = true;
+                if (skipIntermediateEpochs.isSelected()) {
+                    skipIntermediateEpochs.setSelected(false);
+                    loadImages = true;
+                }
                 createFlipbook();
             });
 
             skipIntermediateEpochs = new JCheckBox("Skip intermediate epochs", true);
             mainControlPanel.add(skipIntermediateEpochs);
             skipIntermediateEpochs.addActionListener((ActionEvent evt) -> {
-                if (!skipIntermediateEpochs.isSelected()) {
-                    loadImages = true;
+                if (skipIntermediateEpochs.isSelected()) {
+                    imagesW1.clear();
+                    imagesW2.clear();
+                    imagesW1.putAll(imagesW1Ends);
+                    imagesW2.putAll(imagesW2Ends);
+                    if (stackSlider.getValue() > 1) {
+                        ChangeListener actionListener = stackSlider.getChangeListeners()[0];
+                        stackSlider.removeChangeListener(actionListener);
+                        stackSlider.setValue(1);
+                        stackSlider.addChangeListener(actionListener);
+                        stackSize = 1;
+                        stackLabel.setText(String.format(stackText, stackSize));
+                    }
+                } else {
+                    if (!imagesW1All.isEmpty()) {
+                        imagesW1.putAll(imagesW1All);
+                    }
+                    if (!imagesW2All.isEmpty()) {
+                        imagesW2.putAll(imagesW2All);
+                    }
                 }
+                loadImages = true;
                 createFlipbook();
             });
 
@@ -649,11 +639,15 @@ public class ImageViewerTab {
             mainControlPanel.add(differenceImaging);
             differenceImaging.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
+                    separateScanDirections.setSelected(true);
                     blurImages.setSelected(true);
                     brightnessSlider.setEnabled(false);
+                    separateScanDirections.setEnabled(false);
                 } else {
+                    separateScanDirections.setSelected(false);
                     blurImages.setSelected(false);
                     brightnessSlider.setEnabled(true);
+                    separateScanDirections.setEnabled(true);
                 }
                 if (resetContrast.isSelected()) {
                     resetContrastSlider();
@@ -668,6 +662,13 @@ public class ImageViewerTab {
                     resetContrastSlider();
                     createFlipbook();
                 }
+            });
+
+            skipBadImages = new JCheckBox("Skip poor quality images", true);
+            mainControlPanel.add(skipBadImages);
+            skipBadImages.addActionListener((ActionEvent evt) -> {
+                previousSize = -1;
+                createFlipbook();
             });
 
             JPanel settingsPanel = new JPanel(new GridLayout(1, 2));
@@ -694,7 +695,7 @@ public class ImageViewerTab {
             staticView = new JCheckBox("Static view");
             settingsPanel.add(staticView);
             staticView.addActionListener((ActionEvent evt) -> {
-                if (flipbook != null) {
+                if (!flipbook.isEmpty()) {
                     if (staticView.isSelected()) {
                         createStaticBook();
                     } else {
@@ -736,7 +737,6 @@ public class ImageViewerTab {
             mainControlPanel.add(wiseviewCutouts);
             wiseviewCutouts.setToolTipText("WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
             wiseviewCutouts.addActionListener((ActionEvent evt) -> {
-                resetEpochSlider(NUMBER_OF_WISEVIEW_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousSize = 0;
                 createFlipbook();
@@ -746,7 +746,6 @@ public class ImageViewerTab {
             mainControlPanel.add(unwiseCutouts);
             unwiseCutouts.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
                 pixelScale = PIXEL_SCALE_WISE;
                 previousSize = 0;
                 createFlipbook();
@@ -754,9 +753,18 @@ public class ImageViewerTab {
 
             desiCutouts = new JRadioButton(html("DECaLS cutouts " + INFO_ICON));
             mainControlPanel.add(desiCutouts);
-            desiCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 and DR9).\nW1 represents the r-band, W2 the z-band.");
+            desiCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 and DR9).");
             desiCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_DECAM;
+                previousSize = 0;
+                createFlipbook();
+            });
+
+            ps1Cutouts = new JRadioButton(html("PS1 Warp images " + INFO_ICON));
+            mainControlPanel.add(ps1Cutouts);
+            ps1Cutouts.setToolTipText("These are cutouts from the Pan-STARRS1 DR2 Warp images. For further details, see https://outerspace.stsci.edu/display/PANSTARRS/PS1+Warp+images");
+            ps1Cutouts.addActionListener((ActionEvent evt) -> {
+                pixelScale = PIXEL_SCALE_PS1;
                 previousSize = 0;
                 createFlipbook();
             });
@@ -765,6 +773,7 @@ public class ImageViewerTab {
             cutoutGroup.add(wiseviewCutouts);
             cutoutGroup.add(unwiseCutouts);
             cutoutGroup.add(desiCutouts);
+            cutoutGroup.add(ps1Cutouts);
 
             mainControlPanel.add(createHeaderLabel("Nearest BYW subjects"));
 
@@ -819,7 +828,7 @@ public class ImageViewerTab {
                     aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
                     wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
                     finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-                    createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                    createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, ImageType.STACK));
                     createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
                     createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
                             separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
@@ -1518,9 +1527,9 @@ public class ImageViewerTab {
                         File file = fileChooser.getSelectedFile();
                         file = new File(file.getPath() + ".gif");
                         BufferedImage[] imageSet = new BufferedImage[flipbook.size()];
-                        int i = 0;
-                        for (FlipbookComponent component : flipbook) {
-                            imageSet[i++] = addCrosshairs(processImage(component));
+                        for (int i = 0; i < flipbook.size(); i++) {
+                            FlipbookComponent component = flipbook.get(i);
+                            imageSet[i] = addCrosshairs(processImage(component, i));
                         }
                         if (imageSet.length > 0) {
                             GifSequencer sequencer = new GifSequencer();
@@ -1534,7 +1543,8 @@ public class ImageViewerTab {
 
             timer = new Timer(speed, (ActionEvent e) -> {
                 try {
-                    if (flipbook == null) {
+                    if (flipbook.isEmpty()) {
+                        enableAll();
                         return;
                     }
                     if (imageNumber < 0) {
@@ -1552,7 +1562,7 @@ public class ImageViewerTab {
                     }
                     wiseImage = addCrosshairs(image);
                     ImageIcon icon = new ImageIcon(wiseImage);
-                    String regularLabel = desiCutouts.isSelected() ? "DECaLS DR5-" + DESI_LS_DR_LABEL : component.getTitle();
+                    String regularLabel = component.getTitle();
                     JLabel regularImage = addTextToImage(new JLabel(icon), regularLabel);
                     if (borderFirst.isSelected() && component.isFirstEpoch()) {
                         regularImage.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
@@ -1591,7 +1601,15 @@ public class ImageViewerTab {
                     // Create and display magnified WISE image
                     rightPanel.removeAll();
                     rightPanel.repaint();
-                    regularLabel = desiCutouts.isSelected() ? "DECaLS" : "WISE";
+
+                    if (desiCutouts.isSelected()) {
+                        regularLabel = "DECaLS";
+                    } else if (ps1Cutouts.isSelected()) {
+                        regularLabel = "PS1";
+                    } else {
+                        regularLabel = "WISE";
+                    }
+
                     addMagnifiedImage(regularLabel, wiseImage, upperLeftX, upperLeftY, width, height);
 
                     List<Couple<String, NirImage>> surveyImages = new ArrayList();
@@ -1622,7 +1640,7 @@ public class ImageViewerTab {
 
                     // SDSS image
                     if (processedSdssImage != null) {
-                        surveyImages.add(new Couple("SDSS 1998-2009", new NirImage(2000, processedSdssImage)));
+                        surveyImages.add(new Couple(SDSS_LABEL, new NirImage(2000, processedSdssImage)));
                     }
 
                     // DSS image
@@ -1975,7 +1993,7 @@ public class ImageViewerTab {
                             @Override
                             public void mousePressed(MouseEvent evt) {
                                 try {
-                                    Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView, FileType.STACK_AND_WARP)));
+                                    Desktop.getDesktop().browse(new URI(getPanstarrsUrl(targetRa, targetDec, fieldOfView, ImageType.STACK_AND_WARP)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2068,7 +2086,7 @@ public class ImageViewerTab {
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
-                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && flipbook != null) {
+                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME) && !flipbook.isEmpty()) {
                     if (!staticView.isSelected()) {
                         createFlipbook();
                         timer.restart();
@@ -2089,14 +2107,14 @@ public class ImageViewerTab {
 
                 @Override
                 public void windowDeactivated(WindowEvent e) {
-                    if (flipbook != null) {
+                    if (!flipbook.isEmpty()) {
                         timer.stop();
                     }
                 }
 
                 @Override
                 public void windowActivated(WindowEvent e) {
-                    if (flipbook != null && !staticView.isSelected() && !hasException && !timerStopped) {
+                    if (!flipbook.isEmpty() && !staticView.isSelected() && !hasException && !timerStopped) {
                         timer.restart();
                     }
                 }
@@ -2307,33 +2325,20 @@ public class ImageViewerTab {
         }
     }
 
-    private void resetEpochSlider(int numberOfEpochs) {
-        int numberOfNeoEpochs = numberOfEpochs - 1;
-        epochLabel.setText(String.format(EPOCH_LABEL, numberOfNeoEpochs));
-        ChangeListener changeListener = epochSlider.getChangeListeners()[0];
-        epochSlider.removeChangeListener(changeListener);
-        epochSlider.setMaximum(numberOfNeoEpochs);
-        epochSlider.setValue(numberOfNeoEpochs);
-        epochSlider.addChangeListener(changeListener);
-        selectedEpochs = numberOfEpochs;
-    }
-
     private void resetContrastSlider() {
         ChangeListener changeListener;
 
-        int defaultBrightness = desiCutouts.isSelected() ? DEFAULT_DESI_BRIGHTNESS : DEFAULT_WISE_BRIGHTNESS;
+        brightness = 1;
         changeListener = brightnessSlider.getChangeListeners()[0];
         brightnessSlider.removeChangeListener(changeListener);
-        brightnessSlider.setValue(defaultBrightness);
+        brightnessSlider.setValue(brightness);
         brightnessSlider.addChangeListener(changeListener);
-        brightness = defaultBrightness;
 
-        int defaultContrast = desiCutouts.isSelected() ? DEFAULT_DESI_CONTRAST : DEFAULT_WISE_CONTRAST;
+        contrast = 50;
         changeListener = contrastSlider.getChangeListeners()[0];
         contrastSlider.removeChangeListener(changeListener);
-        contrastSlider.setValue(defaultContrast);
+        contrastSlider.setValue(contrast);
         contrastSlider.addChangeListener(changeListener);
-        contrast = MAXIMUM_CONTRAST - defaultContrast;
     }
 
     private NumberPair undoRotationOfPixelCoords(int mouseX, int mouseY) {
@@ -2451,7 +2456,7 @@ public class ImageViewerTab {
             }
             try {
                 size = (int) ceil(toInteger(sizeField.getText()) / pixelScale);
-                if (desiCutouts.isSelected()) {
+                if (desiCutouts.isSelected() || ps1Cutouts.isSelected()) {
                     if (size > 1200) {
                         errorMessages.add("Field of view must not be larger than 300 arcsec.");
                     }
@@ -2480,6 +2485,7 @@ public class ImageViewerTab {
                 wiseviewCutouts.setEnabled(false);
                 unwiseCutouts.setEnabled(false);
                 desiCutouts.setEnabled(false);
+                ps1Cutouts.setEnabled(false);
 
                 int panstarrsFOV = toInteger(panstarrsField.getText());
                 int aladinLiteFOV = toInteger(aladinLiteField.getText());
@@ -2490,7 +2496,7 @@ public class ImageViewerTab {
                 aladinLiteFOV = aladinLiteFOV == 0 ? defaultFOV : aladinLiteFOV;
                 wiseViewFOV = wiseViewFOV == 0 ? defaultFOV : wiseViewFOV;
                 finderChartFOV = finderChartFOV == 0 ? defaultFOV : finderChartFOV;
-                createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, FileType.STACK));
+                createHyperlink(panstarrsLabel, getPanstarrsUrl(targetRa, targetDec, panstarrsFOV, ImageType.STACK));
                 createHyperlink(aladinLiteLabel, getAladinLiteUrl(targetRa, targetDec, aladinLiteFOV));
                 createHyperlink(wiseViewLabel, getWiseViewUrl(targetRa, targetDec, wiseViewFOV, skipIntermediateEpochs.isSelected() ? 1 : 0,
                         separateScanDirections.isSelected() ? 1 : 0, differenceImaging.isSelected() ? 1 : 0));
@@ -2503,16 +2509,16 @@ public class ImageViewerTab {
                 createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
 
                 loadImages = true;
-                allEpochsW1Loaded = false;
-                allEpochsW2Loaded = false;
-                moreImagesAvailable = false;
-                oneMoreImageAvailable = false;
                 flipbookComplete = false;
                 hasException = false;
                 imageCutOff = false;
-                imagesW1 = new HashMap();
-                imagesW2 = new HashMap();
-                crosshairs = new ArrayList();
+                imagesW1.clear();
+                imagesW2.clear();
+                imagesW1All.clear();
+                imagesW2All.clear();
+                imagesW1Ends.clear();
+                imagesW2Ends.clear();
+                crosshairs.clear();
                 crosshairCoords.setText("");
                 naxis1 = naxis2 = size;
                 pointerX = pointerY = 0;
@@ -2595,18 +2601,22 @@ public class ImageViewerTab {
                     }
                 }
                 if (wiseviewCutouts.isSelected()) {
-                    try {
-                        InputStream stream = getImageData(1, numberOfEpochs + 6);
-                        stream.close();
-                        moreImagesAvailable = true;
-                    } catch (IOException e) {
-                        try {
-                            InputStream stream = getImageData(1, numberOfEpochs);
-                            stream.close();
-                            oneMoreImageAvailable = true;
-                        } catch (IOException ex) {
-                        }
+                    tile = getWiseTiles(targetRa, targetDec).getFirst();
+                } else {
+                    tile = new Tile();
+                    List<Epoch> epochs = new ArrayList();
+                    epochs.add(new Epoch(1, 0, 0, 55256.0)); // 2010-03-01
+                    epochs.add(new Epoch(2, 0, 0, 55256.0)); // 2010-03-01
+                    epochs.add(new Epoch(1, 1, 1, 55440.0)); // 2010-09-01
+                    epochs.add(new Epoch(2, 1, 1, 55440.0)); // 2010-09-01
+                    double epochDate = 56717.0; // 56717.0 = 2014-03-01 --- 56901.0 = 2014-09-01 --- delta = 56901 - 56717 = 184
+                    for (int i = 2; i < 2 * NUMBER_OF_UNWISE_EPOCHS; i++) {
+                        int forward = i % 2 == 0 ? 0 : 1;
+                        epochs.add(new Epoch(1, i, forward, epochDate));
+                        epochs.add(new Epoch(2, i, forward, epochDate));
+                        epochDate += 184;
                     }
+                    tile.setEpochs(epochs);
                 }
             }
 
@@ -2615,35 +2625,10 @@ public class ImageViewerTab {
             previousDec = targetDec;
             imageNumber = 0;
 
-            if (loadImages || reloadImages) {
+            if (loadImages) {
                 epochCount = 0;
-                epochCountW1 = 0;
-                epochCountW2 = 0;
-                band1Images = new ArrayList();
-                band2Images = new ArrayList();
-                requestedEpochs = new ArrayList<>();
-                int totalEpochs = selectedEpochs * 2;
-                int availableEpochs = totalEpochs + (oneMoreImageAvailable ? 1 : 0);
-                if (moreImagesAvailable) {
-                    for (int i = 0; i < 1000; i++) {
-                        requestedEpochs.add(i);
-                    }
-                } else {
-                    if (skipIntermediateEpochs.isSelected()) {
-                        if (reloadImages) {
-                            imagesW1.clear();
-                            imagesW2.clear();
-                        }
-                        requestedEpochs.add(0);
-                        requestedEpochs.add(1);
-                        requestedEpochs.add(availableEpochs - 2);
-                        requestedEpochs.add(availableEpochs - 1);
-                    } else {
-                        for (int i = 0; i < availableEpochs; i++) {
-                            requestedEpochs.add(i);
-                        }
-                    }
-                }
+                band1Images.clear();
+                band2Images.clear();
                 imagePanel.removeAll();
                 rightPanel.removeAll();
                 if (asyncDownloads) {
@@ -2656,30 +2641,85 @@ public class ImageViewerTab {
                     baseFrame.repaint();
                 }
                 writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
+                List<Epoch> epochsW1 = tile.getEpochs().stream().filter(e -> (e.getBand() == 1)).collect(toList());
+                List<Epoch> epochsW2 = tile.getEpochs().stream().filter(e -> (e.getBand() == 2)).collect(toList());
+                if (skipIntermediateEpochs.isSelected()) {
+                    List<Epoch> tempEpochs;
+
+                    tempEpochs = new ArrayList();
+                    for (int i = 0; i < epochsW1.size(); i++) {
+                        if (epochsW1.get(i).getForward() == 0) {
+                            tempEpochs.add(epochsW1.get(i));
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < epochsW1.size(); i++) {
+                        if (epochsW1.get(i).getForward() == 1) {
+                            tempEpochs.add(epochsW1.get(i));
+                            break;
+                        }
+                    }
+                    for (int i = epochsW1.size() - 1; i >= 0; i--) {
+                        if (epochsW1.get(i).getForward() == 0) {
+                            tempEpochs.add(epochsW1.get(i));
+                            break;
+                        }
+                    }
+                    for (int i = epochsW1.size() - 1; i >= 0; i--) {
+                        if (epochsW1.get(i).getForward() == 1) {
+                            tempEpochs.add(epochsW1.get(i));
+                            break;
+                        }
+                    }
+                    epochsW1 = tempEpochs;
+
+                    tempEpochs = new ArrayList();
+                    for (int i = 0; i < epochsW2.size(); i++) {
+                        if (epochsW2.get(i).getForward() == 0) {
+                            tempEpochs.add(epochsW2.get(i));
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < epochsW2.size(); i++) {
+                        if (epochsW2.get(i).getForward() == 1) {
+                            tempEpochs.add(epochsW2.get(i));
+                            break;
+                        }
+                    }
+                    for (int i = epochsW2.size() - 1; i >= 0; i--) {
+                        if (epochsW2.get(i).getForward() == 0) {
+                            tempEpochs.add(epochsW2.get(i));
+                            break;
+                        }
+                    }
+                    for (int i = epochsW2.size() - 1; i >= 0; i--) {
+                        if (epochsW2.get(i).getForward() == 1) {
+                            tempEpochs.add(epochsW2.get(i));
+                            break;
+                        }
+                    }
+                    epochsW2 = tempEpochs;
+                }
                 switch (wiseBand) {
                     case W1:
-                        downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
-                        epochCountW1 = epochCount;
+                        downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
                         break;
                     case W2:
-                        downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
-                        epochCountW2 = epochCount;
+                        downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
                         break;
                     case W1W2:
-                        downloadRequestedEpochs(WiseBand.W1.val, requestedEpochs, imagesW1);
+                        downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
                         if (stopDownloadProcess) {
                             break;
                         }
-                        epochCountW1 = epochCount;
-                        downloadRequestedEpochs(WiseBand.W2.val, requestedEpochs, imagesW2);
-                        epochCountW2 = epochCount;
+                        downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
                         break;
                 }
                 if (stopDownloadProcess) {
                     writeLogEntry("Download process stopped.");
                     return false;
                 } else {
-                    writeLogEntry("Ready.");
+                    writeLogEntry("Finished.");
                 }
                 if (asyncDownloads) {
                     downloadLog.setCaretPosition(0);
@@ -2689,53 +2729,47 @@ public class ImageViewerTab {
                     hasException = true;
                     return false;
                 }
-                if (epochCountW1 > 0 && epochCountW2 > 0) {
-                    epochCount = min(epochCountW1, epochCountW2);
-                }
-                epochCount = epochCount % 2 == 0 ? epochCount : epochCount - 1;
-                if (!skipIntermediateEpochs.isSelected() || moreImagesAvailable) {
-                    epochCount = totalEpochs < epochCount ? totalEpochs : epochCount;
-                }
-            }
-            if (WiseBand.W1.equals(wiseBand) || WiseBand.W1W2.equals(wiseBand)) {
-                if (!skipIntermediateEpochs.isSelected()) {
-                    allEpochsW1Loaded = true;
-                }
-            }
-            if (WiseBand.W2.equals(wiseBand) || WiseBand.W1W2.equals(wiseBand)) {
-                if (!skipIntermediateEpochs.isSelected()) {
-                    allEpochsW2Loaded = true;
-                }
             }
             loadImages = false;
-            reloadImages = false;
 
             List<Fits> band1Scan1Images = new ArrayList();
             List<Fits> band1Scan2Images = new ArrayList();
-            for (int i = 0; i < epochCount && i < band1Images.size(); i++) {
-                if (i % 2 == 0) {
-                    band1Scan1Images.add(band1Images.get(i));
+            for (Fits fits : band1Images) {
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                long forward = hdu.getHeader().getLongValue("FORWARD");
+                if (forward == 0) {
+                    band1Scan1Images.add(fits);
                 } else {
-                    band1Scan2Images.add(band1Images.get(i));
+                    band1Scan2Images.add(fits);
                 }
             }
 
             List<Fits> band2Scan1Images = new ArrayList();
             List<Fits> band2Scan2Images = new ArrayList();
-            for (int i = 0; i < epochCount && i < band2Images.size(); i++) {
-                if (i % 2 == 0) {
-                    band2Scan1Images.add(band2Images.get(i));
+            for (Fits fits : band2Images) {
+                ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+                long forward = hdu.getHeader().getLongValue("FORWARD");
+                if (forward == 0) {
+                    band2Scan1Images.add(fits);
                 } else {
-                    band2Scan2Images.add(band2Images.get(i));
+                    band2Scan2Images.add(fits);
                 }
+            }
+
+            boolean sep = separateScanDirections.isSelected();
+            boolean diff = differenceImaging.isSelected();
+            boolean desi = desiCutouts.isSelected();
+            boolean ps1 = ps1Cutouts.isSelected();
+
+            if (wiseviewCutouts.isSelected() || ps1Cutouts.isSelected()) {
+                band1Scan1Images = stackImages(band1Scan1Images, stackSize);
+                band1Scan2Images = stackImages(band1Scan2Images, stackSize);
+                band2Scan1Images = stackImages(band2Scan1Images, stackSize);
+                band2Scan2Images = stackImages(band2Scan2Images, stackSize);
             }
 
             List<Fits> band1GroupedImages = new ArrayList();
             List<Fits> band2GroupedImages = new ArrayList();
-
-            boolean skip = skipIntermediateEpochs.isSelected();
-            boolean sep = separateScanDirections.isSelected();
-            boolean diff = differenceImaging.isSelected();
 
             if (sep) {
                 if (diff) {
@@ -2774,121 +2808,77 @@ public class ImageViewerTab {
                     }
                 }
             } else {
-                if (diff && !skip) {
-                    // Band W1 -> Scan ASC+DESC
-                    for (int i = 0; i < band1Scan1Images.size() - 1; i++) {
-                        Fits fits;
-                        Fits fits1 = addImages(band1Scan1Images.get(0), band1Scan2Images.get(0));
-                        Fits fits2 = addImages(band1Scan1Images.get(i + 1), band1Scan2Images.get(i + 1));
-                        if (i == 0) {
-                            fits = subtractImages(fits2, fits1);
-                        } else {
-                            fits = subtractImages(fits1, fits2);
-                        }
-                        band1GroupedImages.add(fits);
-                    }
-                    // Band W2 -> Scan ASC+DESC
-                    for (int i = 0; i < band2Scan1Images.size() - 1; i++) {
-                        Fits fits;
-                        Fits fits1 = addImages(band2Scan1Images.get(0), band2Scan2Images.get(0));
-                        Fits fits2 = addImages(band2Scan1Images.get(i + 1), band2Scan2Images.get(i + 1));
-                        if (i == 0) {
-                            fits = subtractImages(fits2, fits1);
-                        } else {
-                            fits = subtractImages(fits1, fits2);
-                        }
-                        band2GroupedImages.add(fits);
-                    }
-                } else {
-                    // Band W1 -> Scan ASC+DESC
-                    for (int i = 0; i < band1Scan1Images.size(); i++) {
-                        band1GroupedImages.add(addImages(band1Scan1Images.get(i), band1Scan2Images.get(i)));
-                    }
-                    // Band W2 -> Scan ASC+DESC
-                    for (int i = 0; i < band2Scan1Images.size(); i++) {
-                        band2GroupedImages.add(addImages(band2Scan1Images.get(i), band2Scan2Images.get(i)));
-                    }
+                // Band W1 -> Scan ASC+DESC
+                for (int i = 0; i < band1Scan1Images.size() && i < band1Scan2Images.size(); i++) {
+                    band1GroupedImages.add(addImages(band1Scan1Images.get(i), band1Scan2Images.get(i)));
+                }
+                // Band W2 -> Scan ASC+DESC
+                for (int i = 0; i < band2Scan1Images.size() && i < band2Scan2Images.size(); i++) {
+                    band2GroupedImages.add(addImages(band2Scan1Images.get(i), band2Scan2Images.get(i)));
                 }
             }
 
-            flipbook = new ArrayList();
+            flipbook.clear();
 
-            if (skip) {
-                List<Fits> groupedImages;
-                if (!band1GroupedImages.isEmpty()) {
-                    groupedImages = new ArrayList();
-                    Fits fits1 = band1GroupedImages.get(0);
-                    Fits fits2 = band1GroupedImages.get(band1GroupedImages.size() - 1);
-                    if (diff) {
-                        groupedImages.add(subtractImages(fits1, fits2));
-                        groupedImages.add(subtractImages(fits2, fits1));
-                    } else {
-                        groupedImages.add(fits1);
-                        groupedImages.add(fits2);
-                    }
-                    band1GroupedImages = groupedImages;
-                }
-                if (!band2GroupedImages.isEmpty()) {
-                    groupedImages = new ArrayList();
-                    Fits fits1 = band2GroupedImages.get(0);
-                    Fits fits2 = band2GroupedImages.get(band2GroupedImages.size() - 1);
-                    if (diff) {
-                        groupedImages.add(subtractImages(fits1, fits2));
-                        groupedImages.add(subtractImages(fits2, fits1));
-                    } else {
-                        groupedImages.add(fits1);
-                        groupedImages.add(fits2);
-                    }
-                    band2GroupedImages = groupedImages;
-                }
-            }
-
-            int half;
-            ComponentInfo info;
-
+            String band;
             switch (wiseBand) {
                 case W1:
-                    half = band1GroupedImages.size() / 2;
+                    if (desi) {
+                        band = "DECaLS r";
+                    } else if (ps1) {
+                        band = "PS1 r";
+                    } else {
+                        band = "W1";
+                    }
                     for (int i = 0; i < band1GroupedImages.size(); i++) {
-                        info = getComponentInfo(sep, skip, half, i);
+                        Fits fits = band1GroupedImages.get(i);
                         flipbook.add(new FlipbookComponent(
-                                band1GroupedImages.get(i),
+                                fits,
                                 null,
-                                "W1",
-                                info.getScan(),
-                                WISE_EPOCHS.get(info.getEpoch()),
-                                info.getTotalEpochs(),
-                                info.getEpoch() == 0
+                                band,
+                                desi ? getDataRelease(fits) : getMeanObsDate(fits),
+                                isFirstEpoch(fits)
                         ));
                     }
                     break;
                 case W2:
-                    half = band2GroupedImages.size() / 2;
+                    if (desi) {
+                        band = "DECaLS z";
+                    } else if (ps1) {
+                        band = "PS1 y";
+                    } else {
+                        band = "W2";
+                    }
                     for (int i = 0; i < band2GroupedImages.size(); i++) {
-                        info = getComponentInfo(sep, skip, half, i);
+                        Fits fits = band2GroupedImages.get(i);
                         flipbook.add(new FlipbookComponent(
                                 null,
-                                band2GroupedImages.get(i),
-                                "W2",
-                                info.getScan(),
-                                WISE_EPOCHS.get(info.getEpoch()),
-                                info.getTotalEpochs(),
-                                info.getEpoch() == 0
+                                fits,
+                                band,
+                                desi ? getDataRelease(fits) : getMeanObsDate(fits),
+                                isFirstEpoch(fits)
                         ));
                     }
                     break;
                 case W1W2:
-                    half = band1GroupedImages.size() / 2;
-                    for (int i = 0; i < band1GroupedImages.size(); i++) {
-                        info = getComponentInfo(sep, skip, half, i);
+                    if (desi) {
+                        band = "DECaLS r+z";
+                    } else if (ps1) {
+                        band = "PS1 r+y";
+                    } else {
+                        band = "W1+W2";
+                    }
+                    int size1 = band1GroupedImages.size();
+                    int size2 = band2GroupedImages.size();
+                    for (int i = 0; i < min(size1, size2); i++) {
+                        Fits fits1 = band1GroupedImages.get(i);
+                        Fits fits2 = band2GroupedImages.get(i);
                         flipbook.add(new FlipbookComponent(
-                                band1GroupedImages.get(i),
-                                band2GroupedImages.get(i),
-                                "W1+W2",
-                                info.getScan(),
-                                WISE_EPOCHS.get(info.getEpoch()),
-                                info.getTotalEpochs(),
-                                info.getEpoch() == 0
+                                fits1,
+                                fits2,
+                                band,
+                                desi ? getDataRelease(fits1) : getMeanObsDate(fits1),
+                                isFirstEpoch(fits1)
                         ));
                     }
                     break;
@@ -2914,42 +2904,58 @@ public class ImageViewerTab {
         return true;
     }
 
+    private boolean isFirstEpoch(Fits fits) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        long firstEpoch = hdu.getHeader().getLongValue("FEPOCH");
+        return firstEpoch == 1;
+    }
+
+    private List<Fits> stackImages(List<Fits> images, int stackSize) {
+        if (stackSize < 2) {
+            return images;
+        }
+        try {
+            List<Fits> list = new ArrayList();
+            Fits fits = images.get(0);
+            int j = 1;
+            for (int i = 1; i < images.size(); i++) {
+                if (j < stackSize) {
+                    fits = addImages(fits, images.get(i));
+                    j++;
+                } else {
+                    list.add(average(fits, j));
+                    fits = images.get(i);
+                    j = 1;
+                }
+            }
+            if (j > 1) {
+                list.add(average(fits, j));
+            }
+            if (list.isEmpty()) {
+                stackSize--;
+                return stackImages(images, stackSize);
+            }
+            return list;
+        } catch (Exception ex) {
+            return images;
+        }
+    }
+
     private void enableAll() {
         skipIntermediateEpochs.setEnabled(true);
-        separateScanDirections.setEnabled(true);
+        if (!differenceImaging.isSelected()) {
+            separateScanDirections.setEnabled(true);
+        }
         differenceImaging.setEnabled(true);
         wiseviewCutouts.setEnabled(true);
         unwiseCutouts.setEnabled(true);
         desiCutouts.setEnabled(true);
+        ps1Cutouts.setEnabled(true);
         if (waitCursor) {
             baseFrame.setCursor(Cursor.getDefaultCursor());
             coordsField.setCursor(Cursor.getDefaultCursor());
             sizeField.setCursor(Cursor.getDefaultCursor());
         }
-    }
-
-    private ComponentInfo getComponentInfo(boolean sep, boolean skip, int half, int i) {
-        int totalEpochs = 0;
-        int epoch;
-        String scan;
-        if (sep) {
-            if (i >= half) {
-                totalEpochs = 1;
-                epoch = i - half;
-                scan = "DESC";
-            } else {
-                epoch = i;
-                scan = "ASC";
-            }
-        } else {
-            epoch = i;
-            scan = "ASC+DESC";
-        }
-        if (skip && i > 0) {
-            epoch = selectedEpochs - 1;
-        }
-        totalEpochs += epoch * 2 + (i > 0 ? EPOCH_GAP : 0);
-        return new ComponentInfo(totalEpochs, epoch, scan);
     }
 
     private NumberPair getRefValues(FlipbookComponent component) throws Exception {
@@ -2977,18 +2983,6 @@ public class ImageViewerTab {
         return null;
     }
 
-    private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, int totalEpochs) {
-        NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-        double fromRa = fromCoords.getX();
-        double fromDec = fromCoords.getY();
-
-        NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
-        double toRa = toCoords.getX();
-        double toDec = toCoords.getY();
-
-        return new NumberPair(toRa, toDec);
-    }
-
     private void processImages() {
         if (desiImage != null) {
             processedDesiImage = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
@@ -3008,13 +3002,14 @@ public class ImageViewerTab {
         if (dssImage != null) {
             processedDssImage = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
         }
-        if (flipbook == null || !flipbookComplete) {
+        if (flipbook.isEmpty() || !flipbookComplete) {
             return;
         }
         timer.stop();
-        flipbook.forEach(component -> {
-            component.setImage(processImage(component));
-        });
+        for (int i = 0; i < flipbook.size(); i++) {
+            FlipbookComponent component = flipbook.get(i);
+            component.setImage(processImage(component, i));
+        }
         timer.restart();
     }
 
@@ -3051,39 +3046,40 @@ public class ImageViewerTab {
     private void createStaticBook() {
         timer.stop();
         JPanel grid = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        for (FlipbookComponent component : flipbook) {
-            BufferedImage image = addCrosshairs(processImage(component));
+        for (int i = 0; i < flipbook.size(); i++) {
+            FlipbookComponent component = flipbook.get(i);
+            BufferedImage image = addCrosshairs(processImage(component, i));
             JScrollPane scrollPanel = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), component.getTitle()));
             grid.add(scrollPanel);
         }
         if (desiImage != null) {
             BufferedImage image = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DECaLS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel("LS", DESI_LS_DR_LABEL)));
             grid.add(pane);
         }
         if (ps1Image != null) {
             BufferedImage image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "PS1"));
-            grid.add(pane);
-        }
-        if (ukidssImage != null) {
-            BufferedImage image = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "UKIDSS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel("PS1", year_ps1_y_i_g)));
             grid.add(pane);
         }
         if (vhsImage != null) {
             BufferedImage image = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "VHS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel(VHS_LABEL, year_vhs_k_h_j)));
+            grid.add(pane);
+        }
+        if (ukidssImage != null) {
+            BufferedImage image = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel(UKIDSS_LABEL, year_ukidss_k_h_j)));
             grid.add(pane);
         }
         if (sdssImage != null) {
             BufferedImage image = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "SDSS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), SDSS_LABEL));
             grid.add(pane);
         }
         if (dssImage != null) {
             BufferedImage image = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
-            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), "DSS"));
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel("DSS", year_dss_2ir_1r_1b)));
             grid.add(pane);
         }
         imagePanel.removeAll();
@@ -3092,7 +3088,7 @@ public class ImageViewerTab {
         baseFrame.setVisible(true);
     }
 
-    public BufferedImage processImage(FlipbookComponent component) {
+    public BufferedImage processImage(FlipbookComponent component, int epoch) {
         BufferedImage image;
         if (wiseBand.equals(WiseBand.W1W2)) {
             image = createColorImage(component.getFits1(), component.getFits2());
@@ -3101,7 +3097,7 @@ public class ImageViewerTab {
         }
         image = zoomImage(image, zoom);
         image = flipImage(image);
-        addOverlaysAndPMVectors(image, component.getTotalEpochs());
+        addOverlaysAndPMVectors(image, epoch);
         return image;
     }
 
@@ -3149,7 +3145,7 @@ public class ImageViewerTab {
         return image;
     }
 
-    private void addOverlaysAndPMVectors(BufferedImage image, int totalEpochs) {
+    private void addOverlaysAndPMVectors(BufferedImage image, int epoch) {
         if (simbadOverlay.isSelected()) {
             if (simbadEntries == null) {
                 simbadEntries = Collections.emptyList();
@@ -3380,7 +3376,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), totalEpochs);
+                drawPMVectors(image, gaiaTpmEntries, Color.CYAN.darker(), epoch);
             }
         }
         if (gaiaDR3ProperMotion.isSelected()) {
@@ -3392,7 +3388,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), totalEpochs);
+                drawPMVectors(image, gaiaDR3TpmEntries, Color.CYAN.darker(), epoch);
             }
         }
         if (noirlabProperMotion.isSelected()) {
@@ -3404,7 +3400,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, totalEpochs);
+                drawPMVectors(image, noirlabTpmEntries, JColor.NAVY.val, epoch);
             }
         }
         if (catWiseProperMotion.isSelected()) {
@@ -3416,7 +3412,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, totalEpochs);
+                drawPMVectors(image, catWiseTpmEntries, Color.MAGENTA, epoch);
             }
         }
         if (ukidssProperMotion.isSelected()) {
@@ -3428,7 +3424,7 @@ public class ImageViewerTab {
                     return null;
                 });
             } else {
-                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, totalEpochs);
+                drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, epoch);
             }
         }
         if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected() || spikeOverlay.isSelected()) {
@@ -3455,226 +3451,179 @@ public class ImageViewerTab {
         }
     }
 
-    private void downloadRequestedEpochs(int band, List<Integer> requestedEpochs, Map<String, ImageContainer> images) throws Exception {
-        if (requestedEpochs == null) {
+    private void downloadRequestedEpochs(Integer forward, int band, List<Epoch> epochs, Map<String, ImageContainer> images) throws Exception {
+        if (epochs == null) {
             writeLogEntry("No images found for band " + band + ".");
             return;
         }
-        writeLogEntry("Downloading ...");
         if (desiCutouts.isSelected()) {
             retrieveDesiImages(band, images);
+        } else if (ps1Cutouts.isSelected()) {
+            retrievePs1Images(band, images);
         } else {
-            for (int i = 0; i < requestedEpochs.size(); i++) {
+            for (Epoch epoch : epochs) {
                 if (stopDownloadProcess) {
                     return;
                 }
-                int requestedEpoch = requestedEpochs.get(i);
+                int requestedEpoch = epoch.getEpoch();
                 String imageKey = band + "_" + requestedEpoch;
                 ImageContainer container = images.get(imageKey);
                 if (container != null) {
-                    writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
+                    writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | cached");
                     continue;
                 }
                 if (unwiseCutouts.isSelected()) {
                     if (requestedEpoch % 2 > 0) {
                         container = images.get(band + "_" + (requestedEpoch - 1));
                         if (container != null) {
-                            LocalDateTime obsDate = container.getDate().plusMonths(6);
-                            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, container.getImage()));
-                            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + obsDate.format(DATE_FORMATTER) + " > downloaded");
+                            Fits fits = new Fits();
+                            fits.addHDU(FitsFactory.hduFactory(container.getImage().getHDU(0).getData().getData()));
+                            Header header = fits.getHDU(0).getHeader();
+                            header.addValue("FORWARD", epoch.getForward(), "Scan direction");
+                            header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
+                            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
+                            writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + formatDate(epoch.getMjdmean()) + " | downloaded");
                             continue;
                         }
                     }
                 }
                 Fits fits;
-                try {
-                    fits = new Fits(getImageData(band, requestedEpoch));
-                } catch (IOException ex) {
-                    if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > not found, looking for substitutes");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                        return;
-                    } else {
-                        break;
-                    }
-                }
                 ImageHDU hdu;
                 try {
+                    fits = new Fits(getImageData(band, requestedEpoch));
                     hdu = (ImageHDU) fits.getHDU(0);
                     fits.close();
-                } catch (FitsException ex) {
-                    if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable, looking for substitutes");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
+                } catch (IOException ex) {
+                    writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + ex.getMessage());
+                    break;
+                }
+                double mjdmean;
+                Header header = hdu.getHeader();
+                if (wiseviewCutouts.isSelected()) {
+                    mjdmean = getMjdmean(header);
+                } else {
+                    mjdmean = epoch.getMjdmean();
+                }
+                header.addValue("FORWARD", epoch.getForward(), "Scan direction");
+                header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+                String meanObsDate = formatDate(mjdmean);
+                if (skipIntermediateEpochs.isSelected()) {
+                    if (forward != null && forward != epoch.getForward()) {
+                        writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (bad scan direction)");
+                        images.clear();
+                        downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
                         return;
                     } else {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " > unreadable");
-                        continue;
+                        forward = null;
                     }
                 }
-                Header header = hdu.getHeader();
-                double minObsEpoch = header.getDoubleValue("MJDMIN");
-                LocalDateTime obsDate;
-                if (unwiseCutouts.isSelected()) {
-                    int wiseEpoch = requestedEpoch / 2;
-                    int year = wiseEpoch == 0 ? 2010 : 2013 + wiseEpoch;
-                    obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
-                } else {
-                    obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(minObsEpoch)));
-                }
-                String formatObsDate = obsDate.format(DATE_FORMATTER);
-
-                // Skip bad quality images
-                ImageData imageData = (ImageData) hdu.getData();
-                float[][] values = (float[][]) imageData.getData();
-                double yLength = values.length;
-                double xLength = yLength > 0 ? values[0].length : 0;
-                int zeroValues = 0;
-                for (int y = 0; y < yLength; y++) {
-                    for (int x = 0; x < xLength; x++) {
-                        try {
-                            if (values[y][x] == 0) {
-                                zeroValues++;
+                if (skipBadImages.isSelected()) {
+                    ImageData imageData = (ImageData) hdu.getData();
+                    float[][] data = (float[][]) imageData.getData();
+                    double y = data.length;
+                    double x = y > 0 ? data[0].length : 0;
+                    int badPixels = 0;
+                    for (int i = 0; i < y; i++) {
+                        for (int j = 0; j < x; j++) {
+                            if (data[i][j] == 0) {
+                                badPixels++;
                             }
-                        } catch (ArrayIndexOutOfBoundsException ex) {
+                        }
+                    }
+                    if (badPixels > x * y * 0.5) {
+                        writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | skipped (poor quality image)");
+                        if (skipIntermediateEpochs.isSelected()) {
+                            images.clear();
+                            downloadRequestedEpochs(epoch.getForward(), band, provideAlternateEpochs(requestedEpoch, epochs), images);
+                            return;
+                        } else {
+                            images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
+                            continue;
                         }
                     }
                 }
-                double maxAllowed = xLength * yLength * 0.1;
-                if (zeroValues > maxAllowed) {
-                    if (requestedEpochs.size() == 4) {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (poor image quality), looking for substitutes");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                        return;
-                    } else {
-                        writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > skipped (poor image quality)");
-                        continue;
-                    }
-                }
-                // End
-
-                images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-                writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + formatObsDate + " > downloaded");
+                images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
+                writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate + " | downloaded");
             }
         }
         if (images.isEmpty()) {
             return;
         }
-        writeLogEntry("Grouping ...");
-        List<ImageContainer> containers = images.values().stream()
-                .filter(container -> container.getImage() != null)
-                .sorted(Comparator.comparing(ImageContainer::getDate))
-                .collect(Collectors.toList());
-        List<List<ImageContainer>> groupedList = new ArrayList<>();
-        List<ImageContainer> group = new ArrayList<>();
-        ImageContainer imageContainer = containers.get(0);
-        LocalDateTime date = imageContainer.getDate();
-        int prevYear = date.getYear();
-        int prevMonth = date.getMonthValue();
-        int prevNode = 1;
-        int node1 = 0;
-        int node2 = 0;
-        boolean nodeChange = false;
-        for (ImageContainer container : containers) {
-            imageContainer = container;
-            date = container.getDate();
-            int year = date.getYear();
-            int month = date.getMonthValue();
-            int node;
-            if (year != prevYear) {
-                node = 1;
-                nodeChange = false;
-            } else if (month - prevMonth > 4 && !nodeChange) {
-                node = prevNode == 1 ? 2 : 1;
-                nodeChange = true;
-            } else {
-                node = prevNode;
-            }
-            if (year == prevYear && node == prevNode) {
-                group.add(container);
-            } else {
-                groupedList.add(group);
-                group = new ArrayList<>();
-                group.add(container);
-            }
-            if (year == prevYear) {
-                if (node == 1) {
-                    node1++;
-                }
-                if (node == 2) {
-                    node2++;
-                }
-            } else {
-                if (node1 == 0 || node2 == 0) {
-                    if (requestedEpochs.size() == 4) {
-                        images.clear();
-                        int requestedEpoch = container.getEpoch();
-                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for substitutes");
-                        downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                        return;
-                    } else {
-                        writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
-                        groupedList.remove(groupedList.size() - 1);
-                    }
-                }
-                node1 = 0;
-                node2 = 0;
-                if (node == 1) {
-                    node1++;
-                }
-                if (node == 2) {
-                    node2++;
-                }
-            }
-            prevYear = year;
-            prevMonth = month;
-            prevNode = node;
-            writeLogEntry("year " + year + " | node " + node);
-        }
-        if (node1 == 0 || node2 == 0) {
-            if (requestedEpochs.size() == 4) {
-                images.clear();
-                int requestedEpoch = imageContainer.getEpoch();
-                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction), looking for substitutes");
-                downloadRequestedEpochs(band, provideAlternativeEpochs(requestedEpoch, requestedEpochs), images);
-                return;
-            } else {
-                writeLogEntry("year " + prevYear + " | node " + prevNode + " > skipped (single scan direction)");
-            }
+        if (skipIntermediateEpochs.isSelected()) {
+            imagesW1Ends.clear();
+            imagesW2Ends.clear();
+            imagesW1Ends.putAll(imagesW1);
+            imagesW2Ends.putAll(imagesW2);
         } else {
-            groupedList.add(group);
+            imagesW1All.clear();
+            imagesW2All.clear();
+            imagesW1All.putAll(imagesW1);
+            imagesW2All.putAll(imagesW2);
         }
-        writeLogEntry("Stacking ...");
-        epochCount = 0;
-        for (List<ImageContainer> imageGroup : groupedList) {
-            ImageContainer container = imageGroup.get(0);
-            LocalDateTime time = container.getDate();
-            int year = time.getYear();
-            int month = time.getMonthValue();
-            Fits fits = container.getImage();
-            extractHeaderInfo(fits);
-            int groupSize = imageGroup.size();
-            for (int i = 1; i < groupSize; i++) {
-                fits = stackImages(fits, imageGroup.get(i).getImage());
-            }
-            addImage(band, groupSize > 1 ? takeAverage(fits, groupSize) : fits);
-            writeLogEntry("band " + band + " | image " + epochCount + " | year " + year + " | month " + month);
-            epochCount++;
+        List<ImageContainer> containers = images.values().stream()
+                .filter(v -> !v.isSkip())
+                .sorted(Comparator.comparing(ImageContainer::getEpoch))
+                .collect(toList());
+        if (containers.isEmpty()) {
+            return;
         }
+        extractHeaderInfo(containers.get(0).getImage()); // Must be the first image in the list
+        containers.stream().map(ImageContainer::getImage).forEach(i -> addImage(band, i));
+        epochCount = containers.size();
+    }
+
+    private List<Epoch> provideAlternateEpochs(int requestedEpoch, List<Epoch> epochs) {
+        int mean = epochs.size() / 2;
+        if (requestedEpoch < mean) {
+            epochs.get(0).setEpoch(epochs.get(0).getEpoch() + 1);
+            epochs.get(1).setEpoch(epochs.get(1).getEpoch() + 1);
+        } else {
+            int last = epochs.size() - 1;
+            epochs.get(last - 1).setEpoch(epochs.get(last - 1).getEpoch() - 1);
+            epochs.get(last).setEpoch(epochs.get(last).getEpoch() - 1);
+        }
+        return epochs;
+    }
+
+    private double getMjdmean(Header header) throws Exception {
+        double mjdmin = header.getDoubleValue("MJDMIN");
+        double mjdmax = header.getDoubleValue("MJDMAX");
+        return (mjdmin + mjdmax) / 2;
+    }
+
+    private String formatDate(double mjd) {
+        LocalDateTime obsDate = convertMJDToDateTime(new BigDecimal(Double.toString(mjd)));
+        return obsDate.format(DATE_FORMATTER);
+    }
+
+    private String getMeanObsDate(Fits fits) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        Header header = hdu.getHeader();
+        double mjdmean = header.getDoubleValue("MJDMEAN");
+        return formatDate(mjdmean);
+    }
+
+    private String getDataRelease(Fits fits) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        Header header = hdu.getHeader();
+        return header.getStringValue("SURVEY");
     }
 
     private void extractHeaderInfo(Fits fits) throws Exception {
-        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-        Header header = hdu.getHeader();
-        if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
-            imageCutOff = true;
+        if (fits != null) {
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            Header header = hdu.getHeader();
+            header.addValue("FEPOCH", 1, "First epoch");
+            if (header.getDoubleValue("NAXIS1") != header.getDoubleValue("NAXIS2")) {
+                imageCutOff = true;
+            }
+            crval1 = header.getDoubleValue("CRVAL1");
+            crval2 = header.getDoubleValue("CRVAL2");
+            crpix1 = header.getDoubleValue("CRPIX1");
+            crpix2 = header.getDoubleValue("CRPIX2");
+            naxis1 = size;
+            naxis2 = size;
         }
-        crval1 = header.getDoubleValue("CRVAL1");
-        crval2 = header.getDoubleValue("CRVAL2");
-        crpix1 = header.getDoubleValue("CRPIX1");
-        crpix2 = header.getDoubleValue("CRPIX2");
-        naxis1 = size;
-        naxis2 = size;
     }
 
     private void writeLogEntry(String log) {
@@ -3682,57 +3631,6 @@ public class ImageViewerTab {
             downloadLog.append(log + LINE_SEP_TEXT_AREA);
         }
         //System.out.println(log);
-    }
-
-    private List<Integer> provideAlternativeEpochs(int requestedEpoch, List<Integer> requestedEpochs) {
-        if (requestedEpoch == selectedEpochs) {
-            return null;
-        }
-        List<Integer> alternativeEpochs = new ArrayList<>();
-        if (requestedEpoch < selectedEpochs) {
-            alternativeEpochs.add(requestedEpochs.get(0) + 1);
-            alternativeEpochs.add(requestedEpochs.get(1) + 1);
-            alternativeEpochs.add(requestedEpochs.get(2));
-            alternativeEpochs.add(requestedEpochs.get(3));
-        } else {
-            alternativeEpochs.add(requestedEpochs.get(0));
-            alternativeEpochs.add(requestedEpochs.get(1));
-            alternativeEpochs.add(requestedEpochs.get(2) - 1);
-            alternativeEpochs.add(requestedEpochs.get(3) - 1);
-        }
-        return alternativeEpochs;
-    }
-
-    private Fits stackImages(Fits fits1, Fits fits2) {
-        try {
-            ImageHDU imageHDU = (ImageHDU) fits1.getHDU(0);
-            ImageData imageData = (ImageData) imageHDU.getData();
-            float[][] values1 = (float[][]) imageData.getData();
-
-            imageHDU = (ImageHDU) fits2.getHDU(0);
-            imageData = (ImageData) imageHDU.getData();
-            float[][] values2 = (float[][]) imageData.getData();
-
-            float[][] addedValues = new float[naxis2][naxis1];
-            for (int i = 0; i < naxis2; i++) {
-                for (int j = 0; j < naxis1; j++) {
-                    try {
-                        float value1 = values1[i][j];
-                        float value2 = values2[i][j];
-                        value1 = value1 == 0 ? value2 : value1;
-                        value2 = value2 == 0 ? value1 : value2;
-                        addedValues[i][j] = value1 + value2;
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                    }
-                }
-            }
-
-            Fits result = new Fits();
-            result.addHDU(FitsFactory.hduFactory(addedValues));
-            return result;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
@@ -3756,7 +3654,7 @@ public class ImageViewerTab {
                     IOUtils.readFully(ti, buf);
                     entries.put(entry.getSize(), buf);
                 }
-                List<Long> sizes = entries.keySet().stream().collect(Collectors.toList());
+                List<Long> sizes = entries.keySet().stream().collect(toList());
                 sizes.sort(Comparator.reverseOrder());
                 long largest = sizes.get(0);
                 return new ByteArrayInputStream(entries.get(largest));
@@ -3769,48 +3667,156 @@ public class ImageViewerTab {
     }
 
     private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
-        boolean firstEpochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5", 2016);
+        boolean firstEpochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5");
         if (!firstEpochDownloaded || !skipIntermediateEpochs.isSelected()) {
-            downloadDesiCutouts(2, band, images, "decals-dr7", 2018);
-            downloadDesiCutouts(4, band, images, "ls-dr8", 2019);
+            downloadDesiCutouts(2, band, images, "decals-dr7");
+            downloadDesiCutouts(4, band, images, "ls-dr8");
+            downloadDesiCutouts(6, band, images, "ls-dr9");
         }
-        downloadDesiCutouts(6, band, images, "ls-dr9", 2020);
+        downloadDesiCutouts(8, band, images, "ls-dr10");
     }
 
-    private boolean downloadDesiCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey, int year) throws Exception {
+    private boolean downloadDesiCutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String survey) throws Exception {
         if (stopDownloadProcess) {
             return true;
         }
         String imageKey = band + "_" + requestedEpoch;
         ImageContainer container = images.get(imageKey);
         if (container != null) {
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
-            requestedEpoch++;
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " > already downloaded");
-            requestedEpoch++;
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | cached");
             return true;
         }
         String selectedBand = band == 1 ? "r" : "z";
         String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
         String imageUrl = String.format(baseUrl, targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
         try {
+            // Ascending scan
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             Fits fits = new Fits(connection.getInputStream());
+            Header header = fits.getHDU(0).getHeader();
+            header.addValue("FORWARD", 0, "Scan direction");
+            header.addValue("MJDMEAN", 55256.0, "Mean MJD");
+            header.addValue("SURVEY", survey, "Data release");
             enhanceImage(fits, 1000);
             fits.close();
-            LocalDateTime obsDate = LocalDateTime.of(year, Month.MARCH, 1, 0, 0);
-            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " > downloaded");
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | " + survey + " | downloaded");
             requestedEpoch++;
+
+            // Descending scan
+            Fits fits2 = new Fits();
+            fits2.addHDU(FitsFactory.hduFactory(fits.getHDU(0).getData().getData()));
+            header = fits2.getHDU(0).getHeader();
+            header.addValue("FORWARD", 1, "Scan direction");
+            header.addValue("MJDMEAN", 55256.0, "Mean MJD");
+            header.addValue("SURVEY", survey, "Data release");
             imageKey = band + "_" + requestedEpoch;
-            obsDate = LocalDateTime.of(year, Month.SEPTEMBER, 1, 0, 0);
-            images.put(imageKey, new ImageContainer(requestedEpoch, obsDate, fits));
-            writeLogEntry("band " + band + " | image " + requestedEpoch + " | " + survey + " > downloaded");
-            requestedEpoch++;
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits2, false));
+
             return true;
         } catch (IOException | FitsException ex) {
             return false;
         }
+    }
+
+    private void retrievePs1Images(int band, Map<String, ImageContainer> images) throws Exception {
+        List<String> fileNames = new ArrayList();
+        String selectedBand = band == 1 ? "r" : "y";
+        try {
+            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, selectedBand);
+            String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
+            try (Scanner scanner = new Scanner(response)) {
+                String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
+                int fileName = 0;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equals("filename")) {
+                        fileName = i;
+                    }
+                }
+                while (scanner.hasNextLine()) {
+                    String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
+                    fileNames.add(columnValues[fileName]);
+                }
+            }
+        } catch (Exception ex) {
+            writeErrorLog(ex);
+        }
+        int i = 0;
+        for (String fileName : fileNames) {
+            downloadPs1Cutouts(i, band, images, fileName);
+            i += 2;
+        }
+    }
+
+    private void downloadPs1Cutouts(int requestedEpoch, int band, Map<String, ImageContainer> images, String fileName) throws Exception {
+        if (stopDownloadProcess) {
+            return;
+        }
+        String imageKey = band + "_" + requestedEpoch;
+        ImageContainer container = images.get(imageKey);
+        if (container != null) {
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | cached");
+            return;
+        }
+        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?ra=%f&dec=%f&size=%d&red=%s&format=fits", targetRa, targetDec, size, fileName);
+        try {
+            // Ascending scan
+            HttpURLConnection connection = establishHttpConnection(imageUrl);
+            Fits fits = new Fits(connection.getInputStream());
+            Header header = fits.getHDU(0).getHeader();
+            double mjdmean = header.getDoubleValue("MJD-OBS");
+            String meanObsDate = formatDate(mjdmean);
+
+            // Skip bad images
+            ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+            ImageData imageData = (ImageData) hdu.getData();
+            float[][] data = (float[][]) imageData.getData();
+            double y = data.length;
+            double x = y > 0 ? data[0].length : 0;
+            int badPixels = 0;
+            for (int i = 0; i < y; i++) {
+                for (int j = 0; j < x; j++) {
+                    float value = data[i][j];
+                    if (isBadPixel(value)) {
+                        badPixels++;
+                    }
+                }
+            }
+            double rate;
+            if (skipBadImages.isSelected()) {
+                rate = 0.1;
+            } else {
+                rate = 0.5;
+            }
+            if (badPixels > x * y * rate) {
+                String reason = skipBadImages.isSelected() ? "(poor quality image)" : "(mostly blank image)";
+                writeLogEntry("band " + band + " | epoch " + requestedEpoch / 2 + " | " + meanObsDate + " | skipped " + reason);
+                images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
+                return;
+            }
+            // End
+
+            header.addValue("FORWARD", 0, "Scan direction");
+            header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+            fits.close();
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
+            writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | " + meanObsDate + " | downloaded");
+            requestedEpoch++;
+
+            // Descending scan
+            Fits fits2 = new Fits();
+            fits2.addHDU(FitsFactory.hduFactory(fits.getHDU(0).getData().getData()));
+            header = fits2.getHDU(0).getHeader();
+            header.addValue("FORWARD", 1, "Scan direction");
+            header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+            imageKey = band + "_" + requestedEpoch;
+            images.put(imageKey, new ImageContainer(requestedEpoch, fits2, false));
+        } catch (IOException | FitsException ex) {
+        }
+    }
+
+    private boolean isBadPixel(float value) {
+        return value == 0 || Float.toString(value).equals("NaN");
     }
 
     private BufferedImage createImage(Fits fits) {
@@ -3885,12 +3891,19 @@ public class ImageViewerTab {
     }
 
     private Fits addImages(Fits fits1, Fits fits2) throws Exception {
-        ImageHDU imageHDU = (ImageHDU) fits1.getHDU(0);
-        ImageData imageData = (ImageData) imageHDU.getData();
+        ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
+        Header header = hdu.getHeader();
+        String survey = header.getStringValue("SURVEY");
+        double mjdmean1 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch1 = header.getLongValue("FEPOCH");
+        ImageData imageData = (ImageData) hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
-        imageHDU = (ImageHDU) fits2.getHDU(0);
-        imageData = (ImageData) imageHDU.getData();
+        hdu = (ImageHDU) fits2.getHDU(0);
+        header = hdu.getHeader();
+        double mjdmean2 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch2 = header.getLongValue("FEPOCH");
+        imageData = (ImageData) hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
         float[][] addedValues = new float[naxis2][naxis1];
@@ -3899,25 +3912,38 @@ public class ImageViewerTab {
                 try {
                     float value1 = values1[i][j];
                     float value2 = values2[i][j];
-                    value1 = value1 == 0 ? value2 : value1;
-                    value2 = value2 == 0 ? value1 : value2;
+                    value1 = isBadPixel(value1) ? value2 : value1;
+                    value2 = isBadPixel(value2) ? value1 : value2;
                     addedValues[i][j] = value1 + value2;
                 } catch (ArrayIndexOutOfBoundsException ex) {
                 }
             }
         }
 
-        Fits result = new Fits();
-        result.addHDU(FitsFactory.hduFactory(addedValues));
-        return result;
+        Fits fits = new Fits();
+        fits.addHDU(FitsFactory.hduFactory(addedValues));
+        hdu = (ImageHDU) fits.getHDU(0);
+        header = hdu.getHeader();
+        double mjdmean = (mjdmean1 + mjdmean2) / 2;
+        header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+        header.addValue("SURVEY", survey, "Data release");
+        header.addValue("FEPOCH", firstEpoch1 > 0 || firstEpoch2 > 0 ? 1 : 0, "First epoch");
+        return fits;
     }
 
     private Fits subtractImages(Fits fits1, Fits fits2) throws Exception {
         ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
+        Header header = hdu.getHeader();
+        String survey = header.getStringValue("SURVEY");
+        double mjdmean1 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch1 = header.getLongValue("FEPOCH");
         ImageData imageData = (ImageData) hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
+        header = hdu.getHeader();
+        double mjdmean2 = header.getDoubleValue("MJDMEAN");
+        long firstEpoch2 = header.getLongValue("FEPOCH");
         imageData = (ImageData) hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
@@ -3931,14 +3957,24 @@ public class ImageViewerTab {
             }
         }
 
-        Fits result = new Fits();
-        result.addHDU(FitsFactory.hduFactory(subtractedValues));
-        return result;
+        Fits fits = new Fits();
+        fits.addHDU(FitsFactory.hduFactory(subtractedValues));
+        hdu = (ImageHDU) fits.getHDU(0);
+        header = hdu.getHeader();
+        double mjdmean = (mjdmean1 + mjdmean2) / 2;
+        header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+        header.addValue("SURVEY", survey, "Data release");
+        header.addValue("FEPOCH", firstEpoch1 > 0 || firstEpoch2 > 0 ? 1 : 0, "First epoch");
+        return fits;
     }
 
-    private Fits takeAverage(Fits fits, int numberOfImages) throws Exception {
-        ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-        ImageData imageData = (ImageData) imageHDU.getData();
+    private Fits average(Fits fits, int numberOfImages) throws Exception {
+        ImageHDU hdu = (ImageHDU) fits.getHDU(0);
+        Header header = hdu.getHeader();
+        String survey = header.getStringValue("SURVEY");
+        double mjdmean = header.getDoubleValue("MJDMEAN");
+        long firstEpoch = header.getLongValue("FEPOCH");
+        ImageData imageData = (ImageData) hdu.getData();
         float[][] values = (float[][]) imageData.getData();
 
         float[][] averagedValues = new float[naxis2][naxis1];
@@ -3951,9 +3987,14 @@ public class ImageViewerTab {
             }
         }
 
-        Fits result = new Fits();
-        result.addHDU(FitsFactory.hduFactory(averagedValues));
-        return result;
+        fits = new Fits();
+        fits.addHDU(FitsFactory.hduFactory(averagedValues));
+        hdu = (ImageHDU) fits.getHDU(0);
+        header = hdu.getHeader();
+        header.addValue("MJDMEAN", mjdmean, "Mean MJD");
+        header.addValue("SURVEY", survey, "Data release");
+        header.addValue("FEPOCH", firstEpoch, "First epoch");
+        return fits;
     }
 
     private void enhanceImage(Fits fits, int enhanceFactor) throws Exception {
@@ -4018,32 +4059,32 @@ public class ImageViewerTab {
                 }
             }
         }
-        List<Double> outliersRemoved = removeOutliers(imageData, 1, 99);
-        double mean = calculateMean(outliersRemoved);
-        //double std = calculateStandardDeviation(outliersRemoved);
-        //double clippingFactor = (std / mean < 5 ? contrast / 2 : contrast) / 100f;
-        double clippingFactor = (mean > 100 ? contrast / 2 : contrast) / 100f;
-        outliersRemoved = imageData;
-        int oldSize = 1, newSize = 0;
-        while (oldSize != newSize) {
-            oldSize = newSize;
-            outliersRemoved = removeOutliers(outliersRemoved, clippingFactor, StatType.MEDIAN);
-            if (outliersRemoved.isEmpty()) {
-                outliersRemoved = imageData;
-                clippingFactor += 0.1;
-            }
-            newSize = outliersRemoved.size();
-        }
+        imageData.sort(Comparator.naturalOrder());
         double lowerBound;
+        double upperBound;
         if (differenceImaging.isSelected()) {
-            lowerBound = outliersRemoved.get(0);
+            NumberPair limits = determineLimits(imageData, contrast / 10f, 100 - contrast / 10f);
+            lowerBound = limits.getX();
+            upperBound = limits.getY();
         } else {
-            double lowPercentile = brightness / 100f;
-            List<Double> minOutliersRemoved = removeOutliers(imageData, lowPercentile, 100);
-            lowerBound = minOutliersRemoved.get(0);
+            NumberPair limits = determineLimits(imageData, brightness, 1);
+            lowerBound = limits.getX();
+            limits = determineLimits(imageData, 1, 1);
+            double min = limits.getX();
+            double max = limits.getY();
+            double dev = max - min;
+            double med = determineMedian(imageData);
+            upperBound = med + ((100 - contrast) / 10f) * dev;
         }
-        double upperBound = outliersRemoved.get(outliersRemoved.size() - 1);
         return new NumberPair(lowerBound, upperBound);
+    }
+
+    public static NumberPair determineLimits(List<Double> values, double lowPercentile, double highPercentile) {
+        int size = values.size();
+        int half = size / 2;
+        int min = (int) (half * lowPercentile / 100);
+        int max = (int) (half * (100 - highPercentile) / 100);
+        return new NumberPair(values.get(min), values.get((size - 1) - max));
     }
 
     private boolean openNewCatalogSearch(double targetRa, double targetDec) {
@@ -4086,13 +4127,16 @@ public class ImageViewerTab {
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
         if (unwiseCutouts.isSelected()) {
-            imageViewerTab.resetEpochSlider(NUMBER_OF_UNWISE_EPOCHS);
             imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
             imageViewerTab.getWiseCoadds().setSelected(true);
         }
         if (desiCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDesiCutouts().setSelected(true);
+        }
+        if (ps1Cutouts.isSelected()) {
+            imageViewerTab.setPixelScale(PIXEL_SCALE_PS1);
+            imageViewerTab.getPs1Cutouts().setSelected(true);
         }
         imageViewerTab.getWiseBands().setSelectedItem(wiseBand);
         imageViewerTab.setQuadrantCount(quadrantCount);
@@ -5258,9 +5302,9 @@ public class ImageViewerTab {
         });
     }
 
-    private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color, int totalEpochs) {
+    private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color, double flipbookIndex) {  // flipbookIndex has to be a double!
         Graphics graphics = image.getGraphics();
-        catalogEntries.forEach(catalogEntry -> {
+        for (CatalogEntry catalogEntry : catalogEntries) {
             NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
@@ -5291,6 +5335,14 @@ public class ImageViewerTab {
             }
 
             if (showProperMotion.isSelected()) {
+                double flipbookSize = flipbook.size() - 1;
+                if (separateScanDirections.isSelected() && !skipIntermediateEpochs.isSelected()) {
+                    flipbookSize /= 2;
+                    if (flipbookIndex > flipbookSize) {
+                        flipbookIndex -= flipbookSize;
+                    }
+                }
+                double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISEVIEW_EPOCHS * 2;
                 NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
                 NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
                 Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
@@ -5304,7 +5356,7 @@ public class ImageViewerTab {
                 double fromX = fromPoint.getX();
                 double fromY = fromPoint.getY();
 
-                numberOfYears = selectedEpochs + 2; // +2 years -> hibernation period
+                numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
 
                 NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
                 double toRa = toCoords.getX();
@@ -5317,7 +5369,19 @@ public class ImageViewerTab {
                 Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
                 arrow.draw(graphics);
             }
-        });
+        }
+    }
+
+    private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears, double totalEpochs) {
+        NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec), new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
+        double fromRa = fromCoords.getX();
+        double fromDec = fromCoords.getY();
+
+        NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
+        double toRa = toCoords.getX();
+        double toDec = toCoords.getY();
+
+        return new NumberPair(toRa, toDec);
     }
 
     private void showPMInfo(List<CatalogEntry> catalogEntries, int x, int y, Color color) {
@@ -5537,7 +5601,7 @@ public class ImageViewerTab {
             });
 
             JButton createCcdButton = new JButton("WISE CCD");
-            buttonPanel.add(createCcdButton);
+            collectPanel.add(createCcdButton);
             createCcdButton.addActionListener((ActionEvent evt) -> {
                 try {
                     createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -5555,6 +5619,28 @@ public class ImageViewerTab {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createCcdButton.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
+            JButton createLcButton = new JButton("WISE LC");
+            collectPanel.add(createLcButton);
+            createLcButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    JFrame frame = new JFrame();
+                    frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    frame.setIconImage(getToolBoxImage());
+                    frame.setTitle("WISE light curves");
+                    frame.add(new WiseLcPanel(catalogEntry, baseFrame));
+                    frame.setSize(1000, 900);
+                    frame.setLocation(0, 0);
+                    frame.setAlwaysOnTop(false);
+                    frame.setResizable(true);
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, ex.getMessage());
+                } finally {
+                    createLcButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
@@ -5772,7 +5858,7 @@ public class ImageViewerTab {
     }
 
     private double getOverlaySize(int scale) {
-        double factor = desiCutouts.isSelected() ? 0.35 : 0.15;
+        double factor = desiCutouts.isSelected() || ps1Cutouts.isSelected() ? 0.35 : 0.15;
         double overlaySize = scale * factor * zoom * sqrt(size) / size;
         return max(5, min(overlaySize, 15));
     }
@@ -5823,6 +5909,10 @@ public class ImageViewerTab {
 
     public JRadioButton getDesiCutouts() {
         return desiCutouts;
+    }
+
+    public JRadioButton getPs1Cutouts() {
+        return ps1Cutouts;
     }
 
     public JCheckBox getSkipIntermediateEpochs() {

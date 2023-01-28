@@ -25,6 +25,7 @@ import astro.tool.box.panel.GaiaCmdPanel;
 import astro.tool.box.panel.ReferencesPanel;
 import astro.tool.box.panel.SedPanel;
 import astro.tool.box.panel.WdSedPanel;
+import astro.tool.box.panel.WiseLcPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.DustExtinctionService;
@@ -400,7 +401,7 @@ public class CatalogQueryTab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(new LineBorder(selectedEntry.getCatalogColor(), 3));
-        scrollPanel.setPreferredSize(new Dimension(675, BOTTOM_PANEL_HEIGHT));
+        scrollPanel.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
         bottomPanel.add(scrollPanel);
     }
 
@@ -409,7 +410,7 @@ public class CatalogQueryTab {
             JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
             container.setBorder(new LineBorder(selectedEntry.getCatalogColor(), 3));
-            container.setPreferredSize(new Dimension(550, BOTTOM_PANEL_HEIGHT));
+            container.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
 
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             if (!mainSequenceResults.isEmpty()) {
@@ -529,7 +530,7 @@ public class CatalogQueryTab {
             });
 
             JButton createSedButton = new JButton("SED");
-            collectPanel.add(createSedButton);
+            buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
@@ -546,7 +547,7 @@ public class CatalogQueryTab {
             });
 
             JButton createWdSedButton = new JButton("WD SED");
-            collectPanel.add(createWdSedButton);
+            buttonPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
@@ -563,7 +564,7 @@ public class CatalogQueryTab {
             });
 
             JButton createCcdButton = new JButton("WISE CCD");
-            buttonPanel.add(createCcdButton);
+            collectPanel.add(createCcdButton);
             createCcdButton.addActionListener((ActionEvent evt) -> {
                 try {
                     createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -581,6 +582,28 @@ public class CatalogQueryTab {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createCcdButton.setCursor(Cursor.getDefaultCursor());
+                }
+            });
+
+            JButton createLcButton = new JButton("WISE LC");
+            collectPanel.add(createLcButton);
+            createLcButton.addActionListener((ActionEvent evt) -> {
+                try {
+                    createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    JFrame frame = new JFrame();
+                    frame.addWindowListener(getChildWindowAdapter(baseFrame));
+                    frame.setIconImage(getToolBoxImage());
+                    frame.setTitle("WISE light curves");
+                    frame.add(new WiseLcPanel(catalogEntry, baseFrame));
+                    frame.setSize(1000, 900);
+                    frame.setLocation(0, 0);
+                    frame.setAlwaysOnTop(false);
+                    frame.setResizable(true);
+                    frame.setVisible(true);
+                } catch (Exception ex) {
+                    showErrorDialog(baseFrame, ex.getMessage());
+                } finally {
+                    createLcButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 

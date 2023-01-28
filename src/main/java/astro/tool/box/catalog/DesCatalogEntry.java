@@ -716,4 +716,24 @@ public class DesCatalogEntry implements CatalogEntry {
         return y_err;
     }
 
+    public int get_g_caut() {
+        return g_caut;
+    }
+
+    public int get_r_caut() {
+        return r_caut;
+    }
+
+    public int get_i_caut() {
+        return i_caut;
+    }
+
+    public int get_z_caut() {
+        return z_caut;
+    }
+
+    public int get_y_caut() {
+        return y_caut;
+    }
+
 }

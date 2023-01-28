@@ -33,6 +33,7 @@ import astro.tool.box.catalog.WhiteDwarf;
 import astro.tool.box.component.TranslucentLabel;
 import astro.tool.box.container.MjdEpoch;
 import astro.tool.box.container.NirImage;
+import astro.tool.box.container.Tiles;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.LookupResult;
 import astro.tool.box.enumeration.Alignment;
@@ -46,6 +47,11 @@ import astro.tool.box.service.DistanceLookupService;
 import astro.tool.box.service.NameResolverService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -131,13 +137,11 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.jfree.chart.JFreeChart;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "3.0.0";
+    public static final String PGM_VERSION = "3.1.0";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
@@ -831,16 +835,24 @@ public class ToolboxHelper {
         return null;
     }
 
+    public static Tiles getWiseTiles(double degRA, double degDE) throws IOException {
+        String url = String.format("http://byw.tools/tiles?ra=%f&dec=%f", degRA, degDE);
+        String response = readResponse(establishHttpConnection(url), "WiseView");
+        return new Gson().fromJson(response, Tiles.class);
+    }
+
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
         List<JLabel> subjects = new ArrayList();
         try {
             String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
             String response = readResponse(establishHttpConnection(url), "Zooniverse");
             if (!response.isEmpty()) {
-                JSONObject obj = new JSONObject(response);
-                JSONArray ids = obj.getJSONArray("ids");
-                for (Object id : ids) {
-                    subjects.add(createHyperlink(id.toString(), "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
+                JsonElement jelement = JsonParser.parseString​(response).getAsJsonObject();
+                JsonObject jobject = jelement.getAsJsonObject();
+                JsonArray jarray = jobject.getAsJsonArray("ids");
+                for (JsonElement element : jarray) {
+                    String id = element.getAsString();
+                    subjects.add(createHyperlink(id, "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
                 }
             }
         } catch (Exception ex) {
