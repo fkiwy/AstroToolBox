@@ -1,6 +1,4 @@
-# AstroToolBox
-
-AstroToolBox is a Java toolset for visualizing, identifying and classifying astronomical objects with a focus on low-mass stars and ultra-cool dwarfs.
+**AstroToolBox** is a Java toolset for visualizing, identifying and classifying astronomical objects with a focus on low-mass stars and ultra-cool dwarfs.
 
 It contains a catalog search for SIMBAD (measurements & references), AllWISE, CatWISE, unWISE, Gaia, NOIRLab Source Catalog (NSC), Pan-STARRS, SDSS, TESS Input Catalog, VISTA VHS, UKIDSS and 2MASS catalogs, plus a spectral type evaluation feature for main sequence stars including brown dwarfs. The spectral type evaluation is performed by applying the relations described in Pecaut & Mamajek (2013), Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019).
 
