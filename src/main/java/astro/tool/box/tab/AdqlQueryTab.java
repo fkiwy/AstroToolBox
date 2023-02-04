@@ -74,7 +74,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class AdqlQueryTab {
+public class AdqlQueryTab implements Tab {
 
     public static final String TAB_NAME = "ADQL Query";
     public static final String QUERY_SERVICE = "TAP service";
@@ -111,7 +111,8 @@ public class AdqlQueryTab {
         this.tabbedPane = tabbedPane;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             builder = factory.newDocumentBuilder();
@@ -548,7 +549,9 @@ public class AdqlQueryTab {
                 }
             });
 
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
@@ -825,8 +828,7 @@ public class AdqlQueryTab {
     private String doPost(String url, List<NameValuePair> params) throws UnsupportedEncodingException, IOException {
         HttpPost post = new HttpPost(url);
         post.setEntity(new UrlEncodedFormEntity(params));
-        try (CloseableHttpClient httpClient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpClient.execute(post)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(post)) {
             writeMessageLog(post.getURI().toString());
             writeMessageLog(params.toString());
             writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
@@ -836,8 +838,7 @@ public class AdqlQueryTab {
 
     private String doGet(String url) throws UnsupportedEncodingException, IOException {
         HttpGet get = new HttpGet(url);
-        try (CloseableHttpClient httpClient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpClient.execute(get)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(get)) {
             //writeMessageLog(get.getURI().toString());
             //writeMessageLog(response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             return EntityUtils.toString(response.getEntity());

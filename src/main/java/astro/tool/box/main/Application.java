@@ -1,7 +1,9 @@
 package astro.tool.box.main;
 
+import astro.tool.box.container.Couple;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Version;
+import astro.tool.box.enumeration.TabCode;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.ServiceHelper.*;
@@ -10,12 +12,14 @@ import astro.tool.box.tab.BatchQueryTab;
 import astro.tool.box.tab.CatalogQueryTab;
 import astro.tool.box.tab.CustomOverlaysTab;
 import astro.tool.box.tab.FileBrowserTab;
+import astro.tool.box.tab.FinderChartTab;
 import astro.tool.box.tab.ImageViewerTab;
 import astro.tool.box.tab.LookupTab;
 import astro.tool.box.tab.ObjectCollectionTab;
 import astro.tool.box.tab.PhotometricClassifierTab;
 import astro.tool.box.tab.SettingsTab;
 import astro.tool.box.tab.ImageSeriesTab;
+import astro.tool.box.tab.Tab;
 import astro.tool.box.tab.ToolTab;
 import astro.tool.box.tab.VizierCatalogsTab;
 import astro.tool.box.util.CSVParser;
@@ -24,7 +28,11 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -73,48 +81,66 @@ public class Application {
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         baseFrame.add(tabbedPane);
 
-        catalogQueryTab = new CatalogQueryTab(baseFrame, tabbedPane);
-        catalogQueryTab.init();
+        Map<String, Tab> tabs = new HashMap<>();
 
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
-        imageViewerTab.init();
+        imageViewerTab.init(true);
+
+        catalogQueryTab = new CatalogQueryTab(baseFrame, tabbedPane);
+        tabs.put(TabCode.CQ.name(), catalogQueryTab);
 
         ImageSeriesTab imageSeriesTab = new ImageSeriesTab(baseFrame, tabbedPane, imageViewerTab);
-        imageSeriesTab.init();
+        tabs.put(TabCode.IS.name(), imageSeriesTab);
 
-        //FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
-        //finderChartTab.init();
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        photoClassTab.init();
+        tabs.put(TabCode.PC.name(), photoClassTab);
 
         VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
-        vizierCatalogsTab.init();
+        tabs.put(TabCode.VC.name(), vizierCatalogsTab);
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane);
-        adqlQueryTab.init();
+        tabs.put(TabCode.AQ.name(), adqlQueryTab);
 
         BatchQueryTab batchQueryTab = new BatchQueryTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        batchQueryTab.init();
+        tabs.put(TabCode.BQ.name(), batchQueryTab);
 
-        FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, this, tabbedPane.getTabCount());
-        fileBrowserTab.init();
+        FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
+        tabs.put(TabCode.FB.name(), fileBrowserTab);
 
         ObjectCollectionTab objectCollectionTab = new ObjectCollectionTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        objectCollectionTab.init();
+        tabs.put(TabCode.OC.name(), objectCollectionTab);
 
         CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane, imageViewerTab);
-        customOverlaysTab.init();
+        tabs.put(TabCode.CO.name(), customOverlaysTab);
 
         ToolTab toolTab = new ToolTab(baseFrame, tabbedPane);
-        toolTab.init();
+        tabs.put(TabCode.TO.name(), toolTab);
 
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
-        lookupTab.init();
+        tabs.put(TabCode.LO.name(), lookupTab);
 
         SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
-        settingsTab.init();
+        tabs.put(TabCode.SE.name(), settingsTab);
+        //
+        // =====================================================================
+        // Add new tabs here
+        // =====================================================================
+        //FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
+        //tabs.put(TabCode.FC.name(), finderChartTab);
+        //
+        String tabOrder = getUserSetting(TAB_ORDER, getDefaultTabOrder());
+        String[] orders = tabOrder.split(",", -1);
 
-        tabbedPane.setSelectedIndex(1);
+        List<Couple<String, Integer>> orderList = new ArrayList();
+        for (String order : orders) {
+            String[] parts = order.split(":");
+            orderList.add(new Couple(parts[0], Integer.valueOf(parts[1])));
+        }
+        orderList.sort(Comparator.comparing(c -> c.getB()));
+
+        for (Couple<String, Integer> couple : orderList) {
+            tabs.get(couple.getA()).init(couple.getB() > 0);
+        }
 
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);
@@ -135,10 +161,10 @@ public class Application {
                         String[] values = CSVParser.parseLine(scanner.nextLine());
                         Version version = new Version(
                                 values[0],
-                                Boolean.valueOf(values[1]),
-                                Integer.valueOf(values[2]),
-                                Integer.valueOf(values[3]),
-                                Integer.valueOf(values[4]),
+                                Boolean.parseBoolean(values[1]),
+                                Integer.parseInt(values[2]),
+                                Integer.parseInt(values[3]),
+                                Integer.parseInt(values[4]),
                                 values[5]
                         );
                         if (version.isLatest()) {

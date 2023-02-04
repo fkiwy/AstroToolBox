@@ -37,7 +37,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-public class ObjectCollectionTab {
+public class ObjectCollectionTab implements Tab {
 
     public static final String TAB_NAME = "Object Collection";
 
@@ -65,7 +65,8 @@ public class ObjectCollectionTab {
         objectCollectionSorter.setSortsOnUpdates(true);
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -217,7 +218,9 @@ public class ObjectCollectionTab {
                 }
             });
 
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

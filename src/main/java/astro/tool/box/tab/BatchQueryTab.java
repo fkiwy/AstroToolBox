@@ -59,7 +59,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 
-public class BatchQueryTab {
+public class BatchQueryTab implements Tab {
 
     public static final String TAB_NAME = "Batch Search";
     private static final int MAX_SEARCH_RADIUS = 10;
@@ -103,7 +103,8 @@ public class BatchQueryTab {
         catalogQueryService = new CatalogQueryService();
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -308,7 +309,9 @@ public class BatchQueryTab {
                 }
             });
 
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

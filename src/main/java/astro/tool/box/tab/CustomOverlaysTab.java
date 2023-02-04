@@ -37,9 +37,9 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 
-public class CustomOverlaysTab {
+public class CustomOverlaysTab implements Tab {
 
-    private static final String TAB_NAME = "Custom Overlays";
+    public static final String TAB_NAME = "Custom Overlays";
     private static final String OVERLAYS_FILE_NAME = "/AstroToolBoxOverlays.txt";
     private static final String OVERLAYS_PATH = USER_HOME + OVERLAYS_FILE_NAME;
 
@@ -57,7 +57,8 @@ public class CustomOverlaysTab {
         this.imageViewerTab = imageViewerTab;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             try (Scanner scanner = new Scanner(new File(OVERLAYS_PATH))) {
                 while (scanner.hasNextLine()) {
@@ -79,7 +80,10 @@ public class CustomOverlaysTab {
             });
 
             JPanel container = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, container);
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, container);
+            }
 
             JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             container.add(topPanel, BorderLayout.PAGE_START);

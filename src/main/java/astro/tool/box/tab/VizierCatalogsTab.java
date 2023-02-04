@@ -35,9 +35,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 
-public class VizierCatalogsTab {
+public class VizierCatalogsTab implements Tab {
 
-    private static final String TAB_NAME = "VizieR Catalogs";
+    public static final String TAB_NAME = "VizieR Catalogs";
     private static final Font MONO_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
     private final JFrame baseFrame;
@@ -78,10 +78,14 @@ public class VizierCatalogsTab {
         this.tabbedPane = tabbedPane;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             mainPanel = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, mainPanel);
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, mainPanel);
+            }
 
             JPanel layout = new JPanel(new GridLayout(2, 1));
             mainPanel.add(layout, BorderLayout.PAGE_START);

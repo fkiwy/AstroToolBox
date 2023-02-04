@@ -72,7 +72,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class CatalogQueryTab {
+public class CatalogQueryTab implements Tab {
 
     public static final String TAB_NAME = "Catalog Search";
 
@@ -132,10 +132,14 @@ public class CatalogQueryTab {
         }
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             mainPanel = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            }
 
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             topPanel.setPreferredSize(new Dimension(1000, 60));

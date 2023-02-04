@@ -27,7 +27,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-public class LookupTab {
+public class LookupTab implements Tab {
 
     public static final String TAB_NAME = "Photometric Relations";
 
@@ -42,7 +42,8 @@ public class LookupTab {
         this.tabbedPane = tabbedPane;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -80,7 +81,9 @@ public class LookupTab {
             });
             lookupTables.setSelectedItem(LookupTable.MAIN_SEQUENCE);
 
-            tabbedPane.addTab(TAB_NAME, mainPanel);
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, mainPanel);
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

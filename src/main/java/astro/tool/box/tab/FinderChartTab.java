@@ -65,9 +65,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class FinderChartTab {
+public class FinderChartTab implements Tab {
 
-    private static final String TAB_NAME = "Finder Chart";
+    public static final String TAB_NAME = "Finder Chart";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -117,10 +117,13 @@ public class FinderChartTab {
         catalogQueryService = new CatalogQueryService();
     }
 
-    public void init() {
+    public void init(boolean visible) {
         try {
             mainPanel = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, mainPanel);
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, mainPanel);
+            }
 
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
@@ -340,7 +343,7 @@ public class FinderChartTab {
                                             } else if (label.contains(UkidssCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, ukidssEntry);
                                             }
-                                            tabbedPane.setSelectedIndex(1);
+                                            tabbedPane.setSelectedIndex(0);
                                         }
                                     });
                                     TableColumnModel columnModel = resultTable.getColumnModel();
@@ -816,7 +819,7 @@ public class FinderChartTab {
             bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
             for (int i = 0; i < flipbook.size(); i++) {
-            FlipbookComponent component = flipbook.get(i);
+                FlipbookComponent component = flipbook.get(i);
                 image = imageViewerTab.processImage(component, i);
                 bandPanel.add(buildImagePanel(image, component.getTitle()));
                 wiseImages.add(new Couple(component.getTitle(), image));
@@ -943,7 +946,7 @@ public class FinderChartTab {
                 }).findFirst().get();
                 if (selected != null) {
                     activateSelectedCatalogOverlay(imageViewerTab, selected);
-                    tabbedPane.setSelectedIndex(1);
+                    tabbedPane.setSelectedIndex(0);
                 }
             }
         });

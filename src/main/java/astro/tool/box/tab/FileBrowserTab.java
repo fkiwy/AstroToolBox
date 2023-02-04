@@ -3,7 +3,6 @@ package astro.tool.box.tab;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
-import astro.tool.box.main.Application;
 import astro.tool.box.util.FileTypeFilter;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -34,7 +33,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-public class FileBrowserTab {
+public class FileBrowserTab implements Tab {
 
     public static final String TAB_NAME = "File Browser";
 
@@ -42,8 +41,6 @@ public class FileBrowserTab {
     private final JTabbedPane tabbedPane;
     private final CatalogQueryTab catalogQueryTab;
     private final ImageViewerTab imageViewerTab;
-    private final Application application;
-    private final int tabIndex;
 
     private JPanel centerPanel;
     private JTable resultTable;
@@ -55,16 +52,15 @@ public class FileBrowserTab {
     private int raColumnIndex;
     private int decColumnIndex;
 
-    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab, Application application, int tabIndex) {
+    public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab, ImageViewerTab imageViewerTab) {
         this.baseFrame = baseFrame;
         this.tabbedPane = tabbedPane;
         this.catalogQueryTab = catalogQueryTab;
         this.imageViewerTab = imageViewerTab;
-        this.application = application;
-        this.tabIndex = tabIndex;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -162,14 +158,6 @@ public class FileBrowserTab {
                 }
             });
 
-            JButton openButton = new JButton("Open new File Browser");
-            topPanel.add(openButton);
-            openButton.addActionListener((ActionEvent evt) -> {
-                FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, application, tabIndex + 1);
-                fileBrowserTab.init();
-                tabbedPane.setSelectedIndex(tabIndex + 1);
-            });
-
             topPanel.add(topPanelMessage);
 
             JButton addButton = new JButton("Add row");
@@ -220,7 +208,9 @@ public class FileBrowserTab {
                 }
             });
 
-            tabbedPane.insertTab(TAB_NAME, null, new JScrollPane(mainPanel), null, tabIndex);
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

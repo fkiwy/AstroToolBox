@@ -19,9 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
-public class ToolTab {
+public class ToolTab implements Tab {
 
-    private static final String TAB_NAME = "Calculators & Converters";
+    public static final String TAB_NAME = "Calculators & Converters";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -31,7 +31,8 @@ public class ToolTab {
         this.tabbedPane = tabbedPane;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel toolPanel = new JPanel(new GridLayout(4, 3));
             AngularDistanceTool angularDistanceTool = new AngularDistanceTool(baseFrame, toolPanel);
@@ -58,7 +59,10 @@ public class ToolTab {
             coordsConverterTool.init();
             DateConverterTool dateConverterTool = new DateConverterTool(baseFrame, toolPanel);
             dateConverterTool.init();
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(toolPanel));
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(toolPanel));
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }

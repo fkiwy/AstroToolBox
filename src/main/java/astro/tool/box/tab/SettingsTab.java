@@ -4,8 +4,10 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
+import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
+import astro.tool.box.main.Application;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
@@ -24,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,10 +48,11 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
-public class SettingsTab {
+public class SettingsTab implements Tab {
 
     public static final String TAB_NAME = "Settings";
     public static final String COMMENTS = "User settings";
+    public static final String RESTART_LABEL = "Restarts after pushing 'Apply settings'";
     public static final String PROP_FILE_NAME = "/AstroToolBox.properties";
     public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     public static final Properties USER_SETTINGS = new Properties();
@@ -131,8 +135,12 @@ public class SettingsTab {
     // Catalogs
     private static final String CATALOGS = "catalogs";
     private List<String> selectedCatalogs;
-
     private JPanel catalogPanel;
+
+    // Tab order
+    public static final String TAB_ORDER = "tabOrder";
+    private JPanel tabOrderPanel;
+
     private ActionListener actionListener;
     private JComboBox wiseBandsBox;
 
@@ -144,7 +152,8 @@ public class SettingsTab {
         this.batchQueryTab = batchQueryTab;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel settingsPanel = new JPanel(new BorderLayout());
 
@@ -224,7 +233,7 @@ public class SettingsTab {
             globalSettings.add(useSimbadMirrorCheckBox);
 
             globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", JLabel.RIGHT));
-            JCheckBox photometricErrorsBox = new JCheckBox("Needs a restart after 'Apply settings'");
+            JCheckBox photometricErrorsBox = new JCheckBox(html("<span color='red'>" + RESTART_LABEL + "</span>"));
             photometricErrorsBox.setSelected(photometricErrors);
             globalSettings.add(photometricErrorsBox);
 
@@ -403,9 +412,9 @@ public class SettingsTab {
             containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.CENTER);
 
-            JPanel gridPanel = new JPanel(new GridLayout(2, 1));
+            JPanel gridPanel = new JPanel(new GridLayout(3, 1));
             containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1235, 160));
+            gridPanel.setPreferredSize(new Dimension(1235, 240));
 
             // Catalogs
             catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -420,11 +429,42 @@ public class SettingsTab {
             setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
             setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
 
-            JCheckBox checkbox;
             for (String catalogKey : catalogInstances.keySet()) {
-                checkbox = new JCheckBox(catalogKey);
+                JCheckBox checkbox = new JCheckBox(catalogKey);
                 checkbox.setSelected(selectedCatalogs.contains(catalogKey));
                 catalogPanel.add(checkbox);
+            }
+
+            // Tab order
+            tabOrderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            tabOrderPanel.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(),
+                    html("Tab order (set order to 0 to hide a tab) <span color='red'>" + RESTART_LABEL + "</span>"),
+                    TitledBorder.LEFT, TitledBorder.TOP
+            ));
+            gridPanel.add(tabOrderPanel);
+
+            String tabOrder = USER_SETTINGS.getProperty(TAB_ORDER, getDefaultTabOrder());
+            String[] orders = tabOrder.split(",", -1);
+
+            Map<String, String> orderMap = new HashMap();
+            for (String order : orders) {
+                String[] parts = order.split(":");
+                orderMap.put(parts[0], parts[1]);
+            }
+
+            int length = TabCode.values().length + 1;
+            String[] orderValues = new String[length];
+            for (int i = 0; i < length; i++) {
+                orderValues[i] = String.valueOf(i);
+            }
+
+            for (TabCode tabCode : TabCode.values()) {
+                tabOrderPanel.add(new JLabel(tabCode.val + ":"));
+                JComboBox tabOrderCombo = new JComboBox(orderValues);
+                tabOrderCombo.setSelectedItem(orderMap.get(tabCode.name()));
+                tabOrderCombo.setName(tabCode.name());
+                tabOrderPanel.add(tabOrderCombo);
             }
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -582,9 +622,30 @@ public class SettingsTab {
                 String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
+                // Tab order
+                List<String> orderList = new ArrayList<>();
+                for (Component component : tabOrderPanel.getComponents()) {
+                    if (component instanceof JComboBox) {
+                        JComboBox tabOrderCombo = (JComboBox) component;
+                        String name = tabOrderCombo.getName();
+                        String text = (String) tabOrderCombo.getSelectedItem();
+                        if (name.equals(TabCode.SE.name()) && text.equals("0")) {
+                            text = (String) tabOrderCombo.getItemAt(tabOrderCombo.getItemCount() - 1);
+                        }
+                        orderList.add(name + ":" + text);
+                    }
+                }
+
+                String newTabOrder = orderList.stream().collect(Collectors.joining(","));
+                USER_SETTINGS.setProperty(TAB_ORDER, newTabOrder);
+
                 saveSettings();
                 message.setText("Settings applied!");
                 timer.restart();
+
+                if (!tabOrder.equals(newTabOrder)) {
+                    restartApplication();
+                }
             });
 
             buttonPanel.add(message);
@@ -679,11 +740,27 @@ public class SettingsTab {
         return Arrays.asList(catalogs.split(","));
     }
 
+    public static String getDefaultTabOrder() {
+        StringBuilder defaultTabOrder = new StringBuilder();
+        int i = 1;
+        for (TabCode tabCode : TabCode.values()) {
+            defaultTabOrder.append(tabCode.name()).append(":").append(i++).append(",");
+        }
+        return defaultTabOrder.deleteCharAt(defaultTabOrder.length() - 1).toString();
+    }
+
     public static void saveSettings() {
         try (OutputStream output = new FileOutputStream(PROP_PATH)) {
             USER_SETTINGS.store(output, COMMENTS);
         } catch (IOException ex) {
         }
+    }
+
+    private void restartApplication() {
+        Application application = new Application();
+        application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        application.init();
+        baseFrame.setVisible(false);
     }
 
 }
