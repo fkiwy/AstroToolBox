@@ -3,6 +3,10 @@
 
 @import "{{ site.theme }}";
 
+#banner {
+  margin-right:-200px;
+}
+
 .wrapper {
   width:850px;
 }
@@ -12,9 +16,9 @@ section {
 }
 
 nav {
-  margin-left:-700px;
+  margin-left:-720px;
 }
 
 footer {
-  margin-left:-700px;
+  display: none;
 }
