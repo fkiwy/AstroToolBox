@@ -7,5 +7,5 @@ plugins:
 - jekyll-remote-theme
 show_downloads: true
 github:
-  zip_url: https://fkiwy.github.io/AstroToolBox/releases/executables
-  tar_url: https://fkiwy.github.io/AstroToolBox/releases/executables
+  zip_url: https://github.com/fkiwy/AstroToolBox/tree/master/releases/executables
+  tar_url: https://github.com/fkiwy/AstroToolBox/tree/master/releases/executables
