@@ -8,4 +8,3 @@ plugins:
 show_downloads: true
 github:
   zip_url: https://github.com/fkiwy/AstroToolBox/tree/master/releases/executables
-  tar_url: https://github.com/fkiwy/AstroToolBox/tree/master/releases/executables
