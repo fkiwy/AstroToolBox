@@ -3,5 +3,6 @@
 # - jekyll-remote-theme
 
 remote_theme: pages-themes/leap-day@v0.2.0
+show_downloads: true
 plugins:
 - jekyll-remote-theme
