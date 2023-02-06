@@ -414,10 +414,10 @@ public class SettingsTab implements Tab {
 
             JPanel gridPanel = new JPanel(new GridLayout(3, 1));
             containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1235, 240));
+            gridPanel.setPreferredSize(new Dimension(1235, 300));
 
             // Catalogs
-            catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            catalogPanel = new JPanel(new GridLayout(3, 5));
             catalogPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
             ));
@@ -436,7 +436,7 @@ public class SettingsTab implements Tab {
             }
 
             // Tab order
-            tabOrderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            tabOrderPanel = new JPanel(new GridLayout(3, 4));
             tabOrderPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(),
                     html("Tab order (set order to 0 to hide a tab) <span color='red'>" + RESTART_LABEL + "</span>"),
@@ -460,7 +460,7 @@ public class SettingsTab implements Tab {
             }
 
             for (TabCode tabCode : TabCode.values()) {
-                tabOrderPanel.add(new JLabel(tabCode.val + ":"));
+                tabOrderPanel.add(new JLabel(tabCode.val + ":", JLabel.RIGHT));
                 JComboBox tabOrderCombo = new JComboBox(orderValues);
                 tabOrderCombo.setSelectedItem(orderMap.get(tabCode.name()));
                 tabOrderCombo.setName(tabCode.name());
