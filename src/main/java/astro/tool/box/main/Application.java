@@ -1,6 +1,5 @@
 package astro.tool.box.main;
 
-import astro.tool.box.container.Couple;
 import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Version;
 import astro.tool.box.enumeration.TabCode;
@@ -12,7 +11,6 @@ import astro.tool.box.tab.BatchQueryTab;
 import astro.tool.box.tab.CatalogQueryTab;
 import astro.tool.box.tab.CustomOverlaysTab;
 import astro.tool.box.tab.FileBrowserTab;
-import astro.tool.box.tab.FinderChartTab;
 import astro.tool.box.tab.ImageViewerTab;
 import astro.tool.box.tab.LookupTab;
 import astro.tool.box.tab.ObjectCollectionTab;
@@ -28,8 +26,6 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,60 +83,54 @@ public class Application {
         imageViewerTab.init(true);
 
         catalogQueryTab = new CatalogQueryTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.CQ.name(), catalogQueryTab);
+        tabs.put(TabCode.CQ.val, catalogQueryTab);
 
         ImageSeriesTab imageSeriesTab = new ImageSeriesTab(baseFrame, tabbedPane, imageViewerTab);
-        tabs.put(TabCode.IS.name(), imageSeriesTab);
+        tabs.put(TabCode.IS.val, imageSeriesTab);
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.PC.name(), photoClassTab);
+        tabs.put(TabCode.PC.val, photoClassTab);
 
         VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.VC.name(), vizierCatalogsTab);
+        tabs.put(TabCode.VC.val, vizierCatalogsTab);
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.AQ.name(), adqlQueryTab);
+        tabs.put(TabCode.AQ.val, adqlQueryTab);
 
         BatchQueryTab batchQueryTab = new BatchQueryTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.BQ.name(), batchQueryTab);
+        tabs.put(TabCode.BQ.val, batchQueryTab);
 
         FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.FB.name(), fileBrowserTab);
+        tabs.put(TabCode.FB.val, fileBrowserTab);
 
         ObjectCollectionTab objectCollectionTab = new ObjectCollectionTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.OC.name(), objectCollectionTab);
+        tabs.put(TabCode.OC.val, objectCollectionTab);
 
         CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane, imageViewerTab);
-        tabs.put(TabCode.CO.name(), customOverlaysTab);
+        tabs.put(TabCode.CO.val, customOverlaysTab);
 
         ToolTab toolTab = new ToolTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.TO.name(), toolTab);
+        tabs.put(TabCode.TO.val, toolTab);
 
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.LO.name(), lookupTab);
+        tabs.put(TabCode.LO.val, lookupTab);
+
+        String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+        for (String sourceTab : sourceTabs.split(",", -1)) {
+            if (!sourceTab.isEmpty()) {
+                tabs.get(sourceTab).init(false);
+            }
+        }
+
+        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, String.join(",", TabCode.getTabLabels()));
+        for (String destTab : destTabs.split(",", -1)) {
+            if (!destTab.isEmpty()) {
+                tabs.get(destTab).init(true);
+            }
+        }
 
         SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab, batchQueryTab);
-        tabs.put(TabCode.SE.name(), settingsTab);
-        //
-        // =====================================================================
-        // Add new tabs here
-        // =====================================================================
-        //FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
-        //tabs.put(TabCode.FC.name(), finderChartTab);
-        //
-        String tabOrder = getUserSetting(TAB_ORDER, getDefaultTabOrder());
-        String[] orders = tabOrder.split(",", -1);
-
-        List<Couple<String, Integer>> orderList = new ArrayList();
-        for (String order : orders) {
-            String[] parts = order.split(":");
-            orderList.add(new Couple(parts[0], Integer.valueOf(parts[1])));
-        }
-        orderList.sort(Comparator.comparing(c -> c.getB()));
-
-        for (Couple<String, Integer> couple : orderList) {
-            tabs.get(couple.getA()).init(couple.getB() > 0);
-        }
+        settingsTab.init(true);
 
         baseFrame.setLocationRelativeTo(null);
         baseFrame.setVisible(true);

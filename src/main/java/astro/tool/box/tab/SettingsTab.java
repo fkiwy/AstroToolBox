@@ -8,6 +8,7 @@ import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.main.Application;
+import astro.tool.box.panel.DualListBox;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
@@ -26,7 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -137,9 +138,9 @@ public class SettingsTab implements Tab {
     private List<String> selectedCatalogs;
     private JPanel catalogPanel;
 
-    // Tab order
-    public static final String TAB_ORDER = "tabOrder";
-    private JPanel tabOrderPanel;
+    // Tabs
+    public static final String SOURCE_TABS = "sourceTabs";
+    public static final String DEST_TABS = "destTabs";
 
     private ActionListener actionListener;
     private JComboBox wiseBandsBox;
@@ -435,37 +436,18 @@ public class SettingsTab implements Tab {
                 catalogPanel.add(checkbox);
             }
 
-            // Tab order
-            tabOrderPanel = new JPanel(new GridLayout(3, 4));
-            tabOrderPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(),
-                    html("Tab order (set order to 0 to hide a tab) <span color='red'>" + RESTART_LABEL + "</span>"),
-                    TitledBorder.LEFT, TitledBorder.TOP
-            ));
-            gridPanel.add(tabOrderPanel);
+            // Tabs
+            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            settingsPanel.add(containerPanel, BorderLayout.PAGE_END);
 
-            String tabOrder = USER_SETTINGS.getProperty(TAB_ORDER, getDefaultTabOrder());
-            String[] orders = tabOrder.split(",", -1);
+            String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+            String destTabs = USER_SETTINGS.getProperty(DEST_TABS, String.join(",", TabCode.getTabLabels()));
 
-            Map<String, String> orderMap = new HashMap();
-            for (String order : orders) {
-                String[] parts = order.split(":");
-                orderMap.put(parts[0], parts[1]);
-            }
-
-            int length = TabCode.values().length + 1;
-            String[] orderValues = new String[length];
-            for (int i = 0; i < length; i++) {
-                orderValues[i] = String.valueOf(i);
-            }
-
-            for (TabCode tabCode : TabCode.values()) {
-                tabOrderPanel.add(new JLabel(tabCode.val + ":", JLabel.RIGHT));
-                JComboBox tabOrderCombo = new JComboBox(orderValues);
-                tabOrderCombo.setSelectedItem(orderMap.get(tabCode.name()));
-                tabOrderCombo.setName(tabCode.name());
-                tabOrderPanel.add(tabOrderCombo);
-            }
+            DualListBox dualListBox = new DualListBox();
+            dualListBox.addSourceElements(Arrays.asList(sourceTabs.split(",", -1)));
+            dualListBox.addDestinationElements(Arrays.asList(destTabs.split(",", -1)));
+            dualListBox.setPreferredSize(new Dimension(500, 250));
+            containerPanel.add(dualListBox);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             gridPanel.add(buttonPanel);
@@ -622,28 +604,18 @@ public class SettingsTab implements Tab {
                 String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
-                // Tab order
-                List<String> orderList = new ArrayList<>();
-                for (Component component : tabOrderPanel.getComponents()) {
-                    if (component instanceof JComboBox) {
-                        JComboBox tabOrderCombo = (JComboBox) component;
-                        String name = tabOrderCombo.getName();
-                        String text = (String) tabOrderCombo.getSelectedItem();
-                        if (name.equals(TabCode.SE.name()) && text.equals("0")) {
-                            text = (String) tabOrderCombo.getItemAt(tabOrderCombo.getItemCount() - 1);
-                        }
-                        orderList.add(name + ":" + text);
-                    }
-                }
+                // Tabs
+                String sourceElements = dualListBox.getSourceElements().stream().collect(Collectors.joining(","));
+                String destElements = dualListBox.getDestinationElements().stream().collect(Collectors.joining(","));
 
-                String newTabOrder = orderList.stream().collect(Collectors.joining(","));
-                USER_SETTINGS.setProperty(TAB_ORDER, newTabOrder);
+                USER_SETTINGS.setProperty(SOURCE_TABS, sourceElements);
+                USER_SETTINGS.setProperty(DEST_TABS, destElements);
 
                 saveSettings();
                 message.setText("Settings applied!");
                 timer.restart();
 
-                if (!tabOrder.equals(newTabOrder)) {
+                if (!destTabs.equals(destElements)) {
                     restartApplication();
                 }
             });
