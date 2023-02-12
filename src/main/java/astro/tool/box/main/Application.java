@@ -116,16 +116,32 @@ public class Application {
         tabs.put(TabCode.LO.name(), lookupTab);
 
         String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
+
+        /* Add a new tab
+        FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
+        tabs.put(TabCode.FC.name(), finderChartTab);
+
+        String newTabCode = TabCode.FC.name();
+        if (!sourceTabs.concat(destTabs).contains(newTabCode)) {
+            destTabs += "," + newTabCode;
+            USER_SETTINGS.setProperty(DEST_TABS, destTabs);
+        }*/
         for (String sourceTab : sourceTabs.split(",", -1)) {
             if (!sourceTab.isEmpty()) {
-                tabs.get(sourceTab).init(false);
+                Tab tab = tabs.get(sourceTab);
+                if (tab != null) {
+                    tab.init(false);
+                }
             }
         }
 
-        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
         for (String destTab : destTabs.split(",", -1)) {
             if (!destTab.isEmpty()) {
-                tabs.get(destTab).init(true);
+                Tab tab = tabs.get(destTab);
+                if (tab != null) {
+                    tab.init(true);
+                }
             }
         }
 

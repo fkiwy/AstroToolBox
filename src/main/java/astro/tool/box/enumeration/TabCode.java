@@ -71,7 +71,10 @@ public enum TabCode {
         }
         List<String> tabLabels = new ArrayList();
         for (String tabCode : Arrays.asList(tabCodes.split(",", -1))) {
-            tabLabels.add(getTabLabel(tabCode));
+            String tabLabel = getTabLabel(tabCode);
+            if (tabLabel != null) {
+                tabLabels.add(tabLabel);
+            }
         }
         return tabLabels;
     }
@@ -82,7 +85,10 @@ public enum TabCode {
         }
         List<String> tabCodes = new ArrayList();
         for (String tabLabel : tabLabels) {
-            tabCodes.add(getTabCode(tabLabel));
+            String tabCode = getTabCode(tabLabel);
+            if (tabCode != null) {
+                tabCodes.add(tabCode);
+            }
         }
         return tabCodes.stream().collect(Collectors.joining(","));
     }

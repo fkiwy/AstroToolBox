@@ -117,6 +117,7 @@ public class FinderChartTab implements Tab {
         catalogQueryService = new CatalogQueryService();
     }
 
+    @Override
     public void init(boolean visible) {
         try {
             mainPanel = new JPanel(new BorderLayout());
