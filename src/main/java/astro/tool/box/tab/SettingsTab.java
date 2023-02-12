@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -441,11 +440,11 @@ public class SettingsTab implements Tab {
             settingsPanel.add(containerPanel, BorderLayout.PAGE_END);
 
             String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
-            String destTabs = USER_SETTINGS.getProperty(DEST_TABS, String.join(",", TabCode.getTabLabels()));
+            String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
 
             DualListBox dualListBox = new DualListBox();
-            dualListBox.addSourceElements(Arrays.asList(sourceTabs.split(",", -1)));
-            dualListBox.addDestinationElements(Arrays.asList(destTabs.split(",", -1)));
+            dualListBox.addSourceElements(TabCode.convertTabCodeToLabel(sourceTabs));
+            dualListBox.addDestinationElements(TabCode.convertTabCodeToLabel(destTabs));
             dualListBox.setPreferredSize(new Dimension(500, 250));
             containerPanel.add(dualListBox);
 
@@ -605,8 +604,8 @@ public class SettingsTab implements Tab {
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
                 // Tabs
-                String sourceElements = dualListBox.getSourceElements().stream().collect(Collectors.joining(","));
-                String destElements = dualListBox.getDestinationElements().stream().collect(Collectors.joining(","));
+                String sourceElements = TabCode.convertTabLabelToCode(dualListBox.getSourceElements());
+                String destElements = TabCode.convertTabLabelToCode(dualListBox.getDestinationElements());
 
                 USER_SETTINGS.setProperty(SOURCE_TABS, sourceElements);
                 USER_SETTINGS.setProperty(DEST_TABS, destElements);
@@ -710,15 +709,6 @@ public class SettingsTab implements Tab {
         String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
         String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
         return Arrays.asList(catalogs.split(","));
-    }
-
-    public static String getDefaultTabOrder() {
-        StringBuilder defaultTabOrder = new StringBuilder();
-        int i = 1;
-        for (TabCode tabCode : TabCode.values()) {
-            defaultTabOrder.append(tabCode.name()).append(":").append(i++).append(",");
-        }
-        return defaultTabOrder.deleteCharAt(defaultTabOrder.length() - 1).toString();
     }
 
     public static void saveSettings() {

@@ -83,37 +83,37 @@ public class Application {
         imageViewerTab.init(true);
 
         catalogQueryTab = new CatalogQueryTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.CQ.val, catalogQueryTab);
+        tabs.put(TabCode.CQ.name(), catalogQueryTab);
 
         ImageSeriesTab imageSeriesTab = new ImageSeriesTab(baseFrame, tabbedPane, imageViewerTab);
-        tabs.put(TabCode.IS.val, imageSeriesTab);
+        tabs.put(TabCode.IS.name(), imageSeriesTab);
 
         PhotometricClassifierTab photoClassTab = new PhotometricClassifierTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.PC.val, photoClassTab);
+        tabs.put(TabCode.PC.name(), photoClassTab);
 
         VizierCatalogsTab vizierCatalogsTab = new VizierCatalogsTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.VC.val, vizierCatalogsTab);
+        tabs.put(TabCode.VC.name(), vizierCatalogsTab);
 
         AdqlQueryTab adqlQueryTab = new AdqlQueryTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.AQ.val, adqlQueryTab);
+        tabs.put(TabCode.AQ.name(), adqlQueryTab);
 
         BatchQueryTab batchQueryTab = new BatchQueryTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.BQ.val, batchQueryTab);
+        tabs.put(TabCode.BQ.name(), batchQueryTab);
 
         FileBrowserTab fileBrowserTab = new FileBrowserTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.FB.val, fileBrowserTab);
+        tabs.put(TabCode.FB.name(), fileBrowserTab);
 
         ObjectCollectionTab objectCollectionTab = new ObjectCollectionTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab);
-        tabs.put(TabCode.OC.val, objectCollectionTab);
+        tabs.put(TabCode.OC.name(), objectCollectionTab);
 
         CustomOverlaysTab customOverlaysTab = new CustomOverlaysTab(baseFrame, tabbedPane, imageViewerTab);
-        tabs.put(TabCode.CO.val, customOverlaysTab);
+        tabs.put(TabCode.CO.name(), customOverlaysTab);
 
         ToolTab toolTab = new ToolTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.TO.val, toolTab);
+        tabs.put(TabCode.TO.name(), toolTab);
 
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
-        tabs.put(TabCode.LO.val, lookupTab);
+        tabs.put(TabCode.LO.name(), lookupTab);
 
         String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
         for (String sourceTab : sourceTabs.split(",", -1)) {
@@ -122,7 +122,7 @@ public class Application {
             }
         }
 
-        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, String.join(",", TabCode.getTabLabels()));
+        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
         for (String destTab : destTabs.split(",", -1)) {
             if (!destTab.isEmpty()) {
                 tabs.get(destTab).init(true);

@@ -13,7 +13,12 @@ import astro.tool.box.tab.PhotometricClassifierTab;
 import astro.tool.box.tab.ToolTab;
 import astro.tool.box.tab.VizierCatalogsTab;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public enum TabCode {
 
@@ -36,12 +41,58 @@ public enum TabCode {
         this.val = val;
     }
 
-    public static List<String> getTabLabels() {
-        List tabLabels = new ArrayList();
+    private static final Map<String, String> TAB_CODES = new HashMap();
+
+    static {
         for (TabCode tabCode : values()) {
-            tabLabels.add(tabCode.val);
+            TAB_CODES.put(tabCode.name(), tabCode.val);
+        }
+    }
+
+    private static String getTabLabel(String tabCode) {
+        return TAB_CODES.get(tabCode);
+    }
+
+    private static final Map<String, String> TAB_LABELS = new HashMap();
+
+    static {
+        for (TabCode tabCode : values()) {
+            TAB_LABELS.put(tabCode.val, tabCode.name());
+        }
+    }
+
+    private static String getTabCode(String tabLabel) {
+        return TAB_LABELS.get(tabLabel);
+    }
+
+    public static List<String> convertTabCodeToLabel(String tabCodes) {
+        if (tabCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> tabLabels = new ArrayList();
+        for (String tabCode : Arrays.asList(tabCodes.split(",", -1))) {
+            tabLabels.add(getTabLabel(tabCode));
         }
         return tabLabels;
+    }
+
+    public static String convertTabLabelToCode(List<String> tabLabels) {
+        if (tabLabels.isEmpty()) {
+            return "";
+        }
+        List<String> tabCodes = new ArrayList();
+        for (String tabLabel : tabLabels) {
+            tabCodes.add(getTabCode(tabLabel));
+        }
+        return tabCodes.stream().collect(Collectors.joining(","));
+    }
+
+    public static String getTabCodes() {
+        List<String> tabCodes = new ArrayList();
+        for (TabCode tabCode : values()) {
+            tabCodes.add(tabCode.name());
+        }
+        return tabCodes.stream().collect(Collectors.joining(","));
     }
 
 }
