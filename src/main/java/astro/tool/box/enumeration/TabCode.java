@@ -101,4 +101,12 @@ public enum TabCode {
         return tabCodes.stream().collect(Collectors.joining(","));
     }
 
+    public static List<String> getTabLabels() {
+        List tabLabels = new ArrayList();
+        for (TabCode tabCode : values()) {
+            tabLabels.add(tabCode.val);
+        }
+        return tabLabels;
+    }
+
 }

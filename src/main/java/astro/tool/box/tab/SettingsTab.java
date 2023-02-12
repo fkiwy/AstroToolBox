@@ -442,10 +442,10 @@ public class SettingsTab implements Tab {
             String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
             String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
 
-            DualListBox dualListBox = new DualListBox();
+            DualListBox dualListBox = new DualListBox(450, 225);
+            dualListBox.setAllElements(TabCode.getTabLabels());
             dualListBox.addSourceElements(TabCode.convertTabCodeToLabel(sourceTabs));
             dualListBox.addDestinationElements(TabCode.convertTabCodeToLabel(destTabs));
-            dualListBox.setPreferredSize(new Dimension(500, 250));
             containerPanel.add(dualListBox);
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));

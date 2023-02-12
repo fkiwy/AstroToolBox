@@ -1,9 +1,9 @@
 package astro.tool.box.panel;
 
 import java.awt.Color;
-import java.awt.GridBagConstraints;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -22,34 +24,138 @@ import javax.swing.ListModel;
 
 public class DualListBox extends JPanel {
 
-    private static final Insets EMPTY_INSETS = new Insets(0, 0, 0, 0);
+    private final JList sourceList;
+    private final JList destList;
 
-    private static final String ADD_BUTTON_LABEL = "Add >>";
+    private final JLabel sourceLabel;
+    private final JLabel destLabel;
 
-    private static final String REMOVE_BUTTON_LABEL = "<< Remove";
+    private final JButton addButton;
+    private final JButton removeButton;
+    private final JButton addAllButton;
+    private final JButton removeAllButton;
+    private final JButton resetButton;
 
-    private static final String DEFAULT_SOURCE_CHOICE_LABEL = "Available";
+    private final CustomListModel sourceListModel;
+    private final CustomListModel destListModel;
 
-    private static final String DEFAULT_DEST_CHOICE_LABEL = "Selected";
+    private List allElements;
 
-    private JLabel sourceLabel;
+    public DualListBox(int width, int height) {
 
-    private JList sourceList;
+        setBorder(BorderFactory.createEtchedBorder());
+        setLayout(new GridBagLayout());
 
-    private CustomListModel sourceListModel;
+        JPanel globalLayout = new JPanel(new GridLayout(1, 3));
+        globalLayout.setPreferredSize(new Dimension(width, height));
+        add(globalLayout);
 
-    private JList destList;
+        sourceLabel = new JLabel("Available");
+        sourceListModel = new CustomListModel();
+        sourceList = new JList(sourceListModel);
+        globalLayout.add(new JScrollPane(sourceList));
 
-    private CustomListModel destListModel;
+        JPanel buttonLayout = new JPanel();
 
-    private JLabel destLabel;
+        buttonLayout.setLayout(new BoxLayout(buttonLayout, BoxLayout.Y_AXIS));
+        globalLayout.add(buttonLayout);
 
-    private JButton addButton;
+        buttonLayout.add(Box.createVerticalGlue());
 
-    private JButton removeButton;
+        addButton = new JButton("Add >>");
+        addButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        addButton.addActionListener(new AddListener());
+        buttonLayout.add(addButton);
 
-    public DualListBox() {
-        initScreen();
+        buttonLayout.add(Box.createVerticalGlue());
+
+        removeButton = new JButton("<< Remove");
+        removeButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        removeButton.addActionListener(new RemoveListener());
+        buttonLayout.add(removeButton);
+
+        buttonLayout.add(Box.createVerticalGlue());
+
+        addAllButton = new JButton("Add all");
+        addAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        addAllButton.addActionListener(new AddAllListener());
+        buttonLayout.add(addAllButton);
+
+        buttonLayout.add(Box.createVerticalGlue());
+
+        removeAllButton = new JButton("Remove all");
+        removeAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        removeAllButton.addActionListener(new RemoveAllListener());
+        buttonLayout.add(removeAllButton);
+
+        buttonLayout.add(Box.createVerticalGlue());
+
+        resetButton = new JButton("Reset");
+        resetButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        resetButton.addActionListener(new ResetListener());
+        buttonLayout.add(resetButton);
+
+        buttonLayout.add(Box.createVerticalGlue());
+
+        destLabel = new JLabel("Selected");
+        destListModel = new CustomListModel();
+        destList = new JList(destListModel);
+        globalLayout.add(new JScrollPane(destList));
+    }
+
+    private class AddListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List selected = sourceList.getSelectedValuesList();
+            addDestinationElements(selected);
+            clearSourceSelected();
+        }
+    }
+
+    private class RemoveListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List selected = destList.getSelectedValuesList();
+            addSourceElements(selected);
+            clearDestinationSelected();
+        }
+    }
+
+    private class AddAllListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            destListModel.addAll(sourceListModel.getModel());
+            sourceListModel.clear();
+        }
+    }
+
+    private class RemoveAllListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            sourceListModel.addAll(destListModel.getModel());
+            destListModel.clear();
+        }
+    }
+
+    private class ResetListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            destListModel.setModel(allElements);
+            sourceListModel.clear();
+        }
+    }
+
+    public List getAllElements() {
+        return allElements;
+    }
+
+    public void setAllElements(List allElements) {
+        this.allElements = allElements;
     }
 
     public String getSourceChoicesTitle() {
@@ -110,7 +216,7 @@ public class DualListBox extends JPanel {
         addSourceElements(newValue);
     }
 
-    public List<String> getSourceElements() {
+    public List getSourceElements() {
         return sourceListModel.getModel();
     }
 
@@ -123,7 +229,7 @@ public class DualListBox extends JPanel {
         addDestinationElements(newValue);
     }
 
-    public List<String> getDestinationElements() {
+    public List getDestinationElements() {
         return destListModel.getModel();
     }
 
@@ -198,54 +304,11 @@ public class DualListBox extends JPanel {
         destList.getSelectionModel().clearSelection();
     }
 
-    private void initScreen() {
-        setBorder(BorderFactory.createEtchedBorder());
-        setLayout(new GridBagLayout());
-        sourceLabel = new JLabel(DEFAULT_SOURCE_CHOICE_LABEL);
-        sourceListModel = new CustomListModel();
-        sourceList = new JList(sourceListModel);
-        add(sourceLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, EMPTY_INSETS, 0, 0));
-        add(new JScrollPane(sourceList), new GridBagConstraints(0, 1, 1, 5, .5, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, EMPTY_INSETS, 0, 0));
-
-        addButton = new JButton(ADD_BUTTON_LABEL);
-        add(addButton, new GridBagConstraints(1, 2, 1, 2, 0, .25, GridBagConstraints.CENTER, GridBagConstraints.NONE, EMPTY_INSETS, 0, 0));
-        addButton.addActionListener(new AddListener());
-        removeButton = new JButton(REMOVE_BUTTON_LABEL);
-        add(removeButton, new GridBagConstraints(1, 4, 1, 2, 0, .25, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 5, 0, 5), 0, 0));
-        removeButton.addActionListener(new RemoveListener());
-
-        destLabel = new JLabel(DEFAULT_DEST_CHOICE_LABEL);
-        destListModel = new CustomListModel();
-        destList = new JList(destListModel);
-        add(destLabel, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, EMPTY_INSETS, 0, 0));
-        add(new JScrollPane(destList), new GridBagConstraints(2, 1, 1, 5, .5, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, EMPTY_INSETS, 0, 0));
-    }
-
-    private class AddListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            List selected = sourceList.getSelectedValuesList();
-            addDestinationElements(selected);
-            clearSourceSelected();
-        }
-    }
-
-    private class RemoveListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            List selected = destList.getSelectedValuesList();
-            addSourceElements(selected);
-            clearDestinationSelected();
-        }
-    }
-
 }
 
 class CustomListModel extends AbstractListModel {
 
-    private final List model;
+    private List model;
 
     public CustomListModel() {
         model = new ArrayList();
@@ -299,6 +362,11 @@ class CustomListModel extends AbstractListModel {
 
     public List getModel() {
         return model;
+    }
+
+    public void setModel(List model) {
+        this.model = model;
+        fireContentsChanged(this, 0, getSize());
     }
 
 }
