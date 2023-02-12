@@ -4,6 +4,8 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
+import static astro.tool.box.enumeration.LookAndFeel.Flat_IntelliJ;
+import static astro.tool.box.enumeration.LookAndFeel.Flat_Mac_Light;
 import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
@@ -13,6 +15,8 @@ import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -409,19 +413,32 @@ public class SettingsTab implements Tab {
             JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
             downloadPanel.add(dssImagesCheckBox);
 
-            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            settingsPanel.add(containerPanel, BorderLayout.CENTER);
+            JPanel centerLayout = new JPanel(new GridLayout(2, 1));
+            settingsPanel.add(centerLayout, BorderLayout.CENTER);
 
-            JPanel gridPanel = new JPanel(new GridLayout(3, 1));
-            containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1235, 300));
+            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            centerLayout.add(containerPanel);
+
+            // Tabs
+            String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+            String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
+
+            DualListBox dualListBox = new DualListBox(450, 225);
+            dualListBox.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(), "Tab selection/order", TitledBorder.LEFT, TitledBorder.TOP
+            ));
+            dualListBox.setAllElements(TabCode.getTabLabels());
+            dualListBox.addSourceElements(TabCode.convertTabCodeToLabel(sourceTabs));
+            dualListBox.addDestinationElements(TabCode.convertTabCodeToLabel(destTabs));
+            containerPanel.add(dualListBox);
 
             // Catalogs
-            catalogPanel = new JPanel(new GridLayout(3, 5));
+            catalogPanel = new JPanel(new GridLayout(7, 3));
+            catalogPanel.setPreferredSize(new Dimension(450, 249));
             catalogPanel.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            gridPanel.add(catalogPanel);
+            containerPanel.add(catalogPanel);
 
             Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
             selectedCatalogs = getSelectedCatalogs(catalogInstances);
@@ -435,21 +452,8 @@ public class SettingsTab implements Tab {
                 catalogPanel.add(checkbox);
             }
 
-            // Tabs
-            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            settingsPanel.add(containerPanel, BorderLayout.PAGE_END);
-
-            String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
-            String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
-
-            DualListBox dualListBox = new DualListBox(450, 225);
-            dualListBox.setAllElements(TabCode.getTabLabels());
-            dualListBox.addSourceElements(TabCode.convertTabCodeToLabel(sourceTabs));
-            dualListBox.addDestinationElements(TabCode.convertTabCodeToLabel(destTabs));
-            containerPanel.add(dualListBox);
-
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            gridPanel.add(buttonPanel);
+            centerLayout.add(buttonPanel);
 
             JLabel message = createMessageLabel();
             Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -667,12 +671,21 @@ public class SettingsTab implements Tab {
                     UIManager.setLookAndFeel(new FlatIntelliJLaf());
                     isFlatLaf = true;
                     break;
+                case Flat_Mac_Light:
+                    UIManager.setLookAndFeel(new FlatMacLightLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Mac_Dark:
+                    UIManager.setLookAndFeel(new FlatMacDarkLaf());
+                    isFlatLaf = true;
+                    break;
             }
             if (isFlatLaf) {
                 UIManager.put("Button.arc", 0);
-                UIManager.put("Component.arc", 0);
                 UIManager.put("CheckBox.arc", 0);
+                UIManager.put("Component.arc", 0);
                 UIManager.put("ProgressBar.arc", 0);
+                UIManager.put("TextComponent.arc", 0);
                 UIManager.put("Component.arrowType", "triangle");
                 UIManager.put("ScrollBar.showButtons", true);
                 UIManager.put("ScrollBar.width", 15);

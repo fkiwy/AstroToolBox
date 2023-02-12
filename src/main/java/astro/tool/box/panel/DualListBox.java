@@ -42,7 +42,6 @@ public class DualListBox extends JPanel {
     private List allElements;
 
     public DualListBox(int width, int height) {
-
         setBorder(BorderFactory.createEtchedBorder());
         setLayout(new GridBagLayout());
 
@@ -56,7 +55,6 @@ public class DualListBox extends JPanel {
         globalLayout.add(new JScrollPane(sourceList));
 
         JPanel buttonLayout = new JPanel();
-
         buttonLayout.setLayout(new BoxLayout(buttonLayout, BoxLayout.Y_AXIS));
         globalLayout.add(buttonLayout);
 
