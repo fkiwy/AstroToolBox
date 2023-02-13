@@ -1,5 +1,6 @@
 package astro.tool.box.panel;
 
+import static astro.tool.box.main.ToolboxHelper.html;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -12,10 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,14 +24,10 @@ public class DualListBox extends JPanel {
 
     private final JList sourceList;
     private final JList destList;
-
-    private final JLabel sourceLabel;
-    private final JLabel destLabel;
-
-    private final JButton addButton;
-    private final JButton removeButton;
-    private final JButton addAllButton;
-    private final JButton removeAllButton;
+    private final JButton showButton;
+    private final JButton hideButton;
+    private final JButton showAllButton;
+    private final JButton hideAllButton;
     private final JButton resetButton;
 
     private final CustomListModel sourceListModel;
@@ -49,53 +43,38 @@ public class DualListBox extends JPanel {
         globalLayout.setPreferredSize(new Dimension(width, height));
         add(globalLayout);
 
-        sourceLabel = new JLabel("Available");
         sourceListModel = new CustomListModel();
         sourceList = new JList(sourceListModel);
         globalLayout.add(new JScrollPane(sourceList));
 
-        JPanel buttonLayout = new JPanel();
-        buttonLayout.setLayout(new BoxLayout(buttonLayout, BoxLayout.Y_AXIS));
+        JPanel buttonLayout = new JPanel(new GridLayout(5, 1));
         globalLayout.add(buttonLayout);
 
-        buttonLayout.add(Box.createVerticalGlue());
+        showButton = new JButton(html("Show tab &raquo;"));
+        showButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        showButton.addActionListener(new AddListener());
+        buttonLayout.add(showButton);
 
-        addButton = new JButton("Add >>");
-        addButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-        addButton.addActionListener(new AddListener());
-        buttonLayout.add(addButton);
+        hideButton = new JButton(html("&laquo; Hide tab"));
+        hideButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        hideButton.addActionListener(new RemoveListener());
+        buttonLayout.add(hideButton);
 
-        buttonLayout.add(Box.createVerticalGlue());
+        showAllButton = new JButton(html("Show all &raquo;"));
+        showAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        showAllButton.addActionListener(new AddAllListener());
+        buttonLayout.add(showAllButton);
 
-        removeButton = new JButton("<< Remove");
-        removeButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-        removeButton.addActionListener(new RemoveListener());
-        buttonLayout.add(removeButton);
-
-        buttonLayout.add(Box.createVerticalGlue());
-
-        addAllButton = new JButton("Add all");
-        addAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-        addAllButton.addActionListener(new AddAllListener());
-        buttonLayout.add(addAllButton);
-
-        buttonLayout.add(Box.createVerticalGlue());
-
-        removeAllButton = new JButton("Remove all");
-        removeAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-        removeAllButton.addActionListener(new RemoveAllListener());
-        buttonLayout.add(removeAllButton);
-
-        buttonLayout.add(Box.createVerticalGlue());
+        hideAllButton = new JButton(html("&laquo; Hide all"));
+        hideAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        hideAllButton.addActionListener(new RemoveAllListener());
+        buttonLayout.add(hideAllButton);
 
         resetButton = new JButton("Reset");
         resetButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
         resetButton.addActionListener(new ResetListener());
         buttonLayout.add(resetButton);
 
-        buttonLayout.add(Box.createVerticalGlue());
-
-        destLabel = new JLabel("Selected");
         destListModel = new CustomListModel();
         destList = new JList(destListModel);
         globalLayout.add(new JScrollPane(destList));
@@ -154,22 +133,6 @@ public class DualListBox extends JPanel {
 
     public void setAllElements(List allElements) {
         this.allElements = allElements;
-    }
-
-    public String getSourceChoicesTitle() {
-        return sourceLabel.getText();
-    }
-
-    public void setSourceChoicesTitle(String newValue) {
-        sourceLabel.setText(newValue);
-    }
-
-    public String getDestinationChoicesTitle() {
-        return destLabel.getText();
-    }
-
-    public void setDestinationChoicesTitle(String newValue) {
-        destLabel.setText(newValue);
     }
 
     public void clearSourceListModel() {

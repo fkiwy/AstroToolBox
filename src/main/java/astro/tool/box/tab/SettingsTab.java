@@ -425,7 +425,9 @@ public class SettingsTab implements Tab {
 
             DualListBox dualListBox = new DualListBox(450, 225);
             dualListBox.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Tab selection/order", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(),
+                    html("Rearrange tabs (<span color='red'>" + RESTART_LABEL + "</span>)"),
+                    TitledBorder.LEFT, TitledBorder.TOP
             ));
             dualListBox.setAllElements(TabCode.getTabLabels());
             dualListBox.addSourceElements(TabCode.convertTabCodeToLabel(sourceTabs));
@@ -436,7 +438,9 @@ public class SettingsTab implements Tab {
             catalogPanel = new JPanel(new GridLayout(7, 3));
             catalogPanel.setPreferredSize(new Dimension(450, 249));
             catalogPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(),
+                    "Select catalogs",
+                    TitledBorder.LEFT, TitledBorder.TOP
             ));
             containerPanel.add(catalogPanel);
 
