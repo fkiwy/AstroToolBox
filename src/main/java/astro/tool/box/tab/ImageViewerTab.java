@@ -3667,10 +3667,14 @@ public class ImageViewerTab implements Tab {
     }
 
     private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
-        boolean firstEpochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5");
-        if (!firstEpochDownloaded || !skipIntermediateEpochs.isSelected()) {
-            downloadDesiCutouts(2, band, images, "decals-dr7");
-            downloadDesiCutouts(4, band, images, "ls-dr8");
+        boolean epochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5");
+        if (!epochDownloaded || !skipIntermediateEpochs.isSelected()) {
+            epochDownloaded = downloadDesiCutouts(2, band, images, "decals-dr7");
+        }
+        if (!epochDownloaded || !skipIntermediateEpochs.isSelected()) {
+            epochDownloaded = downloadDesiCutouts(4, band, images, "ls-dr8");
+        }
+        if (!epochDownloaded || !skipIntermediateEpochs.isSelected()) {
             downloadDesiCutouts(6, band, images, "ls-dr9");
         }
         downloadDesiCutouts(8, band, images, "ls-dr10");
