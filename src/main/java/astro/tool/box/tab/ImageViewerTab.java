@@ -715,7 +715,7 @@ public class ImageViewerTab implements Tab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
-            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
+            JButton resetDefaultsButton = new JButton("Reset image defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
@@ -727,7 +727,7 @@ public class ImageViewerTab implements Tab {
                 createFlipbook();
             });
 
-            stopDownloadButton = new JButton("Stop image downloading process");
+            stopDownloadButton = new JButton("Stop download process");
             mainControlPanel.add(stopDownloadButton);
             stopDownloadButton.addActionListener((ActionEvent evt) -> {
                 stopDownloadProcess = true;
