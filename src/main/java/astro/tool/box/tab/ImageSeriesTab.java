@@ -68,9 +68,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-public class ImageSeriesTab {
+public class ImageSeriesTab implements Tab {
 
-    private static final String TAB_NAME = "Image Series";
+    public static final String TAB_NAME = "Image Series";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -122,10 +122,14 @@ public class ImageSeriesTab {
         catalogQueryService = new CatalogQueryService();
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             mainPanel = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, mainPanel);
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, mainPanel);
+            }
 
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
@@ -347,7 +351,7 @@ public class ImageSeriesTab {
                                             } else if (label.contains(UkidssCatalogEntry.CATALOG_NAME)) {
                                                 activateSelectedCatalogOverlay(imageViewerTab, ukidssEntry);
                                             }
-                                            tabbedPane.setSelectedIndex(1);
+                                            tabbedPane.setSelectedIndex(0);
                                         }
                                     });
                                     TableColumnModel columnModel = resultTable.getColumnModel();
@@ -1012,7 +1016,7 @@ public class ImageSeriesTab {
                 }).findFirst().get();
                 if (selected != null) {
                     activateSelectedCatalogOverlay(imageViewerTab, selected);
-                    tabbedPane.setSelectedIndex(1);
+                    tabbedPane.setSelectedIndex(0);
                 }
             }
         });

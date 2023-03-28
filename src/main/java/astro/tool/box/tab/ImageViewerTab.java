@@ -181,7 +181,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import astro.tool.box.panel.WiseLcPanel;
 
-public class ImageViewerTab {
+public class ImageViewerTab implements Tab {
 
     public static final String TAB_NAME = "Image Viewer";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
@@ -450,7 +450,8 @@ public class ImageViewerTab {
         overlays.deserialize(getUserSetting(OVERLAYS_KEY, overlays.serialize()));
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -714,7 +715,7 @@ public class ImageViewerTab {
             settingsPanel.add(showCrosshairs);
             showCrosshairs.setToolTipText("Click on object to copy coordinates to clipboard (overlays must be disabled)");
 
-            JButton resetDefaultsButton = new JButton("Reset image processing defaults");
+            JButton resetDefaultsButton = new JButton("Reset image defaults");
             mainControlPanel.add(resetDefaultsButton);
             resetDefaultsButton.addActionListener((ActionEvent evt) -> {
                 if (differenceImaging.isSelected()) {
@@ -726,7 +727,7 @@ public class ImageViewerTab {
                 createFlipbook();
             });
 
-            stopDownloadButton = new JButton("Stop image downloading process");
+            stopDownloadButton = new JButton("Stop download process");
             mainControlPanel.add(stopDownloadButton);
             stopDownloadButton.addActionListener((ActionEvent evt) -> {
                 stopDownloadProcess = true;
@@ -2306,7 +2307,9 @@ public class ImageViewerTab {
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltK");
             aMap.put("keyActionForCtrlAltK", keyActionForCtrlAltK);
 
-            tabbedPane.addTab(TAB_NAME, mainPanel);
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, mainPanel);
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
             hasException = true;
@@ -3643,10 +3646,7 @@ public class ImageViewerTab {
                 unwiseEpoch = "neo" + epoch;
             }
             String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, targetRa, targetDec, size, band);
-            try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
-                    InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE);
-                    InputStream gzi = new GzipCompressorInputStream(bi);
-                    ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
+            try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream(); InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE); InputStream gzi = new GzipCompressorInputStream(bi); ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
                 ArchiveEntry entry;
                 Map<Long, byte[]> entries = new HashMap();
                 while ((entry = ti.getNextEntry()) != null) {
@@ -3667,10 +3667,14 @@ public class ImageViewerTab {
     }
 
     private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
-        boolean firstEpochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5");
-        if (!firstEpochDownloaded || !skipIntermediateEpochs.isSelected()) {
-            downloadDesiCutouts(2, band, images, "decals-dr7");
-            downloadDesiCutouts(4, band, images, "ls-dr8");
+        boolean epochDownloaded = downloadDesiCutouts(0, band, images, "decals-dr5");
+        if (!epochDownloaded || !skipIntermediateEpochs.isSelected()) {
+            epochDownloaded = downloadDesiCutouts(2, band, images, "decals-dr7");
+        }
+        if (!epochDownloaded || !skipIntermediateEpochs.isSelected()) {
+            epochDownloaded = downloadDesiCutouts(4, band, images, "ls-dr8");
+        }
+        if (!epochDownloaded || !skipIntermediateEpochs.isSelected()) {
             downloadDesiCutouts(6, band, images, "ls-dr9");
         }
         downloadDesiCutouts(8, band, images, "ls-dr10");
@@ -4118,7 +4122,7 @@ public class ImageViewerTab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(1);
+        application.getTabbedPane().setSelectedIndex(0);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);

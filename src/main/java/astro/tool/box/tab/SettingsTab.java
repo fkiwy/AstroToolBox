@@ -4,12 +4,19 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
+import static astro.tool.box.enumeration.LookAndFeel.Flat_IntelliJ;
+import static astro.tool.box.enumeration.LookAndFeel.Flat_Mac_Light;
+import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
+import astro.tool.box.main.Application;
+import astro.tool.box.panel.DualListBox;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -45,10 +52,11 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
-public class SettingsTab {
+public class SettingsTab implements Tab {
 
     public static final String TAB_NAME = "Settings";
     public static final String COMMENTS = "User settings";
+    public static final String RESTART_LABEL = "Restarts after pushing 'Apply settings'";
     public static final String PROP_FILE_NAME = "/AstroToolBox.properties";
     public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
     public static final Properties USER_SETTINGS = new Properties();
@@ -131,8 +139,12 @@ public class SettingsTab {
     // Catalogs
     private static final String CATALOGS = "catalogs";
     private List<String> selectedCatalogs;
-
     private JPanel catalogPanel;
+
+    // Tabs
+    public static final String SOURCE_TABS = "sourceTabs";
+    public static final String DEST_TABS = "destTabs";
+
     private ActionListener actionListener;
     private JComboBox wiseBandsBox;
 
@@ -144,7 +156,8 @@ public class SettingsTab {
         this.batchQueryTab = batchQueryTab;
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             JPanel settingsPanel = new JPanel(new BorderLayout());
 
@@ -224,7 +237,7 @@ public class SettingsTab {
             globalSettings.add(useSimbadMirrorCheckBox);
 
             globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", JLabel.RIGHT));
-            JCheckBox photometricErrorsBox = new JCheckBox("Needs a restart after 'Apply settings'");
+            JCheckBox photometricErrorsBox = new JCheckBox(html("<span color='red'>" + RESTART_LABEL + "</span>"));
             photometricErrorsBox.setSelected(photometricErrors);
             globalSettings.add(photometricErrorsBox);
 
@@ -400,19 +413,36 @@ public class SettingsTab {
             JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
             downloadPanel.add(dssImagesCheckBox);
 
-            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            settingsPanel.add(containerPanel, BorderLayout.CENTER);
+            JPanel centerLayout = new JPanel(new GridLayout(2, 1));
+            settingsPanel.add(centerLayout, BorderLayout.CENTER);
 
-            JPanel gridPanel = new JPanel(new GridLayout(2, 1));
-            containerPanel.add(gridPanel);
-            gridPanel.setPreferredSize(new Dimension(1235, 160));
+            containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            centerLayout.add(containerPanel);
+
+            // Tabs
+            String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+            String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
+
+            DualListBox dualListBox = new DualListBox(450, 225);
+            dualListBox.setBorder(BorderFactory.createTitledBorder(
+                    BorderFactory.createEtchedBorder(),
+                    html("Rearrange tabs (<span color='red'>" + RESTART_LABEL + "</span>)"),
+                    TitledBorder.LEFT, TitledBorder.TOP
+            ));
+            dualListBox.setAllElements(TabCode.getTabLabels());
+            dualListBox.addSourceElements(TabCode.convertTabCodeToLabel(sourceTabs));
+            dualListBox.addDestinationElements(TabCode.convertTabCodeToLabel(destTabs));
+            containerPanel.add(dualListBox);
 
             // Catalogs
-            catalogPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            catalogPanel = new JPanel(new GridLayout(7, 3));
+            catalogPanel.setPreferredSize(new Dimension(450, 249));
             catalogPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Catalog selection", TitledBorder.LEFT, TitledBorder.TOP
+                    BorderFactory.createEtchedBorder(),
+                    "Select catalogs",
+                    TitledBorder.LEFT, TitledBorder.TOP
             ));
-            gridPanel.add(catalogPanel);
+            containerPanel.add(catalogPanel);
 
             Map<String, CatalogEntry> catalogInstances = getCatalogInstances();
             selectedCatalogs = getSelectedCatalogs(catalogInstances);
@@ -420,15 +450,14 @@ public class SettingsTab {
             setCheckBoxValue(catalogQueryTab.getTopPanel(), selectedCatalogs);
             setCheckBoxValue(batchQueryTab.getBottomRow(), selectedCatalogs);
 
-            JCheckBox checkbox;
             for (String catalogKey : catalogInstances.keySet()) {
-                checkbox = new JCheckBox(catalogKey);
+                JCheckBox checkbox = new JCheckBox(catalogKey);
                 checkbox.setSelected(selectedCatalogs.contains(catalogKey));
                 catalogPanel.add(checkbox);
             }
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            gridPanel.add(buttonPanel);
+            centerLayout.add(buttonPanel);
 
             JLabel message = createMessageLabel();
             Timer timer = new Timer(3000, (ActionEvent e) -> {
@@ -582,9 +611,20 @@ public class SettingsTab {
                 String catalogs = selectedCatalogs.stream().collect(Collectors.joining(","));
                 USER_SETTINGS.setProperty(CATALOGS, catalogs);
 
+                // Tabs
+                String sourceElements = TabCode.convertTabLabelToCode(dualListBox.getSourceElements());
+                String destElements = TabCode.convertTabLabelToCode(dualListBox.getDestinationElements());
+
+                USER_SETTINGS.setProperty(SOURCE_TABS, sourceElements);
+                USER_SETTINGS.setProperty(DEST_TABS, destElements);
+
                 saveSettings();
                 message.setText("Settings applied!");
                 timer.restart();
+
+                if (!destTabs.equals(destElements)) {
+                    restartApplication();
+                }
             });
 
             buttonPanel.add(message);
@@ -635,12 +675,21 @@ public class SettingsTab {
                     UIManager.setLookAndFeel(new FlatIntelliJLaf());
                     isFlatLaf = true;
                     break;
+                case Flat_Mac_Light:
+                    UIManager.setLookAndFeel(new FlatMacLightLaf());
+                    isFlatLaf = true;
+                    break;
+                case Flat_Mac_Dark:
+                    UIManager.setLookAndFeel(new FlatMacDarkLaf());
+                    isFlatLaf = true;
+                    break;
             }
             if (isFlatLaf) {
                 UIManager.put("Button.arc", 0);
-                UIManager.put("Component.arc", 0);
                 UIManager.put("CheckBox.arc", 0);
+                UIManager.put("Component.arc", 0);
                 UIManager.put("ProgressBar.arc", 0);
+                UIManager.put("TextComponent.arc", 0);
                 UIManager.put("Component.arrowType", "triangle");
                 UIManager.put("ScrollBar.showButtons", true);
                 UIManager.put("ScrollBar.width", 15);
@@ -684,6 +733,13 @@ public class SettingsTab {
             USER_SETTINGS.store(output, COMMENTS);
         } catch (IOException ex) {
         }
+    }
+
+    private void restartApplication() {
+        Application application = new Application();
+        application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        application.init();
+        baseFrame.setVisible(false);
     }
 
 }

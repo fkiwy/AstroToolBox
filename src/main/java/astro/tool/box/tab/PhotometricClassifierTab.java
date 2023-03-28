@@ -65,9 +65,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-public class PhotometricClassifierTab {
+public class PhotometricClassifierTab implements Tab {
 
-    private static final String TAB_NAME = "Photometric Classifier";
+    public static final String TAB_NAME = "Photometric Classifier";
 
     private final JFrame baseFrame;
     private final JTabbedPane tabbedPane;
@@ -137,10 +137,14 @@ public class PhotometricClassifierTab {
         }
     }
 
-    public void init() {
+    @Override
+    public void init(boolean visible) {
         try {
             mainPanel = new JPanel(new BorderLayout());
-            tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+
+            if (visible) {
+                tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
+            }
 
             topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
