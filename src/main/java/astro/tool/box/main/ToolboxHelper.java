@@ -191,16 +191,16 @@ public class ToolboxHelper {
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
         VhsCatalogEntry vhsCatalogEntry = new VhsCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
-        GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
-        catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
+        UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
+        catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
         TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
         catalogInstances.put(twoMassCatalogEntry.getCatalogName(), twoMassCatalogEntry);
         TessCatalogEntry tessCatalogEntry = new TessCatalogEntry();
         catalogInstances.put(tessCatalogEntry.getCatalogName(), tessCatalogEntry);
         DesCatalogEntry desCatalogEntry = new DesCatalogEntry();
         catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
-        UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
-        catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
+        GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
+        catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
 
         return catalogInstances;
     }

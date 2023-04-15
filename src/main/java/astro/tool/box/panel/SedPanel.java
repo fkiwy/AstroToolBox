@@ -213,6 +213,7 @@ public class SedPanel extends JPanel {
         sedDataPoints = new StringBuilder();
 
         double searchRadius = toDouble(photSearchRadius.getText());
+        searchRadius = searchRadius < 1 ? 1 : searchRadius;
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 

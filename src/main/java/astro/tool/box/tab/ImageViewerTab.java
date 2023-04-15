@@ -939,7 +939,7 @@ public class ImageViewerTab implements Tab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
-            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR16"), overlays.isSdss());
+            sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR17"), overlays.isSdss());
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
@@ -960,12 +960,12 @@ public class ImageViewerTab implements Tab {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
-            gaiaWDOverlay = new JCheckBox(html("Gaia EDR3 <u>W</u>D"), overlays.isGaiawd());
-            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
-            gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
+            ukidssOverlay = new JCheckBox(html("U<u>K</u>IDSS DR11"), overlays.isUkidss());
+            ukidssOverlay.setForeground(JColor.BLOOD.val);
+            ukidssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlayPanel.add(gaiaWDOverlay);
+            overlayPanel.add(ukidssOverlay);
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
@@ -990,12 +990,12 @@ public class ImageViewerTab implements Tab {
                 processImages();
             });
             overlayPanel.add(desOverlay);
-            ukidssOverlay = new JCheckBox(html("U<u>K</u>IDSS DR11"), overlays.isUkidss());
-            ukidssOverlay.setForeground(JColor.BLOOD.val);
-            ukidssOverlay.addActionListener((ActionEvent evt) -> {
+            gaiaWDOverlay = new JCheckBox(html("Gaia EDR3 <u>W</u>D"), overlays.isGaiawd());
+            gaiaWDOverlay.setForeground(JColor.PURPLE.val);
+            gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlayPanel.add(ukidssOverlay);
+            overlayPanel.add(gaiaWDOverlay);
 
             ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
