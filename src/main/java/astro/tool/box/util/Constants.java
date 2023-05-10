@@ -58,6 +58,8 @@ public class Constants {
 
     public static final String DESI_LS_DR_PARAM = "ls-dr10";
 
+    public static final String DESI_FILTERS = "griz";
+
     public static final String MAMAJEK_VERSION = "2022.04.16";
 
     public static final String LINE_BREAK = "<br/>";

@@ -388,9 +388,9 @@ public class ImageSeriesPdf {
                 images.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), bufferedImage));
                 timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, bufferedImage)));
             }
-            bufferedImage = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
+            bufferedImage = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false);
             if (bufferedImage != null) {
-                images.add(new Couple(getImageLabel("DECaLS g-r-z", DESI_LS_DR_LABEL), bufferedImage));
+                images.add(new Couple(getImageLabel("DECaLS", DESI_LS_DR_LABEL), bufferedImage));
             }
 
             createPdfTable(images, writer, document);

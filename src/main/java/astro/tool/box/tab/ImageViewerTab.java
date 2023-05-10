@@ -4159,7 +4159,7 @@ public class ImageViewerTab implements Tab {
             if (imageSize > 3000) {
                 return null;
             }
-            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=grz&layer=%s", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_LS_DR_PARAM);
+            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_FILTERS, DESI_LS_DR_PARAM);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
@@ -4703,9 +4703,9 @@ public class ImageViewerTab implements Tab {
             if (image != null) {
                 bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS z", DESI_LS_DR_LABEL)));
             }
-            image = retrieveDesiImage(targetRa, targetDec, size, "grz", false);
+            image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false);
             if (image != null) {
-                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g-r-z", DESI_LS_DR_LABEL)));
+                bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS", DESI_LS_DR_LABEL)));
             }
 
             int componentCount = bandPanel.getComponentCount();
