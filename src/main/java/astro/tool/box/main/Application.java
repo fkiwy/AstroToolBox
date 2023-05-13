@@ -1,6 +1,5 @@
 package astro.tool.box.main;
 
-import astro.tool.box.container.NumberTriplet;
 import astro.tool.box.container.Version;
 import astro.tool.box.enumeration.TabCode;
 import static astro.tool.box.main.ToolboxHelper.*;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import javax.swing.BoxLayout;
@@ -53,8 +51,6 @@ public class Application {
     private ImageViewerTab imageViewerTab;
 
     private static boolean versionLoaded;
-
-    public static List<NumberTriplet> CMD_DATA;
 
     public Application() {
         try {
