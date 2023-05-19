@@ -1,7 +1,6 @@
 package astro.tool.box.panel;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.Application.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
@@ -57,6 +56,8 @@ public class GaiaCmdPanel extends JPanel {
 
     private final int min = 2;
     private final int max = 14;
+
+    private List<NumberTriplet> cmdData;
 
     private JFreeChart chart;
 
@@ -219,7 +220,7 @@ public class GaiaCmdPanel extends JPanel {
     private XYSeriesCollection createMainCollection() {
         XYSeriesCollection collection = new XYSeriesCollection();
         XYSeries series = new XYSeries("");
-        CMD_DATA.forEach(triplet -> {
+        cmdData.forEach(triplet -> {
             double x = g_rpButton.isSelected() ? triplet.getY() : triplet.getZ();
             double y = triplet.getX();
             if (x != 0 && y != 0) {
@@ -426,19 +427,19 @@ public class GaiaCmdPanel extends JPanel {
     }
 
     private void loadCmdData() {
-        if (CMD_DATA != null) {
+        if (cmdData != null) {
             return;
         }
         InputStream input = getClass().getResourceAsStream("/Gaia CMD sample.csv");
         try (Scanner scanner = new Scanner(input)) {
             scanner.nextLine();
-            CMD_DATA = new ArrayList();
+            cmdData = new ArrayList();
             while (scanner.hasNextLine()) {
                 String[] columnValues = scanner.nextLine().split(",", -1);
                 double x = toDouble(columnValues[0]);
                 double y = toDouble(columnValues[1]);
                 double z = toDouble(columnValues[2]);
-                CMD_DATA.add(new NumberTriplet(x, y, z));
+                cmdData.add(new NumberTriplet(x, y, z));
             }
         }
     }
