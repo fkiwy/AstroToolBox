@@ -1,5 +1,10 @@
 ## Release notes
 
+### AstroToolBox v3.2.0
+- Added a feature to the settings allowing to rearrange tabs
+- Upgraded to SDSS DR17
+- Changed DESI filters from grz to griz
+
 ### AstroToolBox v3.1.0
 - Improved the image downloading process
 - Removed "NEOWISE years" slider
