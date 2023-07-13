@@ -1,6 +1,7 @@
 package astro.tool.box.panel;
 
 import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.main.Application.*;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.container.NumberTriplet;
@@ -16,7 +17,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +62,6 @@ public class GaiaCmdPanel extends JPanel {
 
     private final int min = 2;
     private final int max = 14;
-
-    private List<NumberTriplet> cmdData;
 
     private JFreeChart chart;
 
@@ -220,7 +224,7 @@ public class GaiaCmdPanel extends JPanel {
     private XYSeriesCollection createMainCollection() {
         XYSeriesCollection collection = new XYSeriesCollection();
         XYSeries series = new XYSeries("");
-        cmdData.forEach(triplet -> {
+        CMD_DATA.forEach(triplet -> {
             double x = g_rpButton.isSelected() ? triplet.getY() : triplet.getZ();
             double y = triplet.getX();
             if (x != 0 && y != 0) {
@@ -427,19 +431,32 @@ public class GaiaCmdPanel extends JPanel {
     }
 
     private void loadCmdData() {
-        if (cmdData != null) {
+        if (CMD_DATA != null) {
             return;
         }
-        InputStream input = getClass().getResourceAsStream("/Gaia CMD sample.csv");
-        try (Scanner scanner = new Scanner(input)) {
+        String tempDir = System.getProperty("java.io.tmpdir");
+        Path filePath = Paths.get(tempDir, "Gaia_CMD_sample.csv");
+        byte[] fileBytes;
+        try {
+            fileBytes = Files.readAllBytes(filePath);
+        } catch (IOException ex) {
+            try {
+                InputStream inputStream = getClass().getResourceAsStream("/Gaia CMD sample.csv");
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+                fileBytes = Files.readAllBytes(filePath);
+            } catch (IOException e) {
+                return;
+            }
+        }
+        try (Scanner scanner = new Scanner(new String(fileBytes))) {
             scanner.nextLine();
-            cmdData = new ArrayList();
+            CMD_DATA = new ArrayList();
             while (scanner.hasNextLine()) {
                 String[] columnValues = scanner.nextLine().split(",", -1);
                 double x = toDouble(columnValues[0]);
                 double y = toDouble(columnValues[1]);
                 double z = toDouble(columnValues[2]);
-                cmdData.add(new NumberTriplet(x, y, z));
+                CMD_DATA.add(new NumberTriplet(x, y, z));
             }
         }
     }

@@ -20,12 +20,12 @@ public enum Sed {
     WISE_W2(171.79, 4.6028),
     WISE_W3(31.67, 11.5608),
     WISE_W4(8.36, 22.0883),
-    DECAM_G(3631, 0.480849),
+    DECAM_G(3631, 0.480849), // http://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=CTIO&gname2=DECam
     DECAM_R(3631, 0.641765),
     DECAM_I(3631, 0.781458),
     DECAM_Z(3631, 0.916885),
     DECAM_Y(3631, 0.989611),
-    VHS_J(1533.54, 1.252483),
+    VHS_J(1533.54, 1.252483), // http://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=Paranal&gname2=VISTA
     VHS_H(1015.62, 1.643245),
     VHS_K(659.1, 2.152152),
     UKIDSS_J(1534.75, 1.2483),
