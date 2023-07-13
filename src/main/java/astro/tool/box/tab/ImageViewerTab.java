@@ -5512,6 +5512,7 @@ public class ImageViewerTab implements Tab {
                 collectPanel.add(referencesButton);
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
+                    referencesFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Measurements and references for "
@@ -5575,6 +5576,7 @@ public class ImageViewerTab implements Tab {
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
@@ -5592,6 +5594,7 @@ public class ImageViewerTab implements Tab {
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("WD SED");
@@ -5610,6 +5613,7 @@ public class ImageViewerTab implements Tab {
                 try {
                     createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     JFrame frame = new JFrame();
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.addWindowListener(getChildWindowAdapter(baseFrame));
                     frame.setIconImage(getToolBoxImage());
                     frame.setTitle("WISE CCD");
@@ -5632,6 +5636,7 @@ public class ImageViewerTab implements Tab {
                 try {
                     createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     JFrame frame = new JFrame();
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.addWindowListener(getChildWindowAdapter(baseFrame));
                     frame.setIconImage(getToolBoxImage());
                     frame.setTitle("WISE light curves");
@@ -5655,6 +5660,7 @@ public class ImageViewerTab implements Tab {
                     try {
                         createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         JFrame frame = new JFrame();
+                        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                         frame.addWindowListener(getChildWindowAdapter(baseFrame));
                         frame.setIconImage(getToolBoxImage());
                         frame.setTitle("Gaia CMD");
@@ -5701,6 +5707,7 @@ public class ImageViewerTab implements Tab {
         }
 
         JFrame detailsFrame = new JFrame();
+        detailsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
@@ -5841,6 +5848,7 @@ public class ImageViewerTab implements Tab {
         container.add(distancePanel);
 
         JFrame detailsFrame = new JFrame();
+        detailsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Photometric distance estimates");
