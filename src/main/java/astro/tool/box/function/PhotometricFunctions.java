@@ -172,32 +172,32 @@ public class PhotometricFunctions {
      * @param zeroPointFlux
      * @return F(λ) (Jy)
      */
-    public static double convertMagnitudeToJanskys(double magnitude, double zeroPointFlux) {
+    public static double convertMagnitudeToFluxJansky(double magnitude, double zeroPointFlux) {
         return magnitude == 0 ? 0 : zeroPointFlux * pow(10, -magnitude / 2.5);
     }
 
     /**
-     * Convert magnitude flux
+     * Convert magnitude to flux density λF(λ)
      *
      * @param magnitude
      * @param zeroPointFlux
      * @param wavelength
      * @return λF(λ) (W/m^2)
      */
-    public static double convertMagnitudeToFlux(double magnitude, double zeroPointFlux, double wavelength) {
-        return convertMagnitudeToJanskys(magnitude, zeroPointFlux) * pow(10, -26 /*should be +26*/) * (299792458 / wavelength * 1000000 /*should be 10000*/);
+    public static double convertMagnitudeToFluxDensity(double magnitude, double zeroPointFlux, double wavelength) {
+        return convertMagnitudeToFluxJansky(magnitude, zeroPointFlux) * pow(10, -26 /*should be +26*/) * (299792458 / wavelength * 1000000 /*should be 10000*/);
     }
 
     /**
-     * Convert magnitude to flux density
+     * Convert magnitude to flux density F(λ)
      *
      * @param magnitude
      * @param zeroPointFlux
      * @param wavelength
      * @return F(λ) (W/m^2/μm)
      */
-    public static double convertMagnitudeToFluxDensity(double magnitude, double zeroPointFlux, double wavelength) {
-        return convertMagnitudeToFlux(magnitude, zeroPointFlux, wavelength) / wavelength;
+    public static double convertMagnitudeToFluxLambda(double magnitude, double zeroPointFlux, double wavelength) {
+        return convertMagnitudeToFluxDensity(magnitude, zeroPointFlux, wavelength) / wavelength;
     }
 
     /**
