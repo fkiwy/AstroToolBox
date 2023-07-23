@@ -66,6 +66,18 @@ public class GenericCatalogEntry implements CatalogEntry {
     }
 
     @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("GenericCatalogEntry{");
+        sb.append(titles[0]).append("=").append(values[0]);
+        for (int i = 1; i < titles.length; i++) {
+            sb.append(", ").append(titles[i]).append("=").append(values[i]);
+        }
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public String getCatalogName() {
         return catalogName;
     }

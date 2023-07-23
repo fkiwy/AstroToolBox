@@ -20,6 +20,7 @@ import astro.tool.box.catalog.DesCatalogEntry;
 import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.catalog.MocaCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.SdssCatalogEntry;
@@ -201,6 +202,8 @@ public class ToolboxHelper {
         catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
         GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
+        MocaCatalogEntry mocaCatalogEntry = new MocaCatalogEntry();
+        catalogInstances.put(mocaCatalogEntry.getCatalogName(), mocaCatalogEntry);
 
         return catalogInstances;
     }
@@ -442,11 +445,13 @@ public class ToolboxHelper {
         }
         field.setCaretPosition(0);
         field.setBorder(BorderFactory.createEmptyBorder());
-        field.setEditable(true);
+        field.setEditable(false);
         if (hasToolTip) {
             field.setToolTipText(html(element.getToolTip()));
         }
-        panel.add(field);
+        field.setPreferredSize(new Dimension(100, field.getPreferredSize().height));
+        JScrollPane scrollPane = new JScrollPane(field, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        panel.add(scrollPane);
     }
 
     public static void alignCatalogColumns(JTable table, CatalogEntry entry) {
