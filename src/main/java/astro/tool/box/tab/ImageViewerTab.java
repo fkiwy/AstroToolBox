@@ -1003,7 +1003,7 @@ public class ImageViewerTab implements Tab {
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
             mocaOverlay = new JCheckBox(html("M<u>O</u>CA"), overlays.isMoca());
-            mocaOverlay.setForeground(JColor.DARK_YELLOW.val);
+            mocaOverlay.setForeground(Color.MAGENTA);
             mocaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
@@ -1891,7 +1891,7 @@ public class ImageViewerTab implements Tab {
                                     count++;
                                 }
                                 if (mocaOverlay.isSelected() && mocaEntries != null) {
-                                    showCatalogInfo(mocaEntries, mouseX, mouseY, JColor.DARK_YELLOW.val);
+                                    showCatalogInfo(mocaEntries, mouseX, mouseY, Color.MAGENTA);
                                     count++;
                                 }
                                 if (ssoOverlay.isSelected() && ssoEntries != null) {
@@ -3377,7 +3377,7 @@ public class ImageViewerTab implements Tab {
                     return null;
                 });
             } else {
-                drawOverlay(image, mocaEntries, JColor.DARK_YELLOW.val, Shape.CIRCLE);
+                drawOverlay(image, mocaEntries, Color.MAGENTA, Shape.DIAMOND);
             }
         }
         if (ssoOverlay.isSelected()) {
