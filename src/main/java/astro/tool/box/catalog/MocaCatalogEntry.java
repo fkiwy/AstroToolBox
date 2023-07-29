@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class MocaCatalogEntry extends GenericCatalogEntry {
 
-    public static final String CATALOG_NAME = "MOCA DB";
+    public static final String CATALOG_NAME = "MOCA";
 
     private String sourceId;
 
@@ -54,7 +54,8 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
         double bottomBoundary = targetDec - radius;
         double topBoundary = targetDec + radius;
 
-        String query = String.format("SELECT * FROM summary_all_objects WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", rightBoundary, leftBoundary, bottomBoundary, topBoundary);
+        //String query = String.format("SELECT * FROM summary_all_objects WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", rightBoundary, leftBoundary, bottomBoundary, topBoundary);
+        String query = String.format("SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", rightBoundary, leftBoundary, bottomBoundary, topBoundary);
 
         List<CatalogEntry> catalogEntries = new ArrayList();
 

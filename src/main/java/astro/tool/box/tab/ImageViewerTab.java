@@ -28,6 +28,7 @@ import astro.tool.box.catalog.GaiaCmd;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
 import astro.tool.box.catalog.GenericCatalogEntry;
+import astro.tool.box.catalog.MocaCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.ProperMotionQuery;
@@ -243,6 +244,7 @@ public class ImageViewerTab implements Tab {
     private List<CatalogEntry> desEntries;
     private List<CatalogEntry> ukidssEntries;
     private List<CatalogEntry> ukidssTpmEntries;
+    private List<CatalogEntry> mocaEntries;
     private List<CatalogEntry> ssoEntries;
 
     private JPanel imagePanel;
@@ -294,6 +296,7 @@ public class ImageViewerTab implements Tab {
     private JCheckBox tessOverlay;
     private JCheckBox desOverlay;
     private JCheckBox ukidssOverlay;
+    private JCheckBox mocaOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
     private JCheckBox haloOverlay;
@@ -997,12 +1000,20 @@ public class ImageViewerTab implements Tab {
             });
             overlayPanel.add(gaiaWDOverlay);
 
-            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlaysControlPanel.add(overlayPanel);
+            mocaOverlay = new JCheckBox(html("M<u>O</u>CA"), overlays.isMoca());
+            mocaOverlay.setForeground(JColor.DARK_YELLOW.val);
+            mocaOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(mocaOverlay);
+            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlaysControlPanel.add(ssoOverlay);
+            overlayPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -1164,6 +1175,7 @@ public class ImageViewerTab implements Tab {
                 overlays.setTess(tessOverlay.isSelected());
                 overlays.setDes(desOverlay.isSelected());
                 overlays.setUkidss(ukidssOverlay.isSelected());
+                overlays.setMoca(mocaOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
                 overlays.setPmgaiadr3(gaiaDR3ProperMotion.isSelected());
@@ -1878,6 +1890,10 @@ public class ImageViewerTab implements Tab {
                                     showCatalogInfo(ukidssEntries, mouseX, mouseY, JColor.BLOOD.val);
                                     count++;
                                 }
+                                if (mocaOverlay.isSelected() && mocaEntries != null) {
+                                    showCatalogInfo(mocaEntries, mouseX, mouseY, JColor.DARK_YELLOW.val);
+                                    count++;
+                                }
                                 if (ssoOverlay.isSelected() && ssoEntries != null) {
                                     showCatalogInfo(ssoEntries, mouseX, mouseY, Color.BLUE);
                                     count++;
@@ -2213,6 +2229,13 @@ public class ImageViewerTab implements Tab {
                     ukidssOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForAltO = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    mocaOverlay.setSelected(!mocaOverlay.isSelected());
+                    mocaOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
             Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2291,6 +2314,9 @@ public class ImageViewerTab implements Tab {
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.ALT_MASK), "keyActionForAltK");
             aMap.put("keyActionForAltK", keyActionForAltK);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK), "keyActionForAltO");
+            aMap.put("keyActionForAltO", keyActionForAltO);
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
             aMap.put("keyActionForAltW", keyActionForAltW);
@@ -3038,6 +3064,7 @@ public class ImageViewerTab implements Tab {
         desEntries = null;
         ukidssEntries = null;
         ukidssTpmEntries = null;
+        mocaEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
             customOverlays.values().forEach((customOverlay) -> {
@@ -3339,6 +3366,18 @@ public class ImageViewerTab implements Tab {
                 });
             } else {
                 drawOverlay(image, ukidssEntries, JColor.BLOOD.val, Shape.CIRCLE);
+            }
+        }
+        if (mocaOverlay.isSelected()) {
+            if (mocaEntries == null) {
+                mocaEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    mocaEntries = fetchCatalogEntries(new MocaCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, mocaEntries, JColor.DARK_YELLOW.val, Shape.CIRCLE);
             }
         }
         if (ssoOverlay.isSelected()) {
@@ -5989,6 +6028,10 @@ public class ImageViewerTab implements Tab {
 
     public JCheckBox getUkidssOverlay() {
         return ukidssOverlay;
+    }
+
+    public JCheckBox getMocaOverlay() {
+        return mocaOverlay;
     }
 
     public JTextField getPanstarrsField() {

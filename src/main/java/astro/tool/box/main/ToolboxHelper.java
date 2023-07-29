@@ -411,7 +411,7 @@ public class ToolboxHelper {
 
     public static void addLabelToPanel(CatalogElement element, JPanel panel) {
         String name = element.getName();
-        JLabel label = new JLabel(name == null ? "" : name + " = ", JLabel.RIGHT);
+        JLabel label = new JLabel(name == null ? "" : name + ": ", JLabel.RIGHT);
         //if (element.isOnFocus()) {
         //    label.setOpaque(true);
         //    label.setBackground(JColor.WHITE.val);
@@ -1128,7 +1128,7 @@ public class ToolboxHelper {
                 }
             }
             if (!imageUrl.isEmpty()) {
-                nirImages.add(new NirImage(filterId, extNo, Integer.valueOf(year), imageUrl));
+                nirImages.add(new NirImage(filterId, extNo, Integer.parseInt(year), imageUrl));
             }
         }
         Map<String, NirImage> images = new LinkedHashMap();

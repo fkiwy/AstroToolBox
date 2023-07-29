@@ -19,6 +19,7 @@ public class Overlays {
         TESS,
         DES,
         UKIDSS,
+        MOCA,
         SSO,
         PM_GAIA_DR2,
         PM_GAIA_DR3,
@@ -47,6 +48,7 @@ public class Overlays {
     private boolean tess;
     private boolean des;
     private boolean ukidss;
+    private boolean moca;
     private boolean sso;
     private boolean pmgaiadr2;
     private boolean pmgaiadr3;
@@ -107,6 +109,9 @@ public class Overlays {
         }
         if (ukidss) {
             overlays.append(ID.UKIDSS).append(",");
+        }
+        if (moca) {
+            overlays.append(ID.MOCA).append(",");
         }
         if (sso) {
             overlays.append(ID.SSO).append(",");
@@ -192,6 +197,9 @@ public class Overlays {
         }
         if (overlays.contains(ID.UKIDSS.name())) {
             ukidss = true;
+        }
+        if (overlays.contains(ID.MOCA.name())) {
+            moca = true;
         }
         if (overlays.contains(ID.SSO.name())) {
             sso = true;
@@ -351,6 +359,14 @@ public class Overlays {
 
     public void setUkidss(boolean ukidss) {
         this.ukidss = ukidss;
+    }
+
+    public boolean isMoca() {
+        return moca;
+    }
+
+    public void setMoca(boolean moca) {
+        this.moca = moca;
     }
 
     public boolean isSso() {
