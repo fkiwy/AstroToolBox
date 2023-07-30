@@ -3,10 +3,12 @@ package astro.tool.box.catalog;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.JColor;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import java.awt.Color;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -97,6 +99,10 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
     @Override
     public String getCatalogName() {
         return CATALOG_NAME;
+    }
+
+    public Color getCatalogColor() {
+        return JColor.DARK_ORANGE.val;
     }
 
     @Override

@@ -1003,7 +1003,7 @@ public class ImageViewerTab implements Tab {
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
             mocaOverlay = new JCheckBox(html("M<u>O</u>CA"), overlays.isMoca());
-            mocaOverlay.setForeground(Color.MAGENTA);
+            mocaOverlay.setForeground(JColor.DARK_ORANGE.val);
             mocaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
@@ -1891,7 +1891,7 @@ public class ImageViewerTab implements Tab {
                                     count++;
                                 }
                                 if (mocaOverlay.isSelected() && mocaEntries != null) {
-                                    showCatalogInfo(mocaEntries, mouseX, mouseY, Color.MAGENTA);
+                                    showCatalogInfo(mocaEntries, mouseX, mouseY, JColor.DARK_ORANGE.val);
                                     count++;
                                 }
                                 if (ssoOverlay.isSelected() && ssoEntries != null) {
@@ -3377,7 +3377,7 @@ public class ImageViewerTab implements Tab {
                     return null;
                 });
             } else {
-                drawOverlay(image, mocaEntries, Color.MAGENTA, Shape.DIAMOND);
+                drawOverlay(image, mocaEntries, JColor.DARK_ORANGE.val, Shape.DIAMOND);
             }
         }
         if (ssoOverlay.isSelected()) {
@@ -5151,10 +5151,7 @@ public class ImageViewerTab implements Tab {
                 GenericCatalogEntry catalogEntry = new GenericCatalogEntry(columnNames, columnValues);
                 catalogEntry.setRa(toDouble(columnValues[raColumnIndex]));
                 catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
-                //NumberPair pair = getCoordinates(columnValues[raColumnIndex] + " " + columnValues[decColumnIndex]);
-                //catalogEntry.setRa(pair.getX());
-                //catalogEntry.setDec(pair.getY());
-                NumberPair coords;
+                /*NumberPair coords;
                 double radius = size * pixelScale / 2 / DEG_ARCSEC;
 
                 coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(-radius, 0));
@@ -5172,6 +5169,19 @@ public class ImageViewerTab implements Tab {
                 if (isCatalogSearch
                         || (catalogRa > rightBoundary && catalogRa < leftBoundary
                         && catalogDec > bottomBoundary && catalogDec < topBoundary)) {
+                    catalogEntry.setTargetRa(targetRa);
+                    catalogEntry.setTargetDec(targetDec);
+                    catalogEntry.setCatalogName(customOverlay.getName());
+                    catalogEntry.loadCatalogElements();
+                    catalogEntries.add(catalogEntry);
+                }*/
+                double catalogRa = catalogEntry.getRa();
+                double catalogDec = catalogEntry.getDec();
+                double radius = getFovDiagonal() / 2;
+
+                double distance = calculateAngularDistance(new NumberPair(targetRa, targetDec), new NumberPair(catalogRa, catalogDec), DEG_ARCSEC);
+
+                if (distance <= radius) {
                     catalogEntry.setTargetRa(targetRa);
                     catalogEntry.setTargetDec(targetDec);
                     catalogEntry.setCatalogName(customOverlay.getName());
