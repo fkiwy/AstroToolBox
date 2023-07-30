@@ -4,12 +4,10 @@ import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculatePositionFromProperMotion;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
 import java.io.IOException;
-import static java.lang.Math.sqrt;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -40,41 +38,11 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
         String username = "public";
         String password = "z@nUg_2h7_%?31y88";
 
-        double targetRa = getRa();
-        double targetDec = getDec();
-        double radius = getSearchRadius() / sqrt(2) / DEG_ARCSEC;
+        double ra = getRa();
+        double dec = getDec();
+        double radius = getSearchRadius() / DEG_ARCSEC;
 
-        NumberPair leftBoundaryCoords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(radius, 0));
-        double leftBoundary = leftBoundaryCoords.getX();
-        leftBoundary = leftBoundary > 360 ? leftBoundary - 360 : leftBoundary;
-        leftBoundary = leftBoundary > 360 ? 0 : leftBoundary;
-
-        NumberPair rightBoundaryCoords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec), new NumberPair(-radius, 0));
-        double rightBoundary = rightBoundaryCoords.getX();
-        rightBoundary = rightBoundary < 0 ? rightBoundary + 360 : rightBoundary;
-        rightBoundary = rightBoundary < 0 ? 0 : rightBoundary;
-
-        double bottomBoundary = targetDec - radius;
-        double topBoundary = targetDec + radius;
-
-        System.out.println("rightBoundary=" + rightBoundary);
-        System.out.println("leftBoundary=" + leftBoundary);
-        System.out.println("bottomBoundary=" + bottomBoundary);
-        System.out.println("topBoundary=" + topBoundary);
-
-        String query;
-        double newLeftBoundary;
-        double newRightBoundary;
-        if (leftBoundaryCoords.getX() > 360 || rightBoundaryCoords.getX() < 0) {
-            newLeftBoundary = 360;
-            newRightBoundary = 0;
-            String query1 = String.format("SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", rightBoundary, newLeftBoundary, bottomBoundary, topBoundary);
-            String query2 = String.format("SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", newRightBoundary, leftBoundary, bottomBoundary, topBoundary);
-            query = query1 + " UNION " + query2;
-        } else {
-            //String query = String.format("SELECT * FROM summary_all_objects WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", rightBoundary, leftBoundary, bottomBoundary, topBoundary);
-            query = String.format("SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ra BETWEEN %f AND %f AND `dec` BETWEEN %f AND %f", rightBoundary, leftBoundary, bottomBoundary, topBoundary);
-        }
+        String query = String.format("SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ACOS(SIN(RADIANS(`dec`)) * SIN(RADIANS(%f)) + COS(RADIANS(`dec`)) * COS(RADIANS(%f)) * COS(RADIANS(ra - %f))) * 180 / PI() <= %f", dec, dec, ra, radius);
 
         List<CatalogEntry> catalogEntries = new ArrayList();
 
