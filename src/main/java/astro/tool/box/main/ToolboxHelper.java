@@ -27,6 +27,7 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
@@ -192,6 +193,8 @@ public class ToolboxHelper {
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
         VhsCatalogEntry vhsCatalogEntry = new VhsCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
+        UhsCatalogEntry uhsCatalogEntry = new UhsCatalogEntry();
+        catalogInstances.put(uhsCatalogEntry.getCatalogName(), uhsCatalogEntry);
         UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
         catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
         TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
