@@ -14,18 +14,19 @@ public class Overlays {
         SDSS,
         SPECTRA,
         VHS,
-        GAIAWD,
+        UHS,
+        UKIDSS,
         TWOMASS,
         TESS,
         DES,
-        UKIDSS,
+        GAIAWD,
         MOCA,
         SSO,
         PM_GAIA_DR2,
         PM_GAIA_DR3,
-        PM_NOIR_LAB,
-        PM_CAT_WISE,
-        PM_UK_IDSS,
+        PM_NOIRLAB,
+        PM_CATWISE,
+        PM_UKIDSS,
         GHOSTS,
         LATENTS,
         HALOS,
@@ -43,11 +44,12 @@ public class Overlays {
     private boolean sdss;
     private boolean spectra;
     private boolean vhs;
-    private boolean gaiawd;
+    private boolean uhs;
+    private boolean ukidss;
     private boolean twomass;
     private boolean tess;
     private boolean des;
-    private boolean ukidss;
+    private boolean gaiawd;
     private boolean moca;
     private boolean sso;
     private boolean pmgaiadr2;
@@ -95,8 +97,11 @@ public class Overlays {
         if (vhs) {
             overlays.append(ID.VHS).append(",");
         }
-        if (gaiawd) {
-            overlays.append(ID.GAIAWD).append(",");
+        if (uhs) {
+            overlays.append(ID.UHS).append(",");
+        }
+        if (ukidss) {
+            overlays.append(ID.UKIDSS).append(",");
         }
         if (twomass) {
             overlays.append(ID.TWOMASS).append(",");
@@ -107,8 +112,8 @@ public class Overlays {
         if (des) {
             overlays.append(ID.DES).append(",");
         }
-        if (ukidss) {
-            overlays.append(ID.UKIDSS).append(",");
+        if (gaiawd) {
+            overlays.append(ID.GAIAWD).append(",");
         }
         if (moca) {
             overlays.append(ID.MOCA).append(",");
@@ -123,13 +128,13 @@ public class Overlays {
             overlays.append(ID.PM_GAIA_DR3).append(",");
         }
         if (pmnoirlab) {
-            overlays.append(ID.PM_NOIR_LAB).append(",");
+            overlays.append(ID.PM_NOIRLAB).append(",");
         }
         if (pmcatwise) {
-            overlays.append(ID.PM_CAT_WISE).append(",");
+            overlays.append(ID.PM_CATWISE).append(",");
         }
         if (pmukidss) {
-            overlays.append(ID.PM_UK_IDSS).append(",");
+            overlays.append(ID.PM_UKIDSS).append(",");
         }
         if (ghosts) {
             overlays.append(ID.GHOSTS).append(",");
@@ -183,8 +188,11 @@ public class Overlays {
         if (overlays.contains(ID.VHS.name())) {
             vhs = true;
         }
-        if (overlays.contains(ID.GAIAWD.name())) {
-            gaiawd = true;
+        if (overlays.contains(ID.UHS.name())) {
+            uhs = true;
+        }
+        if (overlays.contains(ID.UKIDSS.name())) {
+            ukidss = true;
         }
         if (overlays.contains(ID.TWOMASS.name())) {
             twomass = true;
@@ -195,8 +203,8 @@ public class Overlays {
         if (overlays.contains(ID.DES.name())) {
             des = true;
         }
-        if (overlays.contains(ID.UKIDSS.name())) {
-            ukidss = true;
+        if (overlays.contains(ID.GAIAWD.name())) {
+            gaiawd = true;
         }
         if (overlays.contains(ID.MOCA.name())) {
             moca = true;
@@ -210,13 +218,13 @@ public class Overlays {
         if (overlays.contains(ID.PM_GAIA_DR3.name())) {
             pmgaiadr3 = true;
         }
-        if (overlays.contains(ID.PM_NOIR_LAB.name())) {
+        if (overlays.contains(ID.PM_NOIRLAB.name())) {
             pmnoirlab = true;
         }
-        if (overlays.contains(ID.PM_CAT_WISE.name())) {
+        if (overlays.contains(ID.PM_CATWISE.name())) {
             pmcatwise = true;
         }
-        if (overlays.contains(ID.PM_UK_IDSS.name())) {
+        if (overlays.contains(ID.PM_UKIDSS.name())) {
             pmukidss = true;
         }
         if (overlays.contains(ID.GHOSTS.name())) {
@@ -321,12 +329,20 @@ public class Overlays {
         this.vhs = vhs;
     }
 
-    public boolean isGaiawd() {
-        return gaiawd;
+    public boolean isUhs() {
+        return uhs;
     }
 
-    public void setGaiawd(boolean gaiawd) {
-        this.gaiawd = gaiawd;
+    public void setUhs(boolean uhs) {
+        this.uhs = uhs;
+    }
+
+    public boolean isUkidss() {
+        return ukidss;
+    }
+
+    public void setUkidss(boolean ukidss) {
+        this.ukidss = ukidss;
     }
 
     public boolean isTwomass() {
@@ -353,12 +369,12 @@ public class Overlays {
         this.des = des;
     }
 
-    public boolean isUkidss() {
-        return ukidss;
+    public boolean isGaiawd() {
+        return gaiawd;
     }
 
-    public void setUkidss(boolean ukidss) {
-        this.ukidss = ukidss;
+    public void setGaiawd(boolean gaiawd) {
+        this.gaiawd = gaiawd;
     }
 
     public boolean isMoca() {

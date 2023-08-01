@@ -447,14 +447,13 @@ public class ToolboxHelper {
             field.setForeground(JColor.RED.val);
         }
         field.setCaretPosition(0);
-        field.setBorder(BorderFactory.createEmptyBorder());
-        field.setEditable(false);
+        //field.setBorder(BorderFactory.createEmptyBorder());
+        //field.setEditable(false);
         if (hasToolTip) {
             field.setToolTipText(html(element.getToolTip()));
         }
         field.setPreferredSize(new Dimension(100, field.getPreferredSize().height));
-        JScrollPane scrollPane = new JScrollPane(field, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        panel.add(scrollPane);
+        panel.add(field);
     }
 
     public static void alignCatalogColumns(JTable table, CatalogEntry entry) {

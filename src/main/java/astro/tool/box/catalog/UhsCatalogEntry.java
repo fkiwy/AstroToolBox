@@ -4,7 +4,6 @@ import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.util.Comparators.*;
 import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.MiscUtils.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -98,16 +97,19 @@ public class UhsCatalogEntry implements CatalogEntry {
     public UhsCatalogEntry(Map<String, Integer> columns, String[] values) {
         this.columns = columns;
         this.values = values;
-        replaceNanValuesByZero(values);
         sourceId = toLong(values[columns.get("sourceID")]);
         ra = toDouble(values[columns.get("ra")]);
         dec = toDouble(values[columns.get("dec")]);
         objectType = toInteger(values[columns.get("mergedClass")]);
-        j_ap3 = toDouble(values[columns.get("jAperMag3")]);
-        j_ap3_err = toDouble(values[columns.get("jAperMag3Err")]);
-        ks_ap3 = toDouble(values[columns.get("kAperMag3")]);
-        ks_ap3_err = toDouble(values[columns.get("kAperMag3Err")]);
-        j_ks_pnt = toDouble(values[columns.get("jmkPnt")]);
+        j_ap3 = fixValue(toDouble(values[columns.get("jAperMag3")]));
+        j_ap3_err = fixValue(toDouble(values[columns.get("jAperMag3Err")]));
+        ks_ap3 = fixValue(toDouble(values[columns.get("kAperMag3")]));
+        ks_ap3_err = fixValue(toDouble(values[columns.get("kAperMag3Err")]));
+        j_ks_pnt = fixValue(toDouble(values[columns.get("jmkPnt")]));
+    }
+
+    private double fixValue(double value) {
+        return value < -999999 ? 0 : value;
     }
 
     @Override

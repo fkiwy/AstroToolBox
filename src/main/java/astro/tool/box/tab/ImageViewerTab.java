@@ -37,6 +37,7 @@ import astro.tool.box.catalog.SsoCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
@@ -224,26 +225,27 @@ public class ImageViewerTab implements Tab {
     private final List<SpectralTypeLookup> brownDwarfLookupEntries;
     private final Overlays overlays;
     private List<CatalogEntry> simbadEntries;
-    private List<CatalogEntry> gaiaEntries;
-    private List<CatalogEntry> gaiaTpmEntries;
-    private List<CatalogEntry> gaiaDR3Entries;
-    private List<CatalogEntry> gaiaDR3TpmEntries;
     private List<CatalogEntry> allWiseEntries;
     private List<CatalogEntry> catWiseEntries;
     private List<CatalogEntry> catWiseTpmEntries;
     private List<CatalogEntry> catWiseRejectEntries;
     private List<CatalogEntry> unWiseEntries;
-    private List<CatalogEntry> panStarrsEntries;
-    private List<CatalogEntry> sdssEntries;
-    private List<CatalogEntry> twoMassEntries;
-    private List<CatalogEntry> vhsEntries;
-    private List<CatalogEntry> gaiaWDEntries;
+    private List<CatalogEntry> gaiaEntries;
+    private List<CatalogEntry> gaiaTpmEntries;
+    private List<CatalogEntry> gaiaDR3Entries;
+    private List<CatalogEntry> gaiaDR3TpmEntries;
     private List<CatalogEntry> noirlabEntries;
     private List<CatalogEntry> noirlabTpmEntries;
-    private List<CatalogEntry> tessEntries;
-    private List<CatalogEntry> desEntries;
+    private List<CatalogEntry> panStarrsEntries;
+    private List<CatalogEntry> sdssEntries;
+    private List<CatalogEntry> vhsEntries;
+    private List<CatalogEntry> uhsEntries;
     private List<CatalogEntry> ukidssEntries;
     private List<CatalogEntry> ukidssTpmEntries;
+    private List<CatalogEntry> twoMassEntries;
+    private List<CatalogEntry> tessEntries;
+    private List<CatalogEntry> desEntries;
+    private List<CatalogEntry> gaiaWDEntries;
     private List<CatalogEntry> mocaEntries;
     private List<CatalogEntry> ssoEntries;
 
@@ -281,21 +283,22 @@ public class ImageViewerTab implements Tab {
     private JCheckBox markTarget;
     private JCheckBox showCrosshairs;
     private JCheckBox simbadOverlay;
-    private JCheckBox gaiaOverlay;
-    private JCheckBox gaiaDR3Overlay;
     private JCheckBox allWiseOverlay;
     private JCheckBox catWiseOverlay;
     private JCheckBox unWiseOverlay;
+    private JCheckBox gaiaOverlay;
+    private JCheckBox gaiaDR3Overlay;
+    private JCheckBox noirlabOverlay;
     private JCheckBox panStarrsOverlay;
     private JCheckBox sdssOverlay;
     private JCheckBox spectrumOverlay;
-    private JCheckBox twoMassOverlay;
     private JCheckBox vhsOverlay;
-    private JCheckBox gaiaWDOverlay;
-    private JCheckBox noirlabOverlay;
+    private JCheckBox uhsOverlay;
+    private JCheckBox ukidssOverlay;
+    private JCheckBox twoMassOverlay;
     private JCheckBox tessOverlay;
     private JCheckBox desOverlay;
-    private JCheckBox ukidssOverlay;
+    private JCheckBox gaiaWDOverlay;
     private JCheckBox mocaOverlay;
     private JCheckBox ssoOverlay;
     private JCheckBox ghostOverlay;
@@ -882,12 +885,14 @@ public class ImageViewerTab implements Tab {
 
             JPanel overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
+
             simbadOverlay = new JCheckBox(html("<u>S</u>IMBAD"), overlays.isSimbad());
             simbadOverlay.setForeground(Color.RED);
             simbadOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(simbadOverlay);
+
             allWiseOverlay = new JCheckBox(html("<u>A</u>llWISE"), overlays.isAllwise());
             allWiseOverlay.setForeground(Color.GREEN.darker());
             allWiseOverlay.addActionListener((ActionEvent evt) -> {
@@ -897,12 +902,14 @@ public class ImageViewerTab implements Tab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
+
             catWiseOverlay = new JCheckBox(html("<u>C</u>atWISE2020"), overlays.isCatwise());
             catWiseOverlay.setForeground(Color.MAGENTA);
             catWiseOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(catWiseOverlay);
+
             unWiseOverlay = new JCheckBox(html("<u>u</u>nWISE"), overlays.isUnwise());
             unWiseOverlay.setForeground(JColor.MINT.val);
             unWiseOverlay.addActionListener((ActionEvent evt) -> {
@@ -912,12 +919,14 @@ public class ImageViewerTab implements Tab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
+
             gaiaOverlay = new JCheckBox("Gaia DR2", overlays.isGaiadr2());
             gaiaOverlay.setForeground(Color.CYAN.darker());
             gaiaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(gaiaOverlay);
+
             gaiaDR3Overlay = new JCheckBox(html("<u>G</u>aia DR3"), overlays.isGaiadr3());
             gaiaDR3Overlay.setForeground(Color.CYAN.darker());
             gaiaDR3Overlay.addActionListener((ActionEvent evt) -> {
@@ -927,12 +936,14 @@ public class ImageViewerTab implements Tab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
+
             noirlabOverlay = new JCheckBox(html("<u>N</u>SC DR2"), overlays.isNoirlab());
             noirlabOverlay.setForeground(JColor.NAVY.val);
             noirlabOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(noirlabOverlay);
+
             panStarrsOverlay = new JCheckBox(html("<u>P</u>an-STARRS"), overlays.isPanstar());
             panStarrsOverlay.setForeground(JColor.BROWN.val);
             panStarrsOverlay.addActionListener((ActionEvent evt) -> {
@@ -942,12 +953,14 @@ public class ImageViewerTab implements Tab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
+
             sdssOverlay = new JCheckBox(html("S<u>D</u>SS DR17"), overlays.isSdss());
             sdssOverlay.setForeground(JColor.STEEL.val);
             sdssOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(sdssOverlay);
+
             spectrumOverlay = new JCheckBox("SDSS Spectra", overlays.isSpectra());
             spectrumOverlay.setForeground(JColor.OLIVE.val);
             spectrumOverlay.addActionListener((ActionEvent evt) -> {
@@ -957,12 +970,24 @@ public class ImageViewerTab implements Tab {
 
             overlayPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(overlayPanel);
+
             vhsOverlay = new JCheckBox(html("<u>V</u>HS DR5"), overlays.isVhs());
             vhsOverlay.setForeground(JColor.PINK.val);
             vhsOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(vhsOverlay);
+
+            uhsOverlay = new JCheckBox(html("U<u>H</u>S DR2"), overlays.isUhs());
+            uhsOverlay.setForeground(JColor.DARK_YELLOW.val);
+            uhsOverlay.addActionListener((ActionEvent evt) -> {
+                processImages();
+            });
+            overlayPanel.add(uhsOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlaysControlPanel.add(overlayPanel);
+
             ukidssOverlay = new JCheckBox(html("U<u>K</u>IDSS DR11"), overlays.isUkidss());
             ukidssOverlay.setForeground(JColor.BLOOD.val);
             ukidssOverlay.addActionListener((ActionEvent evt) -> {
@@ -970,14 +995,16 @@ public class ImageViewerTab implements Tab {
             });
             overlayPanel.add(ukidssOverlay);
 
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            overlaysControlPanel.add(overlayPanel);
             twoMassOverlay = new JCheckBox(html("2<u>M</u>ASS"), overlays.isTwomass());
             twoMassOverlay.setForeground(JColor.ORANGE.val);
             twoMassOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(twoMassOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlaysControlPanel.add(overlayPanel);
+
             tessOverlay = new JCheckBox(html("<u>T</u>ESS"), overlays.isTess());
             tessOverlay.setForeground(JColor.LILAC.val);
             tessOverlay.addActionListener((ActionEvent evt) -> {
@@ -985,14 +1012,16 @@ public class ImageViewerTab implements Tab {
             });
             overlayPanel.add(tessOverlay);
 
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            overlaysControlPanel.add(overlayPanel);
             desOverlay = new JCheckBox(html("D<u>E</u>S DR2"), overlays.isDes());
             desOverlay.setForeground(JColor.SAND.val);
             desOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(desOverlay);
+
+            overlayPanel = new JPanel(new GridLayout(1, 2));
+            overlaysControlPanel.add(overlayPanel);
+
             gaiaWDOverlay = new JCheckBox(html("Gaia EDR3 <u>W</u>D"), overlays.isGaiawd());
             gaiaWDOverlay.setForeground(JColor.PURPLE.val);
             gaiaWDOverlay.addActionListener((ActionEvent evt) -> {
@@ -1000,20 +1029,19 @@ public class ImageViewerTab implements Tab {
             });
             overlayPanel.add(gaiaWDOverlay);
 
-            overlayPanel = new JPanel(new GridLayout(1, 2));
-            overlaysControlPanel.add(overlayPanel);
             mocaOverlay = new JCheckBox(html("M<u>O</u>CA"), overlays.isMoca());
             mocaOverlay.setForeground(JColor.DARK_ORANGE.val);
             mocaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(mocaOverlay);
-            ssoOverlay = new JCheckBox("Solar Sys. Obj.", overlays.isSso());
+
+            ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
-            overlayPanel.add(ssoOverlay);
+            overlaysControlPanel.add(ssoOverlay);
 
             useCustomOverlays = new JCheckBox("Custom overlays:");
             overlaysControlPanel.add(useCustomOverlays);
@@ -1059,12 +1087,14 @@ public class ImageViewerTab implements Tab {
 
             JPanel properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
+
             gaiaProperMotion = new JCheckBox("Gaia DR2", overlays.isPmgaiadr2());
             gaiaProperMotion.setForeground(Color.CYAN.darker());
             gaiaProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(gaiaProperMotion);
+
             gaiaDR3ProperMotion = new JCheckBox(html("<u>G</u>aia DR3"), overlays.isPmgaiadr3());
             gaiaDR3ProperMotion.setForeground(Color.CYAN.darker());
             gaiaDR3ProperMotion.addActionListener((ActionEvent evt) -> {
@@ -1074,12 +1104,14 @@ public class ImageViewerTab implements Tab {
 
             properMotionPanel = new JPanel(new GridLayout(1, 2));
             overlaysControlPanel.add(properMotionPanel);
+
             noirlabProperMotion = new JCheckBox(html("<u>N</u>SC DR2"), overlays.isPmnoirlab());
             noirlabProperMotion.setForeground(JColor.NAVY.val);
             noirlabProperMotion.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             properMotionPanel.add(noirlabProperMotion);
+
             catWiseProperMotion = new JCheckBox(html("<u>C</u>atWISE2020"), overlays.isPmcatwise());
             catWiseProperMotion.setForeground(Color.MAGENTA);
             catWiseProperMotion.addActionListener((ActionEvent evt) -> {
@@ -1170,11 +1202,12 @@ public class ImageViewerTab implements Tab {
                 overlays.setSdss(sdssOverlay.isSelected());
                 overlays.setSpectra(spectrumOverlay.isSelected());
                 overlays.setVhs(vhsOverlay.isSelected());
-                overlays.setGaiawd(gaiaWDOverlay.isSelected());
+                overlays.setUhs(uhsOverlay.isSelected());
+                overlays.setUkidss(ukidssOverlay.isSelected());
                 overlays.setTwomass(twoMassOverlay.isSelected());
                 overlays.setTess(tessOverlay.isSelected());
                 overlays.setDes(desOverlay.isSelected());
-                overlays.setUkidss(ukidssOverlay.isSelected());
+                overlays.setGaiawd(gaiaWDOverlay.isSelected());
                 overlays.setMoca(mocaOverlay.isSelected());
                 overlays.setSso(ssoOverlay.isSelected());
                 overlays.setPmgaiadr2(gaiaProperMotion.isSelected());
@@ -1870,8 +1903,12 @@ public class ImageViewerTab implements Tab {
                                     showCatalogInfo(vhsEntries, mouseX, mouseY, JColor.PINK.val);
                                     count++;
                                 }
-                                if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
-                                    showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
+                                if (uhsOverlay.isSelected() && uhsEntries != null) {
+                                    showCatalogInfo(uhsEntries, mouseX, mouseY, JColor.DARK_YELLOW.val);
+                                    count++;
+                                }
+                                if (ukidssOverlay.isSelected() && ukidssEntries != null) {
+                                    showCatalogInfo(ukidssEntries, mouseX, mouseY, JColor.BLOOD.val);
                                     count++;
                                 }
                                 if (twoMassOverlay.isSelected() && twoMassEntries != null) {
@@ -1886,8 +1923,8 @@ public class ImageViewerTab implements Tab {
                                     showCatalogInfo(desEntries, mouseX, mouseY, JColor.SAND.val);
                                     count++;
                                 }
-                                if (ukidssOverlay.isSelected() && ukidssEntries != null) {
-                                    showCatalogInfo(ukidssEntries, mouseX, mouseY, JColor.BLOOD.val);
+                                if (gaiaWDOverlay.isSelected() && gaiaWDEntries != null) {
+                                    showCatalogInfo(gaiaWDEntries, mouseX, mouseY, JColor.PURPLE.val);
                                     count++;
                                 }
                                 if (mocaOverlay.isSelected() && mocaEntries != null) {
@@ -2201,6 +2238,20 @@ public class ImageViewerTab implements Tab {
                     vhsOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
+            Action keyActionForAltH = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    uhsOverlay.setSelected(!uhsOverlay.isSelected());
+                    uhsOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
+            Action keyActionForAltK = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ukidssOverlay.setSelected(!ukidssOverlay.isSelected());
+                    ukidssOverlay.getActionListeners()[0].actionPerformed(null);
+                }
+            };
             Action keyActionForAltM = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2222,11 +2273,11 @@ public class ImageViewerTab implements Tab {
                     desOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
-            Action keyActionForAltK = new AbstractAction() {
+            Action keyActionForAltW = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ukidssOverlay.setSelected(!ukidssOverlay.isSelected());
-                    ukidssOverlay.getActionListeners()[0].actionPerformed(null);
+                    gaiaWDOverlay.setSelected(!gaiaWDOverlay.isSelected());
+                    gaiaWDOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
             Action keyActionForAltO = new AbstractAction() {
@@ -2234,13 +2285,6 @@ public class ImageViewerTab implements Tab {
                 public void actionPerformed(ActionEvent e) {
                     mocaOverlay.setSelected(!mocaOverlay.isSelected());
                     mocaOverlay.getActionListeners()[0].actionPerformed(null);
-                }
-            };
-            Action keyActionForAltW = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    gaiaWDOverlay.setSelected(!gaiaWDOverlay.isSelected());
-                    gaiaWDOverlay.getActionListeners()[0].actionPerformed(null);
                 }
             };
             Action keyActionForCtrlAltG = new AbstractAction() {
@@ -2303,6 +2347,12 @@ public class ImageViewerTab implements Tab {
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.ALT_MASK), "keyActionForAltV");
             aMap.put("keyActionForAltV", keyActionForAltV);
 
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK), "keyActionForAltH");
+            aMap.put("keyActionForAltH", keyActionForAltH);
+
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.ALT_MASK), "keyActionForAltK");
+            aMap.put("keyActionForAltK", keyActionForAltK);
+
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK), "keyActionForAltM");
             aMap.put("keyActionForAltM", keyActionForAltM);
 
@@ -2312,14 +2362,11 @@ public class ImageViewerTab implements Tab {
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK), "keyActionForAltE");
             aMap.put("keyActionForAltE", keyActionForAltE);
 
-            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.ALT_MASK), "keyActionForAltK");
-            aMap.put("keyActionForAltK", keyActionForAltK);
+            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
+            aMap.put("keyActionForAltW", keyActionForAltW);
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK), "keyActionForAltO");
             aMap.put("keyActionForAltO", keyActionForAltO);
-
-            iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK), "keyActionForAltW");
-            aMap.put("keyActionForAltW", keyActionForAltW);
 
             iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK), "keyActionForCtrlAltG");
             aMap.put("keyActionForCtrlAltG", keyActionForCtrlAltG);
@@ -3044,26 +3091,27 @@ public class ImageViewerTab implements Tab {
 
     public void initCatalogEntries() {
         simbadEntries = null;
-        gaiaEntries = null;
-        gaiaDR3Entries = null;
-        gaiaTpmEntries = null;
-        gaiaDR3TpmEntries = null;
         allWiseEntries = null;
         catWiseEntries = null;
         catWiseRejectEntries = null;
         catWiseTpmEntries = null;
         unWiseEntries = null;
-        panStarrsEntries = null;
-        sdssEntries = null;
-        twoMassEntries = null;
-        vhsEntries = null;
-        gaiaWDEntries = null;
+        gaiaEntries = null;
+        gaiaDR3Entries = null;
+        gaiaTpmEntries = null;
+        gaiaDR3TpmEntries = null;
         noirlabEntries = null;
         noirlabTpmEntries = null;
-        tessEntries = null;
-        desEntries = null;
+        panStarrsEntries = null;
+        sdssEntries = null;
+        vhsEntries = null;
+        uhsEntries = null;
         ukidssEntries = null;
         ukidssTpmEntries = null;
+        twoMassEntries = null;
+        tessEntries = null;
+        desEntries = null;
+        gaiaWDEntries = null;
         mocaEntries = null;
         ssoEntries = null;
         if (useCustomOverlays.isSelected()) {
@@ -3308,16 +3356,28 @@ public class ImageViewerTab implements Tab {
                 drawOverlay(image, vhsEntries, JColor.PINK.val, Shape.CIRCLE);
             }
         }
-        if (gaiaWDOverlay.isSelected()) {
-            if (gaiaWDEntries == null) {
-                gaiaWDEntries = Collections.emptyList();
+        if (uhsOverlay.isSelected()) {
+            if (uhsEntries == null) {
+                uhsEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry());
+                    uhsEntries = fetchCatalogEntries(new UhsCatalogEntry());
                     processImages();
                     return null;
                 });
             } else {
-                drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
+                drawOverlay(image, uhsEntries, JColor.DARK_YELLOW.val, Shape.CIRCLE);
+            }
+        }
+        if (ukidssOverlay.isSelected()) {
+            if (ukidssEntries == null) {
+                ukidssEntries = Collections.emptyList();
+                CompletableFuture.supplyAsync(() -> {
+                    ukidssEntries = fetchCatalogEntries(new UkidssCatalogEntry());
+                    processImages();
+                    return null;
+                });
+            } else {
+                drawOverlay(image, ukidssEntries, JColor.BLOOD.val, Shape.CIRCLE);
             }
         }
         if (twoMassOverlay.isSelected()) {
@@ -3356,16 +3416,16 @@ public class ImageViewerTab implements Tab {
                 drawOverlay(image, desEntries, JColor.SAND.val, Shape.CIRCLE);
             }
         }
-        if (ukidssOverlay.isSelected()) {
-            if (ukidssEntries == null) {
-                ukidssEntries = Collections.emptyList();
+        if (gaiaWDOverlay.isSelected()) {
+            if (gaiaWDEntries == null) {
+                gaiaWDEntries = Collections.emptyList();
                 CompletableFuture.supplyAsync(() -> {
-                    ukidssEntries = fetchCatalogEntries(new UkidssCatalogEntry());
+                    gaiaWDEntries = fetchCatalogEntries(new GaiaWDCatalogEntry());
                     processImages();
                     return null;
                 });
             } else {
-                drawOverlay(image, ukidssEntries, JColor.BLOOD.val, Shape.CIRCLE);
+                drawOverlay(image, gaiaWDEntries, JColor.PURPLE.val, Shape.CIRCLE);
             }
         }
         if (mocaOverlay.isSelected()) {
@@ -5984,14 +6044,6 @@ public class ImageViewerTab implements Tab {
         return simbadOverlay;
     }
 
-    public JCheckBox getGaiaOverlay() {
-        return gaiaOverlay;
-    }
-
-    public JCheckBox getGaiaDR3Overlay() {
-        return gaiaDR3Overlay;
-    }
-
     public JCheckBox getAllWiseOverlay() {
         return allWiseOverlay;
     }
@@ -6004,6 +6056,18 @@ public class ImageViewerTab implements Tab {
         return unWiseOverlay;
     }
 
+    public JCheckBox getGaiaOverlay() {
+        return gaiaOverlay;
+    }
+
+    public JCheckBox getGaiaDR3Overlay() {
+        return gaiaDR3Overlay;
+    }
+
+    public JCheckBox getNoirlabOverlay() {
+        return noirlabOverlay;
+    }
+
     public JCheckBox getPanStarrsOverlay() {
         return panStarrsOverlay;
     }
@@ -6012,20 +6076,20 @@ public class ImageViewerTab implements Tab {
         return sdssOverlay;
     }
 
-    public JCheckBox getTwoMassOverlay() {
-        return twoMassOverlay;
-    }
-
     public JCheckBox getVhsOverlay() {
         return vhsOverlay;
     }
 
-    public JCheckBox getGaiaWDOverlay() {
-        return gaiaWDOverlay;
+    public JCheckBox getUhsOverlay() {
+        return uhsOverlay;
     }
 
-    public JCheckBox getNoirlabOverlay() {
-        return noirlabOverlay;
+    public JCheckBox getUkidssOverlay() {
+        return ukidssOverlay;
+    }
+
+    public JCheckBox getTwoMassOverlay() {
+        return twoMassOverlay;
     }
 
     public JCheckBox getTessOverlay() {
@@ -6036,8 +6100,8 @@ public class ImageViewerTab implements Tab {
         return desOverlay;
     }
 
-    public JCheckBox getUkidssOverlay() {
-        return ukidssOverlay;
+    public JCheckBox getGaiaWDOverlay() {
+        return gaiaWDOverlay;
     }
 
     public JCheckBox getMocaOverlay() {
