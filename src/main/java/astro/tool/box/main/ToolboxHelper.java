@@ -1151,7 +1151,7 @@ public class ToolboxHelper {
                 if (width > height + offset || width < height - offset) {
                     return new LinkedHashMap();
                 }
-                if (surveyLabel.equals(UKIDSS_LABEL)) {
+                if (surveyLabel.equals(UHS_LABEL) || surveyLabel.equals(UKIDSS_LABEL)) {
                     // Rotate image
                     switch (extNo) {
                         case "1":

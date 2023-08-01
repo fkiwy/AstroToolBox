@@ -348,14 +348,16 @@ public class ImageViewerTab implements Tab {
     private BufferedImage wiseImage;
     private BufferedImage desiImage;
     private BufferedImage ps1Image;
-    private BufferedImage ukidssImage;
     private BufferedImage vhsImage;
+    private BufferedImage uhsImage;
+    private BufferedImage ukidssImage;
     private BufferedImage sdssImage;
     private BufferedImage dssImage;
     private BufferedImage processedDesiImage;
     private BufferedImage processedPs1Image;
-    private BufferedImage processedUkidssImage;
     private BufferedImage processedVhsImage;
+    private BufferedImage processedUhsImage;
+    private BufferedImage processedUkidssImage;
     private BufferedImage processedSdssImage;
     private BufferedImage processedDssImage;
     private Map<String, ImageContainer> imagesW1 = new HashMap();
@@ -391,8 +393,9 @@ public class ImageViewerTab implements Tab {
     private int size = SIZE;
 
     private int year_ps1_y_i_g;
-    private int year_ukidss_k_h_j;
     private int year_vhs_k_h_j;
+    private int year_uhs_k_j;
+    private int year_ukidss_k_h_j;
     //private int year_sdss_z_g_u;
     private int year_dss_2ir_1r_1b;
 
@@ -426,8 +429,9 @@ public class ImageViewerTab implements Tab {
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
-    private boolean ukidssImages;
     private boolean vhsImages;
+    private boolean uhsImages;
+    private boolean ukidssImages;
     private boolean sdssImages;
     private boolean dssImages;
     private boolean waitCursor = true;
@@ -1678,6 +1682,12 @@ public class ImageViewerTab implements Tab {
                         surveyImages.add(new Couple(getImageLabel(VHS_LABEL, year_vhs_k_h_j), new NirImage(year_vhs_k_h_j, processedVhsImage)));
                     }
 
+                    // UHS image
+                    JLabel uhsLabel = null;
+                    if (processedUhsImage != null) {
+                        surveyImages.add(new Couple(getImageLabel(UHS_LABEL, year_uhs_k_j), new NirImage(year_uhs_k_j, processedUhsImage)));
+                    }
+
                     // UKIDSS image
                     JLabel ukidssLabel = null;
                     if (processedUkidssImage != null) {
@@ -1713,6 +1723,8 @@ public class ImageViewerTab implements Tab {
                             ps1Label = imageLabel;
                         } else if (surveyLabel.contains(VHS_LABEL)) {
                             vhsLabel = imageLabel;
+                        } else if (surveyLabel.contains(UHS_LABEL)) {
+                            uhsLabel = imageLabel;
                         } else if (surveyLabel.contains(UKIDSS_LABEL)) {
                             ukidssLabel = imageLabel;
                         }
@@ -2078,6 +2090,36 @@ public class ImageViewerTab implements Tab {
                                 try {
                                     String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
                                     Desktop.getDesktop().browse(new URI(String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
+                                } catch (IOException | URISyntaxException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+
+                            @Override
+                            public void mouseReleased(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseEntered(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseExited(MouseEvent evt) {
+                            }
+
+                            @Override
+                            public void mouseClicked(MouseEvent evt) {
+                            }
+                        });
+                    }
+
+                    if (uhsLabel != null) {
+                        uhsLabel.addMouseListener(new MouseListener() {
+                            @Override
+                            public void mousePressed(MouseEvent evt) {
+                                try {
+                                    String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
+                                    Desktop.getDesktop().browse(new URI(String.format(UHS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2600,62 +2642,72 @@ public class ImageViewerTab implements Tab {
                 pointerX = pointerY = 0;
                 windowShift = 0;
                 year_ps1_y_i_g = 0;
-                year_ukidss_k_h_j = 0;
                 year_vhs_k_h_j = 0;
+                year_uhs_k_j = 0;
+                year_ukidss_k_h_j = 0;
                 //year_sdss_z_g_u = 0;
                 year_dss_2ir_1r_1b = 0;
                 initCatalogEntries();
                 if (resetContrast.isSelected()) {
                     resetContrastSlider();
                 }
+                desiImage = null;
+                processedDesiImage = null;
                 if (legacyImages) {
-                    desiImage = null;
-                    processedDesiImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         desiImage = fetchDesiImage(targetRa, targetDec, size);
                         processedDesiImage = zoomImage(rotateImage(desiImage, quadrantCount), zoom);
                         return null;
                     });
                 }
+                ps1Image = null;
+                processedPs1Image = null;
                 if (panstarrsImages) {
-                    ps1Image = null;
-                    processedPs1Image = null;
                     CompletableFuture.supplyAsync(() -> {
                         ps1Image = fetchPs1Image(targetRa, targetDec, size);
                         processedPs1Image = zoomImage(rotateImage(ps1Image, quadrantCount), zoom);
                         return null;
                     });
                 }
-                if (ukidssImages) {
-                    ukidssImage = null;
-                    processedUkidssImage = null;
-                    CompletableFuture.supplyAsync(() -> {
-                        ukidssImage = fetchUkidssImage(targetRa, targetDec, size);
-                        processedUkidssImage = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
-                        return null;
-                    });
-                }
+                vhsImage = null;
+                processedVhsImage = null;
                 if (vhsImages) {
-                    vhsImage = null;
-                    processedVhsImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         vhsImage = fetchVhsImage(targetRa, targetDec, size);
                         processedVhsImage = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
                         return null;
                     });
                 }
+                uhsImage = null;
+                processedUhsImage = null;
+                if (uhsImages) {
+                    CompletableFuture.supplyAsync(() -> {
+                        uhsImage = fetchUhsImage(targetRa, targetDec, size);
+                        processedUhsImage = zoomImage(rotateImage(uhsImage, quadrantCount), zoom);
+                        return null;
+                    });
+                }
+                ukidssImage = null;
+                processedUkidssImage = null;
+                if (ukidssImages) {
+                    CompletableFuture.supplyAsync(() -> {
+                        ukidssImage = fetchUkidssImage(targetRa, targetDec, size);
+                        processedUkidssImage = zoomImage(rotateImage(ukidssImage, quadrantCount), zoom);
+                        return null;
+                    });
+                }
+                sdssImage = null;
+                processedSdssImage = null;
                 if (sdssImages) {
-                    sdssImage = null;
-                    processedSdssImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         sdssImage = fetchSdssImage(targetRa, targetDec, size);
                         processedSdssImage = zoomImage(rotateImage(sdssImage, quadrantCount), zoom);
                         return null;
                     });
                 }
+                dssImage = null;
+                processedDssImage = null;
                 if (dssImages) {
-                    dssImage = null;
-                    processedDssImage = null;
                     CompletableFuture.supplyAsync(() -> {
                         dssImage = fetchDssImage(targetRa, targetDec, size);
                         processedDssImage = zoomImage(rotateImage(dssImage, quadrantCount), zoom);
@@ -3143,6 +3195,11 @@ public class ImageViewerTab implements Tab {
         if (vhsImage != null) {
             BufferedImage image = zoomImage(rotateImage(vhsImage, quadrantCount), zoom);
             JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel(VHS_LABEL, year_vhs_k_h_j)));
+            grid.add(pane);
+        }
+        if (uhsImage != null) {
+            BufferedImage image = zoomImage(rotateImage(uhsImage, quadrantCount), zoom);
+            JScrollPane pane = new JScrollPane(addTextToImage(new JLabel(new ImageIcon(image)), getImageLabel(UHS_LABEL, year_uhs_k_j)));
             grid.add(pane);
         }
         if (ukidssImage != null) {
@@ -4306,26 +4363,6 @@ public class ImageViewerTab implements Tab {
         }
     }
 
-    private BufferedImage fetchUkidssImage(double targetRa, double targetDec, double size) {
-        try {
-            if (targetDec < -5) {
-                return null;
-            }
-            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
-            NirImage nirImage = nirImages.get("K-H-J");
-            if (nirImage == null) {
-                nirImage = nirImages.get("K-J");
-            }
-            if (nirImage == null) {
-                return null;
-            }
-            year_ukidss_k_h_j = nirImage.getYear();
-            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
     private BufferedImage fetchVhsImage(double targetRa, double targetDec, double size) {
         try {
             if (targetDec > 5) {
@@ -4340,6 +4377,46 @@ public class ImageViewerTab implements Tab {
                 return null;
             }
             year_vhs_k_h_j = nirImage.getYear();
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private BufferedImage fetchUhsImage(double targetRa, double targetDec, double size) {
+        try {
+            if (targetDec < -5) {
+                return null;
+            }
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UHS_SURVEY_URL, UHS_LABEL);
+            NirImage nirImage = nirImages.get("K-H-J");
+            if (nirImage == null) {
+                nirImage = nirImages.get("K-J");
+            }
+            if (nirImage == null) {
+                return null;
+            }
+            year_uhs_k_j = nirImage.getYear();
+            return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private BufferedImage fetchUkidssImage(double targetRa, double targetDec, double size) {
+        try {
+            if (targetDec < -5) {
+                return null;
+            }
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size * pixelScale, UKIDSS_SURVEY_URL, UKIDSS_LABEL);
+            NirImage nirImage = nirImages.get("K-H-J");
+            if (nirImage == null) {
+                nirImage = nirImages.get("K-J");
+            }
+            if (nirImage == null) {
+                return null;
+            }
+            year_ukidss_k_h_j = nirImage.getYear();
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? nirImage.getImage() : null;
         } catch (Exception ex) {
             return null;
@@ -6184,12 +6261,16 @@ public class ImageViewerTab implements Tab {
         this.panstarrsImages = panstarrsImages;
     }
 
-    public void setUkidssImages(boolean ukidssImages) {
-        this.ukidssImages = ukidssImages;
-    }
-
     public void setVhsImages(boolean vhsImages) {
         this.vhsImages = vhsImages;
+    }
+
+    public void setUhsImages(boolean uhsImages) {
+        this.uhsImages = uhsImages;
+    }
+
+    public void setUkidssImages(boolean ukidssImages) {
+        this.ukidssImages = ukidssImages;
     }
 
     public void setLegacyImages(boolean legacyImages) {

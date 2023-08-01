@@ -10,9 +10,11 @@ public class Constants {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
-
     public static final String VHS_SURVEY_URL = "http://horus.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=tilestack";
+
+    public static final String UHS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UHSDR2&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
+
+    public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
 
     public static final String TAP_URL_PARAMS = "/sync?request=doQuery&lang=ADQL&format=csv&query=";
 
@@ -42,11 +44,13 @@ public class Constants {
 
     public static final String CUTOUT_SERVICE_URL = "http://byw.tools/cutout";
 
-    public static final String SDSS_LABEL = "SDSS 1998-2009";
+    public static final String VHS_LABEL = "VHS";
+
+    public static final String UHS_LABEL = "UHS";
 
     public static final String UKIDSS_LABEL = "UKIDSS";
 
-    public static final String VHS_LABEL = "VHS";
+    public static final String SDSS_LABEL = "SDSS 1998-2009";
 
     public static final int SPITZER_EPOCH = 2003;
 
