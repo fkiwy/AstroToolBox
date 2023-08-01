@@ -5553,7 +5553,7 @@ public class ImageViewerTab implements Tab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setMinimumSize(new Dimension(675, 350));
+        scrollPanel.setMinimumSize(new Dimension(700, 300));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -5821,7 +5821,7 @@ public class ImageViewerTab implements Tab {
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        detailsFrame.setSize(675, 675);
+        detailsFrame.setSize(700, 700);
         detailsFrame.setLocation(windowShift, windowShift);
         detailsFrame.setAlwaysOnTop(false);
         detailsFrame.setResizable(true);

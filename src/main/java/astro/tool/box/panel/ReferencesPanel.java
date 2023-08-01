@@ -169,7 +169,7 @@ public class ReferencesPanel extends JPanel {
 
                 columns = new String[]{"Identifier"};
                 resultPanel = new JScrollPane(createResultTable(identifiers, columns, 0));
-                resultPanel.setPreferredSize(new Dimension(300, 200));
+                resultPanel.setPreferredSize(new Dimension(300, 400));
                 resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object identifiers")));
 
                 referencesPanel.add(resultPanel);
@@ -197,7 +197,7 @@ public class ReferencesPanel extends JPanel {
                 }
 
                 resultPanel = new JScrollPane(component);
-                resultPanel.setPreferredSize(new Dimension(1500, 200));
+                resultPanel.setPreferredSize(new Dimension(1500, 400));
                 resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object references")));
 
                 referencesPanel.add(resultPanel);
