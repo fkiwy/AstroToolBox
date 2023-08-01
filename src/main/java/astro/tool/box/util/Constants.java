@@ -56,7 +56,7 @@ public class Constants {
 
     public static final int ALLWISE_EPOCH = 2010;
 
-    public static final int DESI_LS_EPOCH = 2019;
+    public static final int DESI_LS_EPOCH = 2017;
 
     public static final String DESI_LS_DR_LABEL = "DR10";
 

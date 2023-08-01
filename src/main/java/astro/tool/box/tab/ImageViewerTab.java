@@ -318,6 +318,7 @@ public class ImageViewerTab implements Tab {
     private JCheckBox spitzerImageSeries;
     private JCheckBox allwiseImageSeries;
     private JCheckBox ukidssImageSeries;
+    private JCheckBox uhsImageSeries;
     private JCheckBox vhsImageSeries;
     private JCheckBox panstarrsImageSeries;
     private JCheckBox legacyImageSeries;
@@ -1298,6 +1299,12 @@ public class ImageViewerTab implements Tab {
                 imageSeriesPdf.setSelected(false);
             });
 
+            uhsImageSeries = new JCheckBox("UHS J & K bands", false);
+            mouseControlPanel.add(uhsImageSeries);
+            uhsImageSeries.addActionListener((ActionEvent evt) -> {
+                imageSeriesPdf.setSelected(false);
+            });
+
             vhsImageSeries = new JCheckBox("VHS Y, J, H & K bands", false);
             mouseControlPanel.add(vhsImageSeries);
             vhsImageSeries.addActionListener((ActionEvent evt) -> {
@@ -1326,6 +1333,7 @@ public class ImageViewerTab implements Tab {
                     spitzerImageSeries.setSelected(false);
                     allwiseImageSeries.setSelected(false);
                     ukidssImageSeries.setSelected(false);
+                    uhsImageSeries.setSelected(false);
                     vhsImageSeries.setSelected(false);
                     panstarrsImageSeries.setSelected(false);
                     legacyImageSeries.setSelected(false);
@@ -1344,6 +1352,7 @@ public class ImageViewerTab implements Tab {
                     spitzerImageSeries.setSelected(true);
                     allwiseImageSeries.setSelected(true);
                     ukidssImageSeries.setSelected(true);
+                    uhsImageSeries.setSelected(true);
                     vhsImageSeries.setSelected(true);
                     panstarrsImageSeries.setSelected(true);
                     legacyImageSeries.setSelected(true);
@@ -1355,6 +1364,7 @@ public class ImageViewerTab implements Tab {
                     spitzerImageSeries.setSelected(false);
                     allwiseImageSeries.setSelected(false);
                     ukidssImageSeries.setSelected(false);
+                    uhsImageSeries.setSelected(false);
                     vhsImageSeries.setSelected(false);
                     panstarrsImageSeries.setSelected(false);
                     legacyImageSeries.setSelected(false);
@@ -1376,6 +1386,7 @@ public class ImageViewerTab implements Tab {
                     spitzerImageSeries.setSelected(false);
                     allwiseImageSeries.setSelected(false);
                     ukidssImageSeries.setSelected(false);
+                    uhsImageSeries.setSelected(false);
                     vhsImageSeries.setSelected(false);
                     panstarrsImageSeries.setSelected(false);
                     legacyImageSeries.setSelected(false);
@@ -1813,6 +1824,9 @@ public class ImageViewerTab implements Tab {
                                             if (ukidssImageSeries.isSelected()) {
                                                 numberOfPanels++;
                                             }
+                                            if (uhsImageSeries.isSelected()) {
+                                                numberOfPanels++;
+                                            }
                                             if (vhsImageSeries.isSelected()) {
                                                 numberOfPanels++;
                                             }
@@ -1852,6 +1866,9 @@ public class ImageViewerTab implements Tab {
                                             }
                                             if (ukidssImageSeries.isSelected()) {
                                                 displayUkidssImages(newRa, newDec, fieldOfView, counter);
+                                            }
+                                            if (uhsImageSeries.isSelected()) {
+                                                displayUhsImages(newRa, newDec, fieldOfView, counter);
                                             }
                                             if (vhsImageSeries.isSelected()) {
                                                 displayVhsImages(newRa, newDec, fieldOfView, counter);
@@ -4780,6 +4797,45 @@ public class ImageViewerTab implements Tab {
         }
     }
 
+    private void displayUhsImages(double targetRa, double targetDec, int size, Counter counter) {
+        baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            if (targetDec < -5) {
+                return;
+            }
+            Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UHS_SURVEY_URL, UHS_LABEL);
+            if (nirImages.isEmpty()) {
+                return;
+            }
+            JPanel bandPanel = new JPanel(new GridLayout(1, 0));
+            nirImages.entrySet().forEach(entry -> {
+                String band = entry.getKey();
+                NirImage nirImage = entry.getValue();
+                BufferedImage image = nirImage.getImage();
+                int year = nirImage.getYear();
+                bandPanel.add(buildImagePanel(image, getImageLabel(UHS_LABEL + " " + band, year)));
+            });
+            int componentCount = bandPanel.getComponentCount();
+            if (componentCount == 0) {
+                return;
+            }
+            JFrame imageFrame = new JFrame();
+            imageFrame.setIconImage(getToolBoxImage());
+            imageFrame.setTitle(UHS_LABEL + " - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: " + size + "\"");
+            imageFrame.add(bandPanel);
+            imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
+            imageFrame.setLocation(0, counter.value());
+            imageFrame.setAlwaysOnTop(false);
+            imageFrame.setResizable(false);
+            imageFrame.setVisible(true);
+            counter.add();
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        } finally {
+            baseFrame.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void displayVhsImages(double targetRa, double targetDec, int size, Counter counter) {
         baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -4956,6 +5012,19 @@ public class ImageViewerTab implements Tab {
                 }
             }
 
+            if (targetDec > -5) {
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UHS_SURVEY_URL, UHS_LABEL);
+                String band = "K";
+                NirImage nirImage = nirImages.get(band);
+                if (nirImage != null) {
+                    image = nirImage.getImage();
+                    if (image != null) {
+                        int year = nirImage.getYear();
+                        timeSeries.add(new Couple(getImageLabel(UHS_LABEL + " " + band, year), new NirImage(year, image)));
+                    }
+                }
+            }
+
             if (targetDec < 5) {
                 Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);
                 String band = "K";
@@ -5066,6 +5135,19 @@ public class ImageViewerTab implements Tab {
                     if (image != null) {
                         int year = nirImage.getYear();
                         timeSeries.add(new Couple(getImageLabel(UKIDSS_LABEL + " " + band, year), new NirImage(year, image)));
+                    }
+                }
+            }
+
+            if (uhsImageSeries.isSelected() && targetDec > -5) {
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UHS_SURVEY_URL, UHS_LABEL);
+                String band = "K";
+                NirImage nirImage = nirImages.get(band);
+                if (nirImage != null) {
+                    image = nirImage.getImage();
+                    if (image != null) {
+                        int year = nirImage.getYear();
+                        timeSeries.add(new Couple(getImageLabel(UHS_LABEL + " " + band, year), new NirImage(year, image)));
                     }
                 }
             }

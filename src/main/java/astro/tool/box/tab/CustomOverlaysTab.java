@@ -178,17 +178,17 @@ public class CustomOverlaysTab implements Tab {
 
         overlayRow.add(fileNameField);
 
-        JTextField raPositionField = new JTextField(8);
+        JTextField raPositionField = new JTextField(12);
         overlayRow.add(raPositionField);
         raPositionField.setBackground(JColor.LIGHT_GREEN.val);
-        TextPrompt raPositionPrompt = new TextPrompt("RA column #");
+        TextPrompt raPositionPrompt = new TextPrompt("RA column number");
         raPositionPrompt.applyTo(raPositionField);
         raPositionField.setText(overlayName == null || !tableName.isEmpty() || !tapUrl.isEmpty() ? "" : Integer.toString(customOverlay.getRaColumnIndex() + 1));
 
-        JTextField decPositionField = new JTextField(8);
+        JTextField decPositionField = new JTextField(12);
         overlayRow.add(decPositionField);
         decPositionField.setBackground(JColor.LIGHT_GREEN.val);
-        TextPrompt decPositionPrompt = new TextPrompt("Dec column #");
+        TextPrompt decPositionPrompt = new TextPrompt("Dec column number");
         decPositionPrompt.applyTo(decPositionField);
         decPositionField.setText(overlayName == null || !tableName.isEmpty() || !tapUrl.isEmpty() ? "" : Integer.toString(customOverlay.getDecColumnIndex() + 1));
 
@@ -199,14 +199,14 @@ public class CustomOverlaysTab implements Tab {
         tableNamePrompt.applyTo(tableNameField);
         tableNameField.setText(overlayName == null ? "" : customOverlay.getTableName());
 
-        JTextField raColNameField = new JTextField(10);
+        JTextField raColNameField = new JTextField(11);
         overlayRow.add(raColNameField);
         raColNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt raColNamePrompt = new TextPrompt("RA column name");
         raColNamePrompt.applyTo(raColNameField);
         raColNameField.setText(overlayName == null ? "" : customOverlay.getRaColName());
 
-        JTextField decColNameField = new JTextField(10);
+        JTextField decColNameField = new JTextField(11);
         overlayRow.add(decColNameField);
         decColNameField.setBackground(JColor.LIGHT_YELLOW.val);
         TextPrompt decColNamePrompt = new TextPrompt("Dec column name");
