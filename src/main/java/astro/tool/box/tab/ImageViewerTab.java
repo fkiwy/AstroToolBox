@@ -1034,13 +1034,15 @@ public class ImageViewerTab implements Tab {
             });
             overlayPanel.add(gaiaWDOverlay);
 
-            mocaOverlay = new JCheckBox(html("M<u>O</u>CA"), overlays.isMoca());
+            mocaOverlay = new JCheckBox(html("M<u>O</u>CA " + INFO_ICON), overlays.isMoca());
             mocaOverlay.setForeground(JColor.DARK_ORANGE.val);
+            mocaOverlay.setToolTipText(html("Montreal Open Clusters and Associations (MOCA) database (https://mocadb.ca/home)" + LINE_BREAK +
+                                    "Overlays created from the \"Summary of all objects\" table (https://mocadb.ca/schema/summary_all_objects)"));
             mocaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(mocaOverlay);
-
+   
             ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
