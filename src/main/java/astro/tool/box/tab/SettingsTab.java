@@ -117,8 +117,9 @@ public class SettingsTab implements Tab {
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
     private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
-    private static final String UKIDSS_IMAGES = "ukidssImages";
     private static final String VHS_IMAGES = "vhsImages";
+    private static final String UHS_IMAGES = "uhsImages";
+    private static final String UKIDSS_IMAGES = "ukidssImages";
     private static final String SDSS_IMAGES = "sdssImages";
     private static final String DSS_IMAGES = "dssImages";
 
@@ -131,8 +132,9 @@ public class SettingsTab implements Tab {
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
-    private boolean ukidssImages;
     private boolean vhsImages;
+    private boolean uhsImages;
+    private boolean ukidssImages;
     private boolean sdssImages;
     private boolean dssImages;
 
@@ -330,8 +332,9 @@ public class SettingsTab implements Tab {
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
             legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
-            ukidssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(UKIDSS_IMAGES, "true"));
             vhsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(VHS_IMAGES, "true"));
+            uhsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(UHS_IMAGES, "true"));
+            ukidssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(UKIDSS_IMAGES, "true"));
             sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
             dssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(DSS_IMAGES, "true"));
 
@@ -354,8 +357,9 @@ public class SettingsTab implements Tab {
             enableStopDownloadButton();
             imageViewerTab.setLegacyImages(legacyImages);
             imageViewerTab.setPanstarrsImages(panstarrsImages);
-            imageViewerTab.setUkidssImages(ukidssImages);
             imageViewerTab.setVhsImages(vhsImages);
+            imageViewerTab.setUhsImages(uhsImages);
+            imageViewerTab.setUkidssImages(ukidssImages);
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
 
@@ -400,16 +404,22 @@ public class SettingsTab implements Tab {
             imageViewerSettings.add(new JLabel());
             downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
-            JCheckBox ukidssImagesCheckBox = new JCheckBox("UKIDSS", ukidssImages);
-            downloadPanel.add(ukidssImagesCheckBox);
             JCheckBox vhsImagesCheckBox = new JCheckBox("VHS", vhsImages);
             downloadPanel.add(vhsImagesCheckBox);
+            JCheckBox uhsImagesCheckBox = new JCheckBox("UHS", uhsImages);
+            downloadPanel.add(uhsImagesCheckBox);
 
             imageViewerSettings.add(new JLabel());
             downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
+            JCheckBox ukidssImagesCheckBox = new JCheckBox("UKIDSS", ukidssImages);
+            downloadPanel.add(ukidssImagesCheckBox);
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
+            
+            imageViewerSettings.add(new JLabel());
+            downloadPanel = new JPanel(new GridLayout(1, 2));
+            imageViewerSettings.add(downloadPanel);
             JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
             downloadPanel.add(dssImagesCheckBox);
 
@@ -510,8 +520,9 @@ public class SettingsTab implements Tab {
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
                     legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
-                    ukidssImages = ukidssImagesCheckBox.isSelected();
                     vhsImages = vhsImagesCheckBox.isSelected();
+                    uhsImages = uhsImagesCheckBox.isSelected();
+                    ukidssImages = ukidssImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                     dssImages = dssImagesCheckBox.isSelected();
                 } catch (Exception ex) {
@@ -575,8 +586,9 @@ public class SettingsTab implements Tab {
                 enableStopDownloadButton();
                 imageViewerTab.setLegacyImages(legacyImages);
                 imageViewerTab.setPanstarrsImages(panstarrsImages);
-                imageViewerTab.setUkidssImages(ukidssImages);
                 imageViewerTab.setVhsImages(vhsImages);
+                imageViewerTab.setUhsImages(uhsImages);
+                imageViewerTab.setUkidssImages(ukidssImages);
                 imageViewerTab.setSdssImages(sdssImages);
                 imageViewerTab.setDssImages(dssImages);
 
@@ -589,8 +601,9 @@ public class SettingsTab implements Tab {
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
                 USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
-                USER_SETTINGS.setProperty(UKIDSS_IMAGES, String.valueOf(ukidssImages));
                 USER_SETTINGS.setProperty(VHS_IMAGES, String.valueOf(vhsImages));
+                USER_SETTINGS.setProperty(UHS_IMAGES, String.valueOf(uhsImages));
+                USER_SETTINGS.setProperty(UKIDSS_IMAGES, String.valueOf(ukidssImages));
                 USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
                 USER_SETTINGS.setProperty(DSS_IMAGES, String.valueOf(dssImages));
 

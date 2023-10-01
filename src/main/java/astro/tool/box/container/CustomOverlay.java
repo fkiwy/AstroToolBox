@@ -70,10 +70,10 @@ public class CustomOverlay {
     public void deserialize(String data) {
         String[] values = data.split(";", -1);
         name = values[0];
-        color = new Color(Integer.valueOf(values[1]));
+        color = new Color(Integer.parseInt(values[1]));
         shape = Shape.valueOf(values[2]);
-        raColumnIndex = Integer.valueOf(values[3]);
-        decColumnIndex = Integer.valueOf(values[4]);
+        raColumnIndex = Integer.parseInt(values[3]);
+        decColumnIndex = Integer.parseInt(values[4]);
         if (!values[5].isEmpty()) {
             file = new File(values[5]);
         }

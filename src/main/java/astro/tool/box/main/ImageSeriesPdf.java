@@ -320,6 +320,27 @@ public class ImageSeriesPdf {
                 }
             }
 
+            if (targetDec > -5) {
+                images = new ArrayList<>();
+                Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, UHS_SURVEY_URL, UHS_LABEL);
+                if (!nirImages.isEmpty()) {
+                    for (Entry<String, NirImage> entry : nirImages.entrySet()) {
+                        String band = entry.getKey();
+                        NirImage nirImage = entry.getValue();
+                        bufferedImage = nirImage.getImage();
+                        int year = nirImage.getYear();
+                        if (bufferedImage != null) {
+                            String imageLabel = UHS_LABEL + " " + band;
+                            images.add(new Couple(getImageLabel(imageLabel, year), bufferedImage));
+                            if (band.equals("K")) {
+                                timeSeries.add(new Couple(getImageLabel(imageLabel, year), new NirImage(year, bufferedImage)));
+                            }
+                        }
+                    }
+                    createPdfTable(images, writer, document);
+                }
+            }
+
             if (targetDec < 5) {
                 images = new ArrayList<>();
                 Map<String, NirImage> nirImages = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL, VHS_LABEL);

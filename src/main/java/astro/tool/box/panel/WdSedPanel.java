@@ -459,9 +459,9 @@ public class WdSedPanel extends JPanel {
         sedBands.forEach(band -> {
             sedFluxes.put(band, new SedFluxes(
                     sedPhotometry.get(band),
-                    convertMagnitudeToFlux(sedPhotometry.get(band), sedReferences.get(band).getZeropoint(), sedReferences.get(band).getWavelenth()),
-                    convertMagnitudeToJanskys(sedPhotometry.get(band), sedReferences.get(band).getZeropoint()),
-                    convertMagnitudeToFluxDensity(sedPhotometry.get(band), sedReferences.get(band).getZeropoint(), sedReferences.get(band).getWavelenth())
+                    convertMagnitudeToFluxDensity(sedPhotometry.get(band), sedReferences.get(band).getZeropoint(), sedReferences.get(band).getWavelenth()),
+                    convertMagnitudeToFluxJansky(sedPhotometry.get(band), sedReferences.get(band).getZeropoint()),
+                    convertMagnitudeToFluxLambda(sedPhotometry.get(band), sedReferences.get(band).getZeropoint(), sedReferences.get(band).getWavelenth())
             ));
         });
 
@@ -474,11 +474,11 @@ public class WdSedPanel extends JPanel {
                         .append("(")
                         .append(sedReferences.get(band).getWavelenth())
                         .append(",")
-                        .append(sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux())
+                        .append(sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxDensity())
                         .append(")")
                         .append(LINE_SEP);
             }
-            series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFlux());
+            series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxDensity());
         });
 
         if (collection == null) {
@@ -590,22 +590,22 @@ public class WdSedPanel extends JPanel {
         }
         XYSeries series = new XYSeries(spectralType);
         if (useGaiaPhotometry) {
-            series.add(Sed.GAIA_BP.wavelenth, magnitudes.get(Band.BP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.BP) + medianDiffMag, Sed.GAIA_BP.zeropoint, Sed.GAIA_BP.wavelenth));
-            series.add(Sed.GAIA_G.wavelenth, magnitudes.get(Band.G) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.G) + medianDiffMag, Sed.GAIA_G.zeropoint, Sed.GAIA_G.wavelenth));
-            series.add(Sed.GAIA_RP.wavelenth, magnitudes.get(Band.RP) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.RP) + medianDiffMag, Sed.GAIA_RP.zeropoint, Sed.GAIA_RP.wavelenth));
+            series.add(Sed.GAIA_BP.wavelenth, magnitudes.get(Band.BP) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.BP) + medianDiffMag, Sed.GAIA_BP.zeropoint, Sed.GAIA_BP.wavelenth));
+            series.add(Sed.GAIA_G.wavelenth, magnitudes.get(Band.G) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.G) + medianDiffMag, Sed.GAIA_G.zeropoint, Sed.GAIA_G.wavelenth));
+            series.add(Sed.GAIA_RP.wavelenth, magnitudes.get(Band.RP) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.RP) + medianDiffMag, Sed.GAIA_RP.zeropoint, Sed.GAIA_RP.wavelenth));
         } else {
-            series.add(Sed.PS1_G.wavelenth, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.g) + medianDiffMag, Sed.PS1_G.zeropoint, Sed.PS1_G.wavelenth));
-            series.add(Sed.PS1_R.wavelenth, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.r) + medianDiffMag, Sed.PS1_R.zeropoint, Sed.PS1_R.wavelenth));
-            series.add(Sed.PS1_I.wavelenth, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.i) + medianDiffMag, Sed.PS1_I.zeropoint, Sed.PS1_I.wavelenth));
-            series.add(Sed.PS1_Z.wavelenth, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.z) + medianDiffMag, Sed.PS1_Z.zeropoint, Sed.PS1_Z.wavelenth));
-            series.add(Sed.PS1_Y.wavelenth, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.y) + medianDiffMag, Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
+            series.add(Sed.PS1_G.wavelenth, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.g) + medianDiffMag, Sed.PS1_G.zeropoint, Sed.PS1_G.wavelenth));
+            series.add(Sed.PS1_R.wavelenth, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.r) + medianDiffMag, Sed.PS1_R.zeropoint, Sed.PS1_R.wavelenth));
+            series.add(Sed.PS1_I.wavelenth, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.i) + medianDiffMag, Sed.PS1_I.zeropoint, Sed.PS1_I.wavelenth));
+            series.add(Sed.PS1_Z.wavelenth, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.z) + medianDiffMag, Sed.PS1_Z.zeropoint, Sed.PS1_Z.wavelenth));
+            series.add(Sed.PS1_Y.wavelenth, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.y) + medianDiffMag, Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
         }
-        series.add(Sed.MASS_J.wavelenth, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.J) + medianDiffMag, Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
-        series.add(Sed.MASS_H.wavelenth, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.H) + medianDiffMag, Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
-        series.add(Sed.MASS_K.wavelenth, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.K) + medianDiffMag, Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
-        series.add(Sed.WISE_W1.wavelenth, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W1) + medianDiffMag, Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
-        series.add(Sed.WISE_W2.wavelenth, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W2) + medianDiffMag, Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
-        series.add(Sed.WISE_W3.wavelenth, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFlux(magnitudes.get(Band.W3) + medianDiffMag, Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
+        series.add(Sed.MASS_J.wavelenth, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.J) + medianDiffMag, Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
+        series.add(Sed.MASS_H.wavelenth, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.H) + medianDiffMag, Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
+        series.add(Sed.MASS_K.wavelenth, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.K) + medianDiffMag, Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
+        series.add(Sed.WISE_W1.wavelenth, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.W1) + medianDiffMag, Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
+        series.add(Sed.WISE_W2.wavelenth, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.W2) + medianDiffMag, Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
+        series.add(Sed.WISE_W3.wavelenth, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.W3) + medianDiffMag, Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
 
         sedDataPoints.append(spectralType).append(":").append(LINE_SEP);
         for (Object item : series.getItems()) {
@@ -632,13 +632,13 @@ public class WdSedPanel extends JPanel {
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
 
-        LogAxis xAxis = new LogAxis("Wavelength (μm)");
+        LogAxis xAxis = new LogAxis("Wavelength (micron)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
         //xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("λF(λ) (W/m²)");
+        LogAxis yAxis = new LogAxis("λF(λ) (W/m^2)");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(0.5));
         //yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
@@ -703,8 +703,8 @@ public class WdSedPanel extends JPanel {
             toolTips.add(html(sedCatalogs.get(band) + " "
                     + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
                     + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
-                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " Jy<br>"
-                    + "νF(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFlux()) + " W/m^2<br>"
+                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxJansky()) + " Jy<br>"
+                    + "λF(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " W/m^2<br>"
                     + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m^2/μm"));
         });
         CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();

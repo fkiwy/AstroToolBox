@@ -20,12 +20,14 @@ import astro.tool.box.catalog.DesCatalogEntry;
 import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.catalog.MocaCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
@@ -141,7 +143,7 @@ import org.jfree.chart.JFreeChart;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "3.2.1";
+    public static final String PGM_VERSION = "3.3.0";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
@@ -191,6 +193,8 @@ public class ToolboxHelper {
         catalogInstances.put(sdssCatalogEntry.getCatalogName(), sdssCatalogEntry);
         VhsCatalogEntry vhsCatalogEntry = new VhsCatalogEntry();
         catalogInstances.put(vhsCatalogEntry.getCatalogName(), vhsCatalogEntry);
+        UhsCatalogEntry uhsCatalogEntry = new UhsCatalogEntry();
+        catalogInstances.put(uhsCatalogEntry.getCatalogName(), uhsCatalogEntry);
         UkidssCatalogEntry ukidssCatalogEntry = new UkidssCatalogEntry();
         catalogInstances.put(ukidssCatalogEntry.getCatalogName(), ukidssCatalogEntry);
         TwoMassCatalogEntry twoMassCatalogEntry = new TwoMassCatalogEntry();
@@ -201,6 +205,8 @@ public class ToolboxHelper {
         catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
         GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
         catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
+        MocaCatalogEntry mocaCatalogEntry = new MocaCatalogEntry();
+        catalogInstances.put(mocaCatalogEntry.getCatalogName(), mocaCatalogEntry);
 
         return catalogInstances;
     }
@@ -408,7 +414,7 @@ public class ToolboxHelper {
 
     public static void addLabelToPanel(CatalogElement element, JPanel panel) {
         String name = element.getName();
-        JLabel label = new JLabel(name == null ? "" : name + " = ", JLabel.RIGHT);
+        JLabel label = new JLabel(name == null ? "" : name + ": ", JLabel.RIGHT);
         //if (element.isOnFocus()) {
         //    label.setOpaque(true);
         //    label.setBackground(JColor.WHITE.val);
@@ -441,11 +447,12 @@ public class ToolboxHelper {
             field.setForeground(JColor.RED.val);
         }
         field.setCaretPosition(0);
-        field.setBorder(BorderFactory.createEmptyBorder());
-        field.setEditable(true);
+        //field.setBorder(BorderFactory.createEmptyBorder());
+        //field.setEditable(false);
         if (hasToolTip) {
             field.setToolTipText(html(element.getToolTip()));
         }
+        field.setPreferredSize(new Dimension(100, field.getPreferredSize().height));
         panel.add(field);
     }
 
@@ -1074,7 +1081,7 @@ public class ToolboxHelper {
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             image = ImageIO.read(stream);
             if (invert) {
-                image = convertToGray(image);
+                image = convertToGrayImage(image);
                 image = invertImage(image);
             }
             image = zoomImage(image, 256);
@@ -1123,7 +1130,7 @@ public class ToolboxHelper {
                 }
             }
             if (!imageUrl.isEmpty()) {
-                nirImages.add(new NirImage(filterId, extNo, Integer.valueOf(year), imageUrl));
+                nirImages.add(new NirImage(filterId, extNo, Integer.parseInt(year), imageUrl));
             }
         }
         Map<String, NirImage> images = new LinkedHashMap();
@@ -1144,7 +1151,7 @@ public class ToolboxHelper {
                 if (width > height + offset || width < height - offset) {
                     return new LinkedHashMap();
                 }
-                if (surveyLabel.equals(UKIDSS_LABEL)) {
+                if (surveyLabel.equals(UHS_LABEL) || surveyLabel.equals(UKIDSS_LABEL)) {
                     // Rotate image
                     switch (extNo) {
                         case "1":
@@ -1271,6 +1278,54 @@ public class ToolboxHelper {
         graphics.drawImage(colorImage, 0, 0, null);
         graphics.dispose();
         return grayImage;
+    }
+
+    public static BufferedImage convertToGrayImage(BufferedImage colorImage) {
+        int width = colorImage.getWidth();
+        int height = colorImage.getHeight();
+
+        // Create a new BufferedImage with the same dimensions and grayscale color space
+        BufferedImage grayscaleImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+
+        // Iterate through each pixel of the color image and set the grayscale value
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // Get the RGB components of the pixel
+                Color color = new Color(colorImage.getRGB(x, y));
+                int red = color.getRed();
+                int green = color.getGreen();
+                int blue = color.getBlue();
+
+                // Calculate the grayscale value as the average of RGB components
+                //int grayscaleValue = (red + green + blue) / 3;
+                int grayscaleValue = Math.min(red + green + blue, 255);
+
+                // Set the grayscale value to the pixel in the new BufferedImage
+                grayscaleImage.setRGB(x, y, new Color(grayscaleValue, grayscaleValue, grayscaleValue).getRGB());
+            }
+        }
+
+        return grayscaleImage;
+    }
+
+    public static BufferedImage enhanceContrast(BufferedImage grayscaleImage, double contrastFactor) {
+        int width = grayscaleImage.getWidth();
+        int height = grayscaleImage.getHeight();
+
+        // Create a new BufferedImage with enhanced contrast
+        BufferedImage contrastEnhancedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+
+        // Apply the contrast enhancement with the custom contrast factor to each pixel
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixelValue = new Color(grayscaleImage.getRGB(x, y)).getRed();
+                int contrastEnhancedValue = (int) (contrastFactor * pixelValue);
+                contrastEnhancedValue = Math.min(Math.max(contrastEnhancedValue, 0), 255);
+                contrastEnhancedImage.setRGB(x, y, new Color(contrastEnhancedValue, contrastEnhancedValue, contrastEnhancedValue).getRGB());
+            }
+        }
+
+        return contrastEnhancedImage;
     }
 
     public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2) {

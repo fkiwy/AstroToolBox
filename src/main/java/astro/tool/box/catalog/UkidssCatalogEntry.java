@@ -188,7 +188,7 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     @Override
     public CatalogEntry copy() {
-        return new UnWiseCatalogEntry(columns, values);
+        return new UkidssCatalogEntry(columns, values);
     }
 
     @Override

@@ -122,7 +122,7 @@ public class AstrometricFunctions {
      * @return the distance between Sun and star (pc)
      */
     public static double calculateParallacticDistance(double parallax) {
-        if (parallax < 1) {
+        if (parallax < 0.1) {
             return 0;
         } else {
             return ARCSEC_MAS / parallax;

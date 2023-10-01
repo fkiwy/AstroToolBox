@@ -16,6 +16,7 @@ import astro.tool.box.catalog.DesCatalogEntry;
 import astro.tool.box.catalog.GaiaDR2CatalogEntry;
 import astro.tool.box.catalog.GaiaDR3CatalogEntry;
 import astro.tool.box.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.catalog.MocaCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.ProperMotionCatalog;
@@ -23,6 +24,7 @@ import astro.tool.box.catalog.SdssCatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
 import astro.tool.box.catalog.TessCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
@@ -712,6 +714,31 @@ public class ImageSeriesTab implements Tab {
         }
 
         // ______________________________
+        //           UHS
+        // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+        if (targetDec > -5) {
+            Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UHS_SURVEY_URL, UHS_LABEL);
+            if (!images.isEmpty()) {
+                bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                for (Entry<String, NirImage> entry : images.entrySet()) {
+                    String band = entry.getKey();
+                    NirImage nirImage = entry.getValue();
+                    image = nirImage.getImage();
+                    int year = nirImage.getYear();
+                    bandPanel.add(buildImagePanel(image, getImageLabel(UHS_LABEL + " " + band, year)));
+                    if (band.equals("K")) {
+                        timeSeries.add(new Couple(getImageLabel(UHS_LABEL + " " + band, year), new NirImage(year, image)));
+                    }
+                }
+                if (bandPanel.getComponentCount() > 0) {
+                    centerPanel.add(bandPanel);
+                    baseFrame.setVisible(true);
+                    scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+                }
+            }
+        }
+
+        // ______________________________
         //           VHS
         // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
         if (targetDec < 5) {
@@ -1035,12 +1062,6 @@ public class ImageSeriesTab implements Tab {
             case SimbadCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getSimbadOverlay().setSelected(true);
                 break;
-            case GaiaDR2CatalogEntry.CATALOG_NAME:
-                imageViewerTab.getGaiaOverlay().setSelected(true);
-                break;
-            case GaiaDR3CatalogEntry.CATALOG_NAME:
-                imageViewerTab.getGaiaDR3Overlay().setSelected(true);
-                break;
             case AllWiseCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getAllWiseOverlay().setSelected(true);
                 break;
@@ -1050,23 +1071,32 @@ public class ImageSeriesTab implements Tab {
             case UnWiseCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getUnWiseOverlay().setSelected(true);
                 break;
+            case GaiaDR2CatalogEntry.CATALOG_NAME:
+                imageViewerTab.getGaiaOverlay().setSelected(true);
+                break;
+            case GaiaDR3CatalogEntry.CATALOG_NAME:
+                imageViewerTab.getGaiaDR3Overlay().setSelected(true);
+                break;
+            case NoirlabCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getNoirlabOverlay().setSelected(true);
+                break;
             case PanStarrsCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getPanStarrsOverlay().setSelected(true);
                 break;
             case SdssCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getSdssOverlay().setSelected(true);
                 break;
-            case TwoMassCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getTwoMassOverlay().setSelected(true);
-                break;
             case VhsCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getVhsOverlay().setSelected(true);
                 break;
-            case GaiaWDCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getGaiaWDOverlay().setSelected(true);
+            case UhsCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getUhsOverlay().setSelected(true);
                 break;
-            case NoirlabCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getNoirlabOverlay().setSelected(true);
+            case UkidssCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getUkidssOverlay().setSelected(true);
+                break;
+            case TwoMassCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getTwoMassOverlay().setSelected(true);
                 break;
             case TessCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getTessOverlay().setSelected(true);
@@ -1074,8 +1104,11 @@ public class ImageSeriesTab implements Tab {
             case DesCatalogEntry.CATALOG_NAME:
                 imageViewerTab.getDesOverlay().setSelected(true);
                 break;
-            case UkidssCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getUkidssOverlay().setSelected(true);
+            case GaiaWDCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getGaiaWDOverlay().setSelected(true);
+                break;
+            case MocaCatalogEntry.CATALOG_NAME:
+                imageViewerTab.getMocaOverlay().setSelected(true);
                 break;
         }
     }

@@ -4,16 +4,16 @@ public class SedFluxes {
 
     private final double magnitude;
     
-    private final double flux;
-
     private final double fluxDensity;
+
+    private final double fluxJansky;
 
     private final double fluxLambda;
 
-    public SedFluxes(double magnitude, double flux, double fluxDensity, double fluxLambda) {
+    public SedFluxes(double magnitude, double fluxDensity, double fluxJansky, double fluxLambda) {
         this.magnitude = magnitude;
-        this.flux = flux;
         this.fluxDensity = fluxDensity;
+        this.fluxJansky = fluxJansky;
         this.fluxLambda = fluxLambda;
     }
 
@@ -21,12 +21,12 @@ public class SedFluxes {
         return magnitude;
     }
 
-    public double getFlux() {
-        return flux;
-    }
-
     public double getFluxDensity() {
         return fluxDensity;
+    }
+
+    public double getFluxJansky() {
+        return fluxJansky;
     }
 
     public double getFluxLambda() {

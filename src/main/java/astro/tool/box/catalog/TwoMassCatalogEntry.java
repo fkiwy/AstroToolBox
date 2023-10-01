@@ -551,7 +551,7 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
     }
 
     public double getJ_H() {
-        if (Jmag == 0 || Hmag == 0) {
+        if (Jmag == 0 || Hmag == 0 || getJ_H_err() == 0) {
             return 0;
         } else {
             return Jmag - Hmag;
@@ -559,7 +559,7 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
     }
 
     public double getH_K() {
-        if (Hmag == 0 || Kmag == 0) {
+        if (Hmag == 0 || Kmag == 0 || getH_K_err() == 0) {
             return 0;
         } else {
             return Hmag - Kmag;
@@ -567,7 +567,7 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
     }
 
     public double getJ_K() {
-        if (Jmag == 0 || Kmag == 0) {
+        if (Jmag == 0 || Kmag == 0 || getJ_K_err() == 0) {
             return 0;
         } else {
             return Jmag - Kmag;
