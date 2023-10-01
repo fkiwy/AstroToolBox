@@ -1,5 +1,14 @@
 ## Release notes
 
+### AstroToolBox v3.3.0
+- Added MOCA DB summary table
+- Added MOCA overlay
+- Implemented a cone search for custom overlays
+- Added more colors (J-H, H-K, etc.) to the spectral type estimate features
+- Added UHS DR2 catalog
+- Added UHS DR2 catalog overlay
+- Added UHS DR2 images
+
 ### AstroToolBox v3.2.0
 - Added a feature to the settings allowing to rearrange tabs
 - Upgraded to SDSS DR17
