@@ -143,7 +143,7 @@ import org.jfree.chart.JFreeChart;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "3.3.0";
+    public static final String PGM_VERSION = "3.3.1";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
