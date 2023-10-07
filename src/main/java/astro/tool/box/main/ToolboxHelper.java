@@ -447,8 +447,8 @@ public class ToolboxHelper {
             field.setForeground(JColor.RED.val);
         }
         field.setCaretPosition(0);
-        //field.setBorder(BorderFactory.createEmptyBorder());
-        //field.setEditable(false);
+        field.setBorder(BorderFactory.createEmptyBorder());
+        field.setEditable(false);
         if (hasToolTip) {
             field.setToolTipText(html(element.getToolTip()));
         }
