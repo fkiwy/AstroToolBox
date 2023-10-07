@@ -1,5 +1,8 @@
 package astro.tool.box.container;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Overlays {
 
     enum ID {
@@ -154,7 +157,8 @@ public class Overlays {
         return overlays.toString();
     }
 
-    public void deserialize(String overlays) {
+    public void deserialize(String str) {
+        List<String> overlays = Arrays.asList(str.split(","));
         if (overlays.contains(ID.SIMBAD.name())) {
             simbad = true;
         }
