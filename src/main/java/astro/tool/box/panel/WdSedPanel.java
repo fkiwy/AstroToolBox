@@ -100,7 +100,7 @@ public class WdSedPanel extends JPanel {
         removeButton = new JButton("Remove templates");
         bestMatch = new JCheckBox("Best match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
-        commonReferences = new JCheckBox("Use common zero points & wavelengths per band", true);
+        commonReferences = new JCheckBox("Use common zero points & wavelengths per band", false);
 
         XYSeriesCollection collection = createSed(catalogEntry, null, true);
         JFreeChart chart = createChart(collection);
