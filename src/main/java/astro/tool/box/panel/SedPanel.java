@@ -97,7 +97,7 @@ public class SedPanel extends JPanel {
         removeButton = new JButton("Remove templates");
         bestMatch = new JCheckBox("Best match", true);
         overplotTemplates = new JCheckBox("Overplot templates", true);
-        commonReferences = new JCheckBox("Use common zero points & wavelengths per band", true);
+        commonReferences = new JCheckBox("Use common zero points & wavelengths per band", false);
 
         XYSeriesCollection collection = createSed(catalogEntry, null, true);
         JFreeChart chart = createChart(collection);
@@ -326,11 +326,11 @@ public class SedPanel extends JPanel {
                 } else {
                     addDecamReferences();
                 }
-                sedPhotometry.put(Band.g, desEntry.get_g_caut() > 0 ? 0 : desEntry.get_g_mag());
-                sedPhotometry.put(Band.r, desEntry.get_r_caut() > 0 ? 0 : desEntry.get_r_mag());
-                sedPhotometry.put(Band.i, desEntry.get_i_caut() > 0 ? 0 : desEntry.get_i_mag());
-                sedPhotometry.put(Band.z, desEntry.get_z_caut() > 0 ? 0 : desEntry.get_z_mag());
-                sedPhotometry.put(Band.y, desEntry.get_y_caut() > 0 ? 0 : desEntry.get_y_mag());
+                sedPhotometry.put(Band.g, desEntry.get_g_caut() > 3 ? 0 : desEntry.get_g_mag());
+                sedPhotometry.put(Band.r, desEntry.get_r_caut() > 3 ? 0 : desEntry.get_r_mag());
+                sedPhotometry.put(Band.i, desEntry.get_i_caut() > 3 ? 0 : desEntry.get_i_mag());
+                sedPhotometry.put(Band.z, desEntry.get_z_caut() > 3 ? 0 : desEntry.get_z_mag());
+                sedPhotometry.put(Band.y, desEntry.get_y_caut() > 3 ? 0 : desEntry.get_y_mag());
             }
         }
 

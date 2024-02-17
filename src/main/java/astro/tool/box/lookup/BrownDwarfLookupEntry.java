@@ -56,21 +56,21 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
         colors.put(Color.i_y_PS1, toDouble(values[22]));
 
         // 2MASS
-        colors.put(Color.J_H, toDouble(values[17]));
-        colors.put(Color.H_K, toDouble(values[18]));
+        //colors.put(Color.J_H, toDouble(values[17]));
+        //colors.put(Color.H_K, toDouble(values[18]));
         colors.put(Color.J_K, toDouble(values[25]));
 
         // WISE
-        colors.put(Color.K_W1, toDouble(values[19]));
+        //colors.put(Color.K_W1, toDouble(values[19]));
         colors.put(Color.W1_W2, toDouble(values[20]));
 
         // NSC
         colors.put(Color.i_z_NSC, toDouble(values[27]));
-        colors.put(Color.z_Y_NSC, toDouble(values[28]));
+        //colors.put(Color.z_Y_NSC, toDouble(values[28]));
 
         // DES
         colors.put(Color.i_z_DES, toDouble(values[27]));
-        colors.put(Color.z_Y_DES, toDouble(values[28]));
+        //colors.put(Color.z_Y_DES, toDouble(values[28]));
 
         // SDSS
         colors.put(Color.i_z, toDouble(values[30]));
@@ -98,30 +98,30 @@ public class BrownDwarfLookupEntry implements SpectralTypeLookup {
             colors.put(Color.E_i_y_PS1, toDouble(values[22]));
 
             // 2MASS
-            colors.put(Color.e_J_H, toDouble(values[17]));
-            colors.put(Color.e_H_K, toDouble(values[18]));
+            //colors.put(Color.e_J_H, toDouble(values[17]));
+            //colors.put(Color.e_H_K, toDouble(values[18]));
             colors.put(Color.e_J_K, toDouble(values[25]));
-            colors.put(Color.E_J_H, toDouble(values[17]));
-            colors.put(Color.E_H_K, toDouble(values[18]));
+            //colors.put(Color.E_J_H, toDouble(values[17]));
+            //colors.put(Color.E_H_K, toDouble(values[18]));
             colors.put(Color.E_J_K, toDouble(values[25]));
 
             // WISE
-            colors.put(Color.e_K_W1, toDouble(values[19]));
+            //colors.put(Color.e_K_W1, toDouble(values[19]));
             colors.put(Color.e_W1_W2, toDouble(values[20]));
-            colors.put(Color.E_K_W1, toDouble(values[19]));
+            //colors.put(Color.E_K_W1, toDouble(values[19]));
             colors.put(Color.E_W1_W2, toDouble(values[20]));
 
             // NSC
             colors.put(Color.e_i_z_NSC, toDouble(values[27]));
-            colors.put(Color.e_z_Y_NSC, toDouble(values[28]));
+            //colors.put(Color.e_z_Y_NSC, toDouble(values[28]));
             colors.put(Color.E_i_z_NSC, toDouble(values[27]));
-            colors.put(Color.E_z_Y_NSC, toDouble(values[28]));
+            //colors.put(Color.E_z_Y_NSC, toDouble(values[28]));
 
             // DES
             colors.put(Color.e_i_z_DES, toDouble(values[27]));
-            colors.put(Color.e_z_Y_DES, toDouble(values[28]));
+            //colors.put(Color.e_z_Y_DES, toDouble(values[28]));
             colors.put(Color.E_i_z_DES, toDouble(values[27]));
-            colors.put(Color.E_z_Y_DES, toDouble(values[28]));
+            //colors.put(Color.E_z_Y_DES, toDouble(values[28]));
 
             // SDSS
             colors.put(Color.e_i_z, toDouble(values[30]));

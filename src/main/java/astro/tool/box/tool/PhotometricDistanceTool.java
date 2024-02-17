@@ -61,11 +61,15 @@ public class PhotometricDistanceTool {
                         String[] apparentMagnitudeData = apparentMagnitudeField.getText().split(" ");
                         apparentMagnitude = toDouble(apparentMagnitudeData[0]);
                         apparentMagnitudeError = toDouble(apparentMagnitudeData[1]);
+                    } else {
+                        apparentMagnitude = toDouble(apparentMagnitudeField.getText());
                     }
                     if (absoluteMagnitudeField.getText().contains(" ")) {
                         String[] absoluteMagnitudeData = absoluteMagnitudeField.getText().split(" ");
                         absoluteMagnitude = toDouble(absoluteMagnitudeData[0]);
                         absoluteMagnitudeError = toDouble(absoluteMagnitudeData[1]);
+                    } else {
+                        absoluteMagnitude = toDouble(absoluteMagnitudeField.getText());
                     }
                     double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
                     double distanceError = calculatePhotometricDistanceError(apparentMagnitude, apparentMagnitudeError, absoluteMagnitude, absoluteMagnitudeError);

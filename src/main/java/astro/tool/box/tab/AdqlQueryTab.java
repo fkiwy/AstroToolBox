@@ -386,7 +386,7 @@ public class AdqlQueryTab implements Tab {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         queryResults = doGet(createResultUrl(jobId));
-                        File tmpFile = File.createTempFile("AstroToolBox_", ".csv");
+                        File tmpFile = File.createTempFile("AstroToolBox_", ".txt");
                         try (FileWriter writer = new FileWriter(tmpFile)) {
                             writer.write(queryResults);
                         }

@@ -191,6 +191,7 @@ public class ImageViewerTab implements Tab {
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
     public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
+    public static final int CATALOG_PANEL_WIDTH = 700;
     public static final int PANEL_HEIGHT = 220;
     public static final int PANEL_WIDTH = 180;
     public static final int ROW_HEIGHT = 25;
@@ -5714,7 +5715,7 @@ public class ImageViewerTab implements Tab {
 
         JScrollPane scrollPanel = new JScrollPane(detailPanel);
         scrollPanel.setBorder(BorderFactory.createEmptyBorder());
-        scrollPanel.setMinimumSize(new Dimension(700, 300));
+        scrollPanel.setMinimumSize(new Dimension(CATALOG_PANEL_WIDTH, 350));
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -5982,7 +5983,7 @@ public class ImageViewerTab implements Tab {
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
         detailsFrame.add(simpleLayout ? new JScrollPane(container) : container);
-        detailsFrame.setSize(700, 700);
+        detailsFrame.setSize(CATALOG_PANEL_WIDTH, 700);
         detailsFrame.setLocation(windowShift, windowShift);
         detailsFrame.setAlwaysOnTop(false);
         detailsFrame.setResizable(true);
@@ -6032,6 +6033,7 @@ public class ImageViewerTab implements Tab {
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
+        spectralTypePanel.setMinimumSize(new Dimension(CATALOG_PANEL_WIDTH, 75));
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), html("Main sequence spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -6077,6 +6079,7 @@ public class ImageViewerTab implements Tab {
 
         JScrollPane spectralTypePanel = new JScrollPane(spectralTypeTable);
         spectralTypePanel.setToolTipText(PHOT_DIST_INFO);
+        spectralTypePanel.setMinimumSize(new Dimension(CATALOG_PANEL_WIDTH, 75));
         spectralTypePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), html("M, L & T dwarfs spectral type estimates " + INFO_ICON), TitledBorder.LEFT, TitledBorder.TOP
         ));
@@ -6140,7 +6143,7 @@ public class ImageViewerTab implements Tab {
     }
 
     private double getOverlaySize(int scale) {
-        double factor = desiCutouts.isSelected() || ps1Cutouts.isSelected() ? 0.35 : 0.15;
+        double factor = desiCutouts.isSelected() || ps1Cutouts.isSelected() ? 0.25 : 0.15;
         double overlaySize = scale * factor * zoom * sqrt(size) / size;
         return max(5, min(overlaySize, 15));
     }
