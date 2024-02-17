@@ -1,5 +1,11 @@
 ## Release notes
 
+### AstroToolBox v3.4.0
+- Removed K dwarfs from MLT spectral type estimates
+- Fixed a bug in the photometric distance calculator
+- Blocked fields in the object details panel
+- Fixed a bug in overlays deserialization
+
 ### AstroToolBox v3.3.0
 - Added MOCA DB summary table
 - Added MOCA overlay
