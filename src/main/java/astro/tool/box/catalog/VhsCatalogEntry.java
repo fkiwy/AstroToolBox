@@ -269,23 +269,25 @@ public class VhsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "dec,"
-                + "object type,"
-                + "Y (mag),"
-                + "Y err,"
-                + "J (mag),"
-                + "J err,"
-                + "H (mag),"
-                + "H err,"
-                + "Ks (mag),"
-                + "Ks err,"
-                + "Y-J,"
-                + "J-H,"
-                + "H-Ks,"
-                + "J-Ks";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                dec,\
+                object type,\
+                Y (mag),\
+                Y err,\
+                J (mag),\
+                J err,\
+                H (mag),\
+                H err,\
+                Ks (mag),\
+                Ks err,\
+                Y-J,\
+                J-H,\
+                H-Ks,\
+                J-Ks\
+                """;
         return columnTitles.split(",", -1);
     }
 

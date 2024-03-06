@@ -63,7 +63,7 @@ public class LookupTab implements Tab {
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
                     case MAIN_SEQUENCE:
                         fileName = "/SpectralTypeLookupTable.csv";
-                        tableName = String.format("Main sequence stars - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)", MAMAJEK_VERSION);
+                        tableName = "Main sequence stars - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)".formatted(MAMAJEK_VERSION);
                         break;
                     case MLT_DWARFS:
                         fileName = "/BrownDwarfLookupTable.csv";

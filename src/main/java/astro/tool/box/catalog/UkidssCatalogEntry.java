@@ -473,32 +473,34 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "ra err,"
-                + "dec,"
-                + "dec err,"
-                + "pmra (mas/yr),"
-                + "pmra err,"
-                + "pmdec (mas/yr),"
-                + "pmdec err,"
-                + "UKIDSS survey,"
-                + "object type,"
-                + "epoch,"
-                + "Y (mag),"
-                + "Y err,"
-                + "J (mag),"
-                + "J err,"
-                + "H (mag),"
-                + "H err,"
-                + "Ks (mag),"
-                + "Ks err,"
-                + "Y-J,"
-                + "J-H,"
-                + "H-Ks,"
-                + "J-Ks,"
-                + "tpm (mas/yr)";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                ra err,\
+                dec,\
+                dec err,\
+                pmra (mas/yr),\
+                pmra err,\
+                pmdec (mas/yr),\
+                pmdec err,\
+                UKIDSS survey,\
+                object type,\
+                epoch,\
+                Y (mag),\
+                Y err,\
+                J (mag),\
+                J err,\
+                H (mag),\
+                H err,\
+                Ks (mag),\
+                Ks err,\
+                Y-J,\
+                J-H,\
+                H-Ks,\
+                J-Ks,\
+                tpm (mas/yr)\
+                """;
         return columnTitles.split(",", -1);
     }
 

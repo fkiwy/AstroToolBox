@@ -136,7 +136,7 @@ public class UhsCatalogEntry implements CatalogEntry {
 
         double radius = getSearchRadius() / ARCMIN_ARCSEC;
         String url = "http://wsa.roe.ac.uk:8080/wsa/WSASQL?database=UHSDR2&programmeID=107&from=source&formaction=region&ra=%f&dec=%f&sys=J&radius=%f&xSize=&ySize=&format=CSV&compress=NONE&select=default";
-        String paramUrl = String.format(url, getRa(), getDec(), radius);
+        String paramUrl = url.formatted(getRa(), getDec(), radius);
         String htmlContent = downloadHtmlFromUrl(paramUrl);
 
         Document doc = Jsoup.parse(htmlContent);
@@ -260,16 +260,18 @@ public class UhsCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "dec,"
-                + "object type,"
-                + "J (mag),"
-                + "J err,"
-                + "Ks (mag),"
-                + "Ks err,"
-                + "J-Ks";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                dec,\
+                object type,\
+                J (mag),\
+                J err,\
+                Ks (mag),\
+                Ks err,\
+                J-Ks\
+                """;
         return columnTitles.split(",", -1);
     }
 

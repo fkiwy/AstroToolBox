@@ -60,10 +60,10 @@ public class StatisticFunctions {
      */
     public static List<Double> removeOutliers(List<Double> values, double lowPercentile, double highPercentile) {
         if (lowPercentile < 0 || lowPercentile > 100) {
-            throw new IllegalArgumentException(String.format("Low percentile (=%s) out of range. Must be between 0 and 100.", roundTo2Dec(lowPercentile)));
+            throw new IllegalArgumentException("Low percentile (=%s) out of range. Must be between 0 and 100.".formatted(roundTo2Dec(lowPercentile)));
         }
         if (highPercentile < 0 || highPercentile > 100) {
-            throw new IllegalArgumentException(String.format("High percentile (=%s) out of range. Must be between 0 and 100.", roundTo2Dec(highPercentile)));
+            throw new IllegalArgumentException("High percentile (=%s) out of range. Must be between 0 and 100.".formatted(roundTo2Dec(highPercentile)));
         }
 
         values.sort(Comparator.naturalOrder());

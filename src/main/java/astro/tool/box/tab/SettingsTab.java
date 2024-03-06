@@ -610,8 +610,7 @@ public class SettingsTab implements Tab {
                 // Catalogs
                 selectedCatalogs = new ArrayList<>();
                 for (Component component : catalogPanel.getComponents()) {
-                    if (component instanceof JCheckBox) {
-                        JCheckBox catalogBox = (JCheckBox) component;
+                    if (component instanceof JCheckBox catalogBox) {
                         if (catalogBox.isSelected()) {
                             selectedCatalogs.add(catalogBox.getText());
                         }
@@ -658,8 +657,7 @@ public class SettingsTab implements Tab {
 
     private void setCheckBoxValue(JPanel panel, List<String> catalogList) {
         for (Component component : panel.getComponents()) {
-            if (component instanceof JCheckBox) {
-                JCheckBox catalogBox = (JCheckBox) component;
+            if (component instanceof JCheckBox catalogBox) {
                 catalogBox.setSelected(catalogList.contains(catalogBox.getText()));
             }
         }

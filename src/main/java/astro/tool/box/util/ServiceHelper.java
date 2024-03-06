@@ -71,7 +71,7 @@ public class ServiceHelper {
                 throw new ADQLException(ex);
             }
             writeErrorLog(ex);
-            showWarnDialog(null, String.format(SERVICE_NOT_AVAILABLE, serviceProvider));
+            showWarnDialog(null, SERVICE_NOT_AVAILABLE.formatted(serviceProvider));
             return "";
         }
     }

@@ -214,8 +214,7 @@ public class CatalogQueryTab implements Tab {
                     }
                     List<String> selectedCatalogs = new ArrayList<>();
                     for (Component component : topPanel.getComponents()) {
-                        if (component instanceof JCheckBox) {
-                            JCheckBox catalogBox = (JCheckBox) component;
+                        if (component instanceof JCheckBox catalogBox) {
                             if (catalogBox.isSelected()) {
                                 selectedCatalogs.add(catalogBox.getText());
                             }
@@ -419,16 +418,14 @@ public class CatalogQueryTab implements Tab {
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             if (!mainSequenceResults.isEmpty()) {
                 container.add(createMainSequenceSpectralTypePanel(mainSequenceResults, catalogEntry));
-                if (catalogEntry instanceof AllWiseCatalogEntry) {
-                    AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (catalogEntry instanceof AllWiseCatalogEntry entry) {
                     if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                         JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                         messagePanel.add(createLabel(AGN_WARNING, JColor.RED));
                         container.add(messagePanel);
                     }
                 }
-                if (catalogEntry instanceof WhiteDwarf) {
-                    WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+                if (catalogEntry instanceof WhiteDwarf entry) {
                     if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                         JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                         messagePanel.add(createLabel(WD_WARNING, JColor.RED));
@@ -616,7 +613,7 @@ public class CatalogQueryTab implements Tab {
                 }
             });
 
-            if (catalogEntry instanceof GaiaCmd) {
+            if (catalogEntry instanceof GaiaCmd cmd) {
                 JButton createCmdButton = new JButton("Gaia CMD");
                 collectPanel.add(createCmdButton);
                 createCmdButton.addActionListener((ActionEvent evt) -> {
@@ -627,7 +624,7 @@ public class CatalogQueryTab implements Tab {
                         frame.addWindowListener(getChildWindowAdapter(baseFrame));
                         frame.setIconImage(getToolBoxImage());
                         frame.setTitle("Gaia CMD");
-                        frame.add(new GaiaCmdPanel((GaiaCmd) catalogEntry));
+                        frame.add(new GaiaCmdPanel(cmd));
                         frame.setSize(1000, 900);
                         frame.setLocation(0, 0);
                         frame.setAlwaysOnTop(false);

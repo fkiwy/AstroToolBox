@@ -14,8 +14,7 @@ import java.util.List;
 public class CatalogQueryService {
 
     public List<CatalogEntry> getCatalogEntriesByCoords(CatalogEntry catalogEntry) throws IOException {
-        if (catalogEntry instanceof UkidssCatalogEntry) {
-            UkidssCatalogEntry entry = (UkidssCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof UkidssCatalogEntry entry) {
             List<CatalogEntry> catalogEntries = new ArrayList();
             for (Survey survey : UkidssCatalogEntry.Survey.values()) {
                 entry.setSurvey(survey);
@@ -23,18 +22,17 @@ public class CatalogQueryService {
             }
             return catalogEntries;
         }
-        if (catalogEntry instanceof UhsCatalogEntry) {
-            return ((UhsCatalogEntry) catalogEntry).findCatalogEntries();
+        if (catalogEntry instanceof UhsCatalogEntry entry) {
+            return entry.findCatalogEntries();
         }
-        if (catalogEntry instanceof MocaCatalogEntry) {
-            return ((MocaCatalogEntry) catalogEntry).findCatalogEntries();
+        if (catalogEntry instanceof MocaCatalogEntry entry) {
+            return entry.findCatalogEntries();
         }
         return transformResponseToCatalogEntries(readResponse(establishHttpConnection(catalogEntry.getCatalogQueryUrl()), catalogEntry.getCatalogName()), catalogEntry);
     }
 
     public List<CatalogEntry> getCatalogEntriesByCoordsAndTpm(ProperMotionQuery catalogEntry) throws IOException {
-        if (catalogEntry instanceof UkidssCatalogEntry) {
-            UkidssCatalogEntry entry = (UkidssCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof UkidssCatalogEntry entry) {
             List<CatalogEntry> catalogEntries = new ArrayList();
             for (Survey survey : UkidssCatalogEntry.Survey.motionSurveys()) {
                 entry.setSurvey(survey);

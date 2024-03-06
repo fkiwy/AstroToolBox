@@ -335,8 +335,7 @@ public class PhotometricClassifierTab implements Tab {
                 spectralType += ": " + matchedColor + "; ";
                 spectralTypes.add(spectralType);
             });
-            if (catalogEntry instanceof SimbadCatalogEntry) {
-                SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+            if (catalogEntry instanceof SimbadCatalogEntry simbadEntry) {
                 StringBuilder simbadType = new StringBuilder();
                 simbadType.append(simbadEntry.getObjectType());
                 String spectralType = simbadEntry.getSpectralType();
@@ -347,16 +346,14 @@ public class PhotometricClassifierTab implements Tab {
                 simbadType.append("; ");
                 spectralTypes.add(0, simbadType.toString());
             }
-            if (catalogEntry instanceof AllWiseCatalogEntry) {
-                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+            if (catalogEntry instanceof AllWiseCatalogEntry entry) {
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     String spectralType = AGN_WARNING;
                     addOccurrence(new ClassifierData(catalogName, spectralType, sourceId), sptOccurrences, classifierList, resultTable);
                     spectralTypes.add(spectralType);
                 }
             }
-            if (catalogEntry instanceof WhiteDwarf) {
-                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+            if (catalogEntry instanceof WhiteDwarf entry) {
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     String spectralType = WD_WARNING;
                     addOccurrence(new ClassifierData(catalogName, spectralType, sourceId), sptOccurrences, classifierList, resultTable);

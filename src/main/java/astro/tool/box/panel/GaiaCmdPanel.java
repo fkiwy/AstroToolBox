@@ -382,7 +382,7 @@ public class GaiaCmdPanel extends JPanel {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
             String mass = roundTo1Dec((double) i / 10);
-            plot.setDataset(i, createCoolingSequenceCollection(String.format("Mass %s H", mass)));
+            plot.setDataset(i, createCoolingSequenceCollection("Mass %s H".formatted(mass)));
         }
 
         XYLineAndShapeRenderer sequenceRendererH = new XYLineAndShapeRenderer();
@@ -400,7 +400,7 @@ public class GaiaCmdPanel extends JPanel {
         XYPlot plot = chart.getXYPlot();
         for (int i = min; i < max; i++) {
             String mass = roundTo1Dec((double) i / 10);
-            plot.setDataset(i + max - min, createCoolingSequenceCollection(String.format("Mass %s He", mass)));
+            plot.setDataset(i + max - min, createCoolingSequenceCollection("Mass %s He".formatted(mass)));
         }
 
         XYLineAndShapeRenderer sequenceRendererHe = new XYLineAndShapeRenderer();

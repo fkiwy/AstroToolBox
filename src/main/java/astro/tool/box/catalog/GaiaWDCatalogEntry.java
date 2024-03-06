@@ -309,45 +309,47 @@ public class GaiaWDCatalogEntry implements CatalogEntry, Extinction {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "dec,"
-                + "WD id,"
-                + "plx (mas),"
-                + "pmra (mas/yr),"
-                + "pmdec (mas/yr),"
-                + "G (mag),"
-                + "BP (mag),"
-                + "RP (mag),"
-                + "u (mag),"
-                + "g (mag),"
-                + "r (mag),"
-                + "i (mag),"
-                + "z (mag),"
-                + "teff H (K),"
-                + "teff H err,"
-                + "teff He (K),"
-                + "teff He err,"
-                + "logg H,"
-                + "logg H err,"
-                + "logg He,"
-                + "logg He err,"
-                + "mass H (Msun),"
-                + "mass H err,"
-                + "mass He (Msun),"
-                + "mass He err,"
-                + "SDSS id,"
-                + "probability of being a WD,"
-                + "dist (1/plx),"
-                + "tpm (mas/yr),"
-                + "Absolute G (mag),"
-                + "G-RP,"
-                + "BP-RP,"
-                + "u-g,"
-                + "g-r,"
-                + "r-i,"
-                + "i-z";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                dec,\
+                WD id,\
+                plx (mas),\
+                pmra (mas/yr),\
+                pmdec (mas/yr),\
+                G (mag),\
+                BP (mag),\
+                RP (mag),\
+                u (mag),\
+                g (mag),\
+                r (mag),\
+                i (mag),\
+                z (mag),\
+                teff H (K),\
+                teff H err,\
+                teff He (K),\
+                teff He err,\
+                logg H,\
+                logg H err,\
+                logg He,\
+                logg He err,\
+                mass H (Msun),\
+                mass H err,\
+                mass He (Msun),\
+                mass He err,\
+                SDSS id,\
+                probability of being a WD,\
+                dist (1/plx),\
+                tpm (mas/yr),\
+                Absolute G (mag),\
+                G-RP,\
+                BP-RP,\
+                u-g,\
+                g-r,\
+                r-i,\
+                i-z\
+                """;
         return columnTitles.split(",", -1);
     }
 

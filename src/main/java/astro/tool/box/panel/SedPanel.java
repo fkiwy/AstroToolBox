@@ -217,8 +217,8 @@ public class SedPanel extends JPanel {
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
-        if (catalogEntry instanceof PanStarrsCatalogEntry) {
-            panStarrsEntry = (PanStarrsCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof PanStarrsCatalogEntry entry) {
+            panStarrsEntry = entry;
         } else {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
@@ -230,8 +230,8 @@ public class SedPanel extends JPanel {
             }
         }
 
-        if (catalogEntry instanceof AllWiseCatalogEntry) {
-            allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof AllWiseCatalogEntry entry) {
+            allWiseEntry = entry;
         } else {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());

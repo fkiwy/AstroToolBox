@@ -254,27 +254,29 @@ public class SsoCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "object id,"
-                + "type,"
-                + "predicted ra,"
-                + "predicted dec,"
-                + "predicted pm (arcsec/sec),"
-                + "pm direction (deg),"
-                + "heliocentric dist. (AU),"
-                + "absolute mag,"
-                + "visual mag,"
-                + "perihelion dist. (AU),"
-                + "orbital ecc.,"
-                + "orbital incl. (deg),"
-                + "perih. passage time,"
-                + "observation time,"
-                + "dist. to predict ra (arcsec),"
-                + "dist. to predict dec (arcsec),"
-                + "W1 (mag),"
-                + "W1 err,"
-                + "W2 (mag),"
-                + "W2 err";
+        String columnTitles = """
+                dist (arcsec),\
+                object id,\
+                type,\
+                predicted ra,\
+                predicted dec,\
+                predicted pm (arcsec/sec),\
+                pm direction (deg),\
+                heliocentric dist. (AU),\
+                absolute mag,\
+                visual mag,\
+                perihelion dist. (AU),\
+                orbital ecc.,\
+                orbital incl. (deg),\
+                perih. passage time,\
+                observation time,\
+                dist. to predict ra (arcsec),\
+                dist. to predict dec (arcsec),\
+                W1 (mag),\
+                W1 err,\
+                W2 (mag),\
+                W2 err\
+                """;
         return columnTitles.split(",", -1);
     }
 

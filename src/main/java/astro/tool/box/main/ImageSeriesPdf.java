@@ -373,23 +373,23 @@ public class ImageSeriesPdf {
                 int year_y_i_g = getMeanEpoch(year_y, year_i, year_g);
 
                 images = new ArrayList<>();
-                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true);
+                bufferedImage = retrievePs1Image("red=%s".formatted(imageInfos.get("g")), targetRa, targetDec, size, true);
                 images.add(new Couple(getImageLabel("PS1 g", year_g), bufferedImage));
 
-                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true);
+                bufferedImage = retrievePs1Image("red=%s".formatted(imageInfos.get("r")), targetRa, targetDec, size, true);
                 images.add(new Couple(getImageLabel("PS1 r", year_r), bufferedImage));
 
-                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true);
+                bufferedImage = retrievePs1Image("red=%s".formatted(imageInfos.get("i")), targetRa, targetDec, size, true);
                 images.add(new Couple(getImageLabel("PS1 i", year_i), bufferedImage));
 
-                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
+                bufferedImage = retrievePs1Image("red=%s".formatted(imageInfos.get("z")), targetRa, targetDec, size, true);
                 images.add(new Couple(getImageLabel("PS1 z", year_z), bufferedImage));
                 timeSeries.add(new Couple(getImageLabel("PS1 z", year_z), new NirImage(year_z, bufferedImage)));
 
-                bufferedImage = retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true);
+                bufferedImage = retrievePs1Image("red=%s".formatted(imageInfos.get("y")), targetRa, targetDec, size, true);
                 images.add(new Couple(getImageLabel("PS1 y", year_y), bufferedImage));
 
-                bufferedImage = retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
+                bufferedImage = retrievePs1Image("red=%s&green=%s&blue=%s".formatted(imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false);
                 images.add(new Couple(getImageLabel("PS1 y-i-g", year_y_i_g), bufferedImage));
 
                 createPdfTable(images, writer, document);
@@ -477,8 +477,7 @@ public class ImageSeriesPdf {
         List<BatchResult> batchResults = new ArrayList<>();
         for (CatalogEntry catalogEntry : catalogEntries) {
             List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
-            if (catalogEntry instanceof SimbadCatalogEntry) {
-                SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+            if (catalogEntry instanceof SimbadCatalogEntry simbadEntry) {
                 StringBuilder simbadType = new StringBuilder();
                 simbadType.append(simbadEntry.getObjectType());
                 if (!simbadEntry.getSpectralType().isEmpty()) {
@@ -487,14 +486,12 @@ public class ImageSeriesPdf {
                 simbadType.append("; ");
                 spectralTypes.add(0, simbadType.toString());
             }
-            if (catalogEntry instanceof AllWiseCatalogEntry) {
-                AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+            if (catalogEntry instanceof AllWiseCatalogEntry entry) {
                 if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                     spectralTypes.add(AGN_WARNING);
                 }
             }
-            if (catalogEntry instanceof WhiteDwarf) {
-                WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+            if (catalogEntry instanceof WhiteDwarf entry) {
                 if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                     spectralTypes.add(WD_WARNING);
                 }

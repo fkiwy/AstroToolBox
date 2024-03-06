@@ -70,7 +70,7 @@ public class Application {
     public void init() {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
-        baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
+        baseFrame.setTitle("%s %s (Java %s)".formatted(PGM_NAME, PGM_VERSION, JAVA_VERSION));
         baseFrame.setSize(new Dimension(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
@@ -201,7 +201,7 @@ public class Application {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(new JLabel("There's a new " + PGM_NAME + " version available!"));
-        container.add(createHyperlink("> Download new version", RELEASES_URL + String.format("executables/AstroToolBox-%s.jar", latestVersion)));
+        container.add(createHyperlink("> Download new version", RELEASES_URL + "executables/AstroToolBox-%s.jar".formatted(latestVersion)));
         container.add(createHyperlink("> Check release notes", RELEASES_URL + "release%20notes.md"));
         container.add(new JLabel("Please make sure to always use the latest version of this tool!"));
         container.add(new JLabel("Previous versions may contain bugs and/or may no longer work properly."));

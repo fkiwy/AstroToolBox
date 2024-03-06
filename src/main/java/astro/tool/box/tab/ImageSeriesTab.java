@@ -778,13 +778,13 @@ public class ImageSeriesTab implements Tab {
 
             bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), getImageLabel("PS1 g", year_g)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), getImageLabel("PS1 r", year_r)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), getImageLabel("PS1 i", year_i)));
-            bandPanel.add(buildImagePanel(image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("g")), targetRa, targetDec, size, true), getImageLabel("PS1 g", year_g)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("r")), targetRa, targetDec, size, true), getImageLabel("PS1 r", year_r)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("i")), targetRa, targetDec, size, true), getImageLabel("PS1 i", year_i)));
+            bandPanel.add(buildImagePanel(image = retrievePs1Image("red=%s".formatted(imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
             timeSeries.add(new Couple(getImageLabel("PS1 z", year_z), new NirImage(year_z, image)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s&green=%s&blue=%s".formatted(imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
 
             if (bandPanel.getComponentCount() > 0) {
                 bandPanel.add(createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, ImageType.WARP)));

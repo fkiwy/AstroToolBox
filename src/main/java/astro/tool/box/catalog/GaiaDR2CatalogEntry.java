@@ -378,35 +378,37 @@ public class GaiaDR2CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "dec,"
-                + "plx (mas),"
-                + "plx err,"
-                + "pmra (mas/yr),"
-                + "pmra err,"
-                + "pmdec (mas/yr),"
-                + "pmdec err,"
-                + "G (mag),"
-                + "G err,"
-                + "BP (mag),"
-                + "BP err,"
-                + "RP (mag),"
-                + "RP err,"
-                + "BP-RP,"
-                + "BP-G,"
-                + "G-RP,"
-                + "rad vel (km/s),"
-                + "rad vel err,"
-                + "teff (K),"
-                + "radius (Rsun),"
-                + "luminosity (Lsun),"
-                + "dist (1/plx),"
-                + "Absolute G (mag),"
-                + "tpm (mas/yr),"
-                + "tang vel (km/s),"
-                + "tot vel (km/s)";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                dec,\
+                plx (mas),\
+                plx err,\
+                pmra (mas/yr),\
+                pmra err,\
+                pmdec (mas/yr),\
+                pmdec err,\
+                G (mag),\
+                G err,\
+                BP (mag),\
+                BP err,\
+                RP (mag),\
+                RP err,\
+                BP-RP,\
+                BP-G,\
+                G-RP,\
+                rad vel (km/s),\
+                rad vel err,\
+                teff (K),\
+                radius (Rsun),\
+                luminosity (Lsun),\
+                dist (1/plx),\
+                Absolute G (mag),\
+                tpm (mas/yr),\
+                tang vel (km/s),\
+                tot vel (km/s)\
+                """;
         return columnTitles.split(",", -1);
     }
 

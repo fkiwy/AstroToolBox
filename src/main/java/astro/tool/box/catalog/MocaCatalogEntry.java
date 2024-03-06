@@ -44,7 +44,7 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
         double dec = getDec();
         double radius = getSearchRadius() / DEG_ARCSEC;
 
-        String query = String.format("SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ACOS(SIN(RADIANS(`dec`)) * SIN(RADIANS(%f)) + COS(RADIANS(`dec`)) * COS(RADIANS(%f)) * COS(RADIANS(ra - %f))) * 180 / PI() <= %f", dec, dec, ra, radius);
+        String query = "SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ACOS(SIN(RADIANS(`dec`)) * SIN(RADIANS(%f)) + COS(RADIANS(`dec`)) * COS(RADIANS(%f)) * COS(RADIANS(ra - %f))) * 180 / PI() <= %f".formatted(dec, dec, ra, radius);
 
         List<CatalogEntry> catalogEntries = new ArrayList();
 
