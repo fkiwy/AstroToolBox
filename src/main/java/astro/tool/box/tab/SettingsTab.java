@@ -4,8 +4,7 @@ import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.Constants.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
-import static astro.tool.box.enumeration.LookAndFeel.Flat_IntelliJ;
-import static astro.tool.box.enumeration.LookAndFeel.Flat_Mac_Light;
+import static astro.tool.box.enumeration.LookAndFeel.Nord;
 import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
@@ -15,6 +14,9 @@ import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.BorderLayout;
@@ -416,7 +418,7 @@ public class SettingsTab implements Tab {
             downloadPanel.add(ukidssImagesCheckBox);
             JCheckBox sdssImagesCheckBox = new JCheckBox("SDSS", sdssImages);
             downloadPanel.add(sdssImagesCheckBox);
-            
+
             imageViewerSettings.add(new JLabel());
             downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
@@ -667,33 +669,44 @@ public class SettingsTab implements Tab {
         boolean isFlatLaf = false;
         try {
             switch (lookAndFeel) {
-                case OS:
+                case OS ->
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    break;
-                case Flat_Light:
+                case Flat_Light -> {
                     UIManager.setLookAndFeel(new FlatLightLaf());
                     isFlatLaf = true;
-                    break;
-                case Flat_Dark:
+                }
+                case Flat_Dark -> {
                     UIManager.setLookAndFeel(new FlatDarkLaf());
                     isFlatLaf = true;
-                    break;
-                case Flat_Darcula:
+                }
+                case Flat_Darcula -> {
                     UIManager.setLookAndFeel(new FlatDarculaLaf());
                     isFlatLaf = true;
-                    break;
-                case Flat_IntelliJ:
+                }
+                case Flat_IntelliJ -> {
                     UIManager.setLookAndFeel(new FlatIntelliJLaf());
                     isFlatLaf = true;
-                    break;
-                case Flat_Mac_Light:
+                }
+                case Flat_Mac_Light -> {
                     UIManager.setLookAndFeel(new FlatMacLightLaf());
                     isFlatLaf = true;
-                    break;
-                case Flat_Mac_Dark:
+                }
+                case Flat_Mac_Dark -> {
                     UIManager.setLookAndFeel(new FlatMacDarkLaf());
                     isFlatLaf = true;
-                    break;
+                }
+                case Nord -> {
+                    UIManager.setLookAndFeel(new FlatNordIJTheme());
+                    isFlatLaf = true;
+                }
+                case NightOwl -> {
+                    UIManager.setLookAndFeel(new FlatNightOwlIJTheme());
+                    isFlatLaf = true;
+                }
+                case Moonlight -> {
+                    UIManager.setLookAndFeel(new FlatMoonlightIJTheme());
+                    isFlatLaf = true;
+                }
             }
             if (isFlatLaf) {
                 UIManager.put("Button.arc", 0);
