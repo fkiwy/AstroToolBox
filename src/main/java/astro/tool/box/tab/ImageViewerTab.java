@@ -182,6 +182,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import astro.tool.box.panel.WiseLcPanel;
+import java.awt.HeadlessException;
 
 public class ImageViewerTab implements Tab {
 
@@ -1575,7 +1576,7 @@ public class ImageViewerTab implements Tab {
                         file = new File(file.getPath() + ".png");
                         ImageIO.write(wiseImage, "png", file);
                     }
-                } catch (Exception ex) {
+                } catch (HeadlessException | IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -1600,7 +1601,7 @@ public class ImageViewerTab implements Tab {
                             sequencer.generateFromBI(imageSet, file, speed / 10, true);
                         }
                     }
-                } catch (Exception ex) {
+                } catch (HeadlessException | IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -2849,19 +2850,15 @@ public class ImageViewerTab implements Tab {
                     epochsW2 = tempEpochs;
                 }
                 switch (wiseBand) {
-                    case W1:
-                        downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
-                        break;
-                    case W2:
-                        downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
-                        break;
-                    case W1W2:
+                    case W1 -> downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
+                    case W2 -> downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
+                    case W1W2 -> {
                         downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
                         if (stopDownloadProcess) {
                             break;
                         }
                         downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
-                        break;
+                    }
                 }
                 if (stopDownloadProcess) {
                     writeLogEntry("Download process stopped.");
@@ -2970,7 +2967,7 @@ public class ImageViewerTab implements Tab {
 
             String band;
             switch (wiseBand) {
-                case W1:
+                case W1 -> {
                     if (desi) {
                         band = "DECaLS r";
                     } else if (ps1) {
@@ -2988,8 +2985,8 @@ public class ImageViewerTab implements Tab {
                                 isFirstEpoch(fits)
                         ));
                     }
-                    break;
-                case W2:
+                }
+                case W2 -> {
                     if (desi) {
                         band = "DECaLS z";
                     } else if (ps1) {
@@ -3007,8 +3004,8 @@ public class ImageViewerTab implements Tab {
                                 isFirstEpoch(fits)
                         ));
                     }
-                    break;
-                case W1W2:
+                }
+                case W1W2 -> {
                     if (desi) {
                         band = "DECaLS r+z";
                     } else if (ps1) {
@@ -3029,7 +3026,7 @@ public class ImageViewerTab implements Tab {
                                 isFirstEpoch(fits1)
                         ));
                     }
-                    break;
+                }
             }
 
             int count = flipbook.size();
@@ -3918,7 +3915,7 @@ public class ImageViewerTab implements Tab {
                     fileNames.add(columnValues[fileName]);
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             writeErrorLog(ex);
         }
         int i = 0;
@@ -4023,7 +4020,7 @@ public class ImageViewerTab implements Tab {
             }
 
             return image;
-        } catch (Exception ex) {
+        } catch (IOException | IndexOutOfBoundsException | FitsException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -4065,7 +4062,7 @@ public class ImageViewerTab implements Tab {
             }
 
             return image;
-        } catch (Exception ex) {
+        } catch (IOException | IndexOutOfBoundsException | FitsException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -4342,7 +4339,7 @@ public class ImageViewerTab implements Tab {
                 image = ImageIO.read(stream);
             }
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
@@ -4378,7 +4375,7 @@ public class ImageViewerTab implements Tab {
             int year_y = years.get("y").intValue();
             year_ps1_y_i_g = getMeanEpoch(year_y, year_i, year_g);
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
@@ -4458,7 +4455,7 @@ public class ImageViewerTab implements Tab {
             //int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
             //year_sdss_z_g_u = getMeanEpoch(year_z, year_g, year_u);
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
@@ -4530,7 +4527,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4582,7 +4579,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4641,7 +4638,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4700,7 +4697,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4754,7 +4751,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4914,7 +4911,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4958,7 +4955,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -5217,7 +5214,7 @@ public class ImageViewerTab implements Tab {
                             sequencer.generateFromBI(imageSet, file, speed / 10, true);
                         }
                     }
-                } catch (Exception ex) {
+                } catch (HeadlessException | IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -5279,7 +5276,7 @@ public class ImageViewerTab implements Tab {
                 resultEntries.add(catalogEntry);
             });
             return resultEntries;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
             throw new RuntimeException(ex);
         } finally {
@@ -5304,7 +5301,7 @@ public class ImageViewerTab implements Tab {
                 resultEntries.add(catalogEntry);
             });
             return resultEntries;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
             throw new RuntimeException(ex);
         } finally {
@@ -5466,7 +5463,7 @@ public class ImageViewerTab implements Tab {
                 spectrumFrame.setResizable(false);
                 spectrumFrame.setVisible(true);
             }
-        } catch (Exception ex) {
+        } catch (HeadlessException | IOException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -5480,29 +5477,15 @@ public class ImageViewerTab implements Tab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
-            switch (shape) {
-                case CIRCLE:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case CROSS:
-                    toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case XCROSS:
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case SQUARE:
-                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case TRIANGLE:
-                    toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case DIAMOND:
-                    toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                default:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-            }
+            toDraw = switch (shape) {
+                case CIRCLE -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                case CROSS -> new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                case XCROSS -> new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                case SQUARE -> new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                case TRIANGLE -> new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                case DIAMOND -> new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
+                default -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+            };
             toDraw.draw(graphics);
         });
     }
@@ -5520,18 +5503,18 @@ public class ImageViewerTab implements Tab {
                 cc_flags = "0000";
             }
             switch (wiseBand) {
-                case W1:
+                case W1 -> {
                     ab_flags = ab_flags.substring(0, 1);
                     cc_flags = cc_flags.substring(0, 1);
-                    break;
-                case W2:
+                }
+                case W2 -> {
                     ab_flags = ab_flags.substring(1, 2);
                     cc_flags = cc_flags.substring(1, 2);
-                    break;
-                default:
+                }
+                default -> {
                     ab_flags = ab_flags.substring(0, 2);
                     cc_flags = cc_flags.substring(0, 2);
-                    break;
+                }
             }
             String flags = ab_flags + cc_flags;
             if (ghostOverlay.isSelected()) {
@@ -5892,7 +5875,7 @@ public class ImageViewerTab implements Tab {
                     frame.setAlwaysOnTop(false);
                     frame.setResizable(true);
                     frame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (HeadlessException | SecurityException ex) {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createCcdButton.setCursor(Cursor.getDefaultCursor());
@@ -5915,7 +5898,7 @@ public class ImageViewerTab implements Tab {
                     frame.setAlwaysOnTop(false);
                     frame.setResizable(true);
                     frame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (HeadlessException | SecurityException ex) {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createLcButton.setCursor(Cursor.getDefaultCursor());
@@ -5925,7 +5908,7 @@ public class ImageViewerTab implements Tab {
             if (catalogEntry instanceof GaiaCmd cmd) {
                 JButton createCmdButton = new JButton("Gaia CMD");
                 collectPanel.add(createCmdButton);
-                createCmdButton.addActionListener((ActionEvent evt) -> {
+                createCmdButton.addActionListener((var evt) -> {
                     try {
                         createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         JFrame frame = new JFrame();
@@ -5939,7 +5922,7 @@ public class ImageViewerTab implements Tab {
                         frame.setAlwaysOnTop(false);
                         frame.setResizable(true);
                         frame.setVisible(true);
-                    } catch (Exception ex) {
+                    } catch (HeadlessException | SecurityException ex) {
                         showErrorDialog(baseFrame, ex.getMessage());
                     } finally {
                         createCmdButton.setCursor(Cursor.getDefaultCursor());

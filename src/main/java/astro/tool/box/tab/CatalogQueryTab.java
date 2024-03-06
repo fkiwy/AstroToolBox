@@ -37,6 +37,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -204,11 +205,11 @@ public class CatalogQueryTab implements Tab {
                         errorMessages.add("Invalid coordinates!");
                     }
                     try {
-                        searchRadius = Double.valueOf(radius);
+                        searchRadius = Double.parseDouble(radius);
                         if (searchRadius > 300) {
                             errorMessages.add("Radius must not be larger than 300 arcsec.");
                         }
-                    } catch (Exception ex) {
+                    } catch (NumberFormatException ex) {
                         searchRadius = 0;
                         errorMessages.add("Invalid radius!");
                     }
@@ -262,7 +263,7 @@ public class CatalogQueryTab implements Tab {
                                     searchLabel.setText("No results for " + searchLabelText);
                                 }
                                 baseFrame.setVisible(true);
-                            } catch (Exception ex) {
+                            } catch (IOException ex) {
                                 showExceptionDialog(baseFrame, ex);
                             } finally {
                                 baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -583,7 +584,7 @@ public class CatalogQueryTab implements Tab {
                     frame.setAlwaysOnTop(false);
                     frame.setResizable(true);
                     frame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (HeadlessException | SecurityException ex) {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createCcdButton.setCursor(Cursor.getDefaultCursor());
@@ -606,7 +607,7 @@ public class CatalogQueryTab implements Tab {
                     frame.setAlwaysOnTop(false);
                     frame.setResizable(true);
                     frame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (HeadlessException | SecurityException ex) {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createLcButton.setCursor(Cursor.getDefaultCursor());
@@ -630,7 +631,7 @@ public class CatalogQueryTab implements Tab {
                         frame.setAlwaysOnTop(false);
                         frame.setResizable(true);
                         frame.setVisible(true);
-                    } catch (Exception ex) {
+                    } catch (HeadlessException | SecurityException ex) {
                         showErrorDialog(baseFrame, ex.getMessage());
                     } finally {
                         createCmdButton.setCursor(Cursor.getDefaultCursor());

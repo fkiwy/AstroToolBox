@@ -195,14 +195,14 @@ public class ImageSeriesTab implements Tab {
                         errorMessages.add("Invalid coordinates!");
                     }
                     try {
-                        fieldOfView = Integer.valueOf(fov);
+                        fieldOfView = Integer.parseInt(fov);
                         if (fieldOfView < 10) {
                             errorMessages.add("Field of view must not be smaller than 10 arcsec.");
                         }
                         if (fieldOfView > 300) {
                             errorMessages.add("Field of view must not be larger than 300 arcsec.");
                         }
-                    } catch (Exception ex) {
+                    } catch (NumberFormatException ex) {
                         fieldOfView = 0;
                         errorMessages.add("Invalid field of view!");
                     }
@@ -395,7 +395,7 @@ public class ImageSeriesTab implements Tab {
                                     bottomPanel.setSelectedIndex(bottomPanel.getTabCount() - 1);
                                 }
                                 baseFrame.setVisible(true);
-                            } catch (Exception ex) {
+                            } catch (IOException ex) {
                                 showExceptionDialog(baseFrame, ex);
                             }
                             return null;
@@ -982,30 +982,14 @@ public class ImageSeriesTab implements Tab {
             CatalogEntry nearestEntry = catalogEntries.get(0);
             if (nearestEntry.getTargetDistance() < 10) {
                 switch (nearestEntry.getCatalogName()) {
-                    case TwoMassCatalogEntry.CATALOG_NAME:
-                        twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
-                        break;
-                    case AllWiseCatalogEntry.CATALOG_NAME:
-                        allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
-                        break;
-                    case SdssCatalogEntry.CATALOG_NAME:
-                        sdssEntry = (SdssCatalogEntry) nearestEntry;
-                        break;
-                    case PanStarrsCatalogEntry.CATALOG_NAME:
-                        panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
-                        break;
-                    case GaiaDR3CatalogEntry.CATALOG_NAME:
-                        gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
-                        break;
-                    case CatWiseCatalogEntry.CATALOG_NAME:
-                        catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
-                        break;
-                    case NoirlabCatalogEntry.CATALOG_NAME:
-                        noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
-                        break;
-                    case UkidssCatalogEntry.CATALOG_NAME:
-                        ukidssEntry = (UkidssCatalogEntry) nearestEntry;
-                        break;
+                    case TwoMassCatalogEntry.CATALOG_NAME -> twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
+                    case AllWiseCatalogEntry.CATALOG_NAME -> allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
+                    case SdssCatalogEntry.CATALOG_NAME -> sdssEntry = (SdssCatalogEntry) nearestEntry;
+                    case PanStarrsCatalogEntry.CATALOG_NAME -> panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
+                    case GaiaDR3CatalogEntry.CATALOG_NAME -> gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
+                    case CatWiseCatalogEntry.CATALOG_NAME -> catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
+                    case NoirlabCatalogEntry.CATALOG_NAME -> noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
+                    case UkidssCatalogEntry.CATALOG_NAME -> ukidssEntry = (UkidssCatalogEntry) nearestEntry;
                 }
             }
             return catalogEntries;
@@ -1059,57 +1043,23 @@ public class ImageSeriesTab implements Tab {
 
     private void activateSelectedCatalogOverlay(ImageViewerTab imageViewerTab, CatalogEntry selected) {
         switch (selected.getCatalogName()) {
-            case SimbadCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getSimbadOverlay().setSelected(true);
-                break;
-            case AllWiseCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getAllWiseOverlay().setSelected(true);
-                break;
-            case CatWiseCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getCatWiseOverlay().setSelected(true);
-                break;
-            case UnWiseCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getUnWiseOverlay().setSelected(true);
-                break;
-            case GaiaDR2CatalogEntry.CATALOG_NAME:
-                imageViewerTab.getGaiaOverlay().setSelected(true);
-                break;
-            case GaiaDR3CatalogEntry.CATALOG_NAME:
-                imageViewerTab.getGaiaDR3Overlay().setSelected(true);
-                break;
-            case NoirlabCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getNoirlabOverlay().setSelected(true);
-                break;
-            case PanStarrsCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getPanStarrsOverlay().setSelected(true);
-                break;
-            case SdssCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getSdssOverlay().setSelected(true);
-                break;
-            case VhsCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getVhsOverlay().setSelected(true);
-                break;
-            case UhsCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getUhsOverlay().setSelected(true);
-                break;
-            case UkidssCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getUkidssOverlay().setSelected(true);
-                break;
-            case TwoMassCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getTwoMassOverlay().setSelected(true);
-                break;
-            case TessCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getTessOverlay().setSelected(true);
-                break;
-            case DesCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getDesOverlay().setSelected(true);
-                break;
-            case GaiaWDCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getGaiaWDOverlay().setSelected(true);
-                break;
-            case MocaCatalogEntry.CATALOG_NAME:
-                imageViewerTab.getMocaOverlay().setSelected(true);
-                break;
+            case SimbadCatalogEntry.CATALOG_NAME -> imageViewerTab.getSimbadOverlay().setSelected(true);
+            case AllWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getAllWiseOverlay().setSelected(true);
+            case CatWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getCatWiseOverlay().setSelected(true);
+            case UnWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getUnWiseOverlay().setSelected(true);
+            case GaiaDR2CatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaOverlay().setSelected(true);
+            case GaiaDR3CatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaDR3Overlay().setSelected(true);
+            case NoirlabCatalogEntry.CATALOG_NAME -> imageViewerTab.getNoirlabOverlay().setSelected(true);
+            case PanStarrsCatalogEntry.CATALOG_NAME -> imageViewerTab.getPanStarrsOverlay().setSelected(true);
+            case SdssCatalogEntry.CATALOG_NAME -> imageViewerTab.getSdssOverlay().setSelected(true);
+            case VhsCatalogEntry.CATALOG_NAME -> imageViewerTab.getVhsOverlay().setSelected(true);
+            case UhsCatalogEntry.CATALOG_NAME -> imageViewerTab.getUhsOverlay().setSelected(true);
+            case UkidssCatalogEntry.CATALOG_NAME -> imageViewerTab.getUkidssOverlay().setSelected(true);
+            case TwoMassCatalogEntry.CATALOG_NAME -> imageViewerTab.getTwoMassOverlay().setSelected(true);
+            case TessCatalogEntry.CATALOG_NAME -> imageViewerTab.getTessOverlay().setSelected(true);
+            case DesCatalogEntry.CATALOG_NAME -> imageViewerTab.getDesOverlay().setSelected(true);
+            case GaiaWDCatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaWDOverlay().setSelected(true);
+            case MocaCatalogEntry.CATALOG_NAME -> imageViewerTab.getMocaOverlay().setSelected(true);
         }
     }
 

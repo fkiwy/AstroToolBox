@@ -329,7 +329,7 @@ public class BatchQueryTab implements Tab {
         InputStream input;
         LookupTable selectedTable = (LookupTable) lookupTables.getSelectedItem();
         switch (selectedTable) {
-            case MAIN_SEQUENCE:
+            case MAIN_SEQUENCE -> {
                 input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -337,8 +337,8 @@ public class BatchQueryTab implements Tab {
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
-                break;
-            case MLT_DWARFS:
+            }
+            case MLT_DWARFS -> {
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -346,7 +346,7 @@ public class BatchQueryTab implements Tab {
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
-                break;
+            }
         }
 
         try (Scanner scanner = new Scanner(file)) {

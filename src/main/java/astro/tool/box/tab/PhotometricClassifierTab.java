@@ -207,14 +207,14 @@ public class PhotometricClassifierTab implements Tab {
                         errorMessages.add("Invalid coordinates!");
                     }
                     try {
-                        searchRadius = Double.valueOf(radius);
+                        searchRadius = Double.parseDouble(radius);
                         if (searchRadius < 0) {
                             errorMessages.add("Radius must not be smaller than 0.");
                         }
                         if (searchRadius > 100) {
                             errorMessages.add("Radius must not be larger than 100 arcsec.");
                         }
-                    } catch (Exception ex) {
+                    } catch (NumberFormatException ex) {
                         searchRadius = 0;
                         errorMessages.add("Invalid radius!");
                     }

@@ -61,18 +61,18 @@ public class LookupTab implements Tab {
                 String fileName = null;
                 String tableName = null;
                 switch ((LookupTable) lookupTables.getSelectedItem()) {
-                    case MAIN_SEQUENCE:
+                    case MAIN_SEQUENCE -> {
                         fileName = "/SpectralTypeLookupTable.csv";
                         tableName = "Main sequence stars - A Modern Mean Dwarf Stellar Color & Effective Temperature Sequence (Eric Mamajek, version %s)".formatted(MAMAJEK_VERSION);
-                        break;
-                    case MLT_DWARFS:
+                    }
+                    case MLT_DWARFS -> {
                         fileName = "/BrownDwarfLookupTable.csv";
                         tableName = "M, L & T dwarfs - Skrzypek et al. (2015), Skrzypek et al. (2016), Deacon et al. (2016), Best et al. (2018), Carnero Rosell et al. (2019) and Kiman et al. (2019)";
-                        break;
-                    case WHITE_DWARFS:
+                    }
+                    case WHITE_DWARFS -> {
                         fileName = "/WhiteDwarfLookupTable.csv";
                         tableName = "White dwarfs - Evolutionary cooling sequences from http://www.astro.umontreal.ca/~bergeron/CoolingModels (Bédard et al., 2020)";
-                        break;
+                    }
                 }
                 removeAndRecreateCenterPanel(mainPanel);
                 InputStream input = getClass().getResourceAsStream(fileName);

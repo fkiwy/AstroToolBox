@@ -320,15 +320,9 @@ public class JPlot {
     private void savePlot(File file, FileType fileType, int width, int height) {
         try {
             switch (fileType) {
-                case JPEG:
-                    ChartUtils.saveChartAsJPEG(file, chart, width, height);
-                    break;
-                case PNG:
-                    ChartUtils.saveChartAsPNG(file, chart, width, height);
-                    break;
-                case PDF:
-                    savePDF(file, width, height);
-                    break;
+                case JPEG -> ChartUtils.saveChartAsJPEG(file, chart, width, height);
+                case PNG -> ChartUtils.saveChartAsPNG(file, chart, width, height);
+                case PDF -> savePDF(file, width, height);
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);

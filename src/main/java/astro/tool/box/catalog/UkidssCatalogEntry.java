@@ -264,21 +264,11 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
     public String getCatalogQueryUrl() {
         String catalogQuery = "";
         switch (survey) {
-            case LAS:
-                catalogQuery = createCatalogQueryLAS();
-                break;
-            case GCS:
-                catalogQuery = createCatalogQueryGCS();
-                break;
-            case GPS:
-                catalogQuery = createCatalogQueryGPS();
-                break;
-            case DXS:
-                catalogQuery = createCatalogQueryDXS();
-                break;
-            case UDS:
-                catalogQuery = createCatalogQueryUDS();
-                break;
+            case LAS -> catalogQuery = createCatalogQueryLAS();
+            case GCS -> catalogQuery = createCatalogQueryGCS();
+            case GPS -> catalogQuery = createCatalogQueryGPS();
+            case DXS -> catalogQuery = createCatalogQueryDXS();
+            case UDS -> catalogQuery = createCatalogQueryUDS();
         }
         return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
     }
@@ -288,21 +278,21 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
         StringBuilder queryBuilder = new StringBuilder();
         String catalogQuery = "";
         switch (survey) {
-            case LAS:
+            case LAS -> {
                 catalogQuery = createCatalogQueryLAS();
                 addRow(queryBuilder, catalogQuery);
                 catalogQuery = createProperMotionQuery(queryBuilder);
-                break;
-            case GCS:
+            }
+            case GCS -> {
                 catalogQuery = createCatalogQueryGCS();
                 addRow(queryBuilder, catalogQuery);
                 catalogQuery = createProperMotionQuery(queryBuilder);
-                break;
-            case GPS:
+            }
+            case GPS -> {
                 catalogQuery = createCatalogQueryGPS();
                 addRow(queryBuilder, catalogQuery);
                 catalogQuery = createProperMotionQuery(queryBuilder);
-                break;
+            }
         }
         return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
     }

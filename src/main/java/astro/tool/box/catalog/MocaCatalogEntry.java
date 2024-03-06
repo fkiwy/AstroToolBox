@@ -60,7 +60,7 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
                 for (String columnName : columnNames) {
                     columnValues.add(resultSet.getString(columnName));
                 }
-                MocaCatalogEntry catalogEntry = new MocaCatalogEntry(columnNames.toArray(new String[0]), columnValues.toArray(new String[0]));
+                MocaCatalogEntry catalogEntry = new MocaCatalogEntry(columnNames.toArray(String[]::new), columnValues.toArray(String[]::new));
                 catalogEntry.setRa(resultSet.getDouble("ra"));
                 catalogEntry.setDec(resultSet.getDouble("dec"));
                 catalogEntry.setSourceId(resultSet.getString("moca_oid"));
@@ -82,13 +82,13 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
     @Override
     public String[] getColumnValues() {
         List<String> columnValues = getCatalogElements().stream().map(CatalogElement::getValue).collect(Collectors.toList());
-        return columnValues.toArray(new String[0]);
+        return columnValues.toArray(String[]::new);
     }
 
     @Override
     public String[] getColumnTitles() {
         List<String> columnNames = getCatalogElements().stream().map(CatalogElement::getName).collect(Collectors.toList());
-        return columnNames.toArray(new String[0]);
+        return columnNames.toArray(String[]::new);
     }
 
     @Override
@@ -101,6 +101,7 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
         return CATALOG_NAME;
     }
 
+    @Override
     public Color getCatalogColor() {
         return JColor.DARK_ORANGE.val;
     }

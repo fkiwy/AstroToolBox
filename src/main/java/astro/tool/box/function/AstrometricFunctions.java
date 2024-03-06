@@ -209,41 +209,45 @@ public class AstrometricFunctions {
      */
     public static double convertToUnit(double toConvert, Unit fromUnit, Unit toUnit) {
         switch (fromUnit) {
-            case DEGREE:
-                switch (toUnit) {
-                    case DEGREE:
-                        return toConvert;
-                    case ARCSEC:
-                        return toConvert * DEG_ARCSEC;
-                    case MAS:
-                        return toConvert * DEG_MAS;
-                    default:
-                        return 0;
-                }
-            case ARCSEC:
-                switch (toUnit) {
-                    case DEGREE:
-                        return toConvert / DEG_ARCSEC;
-                    case ARCSEC:
-                        return toConvert;
-                    case MAS:
-                        return toConvert * ARCSEC_MAS;
-                    default:
-                        return 0;
-                }
-            case MAS:
-                switch (toUnit) {
-                    case DEGREE:
-                        return toConvert / DEG_MAS;
-                    case ARCSEC:
-                        return toConvert / ARCSEC_MAS;
-                    case MAS:
-                        return toConvert;
-                    default:
-                        return 0;
-                }
-            default:
+            case DEGREE -> {
+                return switch (toUnit) {
+                    case DEGREE ->
+                        toConvert;
+                    case ARCSEC ->
+                        toConvert * DEG_ARCSEC;
+                    case MAS ->
+                        toConvert * DEG_MAS;
+                    default ->
+                        0;
+                };
+            }
+            case ARCSEC -> {
+                return switch (toUnit) {
+                    case DEGREE ->
+                        toConvert / DEG_ARCSEC;
+                    case ARCSEC ->
+                        toConvert;
+                    case MAS ->
+                        toConvert * ARCSEC_MAS;
+                    default ->
+                        0;
+                };
+            }
+            case MAS -> {
+                return switch (toUnit) {
+                    case DEGREE ->
+                        toConvert / DEG_MAS;
+                    case ARCSEC ->
+                        toConvert / ARCSEC_MAS;
+                    case MAS ->
+                        toConvert;
+                    default ->
+                        0;
+                };
+            }
+            default -> {
                 return 0;
+            }
         }
     }
 

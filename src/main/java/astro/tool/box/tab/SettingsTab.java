@@ -52,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 
 public class SettingsTab implements Tab {
@@ -527,7 +528,7 @@ public class SettingsTab implements Tab {
                     ukidssImages = ukidssImagesCheckBox.isSelected();
                     sdssImages = sdssImagesCheckBox.isSelected();
                     dssImages = dssImagesCheckBox.isSelected();
-                } catch (Exception ex) {
+                } catch (NumberFormatException ex) {
                     showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
                     return;
                 }
@@ -644,7 +645,7 @@ public class SettingsTab implements Tab {
             buttonPanel.add(message);
 
             tabbedPane.addTab(TAB_NAME, new JScrollPane(settingsPanel));
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             showExceptionDialog(baseFrame, ex);
         }
     }
@@ -718,7 +719,7 @@ public class SettingsTab implements Tab {
                 UIManager.put("ScrollBar.showButtons", true);
                 UIManager.put("ScrollBar.width", 15);
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | UnsupportedLookAndFeelException e) {
         }
     }
 

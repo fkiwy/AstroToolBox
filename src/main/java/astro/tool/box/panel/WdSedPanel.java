@@ -67,7 +67,7 @@ import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class WdSedPanel extends JPanel {
+public final class WdSedPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 

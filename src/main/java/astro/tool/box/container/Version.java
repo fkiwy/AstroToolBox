@@ -15,7 +15,7 @@ public class Version {
     public Version(String number, boolean latest, int year, int month, int day, String message) {
         this.number = number;
         this.latest = latest;
-        this.date = LocalDate.of(year, month, day);;
+        this.date = LocalDate.of(year, month, day);
         this.message = message;
     }
 

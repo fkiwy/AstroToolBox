@@ -97,7 +97,7 @@ public class ServiceHelper {
                     }
                     entries.add(catalogEntry.getInstance(columns, values));
                 }
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 throw new RuntimeException(response, ex);
             }
         }

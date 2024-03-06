@@ -54,6 +54,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -860,7 +861,7 @@ public class ToolboxHelper {
                     subjects.add(createHyperlink(id, "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
                 }
             }
-        } catch (Exception ex) {
+        } catch (JsonSyntaxException | IOException ex) {
         }
         return subjects;
     }
@@ -939,11 +940,11 @@ public class ToolboxHelper {
                     if (line.contains("obsdate")) {
                         String[] parts = line.split("<obsdate>");
                         parts = parts[1].split("-");
-                        return Integer.valueOf(parts[0]);
+                        return Integer.parseInt(parts[0]);
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | NumberFormatException ex) {
         }
         return 0;
     }
@@ -983,7 +984,7 @@ public class ToolboxHelper {
                 }
                 return convertMJDToDate(epoch / i).get(ChronoField.YEAR);
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
         }
         return 0;
     }
@@ -1015,7 +1016,7 @@ public class ToolboxHelper {
                 return epochs.stream().collect(Collectors.groupingBy(MjdEpoch::getBand, Collectors.averagingInt(MjdEpoch::getEpoch)));
 
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
         }
         return new HashMap();
     }
@@ -1042,7 +1043,7 @@ public class ToolboxHelper {
                     fileNames.put(columnValues[filter], columnValues[fileName]);
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             writeErrorLog(ex);
         }
         return fileNames;
@@ -1152,19 +1153,16 @@ public class ToolboxHelper {
                 if (surveyLabel.equals(UHS_LABEL) || surveyLabel.equals(UKIDSS_LABEL)) {
                     // Rotate image
                     switch (extNo) {
-                        case "1":
+                        case "1" ->
                             image = rotateImage(image, 1);
-                            break;
-                        case "2":
-                            // No rotation necessary
-                            break;
-                        case "3":
+                        case "2" -> {
+                        }
+                        case "3" ->
                             image = rotateImage(image, 3);
-                            break;
-                        case "4":
+                        case "4" ->
                             image = rotateImage(image, 2);
-                            break;
                     }
+                    // No rotation necessary
                 }
                 // Flip image
                 image = flipImage(image);
@@ -1206,18 +1204,18 @@ public class ToolboxHelper {
     }
 
     private static String getBand(String filterId) {
-        switch (filterId) {
-            case "2":
-                return "Y";
-            case "3":
-                return "J";
-            case "4":
-                return "H";
-            case "5":
-                return "K";
-            default:
-                return "?";
-        }
+        return switch (filterId) {
+            case "2" ->
+                "Y";
+            case "3" ->
+                "J";
+            case "4" ->
+                "H";
+            case "5" ->
+                "K";
+            default ->
+                "?";
+        };
     }
 
     public static BufferedImage copyImage(BufferedImage bufferImage) {
