@@ -1038,13 +1038,13 @@ public class ImageViewerTab implements Tab {
 
             mocaOverlay = new JCheckBox(html("M<u>O</u>CA " + INFO_ICON), overlays.isMoca());
             mocaOverlay.setForeground(JColor.DARK_ORANGE.val);
-            mocaOverlay.setToolTipText(html("Montreal Open Clusters and Associations (MOCA) database (https://mocadb.ca/home)" + LINE_BREAK +
-                                    "Overlays created from the \"Summary of all objects\" table (https://mocadb.ca/schema/summary_all_objects)"));
+            mocaOverlay.setToolTipText(html("Montreal Open Clusters and Associations (MOCA) database (https://mocadb.ca/home)" + LINE_BREAK
+                    + "Overlays created from the \"Summary of all objects\" table (https://mocadb.ca/schema/summary_all_objects)"));
             mocaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(mocaOverlay);
-   
+
             ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
@@ -2850,8 +2850,10 @@ public class ImageViewerTab implements Tab {
                     epochsW2 = tempEpochs;
                 }
                 switch (wiseBand) {
-                    case W1 -> downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
-                    case W2 -> downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
+                    case W1 ->
+                        downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
+                    case W2 ->
+                        downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
                     case W1W2 -> {
                         downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
                         if (stopDownloadProcess) {
@@ -3831,6 +3833,9 @@ public class ImageViewerTab implements Tab {
                 sizes.sort(Comparator.reverseOrder());
                 long largest = sizes.get(0);
                 return new ByteArrayInputStream(entries.get(largest));
+            } catch (Exception e) {
+                writeErrorLog(e);
+                return null;
             }
         } else {
             String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
@@ -4272,7 +4277,14 @@ public class ImageViewerTab implements Tab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(0);
+
+        JTabbedPane pane = application.getTabbedPane();
+        int tabIndex = pane.indexOfTab(CatalogQueryTab.TAB_NAME);
+        if (tabIndex < 0) {
+            showErrorDialog(baseFrame, "The Catalog Search tab has been removed. You can add it again from the Settings tab.");
+            return false;
+        }
+        pane.setSelectedIndex(tabIndex);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);
@@ -4295,7 +4307,14 @@ public class ImageViewerTab implements Tab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(0);
+
+        JTabbedPane pane = application.getTabbedPane();
+        int tabIndex = pane.indexOfTab(ImageViewerTab.TAB_NAME);
+        if (tabIndex < 0) {
+            showErrorDialog(baseFrame, "The Image Viewer tab has been removed. You can add it again from the Settings tab.");
+            return false;
+        }
+        pane.setSelectedIndex(tabIndex);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);
@@ -5478,13 +5497,20 @@ public class ImageViewerTab implements Tab {
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
             toDraw = switch (shape) {
-                case CIRCLE -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                case CROSS -> new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-                case XCROSS -> new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-                case SQUARE -> new Square(position.getX(), position.getY(), getOverlaySize(), color);
-                case TRIANGLE -> new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-                case DIAMOND -> new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-                default -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                case CIRCLE ->
+                    new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                case CROSS ->
+                    new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                case XCROSS ->
+                    new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                case SQUARE ->
+                    new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                case TRIANGLE ->
+                    new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                case DIAMOND ->
+                    new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
+                default ->
+                    new Circle(position.getX(), position.getY(), getOverlaySize(), color);
             };
             toDraw.draw(graphics);
         });
