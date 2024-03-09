@@ -17,11 +17,13 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -231,8 +233,38 @@ public class JPlot {
         return this;
     }
 
-    public JPlot scatter(String legendEntry, List<Double> x, List<Double> y, Color color) {
-        return scatter(legendEntry, x, y, color, true);
+    public JPlot error(String legendEntry, List<Double> x, List<Double> y, List<Double> error, Color color, boolean plot) {
+        return error(legendEntry, x, y, error, error, color, plot);
+    }
+
+    public JPlot error(String legendEntry, List<Double> x, List<Double> y, List<Double> lowerError, List<Double> upperError, Color color, boolean plot) {
+        if (plot) {
+            List<Double> upperBound = new ArrayList();
+            List<Double> lowerBound = new ArrayList();
+            for (int i = 0; i < y.size(); i++) {
+                upperBound.add(y.get(i) + upperError.get(i));
+                lowerBound.add(y.get(i) - lowerError.get(i));
+            }
+
+            index++;
+            XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+            renderer.setSeriesLinesVisible(0, true);
+            renderer.setSeriesShapesVisible(0, true);
+            addRenderer(legendEntry, x, y, color, renderer);
+
+            index++;
+            XYLineAndShapeRenderer upperErrorRenderer = new XYLineAndShapeRenderer();
+            upperErrorRenderer.setSeriesLinesVisible(0, false);
+            upperErrorRenderer.setSeriesShapesVisible(0, true);
+            addRenderer(null, x, upperBound, color, upperErrorRenderer, getUpperErrorShape());
+
+            index++;
+            XYLineAndShapeRenderer lowerErrorRenderer = new XYLineAndShapeRenderer();
+            lowerErrorRenderer.setSeriesLinesVisible(0, false);
+            lowerErrorRenderer.setSeriesShapesVisible(0, true);
+            addRenderer(null, x, lowerBound, color, lowerErrorRenderer, getLowerErrorShape());
+        }
+        return this;
     }
 
     public JPlot scatter(String legendEntry, List<Double> x, List<Double> y, Color color, boolean plot) {
@@ -246,10 +278,6 @@ public class JPlot {
         return this;
     }
 
-    public JPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
-        return line(legendEntry, x, y, color, showDataPoints, true);
-    }
-    
     public JPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints, boolean plot) {
         if (plot) {
             index++;
@@ -261,10 +289,6 @@ public class JPlot {
         return this;
     }
 
-    public JPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints) {
-        return curve(legendEntry, x, y, color, showDataPoints, true);
-    }
-    
     public JPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints, boolean plot) {
         if (plot) {
             index++;
@@ -320,9 +344,12 @@ public class JPlot {
     private void savePlot(File file, FileType fileType, int width, int height) {
         try {
             switch (fileType) {
-                case JPEG -> ChartUtils.saveChartAsJPEG(file, chart, width, height);
-                case PNG -> ChartUtils.saveChartAsPNG(file, chart, width, height);
-                case PDF -> savePDF(file, width, height);
+                case JPEG ->
+                    ChartUtils.saveChartAsJPEG(file, chart, width, height);
+                case PNG ->
+                    ChartUtils.saveChartAsPNG(file, chart, width, height);
+                case PDF ->
+                    savePDF(file, width, height);
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -330,12 +357,16 @@ public class JPlot {
     }
 
     private void addRenderer(String legendEntry, List<Double> x, List<Double> y, Color color, XYItemRenderer renderer) {
+        addRenderer(legendEntry, x, y, color, renderer, getShape());
+    }
+
+    private void addRenderer(String legendEntry, List<Double> x, List<Double> y, Color color, XYItemRenderer renderer, Shape shape) {
         if (legendEntry == null || legendEntry.isEmpty()) {
             legendEntry = "Dataset" + index;
             renderer.setSeriesVisibleInLegend(0, false);
         }
         renderer.setSeriesPaint(0, color);
-        renderer.setSeriesShape(0, getShape());
+        renderer.setSeriesShape(0, shape);
         plot.setRenderer(index, renderer);
         addDataset(legendEntry, x, y);
     }
@@ -368,6 +399,28 @@ public class JPlot {
         double size = 6.0;
         double delta = size / 2.0;
         return new Ellipse2D.Double(-delta, -delta, size, size);
+    }
+
+    private Shape getUpperErrorShape() {
+        Path2D tShape = new Path2D.Double();
+        tShape.moveTo(0, 0);
+        tShape.lineTo(-3, 0);
+        tShape.moveTo(0, 0);
+        tShape.lineTo(3, 0);
+        tShape.moveTo(0, 0);
+        tShape.lineTo(0, -6);
+        return tShape;
+    }
+
+    private Shape getLowerErrorShape() {
+        Path2D tShape = new Path2D.Double();
+        tShape.moveTo(0, 0);
+        tShape.lineTo(-3, 0);
+        tShape.moveTo(0, 0);
+        tShape.lineTo(3, 0);
+        tShape.moveTo(0, 0);
+        tShape.lineTo(0, 6);
+        return tShape;
     }
 
     private void savePDF(File file, int width, int height) throws Exception {
