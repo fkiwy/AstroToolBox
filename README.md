@@ -1,26 +1,18 @@
 # AstroToolBox
 
-AstroToolBox is a Java toolset for visualizing, identifying and classifying astronomical objects with a focus on low-mass stars and ultra-cool dwarfs.
+AstroToolBox is a comprehensive Java suite designed for the visualization, identification, and classification of celestial bodies, particularly focusing on low-mass stars and ultra-cool dwarfs.
 
-It contains a catalog search for SIMBAD (measurements & references), AllWISE, CatWISE, unWISE, Gaia, NOIRLab Source Catalog (NSC), Pan-STARRS, SDSS, TESS Input Catalog, VISTA VHS, UKIDSS and 2MASS catalogs, plus a spectral type evaluation feature for main sequence stars including brown dwarfs. The spectral type evaluation is performed by applying the relations described in Pecaut & Mamajek (2013), Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016) and Kiman et al. (2019).
+This toolkit integrates various catalog searches including SIMBAD (for measurements & references), AllWISE, CatWISE, unWISE, Gaia, NOIRLab Source Catalog (NSC), Pan-STARRS, SDSS, TESS Input Catalog, UKIRT UHS & UKIDSS, VISTA VHS, and 2MASS. Additionally, it provides a spectral type evaluation tool for main sequence stars, including brown dwarfs, utilizing established relations from Pecaut & Mamajek (2013), Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016), and Kiman et al. (2019).
 
-There's an SED fitting tool for ultra-cool and white dwarfs using Best et al. SEDs for Field Ultracool Dwarfs and the Montreal Cooling Sequences (Bergeron et al.) for white dwarfs, respectively.
+For ultra-cool and white dwarfs, AstroToolBox offers an SED fitting feature utilizing Best et al. SEDs for Field Ultracool Dwarfs and the Montreal Cooling Sequences (Bergeron et al.) for white dwarfs. Moreover, it includes a functionality to generate Gaia color-magnitude diagrams (CMD) with overlaid M0-M9 spectral types, along with the capability to plot Montreal Cooling Sequences on the white dwarf branch of the Gaia CMD.
 
-A feature that enables the drawing of Gaia color-magnitude diagrams (CMD) with overplotted M0-M9 spectral types is also included. The Montreal Cooling Sequences can be drawn on the white dwarf branch of the Gaia CMD.
+Users can generate WISE light curves from AllWISE Multiepoch and NEOWISE-R Single Exposure (L1b) photometry and save plots as PNG or PDF files. Furthermore, the tool facilitates image blinking from different epochs using WISE coadds (Meisner et al. 2017), DECaLS cutouts (Dey et al. 2019), and Pan-STARRS WARP images (Waters et al. 2020) to identify motion or variability of objects, with the option to save images as PNG or animated GIF files.
 
-You can create WISE light curves from AllWISE Multiepoch and NEOWISE-R Single Exposure (L1b) photometry. The SED, CMD and light curve plots can be saved as PNG or PDF files.
+AstroToolBox allows overlaying of featured catalogs and creation of custom overlays from VizieR catalogs, ADQL queries or local files. It presents time series (static or animated) using infrared and optical images from various surveys (DSS, SDSS, 2MASS, WISE, Spitzer, UKIDSS, UHS, VHS, Pan-STARRS, DECaLS).
 
-Furthermore, the tool has an image viewer that blinks images from different epochs, using WISE coadds (Meisner et al. 2017), DECaLS cutouts (Dey et al. 2019) and Pan-STARRS WARP images (Waters et al. 2020), in order to visually identify the motion or variability of objects. These images can be saved as PNG or animated GIF files.
+The toolkit incorporates a photometric classifier utilizing data from the aforementioned catalogs to provide detailed spectral type classification. It also features an ADQL query interface (ESAC, IRSA, NOIRLab, VizieR) and a batch spectral type lookup using CSV files with object coordinates as input.
 
-Overlays of all featured catalogs can be added as needed. Custom overlays can be created from VizieR catalogs or local files.
-
-The tool displays time series (static or animated) using infrared and optical images of various surveys (DSS, SDSS, 2MASS, AllWISE, DECaLS).
-
-It contains a photometric classifier that uses the photometry of the above mentioned catalogs to create a detailed spectral type classification.
-
-The toolset also includes an ADQL query interface (IRSA, VizieR, NOAO) and a batch spectral type lookup feature that uses a CSV file with object coordinates as input.
-
-In addition, the tool has a file browser linked to the image viewer, which makes it possible to check a large list of objects in a convenient way. Interesting finds can be saved in an object collection for later use. The tool also offers a number of handy astrometric calculators and converters.
+Additionally, AstroToolBox offers a file browser linked to the image viewer for convenient checking of a large list of objects, allowing users to save interesting finds in an object collection for future reference. It also provides various astrometric calculators and converters for user convenience.
 
 AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
