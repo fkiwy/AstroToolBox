@@ -709,7 +709,7 @@ public class ToolboxHelper {
         return toCopy.toString();
     }
 
-    public static String copyObjectDigest(CatalogEntry catalogEntry) {
+    public static String copyObjectSummary(CatalogEntry catalogEntry) {
         StringBuilder toCopy = new StringBuilder();
         toCopy.append(catalogEntry.getCatalogName()).append(": ").append(catalogEntry.getSourceId());
         toCopy.append(LINE_SEP);
@@ -740,8 +740,10 @@ public class ToolboxHelper {
             double value = entry.getValue();
             if (value != 0) {
                 String label = entry.getKey().val;
-                toCopy.append(label).append("=").append(roundTo3DecNZ(value));
-                toCopy.append(LINE_SEP);
+                if (!label.contains("err")) {
+                    toCopy.append(label).append("=").append(roundTo3DecNZ(value));
+                    toCopy.append(LINE_SEP);
+                }
             }
         });
         return toCopy.toString();

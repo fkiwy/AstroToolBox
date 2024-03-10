@@ -396,7 +396,7 @@ public class SettingsTab implements Tab {
             asynchDownloadsCheckBox.setSelected(asyncDownloads);
             imageViewerSettings.add(asynchDownloadsCheckBox);
 
-            imageViewerSettings.add(new JLabel("Download & show images: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Download color images: ", JLabel.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
             JCheckBox legacyImagesCheckBox = new JCheckBox("DECaLS", legacyImages);

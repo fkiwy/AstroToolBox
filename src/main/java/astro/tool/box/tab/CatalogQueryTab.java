@@ -548,18 +548,18 @@ public class CatalogQueryTab implements Tab {
             });
             copyCoordsButton.addActionListener((ActionEvent evt) -> {
                 copyToClipboard(copyObjectCoordinates(catalogEntry));
-                copyCoordsButton.setText("Copied!");
+                copyCoordsButton.setText("Copied to clipboard!");
                 copyCoordsTimer.restart();
             });
 
-            JButton copyInfoButton = new JButton("Copy digest");
+            JButton copyInfoButton = new JButton("Copy summary");
             buttonPanel.add(copyInfoButton);
             Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
-                copyInfoButton.setText("Copy digest");
+                copyInfoButton.setText("Copy summary");
             });
             copyInfoButton.addActionListener((ActionEvent evt) -> {
-                copyToClipboard(copyObjectDigest(catalogEntry));
-                copyInfoButton.setText("Copied!");
+                copyToClipboard(copyObjectSummary(catalogEntry));
+                copyInfoButton.setText("Copied to clipboard!");
                 copyInfoTimer.restart();
             });
 
@@ -569,8 +569,8 @@ public class CatalogQueryTab implements Tab {
                 copyAllButton.setText("Copy all");
             });
             copyAllButton.addActionListener((ActionEvent evt) -> {
-                copyToClipboard(copyObjectInfo(catalogEntry, mainSequenceResults, null, null));
-                copyAllButton.setText("Copied!");
+                copyToClipboard(copyObjectInfo(catalogEntry, mainSequenceResults, brownDwarfsResults, distanceLookupService));
+                copyAllButton.setText("Copied to clipboard!");
                 copyAllTimer.restart();
             });
 
