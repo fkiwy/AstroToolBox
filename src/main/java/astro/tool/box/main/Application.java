@@ -1,11 +1,11 @@
 package astro.tool.box.main;
 
-import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.container.Version;
-import astro.tool.box.enumeration.TabCode;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.ServiceHelper.*;
+import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.container.Version;
+import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.tab.AdqlQueryTab;
 import astro.tool.box.tab.BatchQueryTab;
 import astro.tool.box.tab.CatalogQueryTab;
@@ -77,6 +77,9 @@ public class Application {
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         baseFrame.add(tabbedPane);
 
+        String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
+
         Map<String, Tab> tabs = new HashMap<>();
 
         imageViewerTab = new ImageViewerTab(baseFrame, tabbedPane);
@@ -115,14 +118,10 @@ public class Application {
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
         tabs.put(TabCode.LO.name(), lookupTab);
 
-        String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
-        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
-
-        /* Add a new tab
-        FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
-        tabs.put(TabCode.FC.name(), finderChartTab);
-
-        String newTabCode = TabCode.FC.name();
+        // Add new tab here
+        /*NewTab newTab = new NewTab(baseFrame, tabbedPane);
+        tabs.put(TabCode.XX.name(), newTab);
+        String newTabCode = TabCode.XX.name();
         if (!sourceTabs.concat(destTabs).contains(newTabCode)) {
             destTabs += "," + newTabCode;
             USER_SETTINGS.setProperty(DEST_TABS, destTabs);
