@@ -23,8 +23,8 @@ import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.panel.WiseCcdPanel;
 import astro.tool.box.panel.GaiaCmdPanel;
 import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedPanel;
-import astro.tool.box.panel.WdSedPanel;
+import astro.tool.box.panel.SedMsPanel;
+import astro.tool.box.panel.SedWdPanel;
 import astro.tool.box.panel.WiseLcPanel;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.DistanceLookupService;
@@ -580,7 +580,7 @@ public class CatalogQueryTab implements Tab {
                 fillTygoForm(catalogEntry, catalogQueryService, baseFrame);
             });
 
-            JButton createSedButton = new JButton("SED");
+            JButton createSedButton = new JButton("SED (MS)");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -589,7 +589,7 @@ public class CatalogQueryTab implements Tab {
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
-                frame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+                frame.add(new SedMsPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
                 frame.setSize(1000, 900);
                 frame.setLocation(0, 0);
                 frame.setAlwaysOnTop(false);
@@ -598,7 +598,7 @@ public class CatalogQueryTab implements Tab {
                 createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
-            JButton createWdSedButton = new JButton("WD SED");
+            JButton createWdSedButton = new JButton("SED (WD)");
             buttonPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -607,7 +607,7 @@ public class CatalogQueryTab implements Tab {
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("WD SED");
-                frame.add(new WdSedPanel(catalogQueryService, catalogEntry, baseFrame));
+                frame.add(new SedWdPanel(catalogQueryService, catalogEntry, baseFrame));
                 frame.setSize(1000, 900);
                 frame.setLocation(0, 0);
                 frame.setAlwaysOnTop(false);
