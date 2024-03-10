@@ -17,7 +17,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -56,6 +55,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -388,11 +388,20 @@ public class AdqlQueryTab implements Tab {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         queryResults = doGet(createResultUrl(jobId));
-                        File tmpFile = File.createTempFile("AstroToolBox_", ".txt");
-                        try (FileWriter writer = new FileWriter(tmpFile)) {
-                            writer.write(queryResults);
+                        JFileChooser fileSelector = new JFileChooser();
+                        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV Files", "csv");
+                        fileChooser.setFileFilter(filter);
+                        fileSelector.setDialogTitle("Save CSV File");
+                        int userSelection = fileSelector.showSaveDialog(null);
+                        if (userSelection == JFileChooser.APPROVE_OPTION) {
+                            File fileToSave = fileSelector.getSelectedFile();
+                            if (!fileToSave.getName().toLowerCase().endsWith(".csv")) {
+                                fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
+                            }
+                            try (FileWriter writer = new FileWriter(fileToSave)) {
+                                writer.write(queryResults);
+                            }
                         }
-                        Desktop.getDesktop().open(tmpFile);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
                         String response = doGet(createErrorUrl(jobId));
                         String errorMessage = getErrorMessage(response);

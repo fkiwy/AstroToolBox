@@ -42,6 +42,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -57,6 +59,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -70,6 +73,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
@@ -368,7 +372,55 @@ public class CatalogQueryTab implements Tab {
         });
         resizeColumnWidth(catalogTable);
 
-        JScrollPane catalogScrollPanel = new JScrollPane(catalogTable);
+        // Save table data as CSV file
+        JButton saveButton = new JButton("Save CSV");
+        saveButton.addActionListener((ActionEvent e) -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Save CSV File");
+            // Set file extension filter
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV Files", "csv");
+            fileChooser.setFileFilter(filter);
+            int userSelection = fileChooser.showSaveDialog(null);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                // Append .csv extension if not already present
+                if (!fileToSave.getName().toLowerCase().endsWith(".csv")) {
+                    fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
+                }
+                try (FileWriter csvWriter = new FileWriter(fileToSave)) {
+                    // Write column headers
+                    for (int i = 0; i < catalogTable.getColumnCount(); i++) {
+                        csvWriter.append(catalogTable.getColumnName(i));
+                        if (i < catalogTable.getColumnCount() - 1) {
+                            csvWriter.append(',');
+                        } else {
+                            csvWriter.append('\n');
+                        }
+                    }
+                    // Write table data
+                    for (int row = 0; row < catalogTable.getRowCount(); row++) {
+                        for (int col = 0; col < catalogTable.getColumnCount(); col++) {
+                            csvWriter.append(catalogTable.getValueAt(row, col).toString());
+                            if (col < catalogTable.getColumnCount() - 1) {
+                                csvWriter.append(',');
+                            } else {
+                                csvWriter.append('\n');
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    writeErrorLog(ex);
+                }
+            }
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.add(saveButton);
+        JPanel container = new JPanel(new BorderLayout());
+        container.add(catalogTable, BorderLayout.CENTER);
+        container.add(buttonPanel, BorderLayout.SOUTH);
+
+        JScrollPane catalogScrollPanel = new JScrollPane(container);
         catalogScrollPanel.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
