@@ -71,7 +71,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
@@ -154,12 +153,18 @@ public class CatalogQueryTab implements Tab {
 
             coordsField = new JTextField(25);
             topPanel.add(coordsField);
+            coordsField.addActionListener((ActionEvent e) -> {
+                searchCatalogs();
+            });
 
             JLabel radiusLabel = new JLabel("Search radius (arcsec):");
             topPanel.add(radiusLabel);
 
             radiusField = new JTextField(5);
             topPanel.add(radiusField);
+            radiusField.addActionListener((ActionEvent e) -> {
+                searchCatalogs();
+            });
 
             JLabel catalogLabel = new JLabel("Catalogs:");
             topPanel.add(catalogLabel);
@@ -172,129 +177,13 @@ public class CatalogQueryTab implements Tab {
             }
 
             searchButton = new JButton("Search");
-            baseFrame.getRootPane().setDefaultButton(searchButton);
-            searchButton.requestFocus();
-            searchButton.addActionListener((ActionEvent e) -> {
-                try {
-                    String coords = coordsField.getText();
-                    if (coords.isEmpty()) {
-                        showErrorDialog(baseFrame, "Coordinates must not be empty!");
-                        return;
-                    }
-                    String radius = radiusField.getText();
-                    if (radius.isEmpty()) {
-                        showErrorDialog(baseFrame, "Search radius must not be empty!");
-                        return;
-                    }
-                    List<String> errorMessages = new ArrayList<>();
-                    try {
-                        NumberPair coordinates = getCoordinates(coords);
-                        targetRa = coordinates.getX();
-                        targetDec = coordinates.getY();
-                        if (targetRa < 0) {
-                            errorMessages.add("RA must not be smaller than 0 deg.");
-                        }
-                        if (targetRa > 360) {
-                            errorMessages.add("RA must not be greater than 360 deg.");
-                        }
-                        if (targetDec < -90) {
-                            errorMessages.add("Dec must not be smaller than -90 deg.");
-                        }
-                        if (targetDec > 90) {
-                            errorMessages.add("Dec must not be greater than 90 deg.");
-                        }
-                    } catch (Exception ex) {
-                        targetRa = 0;
-                        targetDec = 0;
-                        errorMessages.add("Invalid coordinates!");
-                    }
-                    try {
-                        searchRadius = Double.parseDouble(radius);
-                        if (searchRadius > 300) {
-                            errorMessages.add("Radius must not be larger than 300 arcsec.");
-                        }
-                    } catch (NumberFormatException ex) {
-                        searchRadius = 0;
-                        errorMessages.add("Invalid radius!");
-                    }
-                    List<String> selectedCatalogs = new ArrayList<>();
-                    for (Component component : topPanel.getComponents()) {
-                        if (component instanceof JCheckBox catalogBox) {
-                            if (catalogBox.isSelected()) {
-                                selectedCatalogs.add(catalogBox.getText());
-                            }
-                        }
-                    }
-                    if (selectedCatalogs.isEmpty()) {
-                        errorMessages.add("No catalog selected!");
-                    }
-                    if (!errorMessages.isEmpty()) {
-                        searchLabel.setText("");
-                        String message = String.join(LINE_SEP, errorMessages);
-                        showErrorDialog(baseFrame, message);
-                    } else {
-                        selectedEntry = null;
-                        if (copyCoordsToClipboard) {
-                            copyCoordsToClipboard(targetRa, targetDec);
-                        }
-                        removeAndRecreateCenterPanel();
-                        removeAndRecreateBottomPanel();
-
-                        CompletableFuture.supplyAsync(() -> {
-                            baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            try {
-                                int count = 0;
-                                StringBuilder resultsPerCatalog = new StringBuilder();
-                                Iterator<String> iter = selectedCatalogs.listIterator();
-                                while (iter.hasNext()) {
-                                    CatalogEntry catalogQuery = catalogInstances.get(iter.next());
-                                    catalogQuery.setRa(targetRa);
-                                    catalogQuery.setDec(targetDec);
-                                    catalogQuery.setSearchRadius(searchRadius);
-                                    int results = queryCatalog(catalogQuery);
-                                    count += results;
-                                    resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
-                                    if (iter.hasNext()) {
-                                        resultsPerCatalog.append("; ");
-                                    }
-                                }
-                                String searchLabelText = "RA=" + targetRa + "° dec=" + targetDec + "° radius=" + searchRadius + " arcsec";
-                                if (count > 0) {
-                                    searchLabel.setText(count + " result(s) for " + searchLabelText + " (" + resultsPerCatalog + ")");
-                                } else {
-                                    searchLabel.setText("No results for " + searchLabelText);
-                                }
-                                baseFrame.setVisible(true);
-                            } catch (IOException ex) {
-                                showExceptionDialog(baseFrame, ex);
-                            } finally {
-                                baseFrame.setCursor(Cursor.getDefaultCursor());
-                                coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                                radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                            }
-                            return null;
-                        });
-                    }
-                } catch (Exception ex) {
-                    showExceptionDialog(baseFrame, ex);
-                }
-            });
             topPanel.add(searchButton);
+            searchButton.addActionListener((ActionEvent e) -> {
+                searchCatalogs();
+            });
 
             searchLabel = new JLabel();
             topPanel.add(searchLabel);
-
-            tabbedPane.addChangeListener((ChangeEvent evt) -> {
-                JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
-                int index = sourceTabbedPane.getSelectedIndex();
-                if (sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
-                    baseFrame.getRootPane().setDefaultButton(searchButton);
-                } else {
-                    baseFrame.getRootPane().setDefaultButton(null);
-                }
-            });
 
             baseFrame.addComponentListener(new ComponentAdapter() {
                 @Override
@@ -309,6 +198,114 @@ public class CatalogQueryTab implements Tab {
             });
 
             mainPanel.add(topPanel, BorderLayout.PAGE_START);
+        } catch (Exception ex) {
+            showExceptionDialog(baseFrame, ex);
+        }
+    }
+
+    private void searchCatalogs() {
+        try {
+            String coords = coordsField.getText();
+            if (coords.isEmpty()) {
+                showErrorDialog(baseFrame, "Coordinates must not be empty!");
+                return;
+            }
+            String radius = radiusField.getText();
+            if (radius.isEmpty()) {
+                showErrorDialog(baseFrame, "Search radius must not be empty!");
+                return;
+            }
+            List<String> errorMessages = new ArrayList<>();
+            try {
+                NumberPair coordinates = getCoordinates(coords);
+                targetRa = coordinates.getX();
+                targetDec = coordinates.getY();
+                if (targetRa < 0) {
+                    errorMessages.add("RA must not be smaller than 0 deg.");
+                }
+                if (targetRa > 360) {
+                    errorMessages.add("RA must not be greater than 360 deg.");
+                }
+                if (targetDec < -90) {
+                    errorMessages.add("Dec must not be smaller than -90 deg.");
+                }
+                if (targetDec > 90) {
+                    errorMessages.add("Dec must not be greater than 90 deg.");
+                }
+            } catch (Exception ex) {
+                targetRa = 0;
+                targetDec = 0;
+                errorMessages.add("Invalid coordinates!");
+            }
+            try {
+                searchRadius = Double.parseDouble(radius);
+                if (searchRadius > 300) {
+                    errorMessages.add("Radius must not be larger than 300 arcsec.");
+                }
+            } catch (NumberFormatException ex) {
+                searchRadius = 0;
+                errorMessages.add("Invalid radius!");
+            }
+            List<String> selectedCatalogs = new ArrayList<>();
+            for (Component component : topPanel.getComponents()) {
+                if (component instanceof JCheckBox catalogBox) {
+                    if (catalogBox.isSelected()) {
+                        selectedCatalogs.add(catalogBox.getText());
+                    }
+                }
+            }
+            if (selectedCatalogs.isEmpty()) {
+                errorMessages.add("No catalog selected!");
+            }
+            if (!errorMessages.isEmpty()) {
+                searchLabel.setText("");
+                String message = String.join(LINE_SEP, errorMessages);
+                showErrorDialog(baseFrame, message);
+            } else {
+                selectedEntry = null;
+                if (copyCoordsToClipboard) {
+                    copyCoordsToClipboard(targetRa, targetDec);
+                }
+                removeAndRecreateCenterPanel();
+                removeAndRecreateBottomPanel();
+
+                CompletableFuture.supplyAsync(() -> {
+                    baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    try {
+                        int count = 0;
+                        StringBuilder resultsPerCatalog = new StringBuilder();
+                        Iterator<String> iter = selectedCatalogs.listIterator();
+                        while (iter.hasNext()) {
+                            CatalogEntry catalogQuery = catalogInstances.get(iter.next());
+                            catalogQuery.setRa(targetRa);
+                            catalogQuery.setDec(targetDec);
+                            catalogQuery.setSearchRadius(searchRadius);
+                            int results = queryCatalog(catalogQuery);
+                            count += results;
+                            resultsPerCatalog.append(catalogQuery.getCatalogName()).append(": ").append(results);
+                            if (iter.hasNext()) {
+                                resultsPerCatalog.append("; ");
+                            }
+                        }
+                        String searchLabelText = "RA=" + targetRa + "° dec=" + targetDec + "° radius=" + searchRadius + " arcsec";
+                        if (count > 0) {
+                            searchLabel.setText(count + " result(s) for " + searchLabelText + " (" + resultsPerCatalog + ")");
+                        } else {
+                            searchLabel.setText("No results for " + searchLabelText);
+                        }
+                        baseFrame.setVisible(true);
+                    } catch (IOException ex) {
+                        showExceptionDialog(baseFrame, ex);
+                    } finally {
+                        baseFrame.setCursor(Cursor.getDefaultCursor());
+                        coordsField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                        radiusField.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                    }
+                    return null;
+                });
+            }
         } catch (Exception ex) {
             showExceptionDialog(baseFrame, ex);
         }
@@ -373,7 +370,7 @@ public class CatalogQueryTab implements Tab {
         resizeColumnWidth(catalogTable);
 
         // Save table data as CSV file
-        JButton saveButton = new JButton("Save CSV");
+        JButton saveButton = new JButton("Save as CSV file");
         saveButton.addActionListener((ActionEvent e) -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Save CSV File");
@@ -416,15 +413,14 @@ public class CatalogQueryTab implements Tab {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(saveButton);
-        JPanel container = new JPanel(new BorderLayout());
-        container.add(catalogTable, BorderLayout.CENTER);
-        container.add(buttonPanel, BorderLayout.SOUTH);
 
-        JScrollPane catalogScrollPanel = new JScrollPane(container);
-        catalogScrollPanel.setBorder(BorderFactory.createTitledBorder(
+        JPanel container = new JPanel(new BorderLayout());
+        container.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(catalogEntry.getCatalogColor(), 3), catalogEntry.getCatalogName() + " results", TitledBorder.LEFT, TitledBorder.TOP
         ));
-        centerPanel.add(catalogScrollPanel);
+        container.add(new JScrollPane(catalogTable), BorderLayout.CENTER);
+        container.add(buttonPanel, BorderLayout.SOUTH);
+        centerPanel.add(container);
     }
 
     private void displayCatalogDetails(CatalogEntry selectedEntry) {
