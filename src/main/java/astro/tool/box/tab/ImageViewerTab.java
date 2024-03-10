@@ -757,7 +757,7 @@ public class ImageViewerTab implements Tab {
             });
 
             unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
-            mainControlPanel.add(unwiseCutouts);
+            //mainControlPanel.add(unwiseCutouts);
             unwiseCutouts.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_WISE;
