@@ -1,5 +1,5 @@
 - name: Screenshots
-  link: /
+  link: /#screenshots
   dropdown: 
     - name: Catalog Search
       link: /#catalog-search
