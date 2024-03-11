@@ -2,7 +2,7 @@
 
 AstroToolBox is a comprehensive Java suite designed for the visualization, identification, and classification of celestial bodies, particularly focusing on low-mass stars and ultra-cool dwarfs.
 
-This toolkit integrates various astronomical catalogs including SIMBAD (for measurements & references), AllWISE, CatWISE, unWISE, Gaia, NOIRLab Source Catalog (NSC), Pan-STARRS, SDSS, TESS Input Catalog, UKIRT UHS & UKIDSS, VISTA VHS, and 2MASS. Additionally, it provides a spectral type evaluation tool for main sequence stars, including brown dwarfs, utilizing established relations from Pecaut & Mamajek (2013), Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016), and Kiman et al. (2019).
+This toolkit integrates various astronomical catalogs including SIMBAD (all available measurements & references), AllWISE, CatWISE, unWISE, Gaia, NOIRLab Source Catalog (NSC), Pan-STARRS, SDSS, TESS Input Catalog, UKIRT UHS & UKIDSS, VISTA VHS, and 2MASS. Additionally, it provides a spectral type evaluation tool for main sequence stars, including brown dwarfs, utilizing established relations from Pecaut & Mamajek (2013), Best et al. (2018), Carnero Rosell et al. (2019), Skrzypek et al. (2015), Skrzypek et al. (2016), and Kiman et al. (2019).
 
 For ultra-cool and white dwarfs, AstroToolBox offers an SED fitting feature using Best et al. SEDs for Field Ultracool Dwarfs and the Montreal Cooling Sequences (Bergeron et al.) for white dwarfs. Moreover, it includes a functionality to generate Gaia color-magnitude diagrams (CMD) with overlaid M0-M9 spectral types, along with the capability to plot Montreal Cooling Sequences on the white dwarf branch.
 
