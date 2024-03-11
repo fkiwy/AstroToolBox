@@ -4,7 +4,7 @@
     - name: Catalog Search
       link: /#catalog-search
     - name: Image Viewer
-      link: /#mage-viewer
+      link: /#image-viewer
     - name: Image Series
       link: /#image-series
     - name: Photometric Classifier
@@ -28,7 +28,7 @@
     - name: Object details
       link: /#object-details
     - name: SED fitting
-      link: /#object-details
+      link: /#sed-fitting
     - name: Gaia CMD
       link: /#gaia-cmd
     - name: Color-Color Diagram
