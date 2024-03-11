@@ -40,7 +40,7 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 [Color-Color Diagram](#color-color-diagram)  
 [WISE light curves](#wise-light-curves)  
 
-### Catalog search
+<a name="catalog-search">### Catalog search</>
 ![Catalog Search](images/Catalog%20Search.png)
 
 ### Image Viewer
@@ -78,13 +78,13 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 ### Custom Overlays
 ![Custom Overlays](images/Custom%20Overlays.png)
 
-### Calculators & Converters
+### Calculators and Converters
 ![Calculators & Converters](images/Calculators%20&%20Converters.png)
 
 ### Photometric Relations
 ![Photometric Relations](images/Photometric%20Relations.png)
 
-### SIMBAD Measurements & References
+### SIMBAD Measurements and References
 ![SIMBAD Measurements & References](images/SIMBAD%20measurements%20&%20references.png)
 
 ### Object details
@@ -107,9 +107,11 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 ![Gaia CMD](images/Gaia%20CMD%20WD.png)
 
 ### Color-Color Diagram
-**J-W2 vs. W1-W2**
+
+#### J-W2 vs. W1-W2
 ![WISE CCD](images/WISE%20CCD.png)
 
 ### WISE light curves
-**AllWISE Multiepoch & NEOWISE-R Single Exposure photometry**
+
+#### AllWISE Multiepoch & NEOWISE-R Single Exposure photometry
 ![WISE LC](images/WISE%20light%20curves.png)
