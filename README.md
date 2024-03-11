@@ -22,6 +22,8 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 
 ## Screenshots
 
+[Catalog search](#catalog-search)
+
 ### Catalog search
 ![Catalog Search](images/Catalog%20Search.png)
 
