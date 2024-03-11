@@ -260,15 +260,6 @@ public final class SedWdPanel extends JPanel {
         sedPhotometry.put(Band.z, panStarrsEntry.get_z_err() == 0 ? 0 : panStarrsEntry.get_z_mag());
         sedPhotometry.put(Band.y, panStarrsEntry.get_y_err() == 0 ? 0 : panStarrsEntry.get_y_mag());
 
-        // 2MASS
-        sedCatalogs.put(Band.J, TwoMassCatalogEntry.CATALOG_NAME);
-        sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
-        sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
-        add2Massferences();
-        sedPhotometry.put(Band.J, allWiseEntry.getJ_err() == 0 ? 0 : allWiseEntry.getJmag());
-        sedPhotometry.put(Band.H, allWiseEntry.getH_err() == 0 ? 0 : allWiseEntry.getHmag());
-        sedPhotometry.put(Band.K, allWiseEntry.getK_err() == 0 ? 0 : allWiseEntry.getKmag());
-
         // WISE
         sedCatalogs.put(Band.W1, allWiseEntry.getCatalogName());
         sedCatalogs.put(Band.W2, allWiseEntry.getCatalogName());
@@ -351,97 +342,95 @@ public final class SedWdPanel extends JPanel {
             }
         }
 
-        if (sedPhotometry.get(Band.J) == 0 && sedPhotometry.get(Band.H) == 0 && sedPhotometry.get(Band.K) == 0) {
-            CatalogEntry retrievedEntry = null;
-            VhsCatalogEntry vhsEntry;
-            if (catalogEntry.getDec() < 5) {
-                vhsEntry = new VhsCatalogEntry();
-                vhsEntry.setRa(catalogEntry.getRa());
-                vhsEntry.setDec(catalogEntry.getDec());
-                vhsEntry.setSearchRadius(searchRadius);
-                retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+        CatalogEntry retrievedEntry = null;
+        VhsCatalogEntry vhsEntry;
+        if (catalogEntry.getDec() < 5) {
+            vhsEntry = new VhsCatalogEntry();
+            vhsEntry.setRa(catalogEntry.getRa());
+            vhsEntry.setDec(catalogEntry.getDec());
+            vhsEntry.setSearchRadius(searchRadius);
+            retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+        }
+        if (retrievedEntry != null) {
+            vhsEntry = (VhsCatalogEntry) retrievedEntry;
+            seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
+            sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
+            sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
+            sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
+            if (commonReferences.isSelected()) {
+                add2Massferences();
+            } else {
+                sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
+                sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
+                sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
+            }
+            sedPhotometry.put(Band.J, vhsEntry.getJmag());
+            sedPhotometry.put(Band.H, vhsEntry.getHmag());
+            sedPhotometry.put(Band.K, vhsEntry.getKmag());
+
+        } else {
+            UkidssCatalogEntry ukidssEntry;
+            if (catalogEntry.getDec() > -5) {
+                ukidssEntry = new UkidssCatalogEntry();
+                ukidssEntry.setRa(catalogEntry.getRa());
+                ukidssEntry.setDec(catalogEntry.getDec());
+                ukidssEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
             }
             if (retrievedEntry != null) {
-                vhsEntry = (VhsCatalogEntry) retrievedEntry;
-                seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
-                sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
-                sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
-                sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
+                ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
+                seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId()).append(" ");
+                sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
+                sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
+                sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
                 if (commonReferences.isSelected()) {
                     add2Massferences();
                 } else {
-                    sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
-                    sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
-                    sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
+                    sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
+                    sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
+                    sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
                 }
-                sedPhotometry.put(Band.J, vhsEntry.getJmag());
-                sedPhotometry.put(Band.H, vhsEntry.getHmag());
-                sedPhotometry.put(Band.K, vhsEntry.getKmag());
-
+                sedPhotometry.put(Band.J, ukidssEntry.getJmag());
+                sedPhotometry.put(Band.H, ukidssEntry.getHmag());
+                sedPhotometry.put(Band.K, ukidssEntry.getKmag());
             } else {
-                UkidssCatalogEntry ukidssEntry;
+                UhsCatalogEntry uhsEntry;
                 if (catalogEntry.getDec() > -5) {
-                    ukidssEntry = new UkidssCatalogEntry();
-                    ukidssEntry.setRa(catalogEntry.getRa());
-                    ukidssEntry.setDec(catalogEntry.getDec());
-                    ukidssEntry.setSearchRadius(searchRadius);
-                    retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
+                    uhsEntry = new UhsCatalogEntry();
+                    uhsEntry.setRa(catalogEntry.getRa());
+                    uhsEntry.setDec(catalogEntry.getDec());
+                    uhsEntry.setSearchRadius(searchRadius);
+                    retrievedEntry = retrieveCatalogEntry(uhsEntry, catalogQueryService, baseFrame);
                 }
                 if (retrievedEntry != null) {
-                    ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
-                    seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId()).append(" ");
-                    sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
-                    sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
-                    sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
+                    uhsEntry = (UhsCatalogEntry) retrievedEntry;
+                    seriesLabel.append(uhsEntry.getCatalogName()).append(": ").append(uhsEntry.getSourceId()).append(" ");
+                    sedCatalogs.put(Band.J, uhsEntry.getCatalogName());
+                    sedCatalogs.put(Band.K, uhsEntry.getCatalogName());
                     if (commonReferences.isSelected()) {
                         add2Massferences();
                     } else {
                         sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
-                        sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
                         sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
                     }
-                    sedPhotometry.put(Band.J, ukidssEntry.getJmag());
-                    sedPhotometry.put(Band.H, ukidssEntry.getHmag());
-                    sedPhotometry.put(Band.K, ukidssEntry.getKmag());
+                    sedPhotometry.put(Band.J, uhsEntry.getJmag());
+                    sedPhotometry.put(Band.K, uhsEntry.getKmag());
                 } else {
-                    UhsCatalogEntry uhsEntry;
-                    if (catalogEntry.getDec() > -5) {
-                        uhsEntry = new UhsCatalogEntry();
-                        uhsEntry.setRa(catalogEntry.getRa());
-                        uhsEntry.setDec(catalogEntry.getDec());
-                        uhsEntry.setSearchRadius(searchRadius);
-                        retrievedEntry = retrieveCatalogEntry(uhsEntry, catalogQueryService, baseFrame);
-                    }
+                    TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
+                    twoMassEntry.setRa(catalogEntry.getRa());
+                    twoMassEntry.setDec(catalogEntry.getDec());
+                    twoMassEntry.setSearchRadius(searchRadius * 2);
+                    retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
                     if (retrievedEntry != null) {
-                        uhsEntry = (UhsCatalogEntry) retrievedEntry;
-                        seriesLabel.append(uhsEntry.getCatalogName()).append(": ").append(uhsEntry.getSourceId()).append(" ");
-                        sedCatalogs.put(Band.J, uhsEntry.getCatalogName());
-                        sedCatalogs.put(Band.K, uhsEntry.getCatalogName());
-                        if (commonReferences.isSelected()) {
-                            add2Massferences();
-                        } else {
-                            sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
-                            sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
-                        }
-                        sedPhotometry.put(Band.J, uhsEntry.getJmag());
-                        sedPhotometry.put(Band.K, uhsEntry.getKmag());
-                    } else {
-                        TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
-                        twoMassEntry.setRa(catalogEntry.getRa());
-                        twoMassEntry.setDec(catalogEntry.getDec());
-                        twoMassEntry.setSearchRadius(searchRadius * 2);
-                        retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
-                        if (retrievedEntry != null) {
-                            twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
-                            seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId()).append(" ");
-                            sedCatalogs.put(Band.J, twoMassEntry.getCatalogName());
-                            sedCatalogs.put(Band.H, twoMassEntry.getCatalogName());
-                            sedCatalogs.put(Band.K, twoMassEntry.getCatalogName());
-                            add2Massferences();
-                            sedPhotometry.put(Band.J, twoMassEntry.getJ_err() == 0 ? 0 : twoMassEntry.getJmag());
-                            sedPhotometry.put(Band.H, twoMassEntry.getH_err() == 0 ? 0 : twoMassEntry.getHmag());
-                            sedPhotometry.put(Band.K, twoMassEntry.getK_err() == 0 ? 0 : twoMassEntry.getKmag());
-                        }
+                        twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
+                        seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId()).append(" ");
+                        sedCatalogs.put(Band.J, twoMassEntry.getCatalogName());
+                        sedCatalogs.put(Band.H, twoMassEntry.getCatalogName());
+                        sedCatalogs.put(Band.K, twoMassEntry.getCatalogName());
+                        add2Massferences();
+                        sedPhotometry.put(Band.J, twoMassEntry.getJ_err() == 0 ? 0 : twoMassEntry.getJmag());
+                        sedPhotometry.put(Band.H, twoMassEntry.getH_err() == 0 ? 0 : twoMassEntry.getHmag());
+                        sedPhotometry.put(Band.K, twoMassEntry.getK_err() == 0 ? 0 : twoMassEntry.getKmag());
                     }
                 }
             }
@@ -452,7 +441,7 @@ public final class SedWdPanel extends JPanel {
             catWiseEntry.setRa(catalogEntry.getRa());
             catWiseEntry.setDec(catalogEntry.getDec());
             catWiseEntry.setSearchRadius(searchRadius);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
+            retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
             if (retrievedEntry == null) {
                 UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
                 unWiseEntry.setRa(catalogEntry.getRa());
@@ -574,7 +563,7 @@ public final class SedWdPanel extends JPanel {
             });
             double medianDiffMag = determineMedian(diffMags);
             int totalMags = diffMags.size();
-            if (totalMags < 6) {
+            if (totalMags < 4) {
                 continue;
             }
             int selectedMags = 0;
@@ -592,15 +581,13 @@ public final class SedWdPanel extends JPanel {
             double meanDiffMag = calculateMean(correctedDiffMags);
             matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
         }
-        if (matches.isEmpty()) {
-            showInfoDialog(null, "No match found.");
-            return;
-        }
-        matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
-        int j = bestMatch.isSelected() ? 1 : 3;
-        for (int i = 0; i < j && i < matches.size(); i++) {
-            SedBestMatch match = matches.get(i);
-            createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
+        if (!matches.isEmpty()) {
+            matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
+            int j = bestMatch.isSelected() ? 1 : 3;
+            for (int i = 0; i < j && i < matches.size(); i++) {
+                SedBestMatch match = matches.get(i);
+                createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
+            }
         }
     }
 
