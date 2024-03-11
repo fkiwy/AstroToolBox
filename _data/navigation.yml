@@ -1,8 +1,3 @@
-- name: Screenshots
-  link: /
-  dropdown: 
-    - name: Catalog Search
-      link: /catalog-search/
 - name: GitHub
   link: https://github.com/fkiwy/AstroToolBox
 - name: Backyard Worlds - Planet 9

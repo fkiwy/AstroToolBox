@@ -23,6 +23,22 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 ## Screenshots
 
 [Catalog search](#catalog-search)
+[Image Viewer](#image-viewer)
+[Image Series](#image-series)
+[Photometric Classifier](#photometric-classifier)
+[VizieR Catalogs](#vizier-catalogs)
+[ADQL Query](#adql-query)
+[Batch Query](#batch-query)
+[File Browser](#file-browser)
+[Custom Overlays](#custom-overlays)
+[Calculators & Converters](#calculators-&-converters)
+[Photometric Relations](#photometric-relations)
+[SIMBAD Measurements & References](#simbad-measurements-&-references)
+[Object details](#object-details)
+[SED fitting](#sed-fitting)
+[Gaia CMD](#gaia-cmd)
+[Color-Color Diagram](#color-color-diagram)
+[WISE light curves](#wise-light-curves)
 
 ### Catalog search
 ![Catalog Search](images/Catalog%20Search.png)
@@ -74,20 +90,26 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 ### Object details
 ![Object details](images/Object%20details.png)
 
-### SED fitting for ultra-cool dwarfs
+### SED fitting
+
+#### Ultra-cool dwarfs
 ![UC SED](images/SED.png)
 
-### SED fitting for white dwarfs
+#### White dwarfs
 ![WD SED](images/WD%20SED.png)
 
-### Gaia CMD with overplotted M0-M9 spectral types
+### Gaia CMD
+
+#### Overplotted M0-M9 spectral types
 ![Gaia CMD](images/Gaia%20CMD%20RD.png)
 
-### Gaia CMD with overplotted Montreal Cooling Sequences 
+#### Overplotted Montreal Cooling Sequences 
 ![Gaia CMD](images/Gaia%20CMD%20WD.png)
 
-### Color-Color Diagram J-W2 vs. W1-W2
+### Color-Color Diagram
+**J-W2 vs. W1-W2**
 ![WISE CCD](images/WISE%20CCD.png)
 
-### WISE light curves (AllWISE Multiepoch & NEOWISE-R Single Exposure photometry)
+### WISE light curves
+**AllWISE Multiepoch & NEOWISE-R Single Exposure photometry**
 ![WISE LC](images/WISE%20light%20curves.png)
