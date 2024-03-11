@@ -40,7 +40,7 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 [Color-Color Diagram](#color-color-diagram)  
 [WISE light curves](#wise-light-curves)  
 
-### <a name="catalog-search">Catalog search</a>
+###Catalog search
 ![Catalog Search](images/Catalog%20Search.png)
 
 ### Image Viewer
