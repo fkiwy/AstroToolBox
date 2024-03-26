@@ -151,7 +151,7 @@ public class ToolboxHelper {
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
-    public static final String INFO_ICON = "<span style='color:red'>&#128712</span>";
+    public static final String INFO_ICON = "<span style='color:red'>&#9432;</span>";
     public static final String PHOT_DIST_INFO = "Clicking on a table row displays photometric distance estimates for the specified spectral type.";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";

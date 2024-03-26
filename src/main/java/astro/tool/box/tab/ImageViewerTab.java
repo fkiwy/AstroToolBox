@@ -757,8 +757,8 @@ public class ImageViewerTab implements Tab {
             });
 
             unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
-            //mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
+            mainControlPanel.add(unwiseCutouts);
+            unwiseCutouts.setToolTipText("unWISE deep coadds are from https://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_WISE;
                 previousSize = 0;
@@ -3820,7 +3820,7 @@ public class ImageViewerTab implements Tab {
             } else {
                 unwiseEpoch = "neo" + epoch;
             }
-            String unwiseURL = "http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on".formatted(unwiseEpoch, targetRa, targetDec, size, band);
+            String unwiseURL = "https://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on".formatted(unwiseEpoch, targetRa, targetDec, size, band);
             try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream(); InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE); InputStream gzi = new GzipCompressorInputStream(bi); ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
                 ArchiveEntry entry;
                 Map<Long, byte[]> entries = new HashMap();
