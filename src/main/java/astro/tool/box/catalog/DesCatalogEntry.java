@@ -369,37 +369,39 @@ public class DesCatalogEntry implements CatalogEntry {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "dec,"
-                + "g Galaxy-Star (0-1),"
-                + "r Galaxy-Star (0-1),"
-                + "i Galaxy-Star (0-1),"
-                + "z Galaxy-Star (0-1),"
-                + "Y Galaxy-Star (0-1),"
-                + "g cautionary flag,"
-                + "r cautionary flag,"
-                + "i cautionary flag,"
-                + "z cautionary flag,"
-                + "Y cautionary flag,"
-                + "u (mag),"
-                + "u err,"
-                + "g (mag),"
-                + "g err,"
-                + "r (mag),"
-                + "r err,"
-                + "i (mag),"
-                + "i err,"
-                + "z (mag),"
-                + "z err,"
-                + "Y (mag),"
-                + "Y err,"
-                + "u-g,"
-                + "g-r,"
-                + "r-i,"
-                + "i-z,"
-                + "z-Y";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                dec,\
+                g Galaxy-Star (0-1),\
+                r Galaxy-Star (0-1),\
+                i Galaxy-Star (0-1),\
+                z Galaxy-Star (0-1),\
+                Y Galaxy-Star (0-1),\
+                g cautionary flag,\
+                r cautionary flag,\
+                i cautionary flag,\
+                z cautionary flag,\
+                Y cautionary flag,\
+                u (mag),\
+                u err,\
+                g (mag),\
+                g err,\
+                r (mag),\
+                r err,\
+                i (mag),\
+                i err,\
+                z (mag),\
+                z err,\
+                Y (mag),\
+                Y err,\
+                u-g,\
+                g-r,\
+                r-i,\
+                i-z,\
+                z-Y\
+                """;
         return columnTitles.split(",", -1);
     }
 

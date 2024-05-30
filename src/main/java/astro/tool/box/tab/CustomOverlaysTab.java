@@ -91,9 +91,11 @@ public class CustomOverlaysTab implements Tab {
             JButton addButton = new JButton("Create new overlay");
             topPanel.add(addButton);
 
-            JLabel topRowLabel = new JLabel(html("Overlays can be created by specifying either a local CSV file (<span style='background:#CCFFCC'>green fields</span>), "
-                    + "a VizieR catalog (<span style='background:#FFFFCC'>yellow fields</span>), "
-                    + "or a TAP access URL (<span style='background:#FFEBCC'>orange fields</span> plus <span style='background:#FFFFCC'>RA & Dec column names</span>)."));
+            JLabel topRowLabel = new JLabel(html("""
+                    Overlays can be created by specifying either a local CSV file (<span style='background:#CCFFCC'>green fields</span>), \
+                    a VizieR catalog (<span style='background:#FFFFCC'>yellow fields</span>), \
+                    or a TAP access URL (<span style='background:#FFEBCC'>orange fields</span> plus <span style='background:#FFFFCC'>RA & Dec column names</span>).\
+                    """));
             topPanel.add(topRowLabel);
 
             GridLayout layout = new GridLayout(overlays.size() + 50, 1);

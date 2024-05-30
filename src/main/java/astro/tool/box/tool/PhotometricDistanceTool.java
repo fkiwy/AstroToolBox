@@ -53,9 +53,9 @@ public class PhotometricDistanceTool {
             JButton calculateButton = new JButton("Calculate");
             calculateButton.addActionListener((ActionEvent e) -> {
                 try {
-                    double apparentMagnitude = 0;
+                    double apparentMagnitude;
                     double apparentMagnitudeError = 0;
-                    double absoluteMagnitude = 0;
+                    double absoluteMagnitude;
                     double absoluteMagnitudeError = 0;
                     if (apparentMagnitudeField.getText().contains(" ")) {
                         String[] apparentMagnitudeData = apparentMagnitudeField.getText().split(" ");

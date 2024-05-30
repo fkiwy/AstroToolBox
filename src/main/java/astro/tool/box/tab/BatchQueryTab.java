@@ -233,8 +233,7 @@ public class BatchQueryTab implements Tab {
 
                 selectedCatalogs = new ArrayList<>();
                 for (Component component : bottomRow.getComponents()) {
-                    if (component instanceof JCheckBox) {
-                        JCheckBox catalogBox = (JCheckBox) component;
+                    if (component instanceof JCheckBox catalogBox) {
                         if (catalogBox.isSelected()) {
                             selectedCatalogs.add(catalogBox.getText());
                         }
@@ -330,7 +329,7 @@ public class BatchQueryTab implements Tab {
         InputStream input;
         LookupTable selectedTable = (LookupTable) lookupTables.getSelectedItem();
         switch (selectedTable) {
-            case MAIN_SEQUENCE:
+            case MAIN_SEQUENCE -> {
                 input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -338,8 +337,8 @@ public class BatchQueryTab implements Tab {
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
-                break;
-            case MLT_DWARFS:
+            }
+            case MLT_DWARFS -> {
                 input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
                 try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
@@ -347,7 +346,7 @@ public class BatchQueryTab implements Tab {
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
                 }
-                break;
+            }
         }
 
         try (Scanner scanner = new Scanner(file)) {
@@ -394,8 +393,7 @@ public class BatchQueryTab implements Tab {
                         continue;
                     }
                     List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, includeColors.isSelected());
-                    if (catalogEntry instanceof SimbadCatalogEntry) {
-                        SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+                    if (catalogEntry instanceof SimbadCatalogEntry simbadEntry) {
                         StringBuilder simbadType = new StringBuilder();
                         simbadType.append(simbadEntry.getObjectType());
                         if (!simbadEntry.getSpectralType().isEmpty()) {
@@ -404,14 +402,12 @@ public class BatchQueryTab implements Tab {
                         simbadType.append("; ");
                         spectralTypes.add(0, simbadType.toString());
                     }
-                    if (catalogEntry instanceof AllWiseCatalogEntry) {
-                        AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                    if (catalogEntry instanceof AllWiseCatalogEntry entry) {
                         if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                             spectralTypes.add(AGN_WARNING);
                         }
                     }
-                    if (catalogEntry instanceof WhiteDwarf) {
-                        WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+                    if (catalogEntry instanceof WhiteDwarf entry) {
                         if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                             spectralTypes.add(WD_WARNING);
                         }

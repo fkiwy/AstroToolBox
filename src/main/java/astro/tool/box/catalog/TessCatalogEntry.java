@@ -479,78 +479,80 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf, Extinction {
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "TIC id,"
-                + "ra,"
-                + "dec,"
-                + "plx (mas),"
-                + "plx err,"
-                + "pmra (mas/yr),"
-                + "pmra err,"
-                + "pmdec (mas/yr),"
-                + "pmdec err,"
-                + "teff (K),"
-                + "teff err,"
-                + "logg (cm/s2),"
-                + "logg err,"
-                + "radius (Rsun),"
-                + "radius err,"
-                + "mass (Msun),"
-                + "mass err,"
-                + "luminosity (Lsun),"
-                + "luminosity err,"
-                + "distance (pc),"
-                + "distance err,"
-                + "G (mag),"
-                + "G err,"
-                + "BP (mag),"
-                + "BP err,"
-                + "RP (mag),"
-                + "RP err,"
-                + "B (mag),"
-                + "B err,"
-                + "V (mag),"
-                + "V err,"
-                + "u (mag),"
-                + "u err,"
-                + "g (mag),"
-                + "g err,"
-                + "r (mag),"
-                + "r err,"
-                + "i (mag),"
-                + "i err,"
-                + "z (mag),"
-                + "z err,"
-                + "W1 (mag),"
-                + "W1 err,"
-                + "W2 (mag),"
-                + "W2 err,"
-                + "W3 (mag),"
-                + "W3 err,"
-                + "W4 (mag),"
-                + "W4 err,"
-                + "J (mag),"
-                + "J err,"
-                + "H (mag),"
-                + "H err,"
-                + "K (mag),"
-                + "K err,"
-                + "G-RP,"
-                + "BP-RP,"
-                + "B-V,"
-                + "u-g,"
-                + "g-r,"
-                + "r-i,"
-                + "i-z,"
-                + "W1-W2,"
-                + "W2-W3,"
-                + "J-W2,"
-                + "J-H,"
-                + "H-K,"
-                + "J-K,"
-                + "dist (1/plx),"
-                + "tpm (mas/yr),"
-                + "Absolute G (mag)";
+        String columnTitles = """
+                dist (arcsec),\
+                TIC id,\
+                ra,\
+                dec,\
+                plx (mas),\
+                plx err,\
+                pmra (mas/yr),\
+                pmra err,\
+                pmdec (mas/yr),\
+                pmdec err,\
+                teff (K),\
+                teff err,\
+                logg (cm/s2),\
+                logg err,\
+                radius (Rsun),\
+                radius err,\
+                mass (Msun),\
+                mass err,\
+                luminosity (Lsun),\
+                luminosity err,\
+                distance (pc),\
+                distance err,\
+                G (mag),\
+                G err,\
+                BP (mag),\
+                BP err,\
+                RP (mag),\
+                RP err,\
+                B (mag),\
+                B err,\
+                V (mag),\
+                V err,\
+                u (mag),\
+                u err,\
+                g (mag),\
+                g err,\
+                r (mag),\
+                r err,\
+                i (mag),\
+                i err,\
+                z (mag),\
+                z err,\
+                W1 (mag),\
+                W1 err,\
+                W2 (mag),\
+                W2 err,\
+                W3 (mag),\
+                W3 err,\
+                W4 (mag),\
+                W4 err,\
+                J (mag),\
+                J err,\
+                H (mag),\
+                H err,\
+                K (mag),\
+                K err,\
+                G-RP,\
+                BP-RP,\
+                B-V,\
+                u-g,\
+                g-r,\
+                r-i,\
+                i-z,\
+                W1-W2,\
+                W2-W3,\
+                J-W2,\
+                J-H,\
+                H-K,\
+                J-K,\
+                dist (1/plx),\
+                tpm (mas/yr),\
+                Absolute G (mag)\
+                """;
         return columnTitles.split(",", -1);
     }
 

@@ -54,6 +54,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -143,13 +144,14 @@ import org.jfree.chart.JFreeChart;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "3.4.0";
+    public static final String PGM_VERSION = "4.0.0";
+    public static final String JAVA_VERSION = "17";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String AGN_WARNING = "Possible AGN!";
     public static final String WD_WARNING = "Possible white dwarf!";
-    public static final String INFO_ICON = "<span style='color:red'>&#128712</span>";
+    public static final String INFO_ICON = "<span style='color:red'>&#9432;</span>";
     public static final String PHOT_DIST_INFO = "Clicking on a table row displays photometric distance estimates for the specified spectral type.";
 
     private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
@@ -633,8 +635,7 @@ public class ToolboxHelper {
     public static void collectObject(String objectType, CatalogEntry catalogEntry, JFrame baseFrame, SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
         // Collect data
         List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
-        if (catalogEntry instanceof SimbadCatalogEntry) {
-            SimbadCatalogEntry simbadEntry = (SimbadCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof SimbadCatalogEntry simbadEntry) {
             StringBuilder simbadType = new StringBuilder();
             simbadType.append(simbadEntry.getObjectType());
             if (!simbadEntry.getSpectralType().isEmpty()) {
@@ -643,14 +644,12 @@ public class ToolboxHelper {
             simbadType.append("; ");
             spectralTypes.add(0, simbadType.toString());
         }
-        if (catalogEntry instanceof AllWiseCatalogEntry) {
-            AllWiseCatalogEntry allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof AllWiseCatalogEntry allWiseEntry) {
             if (isAPossibleAGN(allWiseEntry.getW1_W2(), allWiseEntry.getW2_W3())) {
                 spectralTypes.add(AGN_WARNING);
             }
         }
-        if (catalogEntry instanceof WhiteDwarf) {
-            WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+        if (catalogEntry instanceof WhiteDwarf entry) {
             if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                 spectralTypes.add(WD_WARNING);
             }
@@ -710,7 +709,7 @@ public class ToolboxHelper {
         return toCopy.toString();
     }
 
-    public static String copyObjectDigest(CatalogEntry catalogEntry) {
+    public static String copyObjectSummary(CatalogEntry catalogEntry) {
         StringBuilder toCopy = new StringBuilder();
         toCopy.append(catalogEntry.getCatalogName()).append(": ").append(catalogEntry.getSourceId());
         toCopy.append(LINE_SEP);
@@ -741,8 +740,10 @@ public class ToolboxHelper {
             double value = entry.getValue();
             if (value != 0) {
                 String label = entry.getKey().val;
-                toCopy.append(label).append("=").append(roundTo3DecNZ(value));
-                toCopy.append(LINE_SEP);
+                if (!label.contains("err")) {
+                    toCopy.append(label).append("=").append(roundTo3DecNZ(value));
+                    toCopy.append(LINE_SEP);
+                }
             }
         });
         return toCopy.toString();
@@ -843,7 +844,7 @@ public class ToolboxHelper {
     }
 
     public static Tiles getWiseTiles(double degRA, double degDE) throws IOException {
-        String url = String.format("http://byw.tools/tiles?ra=%f&dec=%f", degRA, degDE);
+        String url = "http://byw.tools/tiles?ra=%f&dec=%f".formatted(degRA, degDE);
         String response = readResponse(establishHttpConnection(url), "WiseView");
         return new Gson().fromJson(response, Tiles.class);
     }
@@ -851,7 +852,7 @@ public class ToolboxHelper {
     public static List<JLabel> getNearestZooniverseSubjects(double degRA, double degDE) {
         List<JLabel> subjects = new ArrayList();
         try {
-            String url = String.format("http://byw.tools/xref?ra=%f&dec=%f", degRA, degDE);
+            String url = "http://byw.tools/xref?ra=%f&dec=%f".formatted(degRA, degDE);
             String response = readResponse(establishHttpConnection(url), "Zooniverse");
             if (!response.isEmpty()) {
                 JsonElement jelement = JsonParser.parseString​(response).getAsJsonObject();
@@ -862,7 +863,7 @@ public class ToolboxHelper {
                     subjects.add(createHyperlink(id, "https://www.zooniverse.org/projects/marckuchner/backyard-worlds-planet-9/talk/subjects/" + id));
                 }
             }
-        } catch (Exception ex) {
+        } catch (JsonSyntaxException | IOException ex) {
         }
         return subjects;
     }
@@ -871,7 +872,7 @@ public class ToolboxHelper {
         BufferedImage bi;
         String ra = "" + targetRa;
         String dec = targetDec > 0 ? "+" + targetDec : "" + targetDec;
-        String imageUrl = String.format("https://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips=%s/%s&width=300&height=300&fov=%s&projection=TAN&coordsys=icrs&rotation_angle=0.0&ra=%s&dec=%s&format=jpg", survey, band, roundTo6DecNZ(size / 3600f), ra, dec);
+        String imageUrl = "https://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips=%s/%s&width=300&height=300&fov=%s&projection=TAN&coordsys=icrs&rotation_angle=0.0&ra=%s&dec=%s&format=jpg".formatted(survey, band, roundTo6DecNZ(size / 3600f), ra, dec);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
@@ -933,7 +934,7 @@ public class ToolboxHelper {
 
     public static int getEpoch(double targetRa, double targetDec, double size, String survey, String band) {
         try {
-            String downloadUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
+            String downloadUrl = "https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?RA=%f&DEC=%f&subsetsize=%s&survey=%s&%s".formatted(targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
             String response = readResponse(establishHttpConnection(downloadUrl), "IRSA");
             try (Scanner scanner = new Scanner(response)) {
                 while (scanner.hasNextLine()) {
@@ -941,18 +942,18 @@ public class ToolboxHelper {
                     if (line.contains("obsdate")) {
                         String[] parts = line.split("<obsdate>");
                         parts = parts[1].split("-");
-                        return Integer.valueOf(parts[0]);
+                        return Integer.parseInt(parts[0]);
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | NumberFormatException ex) {
         }
         return 0;
     }
 
     public static BufferedImage retrieveImage(double targetRa, double targetDec, int size, String survey, String band) {
         BufferedImage bi;
-        String imageUrl = String.format("https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s", targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
+        String imageUrl = "https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?mode=getImage&RA=%f&DEC=%f&subsetsize=%s&thumbnail_size=small&survey=%s&%s".formatted(targetRa, targetDec, roundTo2DecNZ(size / 60f), survey, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
@@ -965,7 +966,7 @@ public class ToolboxHelper {
 
     public static int getPs1Epoch(double targetRa, double targetDec, String filters) {
         try {
-            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, filters);
+            String downloadUrl = "http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma".formatted(targetRa, targetDec, filters);
             String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
@@ -985,14 +986,14 @@ public class ToolboxHelper {
                 }
                 return convertMJDToDate(epoch / i).get(ChronoField.YEAR);
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
         }
         return 0;
     }
 
     public static Map<String, Double> getPs1Epochs(double targetRa, double targetDec) {
         try {
-            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&type=warp&sep=comma", targetRa, targetDec);
+            String downloadUrl = "http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&type=warp&sep=comma".formatted(targetRa, targetDec);
             String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
@@ -1017,7 +1018,7 @@ public class ToolboxHelper {
                 return epochs.stream().collect(Collectors.groupingBy(MjdEpoch::getBand, Collectors.averagingInt(MjdEpoch::getEpoch)));
 
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
         }
         return new HashMap();
     }
@@ -1025,7 +1026,7 @@ public class ToolboxHelper {
     public static Map<String, String> getPs1FileNames(double targetRa, double targetDec) {
         Map<String, String> fileNames = new LinkedHashMap();
         try {
-            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma", targetRa, targetDec);
+            String downloadUrl = "http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=grizy&sep=comma".formatted(targetRa, targetDec);
             String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
@@ -1044,7 +1045,7 @@ public class ToolboxHelper {
                     fileNames.put(columnValues[filter], columnValues[fileName]);
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             writeErrorLog(ex);
         }
         return fileNames;
@@ -1052,7 +1053,7 @@ public class ToolboxHelper {
 
     public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size, boolean invert) {
         BufferedImage bi;
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=95.0&invert=%s", fileNames, targetRa, targetDec, size * 4, 256, invert);
+        String imageUrl = "http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=95.0&invert=%s".formatted(fileNames, targetRa, targetDec, size * 4, 256, invert);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
@@ -1075,7 +1076,7 @@ public class ToolboxHelper {
         if (!band.isEmpty()) {
             band = "&bands=" + band;
         }
-        String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s", targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
+        String imageUrl = "https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s".formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
         try {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
@@ -1096,7 +1097,7 @@ public class ToolboxHelper {
         List<NirImage> nirImages = new ArrayList();
         String[] filterIds = new String[]{"2", "3", "4", "5"};
         for (String filterId : filterIds) {
-            String downloadUrl = String.format(surveyUrl, targetRa, targetDec, filterId, imageSize, imageSize);
+            String downloadUrl = surveyUrl.formatted(targetRa, targetDec, filterId, imageSize, imageSize);
             String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
             int i = 0;
             String imageUrl = "";
@@ -1154,19 +1155,16 @@ public class ToolboxHelper {
                 if (surveyLabel.equals(UHS_LABEL) || surveyLabel.equals(UKIDSS_LABEL)) {
                     // Rotate image
                     switch (extNo) {
-                        case "1":
+                        case "1" ->
                             image = rotateImage(image, 1);
-                            break;
-                        case "2":
-                            // No rotation necessary
-                            break;
-                        case "3":
+                        case "2" -> {
+                        }
+                        case "3" ->
                             image = rotateImage(image, 3);
-                            break;
-                        case "4":
+                        case "4" ->
                             image = rotateImage(image, 2);
-                            break;
                     }
+                    // No rotation necessary
                 }
                 // Flip image
                 image = flipImage(image);
@@ -1208,18 +1206,18 @@ public class ToolboxHelper {
     }
 
     private static String getBand(String filterId) {
-        switch (filterId) {
-            case "2":
-                return "Y";
-            case "3":
-                return "J";
-            case "4":
-                return "H";
-            case "5":
-                return "K";
-            default:
-                return "?";
-        }
+        return switch (filterId) {
+            case "2" ->
+                "Y";
+            case "3" ->
+                "J";
+            case "4" ->
+                "H";
+            case "5" ->
+                "K";
+            default ->
+                "?";
+        };
     }
 
     public static BufferedImage copyImage(BufferedImage bufferImage) {

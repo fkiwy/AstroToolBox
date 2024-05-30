@@ -1,11 +1,11 @@
 package astro.tool.box.main;
 
-import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.container.Version;
-import astro.tool.box.enumeration.TabCode;
 import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.tab.SettingsTab.*;
 import static astro.tool.box.util.ServiceHelper.*;
+import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.container.Version;
+import astro.tool.box.enumeration.TabCode;
 import astro.tool.box.tab.AdqlQueryTab;
 import astro.tool.box.tab.BatchQueryTab;
 import astro.tool.box.tab.CatalogQueryTab;
@@ -70,12 +70,15 @@ public class Application {
     public void init() {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
-        baseFrame.setTitle(PGM_NAME + " " + PGM_VERSION);
+        baseFrame.setTitle("%s %s (Java %s)".formatted(PGM_NAME, PGM_VERSION, JAVA_VERSION));
         baseFrame.setSize(new Dimension(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         baseFrame.add(tabbedPane);
+
+        String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
+        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
 
         Map<String, Tab> tabs = new HashMap<>();
 
@@ -115,14 +118,10 @@ public class Application {
         LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
         tabs.put(TabCode.LO.name(), lookupTab);
 
-        String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
-        String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
-
-        /* Add a new tab
-        FinderChartTab finderChartTab = new FinderChartTab(baseFrame, tabbedPane, imageViewerTab);
-        tabs.put(TabCode.FC.name(), finderChartTab);
-
-        String newTabCode = TabCode.FC.name();
+        // Add new tab here
+        /*NewTab newTab = new NewTab(baseFrame, tabbedPane);
+        tabs.put(TabCode.XX.name(), newTab);
+        String newTabCode = TabCode.XX.name();
         if (!sourceTabs.concat(destTabs).contains(newTabCode)) {
             destTabs += "," + newTabCode;
             USER_SETTINGS.setProperty(DEST_TABS, destTabs);
@@ -201,7 +200,7 @@ public class Application {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(new JLabel("There's a new " + PGM_NAME + " version available!"));
-        container.add(createHyperlink("> Download new version", RELEASES_URL + String.format("executables/AstroToolBox-%s.jar", latestVersion)));
+        container.add(createHyperlink("> Download new version", RELEASES_URL + "executables/AstroToolBox-%s.jar".formatted(latestVersion)));
         container.add(createHyperlink("> Check release notes", RELEASES_URL + "release%20notes.md"));
         container.add(new JLabel("Please make sure to always use the latest version of this tool!"));
         container.add(new JLabel("Previous versions may contain bugs and/or may no longer work properly."));

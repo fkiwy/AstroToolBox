@@ -138,8 +138,8 @@ public class WiseCcdPanel extends JPanel {
 
         AllWiseCatalogEntry allWiseEntry;
 
-        if (catalogEntry instanceof AllWiseCatalogEntry) {
-            allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof AllWiseCatalogEntry entry) {
+            allWiseEntry = entry;
         } else {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());

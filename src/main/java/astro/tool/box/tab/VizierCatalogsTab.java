@@ -178,22 +178,22 @@ public class VizierCatalogsTab implements Tab {
                         errorMessages.add("Invalid coordinates!");
                     }
                     try {
-                        searchRadius = Double.valueOf(radius);
+                        searchRadius = Double.parseDouble(radius);
                         if (searchRadius > 300) {
                             errorMessages.add("Radius must not be larger than 300 arcsec.");
                         }
-                    } catch (Exception ex) {
+                    } catch (NumberFormatException ex) {
                         searchRadius = 0;
                         errorMessages.add("Invalid radius!");
                     }
                     try {
-                        numberOfRows = Integer.valueOf(rows);
+                        numberOfRows = Integer.parseInt(rows);
                         if (numberOfRows > 500) {
                             errorMessages.add("Number of rows must not be greater than 500.");
                         } else if (numberOfRows < 1) {
                             errorMessages.add("Number of rows must not be less than 1.");
                         }
-                    } catch (Exception ex) {
+                    } catch (NumberFormatException ex) {
                         numberOfRows = 0;
                         errorMessages.add("Invalid number of rows!");
                     }
@@ -221,7 +221,7 @@ public class VizierCatalogsTab implements Tab {
                                 setWaitCursor();
                                 String outAll = allColumnsCheckBox.isSelected() ? "&-out.all" : "";
                                 String url = "http://vizier.u-strasbg.fr/viz-bin/asu-txt?-c=%s%s&-c.rs=%f&-out.max=%d&-sort=_r&-out.meta=hu&-oc.form=d&-out.add=_r&-out.form=mini%s";
-                                url = String.format(url, Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows, outAll);
+                                url = url.formatted(Double.toString(targetRa), addPlusSign(targetDec), searchRadius, numberOfRows, outAll);
                                 HttpURLConnection connection = establishHttpConnection(url);
                                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                                     reader.lines().forEach(line -> {

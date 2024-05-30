@@ -5,7 +5,6 @@ import astro.tool.box.tab.BatchQueryTab;
 import astro.tool.box.tab.CatalogQueryTab;
 import astro.tool.box.tab.CustomOverlaysTab;
 import astro.tool.box.tab.FileBrowserTab;
-//import astro.tool.box.tab.FinderChartTab;
 import astro.tool.box.tab.ImageSeriesTab;
 import astro.tool.box.tab.LookupTab;
 import astro.tool.box.tab.ObjectCollectionTab;
@@ -33,7 +32,6 @@ public enum TabCode {
     CO(CustomOverlaysTab.TAB_NAME),
     TO(ToolTab.TAB_NAME),
     LO(LookupTab.TAB_NAME);
-    //FC(FinderChartTab.TAB_NAME);
 
     public String val;
 

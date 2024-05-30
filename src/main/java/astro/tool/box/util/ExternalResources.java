@@ -35,10 +35,6 @@ public class ExternalResources {
         return "http://legacysurvey.org/viewer/exposures/?ra=" + degRA + "&dec=" + degDE + "&layer=" + layer;
     }
 
-    public static String getDataDiscoveryUrl() {
-        return "https://irsa.ipac.caltech.edu/applications/Radar";
-    }
-
     public static String getSimbadUrl(double degRA, double degDE, double degRadius) {
         return "http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=" + degRA + "%20" + degDE + "&Radius=" + degRadius + "&Radius.unit=arcsec&coodisp1=d2&list.pmsel=on&list.plxsel=on&list.rvsel=on&list.bibsel=off&list.notesel=off&output.format=HTML";
     }

@@ -23,7 +23,7 @@ public class FileTypeFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        return description + String.format(" (*%s)", extension);
+        return description + " (*%s)".formatted(extension);
     }
 
 }

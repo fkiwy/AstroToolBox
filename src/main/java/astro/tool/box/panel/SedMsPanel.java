@@ -14,6 +14,7 @@ import astro.tool.box.catalog.DesCatalogEntry;
 import astro.tool.box.catalog.NoirlabCatalogEntry;
 import astro.tool.box.catalog.PanStarrsCatalogEntry;
 import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
 import astro.tool.box.catalog.UkidssCatalogEntry;
 import astro.tool.box.catalog.UnWiseCatalogEntry;
 import astro.tool.box.catalog.VhsCatalogEntry;
@@ -66,7 +67,7 @@ import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-public class SedPanel extends JPanel {
+public class SedMsPanel extends JPanel {
 
     private static final String FONT_NAME = "Tahoma";
 
@@ -87,7 +88,7 @@ public class SedPanel extends JPanel {
     private Map<Band, String> sedCatalogs;
     private StringBuilder sedDataPoints;
 
-    public SedPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) {
+    public SedMsPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) {
         this.brownDwarfLookupEntries = brownDwarfLookupEntries;
         this.catalogQueryService = catalogQueryService;
         this.baseFrame = baseFrame;
@@ -159,7 +160,7 @@ public class SedPanel extends JPanel {
         commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         add(commandPanel);
 
-        commandPanel.add(commonReferences);
+        //commandPanel.add(commonReferences);
         commonReferences.addActionListener((ActionEvent e) -> {
             spectralTypes.setSelectedItem(SpectralType.SELECT);
             collection.removeAllSeries();
@@ -217,8 +218,8 @@ public class SedPanel extends JPanel {
         PanStarrsCatalogEntry panStarrsEntry;
         AllWiseCatalogEntry allWiseEntry;
 
-        if (catalogEntry instanceof PanStarrsCatalogEntry) {
-            panStarrsEntry = (PanStarrsCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof PanStarrsCatalogEntry entry) {
+            panStarrsEntry = entry;
         } else {
             panStarrsEntry = new PanStarrsCatalogEntry();
             panStarrsEntry.setRa(catalogEntry.getRa());
@@ -230,8 +231,8 @@ public class SedPanel extends JPanel {
             }
         }
 
-        if (catalogEntry instanceof AllWiseCatalogEntry) {
-            allWiseEntry = (AllWiseCatalogEntry) catalogEntry;
+        if (catalogEntry instanceof AllWiseCatalogEntry entry) {
+            allWiseEntry = entry;
         } else {
             allWiseEntry = new AllWiseCatalogEntry();
             allWiseEntry.setRa(catalogEntry.getRa());
@@ -263,15 +264,6 @@ public class SedPanel extends JPanel {
         sedPhotometry.put(Band.i, panStarrsEntry.get_i_err() == 0 ? 0 : panStarrsEntry.get_i_mag());
         sedPhotometry.put(Band.z, panStarrsEntry.get_z_err() == 0 ? 0 : panStarrsEntry.get_z_mag());
         sedPhotometry.put(Band.y, panStarrsEntry.get_y_err() == 0 ? 0 : panStarrsEntry.get_y_mag());
-
-        // 2MASS
-        sedCatalogs.put(Band.J, TwoMassCatalogEntry.CATALOG_NAME);
-        sedCatalogs.put(Band.H, TwoMassCatalogEntry.CATALOG_NAME);
-        sedCatalogs.put(Band.K, TwoMassCatalogEntry.CATALOG_NAME);
-        add2Massferences();
-        sedPhotometry.put(Band.J, allWiseEntry.getJ_err() == 0 ? 0 : allWiseEntry.getJmag());
-        sedPhotometry.put(Band.H, allWiseEntry.getH_err() == 0 ? 0 : allWiseEntry.getHmag());
-        sedPhotometry.put(Band.K, allWiseEntry.getK_err() == 0 ? 0 : allWiseEntry.getKmag());
 
         // WISE
         sedCatalogs.put(Band.W1, allWiseEntry.getCatalogName());
@@ -334,58 +326,79 @@ public class SedPanel extends JPanel {
             }
         }
 
-        if (sedPhotometry.get(Band.J) == 0 && sedPhotometry.get(Band.H) == 0 && sedPhotometry.get(Band.K) == 0) {
-            CatalogEntry retrievedEntry = null;
-            VhsCatalogEntry vhsEntry;
-            if (catalogEntry.getDec() < 5) {
-                vhsEntry = new VhsCatalogEntry();
-                vhsEntry.setRa(catalogEntry.getRa());
-                vhsEntry.setDec(catalogEntry.getDec());
-                vhsEntry.setSearchRadius(searchRadius);
-                retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+        CatalogEntry retrievedEntry = null;
+        VhsCatalogEntry vhsEntry;
+        if (catalogEntry.getDec() < 5) {
+            vhsEntry = new VhsCatalogEntry();
+            vhsEntry.setRa(catalogEntry.getRa());
+            vhsEntry.setDec(catalogEntry.getDec());
+            vhsEntry.setSearchRadius(searchRadius);
+            retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+        }
+        if (retrievedEntry != null) {
+            vhsEntry = (VhsCatalogEntry) retrievedEntry;
+            seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
+            sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
+            sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
+            sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
+            if (commonReferences.isSelected()) {
+                add2Massferences();
+            } else {
+                sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
+                sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
+                sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
+            }
+            sedPhotometry.put(Band.J, vhsEntry.getJmag());
+            sedPhotometry.put(Band.H, vhsEntry.getHmag());
+            sedPhotometry.put(Band.K, vhsEntry.getKmag());
+
+        } else {
+            UkidssCatalogEntry ukidssEntry;
+            if (catalogEntry.getDec() > -5) {
+                ukidssEntry = new UkidssCatalogEntry();
+                ukidssEntry.setRa(catalogEntry.getRa());
+                ukidssEntry.setDec(catalogEntry.getDec());
+                ukidssEntry.setSearchRadius(searchRadius);
+                retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
             }
             if (retrievedEntry != null) {
-                vhsEntry = (VhsCatalogEntry) retrievedEntry;
-                seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
-                sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
-                sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
-                sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
+                ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
+                seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId()).append(" ");
+                sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
+                sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
+                sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
                 if (commonReferences.isSelected()) {
                     add2Massferences();
                 } else {
-                    sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
-                    sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
-                    sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
+                    sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
+                    sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
+                    sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
                 }
-                sedPhotometry.put(Band.J, vhsEntry.getJmag());
-                sedPhotometry.put(Band.H, vhsEntry.getHmag());
-                sedPhotometry.put(Band.K, vhsEntry.getKmag());
-
+                sedPhotometry.put(Band.J, ukidssEntry.getJmag());
+                sedPhotometry.put(Band.H, ukidssEntry.getHmag());
+                sedPhotometry.put(Band.K, ukidssEntry.getKmag());
             } else {
-                UkidssCatalogEntry ukidssEntry;
+                UhsCatalogEntry uhsEntry;
                 if (catalogEntry.getDec() > -5) {
-                    ukidssEntry = new UkidssCatalogEntry();
-                    ukidssEntry.setRa(catalogEntry.getRa());
-                    ukidssEntry.setDec(catalogEntry.getDec());
-                    ukidssEntry.setSearchRadius(searchRadius);
-                    retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
+                    uhsEntry = new UhsCatalogEntry();
+                    uhsEntry.setRa(catalogEntry.getRa());
+                    uhsEntry.setDec(catalogEntry.getDec());
+                    uhsEntry.setSearchRadius(searchRadius);
+                    retrievedEntry = retrieveCatalogEntry(uhsEntry, catalogQueryService, baseFrame);
                 }
                 if (retrievedEntry != null) {
-                    ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
-                    seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId()).append(" ");
-                    sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
-                    sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
-                    sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
+                    uhsEntry = (UhsCatalogEntry) retrievedEntry;
+                    seriesLabel.append(uhsEntry.getCatalogName()).append(": ").append(uhsEntry.getSourceId()).append(" ");
+                    sedCatalogs.put(Band.J, uhsEntry.getCatalogName());
+                    sedCatalogs.put(Band.K, uhsEntry.getCatalogName());
                     if (commonReferences.isSelected()) {
                         add2Massferences();
                     } else {
                         sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
-                        sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
                         sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
                     }
-                    sedPhotometry.put(Band.J, ukidssEntry.getJmag());
-                    sedPhotometry.put(Band.H, ukidssEntry.getHmag());
-                    sedPhotometry.put(Band.K, ukidssEntry.getKmag());
+                    sedPhotometry.put(Band.J, uhsEntry.getJmag());
+                    sedPhotometry.put(Band.K, uhsEntry.getKmag());
                 } else {
                     TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
                     twoMassEntry.setRa(catalogEntry.getRa());
@@ -412,7 +425,7 @@ public class SedPanel extends JPanel {
             catWiseEntry.setRa(catalogEntry.getRa());
             catWiseEntry.setDec(catalogEntry.getDec());
             catWiseEntry.setSearchRadius(searchRadius);
-            CatalogEntry retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
+            retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
             if (retrievedEntry == null) {
                 UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
                 unWiseEntry.setRa(catalogEntry.getRa());
@@ -457,11 +470,11 @@ public class SedPanel extends JPanel {
                         .append("(")
                         .append(sedReferences.get(band).getWavelenth())
                         .append(",")
-                        .append(sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxDensity())
+                        .append(sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxLambda())
                         .append(")")
                         .append(LINE_SEP);
             }
-            series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxDensity());
+            series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxLambda());
         });
 
         if (collection == null) {
@@ -535,7 +548,7 @@ public class SedPanel extends JPanel {
             double medianDiffMag = determineMedian(diffMags);
             if (selectedType.equals(SpectralType.SELECT)) {
                 int totalMags = diffMags.size();
-                if (totalMags < 6) {
+                if (totalMags < 4) {
                     continue;
                 }
                 int selectedMags = 0;
@@ -557,15 +570,13 @@ public class SedPanel extends JPanel {
                 return;
             }
         }
-        if (matches.isEmpty()) {
-            showInfoDialog(null, "No match found.");
-            return;
-        }
-        matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
-        int j = bestMatch.isSelected() ? 1 : 3;
-        for (int i = 0; i < j && i < matches.size(); i++) {
-            SedBestMatch match = matches.get(i);
-            createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
+        if (!matches.isEmpty()) {
+            matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
+            int j = bestMatch.isSelected() ? 1 : 3;
+            for (int i = 0; i < j && i < matches.size(); i++) {
+                SedBestMatch match = matches.get(i);
+                createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
+            }
         }
     }
 
@@ -578,17 +589,17 @@ public class SedPanel extends JPanel {
             medianDiffMag = 0;
         }
         XYSeries series = new XYSeries(spectralType);
-        series.add(Sed.PS1_G.wavelenth, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.g) + medianDiffMag, Sed.PS1_G.zeropoint, Sed.PS1_G.wavelenth));
-        series.add(Sed.PS1_R.wavelenth, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.r) + medianDiffMag, Sed.PS1_R.zeropoint, Sed.PS1_R.wavelenth));
-        series.add(Sed.PS1_I.wavelenth, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.i) + medianDiffMag, Sed.PS1_I.zeropoint, Sed.PS1_I.wavelenth));
-        series.add(Sed.PS1_Z.wavelenth, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.z) + medianDiffMag, Sed.PS1_Z.zeropoint, Sed.PS1_Z.wavelenth));
-        series.add(Sed.PS1_Y.wavelenth, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.y) + medianDiffMag, Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
-        series.add(Sed.MASS_J.wavelenth, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.J) + medianDiffMag, Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
-        series.add(Sed.MASS_H.wavelenth, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.H) + medianDiffMag, Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
-        series.add(Sed.MASS_K.wavelenth, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.K) + medianDiffMag, Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
-        series.add(Sed.WISE_W1.wavelenth, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.W1) + medianDiffMag, Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
-        series.add(Sed.WISE_W2.wavelenth, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.W2) + medianDiffMag, Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
-        series.add(Sed.WISE_W3.wavelenth, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFluxDensity(magnitudes.get(Band.W3) + medianDiffMag, Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
+        series.add(Sed.PS1_G.wavelenth, magnitudes.get(Band.g) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.g) + medianDiffMag, Sed.PS1_G.zeropoint, Sed.PS1_G.wavelenth));
+        series.add(Sed.PS1_R.wavelenth, magnitudes.get(Band.r) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.r) + medianDiffMag, Sed.PS1_R.zeropoint, Sed.PS1_R.wavelenth));
+        series.add(Sed.PS1_I.wavelenth, magnitudes.get(Band.i) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.i) + medianDiffMag, Sed.PS1_I.zeropoint, Sed.PS1_I.wavelenth));
+        series.add(Sed.PS1_Z.wavelenth, magnitudes.get(Band.z) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.z) + medianDiffMag, Sed.PS1_Z.zeropoint, Sed.PS1_Z.wavelenth));
+        series.add(Sed.PS1_Y.wavelenth, magnitudes.get(Band.y) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.y) + medianDiffMag, Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
+        series.add(Sed.MASS_J.wavelenth, magnitudes.get(Band.J) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.J) + medianDiffMag, Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
+        series.add(Sed.MASS_H.wavelenth, magnitudes.get(Band.H) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.H) + medianDiffMag, Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
+        series.add(Sed.MASS_K.wavelenth, magnitudes.get(Band.K) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.K) + medianDiffMag, Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
+        series.add(Sed.WISE_W1.wavelenth, magnitudes.get(Band.W1) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.W1) + medianDiffMag, Sed.WISE_W1.zeropoint, Sed.WISE_W1.wavelenth));
+        series.add(Sed.WISE_W2.wavelenth, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.W2) + medianDiffMag, Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
+        series.add(Sed.WISE_W3.wavelenth, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.W3) + medianDiffMag, Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
 
         sedDataPoints.append(spectralType).append(":").append(LINE_SEP);
         for (Object item : series.getItems()) {
@@ -615,13 +626,13 @@ public class SedPanel extends JPanel {
         chart.setPadding(new RectangleInsets(10, 10, 10, 10));
         XYPlot plot = chart.getXYPlot();
 
-        LogAxis xAxis = new LogAxis("Wavelength (micron)");
+        LogAxis xAxis = new LogAxis("Wavelength (μm)");
         xAxis.setAutoRangeMinimumSize(0.1);
         xAxis.setTickUnit(new NumberTickUnit(0.2));
         //xAxis.setNumberFormatOverride(new DecimalFormat("#.#"));
         plot.setDomainAxis(xAxis);
 
-        LogAxis yAxis = new LogAxis("λF(λ) (W/m^2)");
+        LogAxis yAxis = new LogAxis("Flux (W/m²/μm)");
         yAxis.setAutoRangeMinimumSize(1E-18);
         yAxis.setTickUnit(new NumberTickUnit(0.5));
         //yAxis.setNumberFormatOverride(new DecimalFormat("0E0"));
@@ -686,8 +697,8 @@ public class SedPanel extends JPanel {
                     + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
                     + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
                     + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxJansky()) + " Jy<br>"
-                    + "λF(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " W/m^2<br>"
-                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m^2/μm"));
+                    + "λF(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " W/m²<br>"
+                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m²/μm"));
         });
         CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
         generator.addToolTipSeries(toolTips);

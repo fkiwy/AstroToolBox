@@ -14,9 +14,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -55,11 +55,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -158,7 +160,7 @@ public class AdqlQueryTab implements Tab {
                         String content = String.join(LINE_SEP_TEXT_AREA, lines);
                         textEditor.setText(content);
                         scrollEditor.setBorder(createEtchedBorder("Current file: " + file.getName()));
-                    } catch (Exception ex) {
+                    } catch (IOException ex) {
                         showExceptionDialog(baseFrame, ex);
                     }
                 }
@@ -250,7 +252,7 @@ public class AdqlQueryTab implements Tab {
                                 return;
                             }
                         }
-                    } catch (Exception ex) {
+                    } catch (JsonSyntaxException | IOException ex) {
                     }
                 }
                 // Execute query
@@ -313,7 +315,7 @@ public class AdqlQueryTab implements Tab {
                     Duration duration = Duration.between(startTime, Instant.now());
                     LocalTime time = LocalTime.ofSecondOfDay(duration.getSeconds());
                     elapsedTime.setText(time.format(timeFormatter));
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     stopClock();
                     initStatus();
                 }
@@ -386,11 +388,20 @@ public class AdqlQueryTab implements Tab {
                         showInfoDialog(baseFrame, "Query is still running!");
                     } else if (jobStatus.equals(JobStatus.COMPLETED.toString())) {
                         queryResults = doGet(createResultUrl(jobId));
-                        File tmpFile = File.createTempFile("AstroToolBox_", ".txt");
-                        try (FileWriter writer = new FileWriter(tmpFile)) {
-                            writer.write(queryResults);
+                        JFileChooser fileSelector = new JFileChooser();
+                        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV Files", "csv");
+                        fileChooser.setFileFilter(filter);
+                        fileSelector.setDialogTitle("Save CSV File");
+                        int userSelection = fileSelector.showSaveDialog(null);
+                        if (userSelection == JFileChooser.APPROVE_OPTION) {
+                            File fileToSave = fileSelector.getSelectedFile();
+                            if (!fileToSave.getName().toLowerCase().endsWith(".csv")) {
+                                fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
+                            }
+                            try (FileWriter writer = new FileWriter(fileToSave)) {
+                                writer.write(queryResults);
+                            }
                         }
-                        Desktop.getDesktop().open(tmpFile);
                     } else if (jobStatus.equals(JobStatus.ERROR.toString())) {
                         String response = doGet(createErrorUrl(jobId));
                         String errorMessage = getErrorMessage(response);
@@ -425,7 +436,7 @@ public class AdqlQueryTab implements Tab {
                     doPost(createStatusUrl(jobId), params);
                     removeJobId(jobId, getTapProvider());
                     showInfoDialog(baseFrame, "Query aborted!");
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -447,7 +458,7 @@ public class AdqlQueryTab implements Tab {
                     doPost(createDeleteUrl(jobId), params);
                     removeJobId(jobId, getTapProvider());
                     showInfoDialog(baseFrame, "Query deleted!");
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -542,7 +553,7 @@ public class AdqlQueryTab implements Tab {
                     });
 
                     baseFrame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 } finally {
                     browseButton.setCursor(Cursor.getDefaultCursor());
@@ -552,7 +563,7 @@ public class AdqlQueryTab implements Tab {
             if (visible) {
                 tabbedPane.addTab(TAB_NAME, new JScrollPane(mainPanel));
             }
-        } catch (Exception ex) {
+        } catch (ParserConfigurationException ex) {
             showExceptionDialog(baseFrame, ex);
         }
     }
@@ -713,7 +724,7 @@ public class AdqlQueryTab implements Tab {
                         });
 
                         baseFrame.setVisible(true);
-                    } catch (Exception ex) {
+                    } catch (IOException ex) {
                         showExceptionDialog(baseFrame, ex);
                     } finally {
                         resultTable.setCursor(Cursor.getDefaultCursor());

@@ -520,51 +520,53 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "dec,"
-                + "plx (mas),"
-                + "plx err,"
-                + "pmra (mas/yr),"
-                + "pmra err,"
-                + "pmdec (mas/yr),"
-                + "pmdec err,"
-                + "G (mag),"
-                + "G err,"
-                + "BP (mag),"
-                + "BP err,"
-                + "RP (mag),"
-                + "RP err,"
-                + "BP-RP,"
-                + "BP-G,"
-                + "G-RP,"
-                + "RUWE,"
-                + "rad vel (km/s),"
-                + "rad vel err,"
-                + "teff (K),"
-                + "lower teff (K),"
-                + "upper teff (K),"
-                + "log g,"
-                + "lower log g,"
-                + "upper log g,"
-                + "Fe/H (dex),"
-                + "lower Fe/H (dex),"
-                + "upper Fe/H (dex),"
-                + "dist (pc),"
-                + "lower dist (pc),"
-                + "upper dist (pc),"
-                + "var. flag,"
-                + "quasar prob.,"
-                + "galaxy prob.,"
-                + "star prob.,"
-                + "extinct. in G band,"
-                + "reddening E(BP-RP),"
-                + "dist (1/plx),"
-                + "Absolute G (mag),"
-                + "tpm (mas/yr),"
-                + "tang vel (km/s),"
-                + "tot vel (km/s)";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                dec,\
+                plx (mas),\
+                plx err,\
+                pmra (mas/yr),\
+                pmra err,\
+                pmdec (mas/yr),\
+                pmdec err,\
+                G (mag),\
+                G err,\
+                BP (mag),\
+                BP err,\
+                RP (mag),\
+                RP err,\
+                BP-RP,\
+                BP-G,\
+                G-RP,\
+                RUWE,\
+                rad vel (km/s),\
+                rad vel err,\
+                teff (K),\
+                lower teff (K),\
+                upper teff (K),\
+                log g,\
+                lower log g,\
+                upper log g,\
+                Fe/H (dex),\
+                lower Fe/H (dex),\
+                upper Fe/H (dex),\
+                dist (pc),\
+                lower dist (pc),\
+                upper dist (pc),\
+                var. flag,\
+                quasar prob.,\
+                galaxy prob.,\
+                star prob.,\
+                extinct. in G band,\
+                reddening E(BP-RP),\
+                dist (1/plx),\
+                Absolute G (mag),\
+                tpm (mas/yr),\
+                tang vel (km/s),\
+                tot vel (km/s)\
+                """;
         return columnTitles.split(",", -1);
     }
 

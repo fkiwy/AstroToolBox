@@ -369,40 +369,42 @@ public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 
     @Override
     public String[] getColumnTitles() {
-        String columnTitles = "dist (arcsec),"
-                + "source id,"
-                + "ra,"
-                + "ra err (arcsec),"
-                + "dec,"
-                + "dec err (arcsec),"
-                + "pmra (mas/yr),"
-                + "pmra err,"
-                + "pmdec (mas/yr),"
-                + "pmdec err,"
-                + "Galaxy-Star (0-1),"
-                + "mean mjd,"
-                + "detections,"
-                + "delta mjd,"
-                + "u (mag),"
-                + "u err,"
-                + "g (mag),"
-                + "g err,"
-                + "r (mag),"
-                + "r err,"
-                + "i (mag),"
-                + "i err,"
-                + "z (mag),"
-                + "z err,"
-                + "Y (mag),"
-                + "Y err,"
-                + "VR (mag),"
-                + "VR err,"
-                + "u-g,"
-                + "g-r,"
-                + "r-i,"
-                + "i-z,"
-                + "z-Y,"
-                + "tpm (mas/yr)";
+        String columnTitles = """
+                dist (arcsec),\
+                source id,\
+                ra,\
+                ra err (arcsec),\
+                dec,\
+                dec err (arcsec),\
+                pmra (mas/yr),\
+                pmra err,\
+                pmdec (mas/yr),\
+                pmdec err,\
+                Galaxy-Star (0-1),\
+                mean mjd,\
+                detections,\
+                delta mjd,\
+                u (mag),\
+                u err,\
+                g (mag),\
+                g err,\
+                r (mag),\
+                r err,\
+                i (mag),\
+                i err,\
+                z (mag),\
+                z err,\
+                Y (mag),\
+                Y err,\
+                VR (mag),\
+                VR err,\
+                u-g,\
+                g-r,\
+                r-i,\
+                i-z,\
+                z-Y,\
+                tpm (mas/yr)\
+                """;
         return columnTitles.split(",", -1);
     }
 

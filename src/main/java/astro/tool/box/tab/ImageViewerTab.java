@@ -65,8 +65,8 @@ import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.main.ImageSeriesPdf;
 import astro.tool.box.panel.WiseCcdPanel;
 import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedPanel;
-import astro.tool.box.panel.WdSedPanel;
+import astro.tool.box.panel.SedMsPanel;
+import astro.tool.box.panel.SedWdPanel;
 import astro.tool.box.shape.Arrow;
 import astro.tool.box.shape.Circle;
 import astro.tool.box.shape.Cross;
@@ -182,6 +182,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import astro.tool.box.panel.WiseLcPanel;
+import java.awt.HeadlessException;
 
 public class ImageViewerTab implements Tab {
 
@@ -563,14 +564,14 @@ public class ImageViewerTab implements Tab {
                 createFlipbook();
             });
 
-            JLabel speedLabel = new JLabel(String.format("Speed: %d ms", speed));
+            JLabel speedLabel = new JLabel("Speed: %d ms".formatted(speed));
             mainControlPanel.add(speedLabel);
 
             speedSlider = new JSlider(0, 2000, SPEED);
             mainControlPanel.add(speedSlider);
             speedSlider.addChangeListener((ChangeEvent e) -> {
                 speed = speedSlider.getValue();
-                speedLabel.setText(String.format("Speed: %d ms", speed));
+                speedLabel.setText("Speed: %d ms".formatted(speed));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -579,14 +580,14 @@ public class ImageViewerTab implements Tab {
                 processImages();
             });
 
-            JLabel zoomLabel = new JLabel(String.format("Zoom: %d", zoom));
+            JLabel zoomLabel = new JLabel("Zoom: %d".formatted(zoom));
             mainControlPanel.add(zoomLabel);
 
             zoomSlider = new JSlider(100, 2000, ZOOM);
             mainControlPanel.add(zoomSlider);
             zoomSlider.addChangeListener((ChangeEvent e) -> {
                 zoom = zoomSlider.getValue();
-                zoomLabel.setText(String.format("Zoom: %d", zoom));
+                zoomLabel.setText("Zoom: %d".formatted(zoom));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -595,14 +596,14 @@ public class ImageViewerTab implements Tab {
             });
 
             String stackText = "Images per blink: %d";
-            JLabel stackLabel = new JLabel(String.format(stackText, stackSize));
+            JLabel stackLabel = new JLabel(stackText.formatted(stackSize));
             mainControlPanel.add(stackLabel);
 
             stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
             mainControlPanel.add(stackSlider);
             stackSlider.addChangeListener((ChangeEvent e) -> {
                 stackSize = stackSlider.getValue();
-                stackLabel.setText(String.format(stackText, stackSize));
+                stackLabel.setText(stackText.formatted(stackSize));
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     return;
@@ -628,7 +629,7 @@ public class ImageViewerTab implements Tab {
                         stackSlider.setValue(1);
                         stackSlider.addChangeListener(actionListener);
                         stackSize = 1;
-                        stackLabel.setText(String.format(stackText, stackSize));
+                        stackLabel.setText(stackText.formatted(stackSize));
                     }
                 } else {
                     if (!imagesW1All.isEmpty()) {
@@ -757,7 +758,7 @@ public class ImageViewerTab implements Tab {
 
             unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
             mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("unWISE deep coadds are from http://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
+            unwiseCutouts.setToolTipText("unWISE deep coadds are from https://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
             unwiseCutouts.addActionListener((ActionEvent evt) -> {
                 pixelScale = PIXEL_SCALE_WISE;
                 previousSize = 0;
@@ -1037,13 +1038,13 @@ public class ImageViewerTab implements Tab {
 
             mocaOverlay = new JCheckBox(html("M<u>O</u>CA " + INFO_ICON), overlays.isMoca());
             mocaOverlay.setForeground(JColor.DARK_ORANGE.val);
-            mocaOverlay.setToolTipText(html("Montreal Open Clusters and Associations (MOCA) database (https://mocadb.ca/home)" + LINE_BREAK +
-                                    "Overlays created from the \"Summary of all objects\" table (https://mocadb.ca/schema/summary_all_objects)"));
+            mocaOverlay.setToolTipText(html("Montreal Open Clusters and Associations (MOCA) database (https://mocadb.ca/home)" + LINE_BREAK
+                    + "Overlays created from the \"Summary of all objects\" table (https://mocadb.ca/schema/summary_all_objects)"));
             mocaOverlay.addActionListener((ActionEvent evt) -> {
                 processImages();
             });
             overlayPanel.add(mocaOverlay);
-   
+
             ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
             ssoOverlay.setForeground(Color.BLUE);
             ssoOverlay.addActionListener((ActionEvent evt) -> {
@@ -1398,7 +1399,7 @@ public class ImageViewerTab implements Tab {
                 }
             });
 
-            changeFovLabel = new JLabel(html(String.format(CHANGE_FOV_TEXT, fieldOfView)));
+            changeFovLabel = new JLabel(html(CHANGE_FOV_TEXT.formatted(fieldOfView)));
             mouseControlPanel.add(changeFovLabel);
             changeFovLabel.setToolTipText("Spin wheel on flipbook images to change the size of the field of view.");
 
@@ -1547,14 +1548,14 @@ public class ImageViewerTab implements Tab {
 
             playerControlPanel.add(new JLabel());
 
-            JButton rotateButton = new JButton(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+            JButton rotateButton = new JButton("Rotate by 90° clockwise: %d°".formatted(quadrantCount * 90));
             playerControlPanel.add(rotateButton);
             rotateButton.addActionListener((ActionEvent evt) -> {
                 quadrantCount++;
                 if (quadrantCount > 3) {
                     quadrantCount = 0;
                 }
-                rotateButton.setText(String.format("Rotate by 90° clockwise: %d°", quadrantCount * 90));
+                rotateButton.setText("Rotate by 90° clockwise: %d°".formatted(quadrantCount * 90));
                 processImages();
             });
 
@@ -1575,7 +1576,7 @@ public class ImageViewerTab implements Tab {
                         file = new File(file.getPath() + ".png");
                         ImageIO.write(wiseImage, "png", file);
                     }
-                } catch (Exception ex) {
+                } catch (HeadlessException | IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -1600,7 +1601,7 @@ public class ImageViewerTab implements Tab {
                             sequencer.generateFromBI(imageSet, file, speed / 10, true);
                         }
                     }
-                } catch (Exception ex) {
+                } catch (HeadlessException | IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -2041,7 +2042,7 @@ public class ImageViewerTab implements Tab {
                             } else if (fieldOfView > 0) {
                                 fieldOfView--;
                             }
-                            changeFovLabel.setText(html(String.format(CHANGE_FOV_TEXT, fieldOfView)));
+                            changeFovLabel.setText(html(CHANGE_FOV_TEXT.formatted(fieldOfView)));
                         }
                     });
 
@@ -2109,7 +2110,7 @@ public class ImageViewerTab implements Tab {
                             public void mousePressed(MouseEvent evt) {
                                 try {
                                     String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
-                                    Desktop.getDesktop().browse(new URI(String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
+                                    Desktop.getDesktop().browse(new URI(VHS_SURVEY_URL.formatted(targetRa, targetDec, "all", imageSize, imageSize)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2139,7 +2140,7 @@ public class ImageViewerTab implements Tab {
                             public void mousePressed(MouseEvent evt) {
                                 try {
                                     String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
-                                    Desktop.getDesktop().browse(new URI(String.format(UHS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
+                                    Desktop.getDesktop().browse(new URI(UHS_SURVEY_URL.formatted(targetRa, targetDec, "all", imageSize, imageSize)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2169,7 +2170,7 @@ public class ImageViewerTab implements Tab {
                             public void mousePressed(MouseEvent evt) {
                                 try {
                                     String imageSize = roundTo2DecNZ(size * pixelScale / 60f);
-                                    Desktop.getDesktop().browse(new URI(String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", imageSize, imageSize)));
+                                    Desktop.getDesktop().browse(new URI(UKIDSS_SURVEY_URL.formatted(targetRa, targetDec, "all", imageSize, imageSize)));
                                 } catch (IOException | URISyntaxException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -2641,8 +2642,8 @@ public class ImageViewerTab implements Tab {
                 createHyperlink(finderChartLabel, getFinderChartUrl(targetRa, targetDec, finderChartFOV));
                 createHyperlink(legacyViewerLabel, getLegacySkyViewerUrl(targetRa, targetDec, "unwise-neo6"));
                 String fovSize = roundTo2DecNZ(defaultFOV / 60f);
-                createHyperlink(ukidssCutoutsLabel, String.format(UKIDSS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
-                createHyperlink(vhsCutoutsLabel, String.format(VHS_SURVEY_URL, targetRa, targetDec, "all", fovSize, fovSize));
+                createHyperlink(ukidssCutoutsLabel, UKIDSS_SURVEY_URL.formatted(targetRa, targetDec, "all", fovSize, fovSize));
+                createHyperlink(vhsCutoutsLabel, VHS_SURVEY_URL.formatted(targetRa, targetDec, "all", fovSize, fovSize));
                 createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
                 createHyperlink(vizierLabel, getVizierUrl(targetRa, targetDec, 30, 50, false));
 
@@ -2849,19 +2850,17 @@ public class ImageViewerTab implements Tab {
                     epochsW2 = tempEpochs;
                 }
                 switch (wiseBand) {
-                    case W1:
+                    case W1 ->
                         downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
-                        break;
-                    case W2:
+                    case W2 ->
                         downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
-                        break;
-                    case W1W2:
+                    case W1W2 -> {
                         downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
                         if (stopDownloadProcess) {
                             break;
                         }
                         downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
-                        break;
+                    }
                 }
                 if (stopDownloadProcess) {
                     writeLogEntry("Download process stopped.");
@@ -2970,7 +2969,7 @@ public class ImageViewerTab implements Tab {
 
             String band;
             switch (wiseBand) {
-                case W1:
+                case W1 -> {
                     if (desi) {
                         band = "DECaLS r";
                     } else if (ps1) {
@@ -2988,8 +2987,8 @@ public class ImageViewerTab implements Tab {
                                 isFirstEpoch(fits)
                         ));
                     }
-                    break;
-                case W2:
+                }
+                case W2 -> {
                     if (desi) {
                         band = "DECaLS z";
                     } else if (ps1) {
@@ -3007,8 +3006,8 @@ public class ImageViewerTab implements Tab {
                                 isFirstEpoch(fits)
                         ));
                     }
-                    break;
-                case W1W2:
+                }
+                case W1W2 -> {
                     if (desi) {
                         band = "DECaLS r+z";
                     } else if (ps1) {
@@ -3029,7 +3028,7 @@ public class ImageViewerTab implements Tab {
                                 isFirstEpoch(fits1)
                         ));
                     }
-                    break;
+                }
             }
 
             int count = flipbook.size();
@@ -3821,7 +3820,7 @@ public class ImageViewerTab implements Tab {
             } else {
                 unwiseEpoch = "neo" + epoch;
             }
-            String unwiseURL = String.format("http://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on", unwiseEpoch, targetRa, targetDec, size, band);
+            String unwiseURL = "https://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on".formatted(unwiseEpoch, targetRa, targetDec, size, band);
             try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream(); InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE); InputStream gzi = new GzipCompressorInputStream(bi); ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
                 ArchiveEntry entry;
                 Map<Long, byte[]> entries = new HashMap();
@@ -3834,6 +3833,9 @@ public class ImageViewerTab implements Tab {
                 sizes.sort(Comparator.reverseOrder());
                 long largest = sizes.get(0);
                 return new ByteArrayInputStream(entries.get(largest));
+            } catch (Exception e) {
+                writeErrorLog(e);
+                return null;
             }
         } else {
             String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
@@ -3868,7 +3870,7 @@ public class ImageViewerTab implements Tab {
         }
         String selectedBand = band == 1 ? "r" : "z";
         String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
-        String imageUrl = String.format(baseUrl, targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
+        String imageUrl = baseUrl.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
         try {
             // Ascending scan
             HttpURLConnection connection = establishHttpConnection(imageUrl);
@@ -3903,7 +3905,7 @@ public class ImageViewerTab implements Tab {
         List<String> fileNames = new ArrayList();
         String selectedBand = band == 1 ? "r" : "y";
         try {
-            String downloadUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma", targetRa, targetDec, selectedBand);
+            String downloadUrl = "http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=%s&type=warp&sep=comma".formatted(targetRa, targetDec, selectedBand);
             String response = readResponse(establishHttpConnection(downloadUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
@@ -3918,7 +3920,7 @@ public class ImageViewerTab implements Tab {
                     fileNames.add(columnValues[fileName]);
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             writeErrorLog(ex);
         }
         int i = 0;
@@ -3938,7 +3940,7 @@ public class ImageViewerTab implements Tab {
             writeLogEntry("band " + band + " | image " + requestedEpoch / 2 + " | cached");
             return;
         }
-        String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?ra=%f&dec=%f&size=%d&red=%s&format=fits", targetRa, targetDec, size, fileName);
+        String imageUrl = "http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?ra=%f&dec=%f&size=%d&red=%s&format=fits".formatted(targetRa, targetDec, size, fileName);
         try {
             // Ascending scan
             HttpURLConnection connection = establishHttpConnection(imageUrl);
@@ -4023,7 +4025,7 @@ public class ImageViewerTab implements Tab {
             }
 
             return image;
-        } catch (Exception ex) {
+        } catch (IOException | IndexOutOfBoundsException | FitsException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -4065,7 +4067,7 @@ public class ImageViewerTab implements Tab {
             }
 
             return image;
-        } catch (Exception ex) {
+        } catch (IOException | IndexOutOfBoundsException | FitsException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -4275,7 +4277,14 @@ public class ImageViewerTab implements Tab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(0);
+
+        JTabbedPane pane = application.getTabbedPane();
+        int tabIndex = pane.indexOfTab(CatalogQueryTab.TAB_NAME);
+        if (tabIndex < 0) {
+            showErrorDialog(baseFrame, "The Catalog Search tab has been removed. You can add it again from the Settings tab.");
+            return false;
+        }
+        pane.setSelectedIndex(tabIndex);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);
@@ -4298,7 +4307,14 @@ public class ImageViewerTab implements Tab {
         Application application = new Application();
         application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         application.init();
-        application.getTabbedPane().setSelectedIndex(0);
+
+        JTabbedPane pane = application.getTabbedPane();
+        int tabIndex = pane.indexOfTab(ImageViewerTab.TAB_NAME);
+        if (tabIndex < 0) {
+            showErrorDialog(baseFrame, "The Image Viewer tab has been removed. You can add it again from the Settings tab.");
+            return false;
+        }
+        pane.setSelectedIndex(tabIndex);
 
         Point point = baseFrame.getLocation();
         application.getBaseFrame().setLocation((int) point.getX() + WINDOW_SPACING, (int) point.getY() + WINDOW_SPACING);
@@ -4335,14 +4351,14 @@ public class ImageViewerTab implements Tab {
             if (imageSize > 3000) {
                 return null;
             }
-            String imageUrl = String.format("https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s", targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_FILTERS, DESI_LS_DR_PARAM);
+            String imageUrl = "https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s".formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_FILTERS, DESI_LS_DR_PARAM);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
                 image = ImageIO.read(stream);
             }
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
@@ -4350,7 +4366,7 @@ public class ImageViewerTab implements Tab {
     private BufferedImage fetchPs1Image(double targetRa, double targetDec, double size) {
         try {
             List<String> fileNames = new ArrayList<>();
-            String imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=giy&sep=comma", targetRa, targetDec);
+            String imageUrl = "http://ps1images.stsci.edu/cgi-bin/ps1filenames.py?RA=%f&DEC=%f&filters=giy&sep=comma".formatted(targetRa, targetDec);
             String response = readResponse(establishHttpConnection(imageUrl), "Pan-STARRS");
             try (Scanner scanner = new Scanner(response)) {
                 String[] columnNames = scanner.nextLine().split(SPLIT_CHAR);
@@ -4366,7 +4382,7 @@ public class ImageViewerTab implements Tab {
                     fileNames.add(columnValues[fileName]);
                 }
             }
-            imageUrl = String.format("http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8", fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
+            imageUrl = "http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?red=%s&green=%s&blue=%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=99.8".formatted(fileNames.get(2), fileNames.get(1), fileNames.get(0), targetRa, targetDec, (int) round(size * pixelScale * 4), 1024);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
@@ -4378,7 +4394,7 @@ public class ImageViewerTab implements Tab {
             int year_y = years.get("y").intValue();
             year_ps1_y_i_g = getMeanEpoch(year_y, year_i, year_g);
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
@@ -4446,7 +4462,7 @@ public class ImageViewerTab implements Tab {
     private BufferedImage fetchSdssImage(double targetRa, double targetDec, double size) {
         try {
             int resolution = 1024;
-            String imageUrl = String.format(SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f", targetRa, targetDec, resolution, resolution, size * pixelScale / resolution);
+            String imageUrl = (SDSS_BASE_URL + "/SkyserverWS/ImgCutout/getjpeg?ra=%f&dec=%f&width=%d&height=%d&scale=%f").formatted(targetRa, targetDec, resolution, resolution, size * pixelScale / resolution);
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedImage image;
             try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
@@ -4458,7 +4474,7 @@ public class ImageViewerTab implements Tab {
             //int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
             //year_sdss_z_g_u = getMeanEpoch(year_z, year_g, year_u);
             return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
@@ -4530,7 +4546,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4582,7 +4598,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4641,7 +4657,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4700,7 +4716,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4754,7 +4770,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4897,12 +4913,12 @@ public class ImageViewerTab implements Tab {
 
             JPanel bandPanel = new JPanel(new GridLayout(1, 0));
 
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("g")), targetRa, targetDec, size, true), getImageLabel("PS1 g", year_g)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("r")), targetRa, targetDec, size, true), getImageLabel("PS1 r", year_r)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("i")), targetRa, targetDec, size, true), getImageLabel("PS1 i", year_i)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s", imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
-            bandPanel.add(buildImagePanel(retrievePs1Image(String.format("red=%s&green=%s&blue=%s", imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("g")), targetRa, targetDec, size, true), getImageLabel("PS1 g", year_g)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("r")), targetRa, targetDec, size, true), getImageLabel("PS1 r", year_r)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("i")), targetRa, targetDec, size, true), getImageLabel("PS1 i", year_i)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("z")), targetRa, targetDec, size, true), getImageLabel("PS1 z", year_z)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s".formatted(imageInfos.get("y")), targetRa, targetDec, size, true), getImageLabel("PS1 y", year_y)));
+            bandPanel.add(buildImagePanel(retrievePs1Image("red=%s&green=%s&blue=%s".formatted(imageInfos.get("y"), imageInfos.get("i"), imageInfos.get("g")), targetRa, targetDec, size, false), getImageLabel("PS1 y-i-g", year_y_i_g)));
 
             JFrame imageFrame = new JFrame();
             imageFrame.setIconImage(getToolBoxImage());
@@ -4914,7 +4930,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -4958,7 +4974,7 @@ public class ImageViewerTab implements Tab {
             imageFrame.setResizable(false);
             imageFrame.setVisible(true);
             counter.add();
-        } catch (Exception ex) {
+        } catch (HeadlessException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -5044,7 +5060,7 @@ public class ImageViewerTab implements Tab {
             Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
             if (!imageInfos.isEmpty()) {
                 int year = getPs1Epoch(targetRa, targetDec, "z");
-                image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
+                image = retrievePs1Image("red=%s".formatted(imageInfos.get("z")), targetRa, targetDec, size, true);
                 timeSeries.add(new Couple(getImageLabel("PS1 z", year), new NirImage(year, image)));
             }
 
@@ -5172,7 +5188,7 @@ public class ImageViewerTab implements Tab {
                 Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
                 if (!imageInfos.isEmpty()) {
                     int year = getPs1Epoch(targetRa, targetDec, "z");
-                    image = retrievePs1Image(String.format("red=%s", imageInfos.get("z")), targetRa, targetDec, size, true);
+                    image = retrievePs1Image("red=%s".formatted(imageInfos.get("z")), targetRa, targetDec, size, true);
                     timeSeries.add(new Couple(getImageLabel("PS1 z", year), new NirImage(year, image)));
                 }
             }
@@ -5217,7 +5233,7 @@ public class ImageViewerTab implements Tab {
                             sequencer.generateFromBI(imageSet, file, speed / 10, true);
                         }
                     }
-                } catch (Exception ex) {
+                } catch (HeadlessException | IOException ex) {
                     showExceptionDialog(baseFrame, ex);
                 }
             });
@@ -5279,7 +5295,7 @@ public class ImageViewerTab implements Tab {
                 resultEntries.add(catalogEntry);
             });
             return resultEntries;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
             throw new RuntimeException(ex);
         } finally {
@@ -5304,7 +5320,7 @@ public class ImageViewerTab implements Tab {
                 resultEntries.add(catalogEntry);
             });
             return resultEntries;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             showExceptionDialog(baseFrame, ex);
             throw new RuntimeException(ex);
         } finally {
@@ -5466,7 +5482,7 @@ public class ImageViewerTab implements Tab {
                 spectrumFrame.setResizable(false);
                 spectrumFrame.setVisible(true);
             }
-        } catch (Exception ex) {
+        } catch (HeadlessException | IOException | SecurityException ex) {
             showExceptionDialog(baseFrame, ex);
         } finally {
             baseFrame.setCursor(Cursor.getDefaultCursor());
@@ -5480,29 +5496,22 @@ public class ImageViewerTab implements Tab {
             catalogEntry.setPixelRa(position.getX());
             catalogEntry.setPixelDec(position.getY());
             Drawable toDraw;
-            switch (shape) {
-                case CIRCLE:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case CROSS:
-                    toDraw = new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case XCROSS:
-                    toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case SQUARE:
-                    toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case TRIANGLE:
-                    toDraw = new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                case DIAMOND:
-                    toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-                default:
-                    toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-                    break;
-            }
+            toDraw = switch (shape) {
+                case CIRCLE ->
+                    new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+                case CROSS ->
+                    new Cross(position.getX(), position.getY(), getOverlaySize(), color);
+                case XCROSS ->
+                    new XCross(position.getX(), position.getY(), getOverlaySize(), color);
+                case SQUARE ->
+                    new Square(position.getX(), position.getY(), getOverlaySize(), color);
+                case TRIANGLE ->
+                    new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
+                case DIAMOND ->
+                    new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
+                default ->
+                    new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+            };
             toDraw.draw(graphics);
         });
     }
@@ -5520,18 +5529,18 @@ public class ImageViewerTab implements Tab {
                 cc_flags = "0000";
             }
             switch (wiseBand) {
-                case W1:
+                case W1 -> {
                     ab_flags = ab_flags.substring(0, 1);
                     cc_flags = cc_flags.substring(0, 1);
-                    break;
-                case W2:
+                }
+                case W2 -> {
                     ab_flags = ab_flags.substring(1, 2);
                     cc_flags = cc_flags.substring(1, 2);
-                    break;
-                default:
+                }
+                default -> {
                     ab_flags = ab_flags.substring(0, 2);
                     cc_flags = cc_flags.substring(0, 2);
-                    break;
+                }
             }
             String flags = ab_flags + cc_flags;
             if (ghostOverlay.isSelected()) {
@@ -5597,16 +5606,16 @@ public class ImageViewerTab implements Tab {
             if (catalogEntry instanceof GaiaDR3CatalogEntry) {
                 numberOfYears = GAIADR3_ALLWISE_EPOCH_DIFF;
             }
-            if (catalogEntry instanceof NoirlabCatalogEntry) {
-                numberOfYears = ((NoirlabCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
+            if (catalogEntry instanceof NoirlabCatalogEntry entry) {
+                numberOfYears = entry.getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
-            if (catalogEntry instanceof CatWiseCatalogEntry) {
-                ra = ((CatWiseCatalogEntry) catalogEntry).getRa_pm();
-                dec = ((CatWiseCatalogEntry) catalogEntry).getDec_pm();
+            if (catalogEntry instanceof CatWiseCatalogEntry entry) {
+                ra = entry.getRa_pm();
+                dec = entry.getDec_pm();
                 numberOfYears = CATWISE_ALLWISE_EPOCH_DIFF;
             }
-            if (catalogEntry instanceof UkidssCatalogEntry) {
-                numberOfYears = ((UkidssCatalogEntry) catalogEntry).getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
+            if (catalogEntry instanceof UkidssCatalogEntry entry) {
+                numberOfYears = entry.getMeanEpoch() - ALLWISE_REFERENCE_EPOCH;
             }
 
             if (showProperMotion.isSelected()) {
@@ -5726,16 +5735,14 @@ public class ImageViewerTab implements Tab {
             List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService.lookup(catalogEntry.getColors(true));
             if (!mainSequenceResults.isEmpty()) {
                 container.add(createMainSequenceSpectralTypePanel(mainSequenceResults, catalogEntry, color));
-                if (catalogEntry instanceof AllWiseCatalogEntry) {
-                    AllWiseCatalogEntry entry = (AllWiseCatalogEntry) catalogEntry;
+                if (catalogEntry instanceof AllWiseCatalogEntry entry) {
                     if (isAPossibleAGN(entry.getW1_W2(), entry.getW2_W3())) {
                         JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                         messagePanel.add(createLabel(AGN_WARNING, JColor.RED));
                         container.add(messagePanel);
                     }
                 }
-                if (catalogEntry instanceof WhiteDwarf) {
-                    WhiteDwarf entry = (WhiteDwarf) catalogEntry;
+                if (catalogEntry instanceof WhiteDwarf entry) {
                     if (isAPossibleWD(entry.getAbsoluteGmag(), entry.getBP_RP())) {
                         JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                         messagePanel.add(createLabel(WD_WARNING, JColor.RED));
@@ -5809,18 +5816,18 @@ public class ImageViewerTab implements Tab {
             });
             copyCoordsButton.addActionListener((ActionEvent evt) -> {
                 copyToClipboard(copyObjectCoordinates(catalogEntry));
-                copyCoordsButton.setText("Copied!");
+                copyCoordsButton.setText("Copied to clipboard!");
                 copyCoordsTimer.restart();
             });
 
-            JButton copyInfoButton = new JButton("Copy digest");
+            JButton copyInfoButton = new JButton("Copy summary");
             buttonPanel.add(copyInfoButton);
             Timer copyInfoTimer = new Timer(3000, (ActionEvent e) -> {
-                copyInfoButton.setText("Copy digest");
+                copyInfoButton.setText("Copy summary");
             });
             copyInfoButton.addActionListener((ActionEvent evt) -> {
-                copyToClipboard(copyObjectDigest(catalogEntry));
-                copyInfoButton.setText("Copied!");
+                copyToClipboard(copyObjectSummary(catalogEntry));
+                copyInfoButton.setText("Copied to clipboard!");
                 copyInfoTimer.restart();
             });
 
@@ -5831,7 +5838,7 @@ public class ImageViewerTab implements Tab {
             });
             copyAllButton.addActionListener((ActionEvent evt) -> {
                 copyToClipboard(copyObjectInfo(catalogEntry, mainSequenceResults, brownDwarfsResults, distanceLookupService));
-                copyAllButton.setText("Copied!");
+                copyAllButton.setText("Copied to clipboard!");
                 copyAllTimer.restart();
             });
 
@@ -5842,7 +5849,7 @@ public class ImageViewerTab implements Tab {
 
             });
 
-            JButton createSedButton = new JButton("SED");
+            JButton createSedButton = new JButton("SED (MS)");
             buttonPanel.add(createSedButton);
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -5851,7 +5858,7 @@ public class ImageViewerTab implements Tab {
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
-                frame.add(new SedPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+                frame.add(new SedMsPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
                 frame.setSize(1000, 900);
                 frame.setLocation(0, 0);
                 frame.setAlwaysOnTop(false);
@@ -5860,7 +5867,7 @@ public class ImageViewerTab implements Tab {
                 createSedButton.setCursor(Cursor.getDefaultCursor());
             });
 
-            JButton createWdSedButton = new JButton("WD SED");
+            JButton createWdSedButton = new JButton("SED (WD)");
             buttonPanel.add(createWdSedButton);
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -5869,7 +5876,7 @@ public class ImageViewerTab implements Tab {
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("WD SED");
-                frame.add(new WdSedPanel(catalogQueryService, catalogEntry, baseFrame));
+                frame.add(new SedWdPanel(catalogQueryService, catalogEntry, baseFrame));
                 frame.setSize(1000, 900);
                 frame.setLocation(0, 0);
                 frame.setAlwaysOnTop(false);
@@ -5894,7 +5901,7 @@ public class ImageViewerTab implements Tab {
                     frame.setAlwaysOnTop(false);
                     frame.setResizable(true);
                     frame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (HeadlessException | SecurityException ex) {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createCcdButton.setCursor(Cursor.getDefaultCursor());
@@ -5917,17 +5924,17 @@ public class ImageViewerTab implements Tab {
                     frame.setAlwaysOnTop(false);
                     frame.setResizable(true);
                     frame.setVisible(true);
-                } catch (Exception ex) {
+                } catch (HeadlessException | SecurityException ex) {
                     showErrorDialog(baseFrame, ex.getMessage());
                 } finally {
                     createLcButton.setCursor(Cursor.getDefaultCursor());
                 }
             });
 
-            if (catalogEntry instanceof GaiaCmd) {
+            if (catalogEntry instanceof GaiaCmd cmd) {
                 JButton createCmdButton = new JButton("Gaia CMD");
                 collectPanel.add(createCmdButton);
-                createCmdButton.addActionListener((ActionEvent evt) -> {
+                createCmdButton.addActionListener((var evt) -> {
                     try {
                         createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         JFrame frame = new JFrame();
@@ -5935,13 +5942,13 @@ public class ImageViewerTab implements Tab {
                         frame.addWindowListener(getChildWindowAdapter(baseFrame));
                         frame.setIconImage(getToolBoxImage());
                         frame.setTitle("Gaia CMD");
-                        frame.add(new GaiaCmdPanel((GaiaCmd) catalogEntry));
+                        frame.add(new GaiaCmdPanel(cmd));
                         frame.setSize(1000, 900);
                         frame.setLocation(0, 0);
                         frame.setAlwaysOnTop(false);
                         frame.setResizable(true);
                         frame.setVisible(true);
-                    } catch (Exception ex) {
+                    } catch (HeadlessException | SecurityException ex) {
                         showErrorDialog(baseFrame, ex.getMessage());
                     } finally {
                         createCmdButton.setCursor(Cursor.getDefaultCursor());

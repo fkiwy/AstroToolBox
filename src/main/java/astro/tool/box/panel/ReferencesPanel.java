@@ -179,8 +179,7 @@ public class ReferencesPanel extends JPanel {
 
                 columns = new String[]{"Year", "Journal", "Volume", "Title", "Bibcode", "Ref"};
                 JComponent component = createResultTable(results, columns, columns.length - 1);
-                if (component instanceof JTable) {
-                    JTable resultTable = (JTable) component;
+                if (component instanceof JTable resultTable) {
                     resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     resultTable.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
                         if (!e.getValueIsAdjusting()) {
@@ -264,7 +263,7 @@ public class ReferencesPanel extends JPanel {
 
             catalogsPanel.add(new JLabel("VizieR catalogs:"));
             catalogs.forEach(catalog -> {
-                catalogsPanel.add(createHyperlink(catalog, String.format("http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=%s", catalog)));
+                catalogsPanel.add(createHyperlink(catalog, "http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=%s".formatted(catalog)));
             });
         } catch (IOException ex) {
             showExceptionDialog(null, ex);
@@ -297,7 +296,7 @@ public class ReferencesPanel extends JPanel {
                     if (col == linkColumn - 1) {
                         String bibCode = (String) resultTable.getValueAt(row, col);
                         try {
-                            URI uri = new URI(String.format("https://ui.adsabs.harvard.edu/abs/%s", bibCode));
+                            URI uri = new URI("https://ui.adsabs.harvard.edu/abs/%s".formatted(bibCode));
                             Desktop.getDesktop().browse(uri);
                         } catch (IOException | URISyntaxException ex) {
                             showExceptionDialog(null, ex);

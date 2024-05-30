@@ -149,13 +149,13 @@ public class ObjectCollectionTab implements Tab {
                     showErrorDialog(baseFrame, "No row selected yet!");
                     return;
                 }
-                int selectedRow = resultTable.getSelectedRow();
-                String confirmMessage = "Do you really want to delete row # " + resultTable.getValueAt(selectedRow, 0);
+                int selected = resultTable.getSelectedRow();
+                String confirmMessage = "Do you really want to delete row # " + resultTable.getValueAt(selected, 0);
                 if (!showConfirmDialog(baseFrame, confirmMessage)) {
                     return;
                 }
                 DefaultTableModel tableModel = (DefaultTableModel) resultTable.getModel();
-                int rowToDelete = resultTable.convertRowIndexToModel(selectedRow);
+                int rowToDelete = resultTable.convertRowIndexToModel(selected);
                 tableModel.removeRow(rowToDelete);
                 boolean hasFileBeenSaved = saveFile();
                 if (hasFileBeenSaved) {
