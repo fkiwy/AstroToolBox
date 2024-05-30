@@ -1,5 +1,8 @@
 ## Release notes
 
+### AstroToolBox v4.0.0
+- Switched to Java 17
+
 ### AstroToolBox v3.4.0
 - Removed K dwarfs from MLT spectral type estimates
 - Fixed a bug in the photometric distance calculator
