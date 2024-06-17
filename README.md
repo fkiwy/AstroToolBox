@@ -16,7 +16,7 @@ Additionally, AstroToolBox offers a file browser linked to the image viewer for 
 
 AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
-[Download latest version](releases/executables/AstroToolBox-4.0.0.jar)
+[Download latest version](releases/executables/AstroToolBox-4.1.0.jar)
 
 [Release notes](releases/release%20notes.md)
 
