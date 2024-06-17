@@ -117,6 +117,7 @@ public class SettingsTab implements Tab {
     private static final String ZOOM = "zoom";
     private static final String DIFFERENT_SIZE = "differentSize";
     private static final String PROPER_MOTION = "properMotion";
+    public static final String NEAREST_BYW_SUBJECTS = "nearestBywSubjects";
     private static final String ASYNC_DOWNLOADS = "asyncDownloads";
     private static final String LEGACY_IMAGES = "legacyImages";
     private static final String PANSTARRS_IMAGES = "panstarrsImages";
@@ -132,6 +133,7 @@ public class SettingsTab implements Tab {
     private int zoom;
     private int differentSize;
     private int properMotion;
+    private boolean nearestBywSubjects;
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
@@ -169,8 +171,8 @@ public class SettingsTab implements Tab {
             JPanel containerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             settingsPanel.add(containerPanel, BorderLayout.PAGE_START);
 
-            int panelHeight = 300;
-            int gridRows = 11;
+            int panelHeight = 360;
+            int gridRows = 12;
 
             // Global settings
             JPanel globalSettings = new JPanel(new GridLayout(gridRows, 2));
@@ -323,7 +325,7 @@ public class SettingsTab implements Tab {
             imageViewerSettings.setBorder(BorderFactory.createTitledBorder(
                     BorderFactory.createEtchedBorder(), ImageViewerTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP
             ));
-            imageViewerSettings.setPreferredSize(new Dimension(400, panelHeight));
+            imageViewerSettings.setPreferredSize(new Dimension(475, panelHeight));
             containerPanel.add(imageViewerSettings);
 
             wiseBand = WiseBand.valueOf(USER_SETTINGS.getProperty(WISE_BAND, ImageViewerTab.WISE_BAND.name()));
@@ -332,6 +334,7 @@ public class SettingsTab implements Tab {
             zoom = Integer.parseInt(USER_SETTINGS.getProperty(ZOOM, String.valueOf(ImageViewerTab.ZOOM)));
             differentSize = Integer.parseInt(USER_SETTINGS.getProperty(DIFFERENT_SIZE, String.valueOf(ImageViewerTab.DIFFERENT_SIZE)));
             properMotion = Integer.parseInt(USER_SETTINGS.getProperty(PROPER_MOTION, String.valueOf(ImageViewerTab.PROPER_MOTION)));
+            nearestBywSubjects = Boolean.parseBoolean(USER_SETTINGS.getProperty(NEAREST_BYW_SUBJECTS, "true"));
             asyncDownloads = Boolean.parseBoolean(USER_SETTINGS.getProperty(ASYNC_DOWNLOADS, "true"));
             legacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(LEGACY_IMAGES, "true"));
             panstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(PANSTARRS_IMAGES, "true"));
@@ -390,6 +393,11 @@ public class SettingsTab implements Tab {
             imageViewerSettings.add(new JLabel("Total proper motion (mas/yr): ", JLabel.RIGHT));
             JTextField properMotionField = new JTextField(String.valueOf(properMotion));
             imageViewerSettings.add(properMotionField);
+
+            imageViewerSettings.add(new JLabel("Show nearest BYW subjects: ", JLabel.RIGHT));
+            JCheckBox nearestBywSubjectsCheckBox = new JCheckBox(html("<span color='red'>" + RESTART_LABEL + "</span>"));
+            nearestBywSubjectsCheckBox.setSelected(nearestBywSubjects);
+            imageViewerSettings.add(nearestBywSubjectsCheckBox);
 
             imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
             JCheckBox asynchDownloadsCheckBox = new JCheckBox();
@@ -480,6 +488,7 @@ public class SettingsTab implements Tab {
             JButton applyButton = new JButton("Apply settings");
             buttonPanel.add(applyButton);
             applyButton.addActionListener((ActionEvent evt) -> {
+                boolean requiresRestart = false;
                 try {
                     // Global settings
                     lookAndFeel = (LookAndFeel) themes.getSelectedItem();
@@ -503,6 +512,9 @@ public class SettingsTab implements Tab {
                         }
                     }
                     useSimbadMirror = useSimbadMirrorCheckBox.isSelected();
+                    if (photometricErrors != photometricErrorsBox.isSelected()) {
+                        requiresRestart = true;
+                    }
                     photometricErrors = photometricErrorsBox.isSelected();
 
                     // Catalog search settings
@@ -520,6 +532,10 @@ public class SettingsTab implements Tab {
                     zoom = Integer.parseInt(zoomField.getText());
                     differentSize = Integer.parseInt(differentSizeField.getText());
                     properMotion = Integer.parseInt(properMotionField.getText());
+                    if (nearestBywSubjects != nearestBywSubjectsCheckBox.isSelected()) {
+                        requiresRestart = true;
+                    }
+                    nearestBywSubjects = nearestBywSubjectsCheckBox.isSelected();
                     asyncDownloads = asynchDownloadsCheckBox.isSelected();
                     legacyImages = legacyImagesCheckBox.isSelected();
                     panstarrsImages = panstarrsImagesCheckBox.isSelected();
@@ -601,6 +617,7 @@ public class SettingsTab implements Tab {
                 USER_SETTINGS.setProperty(ZOOM, zoomField.getText());
                 USER_SETTINGS.setProperty(DIFFERENT_SIZE, differentSizeField.getText());
                 USER_SETTINGS.setProperty(PROPER_MOTION, properMotionField.getText());
+                USER_SETTINGS.setProperty(NEAREST_BYW_SUBJECTS, String.valueOf(nearestBywSubjects));
                 USER_SETTINGS.setProperty(ASYNC_DOWNLOADS, String.valueOf(asyncDownloads));
                 USER_SETTINGS.setProperty(LEGACY_IMAGES, String.valueOf(legacyImages));
                 USER_SETTINGS.setProperty(PANSTARRS_IMAGES, String.valueOf(panstarrsImages));
@@ -629,6 +646,9 @@ public class SettingsTab implements Tab {
                 // Tabs
                 String sourceElements = TabCode.convertTabLabelToCode(dualListBox.getSourceElements());
                 String destElements = TabCode.convertTabLabelToCode(dualListBox.getDestinationElements());
+                if (!destTabs.equals(destElements)) {
+                    requiresRestart = true;
+                }
 
                 USER_SETTINGS.setProperty(SOURCE_TABS, sourceElements);
                 USER_SETTINGS.setProperty(DEST_TABS, destElements);
@@ -637,7 +657,7 @@ public class SettingsTab implements Tab {
                 message.setText("Settings applied!");
                 timer.restart();
 
-                if (!destTabs.equals(destElements)) {
+                if (requiresRestart) {
                     restartApplication();
                 }
             });

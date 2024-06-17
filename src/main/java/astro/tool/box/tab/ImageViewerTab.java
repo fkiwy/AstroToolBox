@@ -421,6 +421,7 @@ public class ImageViewerTab implements Tab {
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
+    private boolean nearestBywSubjects;
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
@@ -771,13 +772,17 @@ public class ImageViewerTab implements Tab {
             cutoutGroup.add(desiCutouts);
             cutoutGroup.add(ps1Cutouts);
 
-            mainControlPanel.add(createHeaderLabel("Nearest BYW subjects"));
+            nearestBywSubjects = Boolean.parseBoolean(getUserSetting(NEAREST_BYW_SUBJECTS, "true"));
 
-            bywTopRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(bywTopRow);
+            if (nearestBywSubjects) {
+                mainControlPanel.add(createHeaderLabel("Nearest BYW subjects"));
 
-            bywBottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            mainControlPanel.add(bywBottomRow);
+                bywTopRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                mainControlPanel.add(bywTopRow);
+
+                bywBottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                mainControlPanel.add(bywBottomRow);
+            }
 
             mainControlPanel.add(createHeaderLabel("External resources"));
 
@@ -2716,18 +2721,20 @@ public class ImageViewerTab implements Tab {
                         return null;
                     });
                 }
-                bywTopRow.removeAll();
-                bywBottomRow.removeAll();
-                List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
-                int numberOfSubjects = subjects.size();
-                if (numberOfSubjects == 0) {
-                    bywTopRow.add(new JLabel("N/A"));
-                } else {
-                    for (int i = 0; i < 4 && i < numberOfSubjects; i++) {
-                        bywTopRow.add(subjects.get(i));
-                    }
-                    for (int i = 4; i < 8 && i < numberOfSubjects; i++) {
-                        bywBottomRow.add(subjects.get(i));
+                if (nearestBywSubjects) {
+                    bywTopRow.removeAll();
+                    bywBottomRow.removeAll();
+                    List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
+                    int numberOfSubjects = subjects.size();
+                    if (numberOfSubjects == 0) {
+                        bywTopRow.add(new JLabel("N/A"));
+                    } else {
+                        for (int i = 0; i < 4 && i < numberOfSubjects; i++) {
+                            bywTopRow.add(subjects.get(i));
+                        }
+                        for (int i = 4; i < 8 && i < numberOfSubjects; i++) {
+                            bywBottomRow.add(subjects.get(i));
+                        }
                     }
                 }
                 if (wiseviewCutouts.isSelected()) {
