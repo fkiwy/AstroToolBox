@@ -454,6 +454,7 @@ public class ImageViewerTab implements Tab {
         }
         overlays = new Overlays();
         overlays.deserialize(getUserSetting(OVERLAYS_KEY, overlays.serialize()));
+        nearestBywSubjects = Boolean.parseBoolean(getUserSetting(NEAREST_BYW_SUBJECTS, "true"));
     }
 
     @Override
@@ -489,7 +490,10 @@ public class ImageViewerTab implements Tab {
             //===================
             // Tab: Main controls
             //===================
-            int rows = 42;
+            int rows = 38;
+            if (nearestBywSubjects) {
+                rows += 3;
+            }
             int controlPanelWidth = 255;
             int controlPanelHeight = 10 + ROW_HEIGHT * rows;
 
@@ -771,8 +775,6 @@ public class ImageViewerTab implements Tab {
             cutoutGroup.add(wiseviewCutouts);
             cutoutGroup.add(desiCutouts);
             cutoutGroup.add(ps1Cutouts);
-
-            nearestBywSubjects = Boolean.parseBoolean(getUserSetting(NEAREST_BYW_SUBJECTS, "true"));
 
             if (nearestBywSubjects) {
                 mainControlPanel.add(createHeaderLabel("Nearest BYW subjects"));
