@@ -108,7 +108,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -176,11 +175,6 @@ import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
 import nom.tam.fits.ImageHDU;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import astro.tool.box.panel.WiseLcPanel;
 import java.awt.HeadlessException;
 
@@ -206,11 +200,10 @@ public class ImageViewerTab implements Tab {
     public static final String CHANGE_FOV_TEXT = "Current field of view: %d\" " + INFO_ICON;
 
     //Reference epochs:
-    //allwise: 2010.559
-    //catwise: 2014.118 -> catwise - allwise = 3.559 (CatWISE Preliminary)
-    //catwise: 2015.405 -> catwise - allwise = 4.846 (CatWISE2020)
-    //gaiadr2: 2015.5   -> gaiadr2 - allwise = 4.941
-    //gaiadr3: 2016.0   -> gaiadr3 - allwise = 5.441
+    //AllWISE: 2010.559
+    //CatWISE2020: 2015.405 -> catwise - allwise = 4.846
+    //Gaia DR2: 2015.5   -> gaiadr2 - allwise = 4.941
+    //Gaia DR3: 2016.0   -> gaiadr3 - allwise = 5.441
     public static final double ALLWISE_REFERENCE_EPOCH = 2010.559;
     public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.846;
     public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
@@ -268,7 +261,6 @@ public class ImageViewerTab implements Tab {
     private JButton changeFovButton;
     private JButton stopDownloadButton;
     private JRadioButton wiseviewCutouts;
-    private JRadioButton unwiseCutouts;
     private JRadioButton desiCutouts;
     private JRadioButton ps1Cutouts;
     private JRadioButton showCatalogsButton;
@@ -756,15 +748,6 @@ public class ImageViewerTab implements Tab {
                 createFlipbook();
             });
 
-            unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
-            mainControlPanel.add(unwiseCutouts);
-            unwiseCutouts.setToolTipText("unWISE deep coadds are from https://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
-            unwiseCutouts.addActionListener((ActionEvent evt) -> {
-                pixelScale = PIXEL_SCALE_WISE;
-                previousSize = 0;
-                createFlipbook();
-            });
-
             desiCutouts = new JRadioButton(html("DECaLS cutouts " + INFO_ICON));
             mainControlPanel.add(desiCutouts);
             desiCutouts.setToolTipText("DECaLS cutouts are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 and DR9).");
@@ -785,7 +768,6 @@ public class ImageViewerTab implements Tab {
 
             ButtonGroup cutoutGroup = new ButtonGroup();
             cutoutGroup.add(wiseviewCutouts);
-            cutoutGroup.add(unwiseCutouts);
             cutoutGroup.add(desiCutouts);
             cutoutGroup.add(ps1Cutouts);
 
@@ -2622,7 +2604,6 @@ public class ImageViewerTab implements Tab {
                 separateScanDirections.setEnabled(false);
                 differenceImaging.setEnabled(false);
                 wiseviewCutouts.setEnabled(false);
-                unwiseCutouts.setEnabled(false);
                 desiCutouts.setEnabled(false);
                 ps1Cutouts.setEnabled(false);
 
@@ -3095,7 +3076,6 @@ public class ImageViewerTab implements Tab {
         }
         differenceImaging.setEnabled(true);
         wiseviewCutouts.setEnabled(true);
-        unwiseCutouts.setEnabled(true);
         desiCutouts.setEnabled(true);
         ps1Cutouts.setEnabled(true);
         if (waitCursor) {
@@ -3650,21 +3630,6 @@ public class ImageViewerTab implements Tab {
                     writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | cached");
                     continue;
                 }
-                if (unwiseCutouts.isSelected()) {
-                    if (requestedEpoch % 2 > 0) {
-                        container = images.get(band + "_" + (requestedEpoch - 1));
-                        if (container != null) {
-                            Fits fits = new Fits();
-                            fits.addHDU(FitsFactory.hduFactory(container.getImage().getHDU(0).getData().getData()));
-                            Header header = fits.getHDU(0).getHeader();
-                            header.addValue("FORWARD", epoch.getForward(), "Scan direction");
-                            header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
-                            images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
-                            writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + formatDate(epoch.getMjdmean()) + " | downloaded");
-                            continue;
-                        }
-                    }
-                }
                 Fits fits;
                 ImageHDU hdu;
                 try {
@@ -3808,40 +3773,12 @@ public class ImageViewerTab implements Tab {
         if (asyncDownloads) {
             downloadLog.append(log + LINE_SEP_TEXT_AREA);
         }
-        //System.out.println(log);
     }
 
     private InputStream getImageData(int band, int epoch) throws Exception {
-        if (unwiseCutouts.isSelected()) {
-            epoch /= 2;
-            String unwiseEpoch;
-            if (epoch == 0) {
-                unwiseEpoch = "allwise";
-            } else {
-                unwiseEpoch = "neo" + epoch;
-            }
-            String unwiseURL = "https://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on".formatted(unwiseEpoch, targetRa, targetDec, size, band);
-            try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream(); InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE); InputStream gzi = new GzipCompressorInputStream(bi); ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
-                ArchiveEntry entry;
-                Map<Long, byte[]> entries = new HashMap();
-                while ((entry = ti.getNextEntry()) != null) {
-                    byte[] buf = new byte[(int) entry.getSize()];
-                    IOUtils.readFully(ti, buf);
-                    entries.put(entry.getSize(), buf);
-                }
-                List<Long> sizes = entries.keySet().stream().collect(toList());
-                sizes.sort(Comparator.reverseOrder());
-                long largest = sizes.get(0);
-                return new ByteArrayInputStream(entries.get(largest));
-            } catch (Exception e) {
-                writeErrorLog(e);
-                return null;
-            }
-        } else {
-            String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            return connection.getInputStream();
-        }
+        String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
+        HttpURLConnection connection = establishHttpConnection(imageUrl);
+        return connection.getInputStream();
     }
 
     private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
@@ -4322,10 +4259,6 @@ public class ImageViewerTab implements Tab {
         ImageViewerTab imageViewerTab = application.getImageViewerTab();
         imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
         imageViewerTab.getSizeField().setText(differentSizeField.getText());
-        if (unwiseCutouts.isSelected()) {
-            imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
-            imageViewerTab.getWiseCoadds().setSelected(true);
-        }
         if (desiCutouts.isSelected()) {
             imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
             imageViewerTab.getDesiCutouts().setSelected(true);
@@ -6193,10 +6126,6 @@ public class ImageViewerTab implements Tab {
 
     public JTextField getProperMotionField() {
         return properMotionField;
-    }
-
-    public JRadioButton getWiseCoadds() {
-        return unwiseCutouts;
     }
 
     public JRadioButton getDesiCutouts() {
