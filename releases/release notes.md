@@ -1,5 +1,10 @@
 ## Release notes
 
+### AstroToolBox v4.1.0
+- Add "Show nearest BYW subjects" checkbox to Settings tab
+- Remove "unWISE deep coadds" radio button from Image Viewer tab
+- Fix VSA access URL
+
 ### AstroToolBox v4.0.0
 - Switched to Java 17
 
