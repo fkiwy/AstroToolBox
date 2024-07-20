@@ -868,50 +868,6 @@ public class ToolboxHelper {
         return subjects;
     }
 
-    public static BufferedImage getHipsToFits(double targetRa, double targetDec, int size, String survey, String band) {
-        BufferedImage bi;
-        String ra = "" + targetRa;
-        String dec = targetDec > 0 ? "+" + targetDec : "" + targetDec;
-        String imageUrl = "https://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips=%s/%s&width=300&height=300&fov=%s&projection=TAN&coordsys=icrs&rotation_angle=0.0&ra=%s&dec=%s&format=jpg".formatted(survey, band, roundTo6DecNZ(size / 3600f), ra, dec);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
-            bi = ImageIO.read(stream);
-            if (isNullImage(bi)) {
-                bi = null;
-            }
-        } catch (IOException ex) {
-            bi = null;
-        }
-        return bi;
-    }
-
-    private static boolean isNullImage(BufferedImage image) {
-        int xmin = image.getMinX();
-        int ymin = image.getMinY();
-
-        int ymax = ymin + image.getHeight();
-        int xmax = xmin + image.getWidth();
-
-        int pixelCount = 0;
-        int blackCount = 0;
-        int whiteCount = 0;
-
-        for (int i = xmin; i < xmax; i++) {
-            for (int j = ymin; j < ymax; j++) {
-                int pixel = image.getRGB(i, j);
-                if (pixel == -16777216) {
-                    blackCount++;
-                }
-                if (pixel == -1) {
-                    whiteCount++;
-                }
-                pixelCount++;
-            }
-        }
-        return blackCount > pixelCount * 0.5 || whiteCount > pixelCount * 0.5;
-    }
-
     public static String getImageLabel(String text, int epoch) {
         return text + (epoch > 0 ? " " + epoch : "");
     }
