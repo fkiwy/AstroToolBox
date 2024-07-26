@@ -914,10 +914,37 @@ public class ToolboxHelper {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             bi = ImageIO.read(stream);
+            if (!band.contains("colorimage")) {
+                invertColors(bi);
+            }
         } catch (IOException ex) {
             bi = null;
         }
         return bi;
+    }
+
+    public static void invertColors(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgba = image.getRGB(x, y);
+                int a = (rgba >> 24) & 0xff;
+                int r = (rgba >> 16) & 0xff;
+                int g = (rgba >> 8) & 0xff;
+                int b = rgba & 0xff;
+
+                // Invert each color component
+                r = 255 - r;
+                g = 255 - g;
+                b = 255 - b;
+
+                // Reconstruct the pixel with the inverted colors
+                rgba = (a << 24) | (r << 16) | (g << 8) | b;
+                image.setRGB(x, y, rgba);
+            }
+        }
     }
 
     public static int getPs1Epoch(double targetRa, double targetDec, String filters) {
