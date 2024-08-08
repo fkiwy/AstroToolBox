@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>astro.tool.box</groupId>
     <artifactId>astro-tool-box</artifactId>
-    <version>4.1.0</version>
+    <version>4.2.0</version>
     <packaging>jar</packaging>
     <name>AstroToolBox</name>
     <properties>
