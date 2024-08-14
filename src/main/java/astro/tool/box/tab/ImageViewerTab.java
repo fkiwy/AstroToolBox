@@ -2729,7 +2729,7 @@ public class ImageViewerTab implements Tab {
                     List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
                     int numberOfSubjects = subjects.size();
                     if (numberOfSubjects == 0) {
-                        bywTopRow.add(new JLabel("N/A"));
+                        bywTopRow.add(new JLabel("None"));
                     } else {
                         for (int i = 0; i < 4 && i < numberOfSubjects; i++) {
                             bywTopRow.add(subjects.get(i));
