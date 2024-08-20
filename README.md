@@ -8,7 +8,7 @@ For ultra-cool and white dwarfs, AstroToolBox offers an SED fitting tool using B
 
 Users can generate WISE light curves from AllWISE Multiepoch and NEOWISE-R Single Exposure (L1b) photometry and save plots as PNG or PDF files. Furthermore, the toolkit facilitates image blinking from different epochs using WISE coadds (Meisner et al. 2017), DECaLS cutouts (Dey et al. 2019), and Pan-STARRS WARP images (Waters et al. 2020) to identify motion or variability of objects, with the option to save images as PNG or animated GIF files.
 
-AstroToolBox allows overlaying of featured catalogs and creation of custom overlays from VizieR catalogs, ADQL queries or local files. Overlay shapes can be clicked to display catalog details. Another feature is the display of time series (static or animated) using infrared and optical images from various surveys (DSS, SDSS, 2MASS, WISE, Spitzer, UKIDSS, UHS, VHS, Pan-STARRS, DECaLS).
+AstroToolBox allows overlaying of featured catalogs and creation of custom overlays from VizieR catalogs, ADQL queries or local files. Overlay shapes can be clicked to show catalog details. Another feature is the display of time series (static or animated) using infrared and optical images from various surveys (DSS, SDSS, 2MASS, WISE, Spitzer, UKIDSS, UHS, VHS, Pan-STARRS, DECaLS).
 
 The toolkit incorporates a photometric classifier using data from the aforementioned catalogs to provide detailed spectral type classification. It also has an ADQL query interface for searching the ESAC, IRSA, NOIRLab and VizieR data archives.
 
