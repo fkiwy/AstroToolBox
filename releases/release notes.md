@@ -1,5 +1,11 @@
 ## Release notes
 
+### AstroToolBox v4.2.0
+- Show a more meaningful message when MOCA DB or UHS is inaccessible
+- Make maven compiler options compatible with GitHub actions
+- Refactor custom overlay creation
+- Apply IRSA image fix
+
 ### AstroToolBox v4.1.0
 - Add "Show nearest BYW subjects" checkbox to Settings tab
 - Remove "unWISE deep coadds" radio button from Image Viewer tab
