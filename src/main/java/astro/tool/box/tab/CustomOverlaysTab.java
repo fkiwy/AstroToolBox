@@ -85,28 +85,28 @@ public class CustomOverlaysTab implements Tab {
                 tabbedPane.addTab(TAB_NAME, container);
             }
 
-            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            container.add(topPanel, BorderLayout.PAGE_START);
-
-            JButton addButton = new JButton("Create new overlay");
-            topPanel.add(addButton);
-
-            JLabel topRowLabel = new JLabel(html("""
-                    Overlays can be created by specifying either a local CSV file (<span style='background:#CCFFCC'>green fields</span>), \
-                    a VizieR catalog (<span style='background:#FFFFCC'>yellow fields</span>), \
-                    or a TAP access URL (<span style='background:#FFEBCC'>orange fields</span> plus <span style='background:#FFFFCC'>RA & Dec column names</span>).\
-                    """));
-            topPanel.add(topRowLabel);
-
             GridLayout layout = new GridLayout(overlays.size() + 50, 1);
             JPanel overlayPanel = new JPanel(layout);
             container.add(new JScrollPane(overlayPanel), BorderLayout.CENTER);
 
+            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            overlayPanel.add(topPanel);
+
+            JButton addButton = new JButton("Create new overlay");
+            topPanel.add(addButton);
             addButton.addActionListener((ActionEvent evt) -> {
                 layout.setRows(layout.getRows() + 1);
                 addOverlayRow(overlayPanel, new CustomOverlay());
                 baseFrame.setVisible(true);
             });
+
+            JLabel topRowLabel = new JLabel(html("""
+                    Overlays can be created by specifying either a local CSV file (<span style='background:#CCFFCC'>green fields</span>), \
+                    a VizieR catalog (<span style='background:#FFFFCC'>yellow fields</span>), \
+                    or a TAP access URL (<span style='background:#FFEBCC'>orange fields</span> plus <span style='background:#FFFFCC'>RA & Dec column names</span>). \
+                    Don't forget to save your overlays using the 'Save' button at the end of the overlay row.\
+                    """));
+            topPanel.add(topRowLabel);
 
             tabbedPane.addChangeListener((ChangeEvent evt) -> {
                 baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -127,7 +127,11 @@ public class CustomOverlaysTab implements Tab {
 
     private void addOverlayRow(JPanel overlayPanel, CustomOverlay customOverlay) {
         JPanel overlayRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        overlayPanel.add(overlayRow);
+        if (customOverlay.getName() == null) {
+            overlayPanel.add(overlayRow, 1);
+        } else {
+            overlayPanel.add(overlayRow);
+        }
 
         String overlayName = customOverlay.getName();
         String tableName = customOverlay.getTableName();

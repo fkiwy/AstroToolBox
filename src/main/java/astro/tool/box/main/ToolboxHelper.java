@@ -144,7 +144,7 @@ import org.jfree.chart.JFreeChart;
 public class ToolboxHelper {
 
     public static final String PGM_NAME = "AstroToolBox";
-    public static final String PGM_VERSION = "4.1.0";
+    public static final String PGM_VERSION = "4.2.0";
     public static final String JAVA_VERSION = "17";
     public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
@@ -868,50 +868,6 @@ public class ToolboxHelper {
         return subjects;
     }
 
-    public static BufferedImage getHipsToFits(double targetRa, double targetDec, int size, String survey, String band) {
-        BufferedImage bi;
-        String ra = "" + targetRa;
-        String dec = targetDec > 0 ? "+" + targetDec : "" + targetDec;
-        String imageUrl = "https://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips=%s/%s&width=300&height=300&fov=%s&projection=TAN&coordsys=icrs&rotation_angle=0.0&ra=%s&dec=%s&format=jpg".formatted(survey, band, roundTo6DecNZ(size / 3600f), ra, dec);
-        try {
-            HttpURLConnection connection = establishHttpConnection(imageUrl);
-            BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
-            bi = ImageIO.read(stream);
-            if (isNullImage(bi)) {
-                bi = null;
-            }
-        } catch (IOException ex) {
-            bi = null;
-        }
-        return bi;
-    }
-
-    private static boolean isNullImage(BufferedImage image) {
-        int xmin = image.getMinX();
-        int ymin = image.getMinY();
-
-        int ymax = ymin + image.getHeight();
-        int xmax = xmin + image.getWidth();
-
-        int pixelCount = 0;
-        int blackCount = 0;
-        int whiteCount = 0;
-
-        for (int i = xmin; i < xmax; i++) {
-            for (int j = ymin; j < ymax; j++) {
-                int pixel = image.getRGB(i, j);
-                if (pixel == -16777216) {
-                    blackCount++;
-                }
-                if (pixel == -1) {
-                    whiteCount++;
-                }
-                pixelCount++;
-            }
-        }
-        return blackCount > pixelCount * 0.5 || whiteCount > pixelCount * 0.5;
-    }
-
     public static String getImageLabel(String text, int epoch) {
         return text + (epoch > 0 ? " " + epoch : "");
     }
@@ -958,10 +914,37 @@ public class ToolboxHelper {
             HttpURLConnection connection = establishHttpConnection(imageUrl);
             BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
             bi = ImageIO.read(stream);
+            if (!band.contains("colorimage")) {
+                invertColors(bi);
+            }
         } catch (IOException ex) {
             bi = null;
         }
         return bi;
+    }
+
+    public static void invertColors(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgba = image.getRGB(x, y);
+                int a = (rgba >> 24) & 0xff;
+                int r = (rgba >> 16) & 0xff;
+                int g = (rgba >> 8) & 0xff;
+                int b = rgba & 0xff;
+
+                // Invert each color component
+                r = 255 - r;
+                g = 255 - g;
+                b = 255 - b;
+
+                // Reconstruct the pixel with the inverted colors
+                rgba = (a << 24) | (r << 16) | (g << 8) | b;
+                image.setRGB(x, y, rgba);
+            }
+        }
     }
 
     public static int getPs1Epoch(double targetRa, double targetDec, String filters) {

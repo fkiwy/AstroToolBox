@@ -1,12 +1,12 @@
 package astro.tool.box.util;
 
-import astro.tool.box.exception.ADQLException;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.tab.SettingsTab.*;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.SdssCatalogEntry;
+import astro.tool.box.exception.ADQLException;
+import static astro.tool.box.main.ToolboxHelper.*;
 import astro.tool.box.tab.AdqlQueryTab;
+import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class ServiceHelper {
 
-    private static final String SERVICE_NOT_AVAILABLE = "%s is currently not available!";
+    public static final String SERVICE_NOT_AVAILABLE = "%s is currently inaccessible!";
 
     public static String createSimbadUrl(double degRA, double degDE, double degRadius) {
         return getSimbadBaseUrl() + "SELECT%20DISTINCT%20main_id,%20otype_longname,%20sp_type,%20ra,%20dec,%20plx_value,%20plx_err,%20pmra,%20pmdec,%20rvz_radvel,%20rvz_redshift,%20rvz_type,%20U,%20B,%20V,%20R,%20I,%20G,%20J,%20H,%20K,%20u_,%20g_,%20r_,%20i_,%20z_%20,%27.%27%20FROM%20basic%20AS%20b,%20otypedef%20AS%20o%20LEFT%20JOIN%20allfluxes%20ON%20oid%20=%20oidref%20WHERE%20b.otype=%20o.otype%20AND%20otype_txt%20<>%20%27err%27%20AND%201=CONTAINS(POINT(%27ICRS%27,%20ra,%20dec),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20" + degRadius + "))";

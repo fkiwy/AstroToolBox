@@ -1025,7 +1025,7 @@ public class ImageViewerTab implements Tab {
             });
             overlayPanel.add(gaiaWDOverlay);
 
-            mocaOverlay = new JCheckBox(html("M<u>O</u>CA " + INFO_ICON), overlays.isMoca());
+            mocaOverlay = new JCheckBox(html("M<u>O</u>CA DB " + INFO_ICON), overlays.isMoca());
             mocaOverlay.setForeground(JColor.DARK_ORANGE.val);
             mocaOverlay.setToolTipText(html("Montreal Open Clusters and Associations (MOCA) database (https://mocadb.ca/home)" + LINE_BREAK
                     + "Overlays created from the \"Summary of all objects\" table (https://mocadb.ca/schema/summary_all_objects)"));
@@ -2729,7 +2729,7 @@ public class ImageViewerTab implements Tab {
                     List<JLabel> subjects = getNearestZooniverseSubjects(targetRa, targetDec);
                     int numberOfSubjects = subjects.size();
                     if (numberOfSubjects == 0) {
-                        bywTopRow.add(new JLabel("N/A"));
+                        bywTopRow.add(new JLabel("None"));
                     } else {
                         for (int i = 0; i < 4 && i < numberOfSubjects; i++) {
                             bywTopRow.add(subjects.get(i));
