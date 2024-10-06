@@ -1,15 +1,18 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.ConversionFactors.*;
+import astro.tool.box.util.ServiceHelper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -131,33 +134,38 @@ public class UhsCatalogEntry implements CatalogEntry {
         catalogElements.add(new CatalogElement("J-Ks", roundTo4DecNZ(j_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
     }
 
-    public List<CatalogEntry> findCatalogEntries() throws IOException {
+    public List<CatalogEntry> findCatalogEntries() {
         List<CatalogEntry> catalogEntries = new ArrayList();
 
-        double radius = getSearchRadius() / ARCMIN_ARCSEC;
-        String url = "http://wsa.roe.ac.uk:8080/wsa/WSASQL?database=UHSDR2&programmeID=107&from=source&formaction=region&ra=%f&dec=%f&sys=J&radius=%f&xSize=&ySize=&format=CSV&compress=NONE&select=default";
-        String paramUrl = url.formatted(getRa(), getDec(), radius);
-        String htmlContent = downloadHtmlFromUrl(paramUrl);
+        try {
+            double radius = getSearchRadius() / ARCMIN_ARCSEC;
+            String url = "http://wsa.roe.ac.uk:8080/wsa/WSASQL?database=UHSDR2&programmeID=107&from=source&formaction=region&ra=%f&dec=%f&sys=J&radius=%f&xSize=&ySize=&format=CSV&compress=NONE&select=default";
+            String paramUrl = url.formatted(getRa(), getDec(), radius);
+            String htmlContent = downloadHtmlFromUrl(paramUrl);
 
-        Document doc = Jsoup.parse(htmlContent);
-        Elements links = doc.select("a[href]");
-        for (Element link : links) {
-            String href = link.attr("href");
-            if (href.endsWith(".csv")) {
-                String result = downloadHtmlFromUrl(href);
-                List<String[]> csvRows = parseCsvData(result);
-                if (!csvRows.isEmpty()) {
-                    String[] headers = csvRows.get(0);
-                    Map<String, Integer> headerRow = new HashMap<>();
-                    for (int i = 0; i < headers.length; i++) {
-                        headerRow.put(headers[i], i);
+            Document doc = Jsoup.parse(htmlContent);
+            Elements links = doc.select("a[href]");
+            for (Element link : links) {
+                String href = link.attr("href");
+                if (href.endsWith(".csv")) {
+                    String result = downloadHtmlFromUrl(href);
+                    List<String[]> csvRows = parseCsvData(result);
+                    if (!csvRows.isEmpty()) {
+                        String[] headers = csvRows.get(0);
+                        Map<String, Integer> headerRow = new HashMap<>();
+                        for (int i = 0; i < headers.length; i++) {
+                            headerRow.put(headers[i], i);
+                        }
+                        for (int i = 1; i < csvRows.size(); i++) {
+                            catalogEntries.add(new UhsCatalogEntry(headerRow, csvRows.get(i)));
+                        }
+                        break;
                     }
-                    for (int i = 1; i < csvRows.size(); i++) {
-                        catalogEntries.add(new UhsCatalogEntry(headerRow, csvRows.get(i)));
-                    }
-                    break;
                 }
             }
+        } catch (IOException e) {
+            writeErrorLog(e);
+            showWarnDialog(null, ServiceHelper.SERVICE_NOT_AVAILABLE.formatted(CATALOG_NAME));
         }
 
         return catalogEntries;

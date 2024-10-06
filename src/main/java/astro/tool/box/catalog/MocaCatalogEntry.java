@@ -6,10 +6,12 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.JColor;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import astro.tool.box.util.ServiceHelper;
 import java.awt.Color;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class MocaCatalogEntry extends GenericCatalogEntry {
 
-    public static final String CATALOG_NAME = "MOCA";
+    public static final String CATALOG_NAME = "MOCA DB";
 
     private String sourceId;
 
@@ -35,7 +37,7 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
         super(titles, values);
     }
 
-    public List<CatalogEntry> findCatalogEntries() throws IOException {
+    public List<CatalogEntry> findCatalogEntries() {
         String url = "jdbc:mysql://104.248.106.21:3306/mocadb";
         String username = "public";
         String password = "z@nUg_2h7_%?31y88";
@@ -67,7 +69,8 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
                 catalogEntries.add(catalogEntry);
             }
         } catch (SQLException e) {
-            throw new IOException(e);
+            writeErrorLog(e);
+            showWarnDialog(null, ServiceHelper.SERVICE_NOT_AVAILABLE.formatted("MOCA database"));
         }
 
         return catalogEntries;
