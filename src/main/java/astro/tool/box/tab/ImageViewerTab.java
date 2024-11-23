@@ -560,22 +560,6 @@ public class ImageViewerTab implements Tab {
                 createFlipbook();
             });
 
-            JLabel speedLabel = new JLabel("Speed: %d ms".formatted(speed));
-            mainControlPanel.add(speedLabel);
-
-            speedSlider = new JSlider(0, 2000, SPEED);
-            mainControlPanel.add(speedSlider);
-            speedSlider.addChangeListener((ChangeEvent e) -> {
-                speed = speedSlider.getValue();
-                speedLabel.setText("Speed: %d ms".formatted(speed));
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                timer.setDelay(speed);
-                processImages();
-            });
-
             JLabel zoomLabel = new JLabel("Zoom: %d".formatted(zoom));
             mainControlPanel.add(zoomLabel);
 
@@ -588,6 +572,22 @@ public class ImageViewerTab implements Tab {
                 if (source.getValueIsAdjusting()) {
                     return;
                 }
+                processImages();
+            });
+
+            JLabel speedLabel = new JLabel("Blink interval: %d ms".formatted(speed));
+            mainControlPanel.add(speedLabel);
+
+            speedSlider = new JSlider(0, 2000, SPEED);
+            mainControlPanel.add(speedSlider);
+            speedSlider.addChangeListener((ChangeEvent e) -> {
+                speed = speedSlider.getValue();
+                speedLabel.setText("Blink interval: %d ms".formatted(speed));
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                timer.setDelay(speed);
                 processImages();
             });
 
