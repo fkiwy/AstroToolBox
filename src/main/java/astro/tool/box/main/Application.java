@@ -70,7 +70,7 @@ public class Application {
     public void init() {
         baseFrame = new JFrame();
         baseFrame.setIconImage(getToolBoxImage());
-        baseFrame.setTitle("%s %s (Java %s)".formatted(PGM_NAME, PGM_VERSION, JAVA_VERSION));
+        baseFrame.setTitle("%s %s".formatted(PGM_NAME, PGM_VERSION));
         baseFrame.setSize(new Dimension(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 

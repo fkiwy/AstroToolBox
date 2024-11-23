@@ -183,8 +183,7 @@ public class ImageViewerTab implements Tab {
     public static final String TAB_NAME = "Image Viewer";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
-    public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
+    public static final int NUMBER_OF_WISE_EPOCHS = 10;
     public static final int WINDOW_SPACING = 25;
     public static final int CATALOG_PANEL_WIDTH = 700;
     public static final int PANEL_HEIGHT = 220;
@@ -421,7 +420,7 @@ public class ImageViewerTab implements Tab {
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
-    private boolean nearestBywSubjects;
+    private final boolean nearestBywSubjects;
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
@@ -561,22 +560,6 @@ public class ImageViewerTab implements Tab {
                 createFlipbook();
             });
 
-            JLabel speedLabel = new JLabel("Speed: %d ms".formatted(speed));
-            mainControlPanel.add(speedLabel);
-
-            speedSlider = new JSlider(0, 2000, SPEED);
-            mainControlPanel.add(speedSlider);
-            speedSlider.addChangeListener((ChangeEvent e) -> {
-                speed = speedSlider.getValue();
-                speedLabel.setText("Speed: %d ms".formatted(speed));
-                JSlider source = (JSlider) e.getSource();
-                if (source.getValueIsAdjusting()) {
-                    return;
-                }
-                timer.setDelay(speed);
-                processImages();
-            });
-
             JLabel zoomLabel = new JLabel("Zoom: %d".formatted(zoom));
             mainControlPanel.add(zoomLabel);
 
@@ -592,11 +575,27 @@ public class ImageViewerTab implements Tab {
                 processImages();
             });
 
+            JLabel speedLabel = new JLabel("Blink interval: %d ms".formatted(speed));
+            mainControlPanel.add(speedLabel);
+
+            speedSlider = new JSlider(0, 2000, SPEED);
+            mainControlPanel.add(speedSlider);
+            speedSlider.addChangeListener((ChangeEvent e) -> {
+                speed = speedSlider.getValue();
+                speedLabel.setText("Blink interval: %d ms".formatted(speed));
+                JSlider source = (JSlider) e.getSource();
+                if (source.getValueIsAdjusting()) {
+                    return;
+                }
+                timer.setDelay(speed);
+                processImages();
+            });
+
             String stackText = "Images per blink: %d";
             JLabel stackLabel = new JLabel(stackText.formatted(stackSize));
             mainControlPanel.add(stackLabel);
 
-            stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
+            stackSlider = new JSlider(1, NUMBER_OF_WISE_EPOCHS, 1);
             mainControlPanel.add(stackSlider);
             stackSlider.addChangeListener((ChangeEvent e) -> {
                 stackSize = stackSlider.getValue();
@@ -2739,24 +2738,7 @@ public class ImageViewerTab implements Tab {
                         }
                     }
                 }
-                if (wiseviewCutouts.isSelected()) {
-                    tile = getWiseTiles(targetRa, targetDec).getFirst();
-                } else {
-                    tile = new Tile();
-                    List<Epoch> epochs = new ArrayList();
-                    epochs.add(new Epoch(1, 0, 0, 55256.0)); // 2010-03-01
-                    epochs.add(new Epoch(2, 0, 0, 55256.0)); // 2010-03-01
-                    epochs.add(new Epoch(1, 1, 1, 55440.0)); // 2010-09-01
-                    epochs.add(new Epoch(2, 1, 1, 55440.0)); // 2010-09-01
-                    double epochDate = 56717.0; // 56717.0 = 2014-03-01 --- 56901.0 = 2014-09-01 --- delta = 56901 - 56717 = 184
-                    for (int i = 2; i < 2 * NUMBER_OF_UNWISE_EPOCHS; i++) {
-                        int forward = i % 2 == 0 ? 0 : 1;
-                        epochs.add(new Epoch(1, i, forward, epochDate));
-                        epochs.add(new Epoch(2, i, forward, epochDate));
-                        epochDate += 184;
-                    }
-                    tile.setEpochs(epochs);
-                }
+                tile = getWiseTiles(targetRa, targetDec).getFirst();
             }
 
             previousSize = size;
@@ -5568,7 +5550,7 @@ public class ImageViewerTab implements Tab {
                         flipbookIndex -= flipbookSize;
                     }
                 }
-                double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISEVIEW_EPOCHS * 2;
+                double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISE_EPOCHS * 2;
                 NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
                 NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
                 Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
@@ -5582,7 +5564,7 @@ public class ImageViewerTab implements Tab {
                 double fromX = fromPoint.getX();
                 double fromY = fromPoint.getY();
 
-                numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
+                numberOfYears = NUMBER_OF_WISE_EPOCHS + 2; // +2 years -> hibernation period
 
                 NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
                 double toRa = toCoords.getX();
