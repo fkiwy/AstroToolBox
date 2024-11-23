@@ -183,7 +183,7 @@ public class ImageViewerTab implements Tab {
     public static final String TAB_NAME = "Image Viewer";
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
-    public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
+    public static final int NUMBER_OF_WISE_EPOCHS = 10;
     public static final int WINDOW_SPACING = 25;
     public static final int CATALOG_PANEL_WIDTH = 700;
     public static final int PANEL_HEIGHT = 220;
@@ -595,7 +595,7 @@ public class ImageViewerTab implements Tab {
             JLabel stackLabel = new JLabel(stackText.formatted(stackSize));
             mainControlPanel.add(stackLabel);
 
-            stackSlider = new JSlider(1, NUMBER_OF_WISEVIEW_EPOCHS, 1);
+            stackSlider = new JSlider(1, NUMBER_OF_WISE_EPOCHS, 1);
             mainControlPanel.add(stackSlider);
             stackSlider.addChangeListener((ChangeEvent e) -> {
                 stackSize = stackSlider.getValue();
@@ -5550,7 +5550,7 @@ public class ImageViewerTab implements Tab {
                         flipbookIndex -= flipbookSize;
                     }
                 }
-                double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISEVIEW_EPOCHS * 2;
+                double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISE_EPOCHS * 2;
                 NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
                 NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
                 Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
@@ -5564,7 +5564,7 @@ public class ImageViewerTab implements Tab {
                 double fromX = fromPoint.getX();
                 double fromY = fromPoint.getY();
 
-                numberOfYears = NUMBER_OF_WISEVIEW_EPOCHS + 2; // +2 years -> hibernation period
+                numberOfYears = NUMBER_OF_WISE_EPOCHS + 2; // +2 years -> hibernation period
 
                 NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec), new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
                 double toRa = toCoords.getX();
