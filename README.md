@@ -30,7 +30,6 @@ As of version **4.0.0**, AstroToolBox requires Java 17 or later to be installed 
 [Photometric Classifier](#photometric-classifier)  
 [VizieR Catalogs](#vizier-catalogs)  
 [ADQL Query](#adql-query)  
-[Batch Query](#batch-query)  
 [File Browser](#file-browser)  
 [Custom Overlays](#custom-overlays)  
 [Calculators and Converters](#calculators-and-converters)  
@@ -70,9 +69,6 @@ As of version **4.0.0**, AstroToolBox requires Java 17 or later to be installed 
 
 ### ADQL Query
 ![ADQL Query](images/ADQL%20Query.png)
-
-### Batch Query
-![Batch Query](images/Batch%20Query.png)
 
 ### File Browser
 ![File Browser](images/File%20Browser.png)
