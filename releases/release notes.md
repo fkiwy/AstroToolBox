@@ -1,5 +1,9 @@
 ## Release notes
 
+### AstroToolBox v4.3.0
+- Rename speed slider label
+- Update number of WISE epochs
+
 ### AstroToolBox v4.2.0
 - Show a more meaningful message when MOCA DB or UHS is inaccessible
 - Make maven compiler options compatible with GitHub actions
