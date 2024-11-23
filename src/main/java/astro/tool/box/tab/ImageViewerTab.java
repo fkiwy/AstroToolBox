@@ -184,7 +184,6 @@ public class ImageViewerTab implements Tab {
     public static final WiseBand WISE_BAND = WiseBand.W1W2;
     public static final double OVERLAP_FACTOR = 0.9;
     public static final int NUMBER_OF_WISEVIEW_EPOCHS = 9;
-    public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
     public static final int WINDOW_SPACING = 25;
     public static final int CATALOG_PANEL_WIDTH = 700;
     public static final int PANEL_HEIGHT = 220;
@@ -421,7 +420,7 @@ public class ImageViewerTab implements Tab {
     private boolean imageCutOff;
     private boolean timerStopped;
     private boolean hasException;
-    private boolean nearestBywSubjects;
+    private final boolean nearestBywSubjects;
     private boolean asyncDownloads;
     private boolean legacyImages;
     private boolean panstarrsImages;
@@ -2739,24 +2738,7 @@ public class ImageViewerTab implements Tab {
                         }
                     }
                 }
-                if (wiseviewCutouts.isSelected()) {
-                    tile = getWiseTiles(targetRa, targetDec).getFirst();
-                } else {
-                    tile = new Tile();
-                    List<Epoch> epochs = new ArrayList();
-                    epochs.add(new Epoch(1, 0, 0, 55256.0)); // 2010-03-01
-                    epochs.add(new Epoch(2, 0, 0, 55256.0)); // 2010-03-01
-                    epochs.add(new Epoch(1, 1, 1, 55440.0)); // 2010-09-01
-                    epochs.add(new Epoch(2, 1, 1, 55440.0)); // 2010-09-01
-                    double epochDate = 56717.0; // 56717.0 = 2014-03-01 --- 56901.0 = 2014-09-01 --- delta = 56901 - 56717 = 184
-                    for (int i = 2; i < 2 * NUMBER_OF_UNWISE_EPOCHS; i++) {
-                        int forward = i % 2 == 0 ? 0 : 1;
-                        epochs.add(new Epoch(1, i, forward, epochDate));
-                        epochs.add(new Epoch(2, i, forward, epochDate));
-                        epochDate += 184;
-                    }
-                    tile.setEpochs(epochs);
-                }
+                tile = getWiseTiles(targetRa, targetDec).getFirst();
             }
 
             previousSize = size;
