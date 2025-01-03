@@ -469,29 +469,39 @@ public final class SedWdPanel extends JPanel {
         }
 
         List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
+
         sedBands.forEach(band -> {
-            sedFluxes.put(band, new SedFluxes(
-                    sedPhotometry.get(band),
-                    convertMagnitudeToFluxDensity(sedPhotometry.get(band), sedReferences.get(band).getZeropoint(), sedReferences.get(band).getWavelenth()),
-                    convertMagnitudeToFluxJansky(sedPhotometry.get(band), sedReferences.get(band).getZeropoint()),
-                    convertMagnitudeToFluxLambda(sedPhotometry.get(band), sedReferences.get(band).getZeropoint(), sedReferences.get(band).getWavelenth())
-            ));
+            Double photometry = sedPhotometry.get(band);
+            if (photometry != null) {
+                SedReferences references = sedReferences.get(band);
+                sedFluxes.put(band, new SedFluxes(
+                        photometry,
+                        convertMagnitudeToFluxDensity(photometry, references.getZeropoint(), references.getWavelenth()),
+                        convertMagnitudeToFluxJansky(photometry, references.getZeropoint()),
+                        convertMagnitudeToFluxLambda(photometry, references.getZeropoint(), references.getWavelenth())
+                ));
+            }
         });
 
         XYSeries series = new XYSeries(seriesLabel.toString());
 
         sedDataPoints.append(seriesLabel.toString()).append(LINE_SEP);
         sedBands.forEach(band -> {
-            if (sedPhotometry.get(band) != 0) {
-                sedDataPoints
-                        .append("(")
-                        .append(sedReferences.get(band).getWavelenth())
-                        .append(",")
-                        .append(sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxLambda())
-                        .append(")")
-                        .append(LINE_SEP);
+            Double photometry = sedPhotometry.get(band);
+            if (photometry != null) {
+                SedReferences references = sedReferences.get(band);
+                SedFluxes fluxes = sedFluxes.get(band);
+                series.add(references.getWavelenth(), photometry == 0 ? null : fluxes.getFluxLambda());
+                if (photometry != 0) {
+                    sedDataPoints
+                            .append("(")
+                            .append(references.getWavelenth())
+                            .append(",")
+                            .append(fluxes.getFluxLambda())
+                            .append(")")
+                            .append(LINE_SEP);
+                }
             }
-            series.add(sedReferences.get(band).getWavelenth(), sedPhotometry.get(band) == 0 ? null : sedFluxes.get(band).getFluxLambda());
         });
 
         if (collection == null) {
@@ -556,7 +566,7 @@ public final class SedWdPanel extends JPanel {
             List<Double> diffMags = new ArrayList();
             List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
             sedBands.forEach(band -> {
-                if (sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
+                if (sedPhotometry.get(band) != null && sedPhotometry.get(band) != 0 && bands.get(band) != 0) {
                     double diffMag = sedPhotometry.get(band) - bands.get(band);
                     diffMags.add(diffMag);
                 }
@@ -618,7 +628,7 @@ public final class SedWdPanel extends JPanel {
         series.add(Sed.WISE_W2.wavelenth, magnitudes.get(Band.W2) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.W2) + medianDiffMag, Sed.WISE_W2.zeropoint, Sed.WISE_W2.wavelenth));
         series.add(Sed.WISE_W3.wavelenth, magnitudes.get(Band.W3) == 0 ? null : convertMagnitudeToFluxLambda(magnitudes.get(Band.W3) + medianDiffMag, Sed.WISE_W3.zeropoint, Sed.WISE_W3.wavelenth));
 
-        sedDataPoints.append(spectralType).append(":").append(LINE_SEP);
+        sedDataPoints.append(LINE_SEP).append(spectralType).append(":").append(LINE_SEP);
         for (Object item : series.getItems()) {
             XYDataItem dataItem = (XYDataItem) item;
             if (!Double.isNaN(dataItem.getYValue())) {
@@ -711,12 +721,15 @@ public final class SedWdPanel extends JPanel {
         List<String> toolTips = new ArrayList();
         List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
         sedBands.forEach(band -> {
-            toolTips.add(html(sedCatalogs.get(band) + " "
-                    + band.val + "=" + roundTo3DecNZ(sedFluxes.get(band).getMagnitude()) + " mag<br>"
-                    + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
-                    + "F(ν)=" + roundTo3DecSN(sedFluxes.get(band).getFluxJansky()) + " Jy<br>"
-                    + "λF(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxDensity()) + " W/m²<br>"
-                    + "F(λ)=" + roundTo3DecSN(sedFluxes.get(band).getFluxLambda()) + " W/m²/μm"));
+            SedFluxes fluxes = sedFluxes.get(band);
+            if (fluxes != null) {
+                toolTips.add(html(sedCatalogs.get(band) + " "
+                        + band.val + "=" + roundTo3DecNZ(fluxes.getMagnitude()) + " mag<br>"
+                        + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>"
+                        + "F(ν)=" + roundTo3DecSN(fluxes.getFluxJansky()) + " Jy<br>"
+                        + "λF(λ)=" + roundTo3DecSN(fluxes.getFluxDensity()) + " W/m²<br>"
+                        + "F(λ)=" + roundTo3DecSN(fluxes.getFluxLambda()) + " W/m²/μm"));
+            }
         });
         CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
         generator.addToolTipSeries(toolTips);
