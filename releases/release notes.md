@@ -1,5 +1,8 @@
 ## Release notes
 
+### AstroToolBox v4.3.1
+- Fix a bug in the MS and WD SED panels
+
 ### AstroToolBox v4.3.0
 - Rename speed slider label
 - Update number of WISE epochs
