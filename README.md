@@ -16,7 +16,7 @@ Additionally, AstroToolBox offers a file browser linked to the image viewer for 
 
 AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
-As of version **4.0.0**, AstroToolBox requires Java 17 or later to be installed on your computer to function properly (see [installation instructions](https://github.com/fkiwy/AstroToolBox/blob/master/releases/install_instructions.md)).
+As of version **4.0.0**, AstroToolBox requires Java 17 or later to be installed on your computer to function properly (see [Java installation instructions](https://github.com/fkiwy/AstroToolBox/blob/master/releases/install_instructions.md)).
 
 [Download latest version](releases/executables/AstroToolBox-4.3.1.jar)
 
