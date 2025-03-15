@@ -326,26 +326,31 @@ public class BatchQueryTab implements Tab {
         int rowNumber = 1;
         int objectNumber = 1;
 
-        InputStream input;
         LookupTable selectedTable = (LookupTable) lookupTables.getSelectedItem();
         switch (selectedTable) {
             case MAIN_SEQUENCE -> {
-                input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
-                try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+                try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
+                	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                         return new SpectralTypeLookupEntry(line.split(",", -1));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
-                }
+                } catch (IOException e) {
+                	showExceptionDialog(baseFrame, e);
+					throw new RuntimeException(e);
+				}
             }
             case MLT_DWARFS -> {
-                input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
-                try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+                try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
+                	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
                     List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                         return new BrownDwarfLookupEntry(line.split(",", -1));
                     }).collect(Collectors.toList());
                     spectralTypeLookupService = new SpectralTypeLookupService(entries);
-                }
+                } catch (IOException e) {
+                	showExceptionDialog(baseFrame, e);
+                	throw new RuntimeException(e);
+				}
             }
         }
 

@@ -81,20 +81,24 @@ public class ImageSeriesPdf {
         this.imageViewerTab = imageViewerTab;
         catalogInstances = getCatalogInstances();
         catalogQueryService = new CatalogQueryService();
-        InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+        try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
+        	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                 return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             mainSequenceLookupService = new SpectralTypeLookupService(entries);
-        }
-        input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+        } catch (IOException e) {
+        	throw new RuntimeException(e);
+		}
+        try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
+        	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                 return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             brownDwarfsLookupService = new SpectralTypeLookupService(entries);
-        }
+        } catch (IOException e) {
+        	throw new RuntimeException(e);
+		}
     }
 
     public Boolean create(JFrame baseFrame) {

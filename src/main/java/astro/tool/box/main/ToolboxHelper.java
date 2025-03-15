@@ -854,7 +854,7 @@ public class ToolboxHelper {
             String url = "http://byw.tools/xref?ra=%f&dec=%f".formatted(degRA, degDE);
             String response = readResponse(establishHttpConnection(url), "Zooniverse");
             if (!response.isEmpty()) {
-                JsonElement jelement = JsonParser.parseString​(response).getAsJsonObject();
+                JsonElement jelement = JsonParser.parseString(response).getAsJsonObject();
                 JsonObject jobject = jelement.getAsJsonObject();
                 JsonArray jarray = jobject.getAsJsonArray("ids");
                 for (JsonElement element : jarray) {

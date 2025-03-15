@@ -119,21 +119,27 @@ public class CatalogQueryTab implements Tab {
         catalogInstances = getCatalogInstances();
         catalogQueryService = new CatalogQueryService();
         dustExtinctionService = new DustExtinctionService();
-        InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+        try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
+        	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
             List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
                 return new SpectralTypeLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             mainSequenceSpectralTypeLookupService = new SpectralTypeLookupService(entries);
-        }
-        input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");
-        try (Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines()) {
+        } catch (IOException e) {
+        	showExceptionDialog(baseFrame, e);
+        	throw new RuntimeException(e);
+		}
+        try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");) {
+        	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
             brownDwarfLookupEntries = stream.skip(1).map(line -> {
                 return new BrownDwarfLookupEntry(line.split(",", -1));
             }).collect(Collectors.toList());
             brownDwarfsSpectralTypeLookupService = new SpectralTypeLookupService(brownDwarfLookupEntries);
             distanceLookupService = new DistanceLookupService(brownDwarfLookupEntries);
-        }
+        } catch (IOException e) {
+        	showExceptionDialog(baseFrame, e);
+        	throw new RuntimeException(e);
+		}
     }
 
     @Override

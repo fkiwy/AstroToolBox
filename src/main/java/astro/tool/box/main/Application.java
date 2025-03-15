@@ -161,23 +161,24 @@ public class Application {
                     LocalDate referenceDate = LocalDate.now().minusMonths(1);
                     LocalDate releaseDate = LocalDate.MIN;
                     String versionMessage = "";
-                    Scanner scanner = new Scanner(response);
-                    while (scanner.hasNextLine()) {
-                        String[] values = CSVParser.parseLine(scanner.nextLine());
-                        Version version = new Version(
-                                values[0],
-                                Boolean.parseBoolean(values[1]),
-                                Integer.parseInt(values[2]),
-                                Integer.parseInt(values[3]),
-                                Integer.parseInt(values[4]),
-                                values[5]
-                        );
-                        if (version.isLatest()) {
-                            latestVersion = version.getNumber();
-                            releaseDate = version.getDate();
-                            versionMessage = version.getMessage();
-                        }
-                    }
+                    try (Scanner scanner = new Scanner(response)) {
+						while (scanner.hasNextLine()) {
+						    String[] values = CSVParser.parseLine(scanner.nextLine());
+						    Version version = new Version(
+						            values[0],
+						            Boolean.parseBoolean(values[1]),
+						            Integer.parseInt(values[2]),
+						            Integer.parseInt(values[3]),
+						            Integer.parseInt(values[4]),
+						            values[5]
+						    );
+						    if (version.isLatest()) {
+						        latestVersion = version.getNumber();
+						        releaseDate = version.getDate();
+						        versionMessage = version.getMessage();
+						    }
+						}
+					}
                     int latestVersion_num = Integer.parseInt(latestVersion.replace(".", ""));
                     int currentVersion_num = Integer.parseInt(currentVersion.replace(".", ""));
                     if (currentVersion_num < latestVersion_num) {

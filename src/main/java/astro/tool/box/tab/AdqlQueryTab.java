@@ -240,7 +240,7 @@ public class AdqlQueryTab implements Tab {
                     try {
                         response = readResponse(establishHttpConnection(createValidatorUrl(encodeQuery(query))), "Query validator");
                         if (!response.isEmpty()) {
-                            JsonElement jelement = JsonParser.parseString​(response).getAsJsonObject();
+                            JsonElement jelement = JsonParser.parseString(response).getAsJsonObject();
                             JsonObject jobject = jelement.getAsJsonObject();
                             String validation = jobject.get("validation").getAsString();
                             if (!validation.equals("ok")) {
