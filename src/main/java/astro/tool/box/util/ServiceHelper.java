@@ -1,12 +1,22 @@
 package astro.tool.box.util;
 
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.exception.ADQLException;
-import static astro.tool.box.main.ToolboxHelper.*;
-import astro.tool.box.tab.AdqlQueryTab;
-import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.tab.SettingsTab.PROXY_ADDRESS;
+import static astro.tool.box.tab.SettingsTab.PROXY_PORT;
+import static astro.tool.box.tab.SettingsTab.USE_PROXY;
+import static astro.tool.box.tab.SettingsTab.USE_SIMBAD_MIRROR;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.util.Constants.IRSA_BASE_URL;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.PANSTARRS_BASE_URL;
+import static astro.tool.box.util.Constants.SDSS_BASE_URL;
+import static astro.tool.box.util.Constants.SIMBAD_BASE_URL;
+import static astro.tool.box.util.Constants.SIMBAD_MIRROR_URL;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+import static astro.tool.box.util.Constants.SPLIT_CHAR_REPLACEMENT;
+import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,6 +30,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.SdssCatalogEntry;
+import astro.tool.box.exception.ADQLException;
+import astro.tool.box.tab.AdqlQueryTab;
 
 public class ServiceHelper {
 

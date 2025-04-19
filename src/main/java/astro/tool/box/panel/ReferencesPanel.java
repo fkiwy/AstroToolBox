@@ -1,11 +1,12 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.main.ToolboxHelper;
-import astro.tool.box.service.SimbadQueryService;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.bold;
+import static astro.tool.box.main.ToolboxHelper.createHyperlink;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.ENCODING;
+
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -19,6 +20,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -30,6 +32,11 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableColumn;
+
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.main.ToolboxHelper;
+import astro.tool.box.service.SimbadQueryService;
 
 public class ReferencesPanel extends JPanel {
 

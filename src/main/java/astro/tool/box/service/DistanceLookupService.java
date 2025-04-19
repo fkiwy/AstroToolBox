@@ -1,14 +1,17 @@
 package astro.tool.box.service;
 
-import astro.tool.box.container.NumberPair;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.DistanceLookupResult;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.enumeration.Band;
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistance;
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistanceError;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.Band;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.DistanceLookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
 
 public class DistanceLookupService {
 

@@ -1,10 +1,14 @@
 package astro.tool.box.lookup;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import astro.tool.box.enumeration.Color;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.tab.SettingsTab.PHOTOMETRIC_ERRORS;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import astro.tool.box.enumeration.Color;
 
 public class SpectralTypeLookupEntry implements SpectralTypeLookup {
 

@@ -1,13 +1,16 @@
 package astro.tool.box.function;
 
-import astro.tool.box.enumeration.StatType;
 import static astro.tool.box.function.NumericFunctions.roundTo2Dec;
-import static java.lang.Math.*;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import astro.tool.box.enumeration.StatType;
 
 public class StatisticFunctions {
 

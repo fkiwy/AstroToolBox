@@ -1,7 +1,9 @@
 package astro.tool.box.panel;
 
 import static astro.tool.box.main.ToolboxHelper.html;
+
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -11,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -51,27 +54,27 @@ public class DualListBox extends JPanel {
         globalLayout.add(buttonLayout);
 
         showButton = new JButton(html("Show tab &raquo;"));
-        showButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        showButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         showButton.addActionListener(new AddListener());
         buttonLayout.add(showButton);
 
         hideButton = new JButton(html("&laquo; Hide tab"));
-        hideButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        hideButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         hideButton.addActionListener(new RemoveListener());
         buttonLayout.add(hideButton);
 
         showAllButton = new JButton(html("Show all &raquo;"));
-        showAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        showAllButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         showAllButton.addActionListener(new AddAllListener());
         buttonLayout.add(showAllButton);
 
         hideAllButton = new JButton(html("&laquo; Hide all"));
-        hideAllButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        hideAllButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         hideAllButton.addActionListener(new RemoveAllListener());
         buttonLayout.add(hideAllButton);
 
         resetButton = new JButton("Reset");
-        resetButton.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        resetButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         resetButton.addActionListener(new ResetListener());
         buttonLayout.add(resetButton);
 

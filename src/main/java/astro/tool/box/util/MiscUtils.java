@@ -1,15 +1,20 @@
 package astro.tool.box.util;
 
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.enumeration.TapProvider;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.tab.SettingsTab.DEFAULT_TAP_PROVIDER;
+import static astro.tool.box.tab.SettingsTab.TAP_PROVIDER;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.util.Constants.ENCODING;
+import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import astro.tool.box.enumeration.TapProvider;
 
 public class MiscUtils {
 

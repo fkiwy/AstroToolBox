@@ -1,6 +1,10 @@
 package astro.tool.box.shape;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.atan;
+import static java.lang.Math.cos;
+import static java.lang.Math.round;
+import static java.lang.Math.sin;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

@@ -1,22 +1,36 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
+import static astro.tool.box.util.Constants.WISE_1;
+import static astro.tool.box.util.Constants.WISE_2;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.addRow;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
 
@@ -137,10 +151,7 @@ public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final UnWiseCatalogEntry other = (UnWiseCatalogEntry) obj;

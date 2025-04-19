@@ -1,12 +1,28 @@
 package astro.tool.box.function;
 
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.StringPair;
-import astro.tool.box.enumeration.Unit;
+import static astro.tool.box.function.NumericFunctions.formatDouble;
+import static astro.tool.box.function.NumericFunctions.formatInteger;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.util.ConversionFactors.ARCSEC_MAS;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCMIN;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.acos;
+import static java.lang.Math.asin;
+import static java.lang.Math.atan;
+import static java.lang.Math.atan2;
+import static java.lang.Math.cos;
+import static java.lang.Math.floor;
+import static java.lang.Math.pow;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.tan;
+import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
 
-import static java.lang.Math.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -19,6 +35,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
+
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
+import astro.tool.box.enumeration.Unit;
 
 public class AstrometricFunctions {
 

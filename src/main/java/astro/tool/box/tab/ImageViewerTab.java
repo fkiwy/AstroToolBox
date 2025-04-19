@@ -1,89 +1,129 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.function.StatisticFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ExternalResources.*;
-import static astro.tool.box.util.MiscUtils.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.Couple;
-import astro.tool.box.container.CustomOverlay;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.Overlays;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.Artifact;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseRejectEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.Extinction;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaCmd;
-import astro.tool.box.catalog.GaiaDR3CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.GenericCatalogEntry;
-import astro.tool.box.catalog.MocaCatalogEntry;
-import astro.tool.box.catalog.NoirlabCatalogEntry;
-import astro.tool.box.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.catalog.ProperMotionQuery;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.catalog.SsoCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.component.TextPrompt;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.ImageType;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.ObjectType;
-import astro.tool.box.enumeration.Shape;
-import astro.tool.box.enumeration.WiseBand;
-import astro.tool.box.main.Application;
-import astro.tool.box.panel.GaiaCmdPanel;
-import astro.tool.box.container.FlipbookComponent;
-import astro.tool.box.container.Epoch;
-import astro.tool.box.util.GifSequencer;
-import astro.tool.box.container.ImageContainer;
-import astro.tool.box.container.NirImage;
-import astro.tool.box.container.Tile;
-import astro.tool.box.exception.ExtinctionException;
-import astro.tool.box.lookup.DistanceLookupResult;
-import astro.tool.box.main.ImageSeriesPdf;
-import astro.tool.box.panel.WiseCcdPanel;
-import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedMsPanel;
-import astro.tool.box.panel.SedWdPanel;
-import astro.tool.box.shape.Arrow;
-import astro.tool.box.shape.Circle;
-import astro.tool.box.shape.Cross;
-import astro.tool.box.shape.CrossHair;
-import astro.tool.box.shape.Diamond;
-import astro.tool.box.shape.Disk;
-import astro.tool.box.shape.Drawable;
-import astro.tool.box.shape.Square;
-import astro.tool.box.shape.Triangle;
-import astro.tool.box.shape.XCross;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.DistanceLookupService;
-import astro.tool.box.service.DustExtinctionService;
-import astro.tool.box.service.SpectralTypeLookupService;
-import astro.tool.box.util.CSVParser;
-import astro.tool.box.util.Counter;
-import astro.tool.box.util.FileTypeFilter;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.calculatePositionFromProperMotion;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.function.StatisticFunctions.determineMedian;
+import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
+import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_HEIGHT;
+import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_WIDTH;
+import static astro.tool.box.main.ToolboxHelper.BUFFER_SIZE;
+import static astro.tool.box.main.ToolboxHelper.INFO_ICON;
+import static astro.tool.box.main.ToolboxHelper.PHOT_DIST_INFO;
+import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
+import static astro.tool.box.main.ToolboxHelper.addEmptyCatalogElement;
+import static astro.tool.box.main.ToolboxHelper.addFieldToPanel;
+import static astro.tool.box.main.ToolboxHelper.addLabelToPanel;
+import static astro.tool.box.main.ToolboxHelper.addTextToImage;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.collectObject;
+import static astro.tool.box.main.ToolboxHelper.copyCoordsToClipboard;
+import static astro.tool.box.main.ToolboxHelper.copyImage;
+import static astro.tool.box.main.ToolboxHelper.copyObjectCoordinates;
+import static astro.tool.box.main.ToolboxHelper.copyObjectInfo;
+import static astro.tool.box.main.ToolboxHelper.copyObjectSummary;
+import static astro.tool.box.main.ToolboxHelper.copyToClipboard;
+import static astro.tool.box.main.ToolboxHelper.createEmptyBorder;
+import static astro.tool.box.main.ToolboxHelper.createHeaderBox;
+import static astro.tool.box.main.ToolboxHelper.createHeaderLabel;
+import static astro.tool.box.main.ToolboxHelper.createHyperlink;
+import static astro.tool.box.main.ToolboxHelper.createLabel;
+import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
+import static astro.tool.box.main.ToolboxHelper.drawCenterShape;
+import static astro.tool.box.main.ToolboxHelper.fillTygoForm;
+import static astro.tool.box.main.ToolboxHelper.flipImage;
+import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.getEpoch;
+import static astro.tool.box.main.ToolboxHelper.getImageLabel;
+import static astro.tool.box.main.ToolboxHelper.getMeanEpoch;
+import static astro.tool.box.main.ToolboxHelper.getNearestZooniverseSubjects;
+import static astro.tool.box.main.ToolboxHelper.getPs1Epoch;
+import static astro.tool.box.main.ToolboxHelper.getPs1Epochs;
+import static astro.tool.box.main.ToolboxHelper.getPs1FileNames;
+import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+import static astro.tool.box.main.ToolboxHelper.getWiseTiles;
+import static astro.tool.box.main.ToolboxHelper.html;
+import static astro.tool.box.main.ToolboxHelper.isSameTarget;
+import static astro.tool.box.main.ToolboxHelper.retrieveDesiImage;
+import static astro.tool.box.main.ToolboxHelper.retrieveImage;
+import static astro.tool.box.main.ToolboxHelper.retrieveNearInfraredImages;
+import static astro.tool.box.main.ToolboxHelper.retrievePs1Image;
+import static astro.tool.box.main.ToolboxHelper.rotateImage;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.main.ToolboxHelper.showInfoDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.main.ToolboxHelper.zoomImage;
+import static astro.tool.box.tab.SettingsTab.COMMENTS;
+import static astro.tool.box.tab.SettingsTab.CUTOUT_SERVICE;
+import static astro.tool.box.tab.SettingsTab.NEAREST_BYW_SUBJECTS;
+import static astro.tool.box.tab.SettingsTab.PROP_PATH;
+import static astro.tool.box.tab.SettingsTab.USER_SETTINGS;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.util.Constants.ALLWISE_EPOCH;
+import static astro.tool.box.util.Constants.CUTOUT_SERVICE_URL;
+import static astro.tool.box.util.Constants.DATE_FORMATTER;
+import static astro.tool.box.util.Constants.DESI_FILTERS;
+import static astro.tool.box.util.Constants.DESI_LS_DR_LABEL;
+import static astro.tool.box.util.Constants.DESI_LS_DR_PARAM;
+import static astro.tool.box.util.Constants.DESI_LS_EPOCH;
+import static astro.tool.box.util.Constants.LINE_BREAK;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
+import static astro.tool.box.util.Constants.PIXEL_SCALE_DECAM;
+import static astro.tool.box.util.Constants.PIXEL_SCALE_PS1;
+import static astro.tool.box.util.Constants.PIXEL_SCALE_WISE;
+import static astro.tool.box.util.Constants.SDSS_BASE_URL;
+import static astro.tool.box.util.Constants.SDSS_LABEL;
+import static astro.tool.box.util.Constants.SPITZER_EPOCH;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+import static astro.tool.box.util.Constants.TAP_URL_PARAMS;
+import static astro.tool.box.util.Constants.UHS_LABEL;
+import static astro.tool.box.util.Constants.UHS_SURVEY_URL;
+import static astro.tool.box.util.Constants.UKIDSS_LABEL;
+import static astro.tool.box.util.Constants.UKIDSS_SURVEY_URL;
+import static astro.tool.box.util.Constants.VHS_LABEL;
+import static astro.tool.box.util.Constants.VHS_SURVEY_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
+import static astro.tool.box.util.ExternalResources.getAladinLiteUrl;
+import static astro.tool.box.util.ExternalResources.getFinderChartUrl;
+import static astro.tool.box.util.ExternalResources.getLegacySkyViewerUrl;
+import static astro.tool.box.util.ExternalResources.getPanstarrsUrl;
+import static astro.tool.box.util.ExternalResources.getSimbadUrl;
+import static astro.tool.box.util.ExternalResources.getVizierUrl;
+import static astro.tool.box.util.ExternalResources.getWiseViewUrl;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+import static java.lang.Math.abs;
+import static java.lang.Math.asin;
+import static java.lang.Math.atan;
+import static java.lang.Math.atan2;
+import static java.lang.Math.ceil;
+import static java.lang.Math.cos;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.round;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
+import static java.util.stream.Collectors.toList;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -93,6 +133,7 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -114,7 +155,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import static java.lang.Math.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -131,8 +171,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
-import static java.util.stream.Collectors.*;
 import java.util.stream.Stream;
+
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -159,8 +199,10 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
@@ -169,14 +211,86 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultCaret;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.Artifact;
+import astro.tool.box.catalog.CatWiseCatalogEntry;
+import astro.tool.box.catalog.CatWiseRejectEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.DesCatalogEntry;
+import astro.tool.box.catalog.Extinction;
+import astro.tool.box.catalog.GaiaCmd;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.catalog.GenericCatalogEntry;
+import astro.tool.box.catalog.MocaCatalogEntry;
+import astro.tool.box.catalog.NoirlabCatalogEntry;
+import astro.tool.box.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.catalog.ProperMotionQuery;
+import astro.tool.box.catalog.SdssCatalogEntry;
+import astro.tool.box.catalog.SimbadCatalogEntry;
+import astro.tool.box.catalog.SsoCatalogEntry;
+import astro.tool.box.catalog.TessCatalogEntry;
+import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
+import astro.tool.box.catalog.UnWiseCatalogEntry;
+import astro.tool.box.catalog.VhsCatalogEntry;
+import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.component.TextPrompt;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.Couple;
+import astro.tool.box.container.CustomOverlay;
+import astro.tool.box.container.Epoch;
+import astro.tool.box.container.FlipbookComponent;
+import astro.tool.box.container.ImageContainer;
+import astro.tool.box.container.NirImage;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.Overlays;
+import astro.tool.box.container.Tile;
+import astro.tool.box.enumeration.ImageType;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.ObjectType;
+import astro.tool.box.enumeration.Shape;
+import astro.tool.box.enumeration.WiseBand;
+import astro.tool.box.exception.ExtinctionException;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.DistanceLookupResult;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.SpectralTypeLookupEntry;
+import astro.tool.box.main.Application;
+import astro.tool.box.main.ImageSeriesPdf;
+import astro.tool.box.panel.GaiaCmdPanel;
+import astro.tool.box.panel.ReferencesPanel;
+import astro.tool.box.panel.SedMsPanel;
+import astro.tool.box.panel.SedWdPanel;
+import astro.tool.box.panel.WiseCcdPanel;
+import astro.tool.box.panel.WiseLcPanel;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.DustExtinctionService;
+import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.shape.Arrow;
+import astro.tool.box.shape.Circle;
+import astro.tool.box.shape.Cross;
+import astro.tool.box.shape.CrossHair;
+import astro.tool.box.shape.Diamond;
+import astro.tool.box.shape.Disk;
+import astro.tool.box.shape.Drawable;
+import astro.tool.box.shape.Square;
+import astro.tool.box.shape.Triangle;
+import astro.tool.box.shape.XCross;
+import astro.tool.box.util.CSVParser;
+import astro.tool.box.util.Counter;
+import astro.tool.box.util.FileTypeFilter;
+import astro.tool.box.util.GifSequencer;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
-import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.ImageData;
 import nom.tam.fits.ImageHDU;
-import astro.tool.box.panel.WiseLcPanel;
-import java.awt.HeadlessException;
 
 public class ImageViewerTab implements Tab {
 
@@ -471,7 +585,7 @@ public class ImageViewerTab implements Tab {
             leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
             leftPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-            JTabbedPane controlTabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+            JTabbedPane controlTabs = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
             leftPanel.add(controlTabs);
 
             imagePanel = new JPanel();
@@ -1441,7 +1555,7 @@ public class ImageViewerTab implements Tab {
             playerScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
             controlTabs.add("Player", playerScrollPanel);
 
-            playerControlPanel.add(createHeaderLabel("Image player controls", JLabel.CENTER));
+            playerControlPanel.add(createHeaderLabel("Image player controls", SwingConstants.CENTER));
 
             playerControlPanel.add(new JLabel());
 
@@ -3087,7 +3201,7 @@ public class ImageViewerTab implements Tab {
         fits = component.getFits2();
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
+            ImageData imageData = hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             NumberPair refValues = determineRefValues(values);
             double minVal = refValues.getX();
@@ -3097,7 +3211,7 @@ public class ImageViewerTab implements Tab {
         fits = component.getFits1();
         if (fits != null) {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
+            ImageData imageData = hdu.getData();
             float[][] values = (float[][]) imageData.getData();
             NumberPair refValues = determineRefValues(values);
             double minVal = refValues.getX();
@@ -3658,7 +3772,7 @@ public class ImageViewerTab implements Tab {
                     }
                 }
                 if (skipBadImages.isSelected()) {
-                    ImageData imageData = (ImageData) hdu.getData();
+                    ImageData imageData = hdu.getData();
                     float[][] data = (float[][]) imageData.getData();
                     double y = data.length;
                     double x = y > 0 ? data[0].length : 0;
@@ -3821,7 +3935,7 @@ public class ImageViewerTab implements Tab {
 
             // Descending scan
             Fits fits2 = new Fits();
-            fits2.addHDU(FitsFactory.hduFactory(fits.getHDU(0).getData().getData()));
+            fits2.addHDU(Fits.makeHDU(fits.getHDU(0).getData().getData()));
             header = fits2.getHDU(0).getHeader();
             header.addValue("FORWARD", 1, "Scan direction");
             header.addValue("MJDMEAN", 55256.0, "Mean MJD");
@@ -3885,7 +3999,7 @@ public class ImageViewerTab implements Tab {
 
             // Skip bad images
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
+            ImageData imageData = hdu.getData();
             float[][] data = (float[][]) imageData.getData();
             double y = data.length;
             double x = y > 0 ? data[0].length : 0;
@@ -3921,7 +4035,7 @@ public class ImageViewerTab implements Tab {
 
             // Descending scan
             Fits fits2 = new Fits();
-            fits2.addHDU(FitsFactory.hduFactory(fits.getHDU(0).getData().getData()));
+            fits2.addHDU(Fits.makeHDU(fits.getHDU(0).getData().getData()));
             header = fits2.getHDU(0).getHeader();
             header.addValue("FORWARD", 1, "Scan direction");
             header.addValue("MJDMEAN", mjdmean, "Mean MJD");
@@ -3938,7 +4052,7 @@ public class ImageViewerTab implements Tab {
     private BufferedImage createImage(Fits fits) {
         try {
             ImageHDU hdu = (ImageHDU) fits.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
+            ImageData imageData = hdu.getData();
             float[][] values = (float[][]) imageData.getData();
 
             if (blurImages.isSelected()) {
@@ -3967,11 +4081,11 @@ public class ImageViewerTab implements Tab {
     private BufferedImage createColorImage(Fits fits1, Fits fits2) {
         try {
             ImageHDU hdu = (ImageHDU) fits1.getHDU(0);
-            ImageData imageData = (ImageData) hdu.getData();
+            ImageData imageData = hdu.getData();
             float[][] valuesW1 = (float[][]) imageData.getData();
 
             hdu = (ImageHDU) fits2.getHDU(0);
-            imageData = (ImageData) hdu.getData();
+            imageData = hdu.getData();
             float[][] valuesW2 = (float[][]) imageData.getData();
 
             if (blurImages.isSelected()) {
@@ -4012,14 +4126,14 @@ public class ImageViewerTab implements Tab {
         String survey = header.getStringValue("SURVEY");
         double mjdmean1 = header.getDoubleValue("MJDMEAN");
         long firstEpoch1 = header.getLongValue("FEPOCH");
-        ImageData imageData = (ImageData) hdu.getData();
+        ImageData imageData = hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
         header = hdu.getHeader();
         double mjdmean2 = header.getDoubleValue("MJDMEAN");
         long firstEpoch2 = header.getLongValue("FEPOCH");
-        imageData = (ImageData) hdu.getData();
+        imageData = hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
         float[][] addedValues = new float[naxis2][naxis1];
@@ -4037,7 +4151,7 @@ public class ImageViewerTab implements Tab {
         }
 
         Fits fits = new Fits();
-        fits.addHDU(FitsFactory.hduFactory(addedValues));
+        fits.addHDU(Fits.makeHDU(addedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
         double mjdmean = (mjdmean1 + mjdmean2) / 2;
@@ -4053,14 +4167,14 @@ public class ImageViewerTab implements Tab {
         String survey = header.getStringValue("SURVEY");
         double mjdmean1 = header.getDoubleValue("MJDMEAN");
         long firstEpoch1 = header.getLongValue("FEPOCH");
-        ImageData imageData = (ImageData) hdu.getData();
+        ImageData imageData = hdu.getData();
         float[][] values1 = (float[][]) imageData.getData();
 
         hdu = (ImageHDU) fits2.getHDU(0);
         header = hdu.getHeader();
         double mjdmean2 = header.getDoubleValue("MJDMEAN");
         long firstEpoch2 = header.getLongValue("FEPOCH");
-        imageData = (ImageData) hdu.getData();
+        imageData = hdu.getData();
         float[][] values2 = (float[][]) imageData.getData();
 
         float[][] subtractedValues = new float[naxis2][naxis1];
@@ -4074,7 +4188,7 @@ public class ImageViewerTab implements Tab {
         }
 
         Fits fits = new Fits();
-        fits.addHDU(FitsFactory.hduFactory(subtractedValues));
+        fits.addHDU(Fits.makeHDU(subtractedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
         double mjdmean = (mjdmean1 + mjdmean2) / 2;
@@ -4090,7 +4204,7 @@ public class ImageViewerTab implements Tab {
         String survey = header.getStringValue("SURVEY");
         double mjdmean = header.getDoubleValue("MJDMEAN");
         long firstEpoch = header.getLongValue("FEPOCH");
-        ImageData imageData = (ImageData) hdu.getData();
+        ImageData imageData = hdu.getData();
         float[][] values = (float[][]) imageData.getData();
 
         float[][] averagedValues = new float[naxis2][naxis1];
@@ -4104,7 +4218,7 @@ public class ImageViewerTab implements Tab {
         }
 
         fits = new Fits();
-        fits.addHDU(FitsFactory.hduFactory(averagedValues));
+        fits.addHDU(Fits.makeHDU(averagedValues));
         hdu = (ImageHDU) fits.getHDU(0);
         header = hdu.getHeader();
         header.addValue("MJDMEAN", mjdmean, "Mean MJD");
@@ -4115,7 +4229,7 @@ public class ImageViewerTab implements Tab {
 
     private void enhanceImage(Fits fits, int enhanceFactor) throws Exception {
         ImageHDU imageHDU = (ImageHDU) fits.getHDU(0);
-        ImageData imageData = (ImageData) imageHDU.getData();
+        ImageData imageData = imageHDU.getData();
         float[][] values = (float[][]) imageData.getData();
 
         for (int i = 0; i < naxis2; i++) {
@@ -4209,7 +4323,7 @@ public class ImageViewerTab implements Tab {
         timer.stop();
 
         Application application = new Application();
-        application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        application.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         application.init();
 
         JTabbedPane pane = application.getTabbedPane();
@@ -4239,7 +4353,7 @@ public class ImageViewerTab implements Tab {
         timer.stop();
 
         Application application = new Application();
-        application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        application.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         application.init();
 
         JTabbedPane pane = application.getTabbedPane();
@@ -5720,7 +5834,7 @@ public class ImageViewerTab implements Tab {
                 collectPanel.add(referencesButton);
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
-                    referencesFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    referencesFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Measurements and references for "
@@ -5784,7 +5898,7 @@ public class ImageViewerTab implements Tab {
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
@@ -5802,7 +5916,7 @@ public class ImageViewerTab implements Tab {
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("WD SED");
@@ -5821,7 +5935,7 @@ public class ImageViewerTab implements Tab {
                 try {
                     createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     JFrame frame = new JFrame();
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     frame.addWindowListener(getChildWindowAdapter(baseFrame));
                     frame.setIconImage(getToolBoxImage());
                     frame.setTitle("WISE CCD");
@@ -5844,7 +5958,7 @@ public class ImageViewerTab implements Tab {
                 try {
                     createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     JFrame frame = new JFrame();
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     frame.addWindowListener(getChildWindowAdapter(baseFrame));
                     frame.setIconImage(getToolBoxImage());
                     frame.setTitle("WISE light curves");
@@ -5868,7 +5982,7 @@ public class ImageViewerTab implements Tab {
                     try {
                         createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         JFrame frame = new JFrame();
-                        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                         frame.addWindowListener(getChildWindowAdapter(baseFrame));
                         frame.setIconImage(getToolBoxImage());
                         frame.setTitle("Gaia CMD");
@@ -5915,7 +6029,7 @@ public class ImageViewerTab implements Tab {
         }
 
         JFrame detailsFrame = new JFrame();
-        detailsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        detailsFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Object details");
@@ -6058,7 +6172,7 @@ public class ImageViewerTab implements Tab {
         container.add(distancePanel);
 
         JFrame detailsFrame = new JFrame();
-        detailsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        detailsFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Photometric distance estimates");

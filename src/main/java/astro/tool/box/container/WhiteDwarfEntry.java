@@ -1,7 +1,8 @@
 package astro.tool.box.container;
 
-import astro.tool.box.enumeration.Band;
 import java.util.Map;
+
+import astro.tool.box.enumeration.Band;
 
 public class WhiteDwarfEntry {
 

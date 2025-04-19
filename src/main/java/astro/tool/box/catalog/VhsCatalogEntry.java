@@ -1,23 +1,39 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.MiscUtils.*;
-import static astro.tool.box.util.ServiceHelper.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo6Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.function.NumericFunctions.toLong;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getLongComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.addRow;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.MiscUtils.isVizierTAP;
+import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class VhsCatalogEntry implements CatalogEntry {
 
@@ -35,25 +51,25 @@ public class VhsCatalogEntry implements CatalogEntry {
     // Object type
     private int objectType;
 
-    // Default point source Y aperture corrected mag 
+    // Default point source Y aperture corrected mag
     private double y_ap3;
 
     // Error in default point/extended source Y mag
     private double y_ap3_err;
 
-    // Default point source J aperture corrected mag 
+    // Default point source J aperture corrected mag
     private double j_ap3;
 
     // Error in default point/extended source J mag
     private double j_ap3_err;
 
-    // Default point source H aperture corrected mag 
+    // Default point source H aperture corrected mag
     private double h_ap3;
 
     // Error in default point/extended source H mag
     private double h_ap3_err;
 
-    // Default point source Ks aperture corrected mag 
+    // Default point source Ks aperture corrected mag
     private double ks_ap3;
 
     // Error in default point/extended source Ks mag
@@ -188,10 +204,7 @@ public class VhsCatalogEntry implements CatalogEntry {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final VhsCatalogEntry other = (VhsCatalogEntry) obj;

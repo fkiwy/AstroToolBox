@@ -1,35 +1,34 @@
 package astro.tool.box.main;
 
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.container.Version;
-import astro.tool.box.enumeration.TabCode;
-import astro.tool.box.tab.AdqlQueryTab;
-import astro.tool.box.tab.BatchQueryTab;
-import astro.tool.box.tab.CatalogQueryTab;
-import astro.tool.box.tab.CustomOverlaysTab;
-import astro.tool.box.tab.FileBrowserTab;
-import astro.tool.box.tab.ImageViewerTab;
-import astro.tool.box.tab.LookupTab;
-import astro.tool.box.tab.ObjectCollectionTab;
-import astro.tool.box.tab.PhotometricClassifierTab;
-import astro.tool.box.tab.SettingsTab;
-import astro.tool.box.tab.ImageSeriesTab;
-import astro.tool.box.tab.Tab;
-import astro.tool.box.tab.ToolTab;
-import astro.tool.box.tab.VizierCatalogsTab;
-import astro.tool.box.util.CSVParser;
+import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_HEIGHT;
+import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_WIDTH;
+import static astro.tool.box.main.ToolboxHelper.PGM_NAME;
+import static astro.tool.box.main.ToolboxHelper.PGM_VERSION;
+import static astro.tool.box.main.ToolboxHelper.RELEASES_URL;
+import static astro.tool.box.main.ToolboxHelper.createEtchedBorder;
+import static astro.tool.box.main.ToolboxHelper.createHyperlink;
+import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.tab.SettingsTab.DEST_TABS;
+import static astro.tool.box.tab.SettingsTab.SOURCE_TABS;
+import static astro.tool.box.tab.SettingsTab.USER_SETTINGS;
+import static astro.tool.box.tab.SettingsTab.getLookAndFeel;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.tab.SettingsTab.loadUserSettings;
+import static astro.tool.box.tab.SettingsTab.setLookAndFeel;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.time.LocalDate;
-import static java.time.temporal.ChronoUnit.DAYS;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,7 +37,27 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
+
+import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.container.Version;
+import astro.tool.box.enumeration.TabCode;
+import astro.tool.box.tab.AdqlQueryTab;
+import astro.tool.box.tab.BatchQueryTab;
+import astro.tool.box.tab.CatalogQueryTab;
+import astro.tool.box.tab.CustomOverlaysTab;
+import astro.tool.box.tab.FileBrowserTab;
+import astro.tool.box.tab.ImageSeriesTab;
+import astro.tool.box.tab.ImageViewerTab;
+import astro.tool.box.tab.LookupTab;
+import astro.tool.box.tab.ObjectCollectionTab;
+import astro.tool.box.tab.PhotometricClassifierTab;
+import astro.tool.box.tab.SettingsTab;
+import astro.tool.box.tab.Tab;
+import astro.tool.box.tab.ToolTab;
+import astro.tool.box.tab.VizierCatalogsTab;
+import astro.tool.box.util.CSVParser;
 
 public class Application {
 
@@ -74,7 +93,7 @@ public class Application {
         baseFrame.setSize(new Dimension(BASE_FRAME_WIDTH, BASE_FRAME_HEIGHT));
         baseFrame.setDefaultCloseOperation(defaultCloseOperation);
 
-        tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+        tabbedPane = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         baseFrame.add(tabbedPane);
 
         String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");

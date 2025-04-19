@@ -2,9 +2,11 @@ package astro.tool.box.component;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
@@ -38,7 +40,7 @@ public class FixedTable implements ChangeListener, PropertyChangeListener {
 
         fixed.setPreferredScrollableViewportSize(fixed.getPreferredSize());
         scrollPane.setRowHeaderView(fixed);
-        scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, fixed.getTableHeader());
+        scrollPane.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, fixed.getTableHeader());
     }
 
     public JTable getFixedTable() {

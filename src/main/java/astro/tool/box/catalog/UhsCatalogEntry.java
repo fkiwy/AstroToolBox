@@ -1,18 +1,24 @@
 package astro.tool.box.catalog;
 
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.Band;
-import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo6Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.function.NumericFunctions.toLong;
 import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
 import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import astro.tool.box.util.ServiceHelper;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getLongComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.ConversionFactors.ARCMIN_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,10 +29,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.Band;
+import astro.tool.box.enumeration.Color;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.util.ServiceHelper;
 
 public class UhsCatalogEntry implements CatalogEntry {
 
@@ -44,13 +59,13 @@ public class UhsCatalogEntry implements CatalogEntry {
     // Object type
     private int objectType;
 
-    // Default point source J aperture corrected mag 
+    // Default point source J aperture corrected mag
     private double j_ap3;
 
     // Error in default point/extended source J mag
     private double j_ap3_err;
 
-    // Default point source Ks aperture corrected mag 
+    // Default point source Ks aperture corrected mag
     private double ks_ap3;
 
     // Error in default point/extended source Ks mag
@@ -190,10 +205,7 @@ public class UhsCatalogEntry implements CatalogEntry {
         String[] lines = csvData.split("\n");
         boolean isHeader = true;
         for (String line : lines) {
-            if (line.trim().isEmpty()) {
-                continue;
-            }
-            if (!isHeader && line.trim().startsWith("#")) {
+            if (line.trim().isEmpty() || (!isHeader && line.trim().startsWith("#"))) {
                 continue;
             }
             if (isHeader) {
@@ -221,10 +233,7 @@ public class UhsCatalogEntry implements CatalogEntry {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final UhsCatalogEntry other = (UhsCatalogEntry) obj;

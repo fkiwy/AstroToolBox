@@ -1,15 +1,18 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.enumeration.DateSystem;
+import static astro.tool.box.function.AstrometricFunctions.convertDateTimeToMJD;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -17,7 +20,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+
+import astro.tool.box.enumeration.DateSystem;
 
 public class DateConverterTool {
 
@@ -41,21 +47,21 @@ public class DateConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Date to convert: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Date to convert: ", SwingConstants.RIGHT));
             JTextField dateToConvert = new JTextField();
             mainPanel.add(dateToConvert);
 
-            mainPanel.add(new JLabel("Calendar date format: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Calendar date format: ", SwingConstants.RIGHT));
             mainPanel.add(new JLabel("yyyy-MM-dd HH:mm:ss"));
 
-            mainPanel.add(new JLabel("", JLabel.RIGHT));
+            mainPanel.add(new JLabel("", SwingConstants.RIGHT));
             mainPanel.add(new JLabel("Time is not required."));
 
-            mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Convert from: ", SwingConstants.RIGHT));
             JComboBox systemsToConvertFrom = new JComboBox(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
             mainPanel.add(systemsToConvertFrom);
 
-            mainPanel.add(new JLabel("To: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("To: ", SwingConstants.RIGHT));
             JComboBox systemsToConvertTo = new JComboBox(new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
             systemsToConvertTo.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
             mainPanel.add(systemsToConvertTo);
@@ -78,7 +84,7 @@ public class DateConverterTool {
                 }
             });
 
-            mainPanel.add(new JLabel("Converted date: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Converted date: ", SwingConstants.RIGHT));
             JTextField convertedDate = new JTextField();
             convertedDate.setEditable(false);
             mainPanel.add(convertedDate);

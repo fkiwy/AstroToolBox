@@ -1,24 +1,13 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.enumeration.LookAndFeel;
-import static astro.tool.box.enumeration.LookAndFeel.Nord;
-import astro.tool.box.enumeration.TabCode;
-import astro.tool.box.enumeration.TapProvider;
-import astro.tool.box.enumeration.WiseBand;
-import astro.tool.box.main.Application;
-import astro.tool.box.panel.DualListBox;
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import static astro.tool.box.main.ToolboxHelper.USER_HOME;
+import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
+import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
+import static astro.tool.box.main.ToolboxHelper.html;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.LINE_SEP;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -37,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -49,11 +39,31 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
+
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
+
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.enumeration.LookAndFeel;
+import astro.tool.box.enumeration.TabCode;
+import astro.tool.box.enumeration.TapProvider;
+import astro.tool.box.enumeration.WiseBand;
+import astro.tool.box.main.Application;
+import astro.tool.box.panel.DualListBox;
 
 public class SettingsTab implements Tab {
 
@@ -193,16 +203,16 @@ public class SettingsTab implements Tab {
             cutoutService = USER_SETTINGS.getProperty(CUTOUT_SERVICE);
             objectCollectionPath = USER_SETTINGS.getProperty(OBJECT_COLLECTION_PATH, "");
 
-            globalSettings.add(new JLabel("Look & Feel: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Look & Feel: ", SwingConstants.RIGHT));
 
             JComboBox themes = new JComboBox(LookAndFeel.values());
             themes.setSelectedItem(lookAndFeel);
             globalSettings.add(themes);
 
-            globalSettings.add(new JLabel("TAP provider for AllWISE, CatWISE, ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("TAP provider for AllWISE, CatWISE, ", SwingConstants.RIGHT));
             globalSettings.add(new JLabel());
 
-            globalSettings.add(new JLabel("2MASS, Gaia, DES and VHS: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("2MASS, Gaia, DES and VHS: ", SwingConstants.RIGHT));
 
             JPanel radioPanel = new JPanel(new GridLayout(1, 2));
             globalSettings.add(radioPanel);
@@ -225,39 +235,39 @@ public class SettingsTab implements Tab {
             buttonGroup.add(vizierButton);
             buttonGroup.add(noirlabButton);
 
-            globalSettings.add(new JLabel("Proxy host name: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Proxy host name: ", SwingConstants.RIGHT));
             JTextField proxyAddressField = new JTextField(proxyAddress);
             globalSettings.add(proxyAddressField);
 
-            globalSettings.add(new JLabel("Proxy port: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Proxy port: ", SwingConstants.RIGHT));
             JTextField proxyPortField = new JTextField(String.valueOf(proxyPort));
             globalSettings.add(proxyPortField);
 
-            globalSettings.add(new JLabel("Use proxy: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use proxy: ", SwingConstants.RIGHT));
             JCheckBox useProxyCheckBox = new JCheckBox();
             useProxyCheckBox.setSelected(useProxy);
             globalSettings.add(useProxyCheckBox);
 
-            globalSettings.add(new JLabel("Use SIMBAD mirror: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Use SIMBAD mirror: ", SwingConstants.RIGHT));
             JCheckBox useSimbadMirrorCheckBox = new JCheckBox();
             useSimbadMirrorCheckBox.setSelected(useSimbadMirror);
             globalSettings.add(useSimbadMirrorCheckBox);
 
-            globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("Consider phot. errors in SpT estimates: ", SwingConstants.RIGHT));
             JCheckBox photometricErrorsBox = new JCheckBox(html("<span color='red'>" + RESTART_LABEL + "</span>"));
             photometricErrorsBox.setSelected(photometricErrors);
             globalSettings.add(photometricErrorsBox);
 
-            globalSettings.add(new JLabel("WiseView cutout service URL: ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("WiseView cutout service URL: ", SwingConstants.RIGHT));
             JTextField cutoutServiceField = new JTextField(cutoutService);
             globalSettings.add(cutoutServiceField);
 
-            globalSettings.add(new JLabel("File location of object collection (*): ", JLabel.RIGHT));
+            globalSettings.add(new JLabel("File location of object collection (*): ", SwingConstants.RIGHT));
             JTextField collectionPathField = new JTextField(objectCollectionPath);
             globalSettings.add(collectionPathField);
 
-            globalSettings.add(new JLabel("(*) The file will be created by the tool. ", JLabel.RIGHT));
-            globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", JLabel.LEFT));
+            globalSettings.add(new JLabel("(*) The file will be created by the tool. ", SwingConstants.RIGHT));
+            globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", SwingConstants.LEFT));
 
             // Catalog search settings
             JPanel catalogQuerySettings = new JPanel(new GridLayout(gridRows, 2));
@@ -284,41 +294,41 @@ public class SettingsTab implements Tab {
             imageViewerTab.getWiseViewField().setText(String.valueOf(wiseViewFOV));
             imageViewerTab.getFinderChartField().setText(String.valueOf(finderChartFOV));
 
-            catalogQuerySettings.add(new JLabel("Copy coordinates to clipboard: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Copy coordinates to clipboard: ", SwingConstants.RIGHT));
             JCheckBox clipboardCheckBox = new JCheckBox();
             clipboardCheckBox.setSelected(copyCoordsToClipboard);
             catalogQuerySettings.add(clipboardCheckBox);
 
-            catalogQuerySettings.add(new JLabel("Catalog search radius: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Catalog search radius: ", SwingConstants.RIGHT));
             JTextField searchRadiusField = new JTextField(String.valueOf(searchRadius));
             catalogQuerySettings.add(searchRadiusField);
 
-            catalogQuerySettings.add(new JLabel("PanSTARRS FoV: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("PanSTARRS FoV: ", SwingConstants.RIGHT));
             JTextField panstarrsFovField = new JTextField(String.valueOf(panstarrsFOV));
             catalogQuerySettings.add(panstarrsFovField);
 
-            catalogQuerySettings.add(new JLabel("Aladin Lite FoV: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Aladin Lite FoV: ", SwingConstants.RIGHT));
             JTextField aladinLiteFovField = new JTextField(String.valueOf(aladinLiteFOV));
             catalogQuerySettings.add(aladinLiteFovField);
 
-            catalogQuerySettings.add(new JLabel("WiseView FoV: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("WiseView FoV: ", SwingConstants.RIGHT));
             JTextField wiseViewFovField = new JTextField(String.valueOf(wiseViewFOV));
             catalogQuerySettings.add(wiseViewFovField);
 
-            catalogQuerySettings.add(new JLabel("IRSA Finder Chart FoV: ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("IRSA Finder Chart FoV: ", SwingConstants.RIGHT));
             JTextField finderChartFovField = new JTextField(String.valueOf(finderChartFOV));
             catalogQuerySettings.add(finderChartFovField);
 
-            catalogQuerySettings.add(new JLabel("Your name (*): ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Your name (*): ", SwingConstants.RIGHT));
             JTextField userNameField = new JTextField(userName);
             catalogQuerySettings.add(userNameField);
 
-            catalogQuerySettings.add(new JLabel("Your email (*): ", JLabel.RIGHT));
+            catalogQuerySettings.add(new JLabel("Your email (*): ", SwingConstants.RIGHT));
             JTextField userEmailField = new JTextField(userEmail);
             catalogQuerySettings.add(userEmailField);
 
-            catalogQuerySettings.add(new JLabel("(*) Required only for automatic", JLabel.RIGHT));
-            catalogQuerySettings.add(new JLabel(" BYW-TYGO form filling", JLabel.LEFT));
+            catalogQuerySettings.add(new JLabel("(*) Required only for automatic", SwingConstants.RIGHT));
+            catalogQuerySettings.add(new JLabel(" BYW-TYGO form filling", SwingConstants.LEFT));
 
             // Image viewer settings
             JPanel imageViewerSettings = new JPanel(new GridLayout(gridRows, 2));
@@ -369,42 +379,42 @@ public class SettingsTab implements Tab {
             imageViewerTab.setSdssImages(sdssImages);
             imageViewerTab.setDssImages(dssImages);
 
-            imageViewerSettings.add(new JLabel("Bands: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Bands: ", SwingConstants.RIGHT));
             JComboBox wiseBands = new JComboBox(WiseBand.values());
             wiseBands.setSelectedItem(wiseBand);
             imageViewerSettings.add(wiseBands);
 
-            imageViewerSettings.add(new JLabel("Field of view (arcsec): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Field of view (arcsec): ", SwingConstants.RIGHT));
             JTextField sizeField = new JTextField(String.valueOf(size));
             imageViewerSettings.add(sizeField);
 
-            imageViewerSettings.add(new JLabel("Speed (ms): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Speed (ms): ", SwingConstants.RIGHT));
             JTextField speedField = new JTextField(String.valueOf(speed));
             imageViewerSettings.add(speedField);
 
-            imageViewerSettings.add(new JLabel("Zoom: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Zoom: ", SwingConstants.RIGHT));
             JTextField zoomField = new JTextField(String.valueOf(zoom));
             imageViewerSettings.add(zoomField);
 
-            imageViewerSettings.add(new JLabel("Different field of view (arcsec): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Different field of view (arcsec): ", SwingConstants.RIGHT));
             JTextField differentSizeField = new JTextField(String.valueOf(differentSize));
             imageViewerSettings.add(differentSizeField);
 
-            imageViewerSettings.add(new JLabel("Total proper motion (mas/yr): ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Total proper motion (mas/yr): ", SwingConstants.RIGHT));
             JTextField properMotionField = new JTextField(String.valueOf(properMotion));
             imageViewerSettings.add(properMotionField);
 
-            imageViewerSettings.add(new JLabel("Show nearest BYW subjects: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Show nearest BYW subjects: ", SwingConstants.RIGHT));
             JCheckBox nearestBywSubjectsCheckBox = new JCheckBox(html("<span color='red'>" + RESTART_LABEL + "</span>"));
             nearestBywSubjectsCheckBox.setSelected(nearestBywSubjects);
             imageViewerSettings.add(nearestBywSubjectsCheckBox);
 
-            imageViewerSettings.add(new JLabel("Async download of WISE images: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Async download of WISE images: ", SwingConstants.RIGHT));
             JCheckBox asynchDownloadsCheckBox = new JCheckBox();
             asynchDownloadsCheckBox.setSelected(asyncDownloads);
             imageViewerSettings.add(asynchDownloadsCheckBox);
 
-            imageViewerSettings.add(new JLabel("Download color images: ", JLabel.RIGHT));
+            imageViewerSettings.add(new JLabel("Download color images: ", SwingConstants.RIGHT));
             JPanel downloadPanel = new JPanel(new GridLayout(1, 2));
             imageViewerSettings.add(downloadPanel);
             JCheckBox legacyImagesCheckBox = new JCheckBox("DECaLS", legacyImages);
@@ -782,7 +792,7 @@ public class SettingsTab implements Tab {
 
     private void restartApplication() {
         Application application = new Application();
-        application.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        application.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         application.init();
         baseFrame.setVisible(false);
     }

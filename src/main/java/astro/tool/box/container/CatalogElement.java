@@ -1,8 +1,9 @@
 package astro.tool.box.container;
 
-import astro.tool.box.enumeration.Alignment;
 import java.util.Comparator;
 import java.util.Objects;
+
+import astro.tool.box.enumeration.Alignment;
 
 public class CatalogElement {
 
@@ -91,10 +92,7 @@ public class CatalogElement {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final CatalogElement other = (CatalogElement) obj;

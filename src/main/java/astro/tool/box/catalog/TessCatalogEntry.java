@@ -1,12 +1,44 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceHelper.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
+import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
+import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo5Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo5DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toLong;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallaxError;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getLongComparator;
+import static astro.tool.box.util.Constants.SDSS_G;
+import static astro.tool.box.util.Constants.SDSS_I;
+import static astro.tool.box.util.Constants.SDSS_R;
+import static astro.tool.box.util.Constants.SDSS_U;
+import static astro.tool.box.util.Constants.SDSS_Z;
+import static astro.tool.box.util.Constants.TWO_MASS_H;
+import static astro.tool.box.util.Constants.TWO_MASS_J;
+import static astro.tool.box.util.Constants.TWO_MASS_K;
+import static astro.tool.box.util.Constants.WISE_1;
+import static astro.tool.box.util.Constants.WISE_2;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.ABOffset;
@@ -14,10 +46,6 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class TessCatalogEntry implements CatalogEntry, WhiteDwarf, Extinction {
 
@@ -80,10 +108,10 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf, Extinction {
     // Uncertainty in lum
     private double lum_err;
 
-    // Distance 
+    // Distance
     private double dist;
 
-    // Uncertainty in dist 
+    // Uncertainty in dist
     private double dist_err;
 
     // Magnitude in G band
@@ -370,10 +398,7 @@ public class TessCatalogEntry implements CatalogEntry, WhiteDwarf, Extinction {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final TessCatalogEntry other = (TessCatalogEntry) obj;

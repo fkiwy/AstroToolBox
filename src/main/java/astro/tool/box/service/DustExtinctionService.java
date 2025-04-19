@@ -1,14 +1,30 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ServiceHelper.*;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.util.Constants.IRAC_1;
+import static astro.tool.box.util.Constants.IRAC_2;
+import static astro.tool.box.util.Constants.REGEXP_SPACES;
+import static astro.tool.box.util.Constants.SDSS_G;
+import static astro.tool.box.util.Constants.SDSS_I;
+import static astro.tool.box.util.Constants.SDSS_R;
+import static astro.tool.box.util.Constants.SDSS_U;
+import static astro.tool.box.util.Constants.SDSS_Z;
+import static astro.tool.box.util.Constants.TWO_MASS_H;
+import static astro.tool.box.util.Constants.TWO_MASS_J;
+import static astro.tool.box.util.Constants.TWO_MASS_K;
+import static astro.tool.box.util.Constants.WISE_1;
+import static astro.tool.box.util.Constants.WISE_2;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;

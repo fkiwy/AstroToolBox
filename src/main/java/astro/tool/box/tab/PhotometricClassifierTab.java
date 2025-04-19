@@ -1,30 +1,27 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.MiscUtils.*;
-import astro.tool.box.container.ClassificationResult;
-import astro.tool.box.container.ClassifierData;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.SpectralType;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZLZ;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
+import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.createLabel;
+import static astro.tool.box.main.ToolboxHelper.createResultTableSorter;
+import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.isSameTarget;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.MiscUtils.SPECTRAL_TYPES;
+import static astro.tool.box.util.MiscUtils.addToArray;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -46,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -56,6 +54,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -64,6 +63,25 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.catalog.SimbadCatalogEntry;
+import astro.tool.box.catalog.TessCatalogEntry;
+import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.container.ClassificationResult;
+import astro.tool.box.container.ClassifierData;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.SpectralType;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.SpectralTypeLookupEntry;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.SpectralTypeLookupService;
 
 public class PhotometricClassifierTab implements Tab {
 
@@ -426,7 +444,7 @@ public class PhotometricClassifierTab implements Tab {
         columnModel.getColumn(0).setPreferredWidth(150);
 
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
         columnModel.getColumn(4).setCellRenderer(rightRenderer);
         columnModel.getColumn(8).setCellRenderer(rightRenderer);
         columnModel.getColumn(9).setCellRenderer(rightRenderer);

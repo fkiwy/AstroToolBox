@@ -3,7 +3,8 @@ package astro.tool.box.main;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.logging.LogManager;
-import javax.swing.JFrame;
+
+import javax.swing.WindowConstants;
 
 public class Run {
 
@@ -12,7 +13,7 @@ public class Run {
         LogManager.getLogManager().readConfiguration(input);
         Locale.setDefault(Locale.US);
         Application application = new Application();
-        application.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         application.init();
     }
 

@@ -1,9 +1,17 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.util.FileTypeFilter;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.concatArrays;
+import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
+import static astro.tool.box.main.ToolboxHelper.createResultTableSorter;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showConfirmDialog;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -16,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -32,6 +41,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+
+import astro.tool.box.util.FileTypeFilter;
 
 public class FileBrowserTab implements Tab {
 

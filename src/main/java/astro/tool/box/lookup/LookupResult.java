@@ -1,7 +1,8 @@
 package astro.tool.box.lookup;
 
-import astro.tool.box.enumeration.Color;
 import java.util.Objects;
+
+import astro.tool.box.enumeration.Color;
 
 public class LookupResult {
 
@@ -79,10 +80,7 @@ public class LookupResult {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final LookupResult other = (LookupResult) obj;

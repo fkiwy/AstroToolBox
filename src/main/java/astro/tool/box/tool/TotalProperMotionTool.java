@@ -1,17 +1,22 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 public class TotalProperMotionTool {
@@ -36,15 +41,15 @@ public class TotalProperMotionTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Proper motion in RA: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Proper motion in RA: ", SwingConstants.RIGHT));
             JTextField pmraField = new JTextField();
             mainPanel.add(pmraField);
 
-            mainPanel.add(new JLabel("Proper motion in dec: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Proper motion in dec: ", SwingConstants.RIGHT));
             JTextField pmdecField = new JTextField();
             mainPanel.add(pmdecField);
 
-            mainPanel.add(new JLabel("Total proper motion: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Total proper motion: ", SwingConstants.RIGHT));
             JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);

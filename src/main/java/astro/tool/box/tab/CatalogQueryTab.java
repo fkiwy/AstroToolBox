@@ -1,35 +1,42 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.Extinction;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.catalog.GaiaCmd;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.ObjectType;
-import astro.tool.box.exception.ExtinctionException;
-import astro.tool.box.lookup.DistanceLookupResult;
-import astro.tool.box.panel.WiseCcdPanel;
-import astro.tool.box.panel.GaiaCmdPanel;
-import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedMsPanel;
-import astro.tool.box.panel.SedWdPanel;
-import astro.tool.box.panel.WiseLcPanel;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.DistanceLookupService;
-import astro.tool.box.service.DustExtinctionService;
-import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
+import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_HEIGHT;
+import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_WIDTH;
+import static astro.tool.box.main.ToolboxHelper.INFO_ICON;
+import static astro.tool.box.main.ToolboxHelper.PHOT_DIST_INFO;
+import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
+import static astro.tool.box.main.ToolboxHelper.addEmptyCatalogElement;
+import static astro.tool.box.main.ToolboxHelper.addFieldToPanel;
+import static astro.tool.box.main.ToolboxHelper.addLabelToPanel;
+import static astro.tool.box.main.ToolboxHelper.alignCatalogColumns;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.collectObject;
+import static astro.tool.box.main.ToolboxHelper.copyCoordsToClipboard;
+import static astro.tool.box.main.ToolboxHelper.copyObjectCoordinates;
+import static astro.tool.box.main.ToolboxHelper.copyObjectInfo;
+import static astro.tool.box.main.ToolboxHelper.copyObjectSummary;
+import static astro.tool.box.main.ToolboxHelper.copyToClipboard;
+import static astro.tool.box.main.ToolboxHelper.createCatalogTableSorter;
+import static astro.tool.box.main.ToolboxHelper.createLabel;
+import static astro.tool.box.main.ToolboxHelper.fillTygoForm;
+import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
+import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+import static astro.tool.box.main.ToolboxHelper.html;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.util.Constants.LINE_SEP;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -54,6 +61,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -69,12 +77,40 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.Extinction;
+import astro.tool.box.catalog.GaiaCmd;
+import astro.tool.box.catalog.SimbadCatalogEntry;
+import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.ObjectType;
+import astro.tool.box.exception.ExtinctionException;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.DistanceLookupResult;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.SpectralTypeLookupEntry;
+import astro.tool.box.panel.GaiaCmdPanel;
+import astro.tool.box.panel.ReferencesPanel;
+import astro.tool.box.panel.SedMsPanel;
+import astro.tool.box.panel.SedWdPanel;
+import astro.tool.box.panel.WiseCcdPanel;
+import astro.tool.box.panel.WiseLcPanel;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.DustExtinctionService;
+import astro.tool.box.service.SpectralTypeLookupService;
 
 public class CatalogQueryTab implements Tab {
 
@@ -528,7 +564,7 @@ public class CatalogQueryTab implements Tab {
                 collectPanel.add(referencesButton);
                 referencesButton.addActionListener((ActionEvent evt) -> {
                     JFrame referencesFrame = new JFrame();
-                    referencesFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    referencesFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     referencesFrame.addWindowListener(getChildWindowAdapter(baseFrame));
                     referencesFrame.setIconImage(getToolBoxImage());
                     referencesFrame.setTitle("Measurements and references for "
@@ -591,7 +627,7 @@ public class CatalogQueryTab implements Tab {
             createSedButton.addActionListener((ActionEvent evt) -> {
                 createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("SED");
@@ -609,7 +645,7 @@ public class CatalogQueryTab implements Tab {
             createWdSedButton.addActionListener((ActionEvent evt) -> {
                 createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JFrame frame = new JFrame();
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 frame.addWindowListener(getChildWindowAdapter(baseFrame));
                 frame.setIconImage(getToolBoxImage());
                 frame.setTitle("WD SED");
@@ -628,7 +664,7 @@ public class CatalogQueryTab implements Tab {
                 try {
                     createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     JFrame frame = new JFrame();
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     frame.addWindowListener(getChildWindowAdapter(baseFrame));
                     frame.setIconImage(getToolBoxImage());
                     frame.setTitle("WISE CCD");
@@ -651,7 +687,7 @@ public class CatalogQueryTab implements Tab {
                 try {
                     createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     JFrame frame = new JFrame();
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     frame.addWindowListener(getChildWindowAdapter(baseFrame));
                     frame.setIconImage(getToolBoxImage());
                     frame.setTitle("WISE light curves");
@@ -675,7 +711,7 @@ public class CatalogQueryTab implements Tab {
                     try {
                         createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         JFrame frame = new JFrame();
-                        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                         frame.addWindowListener(getChildWindowAdapter(baseFrame));
                         frame.setIconImage(getToolBoxImage());
                         frame.setTitle("Gaia CMD");
@@ -855,7 +891,7 @@ public class CatalogQueryTab implements Tab {
         container.add(distancePanel);
 
         JFrame detailsFrame = new JFrame();
-        detailsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        detailsFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         detailsFrame.addWindowListener(getChildWindowAdapter(baseFrame));
         detailsFrame.setIconImage(getToolBoxImage());
         detailsFrame.setTitle("Photometric distance estimates");

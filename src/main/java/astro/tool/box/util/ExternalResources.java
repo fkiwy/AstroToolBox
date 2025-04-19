@@ -1,7 +1,8 @@
 package astro.tool.box.util;
 
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+
 import astro.tool.box.enumeration.ImageType;
-import static astro.tool.box.util.ConversionFactors.*;
 
 public class ExternalResources {
 

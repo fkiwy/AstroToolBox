@@ -1,10 +1,16 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import astro.tool.box.util.CSVParser;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.function.NumericFunctions.isDecimal;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
+import static astro.tool.box.util.MiscUtils.addRow;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.MiscUtils.removeFirstAndLastCharacter;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.getSimbadBaseUrl;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +18,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import astro.tool.box.util.CSVParser;
 
 public class SimbadQueryService {
 

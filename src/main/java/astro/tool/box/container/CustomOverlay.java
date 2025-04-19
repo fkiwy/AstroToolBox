@@ -1,11 +1,13 @@
 package astro.tool.box.container;
 
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.enumeration.Shape;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
+
 import javax.swing.JCheckBox;
+
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.enumeration.Shape;
 
 public class CustomOverlay {
 

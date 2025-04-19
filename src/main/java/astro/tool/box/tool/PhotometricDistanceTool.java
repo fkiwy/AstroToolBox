@@ -1,17 +1,23 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistance;
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistanceError;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 public class PhotometricDistanceTool {
@@ -36,15 +42,15 @@ public class PhotometricDistanceTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Apparent magnitude: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Apparent magnitude: ", SwingConstants.RIGHT));
             JTextField apparentMagnitudeField = new JTextField();
             mainPanel.add(apparentMagnitudeField);
 
-            mainPanel.add(new JLabel("Absolute magnitude: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Absolute magnitude: ", SwingConstants.RIGHT));
             JTextField absoluteMagnitudeField = new JTextField();
             mainPanel.add(absoluteMagnitudeField);
 
-            mainPanel.add(new JLabel("Distance (pc): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Distance (pc): ", SwingConstants.RIGHT));
             JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);

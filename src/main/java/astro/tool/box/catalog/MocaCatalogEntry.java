@@ -1,16 +1,12 @@
 package astro.tool.box.catalog;
 
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.JColor;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
 import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
 import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import astro.tool.box.util.ServiceHelper;
+
 import java.awt.Color;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,6 +17,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.util.ServiceHelper;
 
 public class MocaCatalogEntry extends GenericCatalogEntry {
 

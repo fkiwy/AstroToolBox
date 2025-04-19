@@ -1,20 +1,31 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import static astro.tool.box.util.MiscUtils.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.JobStatus;
-import astro.tool.box.enumeration.TapProvider;
-import astro.tool.box.util.CSVParser;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import static astro.tool.box.function.NumericFunctions.isDecimal;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.ToolboxHelper.addComparatorsToTableSorter;
+import static astro.tool.box.main.ToolboxHelper.addUndoManager;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.concatArrays;
+import static astro.tool.box.main.ToolboxHelper.createEtchedBorder;
+import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
+import static astro.tool.box.main.ToolboxHelper.getCustomRowFilter;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showConfirmDialog;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.main.ToolboxHelper.showInfoDialog;
+import static astro.tool.box.main.ToolboxHelper.showScrollableErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.writeMessageLog;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.tab.SettingsTab.saveSettings;
+import static astro.tool.box.tab.SettingsTab.setUserSetting;
+import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.MiscUtils.omitQueryComments;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -36,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -62,6 +74,7 @@ import javax.swing.table.TableRowSorter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -75,6 +88,17 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.JobStatus;
+import astro.tool.box.enumeration.TapProvider;
+import astro.tool.box.util.CSVParser;
 
 public class AdqlQueryTab implements Tab {
 

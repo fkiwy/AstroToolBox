@@ -1,65 +1,29 @@
 package astro.tool.box.main;
 
-import astro.tool.box.util.GifSequencer;
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.tab.SettingsTab.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import static astro.tool.box.util.ExternalResources.*;
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.CollectedObject;
-import astro.tool.box.container.Couple;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaDR3CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.MocaCatalogEntry;
-import astro.tool.box.catalog.NoirlabCatalogEntry;
-import astro.tool.box.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.component.TranslucentLabel;
-import astro.tool.box.container.MjdEpoch;
-import astro.tool.box.container.NirImage;
-import astro.tool.box.container.Tiles;
-import astro.tool.box.lookup.DistanceLookupResult;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.function.AstrometricFunctions;
-import astro.tool.box.enumeration.BasicDataType;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.shape.Circle;
-import astro.tool.box.shape.Drawable;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.DistanceLookupService;
-import astro.tool.box.service.NameResolverService;
-import astro.tool.box.service.SpectralTypeLookupService;
-import astro.tool.box.util.FileTypeFilter;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDate;
+import static astro.tool.box.function.NumericFunctions.isNumeric;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.tab.SettingsTab.OBJECT_COLLECTION_PATH;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getIntegerComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.DESI_LS_DR_PARAM;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.PIXEL_SCALE_DECAM;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+import static astro.tool.box.util.Constants.UHS_LABEL;
+import static astro.tool.box.util.Constants.UKIDSS_LABEL;
+import static astro.tool.box.util.ExternalResources.getTygoFormUrl;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -107,6 +71,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -125,6 +90,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -139,7 +105,62 @@ import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+
 import org.jfree.chart.JFreeChart;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.CatWiseCatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.DesCatalogEntry;
+import astro.tool.box.catalog.GaiaDR2CatalogEntry;
+import astro.tool.box.catalog.GaiaDR3CatalogEntry;
+import astro.tool.box.catalog.GaiaWDCatalogEntry;
+import astro.tool.box.catalog.MocaCatalogEntry;
+import astro.tool.box.catalog.NoirlabCatalogEntry;
+import astro.tool.box.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.catalog.SdssCatalogEntry;
+import astro.tool.box.catalog.SimbadCatalogEntry;
+import astro.tool.box.catalog.TessCatalogEntry;
+import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
+import astro.tool.box.catalog.UnWiseCatalogEntry;
+import astro.tool.box.catalog.VhsCatalogEntry;
+import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.component.TranslucentLabel;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.CollectedObject;
+import astro.tool.box.container.Couple;
+import astro.tool.box.container.MjdEpoch;
+import astro.tool.box.container.NirImage;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.Tiles;
+import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.BasicDataType;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.function.AstrometricFunctions;
+import astro.tool.box.lookup.DistanceLookupResult;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.NameResolverService;
+import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.shape.Circle;
+import astro.tool.box.shape.Drawable;
+import astro.tool.box.util.FileTypeFilter;
+import astro.tool.box.util.GifSequencer;
 
 public class ToolboxHelper {
 
@@ -303,7 +324,7 @@ public class ToolboxHelper {
     }
 
     public static JLabel createHeaderLabel(String text) {
-        return createHeaderLabel(text, JLabel.LEFT);
+        return createHeaderLabel(text, SwingConstants.LEFT);
     }
 
     public static JLabel createHeaderLabel(String text, int alignment) {
@@ -415,7 +436,7 @@ public class ToolboxHelper {
 
     public static void addLabelToPanel(CatalogElement element, JPanel panel) {
         String name = element.getName();
-        JLabel label = new JLabel(name == null ? "" : name + ": ", JLabel.RIGHT);
+        JLabel label = new JLabel(name == null ? "" : name + ": ", SwingConstants.RIGHT);
         //if (element.isOnFocus()) {
         //    label.setOpaque(true);
         //    label.setBackground(JColor.WHITE.val);
@@ -459,9 +480,9 @@ public class ToolboxHelper {
 
     public static void alignCatalogColumns(JTable table, CatalogEntry entry) {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
         List<CatalogElement> elements = entry.getCatalogElements();
         for (int i = 0; i < elements.size(); i++) {
             Alignment alignment = elements.get(i).getAlignment();
@@ -480,9 +501,9 @@ public class ToolboxHelper {
 
     public static void alignResultColumns(JTable table, List<String[]> rows) {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
         Map<Integer, BasicDataType> types = determineBasicTypes(rows);
         for (int i = 0; i < types.size(); i++) {
             DefaultTableCellRenderer cellRenderer;
@@ -561,7 +582,7 @@ public class ToolboxHelper {
     }
 
     public static RowFilter getCustomRowFilter(String filterText) {
-        return new RowFilter<Object, Object>() {
+        return new RowFilter<>() {
             @Override
             public boolean include(RowFilter.Entry<? extends Object, ? extends Object> entry) {
                 for (int i = entry.getValueCount() - 1; i >= 0; i--) {
@@ -576,9 +597,9 @@ public class ToolboxHelper {
 
     public static void alignResultColumns(JTable table) {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
         int i = 0;
         table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);
         table.getColumnModel().getColumn(i++).setCellRenderer(rightRenderer);

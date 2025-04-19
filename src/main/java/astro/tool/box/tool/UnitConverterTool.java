@@ -1,12 +1,15 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import astro.tool.box.enumeration.Unit;
+import static astro.tool.box.function.AstrometricFunctions.convertToUnit;
+import static astro.tool.box.function.NumericFunctions.roundTo9DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -14,7 +17,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+
+import astro.tool.box.enumeration.Unit;
 
 public class UnitConverterTool {
 
@@ -38,20 +44,20 @@ public class UnitConverterTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Value to convert: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Value to convert: ", SwingConstants.RIGHT));
             JTextField valueToConvert = new JTextField();
             mainPanel.add(valueToConvert);
 
-            mainPanel.add(new JLabel("Convert from: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Convert from: ", SwingConstants.RIGHT));
             JComboBox unitsToConvertFrom = new JComboBox(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             mainPanel.add(unitsToConvertFrom);
 
-            mainPanel.add(new JLabel("To: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("To: ", SwingConstants.RIGHT));
             JComboBox unitsToConvertTo = new JComboBox(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
             unitsToConvertTo.setSelectedItem(Unit.MAS);
             mainPanel.add(unitsToConvertTo);
 
-            mainPanel.add(new JLabel("Converted value: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Converted value: ", SwingConstants.RIGHT));
             JTextField convertedValue = new JTextField();
             convertedValue.setEditable(false);
             mainPanel.add(convertedValue);

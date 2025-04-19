@@ -1,10 +1,12 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.enumeration.LookupTable;
-import astro.tool.box.component.FixedTable;
+import static astro.tool.box.function.NumericFunctions.isInteger;
+import static astro.tool.box.function.NumericFunctions.isNumeric;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.MAMAJEK_VERSION;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -13,6 +15,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -21,11 +24,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import astro.tool.box.component.FixedTable;
+import astro.tool.box.enumeration.LookupTable;
 
 public class LookupTab implements Tab {
 
@@ -126,9 +133,9 @@ public class LookupTab implements Tab {
 
     private void alignResultColumns(JTable table, List<String[]> rows) {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
         rows.forEach((row) -> {
             for (int i = 0; i < row.length; i++) {
                 DefaultTableCellRenderer cellRenderer;

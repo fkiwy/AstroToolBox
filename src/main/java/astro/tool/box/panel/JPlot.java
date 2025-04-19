@@ -1,14 +1,8 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.enumeration.FileType.*;
-import astro.tool.box.enumeration.FileType;
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
+import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
+import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -25,8 +19,10 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
@@ -41,6 +37,15 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import astro.tool.box.enumeration.FileType;
 
 public class JPlot {
 

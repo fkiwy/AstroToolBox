@@ -1,5 +1,13 @@
 package astro.tool.box.enumeration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import astro.tool.box.tab.AdqlQueryTab;
 import astro.tool.box.tab.BatchQueryTab;
 import astro.tool.box.tab.CatalogQueryTab;
@@ -11,13 +19,6 @@ import astro.tool.box.tab.ObjectCollectionTab;
 import astro.tool.box.tab.PhotometricClassifierTab;
 import astro.tool.box.tab.ToolTab;
 import astro.tool.box.tab.VizierCatalogsTab;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public enum TabCode {
 

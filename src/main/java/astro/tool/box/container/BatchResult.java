@@ -1,6 +1,11 @@
 package astro.tool.box.container;
 
-import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.suppressZero;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

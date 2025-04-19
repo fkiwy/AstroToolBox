@@ -1,17 +1,22 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateTotalVelocity;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 public class TotalVelocityTool {
@@ -36,15 +41,15 @@ public class TotalVelocityTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Tangential velocity (km/s): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Tangential velocity (km/s): ", SwingConstants.RIGHT));
             JTextField tangVelocityField = new JTextField();
             mainPanel.add(tangVelocityField);
 
-            mainPanel.add(new JLabel("Radial velocity (km/s): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Radial velocity (km/s): ", SwingConstants.RIGHT));
             JTextField radVelocityField = new JTextField();
             mainPanel.add(radVelocityField);
 
-            mainPanel.add(new JLabel("Total velocity (km/s): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Total velocity (km/s): ", SwingConstants.RIGHT));
             JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);

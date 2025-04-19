@@ -1,13 +1,13 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.container.CustomOverlay;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.Shape;
-import astro.tool.box.component.TextPrompt;
-import astro.tool.box.util.FileTypeFilter;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.main.ToolboxHelper.USER_HOME;
+import static astro.tool.box.main.ToolboxHelper.html;
+import static astro.tool.box.main.ToolboxHelper.showConfirmDialog;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.LINE_SEP;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -36,6 +37,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
+
+import astro.tool.box.component.TextPrompt;
+import astro.tool.box.container.CustomOverlay;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.Shape;
+import astro.tool.box.util.FileTypeFilter;
 
 public class CustomOverlaysTab implements Tab {
 
@@ -112,9 +119,9 @@ public class CustomOverlaysTab implements Tab {
                 baseFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
                 int index = sourceTabbedPane.getSelectedIndex();
-                if (allOverlaysCreated == false && sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
-                    for (int i = 0; i < overlays.size(); i++) {
-                        addOverlayRow(overlayPanel, overlays.get(i));
+                if (!allOverlaysCreated && sourceTabbedPane.getTitleAt(index).equals(TAB_NAME)) {
+                    for (CustomOverlay overlay : overlays) {
+                        addOverlayRow(overlayPanel, overlay);
                     }
                     allOverlaysCreated = true;
                 }

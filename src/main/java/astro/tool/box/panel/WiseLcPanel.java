@@ -1,17 +1,23 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.StatisticFunctions.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.StatType;
-import astro.tool.box.function.StatisticFunctions;
-import astro.tool.box.util.ServiceHelper;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
+import static astro.tool.box.function.NumericFunctions.addPlusSign;
+import static astro.tool.box.function.NumericFunctions.roundDouble;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.StatisticFunctions.removeOutliers;
+import static astro.tool.box.main.ToolboxHelper.createPDF;
+import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+import static java.lang.Math.round;
+import static java.util.stream.Collectors.groupingBy;
+
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -20,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import static java.lang.Math.round;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -29,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.groupingBy;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -38,8 +43,15 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.StatType;
+import astro.tool.box.function.StatisticFunctions;
+import astro.tool.box.util.ServiceHelper;
 
 public class WiseLcPanel extends JPanel {
 

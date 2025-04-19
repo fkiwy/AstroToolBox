@@ -1,23 +1,23 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.container.BatchResult;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.enumeration.AsynchResult;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.LookupTable;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.SpectralTypeLookupService;
-import astro.tool.box.util.FileTypeFilter;
+import static astro.tool.box.function.NumericFunctions.isNumeric;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
+import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
+import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
+import static astro.tool.box.main.ToolboxHelper.createResultTableSorter;
+import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
+import static astro.tool.box.main.ToolboxHelper.lookupSpectralTypes;
+import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
@@ -41,6 +41,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -58,6 +59,21 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.SimbadCatalogEntry;
+import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.container.BatchResult;
+import astro.tool.box.enumeration.AsynchResult;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.LookupTable;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.lookup.SpectralTypeLookupEntry;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.util.FileTypeFilter;
 
 public class BatchQueryTab implements Tab {
 
@@ -327,32 +343,33 @@ public class BatchQueryTab implements Tab {
         int objectNumber = 1;
 
         LookupTable selectedTable = (LookupTable) lookupTables.getSelectedItem();
-        switch (selectedTable) {
-            case MAIN_SEQUENCE -> {
-                try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
-                	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
-                    List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new SpectralTypeLookupEntry(line.split(",", -1));
-                    }).collect(Collectors.toList());
-                    spectralTypeLookupService = new SpectralTypeLookupService(entries);
-                } catch (IOException e) {
-                	showExceptionDialog(baseFrame, e);
-					throw new RuntimeException(e);
-				}
-            }
-            case MLT_DWARFS -> {
-                try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
-                	Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
-                    List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-                        return new BrownDwarfLookupEntry(line.split(",", -1));
-                    }).collect(Collectors.toList());
-                    spectralTypeLookupService = new SpectralTypeLookupService(entries);
-                } catch (IOException e) {
-                	showExceptionDialog(baseFrame, e);
-                	throw new RuntimeException(e);
-				}
-            }
-        }
+		switch (selectedTable) {
+		case MAIN_SEQUENCE -> {
+			try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
+				Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
+				List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+					return new SpectralTypeLookupEntry(line.split(",", -1));
+				}).collect(Collectors.toList());
+				spectralTypeLookupService = new SpectralTypeLookupService(entries);
+			} catch (IOException e) {
+				showExceptionDialog(baseFrame, e);
+				throw new RuntimeException(e);
+			}
+		}
+		case MLT_DWARFS -> {
+			try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
+				Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
+				List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+					return new BrownDwarfLookupEntry(line.split(",", -1));
+				}).collect(Collectors.toList());
+				spectralTypeLookupService = new SpectralTypeLookupService(entries);
+			} catch (IOException e) {
+				showExceptionDialog(baseFrame, e);
+				throw new RuntimeException(e);
+			}
+		}
+		default -> throw new IllegalArgumentException("Unexpected value: " + selectedTable);
+		}
 
         try (Scanner scanner = new Scanner(file)) {
             String[] columns = scanner.nextLine().split(SPLIT_CHAR);

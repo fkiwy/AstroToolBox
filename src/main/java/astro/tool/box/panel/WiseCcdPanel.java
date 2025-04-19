@@ -1,17 +1,15 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.util.CSVParser;
+import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
+import static astro.tool.box.function.NumericFunctions.addPlusSign;
+import static astro.tool.box.function.NumericFunctions.roundDouble;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.ToolboxHelper.createPDF;
+import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
+import static astro.tool.box.main.ToolboxHelper.retrieveCatalogEntry;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -29,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -36,6 +35,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -48,6 +48,17 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.CatWiseCatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
+import astro.tool.box.catalog.UnWiseCatalogEntry;
+import astro.tool.box.catalog.VhsCatalogEntry;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.util.CSVParser;
 
 public class WiseCcdPanel extends JPanel {
 

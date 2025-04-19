@@ -1,17 +1,23 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateLinearDistance;
+import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 public class LinearDistanceTool {
@@ -36,23 +42,23 @@ public class LinearDistanceTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Coordinates object 1 (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates object 1 (deg): ", SwingConstants.RIGHT));
             JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(new JLabel("Coordinates object 2 (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates object 2 (deg): ", SwingConstants.RIGHT));
             JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 
-            mainPanel.add(new JLabel("Parallax object 1 (mas): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Parallax object 1 (mas): ", SwingConstants.RIGHT));
             JTextField fromParallaxField = new JTextField();
             mainPanel.add(fromParallaxField);
 
-            mainPanel.add(new JLabel("Parallax object 2 (mas): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Parallax object 2 (mas): ", SwingConstants.RIGHT));
             JTextField toParallaxField = new JTextField();
             mainPanel.add(toParallaxField);
 
-            mainPanel.add(new JLabel("Linear distance (pc): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Linear distance (pc): ", SwingConstants.RIGHT));
             JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);

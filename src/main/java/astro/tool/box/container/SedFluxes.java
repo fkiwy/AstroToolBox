@@ -3,7 +3,7 @@ package astro.tool.box.container;
 public class SedFluxes {
 
     private final double magnitude;
-    
+
     private final double fluxDensity;
 
     private final double fluxJansky;

@@ -1,17 +1,25 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ServiceHelper.*;
-import astro.tool.box.container.NumberPair;
+import static astro.tool.box.function.NumericFunctions.addPlusSign;
+import static astro.tool.box.main.ToolboxHelper.createEtchedBorder;
+import static astro.tool.box.main.ToolboxHelper.createHyperlink;
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.main.ToolboxHelper.showInfoDialog;
+import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
 import static astro.tool.box.util.ExternalResources.getVizierUrl;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +28,7 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -34,6 +43,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
+
+import astro.tool.box.container.NumberPair;
 
 public class VizierCatalogsTab implements Tab {
 
@@ -296,11 +307,25 @@ public class VizierCatalogsTab implements Tab {
                         }
                         if (found) {
                             matchesFound++;
+                            
+                            // Request focus for the text area
                             catalogArea.requestFocusInWindow();
-                            Rectangle viewRect = catalogArea.modelToView(position + findLength);
+
+                            // Convert the model position to a Shape (using modelToView2D)
+                            Shape viewShape = catalogArea.modelToView2D(position + findLength);
+
+                            // You need to convert the Shape to a Rectangle, so we can scroll it into view
+                            Rectangle viewRect = viewShape.getBounds();  // This gives us a bounding rectangle
+
+                            // Scroll the view to make sure the desired position is visible
                             catalogArea.scrollRectToVisible(viewRect);
+
+                            // Set the caret position to position + findLength
                             catalogArea.setCaretPosition(position + findLength);
+
+                            // Move the caret to the starting position
                             catalogArea.moveCaretPosition(position);
+
                             position += findLength;
                         } else {
                             String message;

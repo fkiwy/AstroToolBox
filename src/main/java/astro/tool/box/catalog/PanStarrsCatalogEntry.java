@@ -1,25 +1,43 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.ServiceHelper.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.function.NumericFunctions.toLong;
+import static astro.tool.box.function.PhotometricFunctions.getFlagLabels;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getIntegerComparator;
+import static astro.tool.box.util.Comparators.getLongComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
+import static astro.tool.box.util.Constants.LINE_BREAK;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createPanStarrsUrl;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
@@ -206,10 +224,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final PanStarrsCatalogEntry other = (PanStarrsCatalogEntry) obj;

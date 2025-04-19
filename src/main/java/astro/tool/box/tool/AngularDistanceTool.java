@@ -1,13 +1,18 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import astro.tool.box.enumeration.Unit;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -15,7 +20,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+
+import astro.tool.box.enumeration.Unit;
 
 public class AngularDistanceTool {
 
@@ -39,19 +47,19 @@ public class AngularDistanceTool {
             containerPanel.add(mainPanel);
             toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Coordinates object 1 (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates object 1 (deg): ", SwingConstants.RIGHT));
             JTextField fromCoordsField = new JTextField();
             mainPanel.add(fromCoordsField);
 
-            mainPanel.add(new JLabel("Coordinates object 2 (deg): ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Coordinates object 2 (deg): ", SwingConstants.RIGHT));
             JTextField toCoordsField = new JTextField();
             mainPanel.add(toCoordsField);
 
-            mainPanel.add(new JLabel("Angular distance unit: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Angular distance unit: ", SwingConstants.RIGHT));
             JComboBox resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
             mainPanel.add(resultUnits);
 
-            mainPanel.add(new JLabel("Angular distance: ", JLabel.RIGHT));
+            mainPanel.add(new JLabel("Angular distance: ", SwingConstants.RIGHT));
             JTextField resultField = new JTextField();
             resultField.setEditable(false);
             mainPanel.add(resultField);

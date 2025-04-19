@@ -1,21 +1,44 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.*;
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.util.Comparators.*;
-import static astro.tool.box.util.Constants.*;
-import static astro.tool.box.util.ConversionFactors.*;
-import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
+import static astro.tool.box.function.AstrometricFunctions.calculateTangentialVelocityFromParallax;
+import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
+import static astro.tool.box.function.AstrometricFunctions.calculateTotalVelocity;
+import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.NumericFunctions.toLong;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallaxError;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getLongComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.ESAC_TAP_URL;
+import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.addRow;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.MiscUtils.isVizierTAP;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
 
@@ -317,10 +340,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final GaiaDR3CatalogEntry other = (GaiaDR3CatalogEntry) obj;

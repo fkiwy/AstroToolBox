@@ -1,6 +1,6 @@
 package astro.tool.box.shape;
 
-import static java.lang.Math.*;
+import static java.lang.Math.round;
 
 import java.awt.Color;
 import java.awt.Font;

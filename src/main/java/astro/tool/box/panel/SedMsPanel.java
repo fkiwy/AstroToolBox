@@ -1,30 +1,27 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.function.PhotometricFunctions.*;
-import static astro.tool.box.function.StatisticFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.container.SedFluxes;
-import astro.tool.box.container.SedReferences;
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.NoirlabCatalogEntry;
-import astro.tool.box.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.container.SedBestMatch;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.enumeration.Band;
-import astro.tool.box.enumeration.Sed;
-import astro.tool.box.enumeration.SpectralType;
-import astro.tool.box.service.CatalogQueryService;
+import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
+import static astro.tool.box.function.NumericFunctions.addPlusSign;
+import static astro.tool.box.function.NumericFunctions.roundDouble;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecSN;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxDensity;
+import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxJansky;
+import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxLambda;
+import static astro.tool.box.function.StatisticFunctions.calculateMean;
+import static astro.tool.box.function.StatisticFunctions.determineMedian;
+import static astro.tool.box.main.ToolboxHelper.createPDF;
+import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
+import static astro.tool.box.main.ToolboxHelper.html;
+import static astro.tool.box.main.ToolboxHelper.retrieveCatalogEntry;
+import static astro.tool.box.main.ToolboxHelper.showScrollableDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.util.Constants.LINE_BREAK;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static java.lang.Math.abs;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -37,12 +34,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
-import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -52,6 +49,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -66,6 +65,27 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import astro.tool.box.catalog.AllWiseCatalogEntry;
+import astro.tool.box.catalog.CatWiseCatalogEntry;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.DesCatalogEntry;
+import astro.tool.box.catalog.NoirlabCatalogEntry;
+import astro.tool.box.catalog.PanStarrsCatalogEntry;
+import astro.tool.box.catalog.TwoMassCatalogEntry;
+import astro.tool.box.catalog.UhsCatalogEntry;
+import astro.tool.box.catalog.UkidssCatalogEntry;
+import astro.tool.box.catalog.UnWiseCatalogEntry;
+import astro.tool.box.catalog.VhsCatalogEntry;
+import astro.tool.box.container.SedBestMatch;
+import astro.tool.box.container.SedFluxes;
+import astro.tool.box.container.SedReferences;
+import astro.tool.box.enumeration.Band;
+import astro.tool.box.enumeration.Sed;
+import astro.tool.box.enumeration.SpectralType;
+import astro.tool.box.lookup.BrownDwarfLookupEntry;
+import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.service.CatalogQueryService;
 
 public class SedMsPanel extends JPanel {
 
@@ -126,7 +146,7 @@ public class SedMsPanel extends JPanel {
             plot.getRenderer().setSeriesToolTipGenerator(0, addToolTips());
         });
 
-        commandPanel.add(new JLabel("SED templates: ", JLabel.RIGHT));
+        commandPanel.add(new JLabel("SED templates: ", SwingConstants.RIGHT));
         commandPanel.add(spectralTypes);
         spectralTypes.addActionListener((ActionEvent e) -> {
             addReferenceSeds(sedPhotometry, collection);

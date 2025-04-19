@@ -1,7 +1,8 @@
 package astro.tool.box.lookup;
 
-import astro.tool.box.enumeration.Band;
 import java.util.Objects;
+
+import astro.tool.box.enumeration.Band;
 
 public class DistanceLookupResult {
 
@@ -49,10 +50,7 @@ public class DistanceLookupResult {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final DistanceLookupResult other = (DistanceLookupResult) obj;

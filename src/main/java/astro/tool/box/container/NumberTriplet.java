@@ -33,10 +33,7 @@ public class NumberTriplet {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
         final NumberTriplet other = (NumberTriplet) obj;

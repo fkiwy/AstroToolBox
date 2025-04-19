@@ -1,14 +1,20 @@
 package astro.tool.box.function;
 
-import astro.tool.box.container.StringPair;
-import static astro.tool.box.function.AstrometricFunctions.*;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.enumeration.Color;
-import static java.lang.Math.*;
+import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
+import static java.lang.Math.abs;
+import static java.lang.Math.log;
+import static java.lang.Math.log10;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import astro.tool.box.container.StringPair;
+import astro.tool.box.enumeration.Color;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
 
 public class PhotometricFunctions {
 

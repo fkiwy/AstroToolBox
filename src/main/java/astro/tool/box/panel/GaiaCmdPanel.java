@@ -1,12 +1,20 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.Application.*;
-import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.*;
-import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.catalog.GaiaCmd;
-import astro.tool.box.util.CSVParser;
+import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
+import static astro.tool.box.function.NumericFunctions.addPlusSign;
+import static astro.tool.box.function.NumericFunctions.roundDouble;
+import static astro.tool.box.function.NumericFunctions.roundTo1Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
+import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.main.Application.CMD_DATA;
+import static astro.tool.box.main.ToolboxHelper.createPDF;
+import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
+import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+import static astro.tool.box.main.ToolboxHelper.html;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.util.Constants.LINE_BREAK;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -28,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -38,6 +47,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -51,6 +61,10 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import astro.tool.box.catalog.GaiaCmd;
+import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.util.CSVParser;
 
 public class GaiaCmdPanel extends JPanel {
 
