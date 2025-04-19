@@ -16,32 +16,30 @@ import astro.tool.box.lookup.SpectralTypeLookup;
 
 public class SpectralTypeLookupService {
 
-    private final List<SpectralTypeLookup> entries;
+	private final List<SpectralTypeLookup> entries;
 
-    public SpectralTypeLookupService(List<SpectralTypeLookup> entries) {
-        this.entries = entries;
-    }
+	public SpectralTypeLookupService(List<SpectralTypeLookup> entries) {
+		this.entries = entries;
+	}
 
-    public List<LookupResult> lookup(Map<Color, Double> colors) {
-        List<LookupResult> results = new ArrayList<>();
-        SpectralTypeLookup minEntry = entries.get(0);
-        for (SpectralTypeLookup maxEntry : entries) {
-            for (Entry<Color, Double> color : colors.entrySet()) {
-                Color colorKey = color.getKey();
-                Double colorValue = color.getValue();
-                LookupResult result = evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
-                if (result != null) {
-                    Double sptNum = SPECTRAL_TYPES.get(result.getSpt().replace("V", ""));
-                    result.setSptNum(sptNum);
-                    results.add(result);
-                }
-            }
-            minEntry = maxEntry;
-        }
-        return results.stream()
-                .distinct()
-                .sorted(Comparator.comparing(LookupResult::getSptNum))
-                .collect(Collectors.toList());
-    }
+	public List<LookupResult> lookup(Map<Color, Double> colors) {
+		List<LookupResult> results = new ArrayList<>();
+		SpectralTypeLookup minEntry = entries.get(0);
+		for (SpectralTypeLookup maxEntry : entries) {
+			for (Entry<Color, Double> color : colors.entrySet()) {
+				Color colorKey = color.getKey();
+				Double colorValue = color.getValue();
+				LookupResult result = evaluateSpectralType(colorKey, colorValue, minEntry, maxEntry);
+				if (result != null) {
+					Double sptNum = SPECTRAL_TYPES.get(result.getSpt().replace("V", ""));
+					result.setSptNum(sptNum);
+					results.add(result);
+				}
+			}
+			minEntry = maxEntry;
+		}
+		return results.stream().distinct().sorted(Comparator.comparing(LookupResult::getSptNum))
+				.collect(Collectors.toList());
+	}
 
 }

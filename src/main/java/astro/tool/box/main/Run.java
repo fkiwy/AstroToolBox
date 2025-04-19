@@ -8,13 +8,13 @@ import javax.swing.WindowConstants;
 
 public class Run {
 
-    public static void main(String[] args) throws Exception {
-        InputStream input = Run.class.getResourceAsStream("/logging.properties");
-        LogManager.getLogManager().readConfiguration(input);
-        Locale.setDefault(Locale.US);
-        Application application = new Application();
-        application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        application.init();
-    }
+	public static void main(String[] args) throws Exception {
+		InputStream input = Run.class.getResourceAsStream("/logging.properties");
+		LogManager.getLogManager().readConfiguration(input);
+		Locale.setDefault(Locale.US);
+		Application application = new Application();
+		application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		application.init();
+	}
 
 }

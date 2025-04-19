@@ -14,230 +14,230 @@ import astro.tool.box.enumeration.JColor;
 
 public class GenericCatalogEntry implements CatalogEntry {
 
-    private String[] titles;
+	private String[] titles;
 
-    private String[] values;
+	private String[] values;
 
-    // Right ascension
-    private double ra;
+	// Right ascension
+	private double ra;
 
-    // Declination
-    private double dec;
+	// Declination
+	private double dec;
 
-    // Right ascension used for distance calculation
-    private double targetRa;
+	// Right ascension used for distance calculation
+	private double targetRa;
 
-    // Declination used for distance calculation
-    private double targetDec;
+	// Declination used for distance calculation
+	private double targetDec;
 
-    // Pixel RA position
-    private double pixelRa;
+	// Pixel RA position
+	private double pixelRa;
 
-    // Pixel declination position
-    private double pixelDec;
+	// Pixel declination position
+	private double pixelDec;
 
-    // Catalog name
-    private String catalogName;
+	// Catalog name
+	private String catalogName;
 
-    private final List<CatalogElement> catalogElements = new ArrayList<>();
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 
-    public GenericCatalogEntry() {
-    }
+	public GenericCatalogEntry() {
+	}
 
-    public GenericCatalogEntry(String[] titles, String[] values) {
-        this.titles = titles;
-        this.values = values;
-    }
+	public GenericCatalogEntry(String[] titles, String[] values) {
+		this.titles = titles;
+		this.values = values;
+	}
 
-    @Override
-    public CatalogEntry copy() {
-        return null;
-    }
+	@Override
+	public CatalogEntry copy() {
+		return null;
+	}
 
-    @Override
-    public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
-        return new GenericCatalogEntry();
-    }
+	@Override
+	public CatalogEntry getInstance(Map<String, Integer> columns, String[] values) {
+		return new GenericCatalogEntry();
+	}
 
-    @Override
-    public void loadCatalogElements() {
-        for (int i = 0; i < titles.length; i++) {
-            catalogElements.add(new CatalogElement(titles[i], values[i], Alignment.LEFT, null));
-        }
-    }
+	@Override
+	public void loadCatalogElements() {
+		for (int i = 0; i < titles.length; i++) {
+			catalogElements.add(new CatalogElement(titles[i], values[i], Alignment.LEFT, null));
+		}
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GenericCatalogEntry{");
-        sb.append(titles[0]).append("=").append(values[0]);
-        for (int i = 1; i < titles.length; i++) {
-            sb.append(", ").append(titles[i]).append("=").append(values[i]);
-        }
-        sb.append('}');
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("GenericCatalogEntry{");
+		sb.append(titles[0]).append("=").append(values[0]);
+		for (int i = 1; i < titles.length; i++) {
+			sb.append(", ").append(titles[i]).append("=").append(values[i]);
+		}
+		sb.append('}');
+		return sb.toString();
+	}
 
-    @Override
-    public String getCatalogName() {
-        return catalogName;
-    }
+	@Override
+	public String getCatalogName() {
+		return catalogName;
+	}
 
-    public void setCatalogName(String catalogName) {
-        this.catalogName = catalogName;
-    }
+	public void setCatalogName(String catalogName) {
+		this.catalogName = catalogName;
+	}
 
-    @Override
-    public java.awt.Color getCatalogColor() {
-        return JColor.LIGHT_GRAY.val;
-    }
+	@Override
+	public java.awt.Color getCatalogColor() {
+		return JColor.LIGHT_GRAY.val;
+	}
 
-    @Override
-    public String getCatalogQueryUrl() {
-        return "";
-    }
+	@Override
+	public String getCatalogQueryUrl() {
+		return "";
+	}
 
-    @Override
-    public String[] getColumnValues() {
-        return new String[0];
-    }
+	@Override
+	public String[] getColumnValues() {
+		return new String[0];
+	}
 
-    @Override
-    public String[] getColumnTitles() {
-        return new String[0];
-    }
+	@Override
+	public String[] getColumnTitles() {
+		return new String[0];
+	}
 
-    @Override
-    public Map<Band, NumberPair> getBands() {
-        return new LinkedHashMap<>();
-    }
+	@Override
+	public Map<Band, NumberPair> getBands() {
+		return new LinkedHashMap<>();
+	}
 
-    @Override
-    public Map<Color, Double> getColors(boolean toVega) {
-        return new LinkedHashMap<>();
-    }
+	@Override
+	public Map<Color, Double> getColors(boolean toVega) {
+		return new LinkedHashMap<>();
+	}
 
-    @Override
-    public String getMagnitudes() {
-        return "";
-    }
+	@Override
+	public String getMagnitudes() {
+		return "";
+	}
 
-    @Override
-    public String getSourceId() {
-        return "";
-    }
+	@Override
+	public String getSourceId() {
+		return "";
+	}
 
-    @Override
-    public double getRa() {
-        return ra;
-    }
+	@Override
+	public double getRa() {
+		return ra;
+	}
 
-    @Override
-    public void setRa(double ra) {
-        this.ra = ra;
-    }
+	@Override
+	public void setRa(double ra) {
+		this.ra = ra;
+	}
 
-    @Override
-    public double getDec() {
-        return dec;
-    }
+	@Override
+	public double getDec() {
+		return dec;
+	}
 
-    @Override
-    public void setDec(double dec) {
-        this.dec = dec;
-    }
+	@Override
+	public void setDec(double dec) {
+		this.dec = dec;
+	}
 
-    @Override
-    public double getSearchRadius() {
-        return 0;
-    }
+	@Override
+	public double getSearchRadius() {
+		return 0;
+	}
 
-    @Override
-    public void setSearchRadius(double searchRadius) {
-    }
+	@Override
+	public void setSearchRadius(double searchRadius) {
+	}
 
-    @Override
-    public double getTargetRa() {
-        return targetRa;
-    }
+	@Override
+	public double getTargetRa() {
+		return targetRa;
+	}
 
-    @Override
-    public void setTargetRa(double targetRa) {
-        this.targetRa = targetRa;
-    }
+	@Override
+	public void setTargetRa(double targetRa) {
+		this.targetRa = targetRa;
+	}
 
-    @Override
-    public double getTargetDec() {
-        return targetDec;
-    }
+	@Override
+	public double getTargetDec() {
+		return targetDec;
+	}
 
-    @Override
-    public void setTargetDec(double targetDec) {
-        this.targetDec = targetDec;
-    }
+	@Override
+	public void setTargetDec(double targetDec) {
+		this.targetDec = targetDec;
+	}
 
-    @Override
-    public double getPixelRa() {
-        return pixelRa;
-    }
+	@Override
+	public double getPixelRa() {
+		return pixelRa;
+	}
 
-    @Override
-    public void setPixelRa(double pixelRa) {
-        this.pixelRa = pixelRa;
-    }
+	@Override
+	public void setPixelRa(double pixelRa) {
+		this.pixelRa = pixelRa;
+	}
 
-    @Override
-    public double getPixelDec() {
-        return pixelDec;
-    }
+	@Override
+	public double getPixelDec() {
+		return pixelDec;
+	}
 
-    @Override
-    public void setPixelDec(double pixelDec) {
-        this.pixelDec = pixelDec;
-    }
+	@Override
+	public void setPixelDec(double pixelDec) {
+		this.pixelDec = pixelDec;
+	}
 
-    @Override
-    public String getSpt() {
-        return null;
-    }
+	@Override
+	public String getSpt() {
+		return null;
+	}
 
-    @Override
-    public void setSpt(String spt) {
-    }
+	@Override
+	public void setSpt(String spt) {
+	}
 
-    @Override
-    public List<CatalogElement> getCatalogElements() {
-        return catalogElements;
-    }
+	@Override
+	public List<CatalogElement> getCatalogElements() {
+		return catalogElements;
+	}
 
-    @Override
-    public double getPlx() {
-        return 0;
-    }
+	@Override
+	public double getPlx() {
+		return 0;
+	}
 
-    @Override
-    public double getPmra() {
-        return 0;
-    }
+	@Override
+	public double getPmra() {
+		return 0;
+	}
 
-    @Override
-    public double getPmdec() {
-        return 0;
-    }
+	@Override
+	public double getPmdec() {
+		return 0;
+	}
 
-    @Override
-    public double getTargetDistance() {
-        return 0;
-    }
+	@Override
+	public double getTargetDistance() {
+		return 0;
+	}
 
-    @Override
-    public double getParallacticDistance() {
-        return 0;
-    }
+	@Override
+	public double getParallacticDistance() {
+		return 0;
+	}
 
-    @Override
-    public double getTotalProperMotion() {
-        return 0;
-    }
+	@Override
+	public double getTotalProperMotion() {
+		return 0;
+	}
 
 }

@@ -27,73 +27,70 @@ import astro.tool.box.enumeration.Unit;
 
 public class AngularDistanceTool {
 
-    private final JFrame baseFrame;
-    private final JPanel toolPanel;
+	private final JFrame baseFrame;
+	private final JPanel toolPanel;
 
-    public AngularDistanceTool(JFrame baseFrame, JPanel toolPanel) {
-        this.baseFrame = baseFrame;
-        this.toolPanel = toolPanel;
-    }
+	public AngularDistanceTool(JFrame baseFrame, JPanel toolPanel) {
+		this.baseFrame = baseFrame;
+		this.toolPanel = toolPanel;
+	}
 
-    public void init() {
-        try {
-            JPanel mainPanel = new JPanel(new GridLayout(5, 2));
-            mainPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createEtchedBorder(), "Angular distance calculator", TitledBorder.LEFT, TitledBorder.TOP
-            ));
-            mainPanel.setPreferredSize(new Dimension(375, 150));
+	public void init() {
+		try {
+			JPanel mainPanel = new JPanel(new GridLayout(5, 2));
+			mainPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+					"Angular distance calculator", TitledBorder.LEFT, TitledBorder.TOP));
+			mainPanel.setPreferredSize(new Dimension(375, 150));
 
-            JPanel containerPanel = new JPanel();
-            containerPanel.add(mainPanel);
-            toolPanel.add(containerPanel);
+			JPanel containerPanel = new JPanel();
+			containerPanel.add(mainPanel);
+			toolPanel.add(containerPanel);
 
-            mainPanel.add(new JLabel("Coordinates object 1 (deg): ", SwingConstants.RIGHT));
-            JTextField fromCoordsField = new JTextField();
-            mainPanel.add(fromCoordsField);
+			mainPanel.add(new JLabel("Coordinates object 1 (deg): ", SwingConstants.RIGHT));
+			JTextField fromCoordsField = new JTextField();
+			mainPanel.add(fromCoordsField);
 
-            mainPanel.add(new JLabel("Coordinates object 2 (deg): ", SwingConstants.RIGHT));
-            JTextField toCoordsField = new JTextField();
-            mainPanel.add(toCoordsField);
+			mainPanel.add(new JLabel("Coordinates object 2 (deg): ", SwingConstants.RIGHT));
+			JTextField toCoordsField = new JTextField();
+			mainPanel.add(toCoordsField);
 
-            mainPanel.add(new JLabel("Angular distance unit: ", SwingConstants.RIGHT));
-            JComboBox resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
-            mainPanel.add(resultUnits);
+			mainPanel.add(new JLabel("Angular distance unit: ", SwingConstants.RIGHT));
+			JComboBox resultUnits = new JComboBox(new Unit[] { Unit.ARCSEC, Unit.MAS });
+			mainPanel.add(resultUnits);
 
-            mainPanel.add(new JLabel("Angular distance: ", SwingConstants.RIGHT));
-            JTextField resultField = new JTextField();
-            resultField.setEditable(false);
-            mainPanel.add(resultField);
+			mainPanel.add(new JLabel("Angular distance: ", SwingConstants.RIGHT));
+			JTextField resultField = new JTextField();
+			resultField.setEditable(false);
+			mainPanel.add(resultField);
 
-            mainPanel.add(new JLabel());
-            JButton calculateButton = new JButton("Calculate");
-            calculateButton.addActionListener((ActionEvent e) -> {
-                try {
-                    Unit resultUnit = (Unit) resultUnits.getSelectedItem();
-                    double conversionFactor;
-                    if (resultUnit.equals(Unit.ARCSEC)) {
-                        conversionFactor = DEG_ARCSEC;
-                    } else {
-                        conversionFactor = DEG_MAS;
-                    }
-                    double angularDistance = calculateAngularDistance(getCoordinates(fromCoordsField.getText()),
-                            getCoordinates(toCoordsField.getText()),
-                            conversionFactor
-                    );
-                    String result;
-                    if (resultUnit.equals(Unit.ARCSEC)) {
-                        result = roundTo6DecNZ(angularDistance);
-                    } else {
-                        result = roundTo3DecNZ(angularDistance);
-                    }
-                    resultField.setText(result);
-                } catch (Exception ex) {
-                    showErrorDialog(baseFrame, "Invalid input!");
-                }
-            });
-            mainPanel.add(calculateButton);
-        } catch (Exception ex) {
-            showExceptionDialog(baseFrame, ex);
-        }
-    }
+			mainPanel.add(new JLabel());
+			JButton calculateButton = new JButton("Calculate");
+			calculateButton.addActionListener((ActionEvent e) -> {
+				try {
+					Unit resultUnit = (Unit) resultUnits.getSelectedItem();
+					double conversionFactor;
+					if (resultUnit.equals(Unit.ARCSEC)) {
+						conversionFactor = DEG_ARCSEC;
+					} else {
+						conversionFactor = DEG_MAS;
+					}
+					double angularDistance = calculateAngularDistance(getCoordinates(fromCoordsField.getText()),
+							getCoordinates(toCoordsField.getText()), conversionFactor);
+					String result;
+					if (resultUnit.equals(Unit.ARCSEC)) {
+						result = roundTo6DecNZ(angularDistance);
+					} else {
+						result = roundTo3DecNZ(angularDistance);
+					}
+					resultField.setText(result);
+				} catch (Exception ex) {
+					showErrorDialog(baseFrame, "Invalid input!");
+				}
+			});
+			mainPanel.add(calculateButton);
+		} catch (Exception ex) {
+			showExceptionDialog(baseFrame, ex);
+		}
+	}
 
 }

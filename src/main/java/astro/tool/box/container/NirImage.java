@@ -4,50 +4,50 @@ import java.awt.image.BufferedImage;
 
 public class NirImage {
 
-    private final String filderId;
+	private final String filderId;
 
-    private final String extNo;
+	private final String extNo;
 
-    private final int year;
+	private final int year;
 
-    private final String imageUrl;
+	private final String imageUrl;
 
-    private BufferedImage image;
+	private BufferedImage image;
 
-    public NirImage(String filderId, String extNo, int year, String imageUrl) {
-        this.filderId = filderId;
-        this.extNo = extNo;
-        this.year = year;
-        this.imageUrl = imageUrl;
-    }
+	public NirImage(String filderId, String extNo, int year, String imageUrl) {
+		this.filderId = filderId;
+		this.extNo = extNo;
+		this.year = year;
+		this.imageUrl = imageUrl;
+	}
 
-    public NirImage(int year, BufferedImage image) {
-        this(null, null, year, null);
-        this.image = image;
-    }
+	public NirImage(int year, BufferedImage image) {
+		this(null, null, year, null);
+		this.image = image;
+	}
 
-    public String getFilderId() {
-        return filderId;
-    }
+	public String getFilderId() {
+		return filderId;
+	}
 
-    public String getExtNo() {
-        return extNo;
-    }
+	public String getExtNo() {
+		return extNo;
+	}
 
-    public int getYear() {
-        return year;
-    }
+	public int getYear() {
+		return year;
+	}
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+	public String getImageUrl() {
+		return imageUrl;
+	}
 
-    public BufferedImage getImage() {
-        return image;
-    }
+	public BufferedImage getImage() {
+		return image;
+	}
 
-    public void setImage(BufferedImage image) {
-        this.image = image;
-    }
+	public void setImage(BufferedImage image) {
+		this.image = image;
+	}
 
 }
