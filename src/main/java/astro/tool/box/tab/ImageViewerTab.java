@@ -314,9 +314,9 @@ public class ImageViewerTab implements Tab {
 
 	// Reference epochs:
 	// AllWISE: 2010.559
-	// CatWISE2020: 2015.405 -> catwise - allwise = 4.846
-	// Gaia DR2: 2015.5 -> gaiadr2 - allwise = 4.941
-	// Gaia DR3: 2016.0 -> gaiadr3 - allwise = 5.441
+	// CatWISE2020: 2015.405 -> CatWISE2020 - AllWISE = 4.846
+	// Gaia DR2: 2015.5 -> Gaia DR2 - AllWISE = 4.941
+	// Gaia DR3: 2016.0 -> Gaia DR3 - AllWISE = 5.441
 	public static final double ALLWISE_REFERENCE_EPOCH = 2010.559;
 	public static final double CATWISE_ALLWISE_EPOCH_DIFF = 4.846;
 	public static final double GAIADR2_ALLWISE_EPOCH_DIFF = 4.941;
@@ -794,10 +794,11 @@ public class ImageViewerTab implements Tab {
 				}
 			});
 
-			skipBadImages = new JCheckBox("Skip poor quality images", true);
+			skipBadImages = new JCheckBox("Skip poor quality images");
 			mainControlPanel.add(skipBadImages);
 			skipBadImages.addActionListener((ActionEvent evt) -> {
 				previousSize = -1;
+				skipIntermediateEpochs.setSelected(false);
 				createFlipbook();
 			});
 
@@ -3788,18 +3789,6 @@ public class ImageViewerTab implements Tab {
 				header.addValue("FORWARD", epoch.getForward(), "Scan direction");
 				header.addValue("MJDMEAN", mjdmean, "Mean MJD");
 				String meanObsDate = formatDate(mjdmean);
-				if (skipIntermediateEpochs.isSelected()) {
-					if (forward != null && forward != epoch.getForward()) {
-						writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate
-								+ " | skipped (bad scan direction)");
-						images.clear();
-						downloadRequestedEpochs(epoch.getForward(), band,
-								provideAlternateEpochs(requestedEpoch, epochs), images);
-						return;
-					} else {
-						forward = null;
-					}
-				}
 				if (skipBadImages.isSelected()) {
 					ImageData imageData = hdu.getData();
 					float[][] data = (float[][]) imageData.getData();
@@ -3816,15 +3805,8 @@ public class ImageViewerTab implements Tab {
 					if (badPixels > x * y * 0.5) {
 						writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | " + meanObsDate
 								+ " | skipped (poor quality image)");
-						if (skipIntermediateEpochs.isSelected()) {
-							images.clear();
-							downloadRequestedEpochs(epoch.getForward(), band,
-									provideAlternateEpochs(requestedEpoch, epochs), images);
-							return;
-						} else {
-							images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
-							continue;
-						}
+						images.put(imageKey, new ImageContainer(requestedEpoch, fits, true));
+						continue;
 					}
 				}
 				images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
@@ -3853,19 +3835,6 @@ public class ImageViewerTab implements Tab {
 		extractHeaderInfo(containers.get(0).getImage()); // Must be the first image in the list
 		containers.stream().map(ImageContainer::getImage).forEach(i -> addImage(band, i));
 		epochCount = containers.size();
-	}
-
-	private List<Epoch> provideAlternateEpochs(int requestedEpoch, List<Epoch> epochs) {
-		int mean = epochs.size() / 2;
-		if (requestedEpoch < mean) {
-			epochs.get(0).setEpoch(epochs.get(0).getEpoch() + 1);
-			epochs.get(1).setEpoch(epochs.get(1).getEpoch() + 1);
-		} else {
-			int last = epochs.size() - 1;
-			epochs.get(last - 1).setEpoch(epochs.get(last - 1).getEpoch() - 1);
-			epochs.get(last).setEpoch(epochs.get(last).getEpoch() - 1);
-		}
-		return epochs;
 	}
 
 	private double getMjdmean(Header header) throws Exception {
