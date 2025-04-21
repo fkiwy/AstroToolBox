@@ -545,8 +545,7 @@ public class AdqlQueryTab implements Tab {
 				try {
 					String result = readResponse(establishHttpConnection(createSynchQueryUrl(encodedQuery)),
 							QUERY_SERVICE);
-					if (TapProvider.ESAC.equals(getTapProvider())) {
-						// Transform mutliple lines to single lines
+					if (TapProvider.ESA_GAIA.equals(getTapProvider())) {
 						result = result.replace("\n\"\r\n", "").replace("\n\"", "[br]").replace("\r\n", " ")
 								.replace("[br]", "\n\"");
 					}

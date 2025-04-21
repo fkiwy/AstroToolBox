@@ -22,7 +22,7 @@ import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagn
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.Comparators.getLongComparator;
 import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.ESAC_TAP_URL;
+import static astro.tool.box.util.Constants.ESA_GAIA_TAP_URL;
 import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
 import static astro.tool.box.util.MiscUtils.addRow;
@@ -406,7 +406,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 		if (isVizierTAP()) {
 			return VIZIER_TAP_URL + encodeQuery(createCatalogQuery());
 		} else {
-			return ESAC_TAP_URL + encodeQuery(createAltCatalogQuery());
+			return ESA_GAIA_TAP_URL + encodeQuery(createAltCatalogQuery());
 		}
 	}
 
@@ -415,7 +415,7 @@ public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, Pro
 		if (isVizierTAP()) {
 			return VIZIER_TAP_URL + encodeQuery(createProperMotionQuery());
 		} else {
-			return ESAC_TAP_URL + encodeQuery(createAltProperMotionQuery());
+			return ESA_GAIA_TAP_URL + encodeQuery(createAltProperMotionQuery());
 		}
 	}
 

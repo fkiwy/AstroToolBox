@@ -22,9 +22,11 @@ public class Constants {
 
 	public static final String NOIRLAB_TAP_URL = NOIRLAB_BASE_URL + TAP_URL_PARAMS;
 
-	public static final String ESAC_BASE_URL = "https://gea.esac.esa.int/tap-server/tap";
+	public static final String ESA_EUCLID_BASE_URL = "https://eas.esac.esa.int/tap-server/tap";
 
-	public static final String ESAC_TAP_URL = ESAC_BASE_URL + TAP_URL_PARAMS;
+	public static final String ESA_GAIA_BASE_URL = "https://gea.esac.esa.int/tap-server/tap";
+
+	public static final String ESA_GAIA_TAP_URL = ESA_GAIA_BASE_URL + TAP_URL_PARAMS;
 
 	public static final String VIZIER_BASE_URL = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap";
 
