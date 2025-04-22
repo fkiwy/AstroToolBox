@@ -165,7 +165,7 @@ import astro.tool.box.util.GifSequencer;
 public class ToolboxHelper {
 
 	public static final String PGM_NAME = "AstroToolBox";
-	public static final String PGM_VERSION = "4.3.2";
+	public static final String PGM_VERSION = "4.4.0";
 	public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 
 	public static final String USER_HOME = System.getProperty("user.home");
