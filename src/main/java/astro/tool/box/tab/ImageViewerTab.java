@@ -149,6 +149,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -211,6 +212,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultCaret;
+
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.Artifact;
@@ -374,6 +381,7 @@ public class ImageViewerTab implements Tab {
 	private JButton changeFovButton;
 	private JButton stopDownloadButton;
 	private JRadioButton wiseviewCutouts;
+	private JRadioButton unwiseCutouts;
 	private JRadioButton desiCutouts;
 	private JRadioButton ps1Cutouts;
 	private JRadioButton showCatalogsButton;
@@ -609,7 +617,7 @@ public class ImageViewerTab implements Tab {
 			// ===================
 			// Tab: Main controls
 			// ===================
-			int rows = 38;
+			int rows = 39;
 			if (nearestBywSubjects) {
 				rows += 3;
 			}
@@ -875,6 +883,16 @@ public class ImageViewerTab implements Tab {
 				createFlipbook();
 			});
 
+			unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
+			mainControlPanel.add(unwiseCutouts);
+			unwiseCutouts.setToolTipText(
+					"unWISE deep coadds are from https://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
+			unwiseCutouts.addActionListener((ActionEvent evt) -> {
+				pixelScale = PIXEL_SCALE_WISE;
+				previousSize = 0;
+				createFlipbook();
+			});
+
 			desiCutouts = new JRadioButton(html("DECaLS cutouts " + INFO_ICON));
 			mainControlPanel.add(desiCutouts);
 			desiCutouts.setToolTipText(
@@ -897,6 +915,7 @@ public class ImageViewerTab implements Tab {
 
 			ButtonGroup cutoutGroup = new ButtonGroup();
 			cutoutGroup.add(wiseviewCutouts);
+			cutoutGroup.add(unwiseCutouts);
 			cutoutGroup.add(desiCutouts);
 			cutoutGroup.add(ps1Cutouts);
 
@@ -2761,6 +2780,7 @@ public class ImageViewerTab implements Tab {
 				separateScanDirections.setEnabled(false);
 				differenceImaging.setEnabled(false);
 				wiseviewCutouts.setEnabled(false);
+				unwiseCutouts.setEnabled(false);
 				desiCutouts.setEnabled(false);
 				ps1Cutouts.setEnabled(false);
 
@@ -3204,6 +3224,7 @@ public class ImageViewerTab implements Tab {
 		}
 		differenceImaging.setEnabled(true);
 		wiseviewCutouts.setEnabled(true);
+		unwiseCutouts.setEnabled(true);
 		desiCutouts.setEnabled(true);
 		ps1Cutouts.setEnabled(true);
 		if (waitCursor) {
@@ -3769,6 +3790,22 @@ public class ImageViewerTab implements Tab {
 					writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | cached");
 					continue;
 				}
+				if (unwiseCutouts.isSelected()) {
+					if (requestedEpoch % 2 > 0) {
+						container = images.get(band + "_" + (requestedEpoch - 1));
+						if (container != null) {
+							Fits fits = new Fits();
+							fits.addHDU(Fits.makeHDU(container.getImage().getHDU(0).getData().getData()));
+							Header header = fits.getHDU(0).getHeader();
+							header.addValue("FORWARD", epoch.getForward(), "Scan direction");
+							header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
+							images.put(imageKey, new ImageContainer(requestedEpoch, fits, false));
+							writeLogEntry("band " + band + " | epoch " + requestedEpoch + " | "
+									+ formatDate(epoch.getMjdmean()) + " | downloaded");
+							continue;
+						}
+					}
+				}
 				Fits fits;
 				ImageHDU hdu;
 				try {
@@ -3885,10 +3922,40 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private InputStream getImageData(int band, int epoch) throws Exception {
-		String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec=" + targetDec
-				+ "&size=" + size + "&band=" + band + "&epoch=" + epoch;
-		HttpURLConnection connection = establishHttpConnection(imageUrl);
-		return connection.getInputStream();
+		if (unwiseCutouts.isSelected()) {
+			epoch /= 2;
+			String unwiseEpoch;
+			if (epoch == 0) {
+				unwiseEpoch = "allwise";
+			} else {
+				unwiseEpoch = "neo" + ((int) Math.round(((epoch - 1) * 6.0) / 9 + 1));
+			}
+			String unwiseURL = "https://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on"
+					.formatted(unwiseEpoch, targetRa, targetDec, size, band);
+			try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
+					InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE);
+					InputStream gzi = new GzipCompressorInputStream(bi);
+					ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
+				ArchiveEntry entry;
+				Map<Long, byte[]> entries = new HashMap();
+				while ((entry = ti.getNextEntry()) != null) {
+					byte[] buf = new byte[(int) entry.getSize()];
+					IOUtils.readFully(ti, buf);
+					entries.put(entry.getSize(), buf);
+				}
+				List<Long> sizes = entries.keySet().stream().collect(toList());
+				sizes.sort(Comparator.reverseOrder());
+				long largest = sizes.get(0);
+				return new ByteArrayInputStream(entries.get(largest));
+			} catch (Exception e) {
+				return getImageData(band, epoch - 1);
+			}
+		} else {
+			String imageUrl = getUserSetting(CUTOUT_SERVICE, CUTOUT_SERVICE_URL) + "?ra=" + targetRa + "&dec="
+					+ targetDec + "&size=" + size + "&band=" + band + "&epoch=" + epoch;
+			HttpURLConnection connection = establishHttpConnection(imageUrl);
+			return connection.getInputStream();
+		}
 	}
 
 	private void retrieveDesiImages(int band, Map<String, ImageContainer> images) throws Exception {
@@ -4378,6 +4445,10 @@ public class ImageViewerTab implements Tab {
 		ImageViewerTab imageViewerTab = application.getImageViewerTab();
 		imageViewerTab.getCoordsField().setText(roundTo7DecNZ(targetRa) + " " + roundTo7DecNZ(targetDec));
 		imageViewerTab.getSizeField().setText(differentSizeField.getText());
+		if (unwiseCutouts.isSelected()) {
+			imageViewerTab.setPixelScale(PIXEL_SCALE_WISE);
+			imageViewerTab.getWiseCoadds().setSelected(true);
+		}
 		if (desiCutouts.isSelected()) {
 			imageViewerTab.setPixelScale(PIXEL_SCALE_DECAM);
 			imageViewerTab.getDesiCutouts().setSelected(true);
@@ -6326,6 +6397,10 @@ public class ImageViewerTab implements Tab {
 
 	public JTextField getProperMotionField() {
 		return properMotionField;
+	}
+
+	public JRadioButton getWiseCoadds() {
+		return unwiseCutouts;
 	}
 
 	public JRadioButton getDesiCutouts() {
