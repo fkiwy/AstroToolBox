@@ -735,6 +735,9 @@ public class ImageViewerTab implements Tab {
 			mainControlPanel.add(skipIntermediateEpochs);
 			skipIntermediateEpochs.addActionListener((ActionEvent evt) -> {
 				if (skipIntermediateEpochs.isSelected()) {
+					if (skipBadImages.isSelected()) {
+						skipBadImages.setSelected(false);
+					}
 					imagesW1.clear();
 					imagesW2.clear();
 					imagesW1.putAll(imagesW1Ends);
@@ -797,8 +800,10 @@ public class ImageViewerTab implements Tab {
 			skipBadImages = new JCheckBox("Skip poor quality images");
 			mainControlPanel.add(skipBadImages);
 			skipBadImages.addActionListener((ActionEvent evt) -> {
+				if (skipBadImages.isSelected() && skipIntermediateEpochs.isSelected()) {
+					skipIntermediateEpochs.setSelected(false);
+				}
 				previousSize = -1;
-				skipIntermediateEpochs.setSelected(false);
 				createFlipbook();
 			});
 
