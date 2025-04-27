@@ -3,6 +3,7 @@ package astro.tool.box.tab;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.AstrometricFunctions.calculatePositionFromProperMotion;
 import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.function.AstrometricFunctions.convertDateTimeToMJD;
 import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
@@ -161,6 +162,7 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -305,6 +307,7 @@ public class ImageViewerTab implements Tab {
 	public static final WiseBand WISE_BAND = WiseBand.W1W2;
 	public static final double OVERLAP_FACTOR = 0.9;
 	public static final int NUMBER_OF_WISE_EPOCHS = 10;
+	public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
 	public static final int WINDOW_SPACING = 25;
 	public static final int CATALOG_PANEL_WIDTH = 700;
 	public static final int PANEL_HEIGHT = 220;
@@ -719,11 +722,29 @@ public class ImageViewerTab implements Tab {
 				processImages();
 			});
 
+			wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
+			wiseviewCutouts.setToolTipText(
+					"WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
+			wiseviewCutouts.addActionListener((ActionEvent evt) -> {
+				pixelScale = PIXEL_SCALE_WISE;
+				previousSize = 0;
+				createFlipbook();
+			});
+
+			unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
+			unwiseCutouts.setToolTipText(
+					"unWISE deep coadds are from https://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
+			unwiseCutouts.addActionListener((ActionEvent evt) -> {
+				pixelScale = PIXEL_SCALE_WISE;
+				previousSize = 0;
+				createFlipbook();
+			});
+
 			String stackText = "Images per blink: %d";
 			JLabel stackLabel = new JLabel(stackText.formatted(stackSize));
 			mainControlPanel.add(stackLabel);
 
-			stackSlider = new JSlider(1, NUMBER_OF_WISE_EPOCHS, 1);
+			stackSlider = new JSlider(1, getNumberOfWiseEpochs(), 1);
 			mainControlPanel.add(stackSlider);
 			stackSlider.addChangeListener((ChangeEvent e) -> {
 				stackSize = stackSlider.getValue();
@@ -878,25 +899,8 @@ public class ImageViewerTab implements Tab {
 				enableAll();
 			});
 
-			wiseviewCutouts = new JRadioButton(html("WISE cutouts (sep. scan) " + INFO_ICON), true);
 			mainControlPanel.add(wiseviewCutouts);
-			wiseviewCutouts.setToolTipText(
-					"WISE cutouts are from http://byw.tools/wiseview and have separate scan directions,\nwhich can be activated by ticking the 'Separate scan directions' checkbox.");
-			wiseviewCutouts.addActionListener((ActionEvent evt) -> {
-				pixelScale = PIXEL_SCALE_WISE;
-				previousSize = 0;
-				createFlipbook();
-			});
-
-			unwiseCutouts = new JRadioButton(html("unWISE deep coadds " + INFO_ICON));
 			mainControlPanel.add(unwiseCutouts);
-			unwiseCutouts.setToolTipText(
-					"unWISE deep coadds are from https://unwise.me and do not have separate scan directions.\nSeveral epochs are stacked together so that high proper motion objects may look smeared.");
-			unwiseCutouts.addActionListener((ActionEvent evt) -> {
-				pixelScale = PIXEL_SCALE_WISE;
-				previousSize = 0;
-				createFlipbook();
-			});
 
 			desiCutouts = new JRadioButton(html("DECaLS cutouts " + INFO_ICON));
 			mainControlPanel.add(desiCutouts);
@@ -2941,8 +2945,29 @@ public class ImageViewerTab implements Tab {
 					baseFrame.repaint();
 				}
 				writeLogEntry("Target: " + coordsField.getText() + " FoV: " + sizeField.getText() + "\"");
-				List<Epoch> epochsW1 = tile.getEpochs().stream().filter(e -> (e.getBand() == 1)).collect(toList());
-				List<Epoch> epochsW2 = tile.getEpochs().stream().filter(e -> (e.getBand() == 2)).collect(toList());
+				List<Epoch> epochsW1;
+				List<Epoch> epochsW2;
+				if (unwiseCutouts.isSelected()) {
+					epochsW1 = new ArrayList<>();
+					epochsW2 = new ArrayList<>();
+					double mjd = convertDateTimeToMJD(LocalDate.of(2010, 6, 1).atStartOfDay()).doubleValue();
+					epochsW1.add(new Epoch(1, 0, 0, mjd));
+					epochsW1.add(new Epoch(1, 1, 1, mjd));
+					epochsW2.add(new Epoch(2, 0, 0, mjd));
+					epochsW2.add(new Epoch(2, 1, 1, mjd));
+					int year = 2013;
+					for (int i = 2; i <= (NUMBER_OF_UNWISE_EPOCHS - 1) * 2 + 1; i++) {
+						int forward = i % 2 == 0 ? 0 : 1;
+						mjd = convertDateTimeToMJD(LocalDate.of(year + i / 2, 6, 1).atStartOfDay()).doubleValue();
+						epochsW1.add(new Epoch(1, i, forward, mjd));
+						epochsW2.add(new Epoch(2, i, forward, mjd));
+					}
+				} else {
+					epochsW1 = tile.getEpochs().stream().filter(e -> (e.getBand() == 1)).collect(toList());
+					epochsW2 = tile.getEpochs().stream().filter(e -> (e.getBand() == 2)).collect(toList());
+				}
+				epochsW1.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
+				epochsW2.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
 				if (skipIntermediateEpochs.isSelected()) {
 					List<Epoch> tempEpochs;
 
@@ -3057,7 +3082,7 @@ public class ImageViewerTab implements Tab {
 			boolean desi = desiCutouts.isSelected();
 			boolean ps1 = ps1Cutouts.isSelected();
 
-			if (wiseviewCutouts.isSelected() || ps1Cutouts.isSelected()) {
+			if (wiseviewCutouts.isSelected() || unwiseCutouts.isSelected() || ps1Cutouts.isSelected()) {
 				band1Scan1Images = stackImages(band1Scan1Images, stackSize);
 				band1Scan2Images = stackImages(band1Scan2Images, stackSize);
 				band2Scan1Images = stackImages(band2Scan1Images, stackSize);
@@ -3933,7 +3958,7 @@ public class ImageViewerTab implements Tab {
 			if (epoch == 0) {
 				unwiseEpoch = "allwise";
 			} else {
-				unwiseEpoch = "neo" + ((int) Math.round(((epoch - 1) * 6.0) / 9 + 1));
+				unwiseEpoch = "neo" + epoch;
 			}
 			String unwiseURL = "https://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on"
 					.formatted(unwiseEpoch, targetRa, targetDec, size, band);
@@ -5822,7 +5847,7 @@ public class ImageViewerTab implements Tab {
 						flipbookIndex -= flipbookSize;
 					}
 				}
-				double totalEpochs = (flipbookIndex / flipbookSize) * NUMBER_OF_WISE_EPOCHS * 2;
+				double totalEpochs = (flipbookIndex / flipbookSize) * getNumberOfWiseEpochs() * 2;
 				NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
 				NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
 				Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
@@ -5837,7 +5862,7 @@ public class ImageViewerTab implements Tab {
 				double fromX = fromPoint.getX();
 				double fromY = fromPoint.getY();
 
-				numberOfYears = NUMBER_OF_WISE_EPOCHS + 2; // +2 years -> hibernation period
+				numberOfYears = getNumberOfWiseEpochs() + 2; // +2 years -> hibernation period
 
 				NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec),
 						new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
@@ -6362,6 +6387,10 @@ public class ImageViewerTab implements Tab {
 		double factor = desiCutouts.isSelected() || ps1Cutouts.isSelected() ? 0.25 : 0.15;
 		double overlaySize = scale * factor * zoom * sqrt(size) / size;
 		return max(5, min(overlaySize, 15));
+	}
+
+	private int getNumberOfWiseEpochs() {
+		return wiseviewCutouts.isSelected() ? NUMBER_OF_WISE_EPOCHS : NUMBER_OF_UNWISE_EPOCHS;
 	}
 
 	public JCheckBox getBlurImages() {
