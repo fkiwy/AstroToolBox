@@ -4,35 +4,35 @@ import java.time.LocalDate;
 
 public class Version {
 
-    private final String number;
+	private final String number;
 
-    private final boolean latest;
+	private final boolean latest;
 
-    private final LocalDate date;
+	private final LocalDate date;
 
-    private final String message;
+	private final String message;
 
-    public Version(String number, boolean latest, int year, int month, int day, String message) {
-        this.number = number;
-        this.latest = latest;
-        this.date = LocalDate.of(year, month, day);
-        this.message = message;
-    }
+	public Version(String number, boolean latest, int year, int month, int day, String message) {
+		this.number = number;
+		this.latest = latest;
+		this.date = LocalDate.of(year, month, day);
+		this.message = message;
+	}
 
-    public String getNumber() {
-        return number;
-    }
+	public String getNumber() {
+		return number;
+	}
 
-    public boolean isLatest() {
-        return latest;
-    }
+	public boolean isLatest() {
+		return latest;
+	}
 
-    public LocalDate getDate() {
-        return date;
-    }
+	public LocalDate getDate() {
+		return date;
+	}
 
-    public String getMessage() {
-        return message;
-    }
+	public String getMessage() {
+		return message;
+	}
 
 }

@@ -2,8 +2,8 @@ package astro.tool.box.catalog;
 
 public interface ProperMotionQuery extends CatalogEntry {
 
-    String getMotionQueryUrl();
+	String getMotionQueryUrl();
 
-    void setTpm(double tpm);
+	void setTpm(double tpm);
 
 }

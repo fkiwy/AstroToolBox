@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>astro.tool.box</groupId>
     <artifactId>astro-tool-box</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
     <packaging>jar</packaging>
     <name>AstroToolBox</name>
     <properties>
@@ -86,6 +86,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.26.2</version>
         </dependency>
         <dependency>
             <groupId>org.jfree</groupId>

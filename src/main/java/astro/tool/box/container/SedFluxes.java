@@ -2,35 +2,35 @@ package astro.tool.box.container;
 
 public class SedFluxes {
 
-    private final double magnitude;
-    
-    private final double fluxDensity;
+	private final double magnitude;
 
-    private final double fluxJansky;
+	private final double fluxDensity;
 
-    private final double fluxLambda;
+	private final double fluxJansky;
 
-    public SedFluxes(double magnitude, double fluxDensity, double fluxJansky, double fluxLambda) {
-        this.magnitude = magnitude;
-        this.fluxDensity = fluxDensity;
-        this.fluxJansky = fluxJansky;
-        this.fluxLambda = fluxLambda;
-    }
+	private final double fluxLambda;
 
-    public double getMagnitude() {
-        return magnitude;
-    }
+	public SedFluxes(double magnitude, double fluxDensity, double fluxJansky, double fluxLambda) {
+		this.magnitude = magnitude;
+		this.fluxDensity = fluxDensity;
+		this.fluxJansky = fluxJansky;
+		this.fluxLambda = fluxLambda;
+	}
 
-    public double getFluxDensity() {
-        return fluxDensity;
-    }
+	public double getMagnitude() {
+		return magnitude;
+	}
 
-    public double getFluxJansky() {
-        return fluxJansky;
-    }
+	public double getFluxDensity() {
+		return fluxDensity;
+	}
 
-    public double getFluxLambda() {
-        return fluxLambda;
-    }
+	public double getFluxJansky() {
+		return fluxJansky;
+	}
+
+	public double getFluxLambda() {
+		return fluxLambda;
+	}
 
 }

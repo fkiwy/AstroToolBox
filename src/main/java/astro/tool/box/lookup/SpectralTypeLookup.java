@@ -1,18 +1,19 @@
 package astro.tool.box.lookup;
 
-import astro.tool.box.enumeration.Color;
 import java.util.Map;
+
+import astro.tool.box.enumeration.Color;
 
 public interface SpectralTypeLookup {
 
-    String getSpt();
+	String getSpt();
 
-    int getTeff();
+	int getTeff();
 
-    double getRsun();
+	double getRsun();
 
-    double getMsun();
+	double getMsun();
 
-    Map<Color, Double> getColors();
+	Map<Color, Double> getColors();
 
 }

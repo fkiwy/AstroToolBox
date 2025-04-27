@@ -1,97 +1,99 @@
 package astro.tool.box.catalog;
 
 import static astro.tool.box.util.Constants.LINE_SEP;
+
+import java.util.List;
+import java.util.Map;
+
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
-import java.util.List;
-import java.util.Map;
 
 public interface CatalogEntry {
 
-    default String getEntryData() {
-        StringBuilder entryData = new StringBuilder(getCatalogName()).append(":");
-        List<CatalogElement> catalogElements = getCatalogElements();
-        for (int i = 1; i < catalogElements.size(); i++) {
-            CatalogElement catalogElement = catalogElements.get(i);
-            entryData.append(LINE_SEP).append(catalogElement.getName()).append(" = ").append(catalogElement.getValue());
-        }
-        return entryData.toString();
-    }
+	default String getEntryData() {
+		StringBuilder entryData = new StringBuilder(getCatalogName()).append(":");
+		List<CatalogElement> catalogElements = getCatalogElements();
+		for (int i = 1; i < catalogElements.size(); i++) {
+			CatalogElement catalogElement = catalogElements.get(i);
+			entryData.append(LINE_SEP).append(catalogElement.getName()).append(" = ").append(catalogElement.getValue());
+		}
+		return entryData.toString();
+	}
 
-    CatalogEntry copy();
+	CatalogEntry copy();
 
-    CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
+	CatalogEntry getInstance(Map<String, Integer> columns, String[] values);
 
-    void loadCatalogElements();
+	void loadCatalogElements();
 
-    String getCatalogName();
+	String getCatalogName();
 
-    java.awt.Color getCatalogColor();
+	java.awt.Color getCatalogColor();
 
-    String getCatalogQueryUrl();
+	String getCatalogQueryUrl();
 
-    String[] getColumnValues();
+	String[] getColumnValues();
 
-    String[] getColumnTitles();
+	String[] getColumnTitles();
 
-    Map<Band, NumberPair> getBands();
+	Map<Band, NumberPair> getBands();
 
-    Map<Color, Double> getColors(boolean toVega);
+	Map<Color, Double> getColors(boolean toVega);
 
-    String getMagnitudes();
+	String getMagnitudes();
 
-    default String getPhotometry() {
-        return null;
-    }
+	default String getPhotometry() {
+		return null;
+	}
 
-    String getSourceId();
+	String getSourceId();
 
-    double getRa();
+	double getRa();
 
-    void setRa(double ra);
+	void setRa(double ra);
 
-    double getDec();
+	double getDec();
 
-    void setDec(double dec);
+	void setDec(double dec);
 
-    double getSearchRadius();
+	double getSearchRadius();
 
-    void setSearchRadius(double searchRadius);
+	void setSearchRadius(double searchRadius);
 
-    double getTargetRa();
+	double getTargetRa();
 
-    void setTargetRa(double targetRa);
+	void setTargetRa(double targetRa);
 
-    double getTargetDec();
+	double getTargetDec();
 
-    void setTargetDec(double targetDec);
+	void setTargetDec(double targetDec);
 
-    double getPixelRa();
+	double getPixelRa();
 
-    void setPixelRa(double pixelRa);
+	void setPixelRa(double pixelRa);
 
-    double getPixelDec();
+	double getPixelDec();
 
-    void setPixelDec(double pixelDec);
+	void setPixelDec(double pixelDec);
 
-    String getSpt();
+	String getSpt();
 
-    void setSpt(String spt);
+	void setSpt(String spt);
 
-    List<CatalogElement> getCatalogElements();
+	List<CatalogElement> getCatalogElements();
 
-    double getPlx();
+	double getPlx();
 
-    double getPmra();
+	double getPmra();
 
-    double getPmdec();
+	double getPmdec();
 
-    double getTargetDistance();
+	double getTargetDistance();
 
-    double getParallacticDistance();
+	double getParallacticDistance();
 
-    double getTotalProperMotion();
+	double getTotalProperMotion();
 
 }

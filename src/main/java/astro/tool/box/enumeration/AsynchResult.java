@@ -2,6 +2,6 @@ package astro.tool.box.enumeration;
 
 public enum AsynchResult {
 
-    CANCELLED, ERROR, SUCCESS
+	CANCELLED, ERROR, SUCCESS
 
 }

@@ -4,28 +4,28 @@ import nom.tam.fits.Fits;
 
 public class ImageContainer {
 
-    private final int epoch;
+	private final int epoch;
 
-    private final Fits image;
+	private final Fits image;
 
-    private final boolean skip;
+	private final boolean skip;
 
-    public ImageContainer(int epoch, Fits image, boolean skip) {
-        this.epoch = epoch;
-        this.image = image;
-        this.skip = skip;
-    }
+	public ImageContainer(int epoch, Fits image, boolean skip) {
+		this.epoch = epoch;
+		this.image = image;
+		this.skip = skip;
+	}
 
-    public int getEpoch() {
-        return epoch;
-    }
+	public int getEpoch() {
+		return epoch;
+	}
 
-    public Fits getImage() {
-        return image;
-    }
+	public Fits getImage() {
+		return image;
+	}
 
-    public boolean isSkip() {
-        return skip;
-    }
+	public boolean isSkip() {
+		return skip;
+	}
 
 }
