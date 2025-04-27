@@ -1,5 +1,12 @@
 ## Release notes
 
+### AstroToolBox v4.4.0
+- Fix resource leaks
+- Refactor poor quality image processing
+- Add Euclid tables to ADQL query
+- Reintroduce unWISE deep coadds
+- Refactor processing of unWISE deep coadds 
+
 ### AstroToolBox v4.3.1
 - Fix a bug in the MS and WD SED panels
 
