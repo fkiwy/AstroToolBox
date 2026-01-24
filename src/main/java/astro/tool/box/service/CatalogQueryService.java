@@ -49,6 +49,8 @@ public class CatalogQueryService {
 						entry));
 			}
 			return catalogEntries;
+		} else if (catalogEntry instanceof UhsCatalogEntry entry) {
+			return entry.filterCatalogEntries(); 
 		}
 		return transformResponseToCatalogEntries(
 				readResponse(establishHttpConnection(catalogEntry.getMotionQueryUrl()), catalogEntry.getCatalogName()),

@@ -2,8 +2,8 @@ package astro.tool.box.tab;
 
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.AstrometricFunctions.calculatePositionFromProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
 import static astro.tool.box.function.AstrometricFunctions.convertDateTimeToMJD;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
 import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
@@ -358,6 +358,7 @@ public class ImageViewerTab implements Tab {
 	private List<CatalogEntry> sdssEntries;
 	private List<CatalogEntry> vhsEntries;
 	private List<CatalogEntry> uhsEntries;
+	private List<CatalogEntry> uhsTpmEntries;
 	private List<CatalogEntry> ukidssEntries;
 	private List<CatalogEntry> ukidssTpmEntries;
 	private List<CatalogEntry> twoMassEntries;
@@ -428,6 +429,7 @@ public class ImageViewerTab implements Tab {
 	private JCheckBox noirlabProperMotion;
 	private JCheckBox catWiseProperMotion;
 	private JCheckBox ukidssProperMotion;
+	private JCheckBox uhsProperMotion;
 	private JCheckBox showProperMotion;
 	private JCheckBox useCustomOverlays;
 	private JCheckBox dssImageSeries;
@@ -1274,12 +1276,22 @@ public class ImageViewerTab implements Tab {
 			});
 			properMotionPanel.add(catWiseProperMotion);
 
+			properMotionPanel = new JPanel(new GridLayout(1, 2));
+			overlaysControlPanel.add(properMotionPanel);
+
 			ukidssProperMotion = new JCheckBox(html("U<u>K</u>IDSS LAS"), overlays.isPmukidss());
 			ukidssProperMotion.setForeground(JColor.BLOOD.val);
 			ukidssProperMotion.addActionListener((ActionEvent evt) -> {
 				processImages();
 			});
-			overlaysControlPanel.add(ukidssProperMotion);
+			properMotionPanel.add(ukidssProperMotion);
+
+			uhsProperMotion = new JCheckBox(html("U<u>H</u>S DR3"), overlays.isPmuhs());
+			uhsProperMotion.setForeground(JColor.DARK_YELLOW.val);
+			uhsProperMotion.addActionListener((ActionEvent evt) -> {
+				processImages();
+			});
+			properMotionPanel.add(uhsProperMotion);
 
 			properMotionPanel = new JPanel(new GridLayout(1, 2));
 			overlaysControlPanel.add(properMotionPanel);
@@ -1370,6 +1382,7 @@ public class ImageViewerTab implements Tab {
 				overlays.setPmnoirlab(noirlabProperMotion.isSelected());
 				overlays.setPmcatwise(catWiseProperMotion.isSelected());
 				overlays.setPmukidss(ukidssProperMotion.isSelected());
+				overlays.setPmukidss(uhsProperMotion.isSelected());
 				overlays.setGhosts(ghostOverlay.isSelected());
 				overlays.setLatents(haloOverlay.isSelected());
 				overlays.setHalos(latentOverlay.isSelected());
@@ -2153,6 +2166,10 @@ public class ImageViewerTab implements Tab {
 									showPMInfo(ukidssTpmEntries, mouseX, mouseY, JColor.BLOOD.val);
 									count++;
 								}
+								if (uhsProperMotion.isSelected() && uhsTpmEntries != null) {
+									showPMInfo(uhsTpmEntries, mouseX, mouseY, JColor.DARK_YELLOW.val);
+									count++;
+								}
 								if (count == 0) {
 									if (showCrosshairs.isSelected()) {
 										copyCoordsToClipboard(newRa, newDec);
@@ -2540,6 +2557,13 @@ public class ImageViewerTab implements Tab {
 					ukidssProperMotion.getActionListeners()[0].actionPerformed(null);
 				}
 			};
+			Action keyActionForCtrlAltH = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					uhsProperMotion.setSelected(!uhsProperMotion.isSelected());
+					uhsProperMotion.getActionListeners()[0].actionPerformed(null);
+				}
+			};
 
 			// Assign actions to function keys
 			InputMap iMap = mainPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -2608,6 +2632,10 @@ public class ImageViewerTab implements Tab {
 			iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK),
 					"keyActionForCtrlAltK");
 			aMap.put("keyActionForCtrlAltK", keyActionForCtrlAltK);
+
+			iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK),
+					"keyActionForCtrlAltH");
+			aMap.put("keyActionForCtrlAltH", keyActionForCtrlAltH);
 
 			if (visible) {
 				tabbedPane.addTab(TAB_NAME, mainPanel);
@@ -3753,6 +3781,18 @@ public class ImageViewerTab implements Tab {
 				});
 			} else {
 				drawPMVectors(image, ukidssTpmEntries, JColor.BLOOD.val, epoch);
+			}
+		}
+		if (uhsProperMotion.isSelected()) {
+			if (uhsTpmEntries == null) {
+				uhsTpmEntries = Collections.emptyList();
+				CompletableFuture.supplyAsync(() -> {
+					uhsTpmEntries = fetchTpmCatalogEntries(new UhsCatalogEntry());
+					processImages();
+					return null;
+				});
+			} else {
+				drawPMVectors(image, uhsTpmEntries, JColor.DARK_YELLOW.val, epoch);
 			}
 		}
 		if (ghostOverlay.isSelected() || haloOverlay.isSelected() || latentOverlay.isSelected()

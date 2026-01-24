@@ -7,8 +7,8 @@ public class Overlays {
 
 	enum ID {
 		SIMBAD, ALLWISE, CATWISE, UNWISE, GAIADR2, GAIADR3, NOIRLAB, PANSTARRS, SDSS, SPECTRA, VHS, UHS, UKIDSS,
-		TWOMASS, TESS, DES, GAIAWD, MOCA, SSO, PM_GAIA_DR2, PM_GAIA_DR3, PM_NOIRLAB, PM_CATWISE, PM_UKIDSS, GHOSTS,
-		LATENTS, HALOS, SPIKES
+		TWOMASS, TESS, DES, GAIAWD, MOCA, SSO, PM_GAIA_DR2, PM_GAIA_DR3, PM_NOIRLAB, PM_CATWISE, PM_UKIDSS, PM_UHS,
+		GHOSTS, LATENTS, HALOS, SPIKES
 	}
 
 	private boolean simbad;
@@ -35,6 +35,7 @@ public class Overlays {
 	private boolean pmnoirlab;
 	private boolean pmcatwise;
 	private boolean pmukidss;
+	private boolean pmuhs;
 	private boolean ghosts;
 	private boolean latents;
 	private boolean halos;
@@ -113,6 +114,9 @@ public class Overlays {
 		}
 		if (pmukidss) {
 			overlays.append(ID.PM_UKIDSS).append(",");
+		}
+		if (pmuhs) {
+			overlays.append(ID.PM_UHS).append(",");
 		}
 		if (ghosts) {
 			overlays.append(ID.GHOSTS).append(",");
@@ -205,6 +209,9 @@ public class Overlays {
 		}
 		if (overlays.contains(ID.PM_UKIDSS.name())) {
 			pmukidss = true;
+		}
+		if (overlays.contains(ID.PM_UHS.name())) {
+			pmuhs = true;
 		}
 		if (overlays.contains(ID.GHOSTS.name())) {
 			ghosts = true;
@@ -410,6 +417,14 @@ public class Overlays {
 
 	public void setPmukidss(boolean pmukidss) {
 		this.pmukidss = pmukidss;
+	}
+
+	public boolean isPmuhs() {
+		return pmuhs;
+	}
+
+	public void setPmuhs(boolean pmuhs) {
+		this.pmuhs = pmuhs;
 	}
 
 	public boolean isGhosts() {

@@ -437,14 +437,17 @@ public final class SedWdPanel extends JPanel {
 					seriesLabel.append(uhsEntry.getCatalogName()).append(": ").append(uhsEntry.getSourceId())
 							.append(" ");
 					sedCatalogs.put(Band.J, uhsEntry.getCatalogName());
+					sedCatalogs.put(Band.H, uhsEntry.getCatalogName());
 					sedCatalogs.put(Band.K, uhsEntry.getCatalogName());
 					if (commonReferences.isSelected()) {
 						add2Massferences();
 					} else {
 						sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
+						sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
 						sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
 					}
 					sedPhotometry.put(Band.J, uhsEntry.getJmag());
+					sedPhotometry.put(Band.H, uhsEntry.getHmag());
 					sedPhotometry.put(Band.K, uhsEntry.getKmag());
 				} else {
 					TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();

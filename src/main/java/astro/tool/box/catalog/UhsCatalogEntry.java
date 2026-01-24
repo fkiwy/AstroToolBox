@@ -46,7 +46,7 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.util.ServiceHelper;
 
-public class UhsCatalogEntry implements CatalogEntry, ProperMotionCatalog {
+public class UhsCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog {
 
 	public static final String CATALOG_NAME = "UHS DR3";
 
@@ -124,6 +124,9 @@ public class UhsCatalogEntry implements CatalogEntry, ProperMotionCatalog {
 
 	// Search radius
 	private double searchRadius;
+
+	// Total proper motion
+	private double tpm;
 
 	// Most likely spectral type
 	private String spt;
@@ -260,6 +263,20 @@ public class UhsCatalogEntry implements CatalogEntry, ProperMotionCatalog {
 		}
 
 		return catalogEntries;
+	}
+
+	public List<CatalogEntry> filterCatalogEntries() {
+		return findCatalogEntries().stream().filter(e -> e.getTotalProperMotion() >= tpm).toList();
+	}
+
+	@Override
+	public String getMotionQueryUrl() {
+		return null;
+	}
+
+	@Override
+	public void setTpm(double tpm) {
+		this.tpm = tpm;
 	}
 
 	private static String downloadHtmlFromUrl(String url) throws IOException {
