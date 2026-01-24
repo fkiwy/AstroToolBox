@@ -1,11 +1,14 @@
 package astro.tool.box.container;
 
+import java.time.LocalDateTime;
+
 public class Epoch {
 
 	private int band;
 	private int epoch;
 	private int forward;
 	private double mjdmean;
+	private transient LocalDateTime obsDate;
 
 	public Epoch() {
 	}
@@ -19,7 +22,8 @@ public class Epoch {
 
 	@Override
 	public String toString() {
-		return "Epoch{" + "band=" + band + ", epoch=" + epoch + ", forward=" + forward + ", mjdmean=" + mjdmean + '}';
+		return "Epoch{" + "band=" + band + ", epoch=" + epoch + ", forward=" + forward + ", mjdmean=" + mjdmean
+				+ ", obsDate=" + obsDate + '}';
 	}
 
 	public int getBand() {
@@ -52,6 +56,14 @@ public class Epoch {
 
 	public void setMjdmean(double mjdmean) {
 		this.mjdmean = mjdmean;
+	}
+
+	public LocalDateTime getObsDate() {
+		return obsDate;
+	}
+
+	public void setObsDate(LocalDateTime obsDate) {
+		this.obsDate = obsDate;
 	}
 
 }
