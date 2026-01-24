@@ -65,7 +65,7 @@ public class ServiceHelper {
 
 	public static String createPanStarrsUrl(double degRA, double degDE, double degRadius) {
 		return PANSTARRS_BASE_URL + "?ra=" + degRA + "&dec=" + degDE + "&radius=" + degRadius
-				+ "&nDetections.gt=2&columns=[objName,objID,qualityFlag,raMean,decMean,raMeanErr,decMeanErr,epochMean,nDetections,gMeanPSFMag,gMeanPSFMagErr,rMeanPSFMag,rMeanPSFMagErr,iMeanPSFMag,iMeanPSFMagErr,zMeanPSFMag,zMeanPSFMagErr,yMeanPSFMag,yMeanPSFMagErr]";
+				+ "&nDetections.gt=2&sort_by=distance.ASC&columns=[objName,objID,qualityFlag,raMean,decMean,raMeanErr,decMeanErr,epochMean,nDetections,gMeanPSFMag,gMeanPSFMagErr,rMeanPSFMag,rMeanPSFMagErr,iMeanPSFMag,iMeanPSFMagErr,zMeanPSFMag,zMeanPSFMagErr,yMeanPSFMag,yMeanPSFMagErr]";
 	}
 
 	public static String createSdssUrl(double degRA, double degDE, double degRadius) {

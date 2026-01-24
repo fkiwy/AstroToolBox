@@ -306,7 +306,7 @@ public class ImageViewerTab implements Tab {
 	public static final String TAB_NAME = "Image Viewer";
 	public static final WiseBand WISE_BAND = WiseBand.W1W2;
 	public static final double OVERLAP_FACTOR = 0.9;
-	public static final int NUMBER_OF_WISE_EPOCHS = 10;
+	public static final int NUMBER_OF_WISE_EPOCHS = 11;
 	public static final int NUMBER_OF_UNWISE_EPOCHS = 8;
 	public static final int WINDOW_SPACING = 25;
 	public static final int CATALOG_PANEL_WIDTH = 700;
@@ -1128,7 +1128,7 @@ public class ImageViewerTab implements Tab {
 			});
 			overlayPanel.add(vhsOverlay);
 
-			uhsOverlay = new JCheckBox(html("U<u>H</u>S DR2"), overlays.isUhs());
+			uhsOverlay = new JCheckBox(html("U<u>H</u>S DR3"), overlays.isUhs());
 			uhsOverlay.setForeground(JColor.DARK_YELLOW.val);
 			uhsOverlay.addActionListener((ActionEvent evt) -> {
 				processImages();

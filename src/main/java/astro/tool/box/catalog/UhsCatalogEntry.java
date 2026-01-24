@@ -2,12 +2,15 @@ package astro.tool.box.catalog;
 
 import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
+import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
+import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
 import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo6Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import static astro.tool.box.function.NumericFunctions.toDouble;
 import static astro.tool.box.function.NumericFunctions.toInteger;
 import static astro.tool.box.function.NumericFunctions.toLong;
@@ -43,21 +46,42 @@ import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.util.ServiceHelper;
 
-public class UhsCatalogEntry implements CatalogEntry {
+public class UhsCatalogEntry implements CatalogEntry, ProperMotionCatalog {
 
-	public static final String CATALOG_NAME = "UHS DR2";
+	public static final String CATALOG_NAME = "UHS DR3";
 
 	// Unique identifier of this merged detection as assigned by merge algorithm
 	private long sourceId;
 
-	// Celestial Right Ascension (J2000)
+	// Right ascension
 	private double ra;
 
-	// Celestial Declination (J2000)
+	// Error in right ascension
+	private double ra_err;
+
+	// Declination
 	private double dec;
+
+	// Error in declination
+	private double dec_err;
+
+	// Proper motion in right ascension direction
+	private double pmra;
+
+	// Standard error of proper motion in right ascension direction
+	private double pmra_err;
+
+	// Proper motion in declination direction
+	private double pmdec;
+
+	// Standard error of proper motion in declination direction
+	private double pmdec_err;
 
 	// Object type
 	private int objectType;
+
+	// Epoch of position measurement
+	private double epoch;
 
 	// Default point source J aperture corrected mag
 	private double j_ap3;
@@ -65,14 +89,26 @@ public class UhsCatalogEntry implements CatalogEntry {
 	// Error in default point/extended source J mag
 	private double j_ap3_err;
 
+	// Default point source H aperture corrected mag
+	private double h_ap3;
+
+	// Error in default point/extended source H mag
+	private double h_ap3_err;
+
 	// Default point source Ks aperture corrected mag
 	private double ks_ap3;
 
 	// Error in default point/extended source Ks mag
 	private double ks_ap3_err;
 
-	// Point source colour J-Ks
-	private double j_ks_pnt;
+	// Point source colour Y-J
+	private double y_j_pnt;
+
+	// Point source colour J-H
+	private double j_h_pnt;
+
+	// Point source colour H-Ks
+	private double h_ks_pnt;
 
 	// Right ascension used for distance calculation
 	private double targetRa;
@@ -118,12 +154,22 @@ public class UhsCatalogEntry implements CatalogEntry {
 		sourceId = toLong(values[columns.get("sourceID")]);
 		ra = toDouble(values[columns.get("ra")]);
 		dec = toDouble(values[columns.get("dec")]);
+		ra_err = fixValue(toDouble(values[columns.get("sigRa")]));
+		dec_err = fixValue(toDouble(values[columns.get("sigDec")]));
+		pmra = fixValue(toDouble(values[columns.get("muRa")]));
+		pmra_err = fixValue(toDouble(values[columns.get("sigMuRa")]));
+		pmdec = fixValue(toDouble(values[columns.get("muDec")]));
+		pmdec_err = fixValue(toDouble(values[columns.get("sigMuDec")]));
+		epoch = toDouble(values[columns.get("epoch")]);
 		objectType = toInteger(values[columns.get("mergedClass")]);
 		j_ap3 = fixValue(toDouble(values[columns.get("jAperMag3")]));
 		j_ap3_err = fixValue(toDouble(values[columns.get("jAperMag3Err")]));
+		h_ap3 = fixValue(toDouble(values[columns.get("hAperMag3")]));
+		h_ap3_err = fixValue(toDouble(values[columns.get("hAperMag3Err")]));
 		ks_ap3 = fixValue(toDouble(values[columns.get("kAperMag3")]));
 		ks_ap3_err = fixValue(toDouble(values[columns.get("kAperMag3Err")]));
-		j_ks_pnt = fixValue(toDouble(values[columns.get("jmkPnt")]));
+		j_h_pnt = fixValue(toDouble(values[columns.get("jmhPnt")]));
+		h_ks_pnt = fixValue(toDouble(values[columns.get("hmkPnt")]));
 	}
 
 	private double fixValue(double value) {
@@ -141,20 +187,42 @@ public class UhsCatalogEntry implements CatalogEntry {
 				getDoubleComparator()));
 		catalogElements
 				.add(new CatalogElement("source id", String.valueOf(sourceId), Alignment.LEFT, getLongComparator()));
-		catalogElements.add(new CatalogElement("ra", roundTo6DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
-		catalogElements.add(new CatalogElement("dec", roundTo6DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("ra err", roundTo7DecNZ(ra_err), Alignment.LEFT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
+		catalogElements
+				.add(new CatalogElement("dec err", roundTo7DecNZ(dec_err), Alignment.LEFT, getDoubleComparator()));
+		catalogElements
+				.add(new CatalogElement("pmra (mas/yr)", roundTo3DecNZ(pmra), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("pmra err", roundTo3DecNZ(pmra_err), Alignment.RIGHT,
+				getDoubleComparator(), false, false, isProperMotionSpurious(pmra, pmra_err)));
+		catalogElements.add(
+				new CatalogElement("pmdec (mas/yr)", roundTo3DecNZ(pmdec), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("pmdec err", roundTo3DecNZ(pmdec_err), Alignment.RIGHT,
+				getDoubleComparator(), false, false, isProperMotionSpurious(pmdec, pmdec_err)));
 		catalogElements.add(new CatalogElement("object type", TYPE_TABLE.get(objectType), Alignment.LEFT,
 				getStringComparator(), true));
+		catalogElements.add(new CatalogElement("epoch", roundTo3DecNZ(epoch), Alignment.LEFT, getStringComparator()));
 		catalogElements
-				.add(new CatalogElement("J (mag)", roundTo4DecNZ(j_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+				.add(new CatalogElement("J (mag)", roundTo3DecNZ(j_ap3), Alignment.RIGHT, getDoubleComparator(), true));
 		catalogElements
-				.add(new CatalogElement("J err", roundTo4DecNZ(j_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+				.add(new CatalogElement("J err", roundTo3DecNZ(j_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements
+				.add(new CatalogElement("H (mag)", roundTo3DecNZ(h_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+		catalogElements
+				.add(new CatalogElement("H err", roundTo3DecNZ(h_ap3_err), Alignment.RIGHT, getDoubleComparator()));
 		catalogElements.add(
-				new CatalogElement("Ks (mag)", roundTo4DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
+				new CatalogElement("Ks (mag)", roundTo3DecNZ(ks_ap3), Alignment.RIGHT, getDoubleComparator(), true));
 		catalogElements
-				.add(new CatalogElement("Ks err", roundTo4DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+				.add(new CatalogElement("Ks err", roundTo3DecNZ(ks_ap3_err), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("Y-J", roundTo3DecNZ(y_j_pnt), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(j_h_pnt), Alignment.RIGHT, getDoubleComparator()));
 		catalogElements
-				.add(new CatalogElement("J-Ks", roundTo4DecNZ(j_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+				.add(new CatalogElement("H-Ks", roundTo3DecNZ(h_ks_pnt), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements
+				.add(new CatalogElement("J-Ks", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("tpm (mas/yr)", roundTo3DecNZ(getTotalProperMotion()), Alignment.RIGHT,
+				getDoubleComparator(), false, true));
 	}
 
 	public List<CatalogEntry> findCatalogEntries() {
@@ -162,7 +230,7 @@ public class UhsCatalogEntry implements CatalogEntry {
 
 		try {
 			double radius = getSearchRadius() / ARCMIN_ARCSEC;
-			String url = "http://wsa.roe.ac.uk:8080/wsa/WSASQL?database=UHSDR2&programmeID=107&from=source&formaction=region&ra=%f&dec=%f&sys=J&radius=%f&xSize=&ySize=&format=CSV&compress=NONE&select=default";
+			String url = "http://wsa.roe.ac.uk:8080/wsa/WSASQL?database=UHSDR3&programmeID=107&from=source&formaction=region&ra=%f&dec=%f&sys=J&radius=%f&xSize=&ySize=&format=CSV&compress=NONE&select=default";
 			String paramUrl = url.formatted(getRa(), getDec(), radius);
 			String htmlContent = downloadHtmlFromUrl(paramUrl);
 
@@ -270,10 +338,14 @@ public class UhsCatalogEntry implements CatalogEntry {
 
 	@Override
 	public String[] getColumnValues() {
-		String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo6Dec(ra) + ","
-				+ roundTo6Dec(dec) + "," + TYPE_TABLE.get(objectType) + "," + roundTo4Dec(j_ap3) + ","
-				+ roundTo4Dec(j_ap3_err) + "," + roundTo4Dec(ks_ap3) + "," + roundTo4Dec(ks_ap3_err) + ","
-				+ roundTo4Dec(j_ks_pnt);
+		String columnValues = roundTo3DecLZ(getTargetDistance()) + "," + sourceId + "," + roundTo7Dec(ra) + ","
+				+ roundTo7Dec(ra_err) + "," + roundTo7Dec(dec) + "," + roundTo7Dec(dec_err) + "," + roundTo3Dec(pmra)
+				+ "," + roundTo3Dec(pmra_err) + "," + roundTo3Dec(pmdec) + "," + roundTo3Dec(pmdec_err) + ","
+				+ TYPE_TABLE.get(objectType) + "," + roundTo3Dec(epoch) + "," + roundTo3Dec(j_ap3) + ","
+				+ roundTo3Dec(j_ap3_err) + "," + roundTo3Dec(h_ap3) + "," + roundTo3Dec(h_ap3_err) + ","
+				+ roundTo3Dec(ks_ap3) + "," + roundTo3Dec(ks_ap3_err) + "," + roundTo3Dec(y_j_pnt) + ","
+				+ roundTo3Dec(j_h_pnt) + "," + roundTo3Dec(h_ks_pnt) + "," + roundTo3Dec(getJ_K()) + ","
+				+ roundTo3Dec(getTotalProperMotion());
 		return columnValues.split(",", -1);
 	}
 
@@ -283,13 +355,26 @@ public class UhsCatalogEntry implements CatalogEntry {
 				dist (arcsec),\
 				source id,\
 				ra,\
+				ra err,\
 				dec,\
+				dec err,\
+				pmra (mas/yr),\
+				pmra err,\
+				pmdec (mas/yr),\
+				pmdec err,\
 				object type,\
+				epoch,\
 				J (mag),\
 				J err,\
+				H (mag),\
+				H err,\
 				Ks (mag),\
 				Ks err,\
-				J-Ks\
+				Y-J,\
+				J-H,\
+				H-Ks,\
+				J-Ks,\
+				tpm (mas/yr)\
 				""";
 		return columnTitles.split(",", -1);
 	}
@@ -298,6 +383,7 @@ public class UhsCatalogEntry implements CatalogEntry {
 	public Map<Band, NumberPair> getBands() {
 		Map<Band, NumberPair> bands = new LinkedHashMap<>();
 		bands.put(Band.J, new NumberPair(j_ap3, j_ap3_err));
+		bands.put(Band.H, new NumberPair(h_ap3, h_ap3_err));
 		bands.put(Band.K, new NumberPair(ks_ap3, ks_ap3_err));
 		return bands;
 	}
@@ -305,8 +391,14 @@ public class UhsCatalogEntry implements CatalogEntry {
 	@Override
 	public Map<Color, Double> getColors(boolean toVega) {
 		Map<Color, Double> colors = new LinkedHashMap<>();
-		colors.put(Color.J_K, j_ks_pnt);
+		colors.put(Color.J_H, j_h_pnt);
+		colors.put(Color.H_K, h_ks_pnt);
+		colors.put(Color.J_K, getJ_K());
+		colors.put(Color.e_J_H, getJ_H() - getJ_H_err());
+		colors.put(Color.e_H_K, getH_K() - getH_K_err());
 		colors.put(Color.e_J_K, getJ_K() - getJ_K_err());
+		colors.put(Color.E_J_H, getJ_H() + getJ_H_err());
+		colors.put(Color.E_H_K, getH_K() + getH_K_err());
 		colors.put(Color.E_J_K, getJ_K() + getJ_K_err());
 		return colors;
 	}
@@ -316,6 +408,9 @@ public class UhsCatalogEntry implements CatalogEntry {
 		StringBuilder mags = new StringBuilder();
 		if (j_ap3 != 0) {
 			mags.append("J=").append(roundTo4DecNZ(j_ap3)).append(" ");
+		}
+		if (h_ap3 != 0) {
+			mags.append("H=").append(roundTo4DecNZ(h_ap3)).append(" ");
 		}
 		if (ks_ap3 != 0) {
 			mags.append("K=").append(roundTo4DecNZ(ks_ap3)).append(" ");
@@ -328,6 +423,11 @@ public class UhsCatalogEntry implements CatalogEntry {
 		StringBuilder mags = new StringBuilder();
 		if (j_ap3 != 0) {
 			mags.append(roundTo4DecNZ(j_ap3)).append(",").append(roundTo4DecNZ(j_ap3_err)).append(",");
+		} else {
+			mags.append(",,");
+		}
+		if (h_ap3 != 0) {
+			mags.append(roundTo4DecNZ(h_ap3)).append(",").append(roundTo4DecNZ(h_ap3_err)).append(",");
 		} else {
 			mags.append(",,");
 		}
@@ -436,12 +536,22 @@ public class UhsCatalogEntry implements CatalogEntry {
 
 	@Override
 	public double getPmra() {
-		return 0;
+		return pmra;
 	}
 
 	@Override
 	public double getPmdec() {
-		return 0;
+		return pmdec;
+	}
+
+	@Override
+	public double getPmraErr() {
+		return pmra_err;
+	}
+
+	@Override
+	public double getPmdecErr() {
+		return pmdec_err;
 	}
 
 	@Override
@@ -456,11 +566,43 @@ public class UhsCatalogEntry implements CatalogEntry {
 
 	@Override
 	public double getTotalProperMotion() {
-		return 0;
+		return calculateTotalProperMotion(pmra, pmdec);
+	}
+
+	public double getMeanEpoch() {
+		return epoch;
+	}
+
+	public double getJ_H() {
+		return j_h_pnt;
+	}
+
+	public double getH_K() {
+		return h_ks_pnt;
 	}
 
 	public double getJ_K() {
-		return j_ks_pnt;
+		if (j_ap3 == 0 || ks_ap3 == 0) {
+			return 0;
+		} else {
+			return j_ap3 - ks_ap3;
+		}
+	}
+
+	public double getJ_H_err() {
+		if (j_ap3_err == 0 || h_ap3_err == 0) {
+			return 0;
+		} else {
+			return calculateAdditionError(j_ap3_err, h_ap3_err);
+		}
+	}
+
+	public double getH_K_err() {
+		if (h_ap3_err == 0 || ks_ap3_err == 0) {
+			return 0;
+		} else {
+			return calculateAdditionError(h_ap3_err, ks_ap3_err);
+		}
 	}
 
 	public double getJ_K_err() {
@@ -475,12 +617,20 @@ public class UhsCatalogEntry implements CatalogEntry {
 		return j_ap3;
 	}
 
+	public double getHmag() {
+		return h_ap3;
+	}
+
 	public double getKmag() {
 		return ks_ap3;
 	}
 
 	public double getJ_err() {
 		return j_ap3_err;
+	}
+
+	public double getH_err() {
+		return h_ap3_err;
 	}
 
 	public double getK_err() {

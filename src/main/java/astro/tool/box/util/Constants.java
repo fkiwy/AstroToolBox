@@ -12,7 +12,7 @@ public class Constants {
 
 	public static final String VHS_SURVEY_URL = "http://vsa.roe.ac.uk:8080/vdfs/GetImage?database=VHSDR6&programmeID=110&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=tilestack";
 
-	public static final String UHS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UHSDR2&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
+	public static final String UHS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UHSDR3&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
 
 	public static final String UKIDSS_SURVEY_URL = "http://wsa.roe.ac.uk:8080/wsa/GetImage?database=UKIDSSDR11PLUS&programmeID=all&ra=%f&dec=%f&sys=J&filterID=%s&xsize=%s&ysize=%s&obsType=object&frameType=stack";
 
