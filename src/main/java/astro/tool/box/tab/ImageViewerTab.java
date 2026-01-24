@@ -2963,67 +2963,20 @@ public class ImageViewerTab implements Tab {
 						epochsW2.add(new Epoch(2, i, forward, mjd));
 					}
 				} else {
+					tile.getEpochs().stream()
+							.forEach(e -> e.setObsDate(convertMJDToDateTime(BigDecimal.valueOf(e.getMjdmean()))));
+					tile.getEpochs().removeIf(e -> e.getObsDate() != null
+							&& (e.getObsDate().getYear() == 2013 || e.getObsDate().getYear() == 2024));
 					epochsW1 = tile.getEpochs().stream().filter(e -> (e.getBand() == 1)).collect(toList());
 					epochsW2 = tile.getEpochs().stream().filter(e -> (e.getBand() == 2)).collect(toList());
 				}
 				epochsW1.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
 				epochsW2.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
 				if (skipIntermediateEpochs.isSelected()) {
-					List<Epoch> tempEpochs;
-
-					tempEpochs = new ArrayList();
-					for (int i = 0; i < epochsW1.size(); i++) {
-						if (epochsW1.get(i).getForward() == 0) {
-							tempEpochs.add(epochsW1.get(i));
-							break;
-						}
-					}
-					for (int i = 0; i < epochsW1.size(); i++) {
-						if (epochsW1.get(i).getForward() == 1) {
-							tempEpochs.add(epochsW1.get(i));
-							break;
-						}
-					}
-					for (int i = epochsW1.size() - 1; i >= 0; i--) {
-						if (epochsW1.get(i).getForward() == 0) {
-							tempEpochs.add(epochsW1.get(i));
-							break;
-						}
-					}
-					for (int i = epochsW1.size() - 1; i >= 0; i--) {
-						if (epochsW1.get(i).getForward() == 1) {
-							tempEpochs.add(epochsW1.get(i));
-							break;
-						}
-					}
-					epochsW1 = tempEpochs;
-
-					tempEpochs = new ArrayList();
-					for (int i = 0; i < epochsW2.size(); i++) {
-						if (epochsW2.get(i).getForward() == 0) {
-							tempEpochs.add(epochsW2.get(i));
-							break;
-						}
-					}
-					for (int i = 0; i < epochsW2.size(); i++) {
-						if (epochsW2.get(i).getForward() == 1) {
-							tempEpochs.add(epochsW2.get(i));
-							break;
-						}
-					}
-					for (int i = epochsW2.size() - 1; i >= 0; i--) {
-						if (epochsW2.get(i).getForward() == 0) {
-							tempEpochs.add(epochsW2.get(i));
-							break;
-						}
-					}
-					for (int i = epochsW2.size() - 1; i >= 0; i--) {
-						if (epochsW2.get(i).getForward() == 1) {
-							tempEpochs.add(epochsW2.get(i));
-							break;
-						}
-					}
-					epochsW2 = tempEpochs;
+					epochsW1 = selectBoundaryEpochs(epochsW1);
+					epochsW2 = selectBoundaryEpochs(epochsW2);
+					epochsW1.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
+					epochsW2.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
 				}
 				switch (wiseBand) {
 				case W1 -> downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
@@ -3208,6 +3161,35 @@ public class ImageViewerTab implements Tab {
 			enableAll();
 		}
 		return true;
+	}
+
+	private static List<Epoch> selectBoundaryEpochs(List<Epoch> epochs) {
+		List<Epoch> result = new ArrayList<>();
+
+		Epoch first0 = null, first1 = null, last0 = null, last1 = null;
+
+		for (Epoch e : epochs) {
+			if (e.getForward() == 0) {
+				if (first0 == null)
+					first0 = e;
+				last0 = e;
+			} else if (e.getForward() == 1) {
+				if (first1 == null)
+					first1 = e;
+				last1 = e;
+			}
+		}
+
+		if (first0 != null)
+			result.add(first0);
+		if (first1 != null)
+			result.add(first1);
+		if (last0 != null)
+			result.add(last0);
+		if (last1 != null)
+			result.add(last1);
+
+		return result;
 	}
 
 	private boolean isFirstEpoch(Fits fits) throws Exception {
