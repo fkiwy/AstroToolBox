@@ -101,7 +101,18 @@ public final class SedWdPanel extends JPanel {
 	private final JButton removeButton;
 	private final JCheckBox bestMatch;
 	private final JCheckBox overplotTemplates;
-	private final JCheckBox commonReferences;
+
+	private final JCheckBox gaiaPhot;
+	private final JCheckBox panStarrsPhot;
+	private final JCheckBox noirlabPhot;
+	private final JCheckBox desPhot;
+	private final JCheckBox twoMassPhot;
+	private final JCheckBox ukidssPhot;
+	private final JCheckBox uhsPhot;
+	private final JCheckBox vhsPhot;
+	private final JCheckBox allwisePhot;
+	private final JCheckBox catwisePhot;
+	private final JCheckBox unwisePhot;
 
 	private Map<Band, SedReferences> sedReferences;
 	private Map<Band, SedFluxes> sedFluxes;
@@ -122,7 +133,18 @@ public final class SedWdPanel extends JPanel {
 		removeButton = new JButton("Remove templates");
 		bestMatch = new JCheckBox("Best match", true);
 		overplotTemplates = new JCheckBox("Overplot templates", true);
-		commonReferences = new JCheckBox("Use common zero points & wavelengths per band", false);
+
+		gaiaPhot = new JCheckBox("Gaia", true);
+		panStarrsPhot = new JCheckBox("Pan-STARRS", false);
+		noirlabPhot = new JCheckBox("NSC", false);
+		desPhot = new JCheckBox("DES", false);
+		twoMassPhot = new JCheckBox("2MASS", true);
+		ukidssPhot = new JCheckBox("UKIDSS", false);
+		uhsPhot = new JCheckBox("UHS", false);
+		vhsPhot = new JCheckBox("VHS", false);
+		allwisePhot = new JCheckBox("AllWISE", true);
+		catwisePhot = new JCheckBox("CatWISE", false);
+		unwisePhot = new JCheckBox("unWISE", false);
 
 		XYSeriesCollection collection = createSed(catalogEntry, null, true);
 		JFreeChart chart = createChart(collection);
@@ -174,12 +196,115 @@ public final class SedWdPanel extends JPanel {
 		commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(commandPanel);
 
-		// commandPanel.add(commonReferences);
-		commonReferences.addActionListener((ActionEvent e) -> {
+		commandPanel.add(gaiaPhot);
+		gaiaPhot.addActionListener((ActionEvent e) -> {
+			panStarrsPhot.setSelected(false);
+			noirlabPhot.setSelected(false);
+			desPhot.setSelected(false);
 			collection.removeAllSeries();
 			createSed(catalogEntry, collection, true);
 			setSeriesShape(chart);
 		});
+
+		commandPanel.add(panStarrsPhot);
+		panStarrsPhot.addActionListener((ActionEvent e) -> {
+			gaiaPhot.setSelected(false);
+			noirlabPhot.setSelected(false);
+			desPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(noirlabPhot);
+		noirlabPhot.addActionListener((ActionEvent e) -> {
+			gaiaPhot.setSelected(false);
+			panStarrsPhot.setSelected(false);
+			desPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(desPhot);
+		desPhot.addActionListener((ActionEvent e) -> {
+			gaiaPhot.setSelected(false);
+			panStarrsPhot.setSelected(false);
+			noirlabPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(twoMassPhot);
+		twoMassPhot.addActionListener((ActionEvent e) -> {
+			ukidssPhot.setSelected(false);
+			uhsPhot.setSelected(false);
+			vhsPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(ukidssPhot);
+		ukidssPhot.addActionListener((ActionEvent e) -> {
+			twoMassPhot.setSelected(false);
+			uhsPhot.setSelected(false);
+			vhsPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(uhsPhot);
+		uhsPhot.addActionListener((ActionEvent e) -> {
+			twoMassPhot.setSelected(false);
+			ukidssPhot.setSelected(false);
+			vhsPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(vhsPhot);
+		vhsPhot.addActionListener((ActionEvent e) -> {
+			twoMassPhot.setSelected(false);
+			ukidssPhot.setSelected(false);
+			uhsPhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(allwisePhot);
+		allwisePhot.addActionListener((ActionEvent e) -> {
+			catwisePhot.setSelected(false);
+			unwisePhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(catwisePhot);
+		catwisePhot.addActionListener((ActionEvent e) -> {
+			allwisePhot.setSelected(false);
+			unwisePhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel.add(unwisePhot);
+		unwisePhot.addActionListener((ActionEvent e) -> {
+			allwisePhot.setSelected(false);
+			catwisePhot.setSelected(false);
+			collection.removeAllSeries();
+			createSed(catalogEntry, collection, true);
+			setSeriesShape(chart);
+		});
+
+		commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		add(commandPanel);
 
 		JButton createButton = new JButton("Create PDF");
 		commandPanel.add(createButton);
@@ -225,7 +350,18 @@ public final class SedWdPanel extends JPanel {
 		removeButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		bestMatch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		overplotTemplates.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		commonReferences.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+		gaiaPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		panStarrsPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		noirlabPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		desPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		twoMassPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		ukidssPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		uhsPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		vhsPhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		allwisePhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		catwisePhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		unwisePhot.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 		sedReferences = new HashMap();
 		sedFluxes = new HashMap();
@@ -235,69 +371,10 @@ public final class SedWdPanel extends JPanel {
 
 		double searchRadius = toDouble(photSearchRadius.getText());
 		searchRadius = searchRadius < 1 ? 1 : searchRadius;
-		PanStarrsCatalogEntry panStarrsEntry;
-		AllWiseCatalogEntry allWiseEntry;
-
-		if (catalogEntry instanceof PanStarrsCatalogEntry entry) {
-			panStarrsEntry = entry;
-		} else {
-			panStarrsEntry = new PanStarrsCatalogEntry();
-			panStarrsEntry.setRa(catalogEntry.getRa());
-			panStarrsEntry.setDec(catalogEntry.getDec());
-			panStarrsEntry.setSearchRadius(searchRadius);
-			CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
-				panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
-			}
-		}
-
-		if (catalogEntry instanceof AllWiseCatalogEntry entry) {
-			allWiseEntry = entry;
-		} else {
-			allWiseEntry = new AllWiseCatalogEntry();
-			allWiseEntry.setRa(catalogEntry.getRa());
-			allWiseEntry.setDec(catalogEntry.getDec());
-			allWiseEntry.setSearchRadius(searchRadius);
-			CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
-				allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
-			}
-		}
-
 		StringBuilder seriesLabel = new StringBuilder();
-		if (!"0".equals(panStarrsEntry.getSourceId())) {
-			seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId())
-					.append(" ");
-		}
-		if (allWiseEntry.getSourceId() != null) {
-			seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId())
-					.append(" ");
-		}
-
-		// Pan-STARRS
-		sedCatalogs.put(Band.g, panStarrsEntry.getCatalogName());
-		sedCatalogs.put(Band.r, panStarrsEntry.getCatalogName());
-		sedCatalogs.put(Band.i, panStarrsEntry.getCatalogName());
-		sedCatalogs.put(Band.z, panStarrsEntry.getCatalogName());
-		sedCatalogs.put(Band.y, panStarrsEntry.getCatalogName());
-		addPanStarrsReferences();
-		sedPhotometry.put(Band.g, panStarrsEntry.get_g_err() == 0 ? 0 : panStarrsEntry.get_g_mag());
-		sedPhotometry.put(Band.r, panStarrsEntry.get_r_err() == 0 ? 0 : panStarrsEntry.get_r_mag());
-		sedPhotometry.put(Band.i, panStarrsEntry.get_i_err() == 0 ? 0 : panStarrsEntry.get_i_mag());
-		sedPhotometry.put(Band.z, panStarrsEntry.get_z_err() == 0 ? 0 : panStarrsEntry.get_z_mag());
-		sedPhotometry.put(Band.y, panStarrsEntry.get_y_err() == 0 ? 0 : panStarrsEntry.get_y_mag());
-
-		// WISE
-		sedCatalogs.put(Band.W1, allWiseEntry.getCatalogName());
-		sedCatalogs.put(Band.W2, allWiseEntry.getCatalogName());
-		sedCatalogs.put(Band.W3, allWiseEntry.getCatalogName());
-		addWiseReferences();
-		sedPhotometry.put(Band.W1, allWiseEntry.getW1_err() == 0 ? 0 : allWiseEntry.getW1mag());
-		sedPhotometry.put(Band.W2, allWiseEntry.getW2_err() == 0 ? 0 : allWiseEntry.getW2mag());
-		sedPhotometry.put(Band.W3, allWiseEntry.getW3_err() == 0 ? 0 : allWiseEntry.getW3mag());
 
 		useGaiaPhotometry = false;
-		if ("0".equals(panStarrsEntry.getSourceId())) {
+		if (gaiaPhot.isSelected()) {
 			GaiaDR3CatalogEntry gaiaEntry = new GaiaDR3CatalogEntry();
 			gaiaEntry.setRa(catalogEntry.getRa());
 			gaiaEntry.setDec(catalogEntry.getDec());
@@ -310,128 +387,141 @@ public final class SedWdPanel extends JPanel {
 				sedCatalogs.put(Band.BP, gaiaEntry.getCatalogName());
 				sedCatalogs.put(Band.G, gaiaEntry.getCatalogName());
 				sedCatalogs.put(Band.RP, gaiaEntry.getCatalogName());
-				sedReferences.put(Band.BP, new SedReferences(Sed.GAIA_BP.zeropoint, Sed.GAIA_BP.wavelenth));
-				sedReferences.put(Band.G, new SedReferences(Sed.GAIA_G.zeropoint, Sed.GAIA_G.wavelenth));
-				sedReferences.put(Band.RP, new SedReferences(Sed.GAIA_RP.zeropoint, Sed.GAIA_RP.wavelenth));
+				addGaiaReferences();
 				sedPhotometry.put(Band.BP, gaiaEntry.getBPmag());
 				sedPhotometry.put(Band.G, gaiaEntry.getGmag());
 				sedPhotometry.put(Band.RP, gaiaEntry.getRPmag());
-			} else {
-				DesCatalogEntry desEntry = new DesCatalogEntry();
-				desEntry.setRa(catalogEntry.getRa());
-				desEntry.setDec(catalogEntry.getDec());
-				desEntry.setSearchRadius(searchRadius);
-				retrievedEntry = retrieveCatalogEntry(desEntry, catalogQueryService, baseFrame);
-				if (retrievedEntry == null) {
-					NoirlabCatalogEntry noirlabEntry = new NoirlabCatalogEntry();
-					noirlabEntry.setRa(catalogEntry.getRa());
-					noirlabEntry.setDec(catalogEntry.getDec());
-					noirlabEntry.setSearchRadius(searchRadius);
-					retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryService, baseFrame);
-					if (retrievedEntry != null) {
-						noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
-						seriesLabel.append(noirlabEntry.getCatalogName()).append(": ")
-								.append(noirlabEntry.getSourceId()).append(" ");
-						sedCatalogs.put(Band.g, noirlabEntry.getCatalogName());
-						sedCatalogs.put(Band.r, noirlabEntry.getCatalogName());
-						sedCatalogs.put(Band.i, noirlabEntry.getCatalogName());
-						sedCatalogs.put(Band.z, noirlabEntry.getCatalogName());
-						sedCatalogs.put(Band.y, noirlabEntry.getCatalogName());
-						if (commonReferences.isSelected()) {
-							addPanStarrsReferences();
-						} else {
-							addDecamReferences();
-						}
-						sedPhotometry.put(Band.g, noirlabEntry.get_g_mag());
-						sedPhotometry.put(Band.r, noirlabEntry.get_r_mag());
-						sedPhotometry.put(Band.i, noirlabEntry.get_i_mag());
-						sedPhotometry.put(Band.z, noirlabEntry.get_z_mag());
-						sedPhotometry.put(Band.y, noirlabEntry.get_y_mag());
-					}
-				} else {
-					desEntry = (DesCatalogEntry) retrievedEntry;
-					seriesLabel.append(desEntry.getCatalogName()).append(": ").append(desEntry.getSourceId())
-							.append(" ");
-					sedCatalogs.put(Band.g, desEntry.getCatalogName());
-					sedCatalogs.put(Band.r, desEntry.getCatalogName());
-					sedCatalogs.put(Band.i, desEntry.getCatalogName());
-					sedCatalogs.put(Band.z, desEntry.getCatalogName());
-					sedCatalogs.put(Band.y, desEntry.getCatalogName());
-					if (commonReferences.isSelected()) {
-						addPanStarrsReferences();
-					} else {
-						addDecamReferences();
-					}
-					sedPhotometry.put(Band.g, desEntry.get_g_caut() > 3 ? 0 : desEntry.get_g_mag());
-					sedPhotometry.put(Band.r, desEntry.get_r_caut() > 3 ? 0 : desEntry.get_r_mag());
-					sedPhotometry.put(Band.i, desEntry.get_i_caut() > 3 ? 0 : desEntry.get_i_mag());
-					sedPhotometry.put(Band.z, desEntry.get_z_caut() > 3 ? 0 : desEntry.get_z_mag());
-					sedPhotometry.put(Band.y, desEntry.get_y_caut() > 3 ? 0 : desEntry.get_y_mag());
-				}
 			}
 		}
 
-		CatalogEntry retrievedEntry = null;
-		VhsCatalogEntry vhsEntry;
-		if (catalogEntry.getDec() < 5) {
-			vhsEntry = new VhsCatalogEntry();
-			vhsEntry.setRa(catalogEntry.getRa());
-			vhsEntry.setDec(catalogEntry.getDec());
-			vhsEntry.setSearchRadius(searchRadius);
-			retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
-		}
-		if (retrievedEntry != null) {
-			vhsEntry = (VhsCatalogEntry) retrievedEntry;
-			seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId()).append(" ");
-			sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
-			sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
-			sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
-			if (commonReferences.isSelected()) {
-				add2Massferences();
-			} else {
-				sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
-				sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
-				sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
+		if (panStarrsPhot.isSelected()) {
+			PanStarrsCatalogEntry panStarrsEntry = new PanStarrsCatalogEntry();
+			panStarrsEntry.setRa(catalogEntry.getRa());
+			panStarrsEntry.setDec(catalogEntry.getDec());
+			panStarrsEntry.setSearchRadius(searchRadius);
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
+				panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
+				seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId())
+						.append(" ");
+				sedCatalogs.put(Band.g, panStarrsEntry.getCatalogName());
+				sedCatalogs.put(Band.r, panStarrsEntry.getCatalogName());
+				sedCatalogs.put(Band.i, panStarrsEntry.getCatalogName());
+				sedCatalogs.put(Band.z, panStarrsEntry.getCatalogName());
+				sedCatalogs.put(Band.y, panStarrsEntry.getCatalogName());
+				addPanStarrsReferences();
+				sedPhotometry.put(Band.g, panStarrsEntry.get_g_err() == 0 ? 0 : panStarrsEntry.get_g_mag());
+				sedPhotometry.put(Band.r, panStarrsEntry.get_r_err() == 0 ? 0 : panStarrsEntry.get_r_mag());
+				sedPhotometry.put(Band.i, panStarrsEntry.get_i_err() == 0 ? 0 : panStarrsEntry.get_i_mag());
+				sedPhotometry.put(Band.z, panStarrsEntry.get_z_err() == 0 ? 0 : panStarrsEntry.get_z_mag());
+				sedPhotometry.put(Band.y, panStarrsEntry.get_y_err() == 0 ? 0 : panStarrsEntry.get_y_mag());
 			}
-			sedPhotometry.put(Band.J, vhsEntry.getJmag());
-			sedPhotometry.put(Band.H, vhsEntry.getHmag());
-			sedPhotometry.put(Band.K, vhsEntry.getKmag());
+		}
 
-		} else {
+		if (noirlabPhot.isSelected()) {
+			NoirlabCatalogEntry noirlabEntry = new NoirlabCatalogEntry();
+			noirlabEntry.setRa(catalogEntry.getRa());
+			noirlabEntry.setDec(catalogEntry.getDec());
+			noirlabEntry.setSearchRadius(searchRadius);
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
+				noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
+				seriesLabel.append(noirlabEntry.getCatalogName()).append(": ").append(noirlabEntry.getSourceId())
+						.append(" ");
+				sedCatalogs.put(Band.g, noirlabEntry.getCatalogName());
+				sedCatalogs.put(Band.r, noirlabEntry.getCatalogName());
+				sedCatalogs.put(Band.i, noirlabEntry.getCatalogName());
+				sedCatalogs.put(Band.z, noirlabEntry.getCatalogName());
+				sedCatalogs.put(Band.y, noirlabEntry.getCatalogName());
+				addDecamReferences();
+				sedPhotometry.put(Band.g, noirlabEntry.get_g_mag());
+				sedPhotometry.put(Band.r, noirlabEntry.get_r_mag());
+				sedPhotometry.put(Band.i, noirlabEntry.get_i_mag());
+				sedPhotometry.put(Band.z, noirlabEntry.get_z_mag());
+				sedPhotometry.put(Band.y, noirlabEntry.get_y_mag());
+			}
+		}
+
+		if (desPhot.isSelected()) {
+			DesCatalogEntry desEntry = new DesCatalogEntry();
+			desEntry.setRa(catalogEntry.getRa());
+			desEntry.setDec(catalogEntry.getDec());
+			desEntry.setSearchRadius(searchRadius);
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(desEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
+				desEntry = (DesCatalogEntry) retrievedEntry;
+				seriesLabel.append(desEntry.getCatalogName()).append(": ").append(desEntry.getSourceId()).append(" ");
+				sedCatalogs.put(Band.g, desEntry.getCatalogName());
+				sedCatalogs.put(Band.r, desEntry.getCatalogName());
+				sedCatalogs.put(Band.i, desEntry.getCatalogName());
+				sedCatalogs.put(Band.z, desEntry.getCatalogName());
+				sedCatalogs.put(Band.y, desEntry.getCatalogName());
+				addDecamReferences();
+				sedPhotometry.put(Band.g, desEntry.get_g_caut() > 3 ? 0 : desEntry.get_g_mag());
+				sedPhotometry.put(Band.r, desEntry.get_r_caut() > 3 ? 0 : desEntry.get_r_mag());
+				sedPhotometry.put(Band.i, desEntry.get_i_caut() > 3 ? 0 : desEntry.get_i_mag());
+				sedPhotometry.put(Band.z, desEntry.get_z_caut() > 3 ? 0 : desEntry.get_z_mag());
+				sedPhotometry.put(Band.y, desEntry.get_y_caut() > 3 ? 0 : desEntry.get_y_mag());
+			}
+		}
+
+		add2MassReferences();
+		sedPhotometry.put(Band.J, 0d);
+		sedPhotometry.put(Band.H, 0d);
+		sedPhotometry.put(Band.K, 0d);
+
+		if (twoMassPhot.isSelected()) {
+			TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
+			twoMassEntry.setRa(catalogEntry.getRa());
+			twoMassEntry.setDec(catalogEntry.getDec());
+			twoMassEntry.setSearchRadius(searchRadius * 2);
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
+				twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
+				seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId())
+						.append(" ");
+				sedCatalogs.put(Band.J, twoMassEntry.getCatalogName());
+				sedCatalogs.put(Band.H, twoMassEntry.getCatalogName());
+				sedCatalogs.put(Band.K, twoMassEntry.getCatalogName());
+				add2MassReferences();
+				sedPhotometry.put(Band.J, twoMassEntry.getJ_err() == 0 ? 0 : twoMassEntry.getJmag());
+				sedPhotometry.put(Band.H, twoMassEntry.getH_err() == 0 ? 0 : twoMassEntry.getHmag());
+				sedPhotometry.put(Band.K, twoMassEntry.getK_err() == 0 ? 0 : twoMassEntry.getKmag());
+			}
+		}
+
+		if (ukidssPhot.isSelected()) {
 			UkidssCatalogEntry ukidssEntry;
 			if (catalogEntry.getDec() > -5) {
 				ukidssEntry = new UkidssCatalogEntry();
 				ukidssEntry.setRa(catalogEntry.getRa());
 				ukidssEntry.setDec(catalogEntry.getDec());
 				ukidssEntry.setSearchRadius(searchRadius);
-				retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
+				CatalogEntry retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
+				if (retrievedEntry != null) {
+					ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
+					seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId())
+							.append(" ");
+					sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
+					sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
+					sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
+					addUkidssReferences();
+					sedPhotometry.put(Band.J, ukidssEntry.getJmag());
+					sedPhotometry.put(Band.H, ukidssEntry.getHmag());
+					sedPhotometry.put(Band.K, ukidssEntry.getKmag());
+				}
 			}
-			if (retrievedEntry != null) {
-				ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
-				seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId())
-						.append(" ");
-				sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
-				sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
-				sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
-				if (commonReferences.isSelected()) {
-					add2Massferences();
-				} else {
-					sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
-					sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
-					sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
-				}
-				sedPhotometry.put(Band.J, ukidssEntry.getJmag());
-				sedPhotometry.put(Band.H, ukidssEntry.getHmag());
-				sedPhotometry.put(Band.K, ukidssEntry.getKmag());
-			} else {
-				UhsCatalogEntry uhsEntry;
-				if (catalogEntry.getDec() > -5) {
-					uhsEntry = new UhsCatalogEntry();
-					uhsEntry.setRa(catalogEntry.getRa());
-					uhsEntry.setDec(catalogEntry.getDec());
-					uhsEntry.setSearchRadius(searchRadius);
-					retrievedEntry = retrieveCatalogEntry(uhsEntry, catalogQueryService, baseFrame);
-				}
+
+		}
+
+		if (uhsPhot.isSelected()) {
+			UhsCatalogEntry uhsEntry;
+			if (catalogEntry.getDec() > -5) {
+				uhsEntry = new UhsCatalogEntry();
+				uhsEntry.setRa(catalogEntry.getRa());
+				uhsEntry.setDec(catalogEntry.getDec());
+				uhsEntry.setSearchRadius(searchRadius);
+				CatalogEntry retrievedEntry = retrieveCatalogEntry(uhsEntry, catalogQueryService, baseFrame);
 				if (retrievedEntry != null) {
 					uhsEntry = (UhsCatalogEntry) retrievedEntry;
 					seriesLabel.append(uhsEntry.getCatalogName()).append(": ").append(uhsEntry.getSourceId())
@@ -439,61 +529,65 @@ public final class SedWdPanel extends JPanel {
 					sedCatalogs.put(Band.J, uhsEntry.getCatalogName());
 					sedCatalogs.put(Band.H, uhsEntry.getCatalogName());
 					sedCatalogs.put(Band.K, uhsEntry.getCatalogName());
-					if (commonReferences.isSelected()) {
-						add2Massferences();
-					} else {
-						sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
-						sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
-						sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
-					}
+					addUkidssReferences();
 					sedPhotometry.put(Band.J, uhsEntry.getJmag());
 					sedPhotometry.put(Band.H, uhsEntry.getHmag());
 					sedPhotometry.put(Band.K, uhsEntry.getKmag());
-				} else {
-					TwoMassCatalogEntry twoMassEntry = new TwoMassCatalogEntry();
-					twoMassEntry.setRa(catalogEntry.getRa());
-					twoMassEntry.setDec(catalogEntry.getDec());
-					twoMassEntry.setSearchRadius(searchRadius * 2);
-					retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
-					if (retrievedEntry != null) {
-						twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
-						seriesLabel.append(twoMassEntry.getCatalogName()).append(": ")
-								.append(twoMassEntry.getSourceId()).append(" ");
-						sedCatalogs.put(Band.J, twoMassEntry.getCatalogName());
-						sedCatalogs.put(Band.H, twoMassEntry.getCatalogName());
-						sedCatalogs.put(Band.K, twoMassEntry.getCatalogName());
-						add2Massferences();
-						sedPhotometry.put(Band.J, twoMassEntry.getJ_err() == 0 ? 0 : twoMassEntry.getJmag());
-						sedPhotometry.put(Band.H, twoMassEntry.getH_err() == 0 ? 0 : twoMassEntry.getHmag());
-						sedPhotometry.put(Band.K, twoMassEntry.getK_err() == 0 ? 0 : twoMassEntry.getKmag());
-					}
 				}
 			}
 		}
 
-		if (allWiseEntry.getSourceId() == null) {
+		if (vhsPhot.isSelected()) {
+			VhsCatalogEntry vhsEntry;
+			if (catalogEntry.getDec() < 5) {
+				vhsEntry = new VhsCatalogEntry();
+				vhsEntry.setRa(catalogEntry.getRa());
+				vhsEntry.setDec(catalogEntry.getDec());
+				vhsEntry.setSearchRadius(searchRadius);
+				CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
+				if (retrievedEntry != null) {
+					vhsEntry = (VhsCatalogEntry) retrievedEntry;
+					seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId())
+							.append(" ");
+					sedCatalogs.put(Band.J, vhsEntry.getCatalogName());
+					sedCatalogs.put(Band.H, vhsEntry.getCatalogName());
+					sedCatalogs.put(Band.K, vhsEntry.getCatalogName());
+					addVhsReferences();
+					sedPhotometry.put(Band.J, vhsEntry.getJmag());
+					sedPhotometry.put(Band.H, vhsEntry.getHmag());
+					sedPhotometry.put(Band.K, vhsEntry.getKmag());
+
+				}
+			}
+		}
+
+		if (allwisePhot.isSelected()) {
+			AllWiseCatalogEntry allWiseEntry = new AllWiseCatalogEntry();
+			allWiseEntry.setRa(catalogEntry.getRa());
+			allWiseEntry.setDec(catalogEntry.getDec());
+			allWiseEntry.setSearchRadius(searchRadius);
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
+				allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
+				seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId())
+						.append(" ");
+				sedCatalogs.put(Band.W1, allWiseEntry.getCatalogName());
+				sedCatalogs.put(Band.W2, allWiseEntry.getCatalogName());
+				sedCatalogs.put(Band.W3, allWiseEntry.getCatalogName());
+				addWiseReferences();
+				sedPhotometry.put(Band.W1, allWiseEntry.getW1_err() == 0 ? 0 : allWiseEntry.getW1mag());
+				sedPhotometry.put(Band.W2, allWiseEntry.getW2_err() == 0 ? 0 : allWiseEntry.getW2mag());
+				sedPhotometry.put(Band.W3, allWiseEntry.getW3_err() == 0 ? 0 : allWiseEntry.getW3mag());
+			}
+		}
+
+		if (catwisePhot.isSelected()) {
 			CatWiseCatalogEntry catWiseEntry = new CatWiseCatalogEntry();
 			catWiseEntry.setRa(catalogEntry.getRa());
 			catWiseEntry.setDec(catalogEntry.getDec());
 			catWiseEntry.setSearchRadius(searchRadius);
-			retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry == null) {
-				UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
-				unWiseEntry.setRa(catalogEntry.getRa());
-				unWiseEntry.setDec(catalogEntry.getDec());
-				unWiseEntry.setSearchRadius(searchRadius);
-				retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
-				if (retrievedEntry != null) {
-					unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
-					seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId())
-							.append(" ");
-					sedCatalogs.put(Band.W1, unWiseEntry.getCatalogName());
-					sedCatalogs.put(Band.W2, unWiseEntry.getCatalogName());
-					addWiseReferences();
-					sedPhotometry.put(Band.W1, unWiseEntry.getW1mag());
-					sedPhotometry.put(Band.W2, unWiseEntry.getW2mag());
-				}
-			} else {
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
 				catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
 				seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId())
 						.append(" ");
@@ -502,6 +596,24 @@ public final class SedWdPanel extends JPanel {
 				addWiseReferences();
 				sedPhotometry.put(Band.W1, catWiseEntry.getW1mag());
 				sedPhotometry.put(Band.W2, catWiseEntry.getW2mag());
+			}
+		}
+
+		if (unwisePhot.isSelected()) {
+			UnWiseCatalogEntry unWiseEntry = new UnWiseCatalogEntry();
+			unWiseEntry.setRa(catalogEntry.getRa());
+			unWiseEntry.setDec(catalogEntry.getDec());
+			unWiseEntry.setSearchRadius(searchRadius);
+			CatalogEntry retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
+			if (retrievedEntry != null) {
+				unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
+				seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId())
+						.append(" ");
+				sedCatalogs.put(Band.W1, unWiseEntry.getCatalogName());
+				sedCatalogs.put(Band.W2, unWiseEntry.getCatalogName());
+				addWiseReferences();
+				sedPhotometry.put(Band.W1, unWiseEntry.getW1mag());
+				sedPhotometry.put(Band.W2, unWiseEntry.getW2mag());
 			}
 		}
 
@@ -558,17 +670,25 @@ public final class SedWdPanel extends JPanel {
 		removeButton.setCursor(Cursor.getDefaultCursor());
 		bestMatch.setCursor(Cursor.getDefaultCursor());
 		overplotTemplates.setCursor(Cursor.getDefaultCursor());
-		commonReferences.setCursor(Cursor.getDefaultCursor());
+
+		panStarrsPhot.setCursor(Cursor.getDefaultCursor());
+		noirlabPhot.setCursor(Cursor.getDefaultCursor());
+		desPhot.setCursor(Cursor.getDefaultCursor());
+		twoMassPhot.setCursor(Cursor.getDefaultCursor());
+		ukidssPhot.setCursor(Cursor.getDefaultCursor());
+		uhsPhot.setCursor(Cursor.getDefaultCursor());
+		vhsPhot.setCursor(Cursor.getDefaultCursor());
+		allwisePhot.setCursor(Cursor.getDefaultCursor());
+		catwisePhot.setCursor(Cursor.getDefaultCursor());
+		unwisePhot.setCursor(Cursor.getDefaultCursor());
 
 		return collection;
 	}
 
-	private void addDecamReferences() {
-		sedReferences.put(Band.g, new SedReferences(Sed.DECAM_G.zeropoint, Sed.DECAM_G.wavelenth));
-		sedReferences.put(Band.r, new SedReferences(Sed.DECAM_R.zeropoint, Sed.DECAM_R.wavelenth));
-		sedReferences.put(Band.i, new SedReferences(Sed.DECAM_I.zeropoint, Sed.DECAM_I.wavelenth));
-		sedReferences.put(Band.z, new SedReferences(Sed.DECAM_Z.zeropoint, Sed.DECAM_Z.wavelenth));
-		sedReferences.put(Band.y, new SedReferences(Sed.DECAM_Y.zeropoint, Sed.DECAM_Y.wavelenth));
+	private void addGaiaReferences() {
+		sedReferences.put(Band.BP, new SedReferences(Sed.GAIA_BP.zeropoint, Sed.GAIA_BP.wavelenth));
+		sedReferences.put(Band.G, new SedReferences(Sed.GAIA_G.zeropoint, Sed.GAIA_G.wavelenth));
+		sedReferences.put(Band.RP, new SedReferences(Sed.GAIA_RP.zeropoint, Sed.GAIA_RP.wavelenth));
 	}
 
 	private void addPanStarrsReferences() {
@@ -579,10 +699,30 @@ public final class SedWdPanel extends JPanel {
 		sedReferences.put(Band.y, new SedReferences(Sed.PS1_Y.zeropoint, Sed.PS1_Y.wavelenth));
 	}
 
-	private void add2Massferences() {
+	private void addDecamReferences() {
+		sedReferences.put(Band.g, new SedReferences(Sed.DECAM_G.zeropoint, Sed.DECAM_G.wavelenth));
+		sedReferences.put(Band.r, new SedReferences(Sed.DECAM_R.zeropoint, Sed.DECAM_R.wavelenth));
+		sedReferences.put(Band.i, new SedReferences(Sed.DECAM_I.zeropoint, Sed.DECAM_I.wavelenth));
+		sedReferences.put(Band.z, new SedReferences(Sed.DECAM_Z.zeropoint, Sed.DECAM_Z.wavelenth));
+		sedReferences.put(Band.y, new SedReferences(Sed.DECAM_Y.zeropoint, Sed.DECAM_Y.wavelenth));
+	}
+
+	private void add2MassReferences() {
 		sedReferences.put(Band.J, new SedReferences(Sed.MASS_J.zeropoint, Sed.MASS_J.wavelenth));
 		sedReferences.put(Band.H, new SedReferences(Sed.MASS_H.zeropoint, Sed.MASS_H.wavelenth));
 		sedReferences.put(Band.K, new SedReferences(Sed.MASS_K.zeropoint, Sed.MASS_K.wavelenth));
+	}
+
+	private void addUkidssReferences() {
+		sedReferences.put(Band.J, new SedReferences(Sed.UKIDSS_J.zeropoint, Sed.UKIDSS_J.wavelenth));
+		sedReferences.put(Band.H, new SedReferences(Sed.UKIDSS_H.zeropoint, Sed.UKIDSS_H.wavelenth));
+		sedReferences.put(Band.K, new SedReferences(Sed.UKIDSS_K.zeropoint, Sed.UKIDSS_K.wavelenth));
+	}
+
+	private void addVhsReferences() {
+		sedReferences.put(Band.J, new SedReferences(Sed.VHS_J.zeropoint, Sed.VHS_J.wavelenth));
+		sedReferences.put(Band.H, new SedReferences(Sed.VHS_H.zeropoint, Sed.VHS_H.wavelenth));
+		sedReferences.put(Band.K, new SedReferences(Sed.VHS_K.zeropoint, Sed.VHS_K.wavelenth));
 	}
 
 	private void addWiseReferences() {
