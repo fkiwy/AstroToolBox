@@ -103,7 +103,7 @@ import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.panel.GaiaCmdPanel;
 import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedMsPanel;
+import astro.tool.box.panel.SedUcdPanel;
 import astro.tool.box.panel.SedWdPanel;
 import astro.tool.box.panel.WiseCcdPanel;
 import astro.tool.box.panel.WiseLcPanel;
@@ -505,7 +505,7 @@ public class CatalogQueryTab implements Tab {
 			JPanel container = new JPanel();
 			container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 			container.setBorder(new LineBorder(selectedEntry.getCatalogColor(), 3));
-			container.setPreferredSize(new Dimension(650, BOTTOM_PANEL_HEIGHT));
+			container.setPreferredSize(new Dimension(700, BOTTOM_PANEL_HEIGHT));
 
 			List<LookupResult> mainSequenceResults = mainSequenceSpectralTypeLookupService
 					.lookup(catalogEntry.getColors(true));
@@ -564,7 +564,7 @@ public class CatalogQueryTab implements Tab {
 			});
 
 			if (catalogEntry instanceof SimbadCatalogEntry) {
-				JButton referencesButton = new JButton("Object references");
+				JButton referencesButton = new JButton("Literature Ref.");
 				collectPanel.add(referencesButton);
 				referencesButton.addActionListener((ActionEvent evt) -> {
 					JFrame referencesFrame = new JFrame();
@@ -625,7 +625,7 @@ public class CatalogQueryTab implements Tab {
 				fillTygoForm(catalogEntry, catalogQueryService, baseFrame);
 			});
 
-			JButton createSedButton = new JButton("SED (MS)");
+			JButton createSedButton = new JButton("Ultracool Dwarf SED");
 			buttonPanel.add(createSedButton);
 			createSedButton.addActionListener((ActionEvent evt) -> {
 				createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -633,9 +633,9 @@ public class CatalogQueryTab implements Tab {
 				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				frame.addWindowListener(getChildWindowAdapter(baseFrame));
 				frame.setIconImage(getToolBoxImage());
-				frame.setTitle("SED");
-				frame.add(new SedMsPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
-				frame.setSize(1000, 900);
+				frame.setTitle("Ultracool Dwarf SED");
+				frame.add(new SedUcdPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+				frame.setSize(1050, 900);
 				frame.setLocation(0, 0);
 				frame.setAlwaysOnTop(false);
 				frame.setResizable(true);
@@ -643,7 +643,7 @@ public class CatalogQueryTab implements Tab {
 				createSedButton.setCursor(Cursor.getDefaultCursor());
 			});
 
-			JButton createWdSedButton = new JButton("SED (WD)");
+			JButton createWdSedButton = new JButton("White Dwarf SED");
 			buttonPanel.add(createWdSedButton);
 			createWdSedButton.addActionListener((ActionEvent evt) -> {
 				createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -651,9 +651,9 @@ public class CatalogQueryTab implements Tab {
 				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				frame.addWindowListener(getChildWindowAdapter(baseFrame));
 				frame.setIconImage(getToolBoxImage());
-				frame.setTitle("WD SED");
+				frame.setTitle("White Dwarf SED");
 				frame.add(new SedWdPanel(catalogQueryService, catalogEntry, baseFrame));
-				frame.setSize(1000, 900);
+				frame.setSize(1050, 900);
 				frame.setLocation(0, 0);
 				frame.setAlwaysOnTop(false);
 				frame.setResizable(true);
@@ -684,7 +684,7 @@ public class CatalogQueryTab implements Tab {
 				}
 			});
 
-			JButton createLcButton = new JButton("WISE LC");
+			JButton createLcButton = new JButton("WISE Light Curves");
 			collectPanel.add(createLcButton);
 			createLcButton.addActionListener((ActionEvent evt) -> {
 				try {
@@ -693,7 +693,7 @@ public class CatalogQueryTab implements Tab {
 					frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 					frame.addWindowListener(getChildWindowAdapter(baseFrame));
 					frame.setIconImage(getToolBoxImage());
-					frame.setTitle("WISE light curves");
+					frame.setTitle("WISE Light Curves");
 					frame.add(new WiseLcPanel(catalogEntry, baseFrame));
 					frame.setSize(1000, 900);
 					frame.setLocation(0, 0);

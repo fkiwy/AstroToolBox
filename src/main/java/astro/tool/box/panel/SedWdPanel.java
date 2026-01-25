@@ -31,6 +31,7 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -98,6 +99,7 @@ public final class SedWdPanel extends JPanel {
 	private final JFrame baseFrame;
 
 	private final JTextField photSearchRadius;
+	private final JButton createButton;
 	private final JButton removeButton;
 	private final JCheckBox bestMatch;
 	private final JCheckBox overplotTemplates;
@@ -130,21 +132,22 @@ public final class SedWdPanel extends JPanel {
 		this.baseFrame = baseFrame;
 
 		photSearchRadius = new JTextField("5", 3);
+		createButton = new JButton("Create SED");
 		removeButton = new JButton("Remove templates");
 		bestMatch = new JCheckBox("Best match", true);
 		overplotTemplates = new JCheckBox("Overplot templates", true);
 
-		gaiaPhot = new JCheckBox("Gaia", true);
-		panStarrsPhot = new JCheckBox("Pan-STARRS", false);
-		noirlabPhot = new JCheckBox("NSC", false);
-		desPhot = new JCheckBox("DES", false);
-		twoMassPhot = new JCheckBox("2MASS", true);
-		ukidssPhot = new JCheckBox("UKIDSS", false);
-		uhsPhot = new JCheckBox("UHS", false);
-		vhsPhot = new JCheckBox("VHS", false);
-		allwisePhot = new JCheckBox("AllWISE", true);
-		catwisePhot = new JCheckBox("CatWISE", false);
-		unwisePhot = new JCheckBox("unWISE", false);
+		gaiaPhot = new JCheckBox("Gaia  ", true);
+		panStarrsPhot = new JCheckBox("Pan-STARRS  ", false);
+		noirlabPhot = new JCheckBox("NSC  ", false);
+		desPhot = new JCheckBox("DES  ", false);
+		twoMassPhot = new JCheckBox("2MASS  ", true);
+		ukidssPhot = new JCheckBox("UKIDSS  ", false);
+		uhsPhot = new JCheckBox("UHS  ", false);
+		vhsPhot = new JCheckBox("VHS  ", false);
+		allwisePhot = new JCheckBox("AllWISE  ", true);
+		catwisePhot = new JCheckBox("CatWISE  ", false);
+		unwisePhot = new JCheckBox("unWISE  ", false);
 
 		XYSeriesCollection collection = createSed(catalogEntry, null, true);
 		JFreeChart chart = createChart(collection);
@@ -162,15 +165,96 @@ public final class SedWdPanel extends JPanel {
 		JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(commandPanel);
 
-		commandPanel.add(new JLabel("Photometry search radius"));
+		commandPanel.add(new JLabel("Search radius (\")"));
 		commandPanel.add(photSearchRadius);
-		photSearchRadius.addActionListener((ActionEvent e) -> {
+
+		commandPanel.add(gaiaPhot);
+		gaiaPhot.addActionListener((ActionEvent e) -> {
+			panStarrsPhot.setSelected(false);
+			noirlabPhot.setSelected(false);
+			desPhot.setSelected(false);
+		});
+
+		commandPanel.add(panStarrsPhot);
+		panStarrsPhot.addActionListener((ActionEvent e) -> {
+			gaiaPhot.setSelected(false);
+			noirlabPhot.setSelected(false);
+			desPhot.setSelected(false);
+		});
+
+		commandPanel.add(noirlabPhot);
+		noirlabPhot.addActionListener((ActionEvent e) -> {
+			gaiaPhot.setSelected(false);
+			panStarrsPhot.setSelected(false);
+			desPhot.setSelected(false);
+		});
+
+		commandPanel.add(desPhot);
+		desPhot.addActionListener((ActionEvent e) -> {
+			gaiaPhot.setSelected(false);
+			panStarrsPhot.setSelected(false);
+			noirlabPhot.setSelected(false);
+		});
+
+		commandPanel.add(twoMassPhot);
+		twoMassPhot.addActionListener((ActionEvent e) -> {
+			ukidssPhot.setSelected(false);
+			uhsPhot.setSelected(false);
+			vhsPhot.setSelected(false);
+		});
+
+		commandPanel.add(ukidssPhot);
+		ukidssPhot.addActionListener((ActionEvent e) -> {
+			twoMassPhot.setSelected(false);
+			uhsPhot.setSelected(false);
+			vhsPhot.setSelected(false);
+		});
+
+		commandPanel.add(uhsPhot);
+		uhsPhot.addActionListener((ActionEvent e) -> {
+			twoMassPhot.setSelected(false);
+			ukidssPhot.setSelected(false);
+			vhsPhot.setSelected(false);
+		});
+
+		commandPanel.add(vhsPhot);
+		vhsPhot.addActionListener((ActionEvent e) -> {
+			twoMassPhot.setSelected(false);
+			ukidssPhot.setSelected(false);
+			uhsPhot.setSelected(false);
+		});
+
+		commandPanel.add(allwisePhot);
+		allwisePhot.addActionListener((ActionEvent e) -> {
+			catwisePhot.setSelected(false);
+			unwisePhot.setSelected(false);
+		});
+
+		commandPanel.add(catwisePhot);
+		catwisePhot.addActionListener((ActionEvent e) -> {
+			allwisePhot.setSelected(false);
+			unwisePhot.setSelected(false);
+		});
+
+		commandPanel.add(unwisePhot);
+		unwisePhot.addActionListener((ActionEvent e) -> {
+			allwisePhot.setSelected(false);
+			catwisePhot.setSelected(false);
+		});
+
+		commandPanel.add(createButton);
+		createButton.setFont(createButton.getFont().deriveFont(Font.BOLD, 14f));
+		createButton.setMargin(new Insets(2, 10, 2, 10));
+		createButton.addActionListener((ActionEvent e) -> {
 			collection.removeAllSeries();
 			createSed(catalogEntry, collection, true);
 			setSeriesShape(chart);
 			XYPlot plot = chart.getXYPlot();
 			plot.getRenderer().setSeriesToolTipGenerator(0, addToolTips());
 		});
+
+		commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		add(commandPanel);
 
 		commandPanel.add(removeButton);
 		removeButton.addActionListener((ActionEvent e) -> {
@@ -192,119 +276,6 @@ public final class SedWdPanel extends JPanel {
 			createSed(catalogEntry, collection, true);
 			setSeriesShape(chart);
 		});
-
-		commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		add(commandPanel);
-
-		commandPanel.add(gaiaPhot);
-		gaiaPhot.addActionListener((ActionEvent e) -> {
-			panStarrsPhot.setSelected(false);
-			noirlabPhot.setSelected(false);
-			desPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(panStarrsPhot);
-		panStarrsPhot.addActionListener((ActionEvent e) -> {
-			gaiaPhot.setSelected(false);
-			noirlabPhot.setSelected(false);
-			desPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(noirlabPhot);
-		noirlabPhot.addActionListener((ActionEvent e) -> {
-			gaiaPhot.setSelected(false);
-			panStarrsPhot.setSelected(false);
-			desPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(desPhot);
-		desPhot.addActionListener((ActionEvent e) -> {
-			gaiaPhot.setSelected(false);
-			panStarrsPhot.setSelected(false);
-			noirlabPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(twoMassPhot);
-		twoMassPhot.addActionListener((ActionEvent e) -> {
-			ukidssPhot.setSelected(false);
-			uhsPhot.setSelected(false);
-			vhsPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(ukidssPhot);
-		ukidssPhot.addActionListener((ActionEvent e) -> {
-			twoMassPhot.setSelected(false);
-			uhsPhot.setSelected(false);
-			vhsPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(uhsPhot);
-		uhsPhot.addActionListener((ActionEvent e) -> {
-			twoMassPhot.setSelected(false);
-			ukidssPhot.setSelected(false);
-			vhsPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(vhsPhot);
-		vhsPhot.addActionListener((ActionEvent e) -> {
-			twoMassPhot.setSelected(false);
-			ukidssPhot.setSelected(false);
-			uhsPhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(allwisePhot);
-		allwisePhot.addActionListener((ActionEvent e) -> {
-			catwisePhot.setSelected(false);
-			unwisePhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(catwisePhot);
-		catwisePhot.addActionListener((ActionEvent e) -> {
-			allwisePhot.setSelected(false);
-			unwisePhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel.add(unwisePhot);
-		unwisePhot.addActionListener((ActionEvent e) -> {
-			allwisePhot.setSelected(false);
-			catwisePhot.setSelected(false);
-			collection.removeAllSeries();
-			createSed(catalogEntry, collection, true);
-			setSeriesShape(chart);
-		});
-
-		commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		add(commandPanel);
 
 		JButton createButton = new JButton("Create PDF");
 		commandPanel.add(createButton);
@@ -347,6 +318,7 @@ public final class SedWdPanel extends JPanel {
 	private XYSeriesCollection createSed(CatalogEntry catalogEntry, XYSeriesCollection collection,
 			boolean addReferenceSeds) {
 		photSearchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		createButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		removeButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		bestMatch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		overplotTemplates.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -380,7 +352,10 @@ public final class SedWdPanel extends JPanel {
 			gaiaEntry.setDec(catalogEntry.getDec());
 			gaiaEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(gaiaEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				gaiaPhot.setSelected(false);
+				panStarrsPhot.setSelected(true);
+			} else {
 				useGaiaPhotometry = true;
 				gaiaEntry = (GaiaDR3CatalogEntry) retrievedEntry;
 				seriesLabel.append(gaiaEntry.getCatalogName()).append(": ").append(gaiaEntry.getSourceId()).append(" ");
@@ -400,7 +375,10 @@ public final class SedWdPanel extends JPanel {
 			panStarrsEntry.setDec(catalogEntry.getDec());
 			panStarrsEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(panStarrsEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				panStarrsPhot.setSelected(false);
+				noirlabPhot.setSelected(true);
+			} else {
 				panStarrsEntry = (PanStarrsCatalogEntry) retrievedEntry;
 				seriesLabel.append(panStarrsEntry.getCatalogName()).append(": ").append(panStarrsEntry.getSourceId())
 						.append(" ");
@@ -424,7 +402,10 @@ public final class SedWdPanel extends JPanel {
 			noirlabEntry.setDec(catalogEntry.getDec());
 			noirlabEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(noirlabEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				noirlabPhot.setSelected(false);
+				desPhot.setSelected(true);
+			} else {
 				noirlabEntry = (NoirlabCatalogEntry) retrievedEntry;
 				seriesLabel.append(noirlabEntry.getCatalogName()).append(": ").append(noirlabEntry.getSourceId())
 						.append(" ");
@@ -448,7 +429,9 @@ public final class SedWdPanel extends JPanel {
 			desEntry.setDec(catalogEntry.getDec());
 			desEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(desEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				desPhot.setSelected(false);
+			} else {
 				desEntry = (DesCatalogEntry) retrievedEntry;
 				seriesLabel.append(desEntry.getCatalogName()).append(": ").append(desEntry.getSourceId()).append(" ");
 				sedCatalogs.put(Band.g, desEntry.getCatalogName());
@@ -476,7 +459,10 @@ public final class SedWdPanel extends JPanel {
 			twoMassEntry.setDec(catalogEntry.getDec());
 			twoMassEntry.setSearchRadius(searchRadius * 2);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(twoMassEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				twoMassPhot.setSelected(false);
+				ukidssPhot.setSelected(true);
+			} else {
 				twoMassEntry = (TwoMassCatalogEntry) retrievedEntry;
 				seriesLabel.append(twoMassEntry.getCatalogName()).append(": ").append(twoMassEntry.getSourceId())
 						.append(" ");
@@ -498,20 +484,30 @@ public final class SedWdPanel extends JPanel {
 				ukidssEntry.setDec(catalogEntry.getDec());
 				ukidssEntry.setSearchRadius(searchRadius);
 				CatalogEntry retrievedEntry = retrieveCatalogEntry(ukidssEntry, catalogQueryService, baseFrame);
-				if (retrievedEntry != null) {
-					ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
-					seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId())
-							.append(" ");
-					sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
-					sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
-					sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
-					addUkidssReferences();
-					sedPhotometry.put(Band.J, ukidssEntry.getJmag());
-					sedPhotometry.put(Band.H, ukidssEntry.getHmag());
-					sedPhotometry.put(Band.K, ukidssEntry.getKmag());
+				if (retrievedEntry == null) {
+					ukidssPhot.setSelected(false);
+					uhsPhot.setSelected(true);
+				} else {
+					if (ukidssEntry.getJmag() == 0 && ukidssEntry.getHmag() == 0 && ukidssEntry.getKmag() == 0) {
+						ukidssPhot.setSelected(false);
+						uhsPhot.setSelected(true);
+					} else {
+						ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
+						seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId())
+								.append(" ");
+						sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
+						sedCatalogs.put(Band.H, ukidssEntry.getCatalogName());
+						sedCatalogs.put(Band.K, ukidssEntry.getCatalogName());
+						addUkidssReferences();
+						sedPhotometry.put(Band.J, ukidssEntry.getJmag());
+						sedPhotometry.put(Band.H, ukidssEntry.getHmag());
+						sedPhotometry.put(Band.K, ukidssEntry.getKmag());
+					}
 				}
+			} else {
+				ukidssPhot.setSelected(false);
+				vhsPhot.setSelected(true);
 			}
-
 		}
 
 		if (uhsPhot.isSelected()) {
@@ -522,7 +518,10 @@ public final class SedWdPanel extends JPanel {
 				uhsEntry.setDec(catalogEntry.getDec());
 				uhsEntry.setSearchRadius(searchRadius);
 				CatalogEntry retrievedEntry = retrieveCatalogEntry(uhsEntry, catalogQueryService, baseFrame);
-				if (retrievedEntry != null) {
+				if (retrievedEntry == null) {
+					uhsPhot.setSelected(false);
+					vhsPhot.setSelected(true);
+				} else {
 					uhsEntry = (UhsCatalogEntry) retrievedEntry;
 					seriesLabel.append(uhsEntry.getCatalogName()).append(": ").append(uhsEntry.getSourceId())
 							.append(" ");
@@ -534,6 +533,9 @@ public final class SedWdPanel extends JPanel {
 					sedPhotometry.put(Band.H, uhsEntry.getHmag());
 					sedPhotometry.put(Band.K, uhsEntry.getKmag());
 				}
+			} else {
+				uhsPhot.setSelected(false);
+				vhsPhot.setSelected(true);
 			}
 		}
 
@@ -545,7 +547,9 @@ public final class SedWdPanel extends JPanel {
 				vhsEntry.setDec(catalogEntry.getDec());
 				vhsEntry.setSearchRadius(searchRadius);
 				CatalogEntry retrievedEntry = retrieveCatalogEntry(vhsEntry, catalogQueryService, baseFrame);
-				if (retrievedEntry != null) {
+				if (retrievedEntry == null) {
+					vhsPhot.setSelected(false);
+				} else {
 					vhsEntry = (VhsCatalogEntry) retrievedEntry;
 					seriesLabel.append(vhsEntry.getCatalogName()).append(": ").append(vhsEntry.getSourceId())
 							.append(" ");
@@ -556,8 +560,9 @@ public final class SedWdPanel extends JPanel {
 					sedPhotometry.put(Band.J, vhsEntry.getJmag());
 					sedPhotometry.put(Band.H, vhsEntry.getHmag());
 					sedPhotometry.put(Band.K, vhsEntry.getKmag());
-
 				}
+			} else {
+				vhsPhot.setSelected(false);
 			}
 		}
 
@@ -567,7 +572,10 @@ public final class SedWdPanel extends JPanel {
 			allWiseEntry.setDec(catalogEntry.getDec());
 			allWiseEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(allWiseEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				allwisePhot.setSelected(false);
+				catwisePhot.setSelected(true);
+			} else {
 				allWiseEntry = (AllWiseCatalogEntry) retrievedEntry;
 				seriesLabel.append(allWiseEntry.getCatalogName()).append(": ").append(allWiseEntry.getSourceId())
 						.append(" ");
@@ -587,7 +595,10 @@ public final class SedWdPanel extends JPanel {
 			catWiseEntry.setDec(catalogEntry.getDec());
 			catWiseEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(catWiseEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				catwisePhot.setSelected(false);
+				unwisePhot.setSelected(true);
+			} else {
 				catWiseEntry = (CatWiseCatalogEntry) retrievedEntry;
 				seriesLabel.append(catWiseEntry.getCatalogName()).append(": ").append(catWiseEntry.getSourceId())
 						.append(" ");
@@ -605,7 +616,9 @@ public final class SedWdPanel extends JPanel {
 			unWiseEntry.setDec(catalogEntry.getDec());
 			unWiseEntry.setSearchRadius(searchRadius);
 			CatalogEntry retrievedEntry = retrieveCatalogEntry(unWiseEntry, catalogQueryService, baseFrame);
-			if (retrievedEntry != null) {
+			if (retrievedEntry == null) {
+				unwisePhot.setSelected(false);
+			} else {
 				unWiseEntry = (UnWiseCatalogEntry) retrievedEntry;
 				seriesLabel.append(unWiseEntry.getCatalogName()).append(": ").append(unWiseEntry.getSourceId())
 						.append(" ");
@@ -667,6 +680,7 @@ public final class SedWdPanel extends JPanel {
 		}
 
 		photSearchRadius.setCursor(Cursor.getDefaultCursor());
+		createButton.setCursor(Cursor.getDefaultCursor());
 		removeButton.setCursor(Cursor.getDefaultCursor());
 		bestMatch.setCursor(Cursor.getDefaultCursor());
 		overplotTemplates.setCursor(Cursor.getDefaultCursor());
