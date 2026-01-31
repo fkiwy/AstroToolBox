@@ -18,7 +18,7 @@ AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.
 
 As of version **4.0.0**, AstroToolBox requires Java 17 or later to be installed on your computer to function properly (see [Java installation instructions](https://github.com/fkiwy/AstroToolBox/blob/master/releases/install_instructions.md)).
 
-[Download latest version](releases/executables/AstroToolBox-4.4.0.jar)
+[Download latest version](releases/executables/AstroToolBox-4.5.0.jar)
 
 [Release notes](releases/release%20notes.md)
 

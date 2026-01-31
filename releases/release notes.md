@@ -1,5 +1,11 @@
 ## Release notes
 
+### AstroToolBox v4.5.0
+- Improve photometry selection in SED panels
+- Add UHS proper motion overlays
+- Migrate from UHS DR2 to DR3
+- Skip WISE epochs 2013 and 2024
+
 ### AstroToolBox v4.4.0
 - Fix resource leaks
 - Refactor poor quality image processing
