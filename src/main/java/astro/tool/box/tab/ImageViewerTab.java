@@ -904,10 +904,10 @@ public class ImageViewerTab implements Tab {
 			mainControlPanel.add(wiseviewCutouts);
 			mainControlPanel.add(unwiseCutouts);
 
-			desiCutouts = new JRadioButton(html("DECaLS cutouts " + INFO_ICON));
+			desiCutouts = new JRadioButton(html("DESI cutouts " + INFO_ICON));
 			mainControlPanel.add(desiCutouts);
 			desiCutouts.setToolTipText(
-					"DECaLS cutouts are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 and DR9).");
+					"DESI cutouts are from https://www.legacysurvey.org and should be used with caution for motion detection.\nThe imagery might partially be the same for some of the data releases (e.g. DR8 and DR9).");
 			desiCutouts.addActionListener((ActionEvent evt) -> {
 				pixelScale = PIXEL_SCALE_DECAM;
 				previousSize = 0;
@@ -1480,7 +1480,7 @@ public class ImageViewerTab implements Tab {
 				imageSeriesPdf.setSelected(false);
 			});
 
-			legacyImageSeries = new JCheckBox("DECaLS g, r & z bands", false);
+			legacyImageSeries = new JCheckBox("DESI g, r & z bands", false);
 			mouseControlPanel.add(legacyImageSeries);
 			legacyImageSeries.addActionListener((ActionEvent evt) -> {
 				imageSeriesPdf.setSelected(false);
@@ -3126,7 +3126,7 @@ public class ImageViewerTab implements Tab {
 			switch (wiseBand) {
 			case W1 -> {
 				if (desi) {
-					band = "DECaLS r";
+					band = "DESI r";
 				} else if (ps1) {
 					band = "PS1 r";
 				} else {
@@ -3140,7 +3140,7 @@ public class ImageViewerTab implements Tab {
 			}
 			case W2 -> {
 				if (desi) {
-					band = "DECaLS z";
+					band = "DESI z";
 				} else if (ps1) {
 					band = "PS1 y";
 				} else {
@@ -3154,7 +3154,7 @@ public class ImageViewerTab implements Tab {
 			}
 			case W1W2 -> {
 				if (desi) {
-					band = "DECaLS r+z";
+					band = "DESI r+z";
 				} else if (ps1) {
 					band = "PS1 r+y";
 				} else {
@@ -5168,15 +5168,15 @@ public class ImageViewerTab implements Tab {
 
 			BufferedImage image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
 			if (image != null) {
-				bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g", DESI_LS_DR_LABEL)));
+				bandPanel.add(buildImagePanel(image, getImageLabel("DESI g", DESI_LS_DR_LABEL)));
 			}
 			image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
 			if (image != null) {
-				bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS r", DESI_LS_DR_LABEL)));
+				bandPanel.add(buildImagePanel(image, getImageLabel("DESI r", DESI_LS_DR_LABEL)));
 			}
 			image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
 			if (image != null) {
-				bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS z", DESI_LS_DR_LABEL)));
+				bandPanel.add(buildImagePanel(image, getImageLabel("DESI z", DESI_LS_DR_LABEL)));
 			}
 			image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false);
 			if (image != null) {
@@ -5190,7 +5190,7 @@ public class ImageViewerTab implements Tab {
 
 			JFrame imageFrame = new JFrame();
 			imageFrame.setIconImage(getToolBoxImage());
-			imageFrame.setTitle("DECaLS - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec)
+			imageFrame.setTitle("DESI - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec)
 					+ " FoV: " + size + "\"");
 			imageFrame.add(bandPanel);
 			imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
@@ -5300,7 +5300,7 @@ public class ImageViewerTab implements Tab {
 			image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
 			if (image != null) {
 				timeSeries.add(
-						new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+						new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
 			}
 
 			int componentCount = timeSeries.size();
@@ -5438,7 +5438,7 @@ public class ImageViewerTab implements Tab {
 			if (legacyImageSeries.isSelected()) {
 				image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
 				if (image != null) {
-					timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL),
+					timeSeries.add(new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL),
 							new NirImage(DESI_LS_EPOCH, image)));
 				}
 			}
