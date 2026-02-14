@@ -12,7 +12,7 @@ AstroToolBox allows overlaying of featured catalogs and creation of custom overl
 
 The toolkit incorporates a photometric classifier using data from the aforementioned catalogs to provide detailed spectral type classification. It also has an ADQL query interface for searching the ESAC, IRSA, NOIRLab and VizieR data archives.
 
-Additionally, AstroToolBox offers a file browser linked to the image viewer for convenient checking of a large list of objects, allowing users to save interesting finds in an object collection for future reference. It also provides various astrometric calculators and converters for user convenience.
+Additionally, AstroToolBox offers a file browser linked to the image viewer including coordinate propagation to streamline the inspection of large object lists. Users can save interesting finds in an object collection for future reference. The tool also provides various astrometric calculators and converters for user convenience.
 
 AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
