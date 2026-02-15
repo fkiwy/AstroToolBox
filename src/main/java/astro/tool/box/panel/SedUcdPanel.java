@@ -455,11 +455,11 @@ public class SedUcdPanel extends JPanel {
 					ukidssPhot.setSelected(false);
 					uhsPhot.setSelected(true);
 				} else {
+					ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
 					if (ukidssEntry.getJmag() == 0 && ukidssEntry.getHmag() == 0 && ukidssEntry.getKmag() == 0) {
 						ukidssPhot.setSelected(false);
 						uhsPhot.setSelected(true);
 					} else {
-						ukidssEntry = (UkidssCatalogEntry) retrievedEntry;
 						seriesLabel.append(ukidssEntry.getCatalogName()).append(": ").append(ukidssEntry.getSourceId())
 								.append(" ");
 						sedCatalogs.put(Band.J, ukidssEntry.getCatalogName());
