@@ -3346,6 +3346,7 @@ public class ImageViewerTab implements Tab {
 		sdssEntries = null;
 		vhsEntries = null;
 		uhsEntries = null;
+		uhsTpmEntries = null;
 		ukidssEntries = null;
 		ukidssTpmEntries = null;
 		twoMassEntries = null;
