@@ -6,19 +6,19 @@ This toolkit integrates various astronomical catalogs including SIMBAD (all avai
 
 For ultra-cool and white dwarfs, AstroToolBox offers an SED fitting tool using Best et al. SEDs for Field Ultracool Dwarfs and the Montreal Cooling Sequences (Bergeron et al.) for white dwarfs. Moreover, it includes a functionality to generate Gaia color-magnitude diagrams (CMD) with overlaid M0-M9 spectral types, along with the capability to plot Montreal Cooling Sequences on the white dwarf branch.
 
-Users can generate WISE light curves from AllWISE Multiepoch and NEOWISE-R Single Exposure (L1b) photometry and save plots as PNG or PDF files. Furthermore, the toolkit facilitates image blinking from different epochs using WISE coadds (Meisner et al. 2017), DECaLS cutouts (Dey et al. 2019), and Pan-STARRS WARP images (Waters et al. 2020) to identify motion or variability of objects, with the option to save images as PNG or animated GIF files.
+Users can generate WISE light curves from AllWISE Multiepoch and NEOWISE-R Single Exposure (L1b) photometry and save plots as PNG or PDF files. Furthermore, the toolkit facilitates image blinking from different epochs using WISE coadds (Meisner et al. 2017), DESI cutouts (Dey et al. 2019), and Pan-STARRS WARP images (Waters et al. 2020) to identify motion or variability of objects, with the option to save images as PNG or animated GIF files.
 
 AstroToolBox allows overlaying of featured catalogs and creation of custom overlays from VizieR catalogs, ADQL queries or local files. Overlay shapes can be clicked to show catalog details. Another feature is the display of time series (static or animated) using infrared and optical images from various surveys (DSS, SDSS, 2MASS, WISE, Spitzer, UKIDSS, UHS, VHS, Pan-STARRS, DECaLS).
 
 The toolkit incorporates a photometric classifier using data from the aforementioned catalogs to provide detailed spectral type classification. It also has an ADQL query interface for searching the ESAC, IRSA, NOIRLab and VizieR data archives.
 
-Additionally, AstroToolBox offers a file browser linked to the image viewer for convenient checking of a large list of objects, allowing users to save interesting finds in an object collection for future reference. It also provides various astrometric calculators and converters for user convenience.
+Additionally, AstroToolBox offers a file browser linked to the image viewer including coordinate propagation to streamline the inspection of large object lists. Users can save interesting finds in an object collection for future reference. The tool also provides various astrometric calculators and converters for user convenience.
 
 AstroToolBox can be cited via its ASCL.net entry <a href="https://ascl.net/2201.002"><img src="https://img.shields.io/badge/ascl-2201.002-blue.svg?colorB=262255" alt="ascl:2201.002" /></a>
 
 As of version **4.0.0**, AstroToolBox requires Java 17 or later to be installed on your computer to function properly (see [Java installation instructions](https://github.com/fkiwy/AstroToolBox/blob/master/releases/install_instructions.md)).
 
-[Download latest version](releases/executables/AstroToolBox-4.5.0.jar)
+[Download latest version](releases/executables/AstroToolBox-4.5.1.jar)
 
 [Release notes](releases/release%20notes.md)
 

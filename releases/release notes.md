@@ -1,5 +1,10 @@
 ## Release notes
 
+### AstroToolBox v4.5.1
+- Fix a bug in UHS proper motion vectors
+- Fix a bug in UCD SED panel
+- Change DECaLS label to DESI
+
 ### AstroToolBox v4.5.0
 - Improve photometry selection in SED panels
 - Add UHS proper motion overlays

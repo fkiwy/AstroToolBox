@@ -129,15 +129,6 @@ public class SimbadQueryService {
 		return executeQuery(query.toString());
 	}
 
-	/*
-	 * This query is very slow ! public List<String[]> getObjectTypes(String
-	 * mainIdentifier) throws IOException { StringBuilder query = new
-	 * StringBuilder(); addRow(query, "select d.otype_shortname, d.otype_longname");
-	 * addRow(query, "from   otypedef as d, otypes as t, basic as b"); addRow(query,
-	 * "where  t.oidref = b.oid"); addRow(query, "and    d.otype = t.otype");
-	 * addRow(query, "and    b.main_id = '" + mainIdentifier + "'"); return
-	 * executeQuery(query.toString()); }
-	 */
 	public List<String[]> getObjectTypes(String mainIdentifier) throws IOException {
 		StringBuilder query = new StringBuilder();
 		addRow(query, "select t.otypes");

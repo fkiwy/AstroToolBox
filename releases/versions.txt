@@ -2,3 +2,4 @@
 4.3.1,false,2025,01,04,"This is a bugfix version regarding the SED plots."
 4.4.0,false,2025,04,27,""
 4.5.0,true,2026,01,31,"The new version provides full UHS DR3 support, including catalog access and proper motion overlays."
+4.5.1,true,2026,02,22,"This is a bugfix release."

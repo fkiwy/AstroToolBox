@@ -865,16 +865,16 @@ public class ImageSeriesTab implements Tab {
 
 		image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
 		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS g", DESI_LS_DR_LABEL)));
+			bandPanel.add(buildImagePanel(image, getImageLabel("DESI g", DESI_LS_DR_LABEL)));
 		}
 		image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
 		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS r", DESI_LS_DR_LABEL)));
+			bandPanel.add(buildImagePanel(image, getImageLabel("DESI r", DESI_LS_DR_LABEL)));
 		}
 		image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
 		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS z", DESI_LS_DR_LABEL)));
-			timeSeries.add(new Couple(getImageLabel("DECaLS z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+			bandPanel.add(buildImagePanel(image, getImageLabel("DESI z", DESI_LS_DR_LABEL)));
+			timeSeries.add(new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
 		}
 		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false);
 		if (image != null) {
@@ -929,13 +929,13 @@ public class ImageSeriesTab implements Tab {
 
 		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "decals-dr5");
 		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "DECaLS DR5"));
-			desiImages.add(new Couple("DECaLS DR5", image));
+			bandPanel.add(buildImagePanel(image, "DESI DR5"));
+			desiImages.add(new Couple("DESI DR5", image));
 		}
 		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "decals-dr7");
 		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "DECaLS DR7"));
-			desiImages.add(new Couple("DECaLS DR7", image));
+			bandPanel.add(buildImagePanel(image, "DESI DR7"));
+			desiImages.add(new Couple("DESI DR7", image));
 		}
 		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "ls-dr8");
 		if (image != null) {
