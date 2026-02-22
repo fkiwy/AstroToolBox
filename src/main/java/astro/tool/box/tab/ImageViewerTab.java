@@ -378,6 +378,7 @@ public class ImageViewerTab implements Tab {
 	private JLabel finderChartLabel;
 	private JLabel legacyViewerLabel;
 	private JLabel ukidssCutoutsLabel;
+	private JLabel uhsCutoutsLabel;
 	private JLabel vhsCutoutsLabel;
 	private JLabel simbadLabel;
 	private JLabel vizierLabel;
@@ -622,7 +623,7 @@ public class ImageViewerTab implements Tab {
 			// ===================
 			// Tab: Main controls
 			// ===================
-			int rows = 39;
+			int rows = 40;
 			if (nearestBywSubjects) {
 				rows += 3;
 			}
@@ -1006,16 +1007,22 @@ public class ImageViewerTab implements Tab {
 
 			ukidssCutoutsLabel = new JLabel("UKIDSS cutouts");
 			resourcesPanel.add(ukidssCutoutsLabel);
+			
+			uhsCutoutsLabel = new JLabel("UHS cutouts");
+			resourcesPanel.add(uhsCutoutsLabel);
+			
+			resourcesPanel = new JPanel(new GridLayout(1, 2));
+			mainControlPanel.add(resourcesPanel);
 
 			vhsCutoutsLabel = new JLabel("VHS cutouts");
 			resourcesPanel.add(vhsCutoutsLabel);
 
-			resourcesPanel = new JPanel(new GridLayout(1, 2));
-			mainControlPanel.add(resourcesPanel);
-
 			simbadLabel = new JLabel("SIMBAD");
 			resourcesPanel.add(simbadLabel);
 
+			resourcesPanel = new JPanel(new GridLayout(1, 2));
+			mainControlPanel.add(resourcesPanel);
+			
 			vizierLabel = new JLabel("VizieR");
 			resourcesPanel.add(vizierLabel);
 
@@ -1303,6 +1310,8 @@ public class ImageViewerTab implements Tab {
 				gaiaDR3TpmEntries = null;
 				catWiseTpmEntries = null;
 				noirlabTpmEntries = null;
+				ukidssTpmEntries = null;
+				uhsTpmEntries = null;
 				processImages();
 			});
 
@@ -2840,6 +2849,8 @@ public class ImageViewerTab implements Tab {
 				String fovSize = roundTo2DecNZ(defaultFOV / 60f);
 				createHyperlink(ukidssCutoutsLabel,
 						UKIDSS_SURVEY_URL.formatted(targetRa, targetDec, "all", fovSize, fovSize));
+				createHyperlink(uhsCutoutsLabel,
+						UHS_SURVEY_URL.formatted(targetRa, targetDec, "all", fovSize, fovSize));
 				createHyperlink(vhsCutoutsLabel,
 						VHS_SURVEY_URL.formatted(targetRa, targetDec, "all", fovSize, fovSize));
 				createHyperlink(simbadLabel, getSimbadUrl(targetRa, targetDec, 30));
