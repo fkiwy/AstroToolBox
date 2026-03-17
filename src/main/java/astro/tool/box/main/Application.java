@@ -191,8 +191,10 @@ public class Application {
 									Integer.parseInt(values[4]), values[5]);
 							if (version.isLatest()) {
 								latestVersion = version.getNumber();
-								releaseDate = version.getDate();
 								versionMessage = version.getMessage();
+							}
+							if (currentVersion.equals(version.getNumber())) {
+								releaseDate = version.getDate();
 							}
 						}
 					}
@@ -222,9 +224,10 @@ public class Application {
 		container.add(createHyperlink("> Download new version",
 				RELEASES_URL + "executables/AstroToolBox-%s.jar".formatted(latestVersion)));
 		container.add(createHyperlink("> Check release notes", RELEASES_URL + "release%20notes.md"));
+		container.add(new JLabel(" "));
 		container.add(new JLabel("Please make sure to always use the latest version of this tool!"));
 		container.add(new JLabel("Previous versions may contain bugs and/or may no longer work properly."));
-		container.add(new JLabel("Latest version: " + latestVersion));
+		container.add(new JLabel(" "));
 		String versionText = "Current version: " + currentVersion;
 		JLabel versionLabel = new JLabel();
 		if (remainingDays < 1) {
@@ -234,12 +237,14 @@ public class Application {
 			versionLabel.setText(versionText + " will expire in " + remainingDays + " days.");
 		}
 		container.add(versionLabel);
+		container.add(new JLabel("Latest version: " + latestVersion));
 		if (!versionMessage.isEmpty()) {
+			container.add(new JLabel(" "));
 			JTextPane textPane = new JTextPane();
 			textPane.setText(versionMessage);
 			textPane.setEditable(false);
 			JScrollPane scrollPane = new JScrollPane(textPane);
-			scrollPane.setBorder(createEtchedBorder("Info"));
+			scrollPane.setBorder(createEtchedBorder("Latest version notes:"));
 			scrollPane.setPreferredSize(new Dimension(300, 100));
 			container.add(scrollPane);
 		}
