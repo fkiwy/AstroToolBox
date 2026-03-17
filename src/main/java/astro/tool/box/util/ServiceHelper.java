@@ -83,7 +83,9 @@ public class ServiceHelper {
 				webProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyAddress, proxyPort));
 			}
 		}
-		return (HttpURLConnection) new URL(url).openConnection(webProxy == null ? Proxy.NO_PROXY : webProxy);
+		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection(webProxy == null ? Proxy.NO_PROXY : webProxy);
+		connection.setConnectTimeout(10000);
+		return connection;
 	}
 
 	public static String readResponse(HttpURLConnection connection, String serviceProvider) {
