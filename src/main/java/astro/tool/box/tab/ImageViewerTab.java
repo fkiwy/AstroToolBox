@@ -41,6 +41,7 @@ import static astro.tool.box.main.ToolboxHelper.createHeaderLabel;
 import static astro.tool.box.main.ToolboxHelper.createHyperlink;
 import static astro.tool.box.main.ToolboxHelper.createLabel;
 import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
+import static astro.tool.box.main.ToolboxHelper.createToolTip;
 import static astro.tool.box.main.ToolboxHelper.drawCenterShape;
 import static astro.tool.box.main.ToolboxHelper.fillTygoForm;
 import static astro.tool.box.main.ToolboxHelper.flipImage;
@@ -135,6 +136,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -181,6 +183,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -1007,10 +1010,10 @@ public class ImageViewerTab implements Tab {
 
 			ukidssCutoutsLabel = new JLabel("UKIDSS cutouts");
 			resourcesPanel.add(ukidssCutoutsLabel);
-			
+
 			uhsCutoutsLabel = new JLabel("UHS cutouts");
 			resourcesPanel.add(uhsCutoutsLabel);
-			
+
 			resourcesPanel = new JPanel(new GridLayout(1, 2));
 			mainControlPanel.add(resourcesPanel);
 
@@ -1022,7 +1025,7 @@ public class ImageViewerTab implements Tab {
 
 			resourcesPanel = new JPanel(new GridLayout(1, 2));
 			mainControlPanel.add(resourcesPanel);
-			
+
 			vizierLabel = new JLabel("VizieR");
 			resourcesPanel.add(vizierLabel);
 
@@ -1033,10 +1036,32 @@ public class ImageViewerTab implements Tab {
 			overlaysControlPanel.setPreferredSize(new Dimension(controlPanelWidth - 20, controlPanelHeight));
 			overlaysControlPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
+			String overlayTabLabel = "Overlays";
 			JScrollPane overlaysScrollPanel = new JScrollPane(overlaysControlPanel);
 			overlaysScrollPanel.setPreferredSize(new Dimension(controlPanelWidth, 50));
 			overlaysScrollPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-			controlTabs.add("Overlays", overlaysScrollPanel);
+			controlTabs.add(overlayTabLabel, overlaysScrollPanel);
+			controlTabs.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					int selectedIndex = controlTabs.getSelectedIndex();
+					if (controlTabs.getTitleAt(selectedIndex).equals(overlayTabLabel)) {
+						JPanel panel = new JPanel();
+						panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+						panel.add(new JLabel(
+								"Catalog overlay markers (such as the green circles shown in the example below) are clickable and display detailed catalog information."));
+						panel.add(new JLabel(
+								"To see these markers, first enable the relevant catalog overlays using the checkboxes in the left panel."));
+						panel.add(Box.createVerticalStrut(10));
+						ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/Catalog overlay.png"));
+						Image scaledImage = originalIcon.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+						ImageIcon scaledIcon = new ImageIcon(scaledImage);
+						JLabel imageLabel = new JLabel(scaledIcon);
+						panel.add(imageLabel);
+						createToolTip(baseFrame, panel, "overlayMarkers");
+					}
+				}
+			});
 
 			JLabel catalogOverlaysLabel = createHeaderLabel(html("Catalog overlays " + INFO_ICON));
 			overlaysControlPanel.add(catalogOverlaysLabel);
@@ -5202,8 +5227,8 @@ public class ImageViewerTab implements Tab {
 
 			JFrame imageFrame = new JFrame();
 			imageFrame.setIconImage(getToolBoxImage());
-			imageFrame.setTitle("DESI - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec)
-					+ " FoV: " + size + "\"");
+			imageFrame.setTitle("DESI - Target: " + roundTo2DecNZ(targetRa) + " " + roundTo2DecNZ(targetDec) + " FoV: "
+					+ size + "\"");
 			imageFrame.add(bandPanel);
 			imageFrame.setSize(componentCount * PANEL_WIDTH, PANEL_HEIGHT);
 			imageFrame.setLocation(0, counter.value());
@@ -5311,8 +5336,8 @@ public class ImageViewerTab implements Tab {
 
 			image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
 			if (image != null) {
-				timeSeries.add(
-						new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
+				timeSeries
+						.add(new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
 			}
 
 			int componentCount = timeSeries.size();
@@ -5450,8 +5475,8 @@ public class ImageViewerTab implements Tab {
 			if (legacyImageSeries.isSelected()) {
 				image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
 				if (image != null) {
-					timeSeries.add(new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL),
-							new NirImage(DESI_LS_EPOCH, image)));
+					timeSeries.add(
+							new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
 				}
 			}
 

@@ -9,9 +9,11 @@ import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
 import static astro.tool.box.util.Constants.LINE_SEP;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,6 +47,7 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
@@ -103,7 +106,7 @@ public class SettingsTab implements Tab {
 	private String cutoutService;
 	private String objectCollectionPath;
 
-	// Catalog search settings
+	// Miscellaneous settings
 	private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
 	private static final String SEARCH_RADIUS = "searchRadius";
 	private static final String USER_NAME = "userName";
@@ -112,6 +115,8 @@ public class SettingsTab implements Tab {
 	public static final String ALADIN_LITE_FOV = "aladinLiteFOV";
 	public static final String WISE_VIEW_FOV = "wiseViewFOV";
 	public static final String FINDER_CHART_FOV = "finderChartFOV";
+	public static final String SHOW_TOOL_TIPS = "showToolTips";
+	public static final String DISALBED_TOOL_TIPS = "disabledToolTips";
 
 	private boolean copyCoordsToClipboard;
 	private int searchRadius;
@@ -119,6 +124,7 @@ public class SettingsTab implements Tab {
 	private int aladinLiteFOV;
 	private int wiseViewFOV;
 	private int finderChartFOV;
+	private boolean showToolTips;
 
 	// Image viewer settings
 	private static final String WISE_BAND = "wiseBand";
@@ -269,7 +275,7 @@ public class SettingsTab implements Tab {
 			globalSettings.add(new JLabel("(*) The file will be created by the tool. ", SwingConstants.RIGHT));
 			globalSettings.add(new JLabel("Example: C:/Folder/MyCollection.csv", SwingConstants.LEFT));
 
-			// Catalog search settings
+			// Miscellaneous settings
 			JPanel catalogQuerySettings = new JPanel(new GridLayout(gridRows, 2));
 			catalogQuerySettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 					"Miscellaneous settings", TitledBorder.LEFT, TitledBorder.TOP));
@@ -284,6 +290,7 @@ public class SettingsTab implements Tab {
 			finderChartFOV = Integer.parseInt(USER_SETTINGS.getProperty(FINDER_CHART_FOV, "100"));
 			String userName = USER_SETTINGS.getProperty(USER_NAME, "");
 			String userEmail = USER_SETTINGS.getProperty(USER_EMAIL, "");
+			showToolTips = Boolean.parseBoolean(USER_SETTINGS.getProperty(SHOW_TOOL_TIPS, "true"));
 
 			catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
 			catalogQueryTab.setCopyCoordsToClipboard(copyCoordsToClipboard);
@@ -328,6 +335,26 @@ public class SettingsTab implements Tab {
 
 			catalogQuerySettings.add(new JLabel("(*) Required only for automatic", SwingConstants.RIGHT));
 			catalogQuerySettings.add(new JLabel(" BYW-TYGO form filling", SwingConstants.LEFT));
+
+			catalogQuerySettings.add(new JLabel("Show tooltips: ", SwingConstants.RIGHT));
+			JCheckBox toolTipCheckBox = new JCheckBox();
+			toolTipCheckBox.setSelected(showToolTips);
+			catalogQuerySettings.add(toolTipCheckBox);
+
+			JLabel toolTipMessage = createMessageLabel();
+			Timer toolTipTimer = new Timer(3000, (ActionEvent e) -> {
+				toolTipMessage.setText("");
+			});
+
+			JButton enableToolTipButton = new JButton("Re-enable all tooltips");
+			catalogQuerySettings.add(enableToolTipButton);
+			catalogQuerySettings.add(toolTipMessage);
+			enableToolTipButton.addActionListener((ActionEvent evt) -> {
+				USER_SETTINGS.setProperty(DISALBED_TOOL_TIPS, "");
+				saveSettings();
+				toolTipMessage.setText("All tooltips enabled!");
+				toolTipTimer.restart();
+			});
 
 			// Image viewer settings
 			JPanel imageViewerSettings = new JPanel(new GridLayout(gridRows, 2));
@@ -491,7 +518,13 @@ public class SettingsTab implements Tab {
 				message.setText("");
 			});
 
-			JButton applyButton = new JButton("Apply settings");
+			JButton applyButton = new JButton("Click to apply settings");
+			applyButton.setFont(new Font(message.getFont().getName(), Font.BOLD, 14));
+
+			Border redBorder = BorderFactory.createLineBorder(Color.RED, 2);
+			Border padding = BorderFactory.createEmptyBorder(10, 15, 10, 15);
+			applyButton.setBorder(BorderFactory.createCompoundBorder(redBorder, padding));
+
 			buttonPanel.add(applyButton);
 			applyButton.addActionListener((ActionEvent evt) -> {
 				boolean requiresRestart = false;
@@ -523,13 +556,14 @@ public class SettingsTab implements Tab {
 					}
 					photometricErrors = photometricErrorsBox.isSelected();
 
-					// Catalog search settings
+					// Miscellaneous settings
 					copyCoordsToClipboard = clipboardCheckBox.isSelected();
 					searchRadius = Integer.parseInt(searchRadiusField.getText());
 					panstarrsFOV = Integer.parseInt(panstarrsFovField.getText());
 					aladinLiteFOV = Integer.parseInt(aladinLiteFovField.getText());
 					wiseViewFOV = Integer.parseInt(wiseViewFovField.getText());
 					finderChartFOV = Integer.parseInt(finderChartFovField.getText());
+					showToolTips = toolTipCheckBox.isSelected();
 
 					// Image viewer settings
 					wiseBand = (WiseBand) wiseBands.getSelectedItem();
@@ -569,7 +603,7 @@ public class SettingsTab implements Tab {
 				USER_SETTINGS.setProperty(CUTOUT_SERVICE, cutoutServiceField.getText());
 				USER_SETTINGS.setProperty(OBJECT_COLLECTION_PATH, collectionPathField.getText());
 
-				// Catalog search settings
+				// Miscellaneous settings
 				catalogQueryTab.getRadiusField().setText(String.valueOf(searchRadius));
 				catalogQueryTab.setCopyCoordsToClipboard(copyCoordsToClipboard);
 
@@ -587,6 +621,7 @@ public class SettingsTab implements Tab {
 				USER_SETTINGS.setProperty(FINDER_CHART_FOV, finderChartFovField.getText());
 				USER_SETTINGS.setProperty(USER_NAME, userNameField.getText());
 				USER_SETTINGS.setProperty(USER_EMAIL, userEmailField.getText());
+				USER_SETTINGS.setProperty(SHOW_TOOL_TIPS, String.valueOf(showToolTips));
 
 				// Image viewer settings
 				imageViewerTab.initCatalogEntries();

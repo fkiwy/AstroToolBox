@@ -9,8 +9,13 @@ import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
 import static astro.tool.box.function.NumericFunctions.toDouble;
 import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
 import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.tab.SettingsTab.DISALBED_TOOL_TIPS;
 import static astro.tool.box.tab.SettingsTab.OBJECT_COLLECTION_PATH;
+import static astro.tool.box.tab.SettingsTab.SHOW_TOOL_TIPS;
 import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.tab.SettingsTab.loadUserSettings;
+import static astro.tool.box.tab.SettingsTab.saveSettings;
+import static astro.tool.box.tab.SettingsTab.setUserSetting;
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.Comparators.getIntegerComparator;
 import static astro.tool.box.util.Comparators.getStringComparator;
@@ -68,6 +73,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -75,6 +81,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -84,6 +91,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -1558,6 +1566,35 @@ public class ToolboxHelper {
 				baseFrame.setFocusableWindowState(false);
 			}
 		};
+	}
+
+	public static void createToolTip(JFrame baseFrame, JPanel panel, String toolTipName) {
+		loadUserSettings();
+		boolean showToolTips = Boolean.parseBoolean(getUserSetting(SHOW_TOOL_TIPS, "true"));
+		String disabledToolTips = getUserSetting(DISALBED_TOOL_TIPS, "");
+		if (!showToolTips || disabledToolTips.contains(toolTipName)) {
+			return;
+		}
+
+		panel.add(Box.createVerticalStrut(20));
+		panel.add(new JSeparator());
+		panel.add(Box.createVerticalStrut(10));
+
+		JCheckBox disableToolTips = new JCheckBox(
+				"Disable this tooltip (you can re-enable all tooltips via the Settings tab)");
+		panel.add(disableToolTips);
+
+		JOptionPane.showMessageDialog(baseFrame, panel, "Tooltip", JOptionPane.INFORMATION_MESSAGE);
+
+		if (disableToolTips.isSelected()) {
+			StringJoiner joiner = new StringJoiner(",");
+			if (!disabledToolTips.isBlank()) {
+				joiner.add(disabledToolTips);
+			}
+			joiner.add(toolTipName);
+			setUserSetting(DISALBED_TOOL_TIPS, joiner.toString());
+			saveSettings();
+		}
 	}
 
 }
