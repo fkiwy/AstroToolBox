@@ -1,5 +1,11 @@
 ## Release notes
 
+### AstroToolBox v4.5.2
+- Add tooltip window
+- Improve version info panel
+- Set connection timeout to 10000 ms
+- Add link to UHS cutouts
+
 ### AstroToolBox v4.5.1
 - Fix a bug in UHS proper motion vectors
 - Fix a bug in UCD SED panel
