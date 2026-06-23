@@ -673,10 +673,10 @@ public class ImageViewerTab implements Tab {
 
 			mainControlPanel.add(new JLabel("Brightness:"));
 
-			brightnessSlider = new JSlider(1, 100, 1);
+			brightnessSlider = new JSlider(1, 100, 50);
 			mainControlPanel.add(brightnessSlider);
 			brightnessSlider.addChangeListener((ChangeEvent e) -> {
-				brightness = brightnessSlider.getValue();
+				brightness = getInvertedValue(brightnessSlider);
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					return;
@@ -689,7 +689,7 @@ public class ImageViewerTab implements Tab {
 			contrastSlider = new JSlider(1, 100, 50);
 			mainControlPanel.add(contrastSlider);
 			contrastSlider.addChangeListener((ChangeEvent e) -> {
-				contrast = contrastSlider.getValue();
+				contrast = getInvertedValue(contrastSlider);;
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					return;
@@ -1221,14 +1221,14 @@ public class ImageViewerTab implements Tab {
 			mocaOverlay.addActionListener((ActionEvent evt) -> {
 				processImages();
 			});
-			overlayPanel.add(mocaOverlay);
+			//overlayPanel.add(mocaOverlay);
 
 			ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
 			ssoOverlay.setForeground(Color.BLUE);
 			ssoOverlay.addActionListener((ActionEvent evt) -> {
 				processImages();
 			});
-			overlaysControlPanel.add(ssoOverlay);
+			overlayPanel.add(ssoOverlay);
 
 			useCustomOverlays = new JCheckBox("Custom overlays:");
 			overlaysControlPanel.add(useCustomOverlays);
@@ -2696,7 +2696,7 @@ public class ImageViewerTab implements Tab {
 	private void resetContrastSlider() {
 		ChangeListener changeListener;
 
-		brightness = 1;
+		brightness = 50;
 		changeListener = brightnessSlider.getChangeListeners()[0];
 		brightnessSlider.removeChangeListener(changeListener);
 		brightnessSlider.setValue(brightness);
@@ -4441,40 +4441,70 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private NumberPair determineRefValues(float[][] values) {
-		List<Double> imageData = new ArrayList<>();
-		for (float[] row : values) {
-			for (float value : row) {
-				if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
-					imageData.add((double) value);
-				}
-			}
-		}
-		imageData.sort(Comparator.naturalOrder());
-		double lowerBound;
-		double upperBound;
-		if (differenceImaging.isSelected()) {
-			NumberPair limits = determineLimits(imageData, contrast / 10f, 100 - contrast / 10f);
-			lowerBound = limits.getX();
-			upperBound = limits.getY();
-		} else {
-			NumberPair limits = determineLimits(imageData, brightness, 1);
-			lowerBound = limits.getX();
-			limits = determineLimits(imageData, 1, 1);
-			double min = limits.getX();
-			double max = limits.getY();
-			double dev = max - min;
-			double med = determineMedian(imageData);
-			upperBound = med + ((100 - contrast) / 10f) * dev;
-		}
-		return new NumberPair(lowerBound, upperBound);
+	    List<Double> imageData = new ArrayList<>();
+
+	    for (float[] row : values) {
+	        for (float value : row) {
+	            if (Float.isFinite(value)) {
+	                imageData.add((double) value);
+	            }
+	        }
+	    }
+
+	    if (imageData.isEmpty()) {
+	        return new NumberPair(0, 1);
+	    }
+
+	    imageData.sort(Comparator.naturalOrder());
+
+	    double median = determineMedian(imageData);
+	    double sigma = determineRobustSigma(imageData, median);
+
+	    double lowerBound;
+	    double upperBound;
+
+	    if (differenceImaging.isSelected()) {
+	        // Symmetric stretch around zero for difference images
+	        double stretch = (contrast / 10.0) * sigma;
+
+	        lowerBound = -stretch;
+	        upperBound = stretch;
+	    } else {
+	        // brightness slider shifts lower limit
+	        double blackPointSigma = 1.0 + brightness / 30.0;
+
+	        // contrast slider controls upper limit
+	        double whitePointSigma = 1.0 + contrast / 5.0;
+
+	        lowerBound = median - blackPointSigma * sigma;
+	        upperBound = median + whitePointSigma * sigma;
+	    }
+
+	    if (upperBound <= lowerBound) {
+	        upperBound = lowerBound + 1;
+	    }
+
+	    return new NumberPair(lowerBound, upperBound);
 	}
 
-	public static NumberPair determineLimits(List<Double> values, double lowPercentile, double highPercentile) {
-		int size = values.size();
-		int half = size / 2;
-		int min = (int) (half * lowPercentile / 100);
-		int max = (int) (half * (100 - highPercentile) / 100);
-		return new NumberPair(values.get(min), values.get((size - 1) - max));
+	private static int getInvertedValue(JSlider slider) {
+	    return slider.getMaximum()
+	           - slider.getValue()
+	           + slider.getMinimum();
+	}
+	
+	private static double determineRobustSigma(List<Double> values, double median) {
+	    List<Double> deviations = new ArrayList<>(values.size());
+
+	    for (double value : values) {
+	        deviations.add(Math.abs(value - median));
+	    }
+
+	    deviations.sort(Comparator.naturalOrder());
+
+	    double mad = determineMedian(deviations);
+
+	    return mad * 1.4826;
 	}
 
 	private boolean openNewCatalogSearch(double targetRa, double targetDec) {
