@@ -637,7 +637,7 @@ public final class SedWdPanel extends JPanel {
 			if (photometry != null) {
 				SedReferences references = sedReferences.get(band);
 				sedFluxes.put(band,
-						new SedFluxes(photometry,
+						new SedFluxes(photometry, 0,
 								convertMagnitudeToFluxDensity(photometry, references.getZeropoint(),
 										references.getWavelenth()),
 								convertMagnitudeToFluxJansky(photometry, references.getZeropoint()),
