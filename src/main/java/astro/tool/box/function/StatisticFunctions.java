@@ -6,6 +6,7 @@ import static java.lang.Math.sqrt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -87,7 +88,25 @@ public class StatisticFunctions {
 	}
 
 	/**
-	 * Determine the median of a set of values
+	 * Calculate the median absolute deviation (MAD) of the given values
+	 *
+	 * @param values
+	 * @return the median absolute deviation
+	 */
+	public static double medianAbsoluteDeviation(List<Double> values) {
+		if (values.isEmpty()) {
+			return 0;
+		}
+		double median = determineMedian(values);
+		List<Double> deviations = new ArrayList<>(values.size());
+		for (double value : values) {
+			deviations.add(Math.abs(value - median));
+		}
+		return determineMedian(deviations);
+	}
+
+	/**
+	 * Determine the median of the given values
 	 *
 	 * @param values
 	 * @return the median
@@ -96,19 +115,18 @@ public class StatisticFunctions {
 		if (values.isEmpty()) {
 			return 0;
 		}
-		values.sort(Comparator.naturalOrder());
-		int size = values.size();
-		int half = size / 2 - 1;
-		half = half < 0 ? 0 : half;
-		if (size % 2 == 0) {
-			return calculateMean(values.get(half), values.get(half + 1));
+		List<Double> sorted = new ArrayList<>(values);
+		Collections.sort(sorted);
+		int n = sorted.size();
+		if (n % 2 == 0) {
+			return (sorted.get(n / 2 - 1) + sorted.get(n / 2)) / 2.0;
 		} else {
-			return values.get(half);
+			return sorted.get(n / 2);
 		}
 	}
 
 	/**
-	 * Calculate the mean of a set of values
+	 * Calculate the mean of the given values
 	 *
 	 * @param values
 	 * @return the mean
@@ -125,10 +143,10 @@ public class StatisticFunctions {
 	}
 
 	/**
-	 * Calculate the quadrature of some values
+	 * Calculate the quadrature of the given values
 	 *
 	 * @param values
-	 * @return the quadrature of some values
+	 * @return the quadrature
 	 */
 	public static double calculateQuadrature(double... values) {
 		if (values.length == 0) {
@@ -143,10 +161,10 @@ public class StatisticFunctions {
 	}
 
 	/**
-	 * Calculate the standard deviation of a population
+	 * Calculate the standard deviation of the given values
 	 *
 	 * @param values
-	 * @return the standard deviation of a population
+	 * @return the standard deviation
 	 */
 	public static double calculateStandardDeviation(double... values) {
 		if (values.length == 0) {
@@ -186,11 +204,12 @@ public class StatisticFunctions {
 	 * @return the array
 	 */
 	public static double[] convertToArray(List<Double> values) {
-		double[] doubles = new double[values.size()];
-		for (int i = 0; i < doubles.length; i++) {
-			doubles[i] = values.get(i);
-		}
-		return doubles;
+	    double[] array = new double[values.size()];
+	    int i = 0;
+	    for (Double value : values) {
+	        array[i++] = value;
+	    }
+	    return array;
 	}
 
 }

@@ -776,7 +776,7 @@ public final class SedWdPanel extends JPanel {
 				continue;
 			}
 			double meanDiffMag = calculateMean(correctedDiffMags);
-			matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
+			matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag, 0, 0, null));
 		}
 		if (!matches.isEmpty()) {
 			matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
