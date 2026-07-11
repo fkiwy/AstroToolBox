@@ -712,11 +712,7 @@ public class SettingsTab implements Tab {
 	}
 
 	private void enableStopDownloadButton() {
-		if (asyncDownloads) {
-			imageViewerTab.getStopDownloadButton().setEnabled(true);
-		} else {
-			imageViewerTab.getStopDownloadButton().setEnabled(false);
-		}
+		imageViewerTab.getStopDownloadButton().setEnabled(asyncDownloads);
 	}
 
 	private void setCheckBoxValue(JPanel panel, List<String> catalogList) {

@@ -169,8 +169,8 @@ public class VizierCatalogsTab implements Tab {
 					List<String> errorMessages = new ArrayList<>();
 					try {
 						NumberPair coordinates = getCoordinates(coords);
-						targetRa = coordinates.getX();
-						targetDec = coordinates.getY();
+						targetRa = coordinates.x();
+						targetDec = coordinates.y();
 						if (targetRa < 0) {
 							errorMessages.add("RA must not be smaller than 0 deg.");
 						}

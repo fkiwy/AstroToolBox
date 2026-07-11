@@ -638,26 +638,26 @@ public final class SedWdPanel extends JPanel {
 				SedReferences references = sedReferences.get(band);
 				sedFluxes.put(band,
 						new SedFluxes(photometry, 0,
-								convertMagnitudeToFluxDensity(photometry, references.getZeropoint(),
-										references.getWavelenth()),
-								convertMagnitudeToFluxJansky(photometry, references.getZeropoint()),
-								convertMagnitudeToFluxLambda(photometry, references.getZeropoint(),
-										references.getWavelenth())));
+								convertMagnitudeToFluxDensity(photometry, references.zeropoint(),
+										references.wavelenth()),
+								convertMagnitudeToFluxJansky(photometry, references.zeropoint()),
+								convertMagnitudeToFluxLambda(photometry, references.zeropoint(),
+										references.wavelenth())));
 			}
 		});
 
 		XYSeries series = new XYSeries(seriesLabel.toString());
 
-		sedDataPoints.append(seriesLabel.toString()).append(LINE_SEP);
+		sedDataPoints.append(seriesLabel).append(LINE_SEP);
 		sedBands.forEach(band -> {
 			Double photometry = sedPhotometry.get(band);
 			if (photometry != null) {
 				SedReferences references = sedReferences.get(band);
 				SedFluxes fluxes = sedFluxes.get(band);
-				series.add(references.getWavelenth(), photometry == 0 ? null : fluxes.getFluxLambda());
+				series.add(references.wavelenth(), photometry == 0 ? null : fluxes.fluxLambda());
 				if (photometry != 0) {
-					sedDataPoints.append("(").append(references.getWavelenth()).append(",")
-							.append(fluxes.getFluxLambda()).append(")").append(LINE_SEP);
+					sedDataPoints.append("(").append(references.wavelenth()).append(",")
+							.append(fluxes.fluxLambda()).append(")").append(LINE_SEP);
 				}
 			}
 		});
@@ -748,7 +748,7 @@ public final class SedWdPanel extends JPanel {
 	private void addReferenceSeds(Map<Band, Double> sedPhotometry, XYSeriesCollection collection) {
 		List<SedBestMatch> matches = new ArrayList();
 		for (WhiteDwarfEntry entry : whiteDwarfEntries) {
-			Map<Band, Double> bands = entry.getBands();
+			Map<Band, Double> bands = entry.bands();
 			String spectralType = entry.getInfo();
 			List<Double> diffMags = new ArrayList();
 			List<Band> sedBands = useGaiaPhotometry ? Band.getWdSedBands() : Band.getSedBands();
@@ -779,11 +779,11 @@ public final class SedWdPanel extends JPanel {
 			matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag, 0, 0, null));
 		}
 		if (!matches.isEmpty()) {
-			matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
+			matches.sort(Comparator.comparing(SedBestMatch::meanDiffMag));
 			int j = bestMatch.isSelected() ? 1 : 3;
 			for (int i = 0; i < j && i < matches.size(); i++) {
 				SedBestMatch match = matches.get(i);
-				createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
+				createReferenceSed(match.spt(), collection, match.medianDiffMag());
 			}
 		}
 	}
@@ -947,11 +947,11 @@ public final class SedWdPanel extends JPanel {
 		sedBands.forEach(band -> {
 			SedFluxes fluxes = sedFluxes.get(band);
 			if (fluxes != null) {
-				toolTips.add(html(sedCatalogs.get(band) + " " + band.val + "=" + roundTo3DecNZ(fluxes.getMagnitude())
-						+ " mag<br>" + "λ=" + sedReferences.get(band).getWavelenth() + " μm<br>" + "F(ν)="
-						+ roundTo3DecSN(fluxes.getFluxJansky()) + " Jy<br>" + "λF(λ)="
-						+ roundTo3DecSN(fluxes.getFluxDensity()) + " W/m²<br>" + "F(λ)="
-						+ roundTo3DecSN(fluxes.getFluxLambda()) + " W/m²/μm"));
+				toolTips.add(html(sedCatalogs.get(band) + " " + band.val + "=" + roundTo3DecNZ(fluxes.magnitude())
+						+ " mag<br>" + "λ=" + sedReferences.get(band).wavelenth() + " μm<br>" + "F(ν)="
+						+ roundTo3DecSN(fluxes.fluxJansky()) + " Jy<br>" + "λF(λ)="
+						+ roundTo3DecSN(fluxes.fluxDensity()) + " W/m²<br>" + "F(λ)="
+						+ roundTo3DecSN(fluxes.fluxLambda()) + " W/m²/μm"));
 			}
 		});
 		CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();
@@ -963,7 +963,7 @@ public final class SedWdPanel extends JPanel {
 		Map<Band, Double> absoluteMagnitudes = null;
 		for (WhiteDwarfEntry entry : whiteDwarfEntries) {
 			if (entry.getInfo().equals(spt)) {
-				absoluteMagnitudes = entry.getBands();
+				absoluteMagnitudes = entry.bands();
 			}
 		}
 		return absoluteMagnitudes;

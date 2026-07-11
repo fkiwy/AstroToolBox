@@ -25,7 +25,7 @@ import javax.swing.text.JTextComponent;
 public final class TextPrompt extends JLabel implements FocusListener, DocumentListener {
 
 	public enum Show {
-		ALWAYS, FOCUS_GAINED, FOCUS_LOST;
+		ALWAYS, FOCUS_GAINED, FOCUS_LOST
 	}
 
 	private JTextComponent component;

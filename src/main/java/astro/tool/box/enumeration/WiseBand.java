@@ -6,7 +6,7 @@ public enum WiseBand {
 
 	public int val;
 
-	private WiseBand(int val) {
+	WiseBand(int val) {
 		this.val = val;
 	}
 

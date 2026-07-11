@@ -22,7 +22,7 @@ public enum JColor {
 
 	public java.awt.Color val;
 
-	private JColor(java.awt.Color val) {
+	JColor(java.awt.Color val) {
 		this.val = val;
 	}
 

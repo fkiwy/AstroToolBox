@@ -4,30 +4,14 @@ import java.util.Objects;
 
 import astro.tool.box.enumeration.Band;
 
-public class DistanceLookupResult {
-
-	// Band key
-	private final Band bandKey;
-
-	// Band value
-	private final double bandValue;
-
-	// Spectral type
-	private final String spt;
-
-	// Distance
-	private final double distance;
-
-	// Distance error
-	private final double distanceError;
-
-	public DistanceLookupResult(Band bandKey, double bandValue, String spt, double distance, double distanceError) {
-		this.bandKey = bandKey;
-		this.bandValue = bandValue;
-		this.spt = spt;
-		this.distance = distance;
-		this.distanceError = distanceError;
-	}
+/**
+ * @param bandKey       Band key
+ * @param bandValue     Band value
+ * @param spt           Spectral type
+ * @param distance      Distance
+ * @param distanceError Distance error
+ */
+public record DistanceLookupResult(Band bandKey, double bandValue, String spt, double distance, double distanceError) {
 
 	@Override
 	public String toString() {
@@ -71,26 +55,6 @@ public class DistanceLookupResult {
 			return false;
 		}
 		return this.bandKey == other.bandKey;
-	}
-
-	public Band getBandKey() {
-		return bandKey;
-	}
-
-	public double getBandValue() {
-		return bandValue;
-	}
-
-	public String getSpt() {
-		return spt;
-	}
-
-	public double getDistance() {
-		return distance;
-	}
-
-	public double getDistanceError() {
-		return distanceError;
 	}
 
 }

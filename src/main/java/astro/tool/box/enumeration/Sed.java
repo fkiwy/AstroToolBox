@@ -18,7 +18,7 @@ public enum Sed {
 	public double zeropoint;
 	public double wavelenth;
 
-	private Sed(double zeropoint, double wavelenth) {
+	Sed(double zeropoint, double wavelenth) {
 		this.zeropoint = zeropoint;
 		this.wavelenth = wavelenth;
 	}

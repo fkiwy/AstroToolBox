@@ -6,7 +6,7 @@ public enum FileType {
 
 	public String val;
 
-	private FileType(String val) {
+	FileType(String val) {
 		this.val = val;
 	}
 

@@ -18,7 +18,7 @@ import javax.imageio.stream.ImageOutputStream;
 public class GifSequencer {
 
 	public void generateFromFiles(String[] filenames, File output, int delay, boolean loop)
-			throws IIOException, IOException {
+			throws IOException {
 		int length = filenames.length;
 		BufferedImage[] img_list = new BufferedImage[length];
 
@@ -31,7 +31,7 @@ public class GifSequencer {
 	}
 
 	public void generateFromBI(BufferedImage[] images, File output, int delay, boolean loop)
-			throws IIOException, IOException {
+			throws IOException {
 		ImageWriter gifWriter = getWriter();
 		try (ImageOutputStream ios = getImageOutputStream(output)) {
 			IIOMetadata metadata = getMetadata(gifWriter, delay, loop);

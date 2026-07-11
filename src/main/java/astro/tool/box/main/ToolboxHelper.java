@@ -65,7 +65,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -422,7 +421,7 @@ public class ToolboxHelper {
 				dec += parts[i] + " ";
 			}
 			NumberPair decCoords = AstrometricFunctions.convertToDecimalCoords(ra, dec);
-			return roundTo7DecNZ(decCoords.getX()) + " " + roundTo7DecNZ(decCoords.getY());
+			return roundTo7DecNZ(decCoords.x()) + " " + roundTo7DecNZ(decCoords.y());
 		}
 		return coords;
 	}
@@ -728,11 +727,10 @@ public class ToolboxHelper {
 	}
 
 	public static String copyObjectCoordinates(CatalogEntry catalogEntry) {
-		StringBuilder toCopy = new StringBuilder();
-		toCopy.append(roundTo7DecNZ(catalogEntry.getRa()));
-		toCopy.append(" ");
-		toCopy.append(roundTo7DecNZ(catalogEntry.getDec()));
-		return toCopy.toString();
+		String toCopy = roundTo7DecNZ(catalogEntry.getRa()) +
+				" " +
+				roundTo7DecNZ(catalogEntry.getDec());
+		return toCopy;
 	}
 
 	public static String copyObjectSummary(CatalogEntry catalogEntry) {
@@ -796,9 +794,9 @@ public class ToolboxHelper {
 						catalogEntry.getBands());
 				toCopy.append(LINE_SEP).append("      Distance estimates for ").append(entry.getSpt()).append(":");
 				distanceResults.forEach(result -> {
-					toCopy.append(LINE_SEP).append("      - ").append(result.getBandKey().val).append(" = ")
-							.append(roundTo3DecNZ(result.getBandValue())).append(" -> ")
-							.append(roundTo3DecNZ(result.getDistance())).append(" pc");
+					toCopy.append(LINE_SEP).append("      - ").append(result.bandKey().val).append(" = ")
+							.append(roundTo3DecNZ(result.bandValue())).append(" -> ")
+							.append(roundTo3DecNZ(result.distance())).append(" pc");
 				});
 			});
 		}
@@ -823,7 +821,7 @@ public class ToolboxHelper {
 		// Exact Allwise Decimal DEC
 		params.append("&entry.504539104=").append(roundTo7DecNZ(catalogEntry.getDec()));
 		// Notes
-		if (!AllWiseCatalogEntry.class.isInstance(catalogEntry)) {
+		if (!(catalogEntry instanceof AllWiseCatalogEntry)) {
 			params.append("&entry.690953267=").append("Coordinates are from ").append(catalogEntry.getCatalogName());
 		}
 		// GAIA data
@@ -1010,7 +1008,7 @@ public class ToolboxHelper {
 					epoch += toDouble(columnValues[mjd]);
 					i++;
 				}
-				return convertMJDToDate(epoch / i).get(ChronoField.YEAR);
+				return convertMJDToDate(epoch / i).getYear();
 			}
 		} catch (IOException ex) {
 		}
@@ -1039,11 +1037,11 @@ public class ToolboxHelper {
 					String[] columnValues = scanner.nextLine().split(SPLIT_CHAR);
 					String band = columnValues[filter];
 					double epoch = toDouble(columnValues[mjd]);
-					epochs.add(new MjdEpoch(band, convertMJDToDate(epoch).get(ChronoField.YEAR)));
+					epochs.add(new MjdEpoch(band, convertMJDToDate(epoch).getYear()));
 
 				}
 				return epochs.stream()
-						.collect(Collectors.groupingBy(MjdEpoch::getBand, Collectors.averagingInt(MjdEpoch::getEpoch)));
+						.collect(Collectors.groupingBy(MjdEpoch::band, Collectors.averagingInt(MjdEpoch::epoch)));
 
 			}
 		} catch (IOException ex) {
@@ -1417,7 +1415,7 @@ public class ToolboxHelper {
 	public static String formatError(Exception error) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		pw.print(LocalDateTime.now().toString() + " ");
+		pw.print(LocalDateTime.now() + " ");
 		error.printStackTrace(pw);
 		return sw.toString();
 	}
@@ -1425,7 +1423,7 @@ public class ToolboxHelper {
 	public static String formatMessage(String message) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		pw.print(LocalDateTime.now().toString() + " ");
+		pw.print(LocalDateTime.now() + " ");
 		pw.println(message);
 		return sw.toString();
 	}
@@ -1456,7 +1454,7 @@ public class ToolboxHelper {
 			BufferedImage[] imageSet = new BufferedImage[imageList.size()];
 			int i = 0;
 			for (Couple<String, BufferedImage> imageData : imageList) {
-				BufferedImage imageBuffer = imageData.getB();
+				BufferedImage imageBuffer = imageData.b();
 				imageSet[i++] = drawCenterShape(imageBuffer);
 			}
 			if (imageSet.length > 0) {

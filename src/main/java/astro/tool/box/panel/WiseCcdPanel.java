@@ -278,8 +278,8 @@ public class WiseCcdPanel extends JPanel {
 
 	private XYSeriesCollection createTargetCollection(NumberPair pair) {
 		XYSeriesCollection collection = new XYSeriesCollection();
-		double xTarget = pair.getX();
-		double yTarget = pair.getY();
+		double xTarget = pair.x();
+		double yTarget = pair.y();
 		if (xTarget != 0 && yTarget != 0) {
 			XYSeries seriesTarget = new XYSeries(seriesLabel.toString());
 			seriesTarget.add(xTarget, yTarget);
@@ -292,8 +292,8 @@ public class WiseCcdPanel extends JPanel {
 		XYSeriesCollection collection = new XYSeriesCollection();
 		XYSeries series = new XYSeries(fileName, false);
 		loadSpectralType(fileName).forEach(pair -> {
-			double x = pair.getX();
-			double y = pair.getY();
+			double x = pair.x();
+			double y = pair.y();
 			if (x != 0 && y != 0) {
 				series.add(x, y);
 			}

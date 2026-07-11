@@ -165,7 +165,7 @@ public class CatalogQueryTab implements Tab {
 			showExceptionDialog(baseFrame, e);
 			throw new RuntimeException(e);
 		}
-		try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");) {
+		try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
 			Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
 			brownDwarfLookupEntries = stream.skip(1).map(line -> {
 				return new BrownDwarfLookupEntry(line.split(",", -1));
@@ -260,8 +260,8 @@ public class CatalogQueryTab implements Tab {
 			List<String> errorMessages = new ArrayList<>();
 			try {
 				NumberPair coordinates = getCoordinates(coords);
-				targetRa = coordinates.getX();
-				targetDec = coordinates.getY();
+				targetRa = coordinates.x();
+				targetDec = coordinates.y();
 				if (targetRa < 0) {
 					errorMessages.add("RA must not be smaller than 0 deg.");
 				}
@@ -866,10 +866,10 @@ public class CatalogQueryTab implements Tab {
 	private void createDistanceEstimatesPanel(List<DistanceLookupResult> results, String spt, Color color) {
 		List<String[]> distances = new ArrayList<>();
 		results.forEach(entry -> {
-			String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
-			String distance = roundTo3Dec(entry.getDistance());
-			if (entry.getDistanceError() > 0) {
-				distance += "±" + roundTo3Dec(entry.getDistanceError());
+			String matchedBand = entry.bandKey().val + "=" + roundTo3DecNZ(entry.bandValue());
+			String distance = roundTo3Dec(entry.distance());
+			if (entry.distanceError() > 0) {
+				distance += "±" + roundTo3Dec(entry.distanceError());
 			}
 			String resutValues = distance + "," + matchedBand;
 			distances.add(resutValues.split(",", -1));

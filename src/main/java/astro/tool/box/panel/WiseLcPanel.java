@@ -244,10 +244,10 @@ public class WiseLcPanel extends JPanel {
 		}
 
 		Map<Double, Double> w1Median = w1Data.stream().collect(
-				groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e))));
+				groupingBy(e -> e.x(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e))));
 
 		Map<Double, Double> w1Error = w1Data.stream().collect(
-				groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getError(e))));
+				groupingBy(e -> e.x(), Collectors.collectingAndThen(Collectors.toList(), e -> getError(e))));
 
 		List<Double> w1Time = w1Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList());
 		List<Double> w1Values = new ArrayList(w1Median.values());
@@ -259,10 +259,10 @@ public class WiseLcPanel extends JPanel {
 		}
 
 		Map<Double, Double> w2Median = w2Data.stream().collect(
-				groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e))));
+				groupingBy(e -> e.x(), Collectors.collectingAndThen(Collectors.toList(), e -> getMedian(e))));
 
 		Map<Double, Double> w2Error = w2Data.stream().collect(
-				groupingBy(e -> e.getX(), Collectors.collectingAndThen(Collectors.toList(), e -> getError(e))));
+				groupingBy(e -> e.x(), Collectors.collectingAndThen(Collectors.toList(), e -> getError(e))));
 
 		List<Double> w2Time = w2Median.keySet().stream().map(e -> e * 0.5).collect(Collectors.toList());
 		List<Double> w2Values = new ArrayList(w2Median.values());
@@ -293,12 +293,12 @@ public class WiseLcPanel extends JPanel {
 	}
 
 	private double getMedian(List<NumberPair> pairs) {
-		List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
+		List<Double> values = pairs.stream().map(NumberPair::y).collect(Collectors.toList());
 		return StatisticFunctions.determineMedian(values);
 	}
 
 	private double getError(List<NumberPair> pairs) {
-		List<Double> values = pairs.stream().map(NumberPair::getY).collect(Collectors.toList());
+		List<Double> values = pairs.stream().map(NumberPair::y).collect(Collectors.toList());
 		return StatisticFunctions.calculateStandardError(values);
 	}
 
