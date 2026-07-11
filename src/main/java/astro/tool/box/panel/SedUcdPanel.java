@@ -7,11 +7,13 @@ import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecSN;
 import static astro.tool.box.function.NumericFunctions.toDouble;
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistance;
 import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxDensity;
 import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxJansky;
 import static astro.tool.box.function.PhotometricFunctions.convertMagnitudeToFluxLambda;
 import static astro.tool.box.function.StatisticFunctions.calculateMean;
 import static astro.tool.box.function.StatisticFunctions.determineMedian;
+import static astro.tool.box.function.StatisticFunctions.medianAbsoluteDeviation;
 import static astro.tool.box.main.ToolboxHelper.createPDF;
 import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
 import static astro.tool.box.main.ToolboxHelper.html;
@@ -36,10 +38,12 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -58,10 +62,16 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.block.BlockContainer;
+import org.jfree.chart.block.ColumnArrangement;
+import org.jfree.chart.block.LabelBlock;
 import org.jfree.chart.labels.CustomXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.title.CompositeTitle;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
@@ -114,13 +124,19 @@ public class SedUcdPanel extends JPanel {
 	private final JCheckBox catwisePhot;
 	private final JCheckBox unwisePhot;
 
+	private JFreeChart chart;
+	private ChartPanel chartPanel;
+
 	private Map<Band, SedReferences> sedReferences;
 	private Map<Band, SedFluxes> sedFluxes;
 	private Map<Band, NumberPair> sedPhotometry;
 	private Map<Band, String> sedCatalogs;
 	private StringBuilder sedDataPoints;
 
-	double flux_error = Double.NaN;
+	private double flux_error = Double.NaN;
+	private double medianPhotDist;
+	private double stdPhotDist;
+	private List<Band> photDistBands;
 
 	public SedUcdPanel(List<SpectralTypeLookup> brownDwarfLookupEntries, CatalogQueryService catalogQueryService,
 			CatalogEntry catalogEntry, JFrame baseFrame) {
@@ -147,17 +163,6 @@ public class SedUcdPanel extends JPanel {
 		unwisePhot = new JCheckBox("unWISE  ", false);
 
 		YIntervalSeriesCollection collection = createSed(catalogEntry, null, true);
-		JFreeChart chart = createChart(collection);
-
-		ChartPanel chartPanel = new ChartPanel(chart) {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-			}
-		};
-		chartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		chartPanel.setPreferredSize(new Dimension(1000, 850));
-		chartPanel.setBackground(Color.WHITE);
-		add(chartPanel);
 
 		JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(commandPanel);
@@ -281,7 +286,7 @@ public class SedUcdPanel extends JPanel {
 			try {
 				File tmpFile = File.createTempFile("Target_" + roundTo2DecNZ(catalogEntry.getRa())
 						+ addPlusSign(roundDouble(catalogEntry.getDec(), PATTERN_2DEC_NZ)) + "_", ".pdf");
-				createPDF(chart, tmpFile, 800, 700);
+				createPDF(chart, tmpFile, 1000, 800);
 				Desktop.getDesktop().open(tmpFile);
 			} catch (Exception ex) {
 				writeErrorLog(ex);
@@ -333,6 +338,10 @@ public class SedUcdPanel extends JPanel {
 		sedPhotometry = new HashMap();
 		sedCatalogs = new HashMap();
 		sedDataPoints = new StringBuilder();
+
+		medianPhotDist = 0;
+		stdPhotDist = 0;
+		photDistBands = Collections.emptyList();
 
 		double searchRadius = toDouble(photSearchRadius.getText());
 		searchRadius = searchRadius < 1 ? 1 : searchRadius;
@@ -652,18 +661,52 @@ public class SedUcdPanel extends JPanel {
 
 		if (collection == null) {
 			collection = new YIntervalSeriesCollection();
-			collection.addSeries(series);
 		} else {
 			collection.removeAllSeries();
-			collection.addSeries(series);
-			for (int y = 1; y < collection.getSeriesCount(); y++) {
-				collection.addSeries(collection.getSeries(y));
-			}
 		}
+
+		collection.addSeries(series);
 
 		if (addReferenceSeds) {
 			addReferenceSeds(sedPhotometry, collection);
 		}
+
+		chart = createChart(collection);
+
+		if (chartPanel != null) {
+			remove(chartPanel);
+		}
+
+		chartPanel = new ChartPanel(chart) {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+			}
+		};
+		chartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		chartPanel.setPreferredSize(new Dimension(1000, 850));
+		chartPanel.setBackground(Color.WHITE);
+		add(chartPanel, 0);
+
+		// Add median photometric distance to legend
+		LegendTitle legend = chart.getLegend();
+		chart.removeLegend();
+		BlockContainer container = new BlockContainer(new ColumnArrangement());
+		container.add(legend);
+		if (medianPhotDist > 0) {
+			String bandsLabel = photDistBands.stream().map(b -> b.val).collect(Collectors.joining(", "));
+			LabelBlock label = new LabelBlock(
+					String.format("Median photometric distance (%s) = %.2f pc, Median absolute deviation = %.2f pc",
+							bandsLabel, medianPhotDist, stdPhotDist));
+			label.setFont(new Font(FONT_NAME, Font.PLAIN, 18));
+			label.setPaint(Color.DARK_GRAY);
+			container.add(label);
+		}
+		CompositeTitle composite = new CompositeTitle(container);
+		composite.setPosition(RectangleEdge.BOTTOM);
+		chart.addSubtitle(composite);
+
+		revalidate();
+		repaint();
 
 		photSearchRadius.setCursor(Cursor.getDefaultCursor());
 		createButton.setCursor(Cursor.getDefaultCursor());
@@ -733,18 +776,29 @@ public class SedUcdPanel extends JPanel {
 			Map<Band, Double> bands = entry.getMagnitudes();
 			String spectralType = entry.getSpt();
 			List<Double> diffMags = new ArrayList();
+			List<Double> photDistances = new ArrayList();
+			List<Band> photBands = new ArrayList();
 			Band.getSedBands().forEach(band -> {
 				if (sedPhotometry.get(band) != null) {
 					Double observed = sedPhotometry.get(band).getX();
 					Double template = bands.get(band);
 					if (!observed.equals(Double.NaN) && observed != 0 && !template.equals(Double.NaN)
 							&& template != 0) {
-						double diffMag = sedPhotometry.get(band).getX() - bands.get(band);
+						double diffMag = observed - template;
 						diffMags.add(diffMag);
+						double photDistance = calculatePhotometricDistance(observed, template);
+						photDistances.add(photDistance);
+						photBands.add(band);
 					}
 				}
 			});
 			double medianDiffMag = determineMedian(diffMags);
+
+			double medianPhotDistance = determineMedian(photDistances);
+			double stdPhotDistance = 1.4826 * medianAbsoluteDeviation(photDistances);
+			// The factor 1.4826 makes the MAD comparable to the standard deviation under a
+			// normal distribution.
+
 			if (selectedType.equals(SpectralType.SELECT)) {
 				int totalMags = diffMags.size();
 				if (totalMags < 4) {
@@ -763,7 +817,8 @@ public class SedUcdPanel extends JPanel {
 					continue;
 				}
 				double meanDiffMag = calculateMean(correctedDiffMags);
-				matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag));
+				matches.add(new SedBestMatch(spectralType, medianDiffMag, meanDiffMag, medianPhotDistance,
+						stdPhotDistance, photBands));
 			} else if (selectedType.equals(SpectralType.valueOf(spectralType))) {
 				createReferenceSed(spectralType, collection, medianDiffMag);
 				return;
@@ -771,6 +826,10 @@ public class SedUcdPanel extends JPanel {
 		}
 		if (!matches.isEmpty()) {
 			matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
+			SedBestMatch bestMatched = matches.get(0);
+			medianPhotDist = bestMatched.getMedianPhotDist();
+			stdPhotDist = bestMatched.getStdPhotDist();
+			photDistBands = bestMatched.getPhotBands();
 			int j = bestMatch.isSelected() ? 1 : 3;
 			for (int i = 0; i < j && i < matches.size(); i++) {
 				SedBestMatch match = matches.get(i);
@@ -875,12 +934,12 @@ public class SedUcdPanel extends JPanel {
 		plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
 		plot.setDomainGridlineStroke(new BasicStroke());
 
+		Font titleFont = new Font(FONT_NAME, Font.PLAIN, 22);
+		chart.getTitle().setFont(titleFont);
+
 		Font legendFont = new Font(FONT_NAME, Font.PLAIN, 18);
 		chart.getLegend().setFrame(BlockBorder.NONE);
 		chart.getLegend().setItemFont(legendFont);
-
-		Font titleFont = new Font(FONT_NAME, Font.PLAIN, 22);
-		chart.getTitle().setFont(titleFont);
 
 		return chart;
 	}
@@ -902,7 +961,7 @@ public class SedUcdPanel extends JPanel {
 			SedFluxes fluxes = sedFluxes.get(band);
 			if (fluxes != null) {
 				toolTips.add(html(sedCatalogs.get(band) + " " + band.val + "=" + roundTo3DecNZ(fluxes.getMagnitude())
-						+ "±" + roundTo3DecNZ(fluxes.getMagError()) + " mag<br>" + "λ="
+						+ " ± " + roundTo3DecNZ(fluxes.getMagError()) + " mag<br>" + "λ="
 						+ sedReferences.get(band).getWavelenth() + " μm<br>" + "F(ν)="
 						+ roundTo3DecSN(fluxes.getFluxJansky()) + " Jy<br>" + "λF(λ)="
 						+ roundTo3DecSN(fluxes.getFluxDensity()) + " W/m²<br>" + "F(λ)="
