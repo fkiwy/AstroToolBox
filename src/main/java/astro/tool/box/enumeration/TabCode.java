@@ -28,7 +28,7 @@ public enum TabCode {
 
 	public String val;
 
-	private TabCode(String val) {
+	TabCode(String val) {
 		this.val = val;
 	}
 
@@ -61,7 +61,7 @@ public enum TabCode {
 			return Collections.emptyList();
 		}
 		List<String> tabLabels = new ArrayList();
-		for (String tabCode : Arrays.asList(tabCodes.split(",", -1))) {
+		for (String tabCode : tabCodes.split(",", -1)) {
 			String tabLabel = getTabLabel(tabCode);
 			if (tabLabel != null) {
 				tabLabels.add(tabLabel);

@@ -13,7 +13,7 @@ public enum TapProvider {
 
 	public String val;
 
-	private TapProvider(String val) {
+	TapProvider(String val) {
 		this.val = val;
 	}
 

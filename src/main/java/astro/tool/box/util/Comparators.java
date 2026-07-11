@@ -5,22 +5,19 @@ import java.util.Comparator;
 public class Comparators {
 
 	public static Comparator getStringComparator() {
-		return (Comparator) (Object o1, Object o2) -> ((String) o1).compareTo((String) o2);
+		return Comparator.comparing((Object o) -> ((String) o));
 	}
 
 	public static Comparator getIntegerComparator() {
-		return (Comparator) (Object o1, Object o2) -> Integer.valueOf(getStringValue(o1))
-				.compareTo(Integer.valueOf(getStringValue(o2)));
+		return Comparator.comparing((Object o) -> Integer.valueOf(getStringValue(o)));
 	}
 
 	public static Comparator getLongComparator() {
-		return (Comparator) (Object o1, Object o2) -> Long.valueOf(getStringValue(o1))
-				.compareTo(Long.valueOf(getStringValue(o2)));
+		return Comparator.comparing((Object o) -> Long.valueOf(getStringValue(o)));
 	}
 
 	public static Comparator getDoubleComparator() {
-		return (Comparator) (Object o1, Object o2) -> Double.valueOf(getStringValue(o1))
-				.compareTo(Double.valueOf(getStringValue(o2)));
+		return Comparator.comparing((Object o) -> Double.valueOf(getStringValue(o)));
 	}
 
 	public static String getStringValue(Object obj) {

@@ -133,7 +133,7 @@ public class SedUcdPanel extends JPanel {
 	private Map<Band, String> sedCatalogs;
 	private StringBuilder sedDataPoints;
 
-	private double flux_error = Double.NaN;
+	private final double flux_error = Double.NaN;
 	private double medianPhotDist;
 	private double stdPhotDist;
 	private List<Band> photDistBands;
@@ -627,32 +627,32 @@ public class SedUcdPanel extends JPanel {
 		Band.getSedBands().forEach(band -> {
 			NumberPair pair = sedPhotometry.get(band);
 			if (pair != null) {
-				double photometry = pair.getX() == 0 ? Double.NaN : pair.getX();
-				double error = pair.getY() == 0 ? Double.NaN : pair.getY();
+				double photometry = pair.x() == 0 ? Double.NaN : pair.x();
+				double error = pair.y() == 0 ? Double.NaN : pair.y();
 				SedReferences references = sedReferences.get(band);
 				sedFluxes.put(band,
 						new SedFluxes(photometry, error,
-								convertMagnitudeToFluxDensity(photometry, references.getZeropoint(),
-										references.getWavelenth()),
-								convertMagnitudeToFluxJansky(photometry, references.getZeropoint()),
-								convertMagnitudeToFluxLambda(photometry, references.getZeropoint(),
-										references.getWavelenth())));
+								convertMagnitudeToFluxDensity(photometry, references.zeropoint(),
+										references.wavelenth()),
+								convertMagnitudeToFluxJansky(photometry, references.zeropoint()),
+								convertMagnitudeToFluxLambda(photometry, references.zeropoint(),
+										references.wavelenth())));
 			}
 		});
 
 		YIntervalSeries series = new YIntervalSeries(seriesLabel.toString());
 
-		sedDataPoints.append(seriesLabel.toString()).append(LINE_SEP);
+		sedDataPoints.append(seriesLabel).append(LINE_SEP);
 		Band.getSedBands().forEach(band -> {
 			NumberPair pair = sedPhotometry.get(band);
 			if (pair != null) {
 				SedReferences references = sedReferences.get(band);
 				SedFluxes fluxes = sedFluxes.get(band);
-				double flux = fluxes.getFluxLambda();
-				double factor = Math.pow(10.0, 0.4 * fluxes.getMagError());
+				double flux = fluxes.fluxLambda();
+				double factor = Math.pow(10.0, 0.4 * fluxes.magError());
 				double lower = flux / factor;
 				double upper = flux * factor;
-				double wavelength = references.getWavelenth();
+				double wavelength = references.wavelenth();
 				series.add(wavelength, flux, lower, upper);
 				sedDataPoints.append("(").append(wavelength).append(",").append(flux).append(")").append(LINE_SEP);
 
@@ -780,7 +780,7 @@ public class SedUcdPanel extends JPanel {
 			List<Band> photBands = new ArrayList();
 			Band.getSedBands().forEach(band -> {
 				if (sedPhotometry.get(band) != null) {
-					Double observed = sedPhotometry.get(band).getX();
+					Double observed = sedPhotometry.get(band).x();
 					Double template = bands.get(band);
 					if (!observed.equals(Double.NaN) && observed != 0 && !template.equals(Double.NaN)
 							&& template != 0) {
@@ -825,15 +825,15 @@ public class SedUcdPanel extends JPanel {
 			}
 		}
 		if (!matches.isEmpty()) {
-			matches.sort(Comparator.comparing(SedBestMatch::getMeanDiffMag));
+			matches.sort(Comparator.comparing(SedBestMatch::meanDiffMag));
 			SedBestMatch bestMatched = matches.get(0);
-			medianPhotDist = bestMatched.getMedianPhotDist();
-			stdPhotDist = bestMatched.getStdPhotDist();
-			photDistBands = bestMatched.getPhotBands();
+			medianPhotDist = bestMatched.medianPhotDist();
+			stdPhotDist = bestMatched.stdPhotDist();
+			photDistBands = bestMatched.photBands();
 			int j = bestMatch.isSelected() ? 1 : 3;
 			for (int i = 0; i < j && i < matches.size(); i++) {
 				SedBestMatch match = matches.get(i);
-				createReferenceSed(match.getSpt(), collection, match.getMedianDiffMag());
+				createReferenceSed(match.spt(), collection, match.medianDiffMag());
 			}
 		}
 	}
@@ -960,12 +960,12 @@ public class SedUcdPanel extends JPanel {
 		Band.getSedBands().forEach(band -> {
 			SedFluxes fluxes = sedFluxes.get(band);
 			if (fluxes != null) {
-				toolTips.add(html(sedCatalogs.get(band) + " " + band.val + "=" + roundTo3DecNZ(fluxes.getMagnitude())
-						+ " ± " + roundTo3DecNZ(fluxes.getMagError()) + " mag<br>" + "λ="
-						+ sedReferences.get(band).getWavelenth() + " μm<br>" + "F(ν)="
-						+ roundTo3DecSN(fluxes.getFluxJansky()) + " Jy<br>" + "λF(λ)="
-						+ roundTo3DecSN(fluxes.getFluxDensity()) + " W/m²<br>" + "F(λ)="
-						+ roundTo3DecSN(fluxes.getFluxLambda()) + " W/m²/μm"));
+				toolTips.add(html(sedCatalogs.get(band) + " " + band.val + "=" + roundTo3DecNZ(fluxes.magnitude())
+						+ " ± " + roundTo3DecNZ(fluxes.magError()) + " mag<br>" + "λ="
+						+ sedReferences.get(band).wavelenth() + " μm<br>" + "F(ν)="
+						+ roundTo3DecSN(fluxes.fluxJansky()) + " Jy<br>" + "λF(λ)="
+						+ roundTo3DecSN(fluxes.fluxDensity()) + " W/m²<br>" + "F(λ)="
+						+ roundTo3DecSN(fluxes.fluxLambda()) + " W/m²/μm"));
 			}
 		});
 		CustomXYToolTipGenerator generator = new CustomXYToolTipGenerator();

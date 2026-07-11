@@ -65,21 +65,20 @@ public class ClassificationResult {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("ClassificationResult{catalogName=").append(catalogName);
-		sb.append(", targetRa=").append(targetRa);
-		sb.append(", targetDec=").append(targetDec);
-		sb.append(", targetDistance=").append(targetDistance);
-		sb.append(", ra=").append(ra);
-		sb.append(", dec=").append(dec);
-		sb.append(", sourceId=").append(sourceId);
-		sb.append(", plx=").append(plx);
-		sb.append(", pmra=").append(pmra);
-		sb.append(", pmdec=").append(pmdec);
-		sb.append(", magnitudes=").append(magnitudes);
-		sb.append(", spectralTypes=").append(spectralTypes);
-		sb.append('}');
-		return sb.toString();
+		String sb = "ClassificationResult{catalogName=" + catalogName +
+				", targetRa=" + targetRa +
+				", targetDec=" + targetDec +
+				", targetDistance=" + targetDistance +
+				", ra=" + ra +
+				", dec=" + dec +
+				", sourceId=" + sourceId +
+				", plx=" + plx +
+				", pmra=" + pmra +
+				", pmdec=" + pmdec +
+				", magnitudes=" + magnitudes +
+				", spectralTypes=" + spectralTypes +
+				'}';
+		return sb;
 	}
 
 	public Object[] getColumnValues() {

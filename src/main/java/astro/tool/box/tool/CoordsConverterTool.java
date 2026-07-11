@@ -90,10 +90,10 @@ public class CoordsConverterTool {
 					CoordsSystem coordsSystem = (CoordsSystem) systemsToConvertTo.getSelectedItem();
 					NumberPair coordinates = getCoordinates(coordsToConvert.getText());
 					if (coordsSystem.equals(CoordsSystem.DECIMAL)) {
-						converted = coordinates.getX() + " " + coordinates.getY();
+						converted = coordinates.x() + " " + coordinates.y();
 					} else {
-						StringPair strings = convertToSexagesimalCoords(coordinates.getX(), coordinates.getY());
-						converted = strings.getS1() + " " + strings.getS2();
+						StringPair strings = convertToSexagesimalCoords(coordinates.x(), coordinates.y());
+						converted = strings.s1() + " " + strings.s2();
 					}
 					convertedCoords.setText(converted);
 				} catch (Exception ex) {

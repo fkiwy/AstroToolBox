@@ -55,7 +55,7 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
 
 		try (Connection connection = DriverManager.getConnection(url, username, password);
 				Statement statement = connection.createStatement();
-				ResultSet resultSet = statement.executeQuery(query);) {
+				ResultSet resultSet = statement.executeQuery(query)) {
 			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
 			List<String> columnNames = new ArrayList();

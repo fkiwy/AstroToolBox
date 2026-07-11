@@ -150,7 +150,7 @@ public class PhotometricClassifierTab implements Tab {
 			showExceptionDialog(baseFrame, e);
 			throw new RuntimeException(e);
 		}
-		try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv");) {
+		try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
 			Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
 			List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
 				return new BrownDwarfLookupEntry(line.split(",", -1));
@@ -212,8 +212,8 @@ public class PhotometricClassifierTab implements Tab {
 					List<String> errorMessages = new ArrayList<>();
 					try {
 						NumberPair coordinates = getCoordinates(coords);
-						targetRa = coordinates.getX();
-						targetDec = coordinates.getY();
+						targetRa = coordinates.x();
+						targetDec = coordinates.y();
 						if (targetRa < 0) {
 							errorMessages.add("RA must not be smaller than 0 deg.");
 						}
@@ -485,12 +485,12 @@ public class PhotometricClassifierTab implements Tab {
 			Double sptNum = SPECTRAL_TYPES.get(entry.getKey());
 			spectralTypes.add(new SpectralType(entry.getKey(), entry.getValue(), sptNum == null ? -1 : sptNum));
 		});
-		spectralTypes.sort(Comparator.comparing(SpectralType::getOccurrences, Comparator.reverseOrder())
-				.thenComparing(SpectralType::getSptNum));
+		spectralTypes.sort(Comparator.comparing(SpectralType::occurrences, Comparator.reverseOrder())
+				.thenComparing(SpectralType::sptNum));
 
 		List<String[]> occurrences = new ArrayList();
 		spectralTypes.forEach(spectralType -> {
-			occurrences.add(new String[] { spectralType.getOccurrences().toString(), spectralType.getSpt() });
+			occurrences.add(new String[] { spectralType.occurrences().toString(), spectralType.spt() });
 		});
 
 		String titles = "occurrences,spectral type";

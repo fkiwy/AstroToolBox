@@ -33,7 +33,7 @@ public enum Color {
 
 	public String val;
 
-	private Color(String val) {
+	Color(String val) {
 		this.val = val;
 	}
 

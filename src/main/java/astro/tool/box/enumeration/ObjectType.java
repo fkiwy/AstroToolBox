@@ -10,7 +10,7 @@ public enum ObjectType {
 
 	public String val;
 
-	private ObjectType(String val) {
+	ObjectType(String val) {
 		this.val = val;
 	}
 

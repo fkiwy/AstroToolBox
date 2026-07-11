@@ -485,9 +485,9 @@ public class ImageSeriesPdf {
 
 			// Cross survey time series
 			images = new ArrayList<>();
-			timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+			timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
 			for (Couple<String, NirImage> couple : timeSeries) {
-				images.add(new Couple(couple.getA(), couple.getB().getImage()));
+				images.add(new Couple(couple.a(), couple.b().getImage()));
 			}
 
 			createPdfTable(images, writer, document);
@@ -668,8 +668,8 @@ public class ImageSeriesPdf {
 		for (int i = 0; i < totalCells; i++) {
 			if (i < numberOfImages) {
 				Couple<String, BufferedImage> couple = images.get(i);
-				String label = couple.getA();
-				BufferedImage bi = drawCenterShape(couple.getB());
+				String label = couple.a();
+				BufferedImage bi = drawCenterShape(couple.b());
 				Image image = Image.getInstance(writer, bi, 1);
 				PdfPCell cell = new PdfPCell(image, true);
 				cell.setCellEvent(new WatermarkedCell(label));

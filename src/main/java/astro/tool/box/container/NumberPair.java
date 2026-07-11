@@ -1,15 +1,6 @@
 package astro.tool.box.container;
 
-public class NumberPair {
-
-	private final double x;
-
-	private final double y;
-
-	public NumberPair(double x, double y) {
-		this.x = x;
-		this.y = y;
-	}
+public record NumberPair(double x, double y) {
 
 	@Override
 	public String toString() {
@@ -37,14 +28,6 @@ public class NumberPair {
 			return false;
 		}
 		return Double.doubleToLongBits(this.y) == Double.doubleToLongBits(other.y);
-	}
-
-	public double getX() {
-		return x;
-	}
-
-	public double getY() {
-		return y;
 	}
 
 }

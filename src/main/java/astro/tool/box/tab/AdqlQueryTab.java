@@ -654,10 +654,8 @@ public class AdqlQueryTab implements Tab {
 	private void refreshJobIdList() {
 		jobIds.removeAllItems();
 		String[] ids = retrieveJobIds(getTapProvider());
-		if (ids.length > 0) {
-			for (String id : ids) {
-				jobIds.addItem(id);
-			}
+		for (String id : ids) {
+			jobIds.addItem(id);
 		}
 	}
 
@@ -869,7 +867,7 @@ public class AdqlQueryTab implements Tab {
 		}
 	}
 
-	private String doPost(String url, List<NameValuePair> params) throws UnsupportedEncodingException, IOException {
+	private String doPost(String url, List<NameValuePair> params) throws IOException {
 		HttpPost post = new HttpPost(url);
 		post.setEntity(new UrlEncodedFormEntity(params));
 		try (CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -882,7 +880,7 @@ public class AdqlQueryTab implements Tab {
 		}
 	}
 
-	private String doGet(String url) throws UnsupportedEncodingException, IOException {
+	private String doGet(String url) throws IOException {
 		HttpGet get = new HttpGet(url);
 		try (CloseableHttpClient httpClient = HttpClients.createDefault();
 				CloseableHttpResponse response = httpClient.execute(get)) {

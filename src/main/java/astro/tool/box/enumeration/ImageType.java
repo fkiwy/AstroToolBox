@@ -6,7 +6,7 @@ public enum ImageType {
 
 	public String val;
 
-	private ImageType(String val) {
+	ImageType(String val) {
 		this.val = val;
 	}
 

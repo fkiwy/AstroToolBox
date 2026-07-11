@@ -214,8 +214,8 @@ public class ImageSeriesTab implements Tab {
 					List<String> errorMessages = new ArrayList<>();
 					try {
 						NumberPair coordinates = getCoordinates(coords);
-						targetRa = coordinates.getX();
-						targetDec = coordinates.getY();
+						targetRa = coordinates.x();
+						targetDec = coordinates.y();
 						if (targetRa < 0) {
 							errorMessages.add("RA must not be smaller than 0 deg.");
 						}
@@ -330,8 +330,8 @@ public class ImageSeriesTab implements Tab {
 											new NumberPair(twoMassEntry.getRa(), twoMassEntry.getDec()),
 											new NumberPair(allWiseEntry.getRa_pm(), allWiseEntry.getDec_pm()), 0,
 											(int) days, DEG_MAS);
-									double pmRa = properMotions.getX();
-									double pmDec = properMotions.getY();
+									double pmRa = properMotions.x();
+									double pmDec = properMotions.y();
 									double tpm = calculateTotalProperMotion(pmRa, pmDec);
 									resultRows.add(new String[] {
 											"Calculated from " + TwoMassCatalogEntry.CATALOG_NAME + " and "
@@ -348,8 +348,8 @@ public class ImageSeriesTab implements Tab {
 											new NumberPair(sdssEntry.getRa(), sdssEntry.getDec()),
 											new NumberPair(panStarrsEntry.getRa(), panStarrsEntry.getDec()), 0,
 											(int) days, DEG_MAS);
-									double pmRa = properMotions.getX();
-									double pmDec = properMotions.getY();
+									double pmRa = properMotions.x();
+									double pmDec = properMotions.y();
 									double tpm = calculateTotalProperMotion(pmRa, pmDec);
 									resultRows.add(new String[] {
 											"Calculated from " + SdssCatalogEntry.CATALOG_NAME + " and "
@@ -894,11 +894,11 @@ public class ImageSeriesTab implements Tab {
 		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-		timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+		timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
 		List<Couple<String, BufferedImage>> imageList = new ArrayList();
 		for (Couple<String, NirImage> couple : timeSeries) {
-			bandPanel.add(buildImagePanel(couple.getB().getImage(), couple.getA()));
-			imageList.add(new Couple(couple.getA(), couple.getB().getImage()));
+			bandPanel.add(buildImagePanel(couple.b().getImage(), couple.a()));
+			imageList.add(new Couple(couple.a(), couple.b().getImage()));
 		}
 
 		timeSeriesTimer = new Timer(500, null);
@@ -1020,7 +1020,7 @@ public class ImageSeriesTab implements Tab {
 				}
 				displayPanel.removeAll();
 				Couple<String, BufferedImage> imageData = imageList.get(imageCounter.value());
-				displayPanel.add(buildImagePanel(imageData.getB(), imageData.getA()));
+				displayPanel.add(buildImagePanel(imageData.b(), imageData.a()));
 				baseFrame.repaint();
 				imageCounter.add();
 			});

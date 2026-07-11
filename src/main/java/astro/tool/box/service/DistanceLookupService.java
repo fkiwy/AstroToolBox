@@ -40,7 +40,7 @@ public class DistanceLookupService {
 			return results;
 		}
 		for (Map.Entry<Band, NumberPair> entry : apparentMagnitudes.entrySet()) {
-			double apparentMagnitude = entry.getValue().getX();
+			double apparentMagnitude = entry.getValue().x();
 			if (apparentMagnitude == 0) {
 				continue;
 			}
@@ -49,7 +49,7 @@ public class DistanceLookupService {
 				continue;
 			}
 			double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
-			double apparentMagnitudeError = entry.getValue().getY();
+			double apparentMagnitudeError = entry.getValue().y();
 			double absoluteMagnitudeError = absoluteMagnitudesErrors.get(entry.getKey());
 			if (absoluteMagnitudeError == 0) {
 				absoluteMagnitudeError = 0.5;

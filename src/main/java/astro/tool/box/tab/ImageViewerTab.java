@@ -485,17 +485,17 @@ public class ImageViewerTab implements Tab {
 	private BufferedImage processedUkidssImage;
 	private BufferedImage processedSdssImage;
 	private BufferedImage processedDssImage;
-	private Map<String, ImageContainer> imagesW1 = new HashMap();
-	private Map<String, ImageContainer> imagesW2 = new HashMap();
-	private Map<String, ImageContainer> imagesW1All = new HashMap();
-	private Map<String, ImageContainer> imagesW2All = new HashMap();
-	private Map<String, ImageContainer> imagesW1Ends = new HashMap();
-	private Map<String, ImageContainer> imagesW2Ends = new HashMap();
+	private final Map<String, ImageContainer> imagesW1 = new HashMap();
+	private final Map<String, ImageContainer> imagesW2 = new HashMap();
+	private final Map<String, ImageContainer> imagesW1All = new HashMap();
+	private final Map<String, ImageContainer> imagesW2All = new HashMap();
+	private final Map<String, ImageContainer> imagesW1Ends = new HashMap();
+	private final Map<String, ImageContainer> imagesW2Ends = new HashMap();
 	private Map<String, CustomOverlay> customOverlays;
-	private List<NumberPair> crosshairs = new ArrayList();
-	private List<Fits> band1Images = new ArrayList();
-	private List<Fits> band2Images = new ArrayList();
-	private List<FlipbookComponent> flipbook = new ArrayList();
+	private final List<NumberPair> crosshairs = new ArrayList();
+	private final List<Fits> band1Images = new ArrayList();
+	private final List<Fits> band2Images = new ArrayList();
+	private final List<FlipbookComponent> flipbook = new ArrayList();
 	private ImageViewerTab imageViewer;
 
 	private Tile tile;
@@ -689,7 +689,7 @@ public class ImageViewerTab implements Tab {
 			contrastSlider = new JSlider(1, 100, 50);
 			mainControlPanel.add(contrastSlider);
 			contrastSlider.addChangeListener((ChangeEvent e) -> {
-				contrast = getInvertedValue(contrastSlider);;
+				contrast = getInvertedValue(contrastSlider);
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					return;
@@ -889,11 +889,7 @@ public class ImageViewerTab implements Tab {
 			JButton resetDefaultsButton = new JButton("Reset image defaults");
 			mainControlPanel.add(resetDefaultsButton);
 			resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-				if (differenceImaging.isSelected()) {
-					blurImages.setSelected(true);
-				} else {
-					blurImages.setSelected(false);
-				}
+				blurImages.setSelected(differenceImaging.isSelected());
 				resetContrastSlider();
 				createFlipbook();
 			});
@@ -1348,7 +1344,7 @@ public class ImageViewerTab implements Tab {
 
 			JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts " + INFO_ICON));
 			overlaysControlPanel.add(artifactsLabel);
-			artifactsLabel.setToolTipText(html("" + "Small shapes represent affected sources." + LINE_BREAK
+			artifactsLabel.setToolTipText(html("Small shapes represent affected sources." + LINE_BREAK
 					+ "Large shapes represent the actual artifacts."));
 
 			JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
@@ -1571,7 +1567,7 @@ public class ImageViewerTab implements Tab {
 
 			imageSeriesPdf = new JCheckBox(html("Image series PDF " + INFO_ICON), false);
 			mouseControlPanel.add(imageSeriesPdf);
-			imageSeriesPdf.setToolTipText(html("" + "The creation of the PDF may take a few minutes." + LINE_BREAK
+			imageSeriesPdf.setToolTipText(html("The creation of the PDF may take a few minutes." + LINE_BREAK
 					+ "Do not continue working with AstroToolBox until the PDF is ready!"));
 			imageSeriesPdf.addActionListener((ActionEvent evt) -> {
 				if (imageSeriesPdf.isSelected()) {
@@ -1609,7 +1605,7 @@ public class ImageViewerTab implements Tab {
 
 			drawCrosshairs = createHeaderBox(html("Draw crosshairs: " + INFO_ICON));
 			mouseControlPanel.add(drawCrosshairs);
-			drawCrosshairs.setToolTipText(html("" + "Tick the check box!" + LINE_BREAK
+			drawCrosshairs.setToolTipText(html("Tick the check box!" + LINE_BREAK
 					+ "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
 					+ "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
 					+ "Wheel-click the crosshair's center to delete it." + LINE_BREAK
@@ -1705,7 +1701,7 @@ public class ImageViewerTab implements Tab {
 				double distance = size * pixelScale * OVERLAP_FACTOR / DEG_ARCSEC;
 				NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec),
 						new NumberPair(distance, 0));
-				double newRa = coords.getX();
+				double newRa = coords.x();
 				newRa = newRa > 360 ? newRa - 360 : newRa;
 				newRa = newRa > 360 ? 0 : newRa;
 				coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
@@ -1718,7 +1714,7 @@ public class ImageViewerTab implements Tab {
 				double distance = size * pixelScale * OVERLAP_FACTOR / DEG_ARCSEC;
 				NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec),
 						new NumberPair(-distance, 0));
-				double newRa = coords.getX();
+				double newRa = coords.x();
 				newRa = newRa < 0 ? newRa + 360 : newRa;
 				newRa = newRa < 0 ? 0 : newRa;
 				coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
@@ -1839,8 +1835,8 @@ public class ImageViewerTab implements Tab {
 					int imageHeight = wiseImage.getHeight();
 					if (pointerX == 0 && pointerY == 0) {
 						NumberPair pixelCoords = toPixelCoordinates(targetRa, targetDec);
-						pointerX = (int) pixelCoords.getX();
-						pointerY = (int) pixelCoords.getY();
+						pointerX = (int) pixelCoords.x();
+						pointerY = (int) pixelCoords.y();
 					}
 					int upperLeftX = pointerX - (width / 2);
 					int upperLeftY = pointerY - (height / 2);
@@ -1919,11 +1915,11 @@ public class ImageViewerTab implements Tab {
 								new NirImage(year_dss_2ir_1r_1b, processedDssImage)));
 					}
 
-					surveyImages.sort(Comparator.comparing(c -> 3000 - c.getB().getYear()));
+					surveyImages.sort(Comparator.comparing(c -> 3000 - c.b().getYear()));
 
 					for (Couple<String, NirImage> couple : surveyImages) {
-						String surveyLabel = couple.getA();
-						BufferedImage surveyImage = couple.getB().getImage();
+						String surveyLabel = couple.a();
+						BufferedImage surveyImage = couple.b().getImage();
 
 						// Create and display magnified image
 						if (!imageCutOff) {
@@ -1958,14 +1954,14 @@ public class ImageViewerTab implements Tab {
 							NumberPair pointerCoords;
 							if (quadrantCount > 0 && quadrantCount < 4) {
 								NumberPair pixelCoords = undoRotationOfPixelCoords(mouseX, mouseY);
-								mouseX = (int) pixelCoords.getX();
-								mouseY = (int) pixelCoords.getY();
-								pointerCoords = toWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+								mouseX = (int) pixelCoords.x();
+								mouseY = (int) pixelCoords.y();
+								pointerCoords = toWorldCoordinates((int) pixelCoords.x(), (int) pixelCoords.y());
 							} else {
 								pointerCoords = toWorldCoordinates(mouseX, mouseY);
 							}
-							double newRa = pointerCoords.getX();
-							double newDec = pointerCoords.getY();
+							double newRa = pointerCoords.x();
+							double newDec = pointerCoords.y();
 							if (SwingUtilities.isRightMouseButton(evt)) {
 								CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
 							} else if (SwingUtilities.isMiddleMouseButton(evt)) {
@@ -1977,10 +1973,10 @@ public class ImageViewerTab implements Tab {
 									ListIterator<NumberPair> iter = crosshairs.listIterator();
 									while (iter.hasNext()) {
 										NumberPair pixelCoords = iter.next();
-										if (pixelCoords.getX() > crosshairX - radius
-												&& pixelCoords.getX() < crosshairX + radius
-												&& pixelCoords.getY() > crosshairY - radius
-												&& pixelCoords.getY() < crosshairY + radius) {
+										if (pixelCoords.x() > crosshairX - radius
+												&& pixelCoords.x() < crosshairX + radius
+												&& pixelCoords.y() > crosshairY - radius
+												&& pixelCoords.y() < crosshairY + radius) {
 											iter.remove();
 											removed = true;
 										}
@@ -1991,12 +1987,12 @@ public class ImageViewerTab implements Tab {
 									StringBuilder sb = new StringBuilder();
 									for (int i = 0; i < crosshairs.size(); i++) {
 										NumberPair crosshair = crosshairs.get(i);
-										NumberPair c = toWorldCoordinates((int) round(crosshair.getX() * zoom),
-												(int) round(crosshair.getY() * zoom));
+										NumberPair c = toWorldCoordinates((int) round(crosshair.x() * zoom),
+												(int) round(crosshair.y() * zoom));
 										sb.append(i + 1).append(". ");
-										sb.append(roundTo7Dec(c.getX()));
+										sb.append(roundTo7Dec(c.x()));
 										sb.append(" ");
-										sb.append(roundTo7Dec(c.getY()));
+										sb.append(roundTo7Dec(c.y()));
 										sb.append(LINE_SEP_TEXT_AREA);
 									}
 									crosshairCoords.setText(sb.toString());
@@ -2803,8 +2799,8 @@ public class ImageViewerTab implements Tab {
 			List<String> errorMessages = new ArrayList<>();
 			try {
 				NumberPair coordinates = getCoordinates(coords);
-				targetRa = coordinates.getX();
-				targetDec = coordinates.getY();
+				targetRa = coordinates.x();
+				targetDec = coordinates.y();
 				if (targetRa < 0) {
 					errorMessages.add("RA must not be smaller than 0 deg.");
 				}
@@ -3210,8 +3206,8 @@ public class ImageViewerTab implements Tab {
 			int count = flipbook.size();
 			if (count > 0) {
 				NumberPair refVal = getRefValues(flipbook.get(0));
-				minValue = (int) refVal.getX();
-				maxValue = (int) refVal.getY();
+				minValue = (int) refVal.x();
+				maxValue = (int) refVal.y();
 			}
 
 			flipbookComplete = true;
@@ -3318,8 +3314,8 @@ public class ImageViewerTab implements Tab {
 			ImageData imageData = hdu.getData();
 			float[][] values = (float[][]) imageData.getData();
 			NumberPair refValues = determineRefValues(values);
-			double minVal = refValues.getX();
-			double maxVal = refValues.getY();
+			double minVal = refValues.x();
+			double maxVal = refValues.y();
 			return new NumberPair(minVal, maxVal);
 		}
 		fits = component.getFits1();
@@ -3328,8 +3324,8 @@ public class ImageViewerTab implements Tab {
 			ImageData imageData = hdu.getData();
 			float[][] values = (float[][]) imageData.getData();
 			NumberPair refValues = determineRefValues(values);
-			double minVal = refValues.getX();
-			double maxVal = refValues.getY();
+			double minVal = refValues.x();
+			double maxVal = refValues.y();
 			return new NumberPair(minVal, maxVal);
 		}
 		return null;
@@ -3477,9 +3473,9 @@ public class ImageViewerTab implements Tab {
 		// Mark target coordinates
 		if (markTarget.isSelected()) {
 			NumberPair position = toPixelCoordinates(targetRa, targetDec);
-			Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 100, Color.RED);
+			Circle circle = new Circle(position.x(), position.y(), shapeSize * zoom / 100, Color.RED);
 			circle.draw(image.getGraphics());
-			circle = new Circle(position.getX(), position.getY(), 1, Color.RED);
+			circle = new Circle(position.x(), position.y(), 1, Color.RED);
 			circle.draw(image.getGraphics());
 		}
 
@@ -3488,7 +3484,7 @@ public class ImageViewerTab implements Tab {
 			for (int i = 0; i < crosshairs.size(); i++) {
 				NumberPair crosshair = crosshairs.get(i);
 				String label = String.valueOf(i + 1);
-				CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom,
+				CrossHair drawable = new CrossHair(crosshair.x() * zoom, crosshair.y() * zoom,
 						shapeSize * zoom / 100, Color.RED, label);
 				drawable.draw(image.getGraphics());
 			}
@@ -3502,11 +3498,11 @@ public class ImageViewerTab implements Tab {
 			NumberPair coordinates;
 			if (quadrantCount > 0 && quadrantCount < 4) {
 				NumberPair pixelCoords = undoRotationOfPixelCoords(pointerX, pointerY);
-				coordinates = toWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+				coordinates = toWorldCoordinates((int) pixelCoords.x(), (int) pixelCoords.y());
 			} else {
 				coordinates = toWorldCoordinates(pointerX, pointerY);
 			}
-			String label = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
+			String label = roundTo3DecNZ(coordinates.x()) + " " + roundTo3DecNZ(coordinates.y());
 			CrossHair drawable = new CrossHair(pointerX, pointerY, shapeSize * zoom / 100, Color.RED, label);
 			drawable.draw(image.getGraphics());
 		}
@@ -3884,7 +3880,7 @@ public class ImageViewerTab implements Tab {
 						container = images.get(band + "_" + (requestedEpoch - 1));
 						if (container != null) {
 							Fits fits = new Fits();
-							fits.addHDU(Fits.makeHDU(container.getImage().getHDU(0).getData().getData()));
+							fits.addHDU(Fits.makeHDU(container.image().getHDU(0).getData().getData()));
 							Header header = fits.getHDU(0).getHeader();
 							header.addValue("FORWARD", epoch.getForward(), "Scan direction");
 							header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
@@ -3953,13 +3949,13 @@ public class ImageViewerTab implements Tab {
 			imagesW1All.putAll(imagesW1);
 			imagesW2All.putAll(imagesW2);
 		}
-		List<ImageContainer> containers = images.values().stream().filter(v -> !v.isSkip())
-				.sorted(Comparator.comparing(ImageContainer::getEpoch)).collect(toList());
+		List<ImageContainer> containers = images.values().stream().filter(v -> !v.skip())
+				.sorted(Comparator.comparing(ImageContainer::epoch)).collect(toList());
 		if (containers.isEmpty()) {
 			return;
 		}
-		extractHeaderInfo(containers.get(0).getImage()); // Must be the first image in the list
-		containers.stream().map(ImageContainer::getImage).forEach(i -> addImage(band, i));
+		extractHeaderInfo(containers.get(0).image()); // Must be the first image in the list
+		containers.stream().map(ImageContainer::image).forEach(i -> addImage(band, i));
 		epochCount = containers.size();
 	}
 
@@ -5375,9 +5371,9 @@ public class ImageViewerTab implements Tab {
 				return;
 			}
 
-			timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+			timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
 			timeSeries.forEach(couple -> {
-				bandPanel.add(buildImagePanel(couple.getB().getImage(), couple.getA()));
+				bandPanel.add(buildImagePanel(couple.b().getImage(), couple.a()));
 			});
 
 			JFrame imageFrame = new JFrame();
@@ -5515,7 +5511,7 @@ public class ImageViewerTab implements Tab {
 				return;
 			}
 
-			timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+			timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
 
 			JPanel container = new JPanel();
 
@@ -5535,7 +5531,7 @@ public class ImageViewerTab implements Tab {
 						BufferedImage[] imageSet = new BufferedImage[timeSeries.size()];
 						int i = 0;
 						for (Couple<String, NirImage> nirImage : timeSeries) {
-							BufferedImage imageBuffer = nirImage.getB().getImage();
+							BufferedImage imageBuffer = nirImage.b().getImage();
 							imageSet[i++] = drawCenterShape(imageBuffer);
 						}
 						if (imageSet.length > 0) {
@@ -5563,7 +5559,7 @@ public class ImageViewerTab implements Tab {
 				}
 				displayPanel.removeAll();
 				Couple<String, NirImage> nirImage = timeSeries.get(imageCount);
-				displayPanel.add(buildImagePanel(nirImage.getB().getImage(), nirImage.getA()));
+				displayPanel.add(buildImagePanel(nirImage.b().getImage(), nirImage.a()));
 				imageFrame.setVisible(true);
 				imageCount++;
 			});
@@ -5751,11 +5747,11 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		catalogEntries.forEach(catalogEntry -> {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 			SdssCatalogEntry sdssCatalogEntry = (SdssCatalogEntry) catalogEntry;
 			if (!sdssCatalogEntry.getSpecObjID().equals(new BigInteger("0"))) {
-				Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), JColor.OLIVE.val);
+				Drawable toDraw = new Circle(position.x(), position.y(), getOverlaySize(), JColor.OLIVE.val);
 				toDraw.draw(graphics);
 			}
 		});
@@ -5805,17 +5801,17 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		catalogEntries.forEach(catalogEntry -> {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 			Drawable toDraw;
 			toDraw = switch (shape) {
-			case CIRCLE -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-			case CROSS -> new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-			case XCROSS -> new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-			case SQUARE -> new Square(position.getX(), position.getY(), getOverlaySize(), color);
-			case TRIANGLE -> new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-			case DIAMOND -> new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-			default -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+			case CIRCLE -> new Circle(position.x(), position.y(), getOverlaySize(), color);
+			case CROSS -> new Cross(position.x(), position.y(), getOverlaySize(), color);
+			case XCROSS -> new XCross(position.x(), position.y(), getOverlaySize(), color);
+			case SQUARE -> new Square(position.x(), position.y(), getOverlaySize(), color);
+			case TRIANGLE -> new Triangle(position.x(), position.y(), getOverlaySize(), color);
+			case DIAMOND -> new Diamond(position.x(), position.y(), getOverlaySize(), color);
+			default -> new Circle(position.x(), position.y(), getOverlaySize(), color);
 			};
 			toDraw.draw(graphics);
 		});
@@ -5825,8 +5821,8 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		catalogEntries.forEach(catalogEntry -> {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 			Artifact artifact = (Artifact) catalogEntry;
 			String ab_flags = artifact.getAb_flags();
 			String cc_flags = artifact.getCc_flags();
@@ -5850,45 +5846,45 @@ public class ImageViewerTab implements Tab {
 			String flags = ab_flags + cc_flags;
 			if (ghostOverlay.isSelected()) {
 				if (flags.contains("o")) {
-					Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize() / 2,
+					Drawable toDraw = new Diamond(position.x(), position.y(), getOverlaySize() / 2,
 							Color.MAGENTA.darker());
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("O")) {
-					Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(),
+					Drawable toDraw = new Diamond(position.x(), position.y(), getOverlaySize(),
 							Color.MAGENTA.darker());
 					toDraw.draw(graphics);
 				}
 			}
 			if (haloOverlay.isSelected()) {
 				if (flags.contains("h")) {
-					Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize() / 2, Color.YELLOW);
+					Drawable toDraw = new Square(position.x(), position.y(), getOverlaySize() / 2, Color.YELLOW);
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("H")) {
-					Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
+					Drawable toDraw = new Square(position.x(), position.y(), getOverlaySize(), Color.YELLOW);
 					toDraw.draw(graphics);
 				}
 			}
 			if (latentOverlay.isSelected()) {
 				if (flags.contains("p")) {
-					Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize() / 2,
+					Drawable toDraw = new XCross(position.x(), position.y(), getOverlaySize() / 2,
 							Color.GREEN.darker());
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("P")) {
-					Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(),
+					Drawable toDraw = new XCross(position.x(), position.y(), getOverlaySize(),
 							Color.GREEN.darker());
 					toDraw.draw(graphics);
 				}
 			}
 			if (spikeOverlay.isSelected()) {
 				if (flags.contains("d")) {
-					Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize() / 2, Color.ORANGE);
+					Drawable toDraw = new Circle(position.x(), position.y(), getOverlaySize() / 2, Color.ORANGE);
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("D")) {
-					Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+					Drawable toDraw = new Circle(position.x(), position.y(), getOverlaySize(), Color.ORANGE);
 					toDraw.draw(graphics);
 				}
 			}
@@ -5900,8 +5896,8 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		for (CatalogEntry catalogEntry : catalogEntries) {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 
 			double ra = catalogEntry.getRa();
 			double dec = catalogEntry.getDec();
@@ -5938,29 +5934,29 @@ public class ImageViewerTab implements Tab {
 				}
 				double totalEpochs = (flipbookIndex / flipbookSize) * getNumberOfWiseEpochs() * 2;
 				NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
-				NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
-				Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
+				NumberPair pixelCoords = toPixelCoordinates(newPosition.x(), newPosition.y());
+				Disk disk = new Disk(pixelCoords.x(), pixelCoords.y(), getOverlaySize(2), color);
 				disk.draw(image.getGraphics());
 			} else {
 				NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec),
 						new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-				double fromRa = fromCoords.getX();
-				double fromDec = fromCoords.getY();
+				double fromRa = fromCoords.x();
+				double fromDec = fromCoords.y();
 
 				NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
-				double fromX = fromPoint.getX();
-				double fromY = fromPoint.getY();
+				double fromX = fromPoint.x();
+				double fromY = fromPoint.y();
 
 				numberOfYears = getNumberOfWiseEpochs() + 2; // +2 years -> hibernation period
 
 				NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec),
 						new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
-				double toRa = toCoords.getX();
-				double toDec = toCoords.getY();
+				double toRa = toCoords.x();
+				double toDec = toCoords.y();
 
 				NumberPair toPoint = toPixelCoordinates(toRa, toDec);
-				double toX = toPoint.getX();
-				double toY = toPoint.getY();
+				double toX = toPoint.x();
+				double toY = toPoint.y();
 
 				Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
 				arrow.draw(graphics);
@@ -5972,13 +5968,13 @@ public class ImageViewerTab implements Tab {
 			double totalEpochs) {
 		NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec),
 				new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-		double fromRa = fromCoords.getX();
-		double fromDec = fromCoords.getY();
+		double fromRa = fromCoords.x();
+		double fromDec = fromCoords.y();
 
 		NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec),
 				new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
-		double toRa = toCoords.getX();
-		double toDec = toCoords.getY();
+		double toRa = toCoords.x();
+		double toDec = toCoords.y();
 
 		return new NumberPair(toRa, toDec);
 	}
@@ -6421,10 +6417,10 @@ public class ImageViewerTab implements Tab {
 	private void createDistanceEstimatesPanel(List<DistanceLookupResult> results, String spt, Color color) {
 		List<String[]> distances = new ArrayList<>();
 		results.forEach(entry -> {
-			String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
-			String distance = roundTo3Dec(entry.getDistance());
-			if (entry.getDistanceError() > 0) {
-				distance += "±" + roundTo3Dec(entry.getDistanceError());
+			String matchedBand = entry.bandKey().val + "=" + roundTo3DecNZ(entry.bandValue());
+			String distance = roundTo3Dec(entry.distance());
+			if (entry.distanceError() > 0) {
+				distance += "±" + roundTo3Dec(entry.distanceError());
 			}
 			String resutValues = distance + "," + matchedBand;
 			distances.add(resutValues.split(",", -1));

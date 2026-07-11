@@ -312,78 +312,61 @@ public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
 	}
 
 	public static String createToolTip_cc_flags() {
-		StringBuilder toolTip = new StringBuilder();
-		toolTip.append("<b>Contamination and confusion flags (cc flags):</b>").append(LINE_BREAK);
-		toolTip.append(
-				"D,d - Diffraction spike. Source may be a spurious detection of (D) or contaminated by (d) a diffraction spike from a nearby bright star on the same image, or")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"P,p - Persistence. Source may be a spurious detection of (P) or contaminated by (p) a short-term latent image left by a bright source, or")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"H,h - Halo. Source may be a spurious detection of (H) or contaminated by (h) the scattered light halo surrounding a nearby bright source, or")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"O,o (letter \"o\") - Optical ghost. Source may be a spurious detection of (O) or contaminated by (o) an optical ghost image caused by a nearby bright source, or")
-				.append(LINE_BREAK);
-		toolTip.append("0 (number zero) - Source is unaffected by known artifacts. ");
-		return toolTip.toString();
+		String toolTip = "<b>Contamination and confusion flags (cc flags):</b>" + LINE_BREAK +
+				"D,d - Diffraction spike. Source may be a spurious detection of (D) or contaminated by (d) a diffraction spike from a nearby bright star on the same image, or" +
+				LINE_BREAK +
+				"P,p - Persistence. Source may be a spurious detection of (P) or contaminated by (p) a short-term latent image left by a bright source, or" +
+				LINE_BREAK +
+				"H,h - Halo. Source may be a spurious detection of (H) or contaminated by (h) the scattered light halo surrounding a nearby bright source, or" +
+				LINE_BREAK +
+				"O,o (letter \"o\") - Optical ghost. Source may be a spurious detection of (O) or contaminated by (o) an optical ghost image caused by a nearby bright source, or" +
+				LINE_BREAK +
+				"0 (number zero) - Source is unaffected by known artifacts. ";
+		return toolTip;
 	}
 
 	public static String createToolTip_ext_flg() {
-		StringBuilder toolTip = new StringBuilder();
-		toolTip.append("<b>Extended source flag (ext. flag):</b>").append(LINE_BREAK);
-		toolTip.append(
-				"0 - The source shape is consistent with a point-source and the source is not associated with or superimposed on a 2MASS XSC source.")
-				.append(LINE_BREAK);
-		toolTip.append("1 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands.")
-				.append(LINE_BREAK);
-		toolTip.append("2 - The source falls within the extrapolated isophotal footprint of a 2MASS XSC source.")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"3 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and The source falls within the extrapolated isophotal footprint of a 2MASS XSC source.")
-				.append(LINE_BREAK);
-		toolTip.append("4 - The source position falls within 5\" of a 2MASS XSC source.").append(LINE_BREAK);
-		toolTip.append(
-				"5 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and the source position falls within 5\" of a 2MASS XSC source.");
-		return toolTip.toString();
+		String toolTip = "<b>Extended source flag (ext. flag):</b>" + LINE_BREAK +
+				"0 - The source shape is consistent with a point-source and the source is not associated with or superimposed on a 2MASS XSC source." +
+				LINE_BREAK +
+				"1 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands." +
+				LINE_BREAK +
+				"2 - The source falls within the extrapolated isophotal footprint of a 2MASS XSC source." +
+				LINE_BREAK +
+				"3 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and The source falls within the extrapolated isophotal footprint of a 2MASS XSC source." +
+				LINE_BREAK +
+				"4 - The source position falls within 5\" of a 2MASS XSC source." + LINE_BREAK +
+				"5 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and the source position falls within 5\" of a 2MASS XSC source.";
+		return toolTip;
 	}
 
 	public static String createToolTip_var_flg() {
-		StringBuilder toolTip = new StringBuilder();
-		toolTip.append("<b>Variability flag (var. flag):</b>").append(LINE_BREAK);
-		toolTip.append(
-				"A value of \"n\" in a band indicates insufficient or inadequate data to make a determination of possible variability.")
-				.append(LINE_BREAK);
-		toolTip.append("Values of \"0\" through \"9\" indicate increasing probabilities of variation.")
-				.append(LINE_BREAK);
-		toolTip.append("Values of \"0\" through \"5\" are most likely not variables.").append(LINE_BREAK);
-		toolTip.append(
-				"Values of \"6\" and \"7\" are likely flux variables, but are the most susceptible to false-positive variability.")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"Values greater than \"7\" have the highest probability of being true flux variables in a band.");
-		return toolTip.toString();
+		String toolTip = "<b>Variability flag (var. flag):</b>" + LINE_BREAK +
+				"A value of \"n\" in a band indicates insufficient or inadequate data to make a determination of possible variability." +
+				LINE_BREAK +
+				"Values of \"0\" through \"9\" indicate increasing probabilities of variation." +
+				LINE_BREAK +
+				"Values of \"0\" through \"5\" are most likely not variables." + LINE_BREAK +
+				"Values of \"6\" and \"7\" are likely flux variables, but are the most susceptible to false-positive variability." +
+				LINE_BREAK +
+				"Values greater than \"7\" have the highest probability of being true flux variables in a band.";
+		return toolTip;
 	}
 
 	public static String createToolTip_ph_qual() {
-		StringBuilder toolTip = new StringBuilder();
-		toolTip.append("<b>Photometric quality flag (ph. qual.):</b>").append(LINE_BREAK);
-		toolTip.append("A - Source is detected in this band with a flux signal-to-noise ratio w?snr &gt; 10.")
-				.append(LINE_BREAK);
-		toolTip.append("B - Source is detected in this band with a flux signal-to-noise ratio 3 &lt; w?snr &lt; 10.")
-				.append(LINE_BREAK);
-		toolTip.append("C - Source is detected in this band with a flux signal-to-noise ratio 2 &lt; w?snr &lt; 3.")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"U - Upper limit on magnitude. Source measurement has w?snr &lt; 2. The profile-fit magnitude w?mpro is a 95% confidence upper limit.")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"X - A profile-fit measurement was not possible at this location in this band. The value of w?mpro and w?sigmpro will be \"null\" in this band.")
-				.append(LINE_BREAK);
-		toolTip.append(
-				"Z - A profile-fit source flux measurement was made at this location, but the flux uncertainty could not be measured.");
-		return toolTip.toString();
+		String toolTip = "<b>Photometric quality flag (ph. qual.):</b>" + LINE_BREAK +
+				"A - Source is detected in this band with a flux signal-to-noise ratio w?snr &gt; 10." +
+				LINE_BREAK +
+				"B - Source is detected in this band with a flux signal-to-noise ratio 3 &lt; w?snr &lt; 10." +
+				LINE_BREAK +
+				"C - Source is detected in this band with a flux signal-to-noise ratio 2 &lt; w?snr &lt; 3." +
+				LINE_BREAK +
+				"U - Upper limit on magnitude. Source measurement has w?snr &lt; 2. The profile-fit magnitude w?mpro is a 95% confidence upper limit." +
+				LINE_BREAK +
+				"X - A profile-fit measurement was not possible at this location in this band. The value of w?mpro and w?sigmpro will be \"null\" in this band." +
+				LINE_BREAK +
+				"Z - A profile-fit source flux measurement was made at this location, but the flux uncertainty could not be measured.";
+		return toolTip;
 	}
 
 	@Override

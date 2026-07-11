@@ -290,7 +290,7 @@ public class DesCatalogEntry implements CatalogEntry {
 			toolTip.append(LINE_BREAK).append("No warnings.");
 		} else {
 			flagLabels.forEach((flag) -> {
-				toolTip.append(LINE_BREAK).append(flag.getS1()).append(" = ").append(flag.getS2());
+				toolTip.append(LINE_BREAK).append(flag.s1()).append(" = ").append(flag.s2());
 			});
 		}
 		return toolTip.toString();

@@ -232,7 +232,7 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 		StringBuilder toolTip = new StringBuilder();
 		toolTip.append("<b>Quality flag details:</b>");
 		getFlagLabels(qualityFlag, QUALITY_FLAGS).forEach((flag) -> {
-			toolTip.append(LINE_BREAK).append(flag.getS1()).append(" = ").append(flag.getS2());
+			toolTip.append(LINE_BREAK).append(flag.s1()).append(" = ").append(flag.s2());
 		});
 		return toolTip.toString();
 	}

@@ -98,11 +98,11 @@ public class ProperMotionsTool {
 					String pmra;
 					String pmdec;
 					if (resultUnit.equals(Unit.ARCSEC)) {
-						pmra = roundTo6DecNZ(properMotions.getX());
-						pmdec = roundTo6DecNZ(properMotions.getY());
+						pmra = roundTo6DecNZ(properMotions.x());
+						pmdec = roundTo6DecNZ(properMotions.y());
 					} else {
-						pmra = roundTo3DecNZ(properMotions.getX());
-						pmdec = roundTo3DecNZ(properMotions.getY());
+						pmra = roundTo3DecNZ(properMotions.x());
+						pmdec = roundTo3DecNZ(properMotions.y());
 					}
 					resultField.setText(pmra + ", " + pmdec);
 				} catch (Exception ex) {
