@@ -1,59 +1,30 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
-import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_HEIGHT;
-import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_WIDTH;
-import static astro.tool.box.main.ToolboxHelper.INFO_ICON;
-import static astro.tool.box.main.ToolboxHelper.PHOT_DIST_INFO;
-import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
-import static astro.tool.box.main.ToolboxHelper.addEmptyCatalogElement;
-import static astro.tool.box.main.ToolboxHelper.addFieldToPanel;
-import static astro.tool.box.main.ToolboxHelper.addLabelToPanel;
-import static astro.tool.box.main.ToolboxHelper.alignCatalogColumns;
-import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
-import static astro.tool.box.main.ToolboxHelper.collectObject;
-import static astro.tool.box.main.ToolboxHelper.copyCoordsToClipboard;
-import static astro.tool.box.main.ToolboxHelper.copyObjectCoordinates;
-import static astro.tool.box.main.ToolboxHelper.copyObjectInfo;
-import static astro.tool.box.main.ToolboxHelper.copyObjectSummary;
-import static astro.tool.box.main.ToolboxHelper.copyToClipboard;
-import static astro.tool.box.main.ToolboxHelper.createCatalogTableSorter;
-import static astro.tool.box.main.ToolboxHelper.createLabel;
-import static astro.tool.box.main.ToolboxHelper.fillTygoForm;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
-import static astro.tool.box.main.ToolboxHelper.html;
-import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-import static astro.tool.box.util.Constants.LINE_SEP;
+import astro.tool.box.catalog.*;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.enumeration.ObjectType;
+import astro.tool.box.exception.ExtinctionException;
+import astro.tool.box.lookup.*;
+import astro.tool.box.panel.*;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.DustExtinctionService;
+import astro.tool.box.service.SpectralTypeLookupService;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.HeadlessException;
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -62,55 +33,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.Timer;
-import javax.swing.WindowConstants;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
-
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.Extinction;
-import astro.tool.box.catalog.GaiaCmd;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.ObjectType;
-import astro.tool.box.exception.ExtinctionException;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.DistanceLookupResult;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.panel.GaiaCmdPanel;
-import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedUcdPanel;
-import astro.tool.box.panel.SedWdPanel;
-import astro.tool.box.panel.WiseCcdPanel;
-import astro.tool.box.panel.WiseLcPanel;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.DistanceLookupService;
-import astro.tool.box.service.DustExtinctionService;
-import astro.tool.box.service.SpectralTypeLookupService;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
 
 public class CatalogQueryTab implements Tab {
 
@@ -377,7 +304,7 @@ public class CatalogQueryTab implements Tab {
 		});
 		CatalogEntry catalogEntry = catalogEntries.get(0);
 		Object[] columns = catalogEntry.getColumnTitles();
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
 		JTable catalogTable = new JTable(defaultTableModel);
 		alignCatalogColumns(catalogTable, catalogEntry);
@@ -564,7 +491,7 @@ public class CatalogQueryTab implements Tab {
 			});
 
 			if (catalogEntry instanceof SimbadCatalogEntry) {
-				JButton referencesButton = new JButton("Literature Ref.");
+				JButton referencesButton = new JButton("Literature References");
 				collectPanel.add(referencesButton);
 				referencesButton.addActionListener((ActionEvent evt) -> {
 					JFrame referencesFrame = new JFrame();
@@ -581,6 +508,54 @@ public class CatalogQueryTab implements Tab {
 					referencesFrame.setVisible(true);
 				});
 			}
+
+			if (catalogEntry instanceof GaiaCmd cmd) {
+				JButton createCmdButton = new JButton("Gaia CMD");
+				collectPanel.add(createCmdButton);
+				createCmdButton.addActionListener((ActionEvent evt) -> {
+					try {
+						createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						JFrame frame = new JFrame();
+						frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+						frame.addWindowListener(getChildWindowAdapter(baseFrame));
+						frame.setIconImage(getToolBoxImage());
+						frame.setTitle("Gaia CMD");
+						frame.add(new GaiaCmdPanel(cmd));
+						frame.setSize(1000, 900);
+						frame.setLocation(0, 0);
+						frame.setAlwaysOnTop(false);
+						frame.setResizable(true);
+						frame.setVisible(true);
+					} catch (HeadlessException | SecurityException ex) {
+						showErrorDialog(baseFrame, ex.getMessage());
+					} finally {
+						createCmdButton.setCursor(Cursor.getDefaultCursor());
+					}
+				});
+			}
+
+			JButton createCcdButton = new JButton("WISE CCD");
+			collectPanel.add(createCcdButton);
+			createCcdButton.addActionListener((ActionEvent evt) -> {
+				try {
+					createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					JFrame frame = new JFrame();
+					frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+					frame.addWindowListener(getChildWindowAdapter(baseFrame));
+					frame.setIconImage(getToolBoxImage());
+					frame.setTitle("WISE CCD");
+					frame.add(new WiseCcdPanel(catalogQueryService, catalogEntry, baseFrame));
+					frame.setSize(1000, 900);
+					frame.setLocation(0, 0);
+					frame.setAlwaysOnTop(false);
+					frame.setResizable(true);
+					frame.setVisible(true);
+				} catch (HeadlessException | SecurityException ex) {
+					showErrorDialog(baseFrame, ex.getMessage());
+				} finally {
+					createCcdButton.setCursor(Cursor.getDefaultCursor());
+				}
+			});
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			toolsPanel.add(buttonPanel);
@@ -625,67 +600,8 @@ public class CatalogQueryTab implements Tab {
 				fillTygoForm(catalogEntry, catalogQueryService, baseFrame);
 			});
 
-			JButton createSedButton = new JButton("Ultracool Dwarf SED");
-			buttonPanel.add(createSedButton);
-			createSedButton.addActionListener((ActionEvent evt) -> {
-				createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				JFrame frame = new JFrame();
-				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				frame.addWindowListener(getChildWindowAdapter(baseFrame));
-				frame.setIconImage(getToolBoxImage());
-				frame.setTitle("Ultracool Dwarf SED");
-				frame.add(new SedUcdPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
-				frame.setSize(1050, 900);
-				frame.setLocation(0, 0);
-				frame.setAlwaysOnTop(false);
-				frame.setResizable(true);
-				frame.setVisible(true);
-				createSedButton.setCursor(Cursor.getDefaultCursor());
-			});
-
-			JButton createWdSedButton = new JButton("White Dwarf SED");
-			buttonPanel.add(createWdSedButton);
-			createWdSedButton.addActionListener((ActionEvent evt) -> {
-				createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				JFrame frame = new JFrame();
-				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				frame.addWindowListener(getChildWindowAdapter(baseFrame));
-				frame.setIconImage(getToolBoxImage());
-				frame.setTitle("White Dwarf SED");
-				frame.add(new SedWdPanel(catalogQueryService, catalogEntry, baseFrame));
-				frame.setSize(1050, 900);
-				frame.setLocation(0, 0);
-				frame.setAlwaysOnTop(false);
-				frame.setResizable(true);
-				frame.setVisible(true);
-				createWdSedButton.setCursor(Cursor.getDefaultCursor());
-			});
-
-			JButton createCcdButton = new JButton("WISE CCD");
-			collectPanel.add(createCcdButton);
-			createCcdButton.addActionListener((ActionEvent evt) -> {
-				try {
-					createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					JFrame frame = new JFrame();
-					frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-					frame.addWindowListener(getChildWindowAdapter(baseFrame));
-					frame.setIconImage(getToolBoxImage());
-					frame.setTitle("WISE CCD");
-					frame.add(new WiseCcdPanel(catalogQueryService, catalogEntry, baseFrame));
-					frame.setSize(1000, 900);
-					frame.setLocation(0, 0);
-					frame.setAlwaysOnTop(false);
-					frame.setResizable(true);
-					frame.setVisible(true);
-				} catch (HeadlessException | SecurityException ex) {
-					showErrorDialog(baseFrame, ex.getMessage());
-				} finally {
-					createCcdButton.setCursor(Cursor.getDefaultCursor());
-				}
-			});
-
 			JButton createLcButton = new JButton("WISE Light Curves");
-			collectPanel.add(createLcButton);
+			buttonPanel.add(createLcButton);
 			createLcButton.addActionListener((ActionEvent evt) -> {
 				try {
 					createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -707,30 +623,23 @@ public class CatalogQueryTab implements Tab {
 				}
 			});
 
-			if (catalogEntry instanceof GaiaCmd cmd) {
-				JButton createCmdButton = new JButton("Gaia CMD");
-				collectPanel.add(createCmdButton);
-				createCmdButton.addActionListener((ActionEvent evt) -> {
-					try {
-						createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-						JFrame frame = new JFrame();
-						frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-						frame.addWindowListener(getChildWindowAdapter(baseFrame));
-						frame.setIconImage(getToolBoxImage());
-						frame.setTitle("Gaia CMD");
-						frame.add(new GaiaCmdPanel(cmd));
-						frame.setSize(1000, 900);
-						frame.setLocation(0, 0);
-						frame.setAlwaysOnTop(false);
-						frame.setResizable(true);
-						frame.setVisible(true);
-					} catch (HeadlessException | SecurityException ex) {
-						showErrorDialog(baseFrame, ex.getMessage());
-					} finally {
-						createCmdButton.setCursor(Cursor.getDefaultCursor());
-					}
-				});
-			}
+			JButton createSedButton = new JButton("SED Fitting");
+			buttonPanel.add(createSedButton);
+			createSedButton.addActionListener((ActionEvent evt) -> {
+				createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				JFrame frame = new JFrame();
+				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				frame.addWindowListener(getChildWindowAdapter(baseFrame));
+				frame.setIconImage(getToolBoxImage());
+				frame.setTitle("SED Fitting");
+				frame.add(new SedFittingPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+				frame.setSize(1050, 900);
+				frame.setLocation(0, 0);
+				frame.setAlwaysOnTop(false);
+				frame.setResizable(true);
+				frame.setVisible(true);
+				createSedButton.setCursor(Cursor.getDefaultCursor());
+			});
 
 			if (addExtinctionCheckbox && catalogEntry instanceof Extinction) {
 				final Extinction entry = (Extinction) catalogEntry.copy();
@@ -781,7 +690,7 @@ public class CatalogQueryTab implements Tab {
 
 		String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
 		alignResultColumns(spectralTypeTable, spectralTypes);
 		spectralTypeTable.setAutoCreateRowSorter(true);
@@ -829,7 +738,7 @@ public class CatalogQueryTab implements Tab {
 
 		String titles = "spt,matched color,nearest color,offset";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
 		alignResultColumns(spectralTypeTable, spectralTypes);
 		spectralTypeTable.setAutoCreateRowSorter(true);
@@ -877,7 +786,7 @@ public class CatalogQueryTab implements Tab {
 
 		String titles = "distance (pc),matched bands";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable distanceTable = new JTable(distances.toArray(rows), columns);
 		alignResultColumns(distanceTable, distances);
 		distanceTable.setAutoCreateRowSorter(true);
