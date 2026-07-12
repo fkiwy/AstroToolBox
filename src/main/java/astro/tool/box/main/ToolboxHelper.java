@@ -234,8 +234,8 @@ public class ToolboxHelper {
 		catalogInstances.put(desCatalogEntry.getCatalogName(), desCatalogEntry);
 		GaiaWDCatalogEntry gaiaWDCatalogEntry = new GaiaWDCatalogEntry();
 		catalogInstances.put(gaiaWDCatalogEntry.getCatalogName(), gaiaWDCatalogEntry);
-		MocaCatalogEntry mocaCatalogEntry = new MocaCatalogEntry();
-		catalogInstances.put(mocaCatalogEntry.getCatalogName(), mocaCatalogEntry);
+		//MocaCatalogEntry mocaCatalogEntry = new MocaCatalogEntry();
+		//catalogInstances.put(mocaCatalogEntry.getCatalogName(), mocaCatalogEntry);
 
 		return catalogInstances;
 	}
