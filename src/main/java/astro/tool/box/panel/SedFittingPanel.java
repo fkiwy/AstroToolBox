@@ -731,22 +731,24 @@ public class SedFittingPanel extends JPanel {
 		add(chartPanel, 0);
 
 		// Add median photometric distance to legend
-		LegendTitle legend = chart.getLegend();
-		chart.removeLegend();
-		BlockContainer container = new BlockContainer(new ColumnArrangement());
-		container.add(legend);
-		if (medianPhotDist > 0) {
-			String bandsLabel = photDistBands.stream().map(b -> b.val).collect(Collectors.joining(", "));
-			LabelBlock label = new LabelBlock(
-					String.format("Median photometric distance (%s) = %.2f pc, Median absolute deviation = %.2f pc",
-							bandsLabel, medianPhotDist, stdPhotDist));
-			label.setFont(new Font(FONT_NAME, Font.PLAIN, 18));
-			label.setPaint(Color.DARK_GRAY);
-			container.add(label);
+		if (templateType == TemplateType.UCD) {
+			LegendTitle legend = chart.getLegend();
+			chart.removeLegend();
+			BlockContainer container = new BlockContainer(new ColumnArrangement());
+			container.add(legend);
+			if (medianPhotDist > 0) {
+				String bandsLabel = photDistBands.stream().map(b -> b.val).collect(Collectors.joining(", "));
+				LabelBlock label = new LabelBlock(
+						String.format("Median photometric distance (%s) = %.2f pc, Median absolute deviation = %.2f pc",
+								bandsLabel, medianPhotDist, stdPhotDist));
+				label.setFont(new Font(FONT_NAME, Font.PLAIN, 18));
+				label.setPaint(Color.DARK_GRAY);
+				container.add(label);
+			}
+			CompositeTitle composite = new CompositeTitle(container);
+			composite.setPosition(RectangleEdge.BOTTOM);
+			chart.addSubtitle(composite);
 		}
-		CompositeTitle composite = new CompositeTitle(container);
-		composite.setPosition(RectangleEdge.BOTTOM);
-		chart.addSubtitle(composite);
 
 		revalidate();
 		repaint();
