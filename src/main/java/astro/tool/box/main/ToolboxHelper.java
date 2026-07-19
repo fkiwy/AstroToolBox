@@ -58,9 +58,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -112,6 +115,10 @@ import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+
+import nom.tam.fits.Fits;
+import nom.tam.fits.ImageData;
+import nom.tam.fits.ImageHDU;
 
 import org.jfree.chart.JFreeChart;
 
@@ -1141,7 +1148,7 @@ public class ToolboxHelper {
 					if (line.contains("href")) {
 						String[] parts = line.split("href=\"");
 						parts = parts[1].split("\"");
-						imageUrl = parts[0].replace("getImage", "getJImage");
+						imageUrl = parts[0].replace("getImage", "getFImage");
 						parts = line.split("extNo=");
 						parts = parts[1].split("&");
 						extNo = parts[0];
@@ -1175,9 +1182,15 @@ public class ToolboxHelper {
 			String extNo = nirImage.getExtNo();
 			String imageUrl = nirImage.getImageUrl();
 			try {
-				HttpURLConnection connection = establishHttpConnection(imageUrl);
-				BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
-				BufferedImage image = ImageIO.read(stream);
+				HttpURLConnection connection = establishNearInfraredFitsConnection(imageUrl);
+				BufferedImage image;
+				try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
+					Fits fits = new Fits(stream);
+					ImageHDU hdu = (ImageHDU) fits.getHDU(1);
+					ImageData imageData = hdu.getData();
+					image = createFitsImage(imageData.getData());
+					fits.close();
+				}
 				int width = image.getWidth();
 				int height = image.getHeight();
 				int offset = 2;
@@ -1187,18 +1200,16 @@ public class ToolboxHelper {
 				if (surveyLabel.equals(UHS_LABEL) || surveyLabel.equals(UKIDSS_LABEL)) {
 					// Rotate image
 					switch (extNo) {
-						case "1" -> image = rotateImage(image, 1);
-						case "3" -> image = rotateImage(image, 3);
+						case "1" -> image = rotateImage(image, 3);
+						case "3" -> image = rotateImage(image, 1);
 						case "4" -> image = rotateImage(image, 2);
 						default -> { // No rotation necessary
 						}
 					}
 				}
-				// Flip image
-				image = flipImage(image);
 				nirImage.setImage(image);
 				images.put(band, nirImage);
-			} catch (IOException ex) {
+			} catch (Exception ex) {
 				writeErrorLog(ex);
 			}
 		}
@@ -1216,22 +1227,90 @@ public class ToolboxHelper {
 			int y1 = nir1.getYear();
 			int y2 = nir2.getYear();
 			int y3 = nir3.getYear();
-			BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i2), invertImage(i3));
+			BufferedImage colorImage = createColorImage(i1, i2, i3);
 			NirImage nirImage = new NirImage(getMeanEpoch(y1, y2, y3), colorImage);
 			images.put("K-H-J", nirImage);
-		} else if (nir1 != null && nir3 != null) {
-			BufferedImage i1 = nir1.getImage();
-			BufferedImage i3 = nir3.getImage();
-			int width = i3.getWidth();
-			int height = i3.getHeight();
-			i1 = resizeImage(i1, width, height);
-			int y1 = nir1.getYear();
-			int y3 = nir3.getYear();
-			BufferedImage colorImage = createColorImage(invertImage(i1), invertImage(i3));
-			NirImage nirImage = new NirImage(getMeanEpoch(y1, y3), colorImage);
-			images.put("K-J", nirImage);
 		}
 		return images;
+	}
+
+	private static HttpURLConnection establishNearInfraredFitsConnection(String imageUrl) throws IOException {
+		HttpURLConnection connection = establishHttpConnection(imageUrl);
+		configureNearInfraredFitsConnection(connection);
+		if (connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+			// The legacy WSA CGI can return 500 when its response is routed through a
+			// configured HTTP proxy, even though the same URL is directly accessible.
+			connection.disconnect();
+			connection = (HttpURLConnection) new URL(imageUrl).openConnection(Proxy.NO_PROXY);
+			connection.setConnectTimeout(10000);
+			configureNearInfraredFitsConnection(connection);
+		}
+		return connection;
+	}
+
+	private static void configureNearInfraredFitsConnection(HttpURLConnection connection) {
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+		connection.setRequestProperty("Accept", "application/fits, application/octet-stream;q=0.9, */*;q=0.8");
+	}
+
+	private static BufferedImage createFitsImage(Object data) {
+		if (!data.getClass().isArray()) {
+			throw new IllegalArgumentException("FITS image data is not an array");
+		}
+		int height = Array.getLength(data);
+		if (height == 0) {
+			throw new IllegalArgumentException("FITS image data is empty");
+		}
+		Object firstRow = Array.get(data, 0);
+		if (firstRow == null || !firstRow.getClass().isArray()) {
+			throw new IllegalArgumentException("FITS image data is not two-dimensional");
+		}
+		int width = Array.getLength(firstRow);
+		if (width == 0) {
+			throw new IllegalArgumentException("FITS image data is empty");
+		}
+
+		double[] pixels = new double[width * height];
+		int pixelCount = 0;
+		for (int y = 0; y < height; y++) {
+			Object row = Array.get(data, y);
+			if (row == null || !row.getClass().isArray()) {
+				continue;
+			}
+			for (int x = 0; x < Math.min(width, Array.getLength(row)); x++) {
+				Object value = Array.get(row, x);
+				if (value instanceof Number number && Double.isFinite(number.doubleValue())) {
+					pixels[pixelCount++] = number.doubleValue();
+				}
+			}
+		}
+		if (pixelCount == 0) {
+			throw new IllegalArgumentException("FITS image contains no finite pixels");
+		}
+
+		java.util.Arrays.sort(pixels, 0, pixelCount);
+		double lowerBound = pixels[(int) Math.floor((pixelCount - 1) * 0.01)];
+		double upperBound = pixels[(int) Math.ceil((pixelCount - 1) * 0.9999)];
+		if (upperBound <= lowerBound) {
+			upperBound = lowerBound + 1;
+		}
+
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+		for (int y = 0; y < height; y++) {
+			Object row = Array.get(data, y);
+			if (row == null || !row.getClass().isArray()) {
+				continue;
+			}
+			for (int x = 0; x < Math.min(width, Array.getLength(row)); x++) {
+				Object value = Array.get(row, x);
+				if (value instanceof Number number && Double.isFinite(number.doubleValue())) {
+					double normalized = (number.doubleValue() - lowerBound) / (upperBound - lowerBound);
+					int gray = (int) Math.round(Math.max(0, Math.min(1, normalized)) * 255);
+					image.getRaster().setSample(x, y, 0, gray);
+				}
+			}
+		}
+		return image;
 	}
 
 	private static String getBand(String filterId) {
@@ -1353,24 +1432,6 @@ public class ToolboxHelper {
 		}
 
 		return contrastEnhancedImage;
-	}
-
-	public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2) {
-		BufferedImage colorImage = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_INT_RGB);
-		for (int x = 0; x < colorImage.getWidth(); x++) {
-			for (int y = 0; y < colorImage.getHeight(); y++) {
-				try {
-					int rgb1 = i1.getRGB(x, y);
-					int rgb2 = i2.getRGB(x, y);
-					Color c1 = new Color(rgb1, true);
-					Color c2 = new Color(rgb2, true);
-					Color color = new Color(c1.getRed(), (c1.getRed() + c2.getRed()) / 2, c2.getRed());
-					colorImage.setRGB(x, y, color.getRGB());
-				} catch (ArrayIndexOutOfBoundsException ex) {
-				}
-			}
-		}
-		return colorImage;
 	}
 
 	public static BufferedImage createColorImage(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
