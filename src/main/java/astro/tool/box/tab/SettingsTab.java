@@ -1,65 +1,5 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.main.ToolboxHelper.USER_HOME;
-import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.html;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.LINE_SEP;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
-
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
-
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TabCode;
@@ -67,6 +7,30 @@ import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.main.Application;
 import astro.tool.box.panel.DualListBox;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTMoonlightIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTNightOwlIJTheme;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
+
+import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
 
 public class SettingsTab implements Tab {
 
@@ -172,7 +136,7 @@ public class SettingsTab implements Tab {
 	private JComboBox wiseBandsBox;
 
 	public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab,
-			ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
+	                   ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
 		this.baseFrame = baseFrame;
 		this.tabbedPane = tabbedPane;
 		this.catalogQueryTab = catalogQueryTab;
@@ -727,43 +691,43 @@ public class SettingsTab implements Tab {
 		boolean isFlatLaf = false;
 		try {
 			switch (lookAndFeel) {
-			case OS -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			case Flat_Light -> {
-				UIManager.setLookAndFeel(new FlatLightLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Dark -> {
-				UIManager.setLookAndFeel(new FlatDarkLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Darcula -> {
-				UIManager.setLookAndFeel(new FlatDarculaLaf());
-				isFlatLaf = true;
-			}
-			case Flat_IntelliJ -> {
-				UIManager.setLookAndFeel(new FlatIntelliJLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Mac_Light -> {
-				UIManager.setLookAndFeel(new FlatMacLightLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Mac_Dark -> {
-				UIManager.setLookAndFeel(new FlatMacDarkLaf());
-				isFlatLaf = true;
-			}
-			case Nord -> {
-				UIManager.setLookAndFeel(new FlatNordIJTheme());
-				isFlatLaf = true;
-			}
-			case NightOwl -> {
-				UIManager.setLookAndFeel(new FlatNightOwlIJTheme());
-				isFlatLaf = true;
-			}
-			case Moonlight -> {
-				UIManager.setLookAndFeel(new FlatMoonlightIJTheme());
-				isFlatLaf = true;
-			}
+				case OS -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				case Flat_Light -> {
+					UIManager.setLookAndFeel(new FlatLightLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Dark -> {
+					UIManager.setLookAndFeel(new FlatDarkLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Darcula -> {
+					UIManager.setLookAndFeel(new FlatDarculaLaf());
+					isFlatLaf = true;
+				}
+				case Flat_IntelliJ -> {
+					UIManager.setLookAndFeel(new FlatIntelliJLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Mac_Light -> {
+					UIManager.setLookAndFeel(new FlatMacLightLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Mac_Dark -> {
+					UIManager.setLookAndFeel(new FlatMacDarkLaf());
+					isFlatLaf = true;
+				}
+				case Nord -> {
+					UIManager.setLookAndFeel(new FlatNordIJTheme());
+					isFlatLaf = true;
+				}
+				case NightOwl -> {
+					UIManager.setLookAndFeel(new FlatMTNightOwlIJTheme());
+					isFlatLaf = true;
+				}
+				case Moonlight -> {
+					UIManager.setLookAndFeel(new FlatMTMoonlightIJTheme());
+					isFlatLaf = true;
+				}
 			}
 			if (isFlatLaf) {
 				UIManager.put("Button.arc", 0);
@@ -776,7 +740,7 @@ public class SettingsTab implements Tab {
 				UIManager.put("ScrollBar.width", 15);
 			}
 		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
-				| UnsupportedLookAndFeelException e) {
+		         | UnsupportedLookAndFeelException e) {
 		}
 	}
 
