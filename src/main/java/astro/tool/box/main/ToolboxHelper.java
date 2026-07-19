@@ -727,10 +727,9 @@ public class ToolboxHelper {
 	}
 
 	public static String copyObjectCoordinates(CatalogEntry catalogEntry) {
-		String toCopy = roundTo7DecNZ(catalogEntry.getRa()) +
+		return roundTo7DecNZ(catalogEntry.getRa()) +
 				" " +
 				roundTo7DecNZ(catalogEntry.getDec());
-		return toCopy;
 	}
 
 	public static String copyObjectSummary(CatalogEntry catalogEntry) {
@@ -1008,7 +1007,7 @@ public class ToolboxHelper {
 					epoch += toDouble(columnValues[mjd]);
 					i++;
 				}
-				return convertMJDToDate(epoch / i).getYear();
+				return i > 0 ? convertMJDToDate(epoch / i).getYear() : 0;
 			}
 		} catch (IOException ex) {
 		}
@@ -1188,19 +1187,19 @@ public class ToolboxHelper {
 				if (surveyLabel.equals(UHS_LABEL) || surveyLabel.equals(UKIDSS_LABEL)) {
 					// Rotate image
 					switch (extNo) {
-					case "1" -> image = rotateImage(image, 1);
-					case "2" -> {
+						case "1" -> image = rotateImage(image, 1);
+						case "3" -> image = rotateImage(image, 3);
+						case "4" -> image = rotateImage(image, 2);
+						default -> { // No rotation necessary
+						}
 					}
-					case "3" -> image = rotateImage(image, 3);
-					case "4" -> image = rotateImage(image, 2);
-					}
-					// No rotation necessary
 				}
 				// Flip image
 				image = flipImage(image);
 				nirImage.setImage(image);
 				images.put(band, nirImage);
 			} catch (IOException ex) {
+				writeErrorLog(ex);
 			}
 		}
 		NirImage nir1 = images.get("K");
