@@ -319,6 +319,8 @@ public class SedFittingPanel extends JPanel {
 	private YIntervalSeriesCollection createSed(CatalogEntry catalogEntry, YIntervalSeriesCollection collection,
 	                                            boolean addReferenceSeds, TemplateType templateType) {
 		photSearchRadius.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		ucdTemplateButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		wdTemplateButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		createButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		removeButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		bestMatch.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -742,6 +744,8 @@ public class SedFittingPanel extends JPanel {
 		repaint();
 
 		photSearchRadius.setCursor(Cursor.getDefaultCursor());
+		ucdTemplateButton.setCursor(Cursor.getDefaultCursor());
+		wdTemplateButton.setCursor(Cursor.getDefaultCursor());
 		createButton.setCursor(Cursor.getDefaultCursor());
 		removeButton.setCursor(Cursor.getDefaultCursor());
 		bestMatch.setCursor(Cursor.getDefaultCursor());
