@@ -1,7 +1,8 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.PhotometricFunctions.evaluateSpectralType;
-import static astro.tool.box.util.MiscUtils.SPECTRAL_TYPES;
+import astro.tool.box.enumeration.Color;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,9 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import astro.tool.box.enumeration.Color;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.lookup.SpectralTypeLookup;
+import static astro.tool.box.function.PhotometricFunctions.evaluateSpectralType;
+import static astro.tool.box.util.MiscUtils.SPECTRAL_TYPES;
 
 public class SpectralTypeLookupService {
 

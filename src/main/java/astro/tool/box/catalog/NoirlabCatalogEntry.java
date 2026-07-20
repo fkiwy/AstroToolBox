@@ -1,38 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.convertDateToYear;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getIntegerComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -40,120 +7,95 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
+import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.addRow;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+
 public class NoirlabCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog {
 
 	public static final String CATALOG_NAME = "NSC DR2";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique source identifier (unique within a particular Data Release)
 	private String sourceId;
-
 	// Right ascension
 	private double ra;
-
 	// Error in right ascension
 	private double ra_err;
-
 	// Declination
 	private double dec;
-
 	// Error in declination
 	private double dec_err;
-
 	// Galaxy-Star (0-1)
 	private double type;
-
 	// Proper motion in right ascension direction
 	private double pmra;
-
 	// Standard error of proper motion in right ascension direction
 	private double pmra_err;
-
 	// Proper motion in declination direction
 	private double pmdec;
-
 	// Standard error of proper motion in declination direction
 	private double pmdec_err;
-
 	// Mean Modified Julian Date
 	private LocalDateTime mean_mjd;
-
 	// Number of detections in all bands
 	private int ndet;
-
 	// Range of Modified Julian Date
 	private double delta_mjd;
-
 	// Magnitude in u band
 	private double u_mag;
-
 	// Error in u magnitude
 	private double u_err;
-
 	// Magnitude in g band
 	private double g_mag;
-
 	// Error in g magnitude
 	private double g_err;
-
 	// Magnitude in r band
 	private double r_mag;
-
 	// Error in r magnitude
 	private double r_err;
-
 	// Magnitude in i band
 	private double i_mag;
-
 	// Error in i magnitude
 	private double i_err;
-
 	// Magnitude in z band
 	private double z_mag;
-
 	// Error in z magnitude
 	private double z_err;
-
 	// Magnitude in Y band
 	private double y_mag;
-
 	// Error in Y band
 	private double y_err;
-
 	// Magnitude in VR band
 	private double vr_mag;
-
 	// Error in VR band
 	private double vr_err;
-
 	// Galactic longitude
 	private double glon;
-
 	// Galactic latitude
 	private double glat;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Total proper motion
 	private double tpm;
-
 	// Most likely spectral type
 	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

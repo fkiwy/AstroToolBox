@@ -1,37 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getIntegerComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.LINE_BREAK;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.Constants.TWO_MASS_H;
-import static astro.tool.box.util.Constants.TWO_MASS_J;
-import static astro.tool.box.util.Constants.TWO_MASS_K;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.isVizierTAP;
-import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -39,80 +7,68 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+
 public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
 
 	public static final String CATALOG_NAME = "2MASS";
 
 	public static final String NEW_LINE = "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Source designation formed from sexigesimal coordinates
 	private String sourceId;
-
 	// Right ascension (J2000)
 	private double ra;
-
 	// Declination (J2000)
 	private double dec;
-
 	// J band selected "default" magnitude
 	private double Jmag;
-
 	// Corrected J band photometric uncertainty
 	private double J_err;
-
 	// H band selected "default" magnitude
 	private double Hmag;
-
 	// Corrected H band photometric uncertainty
 	private double H_err;
-
 	// K band selected "default" magnitude
 	private double Kmag;
-
 	// Corrected K band photometric uncertainty
 	private double K_err;
-
 	// observation reference date
 	private String xdate;
-
 	// Flag indicating photometric quality of source
 	private String ph_qual;
-
 	// Source of JHK "default" mags (AKA "read flag")
 	private String rd_flg;
-
 	// Indicates # JHK components fit simultaneously to source
 	private String bl_flg;
-
 	// Indicates JHK artifact contamination and/or confusion
 	private String cc_flg;
-
 	// Flag indicating if src is contaminated by extended source
 	private int gal_contam;
-
 	// Src is positionally associated with an asteroid, comet, etc
 	private int mp_flg;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Most likely spectral type
 	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;
@@ -159,48 +115,6 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
 			gal_contam = toInteger(values[columns.get("gal_contam")]);
 			mp_flg = toInteger(values[columns.get("mp_flg")]);
 		}
-	}
-
-	@Override
-	public CatalogEntry copy() {
-		return new TwoMassCatalogEntry(columns, values);
-	}
-
-	@Override
-	public void loadCatalogElements() {
-		catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT,
-				getDoubleComparator()));
-		catalogElements.add(new CatalogElement("source id", sourceId, Alignment.LEFT, getStringComparator()));
-		catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
-		catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
-		catalogElements.add(new CatalogElement("observation date", xdate, Alignment.LEFT, getStringComparator()));
-		catalogElements.add(new CatalogElement("ph. qual.", ph_qual, Alignment.LEFT, getStringComparator(),
-				createToolTip_ph_qual()));
-		catalogElements.add(
-				new CatalogElement("read flag", rd_flg, Alignment.LEFT, getStringComparator(), createToolTip_rd_flg()));
-		catalogElements.add(new CatalogElement("blend flag", bl_flg, Alignment.LEFT, getStringComparator(),
-				createToolTip_bl_flg()));
-		catalogElements.add(
-				new CatalogElement("cc flags", cc_flg, Alignment.LEFT, getStringComparator(), createToolTip_cc_flg()));
-		catalogElements.add(new CatalogElement("ext. flag", String.valueOf(gal_contam), Alignment.RIGHT,
-				getIntegerComparator(), createToolTip_gal_contam()));
-		catalogElements.add(new CatalogElement("minor planet flag", String.valueOf(mp_flg), Alignment.RIGHT,
-				getIntegerComparator(), createToolTip_mp_flg()));
-		catalogElements
-				.add(new CatalogElement("J (mag)", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator(), true));
-		catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(J_err), Alignment.RIGHT, getDoubleComparator()));
-		catalogElements
-				.add(new CatalogElement("H (mag)", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator(), true));
-		catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(H_err), Alignment.RIGHT, getDoubleComparator()));
-		catalogElements
-				.add(new CatalogElement("K (mag)", roundTo3DecNZ(Kmag), Alignment.RIGHT, getDoubleComparator(), true));
-		catalogElements.add(new CatalogElement("K err", roundTo3DecNZ(K_err), Alignment.RIGHT, getDoubleComparator()));
-		catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(getJ_H()), Alignment.RIGHT, getDoubleComparator(),
-				false, true));
-		catalogElements.add(new CatalogElement("H-K", roundTo3DecNZ(getH_K()), Alignment.RIGHT, getDoubleComparator(),
-				false, true));
-		catalogElements.add(new CatalogElement("J-K", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator(),
-				false, true));
 	}
 
 	public static String createToolTip_ph_qual() {
@@ -336,6 +250,48 @@ public class TwoMassCatalogEntry implements CatalogEntry, Extinction {
 				"\"0\" - Source is not associated with a known solar system object." + LINE_BREAK +
 				"\"1\" - Source is associated with the predicted position of a known solar system object.";
 		return toolTip;
+	}
+
+	@Override
+	public CatalogEntry copy() {
+		return new TwoMassCatalogEntry(columns, values);
+	}
+
+	@Override
+	public void loadCatalogElements() {
+		catalogElements.add(new CatalogElement("dist (arcsec)", roundTo3DecNZLZ(getTargetDistance()), Alignment.RIGHT,
+				getDoubleComparator()));
+		catalogElements.add(new CatalogElement("source id", sourceId, Alignment.LEFT, getStringComparator()));
+		catalogElements.add(new CatalogElement("ra", roundTo7DecNZ(ra), Alignment.LEFT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("dec", roundTo7DecNZ(dec), Alignment.LEFT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("observation date", xdate, Alignment.LEFT, getStringComparator()));
+		catalogElements.add(new CatalogElement("ph. qual.", ph_qual, Alignment.LEFT, getStringComparator(),
+				createToolTip_ph_qual()));
+		catalogElements.add(
+				new CatalogElement("read flag", rd_flg, Alignment.LEFT, getStringComparator(), createToolTip_rd_flg()));
+		catalogElements.add(new CatalogElement("blend flag", bl_flg, Alignment.LEFT, getStringComparator(),
+				createToolTip_bl_flg()));
+		catalogElements.add(
+				new CatalogElement("cc flags", cc_flg, Alignment.LEFT, getStringComparator(), createToolTip_cc_flg()));
+		catalogElements.add(new CatalogElement("ext. flag", String.valueOf(gal_contam), Alignment.RIGHT,
+				getIntegerComparator(), createToolTip_gal_contam()));
+		catalogElements.add(new CatalogElement("minor planet flag", String.valueOf(mp_flg), Alignment.RIGHT,
+				getIntegerComparator(), createToolTip_mp_flg()));
+		catalogElements
+				.add(new CatalogElement("J (mag)", roundTo3DecNZ(Jmag), Alignment.RIGHT, getDoubleComparator(), true));
+		catalogElements.add(new CatalogElement("J err", roundTo3DecNZ(J_err), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements
+				.add(new CatalogElement("H (mag)", roundTo3DecNZ(Hmag), Alignment.RIGHT, getDoubleComparator(), true));
+		catalogElements.add(new CatalogElement("H err", roundTo3DecNZ(H_err), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements
+				.add(new CatalogElement("K (mag)", roundTo3DecNZ(Kmag), Alignment.RIGHT, getDoubleComparator(), true));
+		catalogElements.add(new CatalogElement("K err", roundTo3DecNZ(K_err), Alignment.RIGHT, getDoubleComparator()));
+		catalogElements.add(new CatalogElement("J-H", roundTo3DecNZ(getJ_H()), Alignment.RIGHT, getDoubleComparator(),
+				false, true));
+		catalogElements.add(new CatalogElement("H-K", roundTo3DecNZ(getH_K()), Alignment.RIGHT, getDoubleComparator(),
+				false, true));
+		catalogElements.add(new CatalogElement("J-K", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator(),
+				false, true));
 	}
 
 	@Override

@@ -1,166 +1,101 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.NumericFunctions.roundTo0Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo0DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo1Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo1DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getIntegerComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.LINE_BREAK;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.Constants.TWO_MASS_H;
-import static astro.tool.box.util.Constants.TWO_MASS_J;
-import static astro.tool.box.util.Constants.TWO_MASS_K;
-import static astro.tool.box.util.Constants.WISE_1;
-import static astro.tool.box.util.Constants.WISE_2;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.isVizierTAP;
-import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+
 public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
 
 	public static final String CATALOG_NAME = "AllWISE";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique WISE source designation
 	private String sourceId;
-
 	// Right ascension (J2000)
 	private double ra;
-
 	// Declination (J2000)
 	private double dec;
-
 	// Instrumental profile-fit photometry magnitude, band 1
 	private double W1mag;
-
 	// Instrumental profile-fit photometry flux uncertainty in mag units, band 1
 	private double W1_err;
-
 	// Instrumental profile-fit photometry magnitude, band 2
 	private double W2mag;
-
 	// Instrumental profile-fit photometry flux uncertainty in mag units, band 2
 	private double W2_err;
-
 	// Instrumental profile-fit photometry magnitude, band 3
 	private double W3mag;
-
 	// Instrumental profile-fit photometry flux uncertainty in mag units, band 3
 	private double W3_err;
-
 	// Instrumental profile-fit photometry magnitude, band 4
 	private double W4mag;
-
 	// Instrumental profile-fit photometry flux uncertainty in mag units, band 4
 	private double W4_err;
-
 	// Instrumental profile-fit photometry S/N ratio, band 1
 	private double W1_snr;
-
 	// Instrumental profile-fit photometry S/N ratio, band 2
 	private double W2_snr;
-
 	// Instrumental profile-fit photometry S/N ratio, band 3
 	private double W3_snr;
-
 	// Instrumental profile-fit photometry S/N ratio, band 4
 	private double W4_snr;
-
 	// Apparent motion in RA
 	private double pmra;
-
 	// Uncertainty in the RA motion estimate
 	private double pmra_err;
-
 	// Apparent motion in Dec
 	private double pmdec;
-
 	// Uncertainty in the Dec motion estimate
 	private double pmdec_err;
-
 	// Prioritized artifacts affecting the source in each band
 	private String cc_flags;
-
 	// Probability that source morphology is not consistent with single PSF
 	private int ext_flg;
-
 	// Probability that flux varied in any band greater than amount expected from
 	// unc.s
 	private String var_flg;
-
 	// Photometric quality of each band (A=highest, U=upper limit)
 	private String ph_qual;
-
 	// J magnitude entry of the associated 2MASS All-Sky PSC source
 	private double Jmag;
-
 	// J photometric uncertainty of the associated 2MASS All-Sky PSC source
 	private double J_err;
-
 	// H magnitude entry of the associated 2MASS All-Sky PSC source
 	private double Hmag;
-
 	// H photometric uncertainty of the associated 2MASS All-Sky PSC source
 	private double H_err;
-
 	// K magnitude entry of the associated 2MASS All-Sky PSC source
 	private double Kmag;
-
 	// K photometric uncertainty of the associated 2MASS All-Sky PSC source
 	private double K_err;
-
 	// Right ascension at epoch MJD=55400.0 (2010.5589) from pff model incl. motion
 	private double ra_pm;
-
 	// Declination at epoch MJD=55400.0 (2010.5589) from pff model incl. motion
 	private double dec_pm;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Most likely spectral type
 	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;
@@ -239,6 +174,64 @@ public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
 		}
 	}
 
+	public static String createToolTip_cc_flags() {
+		String toolTip = "<b>Contamination and confusion flags (cc flags):</b>" + LINE_BREAK +
+				"D,d - Diffraction spike. Source may be a spurious detection of (D) or contaminated by (d) a diffraction spike from a nearby bright star on the same image, or" +
+				LINE_BREAK +
+				"P,p - Persistence. Source may be a spurious detection of (P) or contaminated by (p) a short-term latent image left by a bright source, or" +
+				LINE_BREAK +
+				"H,h - Halo. Source may be a spurious detection of (H) or contaminated by (h) the scattered light halo surrounding a nearby bright source, or" +
+				LINE_BREAK +
+				"O,o (letter \"o\") - Optical ghost. Source may be a spurious detection of (O) or contaminated by (o) an optical ghost image caused by a nearby bright source, or" +
+				LINE_BREAK +
+				"0 (number zero) - Source is unaffected by known artifacts. ";
+		return toolTip;
+	}
+
+	public static String createToolTip_ext_flg() {
+		String toolTip = "<b>Extended source flag (ext. flag):</b>" + LINE_BREAK +
+				"0 - The source shape is consistent with a point-source and the source is not associated with or superimposed on a 2MASS XSC source." +
+				LINE_BREAK +
+				"1 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands." +
+				LINE_BREAK +
+				"2 - The source falls within the extrapolated isophotal footprint of a 2MASS XSC source." +
+				LINE_BREAK +
+				"3 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and The source falls within the extrapolated isophotal footprint of a 2MASS XSC source." +
+				LINE_BREAK +
+				"4 - The source position falls within 5\" of a 2MASS XSC source." + LINE_BREAK +
+				"5 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and the source position falls within 5\" of a 2MASS XSC source.";
+		return toolTip;
+	}
+
+	public static String createToolTip_var_flg() {
+		String toolTip = "<b>Variability flag (var. flag):</b>" + LINE_BREAK +
+				"A value of \"n\" in a band indicates insufficient or inadequate data to make a determination of possible variability." +
+				LINE_BREAK +
+				"Values of \"0\" through \"9\" indicate increasing probabilities of variation." +
+				LINE_BREAK +
+				"Values of \"0\" through \"5\" are most likely not variables." + LINE_BREAK +
+				"Values of \"6\" and \"7\" are likely flux variables, but are the most susceptible to false-positive variability." +
+				LINE_BREAK +
+				"Values greater than \"7\" have the highest probability of being true flux variables in a band.";
+		return toolTip;
+	}
+
+	public static String createToolTip_ph_qual() {
+		String toolTip = "<b>Photometric quality flag (ph. qual.):</b>" + LINE_BREAK +
+				"A - Source is detected in this band with a flux signal-to-noise ratio w?snr &gt; 10." +
+				LINE_BREAK +
+				"B - Source is detected in this band with a flux signal-to-noise ratio 3 &lt; w?snr &lt; 10." +
+				LINE_BREAK +
+				"C - Source is detected in this band with a flux signal-to-noise ratio 2 &lt; w?snr &lt; 3." +
+				LINE_BREAK +
+				"U - Upper limit on magnitude. Source measurement has w?snr &lt; 2. The profile-fit magnitude w?mpro is a 95% confidence upper limit." +
+				LINE_BREAK +
+				"X - A profile-fit measurement was not possible at this location in this band. The value of w?mpro and w?sigmpro will be \"null\" in this band." +
+				LINE_BREAK +
+				"Z - A profile-fit source flux measurement was made at this location, but the flux uncertainty could not be measured.";
+		return toolTip;
+	}
+
 	@Override
 	public CatalogEntry copy() {
 		return new AllWiseCatalogEntry(columns, values);
@@ -309,64 +302,6 @@ public class AllWiseCatalogEntry implements CatalogEntry, Extinction {
 				false, true));
 		catalogElements.add(new CatalogElement("J-K", roundTo3DecNZ(getJ_K()), Alignment.RIGHT, getDoubleComparator(),
 				false, true));
-	}
-
-	public static String createToolTip_cc_flags() {
-		String toolTip = "<b>Contamination and confusion flags (cc flags):</b>" + LINE_BREAK +
-				"D,d - Diffraction spike. Source may be a spurious detection of (D) or contaminated by (d) a diffraction spike from a nearby bright star on the same image, or" +
-				LINE_BREAK +
-				"P,p - Persistence. Source may be a spurious detection of (P) or contaminated by (p) a short-term latent image left by a bright source, or" +
-				LINE_BREAK +
-				"H,h - Halo. Source may be a spurious detection of (H) or contaminated by (h) the scattered light halo surrounding a nearby bright source, or" +
-				LINE_BREAK +
-				"O,o (letter \"o\") - Optical ghost. Source may be a spurious detection of (O) or contaminated by (o) an optical ghost image caused by a nearby bright source, or" +
-				LINE_BREAK +
-				"0 (number zero) - Source is unaffected by known artifacts. ";
-		return toolTip;
-	}
-
-	public static String createToolTip_ext_flg() {
-		String toolTip = "<b>Extended source flag (ext. flag):</b>" + LINE_BREAK +
-				"0 - The source shape is consistent with a point-source and the source is not associated with or superimposed on a 2MASS XSC source." +
-				LINE_BREAK +
-				"1 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands." +
-				LINE_BREAK +
-				"2 - The source falls within the extrapolated isophotal footprint of a 2MASS XSC source." +
-				LINE_BREAK +
-				"3 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and The source falls within the extrapolated isophotal footprint of a 2MASS XSC source." +
-				LINE_BREAK +
-				"4 - The source position falls within 5\" of a 2MASS XSC source." + LINE_BREAK +
-				"5 - The profile-fit photometry goodness-of-fit, w?rchi2, is &gt; 3.0 in one or more bands, and the source position falls within 5\" of a 2MASS XSC source.";
-		return toolTip;
-	}
-
-	public static String createToolTip_var_flg() {
-		String toolTip = "<b>Variability flag (var. flag):</b>" + LINE_BREAK +
-				"A value of \"n\" in a band indicates insufficient or inadequate data to make a determination of possible variability." +
-				LINE_BREAK +
-				"Values of \"0\" through \"9\" indicate increasing probabilities of variation." +
-				LINE_BREAK +
-				"Values of \"0\" through \"5\" are most likely not variables." + LINE_BREAK +
-				"Values of \"6\" and \"7\" are likely flux variables, but are the most susceptible to false-positive variability." +
-				LINE_BREAK +
-				"Values greater than \"7\" have the highest probability of being true flux variables in a band.";
-		return toolTip;
-	}
-
-	public static String createToolTip_ph_qual() {
-		String toolTip = "<b>Photometric quality flag (ph. qual.):</b>" + LINE_BREAK +
-				"A - Source is detected in this band with a flux signal-to-noise ratio w?snr &gt; 10." +
-				LINE_BREAK +
-				"B - Source is detected in this band with a flux signal-to-noise ratio 3 &lt; w?snr &lt; 10." +
-				LINE_BREAK +
-				"C - Source is detected in this band with a flux signal-to-noise ratio 2 &lt; w?snr &lt; 3." +
-				LINE_BREAK +
-				"U - Upper limit on magnitude. Source measurement has w?snr &lt; 2. The profile-fit magnitude w?mpro is a 95% confidence upper limit." +
-				LINE_BREAK +
-				"X - A profile-fit measurement was not possible at this location in this band. The value of w?mpro and w?sigmpro will be \"null\" in this band." +
-				LINE_BREAK +
-				"Z - A profile-fit source flux measurement was made at this location, but the flux uncertainty could not be measured.";
-		return toolTip;
 	}
 
 	@Override

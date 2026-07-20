@@ -1,26 +1,20 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
-import static astro.tool.box.function.NumericFunctions.addPlusSign;
-import static astro.tool.box.function.NumericFunctions.roundDouble;
-import static astro.tool.box.function.NumericFunctions.roundTo1Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.main.Application.CMD_DATA;
-import static astro.tool.box.main.ToolboxHelper.createPDF;
-import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
-import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
-import static astro.tool.box.main.ToolboxHelper.html;
-import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-import static astro.tool.box.util.Constants.LINE_BREAK;
+import astro.tool.box.catalog.GaiaCmd;
+import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.util.CSVParser;
+import org.jfree.chart.*;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Shape;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
@@ -31,54 +25,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItem;
-import org.jfree.chart.LegendItemCollection;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.NumberTickUnit;
-import org.jfree.chart.block.BlockBorder;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.ui.RectangleInsets;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
-import astro.tool.box.catalog.GaiaCmd;
-import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.util.CSVParser;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.main.Application.CMD_DATA;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_BREAK;
 
 public class GaiaCmdPanel extends JPanel {
 
 	private static final String FONT_NAME = "Tahoma";
-
-	private final JRadioButton g_rpButton;
-	private final JCheckBox coolingSequencesH;
-	private final JCheckBox coolingSequencesHe;
-
-	private final int min = 2;
-	private final int max = 14;
-
-	private JFreeChart chart;
-
 	private static final List<Color> COLORS = new ArrayList();
 
 	static {
@@ -94,6 +51,12 @@ public class GaiaCmdPanel extends JPanel {
 		COLORS.add(new Color(253, 231, 37));
 	}
 
+	private final JRadioButton g_rpButton;
+	private final JCheckBox coolingSequencesH;
+	private final JCheckBox coolingSequencesHe;
+	private final int min = 2;
+	private final int max = 14;
+	private JFreeChart chart;
 	private String targetLabel;
 
 	public GaiaCmdPanel(GaiaCmd catalogEntry) {

@@ -1,76 +1,6 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZLZ;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
-import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
-import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
-import static astro.tool.box.main.ToolboxHelper.createLabel;
-import static astro.tool.box.main.ToolboxHelper.createResultTableSorter;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.isSameTarget;
-import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.MiscUtils.SPECTRAL_TYPES;
-import static astro.tool.box.util.MiscUtils.addToArray;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.catalog.*;
 import astro.tool.box.container.ClassificationResult;
 import astro.tool.box.container.ClassifierData;
 import astro.tool.box.container.NumberPair;
@@ -82,6 +12,33 @@ import astro.tool.box.lookup.SpectralTypeLookup;
 import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.MiscUtils.SPECTRAL_TYPES;
+import static astro.tool.box.util.MiscUtils.addToArray;
 
 public class PhotometricClassifierTab implements Tab {
 
@@ -127,7 +84,7 @@ public class PhotometricClassifierTab implements Tab {
 	private List<ClassifierData> classifierListBrownDwarfs;
 
 	public PhotometricClassifierTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab,
-			ImageViewerTab imageViewerTab) {
+	                                ImageViewerTab imageViewerTab) {
 		this.baseFrame = baseFrame;
 		this.tabbedPane = tabbedPane;
 		this.catalogQueryTab = catalogQueryTab;
@@ -359,8 +316,8 @@ public class PhotometricClassifierTab implements Tab {
 	}
 
 	private List<ClassificationResult> performSpectralTypeLookup(SpectralTypeLookupService spectralTypeLookupService,
-			List<CatalogEntry> catalogEntries, Map<String, Integer> sptOccurrences, List<ClassifierData> classifierList,
-			JTable resultTable) throws Exception {
+	                                                             List<CatalogEntry> catalogEntries, Map<String, Integer> sptOccurrences, List<ClassifierData> classifierList,
+	                                                             JTable resultTable) throws Exception {
 		List<ClassificationResult> classificationResults = new ArrayList<>();
 		for (CatalogEntry catalogEntry : catalogEntries) {
 			String catalogName = catalogEntry.getCatalogName();
@@ -417,14 +374,14 @@ public class PhotometricClassifierTab implements Tab {
 	}
 
 	private JTable displayQueryResults(List<ClassificationResult> classificationResults, String title,
-			Color borderColor) {
+	                                   Color borderColor) {
 		List<Object[]> resultRows = new ArrayList<>();
 		classificationResults.forEach(entry -> {
-			resultRows.add(addToArray(new Boolean[] { Boolean.FALSE }, entry.getColumnValues()));
+			resultRows.add(addToArray(new Boolean[]{Boolean.FALSE}, entry.getColumnValues()));
 		});
 		ClassificationResult result = classificationResults.get(0);
-		Object[] columns = addToArray(new String[] { "Remove from classification" }, result.getColumnTitles());
-		Object[][] array = new Object[][] {};
+		Object[] columns = addToArray(new String[]{"Remove from classification"}, result.getColumnTitles());
+		Object[][] array = new Object[][]{};
 		Object[][] rows = resultRows.toArray(array);
 		DefaultTableModel defaultTableModel = new DefaultTableModel(rows, columns);
 		JTable resultTable = new JTable(defaultTableModel) {
@@ -490,12 +447,12 @@ public class PhotometricClassifierTab implements Tab {
 
 		List<String[]> occurrences = new ArrayList();
 		spectralTypes.forEach(spectralType -> {
-			occurrences.add(new String[] { spectralType.occurrences().toString(), spectralType.spt() });
+			occurrences.add(new String[]{spectralType.occurrences().toString(), spectralType.spt()});
 		});
 
 		String titles = "occurrences,spectral type";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(occurrences.toArray(rows), columns);
 		JTable resultTable = new JTable(defaultTableModel);
 		alignResultColumns(resultTable, occurrences);
@@ -525,14 +482,14 @@ public class PhotometricClassifierTab implements Tab {
 
 		List<String[]> occurrences = new ArrayList();
 		classifierList.forEach(classifierData -> {
-			occurrences.add(new String[] { classifierData.getCatalog(), classifierData.getSpectralType(),
+			occurrences.add(new String[]{classifierData.getCatalog(), classifierData.getSpectralType(),
 					classifierData.getColorKey(), classifierData.getColorValue(), classifierData.getReferenceColor(),
-					classifierData.getSourceId() });
+					classifierData.getSourceId()});
 		});
 
 		String titles = "catalog,spectral type,color,value,reference value,source id";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(occurrences.toArray(rows), columns);
 		JTable resultTable = new JTable(defaultTableModel);
 		alignResultColumns(resultTable, occurrences);
@@ -555,7 +512,7 @@ public class PhotometricClassifierTab implements Tab {
 	}
 
 	private void addOccurrence(ClassifierData classifierData, Map<String, Integer> sptOccurrences,
-			List<ClassifierData> classifierList, JTable resultTable) {
+	                           List<ClassifierData> classifierList, JTable resultTable) {
 		if (resultTable != null) {
 			for (int i = 0; i < resultTable.getRowCount(); i++) {
 				String sourceId = (String) resultTable.getValueAt(i, 7);

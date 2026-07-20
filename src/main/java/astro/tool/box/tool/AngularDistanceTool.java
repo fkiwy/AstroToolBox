@@ -1,29 +1,18 @@
 package astro.tool.box.tool;
 
+import astro.tool.box.enumeration.Unit;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
 import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.main.ToolboxHelper.*;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
 import static astro.tool.box.util.ConversionFactors.DEG_MAS;
-
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
-
-import astro.tool.box.enumeration.Unit;
 
 public class AngularDistanceTool {
 
@@ -55,7 +44,7 @@ public class AngularDistanceTool {
 			mainPanel.add(toCoordsField);
 
 			mainPanel.add(new JLabel("Angular distance unit: ", SwingConstants.RIGHT));
-			JComboBox resultUnits = new JComboBox(new Unit[] { Unit.ARCSEC, Unit.MAS });
+			JComboBox resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
 			mainPanel.add(resultUnits);
 
 			mainPanel.add(new JLabel("Angular distance: ", SwingConstants.RIGHT));

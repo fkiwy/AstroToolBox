@@ -1,14 +1,25 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
-import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
+import astro.tool.box.enumeration.FileType;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
+import org.jfree.chart.*;
+import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Shape;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
@@ -20,32 +31,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.StandardChartTheme;
-import org.jfree.chart.axis.LogAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.NumberTickUnit;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.renderer.xy.XYSplineRenderer;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
-
-import astro.tool.box.enumeration.FileType;
+import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
+import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
 
 public class JPlot {
 
@@ -239,12 +226,12 @@ public class JPlot {
 	}
 
 	public JPlot error(String legendEntry, List<Double> x, List<Double> y, List<Double> error, Color color,
-			boolean plot) {
+	                   boolean plot) {
 		return error(legendEntry, x, y, error, error, color, plot);
 	}
 
 	public JPlot error(String legendEntry, List<Double> x, List<Double> y, List<Double> lowerError,
-			List<Double> upperError, Color color, boolean plot) {
+	                   List<Double> upperError, Color color, boolean plot) {
 		if (plot) {
 			List<Double> upperBound = new ArrayList();
 			List<Double> lowerBound = new ArrayList();
@@ -286,7 +273,7 @@ public class JPlot {
 	}
 
 	public JPlot line(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints,
-			boolean plot) {
+	                  boolean plot) {
 		if (plot) {
 			index++;
 			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -298,7 +285,7 @@ public class JPlot {
 	}
 
 	public JPlot curve(String legendEntry, List<Double> x, List<Double> y, Color color, boolean showDataPoints,
-			boolean plot) {
+	                   boolean plot) {
 		if (plot) {
 			index++;
 			XYSplineRenderer renderer = new XYSplineRenderer(100);
@@ -353,9 +340,9 @@ public class JPlot {
 	private void savePlot(File file, FileType fileType, int width, int height) {
 		try {
 			switch (fileType) {
-			case JPEG -> ChartUtils.saveChartAsJPEG(file, chart, width, height);
-			case PNG -> ChartUtils.saveChartAsPNG(file, chart, width, height);
-			case PDF -> savePDF(file, width, height);
+				case JPEG -> ChartUtils.saveChartAsJPEG(file, chart, width, height);
+				case PNG -> ChartUtils.saveChartAsPNG(file, chart, width, height);
+				case PDF -> savePDF(file, width, height);
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
@@ -367,7 +354,7 @@ public class JPlot {
 	}
 
 	private void addRenderer(String legendEntry, List<Double> x, List<Double> y, Color color, XYItemRenderer renderer,
-			Shape shape) {
+	                         Shape shape) {
 		if (legendEntry == null || legendEntry.isEmpty()) {
 			legendEntry = "Dataset" + index;
 			renderer.setSeriesVisibleInLegend(0, false);

@@ -2,9 +2,8 @@ package astro.tool.box.util;
 
 public class Counter {
 
-	private int value;
-
 	private final int increment;
+	private int value;
 
 	public Counter() {
 		this.increment = 1;

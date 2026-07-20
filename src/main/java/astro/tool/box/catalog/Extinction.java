@@ -1,8 +1,8 @@
 package astro.tool.box.catalog;
 
-import java.util.Map;
-
 import astro.tool.box.exception.ExtinctionException;
+
+import java.util.Map;
 
 public interface Extinction extends CatalogEntry {
 

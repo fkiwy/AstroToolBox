@@ -1,134 +1,27 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceHelper.createIrsaUrl;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createIrsaUrl;
+
 public class SsoCatalogEntry implements CatalogEntry {
 
 	public static final String CATALOG_NAME = "Solar System Objects";
-
-	// Solar System object identifier
-	private String objectID;
-
-	// Type of Solar System object
-	private String type;
-
-	// Right Ascension (J2000) of SSO at time of NEOWISE observation (deg)
-	private double ra;
-
-	// Declination (J2000) of SSO at time of NEOWISE observation (deg)
-	private double dec;
-
-	// Predicted Right Ascension (J2000) of SSO at time of NEOWISE observation (deg)
-	private double pra;
-
-	// Predicted Declination (J2000) of SSO at time of NEOWISE observation (deg)
-	private double pdec;
-
-	// Predicted proper motion of SSO at time of NEOWISE observation (arcsec/sec)
-	private double ppm;
-
-	// Direction of predicted proper motion (E of N) of SSO at time of NEOWISE
-	// observation (deg)
-	private double theta;
-
-	// SSO heliocentric distance at the time of the NEOWISE observation (AU)
-	private double rhelio;
-
-	// SSO absolute magnitude (mag)
-	private double amag;
-
-	// SSO predicted visual magnitude at the time of the NEOWISE observation (mag)
-	private double vmag;
-
-	// SSO perihelion distance at the time of the NEOWISE observation (AU)
-	private double perdist;
-
-	// SSO orbital eccentricity
-	private double ecc;
-
-	// SSO orbital inclination (deg)
-	private double incl;
-
-	// SSO orbit perihelion passage time, modified Julian date (mjdate)
-	private double pertime;
-
-	// Modified Julian date of the mid-point of the observation of the frameset
-	// within which the FOV the SSO is predicted to fall (mjdate)
-	private LocalDateTime mjd;
-
-	// RA distance between associated NEOWISE detection and predicted SSO position
-	// (NEOWISE - SSO)
-	private double dra;
-
-	// Declination distance between associated NEOWISE extraction and predicted SSO
-	// position (NEOWISE - SSO)
-	private double ddec;
-
-	// Single-exposure W1 profile-fit magnitude or magnitude upper limit for the
-	// NEOWISE detection spatially associated with the SSO
-	private double W1mag;
-
-	// Single-exposure W1 profile-fit photometric measurement uncertainty for the
-	// associated NEOWISE detection
-	private double W1_err;
-
-	// Single-exposure W2 profile-fit magnitude or magnitude upper limit for the
-	// NEOWISE detection spatially associated with the SSO
-	private double W2mag;
-
-	// Single-exposure W2 profile-fit photometric measurement uncertainty for the
-	// associated NEOWISE detection
-	private double W2_err;
-
-	// Right ascension used for distance calculation
-	private double targetRa;
-
-	// Declination used for distance calculation
-	private double targetDec;
-
-	// Pixel RA position
-	private double pixelRa;
-
-	// Pixel declination position
-	private double pixelDec;
-
-	// Search radius
-	private double searchRadius;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
-	private Map<String, Integer> columns;
-
-	private String[] values;
-
 	private static final Map<String, String> TYPE_TABLE = new HashMap<>();
 
 	static {
@@ -139,6 +32,72 @@ public class SsoCatalogEntry implements CatalogEntry {
 		TYPE_TABLE.put("P", "Planet");
 		TYPE_TABLE.put("S", "Planetary Satellite");
 	}
+
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
+	// Solar System object identifier
+	private String objectID;
+	// Type of Solar System object
+	private String type;
+	// Right Ascension (J2000) of SSO at time of NEOWISE observation (deg)
+	private double ra;
+	// Declination (J2000) of SSO at time of NEOWISE observation (deg)
+	private double dec;
+	// Predicted Right Ascension (J2000) of SSO at time of NEOWISE observation (deg)
+	private double pra;
+	// Predicted Declination (J2000) of SSO at time of NEOWISE observation (deg)
+	private double pdec;
+	// Predicted proper motion of SSO at time of NEOWISE observation (arcsec/sec)
+	private double ppm;
+	// Direction of predicted proper motion (E of N) of SSO at time of NEOWISE
+	// observation (deg)
+	private double theta;
+	// SSO heliocentric distance at the time of the NEOWISE observation (AU)
+	private double rhelio;
+	// SSO absolute magnitude (mag)
+	private double amag;
+	// SSO predicted visual magnitude at the time of the NEOWISE observation (mag)
+	private double vmag;
+	// SSO perihelion distance at the time of the NEOWISE observation (AU)
+	private double perdist;
+	// SSO orbital eccentricity
+	private double ecc;
+	// SSO orbital inclination (deg)
+	private double incl;
+	// SSO orbit perihelion passage time, modified Julian date (mjdate)
+	private double pertime;
+	// Modified Julian date of the mid-point of the observation of the frameset
+	// within which the FOV the SSO is predicted to fall (mjdate)
+	private LocalDateTime mjd;
+	// RA distance between associated NEOWISE detection and predicted SSO position
+	// (NEOWISE - SSO)
+	private double dra;
+	// Declination distance between associated NEOWISE extraction and predicted SSO
+	// position (NEOWISE - SSO)
+	private double ddec;
+	// Single-exposure W1 profile-fit magnitude or magnitude upper limit for the
+	// NEOWISE detection spatially associated with the SSO
+	private double W1mag;
+	// Single-exposure W1 profile-fit photometric measurement uncertainty for the
+	// associated NEOWISE detection
+	private double W1_err;
+	// Single-exposure W2 profile-fit magnitude or magnitude upper limit for the
+	// NEOWISE detection spatially associated with the SSO
+	private double W2mag;
+	// Single-exposure W2 profile-fit photometric measurement uncertainty for the
+	// associated NEOWISE detection
+	private double W2_err;
+	// Right ascension used for distance calculation
+	private double targetRa;
+	// Declination used for distance calculation
+	private double targetDec;
+	// Pixel RA position
+	private double pixelRa;
+	// Pixel declination position
+	private double pixelDec;
+	// Search radius
+	private double searchRadius;
+	private Map<String, Integer> columns;
+	private String[] values;
 
 	public SsoCatalogEntry() {
 	}

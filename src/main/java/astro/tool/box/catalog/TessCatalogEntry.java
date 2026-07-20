@@ -1,243 +1,151 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo5Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo5DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallaxError;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Constants.SDSS_G;
-import static astro.tool.box.util.Constants.SDSS_I;
-import static astro.tool.box.util.Constants.SDSS_R;
-import static astro.tool.box.util.Constants.SDSS_U;
-import static astro.tool.box.util.Constants.SDSS_Z;
-import static astro.tool.box.util.Constants.TWO_MASS_H;
-import static astro.tool.box.util.Constants.TWO_MASS_J;
-import static astro.tool.box.util.Constants.TWO_MASS_K;
-import static astro.tool.box.util.Constants.WISE_1;
-import static astro.tool.box.util.Constants.WISE_2;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ABOffset;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.Band;
-import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallaxError;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getLongComparator;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
 
 public class TessCatalogEntry implements CatalogEntry, WhiteDwarf, Extinction {
 
 	public static final String CATALOG_NAME = "TESS Input Catalog";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// TESS Input Catalog identifier
 	private long sourceId;
-
 	// Right ascension
 	private double ra;
-
 	// Declination
 	private double dec;
-
 	// Parallax
 	private double plx;
-
 	// Error in parallax
 	private double plx_err;
-
 	// Proper motion in right ascension direction
 	private double pmra;
-
 	// Proper motion error in right ascension
 	private double pmra_err;
-
 	// Proper motion in declination direction
 	private double pmdec;
-
 	// Proper motion error in declination
 	private double pmdec_err;
-
 	// Effective temperature
 	private double teff;
-
 	// Uncertainty in teff
 	private double teff_err;
-
 	// Surface Gravity
 	private double logg;
-
 	// Uncertainty in logg
 	private double logg_err;
-
 	// Radius
 	private double rad;
-
 	// Uncertainty in rad
 	private double rad_err;
-
 	// Mass
 	private double mass;
-
 	// Uncertainty in mass
 	private double mass_err;
-
 	// Stellar Luminosity
 	private double lum;
-
 	// Uncertainty in lum
 	private double lum_err;
-
 	// Distance
 	private double dist;
-
 	// Uncertainty in dist
 	private double dist_err;
-
 	// Magnitude in G band
 	private double Gmag;
-
 	// Error in G magnitude
 	private double G_err;
-
 	// Magnitude in BP band
 	private double BPmag;
-
 	// Error in BP magnitude
 	private double BP_err;
-
 	// Magnitude in RP band
 	private double RPmag;
-
 	// Error in RP magnitude
 	private double RP_err;
-
 	// Magnitude in B band
 	private double Bmag;
-
 	// Error in B magnitude
 	private double B_err;
-
 	// Magnitude in V band
 	private double Vmag;
-
 	// Error in V magnitude
 	private double V_err;
-
 	// Magnitude in u band
 	private double u_mag;
-
 	// Error in u magnitude
 	private double u_err;
-
 	// Magnitude in g band
 	private double g_mag;
-
 	// Error in g magnitude
 	private double g_err;
-
 	// Magnitude in r band
 	private double r_mag;
-
 	// Error in r magnitude
 	private double r_err;
-
 	// Magnitude in i band
 	private double i_mag;
-
 	// Error in i magnitude
 	private double i_err;
-
 	// Magnitude in z band
 	private double z_mag;
-
 	// Error in z magnitude
 	private double z_err;
-
 	// Magnitude in W1 band
 	private double W1mag;
-
 	// Error in W1 magnitude
 	private double W1_err;
-
 	// Magnitude in W2 band
 	private double W2mag;
-
 	// Error in W2 magnitude
 	private double W2_err;
-
 	// Magnitude in W3 band
 	private double W3mag;
-
 	// Error in W3 magnitude
 	private double W3_err;
-
 	// Magnitude in W4 band
 	private double W4mag;
-
 	// Error in W4 magnitude
 	private double W4_err;
-
 	// Magnitude in J band
 	private double Jmag;
-
 	// Error in J magnitude
 	private double J_err;
-
 	// Magnitude in H band
 	private double Hmag;
-
 	// Error in H magnitude
 	private double H_err;
-
 	// Magnitude in K band
 	private double Kmag;
-
 	// Error in K magnitude
 	private double K_err;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Most likely spectral type
 	private String spt;
-
 	private boolean toVega;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

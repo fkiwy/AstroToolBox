@@ -1,9 +1,9 @@
 package astro.tool.box.container;
 
+import astro.tool.box.enumeration.Alignment;
+
 import java.util.Comparator;
 import java.util.Objects;
-
-import astro.tool.box.enumeration.Alignment;
 
 public class CatalogElement {
 
@@ -34,7 +34,7 @@ public class CatalogElement {
 	}
 
 	public CatalogElement(String name, String value, Alignment alignment, Comparator<String> comparator,
-			String toolTip) {
+	                      String toolTip) {
 		this.name = name;
 		this.value = value;
 		this.alignment = alignment;
@@ -43,7 +43,7 @@ public class CatalogElement {
 	}
 
 	public CatalogElement(String name, String value, Alignment alignment, Comparator<String> comparator,
-			boolean onFocus) {
+	                      boolean onFocus) {
 		this.name = name;
 		this.value = value;
 		this.alignment = alignment;
@@ -52,7 +52,7 @@ public class CatalogElement {
 	}
 
 	public CatalogElement(String name, String value, Alignment alignment, Comparator<String> comparator,
-			boolean onFocus, boolean computed) {
+	                      boolean onFocus, boolean computed) {
 		this.name = name;
 		this.value = value;
 		this.alignment = alignment;
@@ -62,7 +62,7 @@ public class CatalogElement {
 	}
 
 	public CatalogElement(String name, String value, Alignment alignment, Comparator<String> comparator,
-			boolean onFocus, boolean computed, boolean faulty) {
+	                      boolean onFocus, boolean computed, boolean faulty) {
 		this.name = name;
 		this.value = value;
 		this.alignment = alignment;

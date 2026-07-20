@@ -1,12 +1,9 @@
 package astro.tool.box.container;
 
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static astro.tool.box.function.NumericFunctions.*;
 
 public class ClassificationResult {
 
@@ -47,8 +44,8 @@ public class ClassificationResult {
 	private final List<String> spectralTypes;
 
 	private ClassificationResult(String catalogName, double targetRa, double targetDec, double targetDistance,
-			double ra, double dec, String sourceId, double plx, double pmra, double pmdec, String magnitudes,
-			List<String> spectralTypes) {
+	                             double ra, double dec, String sourceId, double plx, double pmra, double pmdec, String magnitudes,
+	                             List<String> spectralTypes) {
 		this.catalogName = catalogName;
 		this.targetRa = targetRa;
 		this.targetDec = targetDec;

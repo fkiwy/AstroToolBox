@@ -1,48 +1,26 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.main.ToolboxHelper.USER_HOME;
-import static astro.tool.box.main.ToolboxHelper.html;
-import static astro.tool.box.main.ToolboxHelper.showConfirmDialog;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.LINE_SEP;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.Timer;
-import javax.swing.event.ChangeEvent;
-
 import astro.tool.box.component.TextPrompt;
 import astro.tool.box.container.CustomOverlay;
 import astro.tool.box.enumeration.JColor;
 import astro.tool.box.enumeration.Shape;
 import astro.tool.box.util.FileTypeFilter;
+
+import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
 
 public class CustomOverlaysTab implements Tab {
 
@@ -307,7 +285,7 @@ public class CustomOverlaysTab implements Tab {
 						boolean hasRadius = adqlQuery.contains(":radius:");
 						if (!hasRa || !hasDec || !hasRadius) {
 							errors.append(
-									"Your ADQL must contain the following 3 keywords, colons included! :ra:, :dec:, :radius: (e.g. CIRCLE('ICRS', :ra:, :dec:, :radius:)).")
+											"Your ADQL must contain the following 3 keywords, colons included! :ra:, :dec:, :radius: (e.g. CIRCLE('ICRS', :ra:, :dec:, :radius:)).")
 									.append(LINE_SEP);
 						}
 					}

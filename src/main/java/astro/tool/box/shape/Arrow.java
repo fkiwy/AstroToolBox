@@ -1,16 +1,8 @@
 package astro.tool.box.shape;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.atan;
-import static java.lang.Math.cos;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
+import java.awt.*;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import static java.lang.Math.*;
 
 public class Arrow implements Drawable {
 

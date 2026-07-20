@@ -1,37 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.NumericFunctions.roundTo2Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.PhotometricFunctions.getFlagLabels;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getIntegerComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Constants.LINE_BREAK;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.isVizierTAP;
-import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
@@ -40,109 +8,22 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.getFlagLabels;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.LINE_BREAK;
+import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+
 public class DesCatalogEntry implements CatalogEntry {
 
 	public static final String CATALOG_NAME = "DES DR2";
-
-	// Identifier based on IAU format
-	private String sourceId;
-
-	// Right ascension (J2000)
-	private double ra;
-
-	// Declination (J2000)
-	private double dec;
-
-	// Extended source flag for g-band (0=galaxy; 1=star)
-	private double g_ext;
-
-	// Extended source flag for r-band (0=galaxy; 1=star)
-	private double r_ext;
-
-	// Extended source flag for i-band (0=galaxy; 1=star)
-	private double i_ext;
-
-	// Extended source flag for z-band (0=galaxy; 1=star)
-	private double z_ext;
-
-	// Extended source flag for Y-band (0=galaxy; 1=star)
-	private double y_ext;
-
-	// Cautionary flag for g-band (<4=well behaved objects)
-	private int g_caut;
-
-	// Cautionary flag for r-band (<4=well behaved objects)
-	private int r_caut;
-
-	// Cautionary flag for i-band (<4=well behaved objects)
-	private int i_caut;
-
-	// Cautionary flag for z-band (<4=well behaved objects)
-	private int z_caut;
-
-	// Cautionary flag for y-band (<4=well behaved objects)
-	private int y_caut;
-
-	// Magnitude in g band
-	private double g_mag;
-
-	// Error in g magnitude
-	private double g_err;
-
-	// Magnitude in r band
-	private double r_mag;
-
-	// Error in r magnitude
-	private double r_err;
-
-	// Magnitude in i band
-	private double i_mag;
-
-	// Error in i magnitude
-	private double i_err;
-
-	// Magnitude in z band
-	private double z_mag;
-
-	// Error in z magnitude
-	private double z_err;
-
-	// Magnitude in Y band
-	private double y_mag;
-
-	// Error in Y band
-	private double y_err;
-
-	// Galactic longitude
-	private double glon;
-
-	// Galactic latitude
-	private double glat;
-
-	// Right ascension used for distance calculation
-	private double targetRa;
-
-	// Declination used for distance calculation
-	private double targetDec;
-
-	// Pixel RA position
-	private double pixelRa;
-
-	// Pixel declination position
-	private double pixelDec;
-
-	// Search radius
-	private double searchRadius;
-
-	// Most likely spectral type
-	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
-	private Map<String, Integer> columns;
-
-	private String[] values;
-
 	private static final Map<Integer, String> CAUTIONARY_FLAGS;
 
 	static {
@@ -157,6 +38,72 @@ public class DesCatalogEntry implements CatalogEntry {
 		CAUTIONARY_FLAGS.put(64, "A memory overflow occurred during deblending.");
 		CAUTIONARY_FLAGS.put(128, "A memory overflow occurred during extraction.");
 	}
+
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
+	// Identifier based on IAU format
+	private String sourceId;
+	// Right ascension (J2000)
+	private double ra;
+	// Declination (J2000)
+	private double dec;
+	// Extended source flag for g-band (0=galaxy; 1=star)
+	private double g_ext;
+	// Extended source flag for r-band (0=galaxy; 1=star)
+	private double r_ext;
+	// Extended source flag for i-band (0=galaxy; 1=star)
+	private double i_ext;
+	// Extended source flag for z-band (0=galaxy; 1=star)
+	private double z_ext;
+	// Extended source flag for Y-band (0=galaxy; 1=star)
+	private double y_ext;
+	// Cautionary flag for g-band (<4=well behaved objects)
+	private int g_caut;
+	// Cautionary flag for r-band (<4=well behaved objects)
+	private int r_caut;
+	// Cautionary flag for i-band (<4=well behaved objects)
+	private int i_caut;
+	// Cautionary flag for z-band (<4=well behaved objects)
+	private int z_caut;
+	// Cautionary flag for y-band (<4=well behaved objects)
+	private int y_caut;
+	// Magnitude in g band
+	private double g_mag;
+	// Error in g magnitude
+	private double g_err;
+	// Magnitude in r band
+	private double r_mag;
+	// Error in r magnitude
+	private double r_err;
+	// Magnitude in i band
+	private double i_mag;
+	// Error in i magnitude
+	private double i_err;
+	// Magnitude in z band
+	private double z_mag;
+	// Error in z magnitude
+	private double z_err;
+	// Magnitude in Y band
+	private double y_mag;
+	// Error in Y band
+	private double y_err;
+	// Galactic longitude
+	private double glon;
+	// Galactic latitude
+	private double glat;
+	// Right ascension used for distance calculation
+	private double targetRa;
+	// Declination used for distance calculation
+	private double targetDec;
+	// Pixel RA position
+	private double pixelRa;
+	// Pixel declination position
+	private double pixelDec;
+	// Search radius
+	private double searchRadius;
+	// Most likely spectral type
+	private String spt;
+	private Map<String, Integer> columns;
+	private String[] values;
 
 	public DesCatalogEntry() {
 	}

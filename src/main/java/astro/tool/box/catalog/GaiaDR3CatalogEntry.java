@@ -1,189 +1,122 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTangentialVelocityFromParallax;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalVelocity;
-import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallaxError;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.ESA_GAIA_TAP_URL;
-import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.isVizierTAP;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallaxError;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.ESA_GAIA_TAP_URL;
+import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+
 public class GaiaDR3CatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, WhiteDwarf, GaiaCmd {
 
 	public static final String CATALOG_NAME = "Gaia DR3";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique source identifier (unique within a particular Data Release)
 	private long sourceId;
-
 	// Right ascension
 	private double ra;
-
 	// Declination
 	private double dec;
-
 	// Parallax
 	private double plx;
-
 	// Standard error of parallax
 	private double plx_err;
-
 	// Proper motion in right ascension direction
 	private double pmra;
-
 	// Standard error of proper motion in right ascension direction
 	private double pmra_err;
-
 	// Proper motion in declination direction
 	private double pmdec;
-
 	// Standard error of proper motion in declination direction
 	private double pmdec_err;
-
 	// G-band mean magnitude
 	private double Gmag;
-
 	// Error in G-band mean magnitude
 	private double G_err;
-
 	// Integrated BP mean magnitude
 	private double BPmag;
-
 	// Error in BP mean magnitude
 	private double BP_err;
-
 	// Integrated RP mean magnitude
 	private double RPmag;
-
 	// Error in RP mean magnitude
 	private double RP_err;
-
 	// BP - RP colour
 	private double BP_RP;
-
 	// BP - G colour
 	private double BP_G;
-
 	// G - RP colour
 	private double G_RP;
-
 	// Renormalised unit weight error (RUWE)
 	private double ruwe;
-
 	// Radial velocity
 	private double radvel;
-
 	// Radial velocity error
 	private double radvel_err;
-
 	// Effective temperature [K]
 	private double teff_gspphot;
-
 	// Lower confidence level of effective temperature [K]
 	private double teff_gspphot_lower;
-
 	// Upper confidence level of effective temperature [K]
 	private double teff_gspphot_upper;
-
 	// Surface gravity
 	private double logg_gspphot;
-
 	// Lower confidence level of surface gravity
 	private double logg_gspphot_lower;
-
 	// Upper confidence level of surface gravity
 	private double logg_gspphot_upper;
-
 	// Iron abundance (Fe/H) [dex]
 	private double mh_gspphot;
-
 	// Lower confidence level of iron abundance (Fe/H) [dex]
 	private double mh_gspphot_lower;
-
 	// Upper confidence level of iron abundance (Fe/H) [dex]
 	private double mh_gspphot_upper;
-
 	// Distance [pc]
 	private double distance_gspphot;
-
 	// Lower confidence level of distance [pc]
 	private double distance_gspphot_lower;
-
 	// Upper confidence level of distance [pc]
 	private double distance_gspphot_upper;
-
 	// Photometric variability flag
 	private String phot_variable_flag;
-
 	// Probability of being a quasar
 	private double classprob_dsc_combmod_quasar;
-
 	// Probability of being a galaxy
 	private double classprob_dsc_combmod_galaxy;
-
 	// Probability of being a star
 	private double classprob_dsc_combmod_star;
-
 	// Extinction in G band
 	private double ag_gspphot;
-
 	// Reddening E(G_BP - G_RP)
 	private double ebpminrp_gspphot;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Total proper motion
 	private double tpm;
-
 	// Most likely spectral type
 	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

@@ -1,138 +1,84 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
-import static astro.tool.box.function.NumericFunctions.roundTo1Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo1DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo2Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
-import static astro.tool.box.util.Constants.WISE_1;
-import static astro.tool.box.util.Constants.WISE_2;
-import static astro.tool.box.util.ConversionFactors.ARCSEC_MAS;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.isVizierTAP;
-import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.ARCSEC_MAS;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+
 public class CatWiseCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog, Artifact, Extinction {
 
 	public static final String CATALOG_NAME = "CatWISE2020";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique WISE source designation
 	private String sourceId;
-
 	// Right ascension (J2000)
 	private double ra;
-
 	// Declination (J2000)
 	private double dec;
-
 	// Instrumental profile-fit photometry magnitude, band 1
 	private double W1mag;
-
 	// Instrumental profile-fit photometry flux uncertainty in mag units, band 1
 	private double W1_err;
-
 	// Instrumental profile-fit photometry magnitude, band 2
 	private double W2mag;
-
 	// Instrumental profile-fit photometry flux uncertainty in mag units, band 2
 	private double W2_err;
-
 	// Instrumental profile-fit photometry S/N ratio, band 1
 	private double W1_snr;
-
 	// Instrumental profile-fit photometry S/N ratio, band 2
 	private double W2_snr;
-
 	// Apparent motion in RA
 	private double pmra;
-
 	// Uncertainty in the RA motion estimate
 	private double pmra_err;
-
 	// Apparent motion in Dec
 	private double pmdec;
-
 	// Uncertainty in the Dec motion estimate
 	private double pmdec_err;
-
 	// Parallax from PM desc-asce elon
 	private double par_pm;
-
 	// One-sigma uncertainty in par_pm
 	private double par_pmsig;
-
 	// Parallax estimate from stationary solution
 	private double par_stat;
-
 	// One-sigma uncertainty in par_stat
 	private double par_sigma;
-
 	// Prioritized artifacts affecting the source in each band
 	private String cc_flags;
-
 	// UnWISE artifact bitmask contamination flags
 	private String ab_flags;
-
 	// Mean observation epoch
 	private double meanObsMJD;
-
 	// Right ascension at epoch MJD=56700.0 (2014.118) from pff model incl. motion
 	private double ra_pm;
-
 	// Declination at epoch MJD=56700.0 (2014.118) from pff model incl. motion
 	private double dec_pm;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Total proper motion
 	private double tpm;
-
 	// Most likely spectral type
 	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

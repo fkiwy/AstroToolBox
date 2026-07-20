@@ -1,19 +1,19 @@
 package astro.tool.box.function;
 
+import astro.tool.box.enumeration.StatType;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static astro.tool.box.function.NumericFunctions.roundTo2Dec;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import astro.tool.box.enumeration.StatType;
-
 public class StatisticFunctions {
+
+	private StatisticFunctions() {
+		/* This utility class should not be instantiated */
+	}
 
 	/**
 	 * Remove outliers from a list of values using sigma clipping
@@ -35,7 +35,7 @@ public class StatisticFunctions {
 	}
 
 	public static List<List<Double>> removeOutliers(List<List<Double>> table, int columnIndex, double numberOfStds,
-			StatType statType) {
+	                                                StatType statType) {
 		List<Double> values = table.stream().map(v -> v.get(columnIndex)).collect(Collectors.toList());
 		double avg;
 		if (StatType.MEAN.equals(statType)) {
@@ -204,12 +204,85 @@ public class StatisticFunctions {
 	 * @return the array
 	 */
 	public static double[] convertToArray(List<Double> values) {
-	    double[] array = new double[values.size()];
-	    int i = 0;
-	    for (Double value : values) {
-	        array[i++] = value;
-	    }
-	    return array;
+		double[] array = new double[values.size()];
+		int i = 0;
+		for (Double value : values) {
+			array[i++] = value;
+		}
+		return array;
+	}
+
+	public static double[] getMinMax(double[] data) {
+		return getMinMax(data, 0.1, 99.0);
+	}
+
+	public static double[] getMinMax(double[] data, double lo, double hi) {
+		double med = nanMedian(data);
+
+		double[] absDiff = new double[data.length];
+		for (int i = 0; i < data.length; i++) {
+			if (Double.isNaN(data[i])) {
+				absDiff[i] = Double.NaN;
+			} else {
+				absDiff[i] = Math.abs(data[i] - med);
+			}
+		}
+
+		double mad = nanMedian(absDiff);
+
+		double dev = nanPercentile(data, hi) - nanPercentile(data, lo);
+
+		double min = med - 2.0 * mad;
+		double max = med + 2.0 * dev;
+
+		return new double[]{min, max};
+	}
+
+	private static double nanMedian(double[] data) {
+		double[] values = Arrays.stream(data)
+				.filter(d -> !Double.isNaN(d))
+				.sorted()
+				.toArray();
+
+		if (values.length == 0) {
+			return Double.NaN;
+		}
+
+		int mid = values.length / 2;
+		if (values.length % 2 == 0) {
+			return (values[mid - 1] + values[mid]) / 2.0;
+		} else {
+			return values[mid];
+		}
+	}
+
+	private static double nanPercentile(double[] data, double percentile) {
+		double[] values = Arrays.stream(data)
+				.filter(d -> !Double.isNaN(d))
+				.sorted()
+				.toArray();
+
+		if (values.length == 0) {
+			return Double.NaN;
+		}
+
+		if (percentile <= 0) {
+			return values[0];
+		}
+		if (percentile >= 100) {
+			return values[values.length - 1];
+		}
+
+		double index = percentile / 100.0 * (values.length - 1);
+		int lower = (int) Math.floor(index);
+		int upper = (int) Math.ceil(index);
+
+		if (lower == upper) {
+			return values[lower];
+		}
+
+		double weight = index - lower;
+		return values[lower] * (1.0 - weight) + values[upper] * weight;
 	}
 
 }

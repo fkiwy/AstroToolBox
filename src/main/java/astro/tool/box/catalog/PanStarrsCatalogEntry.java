@@ -1,37 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.function.PhotometricFunctions.getFlagLabels;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getIntegerComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
-import static astro.tool.box.util.Constants.LINE_BREAK;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceHelper.createPanStarrsUrl;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -39,95 +7,22 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.getFlagLabels;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
+import static astro.tool.box.util.Constants.LINE_BREAK;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createPanStarrsUrl;
+
 public class PanStarrsCatalogEntry implements CatalogEntry {
 
 	public static final String CATALOG_NAME = "Pan-STARRS";
-
-	// Unique object identifier
-	private long objID;
-
-	// IAU name for this object
-	private String objName;
-
-	// Subset of objInfoFlag denoting whether this object is real or a likely false
-	// positive
-	private int qualityFlag;
-
-	// Right ascension from single epoch detections (weighted mean) in equinox J2000
-	// at the mean epoch given by epochMean
-	private double raMean;
-
-	// Declination from single epoch detections (weighted mean) in equinox J2000 at
-	// the mean epoch given by epochMean
-	private double decMean;
-
-	// Right ascension standard deviation from single epoch detections
-	private double raMeanErr;
-
-	// Declination standard deviation from single epoch detections
-	private double decMeanErr;
-
-	// Modified Julian Date of the mean epoch corresponding to raMean, decMean
-	// (equinox J2000)
-	private LocalDateTime epochMean;
-
-	// Number of single epoch detections in all filters
-	private int nDetections;
-
-	// Mean PSF magnitude from g filter detections
-	private double gMeanPSFMag;
-
-	// Error in mean PSF magnitude from g filter detections
-	private double gMeanPSFMagErr;
-
-	// Mean PSF magnitude from r filter detections
-	private double rMeanPSFMag;
-
-	// Error in mean PSF magnitude from r filter detections
-	private double rMeanPSFMagErr;
-
-	// Mean PSF magnitude from i filter detections
-	private double iMeanPSFMag;
-
-	// Error in mean PSF magnitude from i filter detections
-	private double iMeanPSFMagErr;
-
-	// Mean PSF magnitude from z filter detections
-	private double zMeanPSFMag;
-
-	// Error in mean PSF magnitude from z filter detections
-	private double zMeanPSFMagErr;
-
-	// Mean PSF magnitude from y filter detections
-	private double yMeanPSFMag;
-
-	// Error in mean PSF magnitude from y filter detections
-	private double yMeanPSFMagErr;
-
-	// Right ascension used for distance calculation
-	private double targetRa;
-
-	// Declination used for distance calculation
-	private double targetDec;
-
-	// Pixel RA position
-	private double pixelRa;
-
-	// Pixel declination position
-	private double pixelDec;
-
-	// Search radius
-	private double searchRadius;
-
-	// Most likely spectral type
-	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
-	private Map<String, Integer> columns;
-
-	private String[] values;
-
 	private static final Map<Integer, String> QUALITY_FLAGS;
 
 	static {
@@ -141,6 +36,64 @@ public class PanStarrsCatalogEntry implements CatalogEntry {
 		QUALITY_FLAGS.put(64, "suspect object in the stack (no more than 1 good measurement)");
 		QUALITY_FLAGS.put(128, "poor-quality stack object (no more than 1 good or suspect measurement)");
 	}
+
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
+	// Unique object identifier
+	private long objID;
+	// IAU name for this object
+	private String objName;
+	// Subset of objInfoFlag denoting whether this object is real or a likely false
+	// positive
+	private int qualityFlag;
+	// Right ascension from single epoch detections (weighted mean) in equinox J2000
+	// at the mean epoch given by epochMean
+	private double raMean;
+	// Declination from single epoch detections (weighted mean) in equinox J2000 at
+	// the mean epoch given by epochMean
+	private double decMean;
+	// Right ascension standard deviation from single epoch detections
+	private double raMeanErr;
+	// Declination standard deviation from single epoch detections
+	private double decMeanErr;
+	// Modified Julian Date of the mean epoch corresponding to raMean, decMean
+	// (equinox J2000)
+	private LocalDateTime epochMean;
+	// Number of single epoch detections in all filters
+	private int nDetections;
+	// Mean PSF magnitude from g filter detections
+	private double gMeanPSFMag;
+	// Error in mean PSF magnitude from g filter detections
+	private double gMeanPSFMagErr;
+	// Mean PSF magnitude from r filter detections
+	private double rMeanPSFMag;
+	// Error in mean PSF magnitude from r filter detections
+	private double rMeanPSFMagErr;
+	// Mean PSF magnitude from i filter detections
+	private double iMeanPSFMag;
+	// Error in mean PSF magnitude from i filter detections
+	private double iMeanPSFMagErr;
+	// Mean PSF magnitude from z filter detections
+	private double zMeanPSFMag;
+	// Error in mean PSF magnitude from z filter detections
+	private double zMeanPSFMagErr;
+	// Mean PSF magnitude from y filter detections
+	private double yMeanPSFMag;
+	// Error in mean PSF magnitude from y filter detections
+	private double yMeanPSFMagErr;
+	// Right ascension used for distance calculation
+	private double targetRa;
+	// Declination used for distance calculation
+	private double targetDec;
+	// Pixel RA position
+	private double pixelRa;
+	// Pixel declination position
+	private double pixelDec;
+	// Search radius
+	private double searchRadius;
+	// Most likely spectral type
+	private String spt;
+	private Map<String, Integer> columns;
+	private String[] values;
 
 	public PanStarrsCatalogEntry() {
 	}

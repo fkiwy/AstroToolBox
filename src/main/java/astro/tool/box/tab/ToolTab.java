@@ -1,26 +1,11 @@
 package astro.tool.box.tab;
 
+import astro.tool.box.tool.*;
+
+import javax.swing.*;
+import java.awt.*;
+
 import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-
-import java.awt.GridLayout;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-
-import astro.tool.box.tool.AbsoluteMagnitudeTool;
-import astro.tool.box.tool.AngularDistanceTool;
-import astro.tool.box.tool.CoordsConverterTool;
-import astro.tool.box.tool.DateConverterTool;
-import astro.tool.box.tool.LinearDistanceTool;
-import astro.tool.box.tool.ParallacticDistanceTool;
-import astro.tool.box.tool.PhotometricDistanceTool;
-import astro.tool.box.tool.ProperMotionsTool;
-import astro.tool.box.tool.TangentialVelocityTool;
-import astro.tool.box.tool.TotalProperMotionTool;
-import astro.tool.box.tool.TotalVelocityTool;
-import astro.tool.box.tool.UnitConverterTool;
 
 public class ToolTab implements Tab {
 

@@ -1,30 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.Constants.WISE_1;
-import static astro.tool.box.util.Constants.WISE_2;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -32,66 +7,56 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+
 public class UnWiseCatalogEntry implements CatalogEntry, Extinction {
 
 	public static final String CATALOG_NAME = "unWISE";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique object id
 	private String unwise_objid;
-
 	// W1 position, if available; otherwise W2 position
 	private double ra;
-
 	// W1 position, if available; otherwise W2 position
 	private double dec;
-
 	// W1 magnitude (Vega)
 	private double mag_w1_vg;
-
 	// W2 magnitude (Vega)
 	private double mag_w2_vg;
-
 	// W1-W2 color (Vega)
 	private double w1_w2_vg;
-
 	// quality factor for W1
 	private double qf_w1;
-
 	// quality factor for W2
 	private double qf_w2;
-
 	// unWISE Coadd flags at central pixel for W1
 	private int flags_unwise_w1;
-
 	// unWISE Coadd flags at central pixel for W2
 	private int flags_unwise_w2;
-
 	// Additional informational flags at central pixel for W1
 	private int flags_info_w1;
-
 	// Additional informational flags at central pixel for W2
 	private int flags_info_w2;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Most likely spectral type
 	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

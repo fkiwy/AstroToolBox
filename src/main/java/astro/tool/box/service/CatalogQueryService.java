@@ -1,19 +1,13 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
-import static astro.tool.box.util.ServiceHelper.readResponse;
-import static astro.tool.box.util.ServiceHelper.transformResponseToCatalogEntries;
+import astro.tool.box.catalog.*;
+import astro.tool.box.catalog.UkidssCatalogEntry.Survey;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.MocaCatalogEntry;
-import astro.tool.box.catalog.ProperMotionQuery;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry.Survey;
+import static astro.tool.box.util.ServiceHelper.*;
 
 public class CatalogQueryService {
 
@@ -50,7 +44,7 @@ public class CatalogQueryService {
 			}
 			return catalogEntries;
 		} else if (catalogEntry instanceof UhsCatalogEntry entry) {
-			return entry.filterCatalogEntries(); 
+			return entry.filterCatalogEntries();
 		}
 		return transformResponseToCatalogEntries(
 				readResponse(establishHttpConnection(catalogEntry.getMotionQueryUrl()), catalogEntry.getCatalogName()),

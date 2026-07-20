@@ -1,16 +1,14 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
-import static astro.tool.box.main.ToolboxHelper.bold;
-import static astro.tool.box.main.ToolboxHelper.createHyperlink;
-import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.ENCODING;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.main.ToolboxHelper;
+import astro.tool.box.service.SimbadQueryService;
 
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.TableColumn;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -21,22 +19,8 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.TableColumn;
-
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.main.ToolboxHelper;
-import astro.tool.box.service.SimbadQueryService;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.ENCODING;
 
 public class ReferencesPanel extends JPanel {
 
@@ -74,7 +58,7 @@ public class ReferencesPanel extends JPanel {
 				// Object types
 				List<String[]> results = simbadQueryService.getObjectTypes(mainIdentifier);
 
-				String[] columns = new String[] { "Object type", "Description" };
+				String[] columns = new String[]{"Object type", "Description"};
 				JScrollPane resultPanel = new JScrollPane(createResultTable(results, columns, 0));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object types")));
@@ -84,7 +68,7 @@ public class ReferencesPanel extends JPanel {
 				// Spectral types
 				results = simbadQueryService.getObjectSpectralTypes(mainIdentifier);
 
-				columns = new String[] { "Spectral type", "Bibcode" };
+				columns = new String[]{"Spectral type", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Spectral types")));
@@ -94,7 +78,7 @@ public class ReferencesPanel extends JPanel {
 				// Parallaxes
 				results = simbadQueryService.getObjectParallaxes(mainIdentifier);
 
-				columns = new String[] { "Parallax", "Error", "Bibcode" };
+				columns = new String[]{"Parallax", "Error", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Parallaxes")));
@@ -104,8 +88,8 @@ public class ReferencesPanel extends JPanel {
 				// Distances
 				results = simbadQueryService.getObjectDistances(mainIdentifier);
 
-				columns = new String[] { "Distance", "Quality", "Unit", "Minus error", "Plus error", "Method",
-						"Bibcode" };
+				columns = new String[]{"Distance", "Quality", "Unit", "Minus error", "Plus error", "Method",
+						"Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Distances")));
@@ -115,8 +99,8 @@ public class ReferencesPanel extends JPanel {
 				// Velocities
 				results = simbadQueryService.getObjectVelocities(mainIdentifier);
 
-				columns = new String[] { "Type", "Velocity", "Error", "Quality", "Number of meas.", "Nature of meas.",
-						"Quality", "Wavelength", "Resolution", "Obs. date", "Remarks", "Origin", "Bibcode" };
+				columns = new String[]{"Type", "Velocity", "Error", "Quality", "Number of meas.", "Nature of meas.",
+						"Quality", "Wavelength", "Resolution", "Obs. date", "Remarks", "Origin", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Velocities")));
@@ -126,7 +110,7 @@ public class ReferencesPanel extends JPanel {
 				// Proper motions
 				results = simbadQueryService.getObjectProperMotions(mainIdentifier);
 
-				columns = new String[] { "PM R.A.", "R.A. error", "PM DEC.", "DEC. error", "Coord. system", "Bibcode" };
+				columns = new String[]{"PM R.A.", "R.A. error", "PM DEC.", "DEC. error", "Coord. system", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Proper motions")));
@@ -136,7 +120,7 @@ public class ReferencesPanel extends JPanel {
 				// Fluxes
 				results = simbadQueryService.getObjectFluxes(mainIdentifier);
 
-				columns = new String[] { "Filter", "Flux", "Error", "Quality", "Description", "Unit", "Bibcode" };
+				columns = new String[]{"Filter", "Flux", "Error", "Quality", "Description", "Unit", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Fluxes")));
@@ -146,10 +130,10 @@ public class ReferencesPanel extends JPanel {
 				// Variabilities
 				results = simbadQueryService.getObjectVariabilities(mainIdentifier);
 
-				columns = new String[] { "Type", "Upper limit flag", "Max. brightness", "Uncertainty flag",
+				columns = new String[]{"Type", "Upper limit flag", "Max. brightness", "Uncertainty flag",
 						"Magnitude type", "Lower limit flag", "Min. brightness", "Uncertainty flag",
 						"Lower limit flag period", "Period", "Uncertainty flag period", "Epoch", "Uncertainty epoch",
-						"Raising time", "Uncertainty raising time", "Bibcode" };
+						"Raising time", "Uncertainty raising time", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Variabilities")));
@@ -159,8 +143,8 @@ public class ReferencesPanel extends JPanel {
 				// Rotations
 				results = simbadQueryService.getObjectRotations(mainIdentifier);
 
-				columns = new String[] { "Upper value Vsini", "Vsini", "Error", "Number of meas.", "Quality",
-						"Bibcode" };
+				columns = new String[]{"Upper value Vsini", "Vsini", "Error", "Number of meas.", "Quality",
+						"Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Rotations")));
@@ -170,8 +154,8 @@ public class ReferencesPanel extends JPanel {
 				// Metallicities
 				results = simbadQueryService.getObjectMetallicities(mainIdentifier);
 
-				columns = new String[] { "Teff", "Log g", "Fe H", "Fe H flag", "Comparison star",
-						"Star in the Cayrel et al.", "Bibcode" };
+				columns = new String[]{"Teff", "Log g", "Fe H", "Fe H flag", "Comparison star",
+						"Star in the Cayrel et al.", "Bibcode"};
 				resultPanel = new JScrollPane(createResultTable(results, columns, columns.length));
 				resultPanel.setPreferredSize(new Dimension(300, 150));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Metallicities")));
@@ -181,7 +165,7 @@ public class ReferencesPanel extends JPanel {
 				// Object identifiers
 				List<String[]> identifiers = simbadQueryService.getObjectIdentifiers(mainIdentifier);
 
-				columns = new String[] { "Identifier" };
+				columns = new String[]{"Identifier"};
 				resultPanel = new JScrollPane(createResultTable(identifiers, columns, 0));
 				resultPanel.setPreferredSize(new Dimension(300, 400));
 				resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Object identifiers")));
@@ -191,7 +175,7 @@ public class ReferencesPanel extends JPanel {
 				// Object references
 				results = simbadQueryService.getObjectReferences(mainIdentifier);
 
-				columns = new String[] { "Year", "Journal", "Volume", "Title", "Bibcode", "Ref" };
+				columns = new String[]{"Year", "Journal", "Volume", "Title", "Bibcode", "Ref"};
 				JComponent component = createResultTable(results, columns, columns.length - 1);
 				if (component instanceof JTable resultTable) {
 					resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -242,7 +226,7 @@ public class ReferencesPanel extends JPanel {
 			// Authors
 			List<String[]> results = simbadQueryService.getAuthors(bibRef);
 
-			String[] columns = new String[] { "Author" };
+			String[] columns = new String[]{"Author"};
 			JScrollPane resultPanel = new JScrollPane(createResultTable(results, columns, 0));
 			resultPanel.setPreferredSize(new Dimension(300, 200));
 			resultPanel.setBorder(ToolboxHelper.createEtchedBorder(bold("Authors")));
@@ -290,7 +274,7 @@ public class ReferencesPanel extends JPanel {
 		if (results.isEmpty()) {
 			return new JLabel("N/A");
 		}
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable resultTable = new JTable(results.toArray(rows), columns);
 		alignResultColumns(resultTable, results);
 		resizeColumnWidth(resultTable, 1000);

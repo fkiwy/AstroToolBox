@@ -1,83 +1,5 @@
 package astro.tool.box.main;
 
-import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
-import static astro.tool.box.function.NumericFunctions.PATTERN_6DEC_NZ;
-import static astro.tool.box.function.NumericFunctions.addPlusSign;
-import static astro.tool.box.function.NumericFunctions.roundDouble;
-import static astro.tool.box.function.NumericFunctions.roundTo1DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
-import static astro.tool.box.main.ToolboxHelper.PGM_NAME;
-import static astro.tool.box.main.ToolboxHelper.PGM_VERSION;
-import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
-import static astro.tool.box.main.ToolboxHelper.drawCenterShape;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.getEpoch;
-import static astro.tool.box.main.ToolboxHelper.getImageLabel;
-import static astro.tool.box.main.ToolboxHelper.getMeanEpoch;
-import static astro.tool.box.main.ToolboxHelper.getPs1Epochs;
-import static astro.tool.box.main.ToolboxHelper.getPs1FileNames;
-import static astro.tool.box.main.ToolboxHelper.lookupSpectralTypes;
-import static astro.tool.box.main.ToolboxHelper.retrieveDesiImage;
-import static astro.tool.box.main.ToolboxHelper.retrieveImage;
-import static astro.tool.box.main.ToolboxHelper.retrieveNearInfraredImages;
-import static astro.tool.box.main.ToolboxHelper.retrievePs1Image;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
-import static astro.tool.box.util.Constants.ALLWISE_EPOCH;
-import static astro.tool.box.util.Constants.DESI_FILTERS;
-import static astro.tool.box.util.Constants.DESI_LS_DR_LABEL;
-import static astro.tool.box.util.Constants.DESI_LS_EPOCH;
-import static astro.tool.box.util.Constants.SPITZER_EPOCH;
-import static astro.tool.box.util.Constants.UHS_LABEL;
-import static astro.tool.box.util.Constants.UHS_SURVEY_URL;
-import static astro.tool.box.util.Constants.UKIDSS_LABEL;
-import static astro.tool.box.util.Constants.UKIDSS_SURVEY_URL;
-import static astro.tool.box.util.Constants.VHS_LABEL;
-import static astro.tool.box.util.Constants.VHS_SURVEY_URL;
-
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfPageEventHelper;
-import com.itextpdf.text.pdf.PdfWriter;
-
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
@@ -92,6 +14,30 @@ import astro.tool.box.lookup.SpectralTypeLookupEntry;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.tab.ImageViewerTab;
+import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.pdf.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.util.Constants.*;
 
 public class ImageSeriesPdf {
 
@@ -547,7 +493,7 @@ public class ImageSeriesPdf {
 	}
 
 	private PdfPTable createCatalogEntriesTable(SpectralTypeLookupService spectralTypeLookupService,
-			List<CatalogEntry> catalogEntries, String header, String mainHeader) throws Exception {
+	                                            List<CatalogEntry> catalogEntries, String header, String mainHeader) throws Exception {
 		List<BatchResult> batchResults = new ArrayList<>();
 		for (CatalogEntry catalogEntry : catalogEntries) {
 			List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService,
@@ -583,7 +529,7 @@ public class ImageSeriesPdf {
 
 		int numberOfCols = 10;
 		PdfPTable table = new PdfPTable(numberOfCols);
-		table.setTotalWidth(new float[] { 50, 30, 40, 40, 80, 30, 35, 35, 100, 100 });
+		table.setTotalWidth(new float[]{50, 30, 40, 40, 80, 30, 35, 35, 100, 100});
 		table.setLockedWidth(true);
 		table.setSpacingBefore(10);
 		table.setKeepTogether(true);

@@ -1,25 +1,13 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.addPlusSign;
-import static astro.tool.box.main.ToolboxHelper.createEtchedBorder;
-import static astro.tool.box.main.ToolboxHelper.createHyperlink;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.main.ToolboxHelper.showInfoDialog;
-import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
-import static astro.tool.box.util.ExternalResources.getVizierUrl;
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import astro.tool.box.container.NumberPair;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Rectangle;
-import java.awt.Shape;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.Document;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,22 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
-import javax.swing.text.Document;
-
-import astro.tool.box.container.NumberPair;
+import static astro.tool.box.function.NumericFunctions.addPlusSign;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
+import static astro.tool.box.util.ExternalResources.getVizierUrl;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
 
 public class VizierCatalogsTab implements Tab {
 

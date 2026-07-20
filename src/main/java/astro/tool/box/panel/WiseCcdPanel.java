@@ -1,46 +1,10 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.function.NumericFunctions.PATTERN_2DEC_NZ;
-import static astro.tool.box.function.NumericFunctions.addPlusSign;
-import static astro.tool.box.function.NumericFunctions.roundDouble;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.main.ToolboxHelper.createPDF;
-import static astro.tool.box.main.ToolboxHelper.getInfoIcon;
-import static astro.tool.box.main.ToolboxHelper.retrieveCatalogEntry;
-import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItem;
-import org.jfree.chart.LegendItemCollection;
+import astro.tool.box.catalog.*;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.util.CSVParser;
+import org.jfree.chart.*;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.plot.XYPlot;
@@ -49,29 +13,24 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.util.CSVParser;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
+import java.util.List;
+
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.main.ToolboxHelper.*;
 
 public class WiseCcdPanel extends JPanel {
 
 	private static final String FONT_NAME = "Tahoma";
-
-	private final CatalogQueryService catalogQueryService;
-	private final JFrame baseFrame;
-
-	private final JTextField photSearchRadius;
-
-	private JFreeChart chart;
-
 	private static final List<Color> COLORS = new ArrayList();
+	private static final List<String> LABELS = new ArrayList();
 
 	static {
 		COLORS.add(new Color(68, 1, 84));
@@ -82,8 +41,6 @@ public class WiseCcdPanel extends JPanel {
 		COLORS.add(new Color(253, 231, 37));
 	}
 
-	private static final List<String> LABELS = new ArrayList();
-
 	static {
 		LABELS.add("Late M");
 		LABELS.add("Early L");
@@ -93,6 +50,10 @@ public class WiseCcdPanel extends JPanel {
 		LABELS.add("Early Y");
 	}
 
+	private final CatalogQueryService catalogQueryService;
+	private final JFrame baseFrame;
+	private final JTextField photSearchRadius;
+	private JFreeChart chart;
 	private StringBuilder seriesLabel;
 
 	public WiseCcdPanel(CatalogQueryService catalogQueryService, CatalogEntry catalogEntry, JFrame baseFrame) {

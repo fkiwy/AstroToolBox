@@ -1,15 +1,6 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.NumericFunctions.isDecimal;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.removeFirstAndLastCharacter;
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
-import static astro.tool.box.util.ServiceHelper.getSimbadBaseUrl;
-import static astro.tool.box.util.ServiceHelper.readResponse;
+import astro.tool.box.util.CSVParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +10,10 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import astro.tool.box.util.CSVParser;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
+import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.util.ServiceHelper.*;
 
 public class SimbadQueryService {
 
@@ -37,7 +31,7 @@ public class SimbadQueryService {
 			scanner.nextLine();
 			if (scanner.hasNext()) {
 				String identifiers = removeFirstAndLastCharacter(scanner.nextLine());
-				return Stream.of(identifiers.split("\\|")).sorted().map(identifier -> new String[] { identifier })
+				return Stream.of(identifiers.split("\\|")).sorted().map(identifier -> new String[]{identifier})
 						.collect(Collectors.toList());
 			}
 		}
@@ -94,7 +88,7 @@ public class SimbadQueryService {
 			scanner.nextLine();
 			while (scanner.hasNextLine()) {
 				String author = removeFirstAndLastCharacter(scanner.nextLine());
-				authors.add(new String[] { author });
+				authors.add(new String[]{author});
 			}
 		}
 		return authors;

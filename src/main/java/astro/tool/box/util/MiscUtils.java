@@ -1,11 +1,6 @@
 package astro.tool.box.util;
 
-import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-import static astro.tool.box.tab.SettingsTab.DEFAULT_TAP_PROVIDER;
-import static astro.tool.box.tab.SettingsTab.TAP_PROVIDER;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.util.Constants.ENCODING;
-import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
+import astro.tool.box.enumeration.TapProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,7 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import astro.tool.box.enumeration.TapProvider;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.ENCODING;
+import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
 
 public class MiscUtils {
 
@@ -22,7 +20,7 @@ public class MiscUtils {
 
 	static {
 		int j = 0;
-		String[] spts = new String[] { "O", "B", "A", "F", "G", "K", "M", "L", "T", "Y" };
+		String[] spts = new String[]{"O", "B", "A", "F", "G", "K", "M", "L", "T", "Y"};
 		for (String spt : spts) {
 			for (int i = 0; i < 10; i++) {
 				add(spt, i, j++);

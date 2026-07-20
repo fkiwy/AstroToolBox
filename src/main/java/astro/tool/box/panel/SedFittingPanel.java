@@ -51,26 +51,17 @@ import static java.lang.Math.abs;
 public class SedFittingPanel extends JPanel {
 
 	private static final String FONT_NAME = "Tahoma";
-
-	public enum TemplateType {
-		UCD, WD
-	}
-
 	private final List<SpectralTypeLookup> brownDwarfEntries;
 	private final CatalogQueryService catalogQueryService;
 	private final JFrame baseFrame;
 	private final List<WhiteDwarfEntry> whiteDwarfEntries;
 	private final CatalogEntry catalogEntry;
-
-	private TemplateType templateType = TemplateType.UCD;
-
 	private final JTextField photSearchRadius;
 	private final JComboBox spectralTypes;
 	private final JButton createButton;
 	private final JButton removeButton;
 	private final JCheckBox bestMatch;
 	private final JCheckBox overplotTemplates;
-
 	private final JCheckBox gaiaPhot;
 	private final JCheckBox panStarrsPhot;
 	private final JCheckBox noirlabPhot;
@@ -82,10 +73,10 @@ public class SedFittingPanel extends JPanel {
 	private final JCheckBox allwisePhot;
 	private final JCheckBox catwisePhot;
 	private final JCheckBox unwisePhot;
-
 	private final JRadioButton ucdTemplateButton;
 	private final JRadioButton wdTemplateButton;
-
+	private final double flux_error = Double.NaN;
+	private TemplateType templateType = TemplateType.UCD;
 	private JFreeChart chart;
 	private ChartPanel chartPanel;
 
@@ -94,12 +85,9 @@ public class SedFittingPanel extends JPanel {
 	private Map<Band, NumberPair> sedPhotometry;
 	private Map<Band, String> sedCatalogs;
 	private StringBuilder sedDataPoints;
-
-	private final double flux_error = Double.NaN;
 	private double medianPhotDist;
 	private double stdPhotDist;
 	private List<Band> photDistBands;
-
 	private boolean useGaiaPhotometry;
 
 	public SedFittingPanel(List<SpectralTypeLookup> brownDwarfEntries, CatalogQueryService catalogQueryService,
@@ -1143,6 +1131,10 @@ public class SedFittingPanel extends JPanel {
 				whiteDwarfEntries.add(new WhiteDwarfEntry(type, teff, logG, mass, age, bands));
 			}
 		}
+	}
+
+	public enum TemplateType {
+		UCD, WD
 	}
 
 }

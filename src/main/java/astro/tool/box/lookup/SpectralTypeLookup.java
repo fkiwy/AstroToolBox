@@ -1,8 +1,8 @@
 package astro.tool.box.lookup;
 
-import java.util.Map;
-
 import astro.tool.box.enumeration.Color;
+
+import java.util.Map;
 
 public interface SpectralTypeLookup {
 

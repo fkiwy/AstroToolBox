@@ -1,8 +1,8 @@
 package astro.tool.box.container;
 
-import java.awt.image.BufferedImage;
-
 import nom.tam.fits.Fits;
+
+import java.awt.image.BufferedImage;
 
 public class FlipbookComponent {
 

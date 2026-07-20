@@ -1,27 +1,16 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.convertToSexagesimalCoords;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
-
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.container.StringPair;
 import astro.tool.box.enumeration.CoordsSystem;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+import static astro.tool.box.function.AstrometricFunctions.convertToSexagesimalCoords;
+import static astro.tool.box.main.ToolboxHelper.*;
 
 public class CoordsConverterTool {
 
@@ -50,12 +39,12 @@ public class CoordsConverterTool {
 
 			mainPanel.add(new JLabel("Convert from: ", SwingConstants.RIGHT));
 			JComboBox systemsToConvertFrom = new JComboBox(
-					new CoordsSystem[] { CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL });
+					new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
 			mainPanel.add(systemsToConvertFrom);
 
 			mainPanel.add(new JLabel("To: ", SwingConstants.RIGHT));
 			JComboBox systemsToConvertTo = new JComboBox(
-					new CoordsSystem[] { CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL });
+					new CoordsSystem[]{CoordsSystem.DECIMAL, CoordsSystem.SEXAGESIMAL});
 			systemsToConvertTo.setSelectedItem(CoordsSystem.SEXAGESIMAL);
 			mainPanel.add(systemsToConvertTo);
 

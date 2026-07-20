@@ -1,26 +1,17 @@
 package astro.tool.box.tool;
 
+import astro.tool.box.enumeration.Unit;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
 import static astro.tool.box.function.AstrometricFunctions.convertToUnit;
 import static astro.tool.box.function.NumericFunctions.roundTo9DecNZ;
 import static astro.tool.box.function.NumericFunctions.toDouble;
 import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
 import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
-
-import astro.tool.box.enumeration.Unit;
 
 public class UnitConverterTool {
 
@@ -48,11 +39,11 @@ public class UnitConverterTool {
 			mainPanel.add(valueToConvert);
 
 			mainPanel.add(new JLabel("Convert from: ", SwingConstants.RIGHT));
-			JComboBox unitsToConvertFrom = new JComboBox(new Unit[] { Unit.DEGREE, Unit.ARCSEC, Unit.MAS });
+			JComboBox unitsToConvertFrom = new JComboBox(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
 			mainPanel.add(unitsToConvertFrom);
 
 			mainPanel.add(new JLabel("To: ", SwingConstants.RIGHT));
-			JComboBox unitsToConvertTo = new JComboBox(new Unit[] { Unit.DEGREE, Unit.ARCSEC, Unit.MAS });
+			JComboBox unitsToConvertTo = new JComboBox(new Unit[]{Unit.DEGREE, Unit.ARCSEC, Unit.MAS});
 			unitsToConvertTo.setSelectedItem(Unit.MAS);
 			mainPanel.add(unitsToConvertTo);
 

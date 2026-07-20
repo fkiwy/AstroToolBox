@@ -1,12 +1,7 @@
 package astro.tool.box.panel;
 
-import static astro.tool.box.main.ToolboxHelper.html;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -14,14 +9,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
+import static astro.tool.box.main.ToolboxHelper.html;
 
 public class DualListBox extends JPanel {
 
@@ -83,6 +71,144 @@ public class DualListBox extends JPanel {
 		globalLayout.add(new JScrollPane(destList));
 	}
 
+	public List getAllElements() {
+		return allElements;
+	}
+
+	public void setAllElements(List allElements) {
+		this.allElements = allElements;
+	}
+
+	public void clearSourceListModel() {
+		sourceListModel.clear();
+	}
+
+	public void clearDestinationListModel() {
+		destListModel.clear();
+	}
+
+	public void addSourceElements(ListModel newValue) {
+		fillListModel(sourceListModel, newValue);
+	}
+
+	public void addDestinationElements(ListModel newValue) {
+		fillListModel(destListModel, newValue);
+	}
+
+	private void fillListModel(CustomListModel model, ListModel newValues) {
+		int size = newValues.getSize();
+		for (int i = 0; i < size; i++) {
+			model.add(newValues.getElementAt(i));
+		}
+	}
+
+	public void addSourceElements(List newValue) {
+		fillListModel(sourceListModel, newValue);
+	}
+
+	public List getSourceElements() {
+		return sourceListModel.getModel();
+	}
+
+	public void setSourceElements(ListModel newValue) {
+		clearSourceListModel();
+		addSourceElements(newValue);
+	}
+
+	public void setSourceElements(List newValue) {
+		clearSourceListModel();
+		addSourceElements(newValue);
+	}
+
+	public void addDestinationElements(List newValue) {
+		fillListModel(destListModel, newValue);
+	}
+
+	public List getDestinationElements() {
+		return destListModel.getModel();
+	}
+
+	public void setDestinationElements(ListModel newValue) {
+		clearDestinationListModel();
+		addDestinationElements(newValue);
+	}
+
+	public void setDestinationElements(List newValue) {
+		clearDestinationListModel();
+		addDestinationElements(newValue);
+	}
+
+	private void fillListModel(CustomListModel model, List newValues) {
+		model.addAll(newValues);
+	}
+
+	public Iterator sourceIterator() {
+		return sourceListModel.iterator();
+	}
+
+	public Iterator destinationIterator() {
+		return destListModel.iterator();
+	}
+
+	public ListCellRenderer getSourceCellRenderer() {
+		return sourceList.getCellRenderer();
+	}
+
+	public void setSourceCellRenderer(ListCellRenderer newValue) {
+		sourceList.setCellRenderer(newValue);
+	}
+
+	public ListCellRenderer getDestinationCellRenderer() {
+		return destList.getCellRenderer();
+	}
+
+	public void setDestinationCellRenderer(ListCellRenderer newValue) {
+		destList.setCellRenderer(newValue);
+	}
+
+	public int getVisibleRowCount() {
+		return sourceList.getVisibleRowCount();
+	}
+
+	public void setVisibleRowCount(int newValue) {
+		sourceList.setVisibleRowCount(newValue);
+		destList.setVisibleRowCount(newValue);
+	}
+
+	public Color getSelectionBackground() {
+		return sourceList.getSelectionBackground();
+	}
+
+	public void setSelectionBackground(Color newValue) {
+		sourceList.setSelectionBackground(newValue);
+		destList.setSelectionBackground(newValue);
+	}
+
+	public Color getSelectionForeground() {
+		return sourceList.getSelectionForeground();
+	}
+
+	public void setSelectionForeground(Color newValue) {
+		sourceList.setSelectionForeground(newValue);
+		destList.setSelectionForeground(newValue);
+	}
+
+	private void clearSourceSelected() {
+		List selected = sourceList.getSelectedValuesList();
+		for (int i = selected.size() - 1; i >= 0; --i) {
+			sourceListModel.removeElement(selected.get(i));
+		}
+		sourceList.getSelectionModel().clearSelection();
+	}
+
+	private void clearDestinationSelected() {
+		List selected = destList.getSelectedValuesList();
+		for (int i = selected.size() - 1; i >= 0; --i) {
+			destListModel.removeElement(selected.get(i));
+		}
+		destList.getSelectionModel().clearSelection();
+	}
+
 	private class AddListener implements ActionListener {
 
 		@Override
@@ -128,144 +254,6 @@ public class DualListBox extends JPanel {
 			destListModel.setModel(allElements);
 			sourceListModel.clear();
 		}
-	}
-
-	public List getAllElements() {
-		return allElements;
-	}
-
-	public void setAllElements(List allElements) {
-		this.allElements = allElements;
-	}
-
-	public void clearSourceListModel() {
-		sourceListModel.clear();
-	}
-
-	public void clearDestinationListModel() {
-		destListModel.clear();
-	}
-
-	public void addSourceElements(ListModel newValue) {
-		fillListModel(sourceListModel, newValue);
-	}
-
-	public void setSourceElements(ListModel newValue) {
-		clearSourceListModel();
-		addSourceElements(newValue);
-	}
-
-	public void addDestinationElements(ListModel newValue) {
-		fillListModel(destListModel, newValue);
-	}
-
-	public void setDestinationElements(ListModel newValue) {
-		clearDestinationListModel();
-		addDestinationElements(newValue);
-	}
-
-	private void fillListModel(CustomListModel model, ListModel newValues) {
-		int size = newValues.getSize();
-		for (int i = 0; i < size; i++) {
-			model.add(newValues.getElementAt(i));
-		}
-	}
-
-	public void addSourceElements(List newValue) {
-		fillListModel(sourceListModel, newValue);
-	}
-
-	public void setSourceElements(List newValue) {
-		clearSourceListModel();
-		addSourceElements(newValue);
-	}
-
-	public List getSourceElements() {
-		return sourceListModel.getModel();
-	}
-
-	public void addDestinationElements(List newValue) {
-		fillListModel(destListModel, newValue);
-	}
-
-	public void setDestinationElements(List newValue) {
-		clearDestinationListModel();
-		addDestinationElements(newValue);
-	}
-
-	public List getDestinationElements() {
-		return destListModel.getModel();
-	}
-
-	private void fillListModel(CustomListModel model, List newValues) {
-		model.addAll(newValues);
-	}
-
-	public Iterator sourceIterator() {
-		return sourceListModel.iterator();
-	}
-
-	public Iterator destinationIterator() {
-		return destListModel.iterator();
-	}
-
-	public void setSourceCellRenderer(ListCellRenderer newValue) {
-		sourceList.setCellRenderer(newValue);
-	}
-
-	public ListCellRenderer getSourceCellRenderer() {
-		return sourceList.getCellRenderer();
-	}
-
-	public void setDestinationCellRenderer(ListCellRenderer newValue) {
-		destList.setCellRenderer(newValue);
-	}
-
-	public ListCellRenderer getDestinationCellRenderer() {
-		return destList.getCellRenderer();
-	}
-
-	public void setVisibleRowCount(int newValue) {
-		sourceList.setVisibleRowCount(newValue);
-		destList.setVisibleRowCount(newValue);
-	}
-
-	public int getVisibleRowCount() {
-		return sourceList.getVisibleRowCount();
-	}
-
-	public void setSelectionBackground(Color newValue) {
-		sourceList.setSelectionBackground(newValue);
-		destList.setSelectionBackground(newValue);
-	}
-
-	public Color getSelectionBackground() {
-		return sourceList.getSelectionBackground();
-	}
-
-	public void setSelectionForeground(Color newValue) {
-		sourceList.setSelectionForeground(newValue);
-		destList.setSelectionForeground(newValue);
-	}
-
-	public Color getSelectionForeground() {
-		return sourceList.getSelectionForeground();
-	}
-
-	private void clearSourceSelected() {
-		List selected = sourceList.getSelectedValuesList();
-		for (int i = selected.size() - 1; i >= 0; --i) {
-			sourceListModel.removeElement(selected.get(i));
-		}
-		sourceList.getSelectionModel().clearSelection();
-	}
-
-	private void clearDestinationSelected() {
-		List selected = destList.getSelectedValuesList();
-		for (int i = selected.size() - 1; i >= 0; --i) {
-			destListModel.removeElement(selected.get(i));
-		}
-		destList.getSelectionModel().clearSelection();
 	}
 
 }

@@ -1,166 +1,8 @@
 package astro.tool.box.main;
 
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDate;
-import static astro.tool.box.function.NumericFunctions.isNumeric;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.tab.SettingsTab.DISALBED_TOOL_TIPS;
-import static astro.tool.box.tab.SettingsTab.OBJECT_COLLECTION_PATH;
-import static astro.tool.box.tab.SettingsTab.SHOW_TOOL_TIPS;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.tab.SettingsTab.loadUserSettings;
-import static astro.tool.box.tab.SettingsTab.saveSettings;
-import static astro.tool.box.tab.SettingsTab.setUserSetting;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getIntegerComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.DESI_LS_DR_PARAM;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.PIXEL_SCALE_DECAM;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
-import static astro.tool.box.util.Constants.UHS_LABEL;
-import static astro.tool.box.util.Constants.UKIDSS_LABEL;
-import static astro.tool.box.util.ExternalResources.getTygoFormUrl;
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
-import static astro.tool.box.util.ServiceHelper.readResponse;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.WritableRaster;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.StringJoiner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.RowFilter;
-import javax.swing.SwingConstants;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import javax.swing.text.Document;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
-
-import nom.tam.fits.Fits;
-import nom.tam.fits.ImageData;
-import nom.tam.fits.ImageHDU;
-
-import org.jfree.chart.JFreeChart;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
-
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaDR3CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.MocaCatalogEntry;
-import astro.tool.box.catalog.NoirlabCatalogEntry;
-import astro.tool.box.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
+import astro.tool.box.catalog.*;
 import astro.tool.box.component.TranslucentLabel;
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.CollectedObject;
-import astro.tool.box.container.Couple;
-import astro.tool.box.container.MjdEpoch;
-import astro.tool.box.container.NirImage;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.Tiles;
+import astro.tool.box.container.*;
 import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.BasicDataType;
 import astro.tool.box.enumeration.JColor;
@@ -175,6 +17,62 @@ import astro.tool.box.shape.Circle;
 import astro.tool.box.shape.Drawable;
 import astro.tool.box.util.FileTypeFilter;
 import astro.tool.box.util.GifSequencer;
+import com.google.gson.*;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
+import nom.tam.fits.Fits;
+import nom.tam.fits.ImageData;
+import nom.tam.fits.ImageHDU;
+import org.jfree.chart.JFreeChart;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.table.*;
+import javax.swing.text.Document;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDate;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.function.StatisticFunctions.getMinMax;
+import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ExternalResources.getTygoFormUrl;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
 
 public class ToolboxHelper {
 
@@ -389,7 +287,7 @@ public class ToolboxHelper {
 	}
 
 	public static boolean isSameTarget(double targetRa, double targetDec, double size, double previousRa,
-			double previousDec, double previousSize) {
+	                                   double previousDec, double previousSize) {
 		return targetRa == previousRa && targetDec == previousDec && size == previousSize;
 	}
 
@@ -539,7 +437,7 @@ public class ToolboxHelper {
 	}
 
 	public static void addComparatorsToTableSorter(TableRowSorter<TableModel> sorter,
-			DefaultTableModel defaultTableModel, List<String[]> rows) {
+	                                               DefaultTableModel defaultTableModel, List<String[]> rows) {
 		sorter.setModel(defaultTableModel);
 		Map<Integer, BasicDataType> types = determineBasicTypes(rows);
 		for (int i = 0; i < types.size(); i++) {
@@ -655,7 +553,7 @@ public class ToolboxHelper {
 	}
 
 	public static List<String> lookupSpectralTypes(Map<astro.tool.box.enumeration.Color, Double> colors,
-			SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
+	                                               SpectralTypeLookupService spectralTypeLookupService, boolean includeColors) {
 		List<LookupResult> results = spectralTypeLookupService.lookup(colors);
 		List<String> spectralTypes = new ArrayList();
 		results.forEach(entry -> {
@@ -671,7 +569,7 @@ public class ToolboxHelper {
 	}
 
 	public static void collectObject(String objectType, CatalogEntry catalogEntry, JFrame baseFrame,
-			SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
+	                                 SpectralTypeLookupService spectralTypeLookupService, JTable collectionTable) {
 		// Collect data
 		List<String> spectralTypes = lookupSpectralTypes(catalogEntry.getColors(true), spectralTypeLookupService, true);
 		if (catalogEntry instanceof SimbadCatalogEntry simbadEntry) {
@@ -729,7 +627,7 @@ public class ToolboxHelper {
 
 		if (collectionTable != null) {
 			DefaultTableModel tableModel = (DefaultTableModel) collectionTable.getModel();
-			tableModel.addRow(concatArrays(new String[] { "" }, collectedObject.getColumnValues()));
+			tableModel.addRow(concatArrays(new String[]{""}, collectedObject.getColumnValues()));
 		}
 	}
 
@@ -780,7 +678,7 @@ public class ToolboxHelper {
 	}
 
 	public static String copyObjectInfo(CatalogEntry catalogEntry, List<LookupResult> mainSequenceResults,
-			List<LookupResult> brownDwarfsResults, DistanceLookupService distanceLookupService) {
+	                                    List<LookupResult> brownDwarfsResults, DistanceLookupService distanceLookupService) {
 		StringBuilder toCopy = new StringBuilder();
 		toCopy.append(catalogEntry.getEntryData());
 		toCopy.append(LINE_SEP).append(LINE_SEP).append("Spectral type estimates:");
@@ -810,7 +708,7 @@ public class ToolboxHelper {
 	}
 
 	public static void fillTygoForm(CatalogEntry catalogEntry, CatalogQueryService catalogQueryService,
-			JFrame baseFrame) {
+	                                JFrame baseFrame) {
 		StringBuilder params = new StringBuilder();
 		// Citizen scientist name
 		String userName = getUserSetting("userName", "");
@@ -868,7 +766,7 @@ public class ToolboxHelper {
 	}
 
 	public static CatalogEntry retrieveCatalogEntry(CatalogEntry catalogQuery, CatalogQueryService catalogQueryService,
-			JFrame baseFrame) {
+	                                                JFrame baseFrame) {
 		try {
 			List<CatalogEntry> catalogEntries = catalogQueryService.getCatalogEntriesByCoords(catalogQuery);
 			catalogEntries.forEach(catalogEntry -> {
@@ -1085,7 +983,7 @@ public class ToolboxHelper {
 	}
 
 	public static BufferedImage retrievePs1Image(String fileNames, double targetRa, double targetDec, int size,
-			boolean invert) {
+	                                             boolean invert) {
 		BufferedImage bi;
 		String imageUrl = "http://ps1images.stsci.edu/cgi-bin/fitscut.cgi?%s&ra=%f&dec=%f&size=%d&output_size=%d&autoscale=95.0&invert=%s"
 				.formatted(fileNames, targetRa, targetDec, size * 4, 256, invert);
@@ -1100,12 +998,12 @@ public class ToolboxHelper {
 	}
 
 	public static BufferedImage retrieveDesiImage(double targetRa, double targetDec, int size, String band,
-			boolean invert) {
+	                                              boolean invert) {
 		return retrieveDesiImage(targetRa, targetDec, size, band, invert, DESI_LS_DR_PARAM);
 	}
 
 	public static BufferedImage retrieveDesiImage(double targetRa, double targetDec, int size, String band,
-			boolean invert, String layer) {
+	                                              boolean invert, String layer) {
 		BufferedImage image;
 		if (band == null) {
 			band = "";
@@ -1131,10 +1029,10 @@ public class ToolboxHelper {
 	}
 
 	public static Map<String, NirImage> retrieveNearInfraredImages(double targetRa, double targetDec, double size,
-			String surveyUrl, String surveyLabel) throws Exception {
+	                                                               String surveyUrl, String surveyLabel) throws Exception {
 		String imageSize = roundTo2DecNZ(size / 60f);
 		List<NirImage> nirImages = new ArrayList();
-		String[] filterIds = new String[] { "2", "3", "4", "5" };
+		String[] filterIds = new String[]{"2", "3", "4", "5"};
 		for (String filterId : filterIds) {
 			String downloadUrl = surveyUrl.formatted(targetRa, targetDec, filterId, imageSize, imageSize);
 			String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
@@ -1288,12 +1186,9 @@ public class ToolboxHelper {
 			throw new IllegalArgumentException("FITS image contains no finite pixels");
 		}
 
-		java.util.Arrays.sort(pixels, 0, pixelCount);
-		double lowerBound = pixels[(int) Math.floor((pixelCount - 1) * 0.01)];
-		double upperBound = pixels[(int) Math.ceil((pixelCount - 1) * 0.9999)];
-		if (upperBound <= lowerBound) {
-			upperBound = lowerBound + 1;
-		}
+		double[] result = getMinMax(pixels);
+		double lowerBound = result[0];
+		double upperBound = result[1];
 
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		for (int y = 0; y < height; y++) {
@@ -1315,11 +1210,11 @@ public class ToolboxHelper {
 
 	private static String getBand(String filterId) {
 		return switch (filterId) {
-		case "2" -> "Y";
-		case "3" -> "J";
-		case "4" -> "H";
-		case "5" -> "K";
-		default -> "?";
+			case "2" -> "Y";
+			case "3" -> "J";
+			case "4" -> "H";
+			case "5" -> "K";
+			default -> "?";
 		};
 	}
 

@@ -1,13 +1,11 @@
 package astro.tool.box.container;
 
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
 
 public class CollectedObject {
 
@@ -45,7 +43,7 @@ public class CollectedObject {
 	private final String notes;
 
 	private CollectedObject(LocalDateTime discoveryDate, String objectType, String catalogName, double ra, double dec,
-			String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes, String notes) {
+	                        String sourceId, double plx, double pmra, double pmdec, List<String> spectralTypes, String notes) {
 		this.discoveryDate = discoveryDate;
 		this.objectType = objectType;
 		this.catalogName = catalogName;

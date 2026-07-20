@@ -1,21 +1,9 @@
 package astro.tool.box.util;
 
-import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
-import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-import static astro.tool.box.tab.SettingsTab.PROXY_ADDRESS;
-import static astro.tool.box.tab.SettingsTab.PROXY_PORT;
-import static astro.tool.box.tab.SettingsTab.USE_PROXY;
-import static astro.tool.box.tab.SettingsTab.USE_SIMBAD_MIRROR;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.util.Constants.IRSA_BASE_URL;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.PANSTARRS_BASE_URL;
-import static astro.tool.box.util.Constants.SDSS_BASE_URL;
-import static astro.tool.box.util.Constants.SIMBAD_BASE_URL;
-import static astro.tool.box.util.Constants.SIMBAD_MIRROR_URL;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
-import static astro.tool.box.util.Constants.SPLIT_CHAR_REPLACEMENT;
-import static astro.tool.box.util.Constants.VIZIER_TAP_URL;
+import astro.tool.box.catalog.CatalogEntry;
+import astro.tool.box.catalog.SdssCatalogEntry;
+import astro.tool.box.exception.ADQLException;
+import astro.tool.box.tab.AdqlQueryTab;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.exception.ADQLException;
-import astro.tool.box.tab.AdqlQueryTab;
+import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
+import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
+import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
 
 public class ServiceHelper {
 
@@ -52,7 +40,7 @@ public class ServiceHelper {
 	}
 
 	public static String createVizieRUrl(double degRA, double degDE, double degRadius, String tableName,
-			String raColName, String decColName) {
+	                                     String raColName, String decColName) {
 		return VIZIER_TAP_URL + "SELECT%20*%20FROM%20%22" + tableName + "%22%20WHERE%201=CONTAINS(POINT(%27ICRS%27,%20"
 				+ raColName + ",%20" + decColName + "),%20CIRCLE(%27ICRS%27,%20" + degRA + ",%20" + degDE + ",%20"
 				+ degRadius + "))";
