@@ -1,160 +1,101 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.SDSS_G;
-import static astro.tool.box.util.Constants.SDSS_I;
-import static astro.tool.box.util.Constants.SDSS_R;
-import static astro.tool.box.util.Constants.SDSS_U;
-import static astro.tool.box.util.Constants.SDSS_Z;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ABOffset;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.Band;
-import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
 
 public class GaiaWDCatalogEntry implements CatalogEntry, Extinction {
 
 	public static final String CATALOG_NAME = "Gaia EDR3 WD";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique source identifier (unique within a particular Data Release)
 	private long sourceId;
-
 	// WD name
 	private String wdId;
-
 	// Right ascension
 	private double ra;
-
 	// Declination
 	private double dec;
-
 	// Parallax
 	private double plx;
-
 	// Proper motion in right ascension direction
 	private double pmra;
-
 	// Proper motion in declination direction
 	private double pmdec;
-
 	// G-band mean magnitude
 	private double Gmag;
-
 	// Integrated BP mean magnitude
 	private double BPmag;
-
 	// Integrated RP mean magnitude
 	private double RPmag;
-
 	// SDSS object name if available
 	private String sdssId;
-
 	// Magnitude in u band
 	private double u_mag;
-
 	// Magnitude in g band
 	private double g_mag;
-
 	// Magnitude in r band
 	private double r_mag;
-
 	// Magnitude in i band
 	private double i_mag;
-
 	// Magnitude in z band
 	private double z_mag;
-
 	// The probability of being a white dwarf
 	private double pwd;
-
 	// Effective temperature from fitting the dereddened G, GBP and GRP absolute
 	// fluxes with pure-H model atmospheres
 	private double teffH;
-
 	// Surface gravity from fitting the dereddened G, GBP and GRP absolute fluxes
 	// with pure-H model atmospheres
 	private double loggH;
-
 	// Stellar mass resulting from the adopted mass-radius relation
 	private double massH;
-
 	// Effective temperature from fitting the dereddened G, GBP and GRP absolute
 	// fluxes with pure-He model atmospheres
 	private double teffHe;
-
 	// Surface gravity from fitting the dereddened G, GBP and GRP absolute fluxes
 	// with pure-He model atmospheres
 	private double loggHe;
-
 	// Stellar mass resulting from the adopted mass-radius relation
 	private double massHe;
-
 	// Uncertainty on teff H
 	private double teffH_err;
-
 	// Uncertainty on log g H
 	private double loggH_err;
-
 	// Uncertainty on mass H
 	private double massH_err;
-
 	// Uncertainty on teff He
 	private double teffHe_err;
-
 	// Uncertainty on log g He
 	private double loggHe_err;
-
 	// Uncertainty on mass He
 	private double massHe_err;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Most likely spectral type
 	private String spt;
-
 	private boolean toVega;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

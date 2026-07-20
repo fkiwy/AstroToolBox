@@ -1,41 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.NumericFunctions.roundTo1Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo1DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo6Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.SDSS_G;
-import static astro.tool.box.util.Constants.SDSS_I;
-import static astro.tool.box.util.Constants.SDSS_R;
-import static astro.tool.box.util.Constants.SDSS_U;
-import static astro.tool.box.util.Constants.SDSS_Z;
-import static astro.tool.box.util.Constants.TWO_MASS_H;
-import static astro.tool.box.util.Constants.TWO_MASS_J;
-import static astro.tool.box.util.Constants.TWO_MASS_K;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceHelper.createSimbadUrl;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.ABOffset;
@@ -43,110 +7,86 @@ import astro.tool.box.enumeration.Alignment;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.calculateAbsoluteMagnitudeFromParallax;
+import static astro.tool.box.util.Comparators.getDoubleComparator;
+import static astro.tool.box.util.Comparators.getStringComparator;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createSimbadUrl;
+
 public class SimbadCatalogEntry implements CatalogEntry, Extinction {
 
 	public static final String CATALOG_NAME = "SIMBAD";
-
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	// Unique source identifier
 	private String sourceId;
-
 	// Object type
 	private String objectType;
-
 	// Spectral type
 	private String spectralType;
-
 	// Right ascension
 	private double ra;
-
 	// Declination
 	private double dec;
-
 	// Parallax
 	private double plx;
-
 	// Parallax error
 	private double plx_err;
-
 	// Proper motion in right ascension direction
 	private double pmra;
-
 	// Proper motion in declination direction
 	private double pmdec;
-
 	// Radial velocity
 	private double radvel;
-
 	// Redshift
 	private double redshift;
-
 	// Radial velocity type
 	private String rvtype;
-
 	// Johnson U magnitude
 	private double Umag;
-
 	// Johnson B magnitude
 	private double Bmag;
-
 	// Johnson V magnitude
 	private double Vmag;
-
 	// Johnson-Cousins R magnitude
 	private double Rmag;
-
 	// Johnson-Cousins I magnitude
 	private double Imag;
-
 	// Gaia G magnitude
 	private double Gmag;
-
 	// 2MASS J magnitude
 	private double Jmag;
-
 	// 2MASS H magnitude
 	private double Hmag;
-
 	// 2MASS K magnitude
 	private double Kmag;
-
 	// SDSS u magnitude
 	private double u_mag;
-
 	// SDSS g magnitude
 	private double g_mag;
-
 	// SDSS r magnitude
 	private double r_mag;
-
 	// SDSS i magnitude
 	private double i_mag;
-
 	// SDSS z magnitude
 	private double z_mag;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Search radius
 	private double searchRadius;
-
 	// Most likely spectral type
 	private String spt;
-
 	private boolean toVega;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
 	private Map<String, Integer> columns;
 
 	private String[] values;

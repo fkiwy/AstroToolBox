@@ -1,14 +1,10 @@
 package astro.tool.box.container;
 
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.suppressZero;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static astro.tool.box.function.NumericFunctions.*;
 
 public class BatchResult {
 
@@ -72,8 +68,8 @@ public class BatchResult {
 	}
 
 	private BatchResult(int rowNumber, int objectNumber, String catalogName, double targetRa, double targetDec,
-			double targetDistance, double ra, double dec, String sourceId, double plx, double pmra, double pmdec,
-			String magnitudes, List<String> spectralTypes) {
+	                    double targetDistance, double ra, double dec, String sourceId, double plx, double pmra, double pmdec,
+	                    String magnitudes, List<String> spectralTypes) {
 		this.rowNumber = rowNumber;
 		this.objectNumber = objectNumber;
 		this.catalogName = catalogName;

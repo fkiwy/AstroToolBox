@@ -1,8 +1,8 @@
 package astro.tool.box.lookup;
 
-import java.util.Objects;
-
 import astro.tool.box.enumeration.Color;
+
+import java.util.Objects;
 
 public class LookupResult {
 
@@ -34,7 +34,7 @@ public class LookupResult {
 	private Double sptNum;
 
 	public LookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun,
-			double nearest, double gap) {
+	                    double nearest, double gap) {
 		this.colorKey = colorKey;
 		this.colorValue = colorValue;
 		this.spt = spt;

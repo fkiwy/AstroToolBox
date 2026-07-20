@@ -1,27 +1,13 @@
 package astro.tool.box.main;
 
-import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_HEIGHT;
-import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_WIDTH;
-import static astro.tool.box.main.ToolboxHelper.PGM_NAME;
-import static astro.tool.box.main.ToolboxHelper.PGM_VERSION;
-import static astro.tool.box.main.ToolboxHelper.RELEASES_URL;
-import static astro.tool.box.main.ToolboxHelper.createEtchedBorder;
-import static astro.tool.box.main.ToolboxHelper.createHyperlink;
-import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.tab.SettingsTab.DEST_TABS;
-import static astro.tool.box.tab.SettingsTab.SOURCE_TABS;
-import static astro.tool.box.tab.SettingsTab.USER_SETTINGS;
-import static astro.tool.box.tab.SettingsTab.getLookAndFeel;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.tab.SettingsTab.loadUserSettings;
-import static astro.tool.box.tab.SettingsTab.setLookAndFeel;
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
-import static astro.tool.box.util.ServiceHelper.readResponse;
-import static java.time.temporal.ChronoUnit.DAYS;
+import astro.tool.box.container.NumberTriplet;
+import astro.tool.box.container.Version;
+import astro.tool.box.enumeration.TabCode;
+import astro.tool.box.tab.*;
+import astro.tool.box.util.CSVParser;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -29,51 +15,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
-import javax.swing.SwingConstants;
-import javax.swing.ToolTipManager;
-
-import astro.tool.box.container.NumberTriplet;
-import astro.tool.box.container.Version;
-import astro.tool.box.enumeration.TabCode;
-import astro.tool.box.tab.AdqlQueryTab;
-import astro.tool.box.tab.BatchQueryTab;
-import astro.tool.box.tab.CatalogQueryTab;
-import astro.tool.box.tab.CustomOverlaysTab;
-import astro.tool.box.tab.FileBrowserTab;
-import astro.tool.box.tab.ImageSeriesTab;
-import astro.tool.box.tab.ImageViewerTab;
-import astro.tool.box.tab.LookupTab;
-import astro.tool.box.tab.ObjectCollectionTab;
-import astro.tool.box.tab.PhotometricClassifierTab;
-import astro.tool.box.tab.SettingsTab;
-import astro.tool.box.tab.Tab;
-import astro.tool.box.tab.ToolTab;
-import astro.tool.box.tab.VizierCatalogsTab;
-import astro.tool.box.util.CSVParser;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
+import static astro.tool.box.util.ServiceHelper.readResponse;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class Application {
 
-	private int defaultCloseOperation;
-
-	private JFrame baseFrame;
-
-	private JTabbedPane tabbedPane;
-
-	private CatalogQueryTab catalogQueryTab;
-
-	private ImageViewerTab imageViewerTab;
-
-	private static boolean versionLoaded;
-
 	public static List<NumberTriplet> CMD_DATA;
+	private static boolean versionLoaded;
+	private int defaultCloseOperation;
+	private JFrame baseFrame;
+	private JTabbedPane tabbedPane;
+	private CatalogQueryTab catalogQueryTab;
+	private ImageViewerTab imageViewerTab;
 
 	public Application() {
 		try {
@@ -217,7 +173,7 @@ public class Application {
 	}
 
 	private void showVersionPanel(JFrame baseFrame, String currentVersion, String latestVersion, long remainingDays,
-			String versionMessage) {
+	                              String versionMessage) {
 		JPanel container = new JPanel();
 		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 		container.add(new JLabel("There's a new " + PGM_NAME + " version available!"));

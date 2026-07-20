@@ -1,6 +1,6 @@
 package astro.tool.box.shape;
 
-import java.awt.Graphics;
+import java.awt.*;
 
 public interface Drawable {
 

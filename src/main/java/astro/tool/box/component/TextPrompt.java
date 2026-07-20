@@ -1,41 +1,30 @@
 package astro.tool.box.component;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 /**
  * The TextPrompt class will display a prompt over top of a text component when
  * the Document of the text field is empty. The Show property is used to
  * determine the visibility of the prompt.
- *
+ * <p>
  * The Font and foreground Color of the prompt will default to those properties
  * of the parent text component. You are free to change the properties after
  * class construction.
  */
 public final class TextPrompt extends JLabel implements FocusListener, DocumentListener {
 
-	public enum Show {
-		ALWAYS, FOCUS_GAINED, FOCUS_LOST
-	}
-
-	private JTextComponent component;
-
 	private final Show show;
-
+	private JTextComponent component;
 	private Document document;
-
 	private boolean showPromptOnce;
-
 	private int focusLost;
 
 	public TextPrompt(String text) {
@@ -111,6 +100,10 @@ public final class TextPrompt extends JLabel implements FocusListener, DocumentL
 
 	@Override
 	public void changedUpdate(DocumentEvent e) {
+	}
+
+	public enum Show {
+		ALWAYS, FOCUS_GAINED, FOCUS_LOST
 	}
 
 }

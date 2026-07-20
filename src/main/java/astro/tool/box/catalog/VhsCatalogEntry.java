@@ -1,33 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo6Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.MiscUtils.isVizierTAP;
-import static astro.tool.box.util.MiscUtils.replaceNanValuesByZero;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -35,82 +7,20 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
+import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.*;
+import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
+
 public class VhsCatalogEntry implements CatalogEntry {
 
 	public static final String CATALOG_NAME = "VHS DR5";
-
-	// Unique identifier of this merged detection as assigned by merge algorithm
-	private long sourceId;
-
-	// Celestial Right Ascension (J2000)
-	private double ra;
-
-	// Celestial Declination (J2000)
-	private double dec;
-
-	// Object type
-	private int objectType;
-
-	// Default point source Y aperture corrected mag
-	private double y_ap3;
-
-	// Error in default point/extended source Y mag
-	private double y_ap3_err;
-
-	// Default point source J aperture corrected mag
-	private double j_ap3;
-
-	// Error in default point/extended source J mag
-	private double j_ap3_err;
-
-	// Default point source H aperture corrected mag
-	private double h_ap3;
-
-	// Error in default point/extended source H mag
-	private double h_ap3_err;
-
-	// Default point source Ks aperture corrected mag
-	private double ks_ap3;
-
-	// Error in default point/extended source Ks mag
-	private double ks_ap3_err;
-
-	// Point source colour Y-J
-	private double y_j_pnt;
-
-	// Point source colour J-H
-	private double j_h_pnt;
-
-	// Point source colour H-Ks
-	private double h_ks_pnt;
-
-	// Point source colour J-Ks
-	private double j_ks_pnt;
-
-	// Right ascension used for distance calculation
-	private double targetRa;
-
-	// Declination used for distance calculation
-	private double targetDec;
-
-	// Pixel RA position
-	private double pixelRa;
-
-	// Pixel declination position
-	private double pixelDec;
-
-	// Search radius
-	private double searchRadius;
-
-	// Most likely spectral type
-	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
-	private Map<String, Integer> columns;
-
-	private String[] values;
-
 	private static final Map<Integer, String> TYPE_TABLE = new HashMap<>();
 
 	static {
@@ -121,6 +31,54 @@ public class VhsCatalogEntry implements CatalogEntry {
 		TYPE_TABLE.put(-3, "Probable galaxy");
 		TYPE_TABLE.put(-9, "Saturated");
 	}
+
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
+	// Unique identifier of this merged detection as assigned by merge algorithm
+	private long sourceId;
+	// Celestial Right Ascension (J2000)
+	private double ra;
+	// Celestial Declination (J2000)
+	private double dec;
+	// Object type
+	private int objectType;
+	// Default point source Y aperture corrected mag
+	private double y_ap3;
+	// Error in default point/extended source Y mag
+	private double y_ap3_err;
+	// Default point source J aperture corrected mag
+	private double j_ap3;
+	// Error in default point/extended source J mag
+	private double j_ap3_err;
+	// Default point source H aperture corrected mag
+	private double h_ap3;
+	// Error in default point/extended source H mag
+	private double h_ap3_err;
+	// Default point source Ks aperture corrected mag
+	private double ks_ap3;
+	// Error in default point/extended source Ks mag
+	private double ks_ap3_err;
+	// Point source colour Y-J
+	private double y_j_pnt;
+	// Point source colour J-H
+	private double j_h_pnt;
+	// Point source colour H-Ks
+	private double h_ks_pnt;
+	// Point source colour J-Ks
+	private double j_ks_pnt;
+	// Right ascension used for distance calculation
+	private double targetRa;
+	// Declination used for distance calculation
+	private double targetDec;
+	// Pixel RA position
+	private double pixelRa;
+	// Pixel declination position
+	private double pixelDec;
+	// Search radius
+	private double searchRadius;
+	// Most likely spectral type
+	private String spt;
+	private Map<String, Integer> columns;
+	private String[] values;
 
 	public VhsCatalogEntry() {
 	}

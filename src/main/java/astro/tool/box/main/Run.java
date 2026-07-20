@@ -1,10 +1,9 @@
 package astro.tool.box.main;
 
+import javax.swing.*;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.logging.LogManager;
-
-import javax.swing.WindowConstants;
 
 public class Run {
 

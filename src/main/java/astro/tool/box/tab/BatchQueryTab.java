@@ -1,65 +1,5 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.isNumeric;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
-import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
-import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
-import static astro.tool.box.main.ToolboxHelper.createResultTableSorter;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.lookupSpectralTypes;
-import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableModel;
-
 import astro.tool.box.catalog.AllWiseCatalogEntry;
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.catalog.SimbadCatalogEntry;
@@ -75,6 +15,27 @@ import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.service.SpectralTypeLookupService;
 import astro.tool.box.util.FileTypeFilter;
 
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.*;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
+
 public class BatchQueryTab implements Tab {
 
 	public static final String TAB_NAME = "Batch Search";
@@ -85,7 +46,8 @@ public class BatchQueryTab implements Tab {
 	private final JTabbedPane tabbedPane;
 	private final CatalogQueryTab catalogQueryTab;
 	private final ImageViewerTab imageViewerTab;
-
+	private final CatalogQueryService catalogQueryService;
+	private final Map<String, CatalogEntry> catalogInstances;
 	private JPanel bottomRow;
 	private JPanel centerPanel;
 	private JTextField echoField;
@@ -93,16 +55,10 @@ public class BatchQueryTab implements Tab {
 	private JComboBox lookupTables;
 	private JProgressBar progressBar;
 	private JButton cancelButton;
-
 	private File file;
 	private List<String> selectedCatalogs;
 	private List<BatchResult> batchResults;
-
-	private final CatalogQueryService catalogQueryService;
 	private SpectralTypeLookupService spectralTypeLookupService;
-
-	private final Map<String, CatalogEntry> catalogInstances;
-
 	private boolean isProcessing;
 	private boolean toCancel;
 
@@ -111,7 +67,7 @@ public class BatchQueryTab implements Tab {
 	private double searchRadius;
 
 	public BatchQueryTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab,
-			ImageViewerTab imageViewerTab) {
+	                     ImageViewerTab imageViewerTab) {
 		this.baseFrame = baseFrame;
 		this.tabbedPane = tabbedPane;
 		this.catalogQueryTab = catalogQueryTab;
@@ -181,7 +137,7 @@ public class BatchQueryTab implements Tab {
 
 			centerRow.add(new JLabel("Relations table:"));
 
-			lookupTables = new JComboBox(new LookupTable[] { LookupTable.MAIN_SEQUENCE, LookupTable.MLT_DWARFS });
+			lookupTables = new JComboBox(new LookupTable[]{LookupTable.MAIN_SEQUENCE, LookupTable.MLT_DWARFS});
 			centerRow.add(lookupTables);
 
 			JButton queryButton = new JButton("Start query");
@@ -348,31 +304,31 @@ public class BatchQueryTab implements Tab {
 
 		LookupTable selectedTable = (LookupTable) lookupTables.getSelectedItem();
 		switch (selectedTable) {
-		case MAIN_SEQUENCE -> {
-			try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
-				Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
-				List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-					return new SpectralTypeLookupEntry(line.split(",", -1));
-				}).collect(Collectors.toList());
-				spectralTypeLookupService = new SpectralTypeLookupService(entries);
-			} catch (IOException e) {
-				showExceptionDialog(baseFrame, e);
-				throw new RuntimeException(e);
+			case MAIN_SEQUENCE -> {
+				try (InputStream input = getClass().getResourceAsStream("/SpectralTypeLookupTable.csv")) {
+					Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
+					List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+						return new SpectralTypeLookupEntry(line.split(",", -1));
+					}).collect(Collectors.toList());
+					spectralTypeLookupService = new SpectralTypeLookupService(entries);
+				} catch (IOException e) {
+					showExceptionDialog(baseFrame, e);
+					throw new RuntimeException(e);
+				}
 			}
-		}
-		case MLT_DWARFS -> {
-			try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
-				Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
-				List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
-					return new BrownDwarfLookupEntry(line.split(",", -1));
-				}).collect(Collectors.toList());
-				spectralTypeLookupService = new SpectralTypeLookupService(entries);
-			} catch (IOException e) {
-				showExceptionDialog(baseFrame, e);
-				throw new RuntimeException(e);
+			case MLT_DWARFS -> {
+				try (InputStream input = getClass().getResourceAsStream("/BrownDwarfLookupTable.csv")) {
+					Stream<String> stream = new BufferedReader(new InputStreamReader(input)).lines();
+					List<SpectralTypeLookup> entries = stream.skip(1).map(line -> {
+						return new BrownDwarfLookupEntry(line.split(",", -1));
+					}).collect(Collectors.toList());
+					spectralTypeLookupService = new SpectralTypeLookupService(entries);
+				} catch (IOException e) {
+					showExceptionDialog(baseFrame, e);
+					throw new RuntimeException(e);
+				}
 			}
-		}
-		default -> throw new IllegalArgumentException("Unexpected value: " + selectedTable);
+			default -> throw new IllegalArgumentException("Unexpected value: " + selectedTable);
 		}
 
 		try (Scanner scanner = new Scanner(file)) {
@@ -505,7 +461,7 @@ public class BatchQueryTab implements Tab {
 		});
 		BatchResult result = batchResults.get(0);
 		Object[] columns = result.getColumnTitles();
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
 		JTable resultTable = new JTable(defaultTableModel);
 		alignResultColumns(resultTable);

@@ -1,32 +1,18 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateProperMotions;
-import static astro.tool.box.function.NumericFunctions.fromDoubleToInteger;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo6DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ConversionFactors.DEG_MAS;
-
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
-
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Unit;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+import static astro.tool.box.function.AstrometricFunctions.calculateProperMotions;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
 
 public class ProperMotionsTool {
 
@@ -58,7 +44,7 @@ public class ProperMotionsTool {
 			mainPanel.add(toCoordsField);
 
 			mainPanel.add(new JLabel("Elapsed time unit: ", SwingConstants.RIGHT));
-			JComboBox timeUnits = new JComboBox(new Unit[] { Unit.YEAR, Unit.DAY });
+			JComboBox timeUnits = new JComboBox(new Unit[]{Unit.YEAR, Unit.DAY});
 			mainPanel.add(timeUnits);
 
 			mainPanel.add(new JLabel("Elapsed time: ", SwingConstants.RIGHT));
@@ -66,7 +52,7 @@ public class ProperMotionsTool {
 			mainPanel.add(elapsedTimeField);
 
 			mainPanel.add(new JLabel("Proper motions unit: ", SwingConstants.RIGHT));
-			JComboBox resultUnits = new JComboBox(new Unit[] { Unit.ARCSEC, Unit.MAS });
+			JComboBox resultUnits = new JComboBox(new Unit[]{Unit.ARCSEC, Unit.MAS});
 			mainPanel.add(resultUnits);
 
 			mainPanel.add(new JLabel("Proper motions (pmra, pmdec): ", SwingConstants.RIGHT));

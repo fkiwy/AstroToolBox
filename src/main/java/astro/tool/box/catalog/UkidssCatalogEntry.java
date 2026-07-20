@@ -1,33 +1,5 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.isProperMotionSpurious;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo4DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.MiscUtils.addRow;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -35,114 +7,21 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.util.*;
+
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.NOIRLAB_TAP_URL;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.MiscUtils.addRow;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+
 public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperMotionCatalog {
 
 	public static final String CATALOG_NAME = "UKIDSS DR11";
-
-	// Unique identifier of this merged detection as assigned by merge algorithm
-	private long sourceId;
-
-	// Right ascension
-	private double ra;
-
-	// Error in right ascension
-	private double ra_err;
-
-	// Declination
-	private double dec;
-
-	// Error in declination
-	private double dec_err;
-
-	// Proper motion in right ascension direction
-	private double pmra;
-
-	// Standard error of proper motion in right ascension direction
-	private double pmra_err;
-
-	// Proper motion in declination direction
-	private double pmdec;
-
-	// Standard error of proper motion in declination direction
-	private double pmdec_err;
-
-	// Object type
-	private int objectType;
-
-	// Epoch of position measurement
-	private double epoch;
-
-	// Default point source Y aperture corrected mag
-	private double y_ap3;
-
-	// Error in default point/extended source Y mag
-	private double y_ap3_err;
-
-	// Default point source J aperture corrected mag
-	private double j_ap3;
-
-	// Error in default point/extended source J mag
-	private double j_ap3_err;
-
-	// Default point source H aperture corrected mag
-	private double h_ap3;
-
-	// Error in default point/extended source H mag
-	private double h_ap3_err;
-
-	// Default point source Ks aperture corrected mag
-	private double ks_ap3;
-
-	// Error in default point/extended source Ks mag
-	private double ks_ap3_err;
-
-	// Point source colour Y-J
-	private double y_j_pnt;
-
-	// Point source colour J-H
-	private double j_h_pnt;
-
-	// Point source colour H-Ks
-	private double h_ks_pnt;
-
-	// Right ascension used for distance calculation
-	private double targetRa;
-
-	// Declination used for distance calculation
-	private double targetDec;
-
-	// Pixel RA position
-	private double pixelRa;
-
-	// Pixel declination position
-	private double pixelDec;
-
-	// Search radius
-	private double searchRadius;
-
-	// Total proper motion
-	private double tpm;
-
-	// Most likely spectral type
-	private String spt;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
-	private Map<String, Integer> columns;
-
-	private String[] values;
-
-	private Survey survey;
-
-	public enum Survey {
-		LAS, GCS, GPS, DXS, UDS;
-
-		public static Survey[] motionSurveys() {
-			return new Survey[] { LAS, GCS, GPS };
-		}
-	}
-
 	private static final Map<Integer, String> TYPE_TABLE = new HashMap<>();
+	private static final Map<Survey, String> SURVEY_LABEL = new HashMap<>();
 
 	static {
 		TYPE_TABLE.put(1, "Galaxy");
@@ -153,8 +32,6 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 		TYPE_TABLE.put(-9, "Saturated");
 	}
 
-	private static final Map<Survey, String> SURVEY_LABEL = new HashMap<>();
-
 	static {
 		SURVEY_LABEL.put(Survey.LAS, "Large Area Survey");
 		SURVEY_LABEL.put(Survey.GCS, "Galactic Clusters Survey");
@@ -162,6 +39,69 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 		SURVEY_LABEL.put(Survey.DXS, "Deep Extragalactic Survey");
 		SURVEY_LABEL.put(Survey.UDS, "Ultra Deep Survey");
 	}
+
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
+	// Unique identifier of this merged detection as assigned by merge algorithm
+	private long sourceId;
+	// Right ascension
+	private double ra;
+	// Error in right ascension
+	private double ra_err;
+	// Declination
+	private double dec;
+	// Error in declination
+	private double dec_err;
+	// Proper motion in right ascension direction
+	private double pmra;
+	// Standard error of proper motion in right ascension direction
+	private double pmra_err;
+	// Proper motion in declination direction
+	private double pmdec;
+	// Standard error of proper motion in declination direction
+	private double pmdec_err;
+	// Object type
+	private int objectType;
+	// Epoch of position measurement
+	private double epoch;
+	// Default point source Y aperture corrected mag
+	private double y_ap3;
+	// Error in default point/extended source Y mag
+	private double y_ap3_err;
+	// Default point source J aperture corrected mag
+	private double j_ap3;
+	// Error in default point/extended source J mag
+	private double j_ap3_err;
+	// Default point source H aperture corrected mag
+	private double h_ap3;
+	// Error in default point/extended source H mag
+	private double h_ap3_err;
+	// Default point source Ks aperture corrected mag
+	private double ks_ap3;
+	// Error in default point/extended source Ks mag
+	private double ks_ap3_err;
+	// Point source colour Y-J
+	private double y_j_pnt;
+	// Point source colour J-H
+	private double j_h_pnt;
+	// Point source colour H-Ks
+	private double h_ks_pnt;
+	// Right ascension used for distance calculation
+	private double targetRa;
+	// Declination used for distance calculation
+	private double targetDec;
+	// Pixel RA position
+	private double pixelRa;
+	// Pixel declination position
+	private double pixelDec;
+	// Search radius
+	private double searchRadius;
+	// Total proper motion
+	private double tpm;
+	// Most likely spectral type
+	private String spt;
+	private Map<String, Integer> columns;
+	private String[] values;
+	private Survey survey;
 
 	public UkidssCatalogEntry() {
 	}
@@ -298,11 +238,11 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 	public String getCatalogQueryUrl() {
 		String catalogQuery = "";
 		switch (survey) {
-		case LAS -> catalogQuery = createCatalogQueryLAS();
-		case GCS -> catalogQuery = createCatalogQueryGCS();
-		case GPS -> catalogQuery = createCatalogQueryGPS();
-		case DXS -> catalogQuery = createCatalogQueryDXS();
-		case UDS -> catalogQuery = createCatalogQueryUDS();
+			case LAS -> catalogQuery = createCatalogQueryLAS();
+			case GCS -> catalogQuery = createCatalogQueryGCS();
+			case GPS -> catalogQuery = createCatalogQueryGPS();
+			case DXS -> catalogQuery = createCatalogQueryDXS();
+			case UDS -> catalogQuery = createCatalogQueryUDS();
 		}
 		return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
 	}
@@ -312,22 +252,22 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 		StringBuilder queryBuilder = new StringBuilder();
 		String catalogQuery = "";
 		switch (survey) {
-		case LAS -> {
-			catalogQuery = createCatalogQueryLAS();
-			addRow(queryBuilder, catalogQuery);
-			catalogQuery = createProperMotionQuery(queryBuilder);
-		}
-		case GCS -> {
-			catalogQuery = createCatalogQueryGCS();
-			addRow(queryBuilder, catalogQuery);
-			catalogQuery = createProperMotionQuery(queryBuilder);
-		}
-		case GPS -> {
-			catalogQuery = createCatalogQueryGPS();
-			addRow(queryBuilder, catalogQuery);
-			catalogQuery = createProperMotionQuery(queryBuilder);
-		}
-		default -> throw new IllegalArgumentException("Unexpected value: " + survey);
+			case LAS -> {
+				catalogQuery = createCatalogQueryLAS();
+				addRow(queryBuilder, catalogQuery);
+				catalogQuery = createProperMotionQuery(queryBuilder);
+			}
+			case GCS -> {
+				catalogQuery = createCatalogQueryGCS();
+				addRow(queryBuilder, catalogQuery);
+				catalogQuery = createProperMotionQuery(queryBuilder);
+			}
+			case GPS -> {
+				catalogQuery = createCatalogQueryGPS();
+				addRow(queryBuilder, catalogQuery);
+				catalogQuery = createProperMotionQuery(queryBuilder);
+			}
+			default -> throw new IllegalArgumentException("Unexpected value: " + survey);
 		}
 		return NOIRLAB_TAP_URL + encodeQuery(catalogQuery);
 	}
@@ -785,6 +725,14 @@ public class UkidssCatalogEntry implements CatalogEntry, ProperMotionQuery, Prop
 
 	public double getK_err() {
 		return ks_ap3_err;
+	}
+
+	public enum Survey {
+		LAS, GCS, GPS, DXS, UDS;
+
+		public static Survey[] motionSurveys() {
+			return new Survey[]{LAS, GCS, GPS};
+		}
 	}
 
 }

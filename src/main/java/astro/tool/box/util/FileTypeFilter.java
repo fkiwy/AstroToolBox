@@ -1,8 +1,7 @@
 package astro.tool.box.util;
 
-import java.io.File;
-
 import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 public class FileTypeFilter extends FileFilter {
 

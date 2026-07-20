@@ -1,29 +1,20 @@
 package astro.tool.box.tool;
 
-import static astro.tool.box.function.AstrometricFunctions.convertDateTimeToMJD;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
+import astro.tool.box.enumeration.DateSystem;
 
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
-
-import astro.tool.box.enumeration.DateSystem;
+import static astro.tool.box.function.AstrometricFunctions.convertDateTimeToMJD;
+import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
+import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
+import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
+import static astro.tool.box.util.Constants.DATE_TIME_FORMATTER;
 
 public class DateConverterTool {
 
@@ -58,12 +49,12 @@ public class DateConverterTool {
 
 			mainPanel.add(new JLabel("Convert from: ", SwingConstants.RIGHT));
 			JComboBox systemsToConvertFrom = new JComboBox(
-					new DateSystem[] { DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE });
+					new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
 			mainPanel.add(systemsToConvertFrom);
 
 			mainPanel.add(new JLabel("To: ", SwingConstants.RIGHT));
 			JComboBox systemsToConvertTo = new JComboBox(
-					new DateSystem[] { DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE });
+					new DateSystem[]{DateSystem.CALENDAR_DATE, DateSystem.MODIFIED_JULIAN_DATE});
 			systemsToConvertTo.setSelectedItem(DateSystem.MODIFIED_JULIAN_DATE);
 			mainPanel.add(systemsToConvertTo);
 

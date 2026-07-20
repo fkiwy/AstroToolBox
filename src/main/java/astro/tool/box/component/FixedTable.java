@@ -1,16 +1,12 @@
 package astro.tool.box.component;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class FixedTable implements ChangeListener, PropertyChangeListener {
 

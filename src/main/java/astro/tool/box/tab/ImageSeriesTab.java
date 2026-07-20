@@ -1,53 +1,23 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateProperMotions;
-import static astro.tool.box.function.AstrometricFunctions.calculateTotalProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.main.ToolboxHelper.addTextToImage;
-import static astro.tool.box.main.ToolboxHelper.alignCatalogColumns;
-import static astro.tool.box.main.ToolboxHelper.createCatalogTableSorter;
-import static astro.tool.box.main.ToolboxHelper.createHyperlink;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.getEpoch;
-import static astro.tool.box.main.ToolboxHelper.getImageLabel;
-import static astro.tool.box.main.ToolboxHelper.getMeanEpoch;
-import static astro.tool.box.main.ToolboxHelper.getPs1Epochs;
-import static astro.tool.box.main.ToolboxHelper.getPs1FileNames;
-import static astro.tool.box.main.ToolboxHelper.red;
-import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
-import static astro.tool.box.main.ToolboxHelper.retrieveDesiImage;
-import static astro.tool.box.main.ToolboxHelper.retrieveImage;
-import static astro.tool.box.main.ToolboxHelper.retrieveNearInfraredImages;
-import static astro.tool.box.main.ToolboxHelper.retrievePs1Image;
-import static astro.tool.box.main.ToolboxHelper.saveAnimatedGif;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
-import static astro.tool.box.util.Constants.ALLWISE_EPOCH;
-import static astro.tool.box.util.Constants.DESI_FILTERS;
-import static astro.tool.box.util.Constants.DESI_LS_DR_LABEL;
-import static astro.tool.box.util.Constants.DESI_LS_DR_PARAM;
-import static astro.tool.box.util.Constants.DESI_LS_EPOCH;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.SPITZER_EPOCH;
-import static astro.tool.box.util.Constants.UHS_LABEL;
-import static astro.tool.box.util.Constants.UHS_SURVEY_URL;
-import static astro.tool.box.util.Constants.UKIDSS_LABEL;
-import static astro.tool.box.util.Constants.UKIDSS_SURVEY_URL;
-import static astro.tool.box.util.Constants.VHS_LABEL;
-import static astro.tool.box.util.Constants.VHS_SURVEY_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_MAS;
-import static astro.tool.box.util.ExternalResources.getLegacySingleExposuresUrl;
-import static astro.tool.box.util.ExternalResources.getPanstarrsUrl;
-import static java.lang.Math.sqrt;
+import astro.tool.box.catalog.*;
+import astro.tool.box.container.Couple;
+import astro.tool.box.container.FlipbookComponent;
+import astro.tool.box.container.NirImage;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.ImageType;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.util.Counter;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -61,53 +31,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.Timer;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
-
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaDR3CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.MocaCatalogEntry;
-import astro.tool.box.catalog.NoirlabCatalogEntry;
-import astro.tool.box.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.catalog.ProperMotionCatalog;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.container.Couple;
-import astro.tool.box.container.FlipbookComponent;
-import astro.tool.box.container.NirImage;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ImageType;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.util.Counter;
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
+import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.tab.SettingsTab.getSelectedCatalogs;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
+import static astro.tool.box.util.ExternalResources.getLegacySingleExposuresUrl;
+import static astro.tool.box.util.ExternalResources.getPanstarrsUrl;
+import static java.lang.Math.sqrt;
 
 public class ImageSeriesTab implements Tab {
 
@@ -311,7 +244,7 @@ public class ImageSeriesTab implements Tab {
 								for (CatalogEntry catalogEntry : catalogInstances.values()) {
 									if (selectedCatalogs.contains(catalogEntry.getCatalogName())) {
 										double searchRadius = fieldOfView * sqrt(2) / 2; // diagonal of the fov divided
-																							// by 2
+										// by 2
 										catalogEntry.setRa(targetRa);
 										catalogEntry.setDec(targetDec);
 										catalogEntry.setSearchRadius(searchRadius);
@@ -333,13 +266,13 @@ public class ImageSeriesTab implements Tab {
 									double pmRa = properMotions.x();
 									double pmDec = properMotions.y();
 									double tpm = calculateTotalProperMotion(pmRa, pmDec);
-									resultRows.add(new String[] {
+									resultRows.add(new String[]{
 											"Calculated from " + TwoMassCatalogEntry.CATALOG_NAME + " and "
 													+ AllWiseCatalogEntry.CATALOG_NAME + " coordinates",
 											twoMassEntry.getSourceId(), roundTo3DecLZ(twoMassEntry.getTargetDistance()),
 											allWiseEntry.getSourceId(), roundTo3DecLZ(allWiseEntry.getTargetDistance()),
 											roundTo3DecLZ(tpm), roundTo3DecLZ(pmRa), roundTo3DecLZ(pmDec), "N/A",
-											"N/A" });
+											"N/A"});
 								}
 								if (sdssEntry != null && panStarrsEntry != null) {
 									long days = Duration.between(sdssEntry.getObsDate(), panStarrsEntry.getObsDate())
@@ -351,13 +284,13 @@ public class ImageSeriesTab implements Tab {
 									double pmRa = properMotions.x();
 									double pmDec = properMotions.y();
 									double tpm = calculateTotalProperMotion(pmRa, pmDec);
-									resultRows.add(new String[] {
+									resultRows.add(new String[]{
 											"Calculated from " + SdssCatalogEntry.CATALOG_NAME + " and "
 													+ PanStarrsCatalogEntry.CATALOG_NAME + " coordinates",
 											sdssEntry.getSourceId(), roundTo3DecLZ(sdssEntry.getTargetDistance()),
 											panStarrsEntry.getSourceId(),
 											roundTo3DecLZ(panStarrsEntry.getTargetDistance()), roundTo3DecLZ(tpm),
-											roundTo3DecLZ(pmRa), roundTo3DecLZ(pmDec), "N/A", "N/A" });
+											roundTo3DecLZ(pmRa), roundTo3DecLZ(pmDec), "N/A", "N/A"});
 								}
 								addProperMotionEntry(gaiaDR3Entry, resultRows);
 								addProperMotionEntry(catWiseEntry, resultRows);
@@ -367,11 +300,11 @@ public class ImageSeriesTab implements Tab {
 								}
 								addProperMotionEntry(ukidssEntry, resultRows);
 								if (!resultRows.isEmpty()) {
-									String[] columns = new String[] { "Proper motion origin", "source 1",
+									String[] columns = new String[]{"Proper motion origin", "source 1",
 											"dist. from target (arcsec)", "source 2", "dist. from target (arcsec)",
 											"tpm (mas/yr)", "pmRA (mas/yr)", "pmDE (mas/yr)", "pmRA error",
-											"pmDE error" };
-									Object[][] rows = new Object[][] {};
+											"pmDE error"};
+									Object[][] rows = new Object[][]{};
 									JTable resultTable = new JTable(resultRows.toArray(rows), columns);
 									resultTable.setAutoCreateRowSorter(true);
 									resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -517,9 +450,9 @@ public class ImageSeriesTab implements Tab {
 			double pmDec = entry.getPmdec();
 			double pmRaErr = entry.getPmraErr();
 			double pmDecErr = entry.getPmdecErr();
-			resultRows.add(new String[] { entry.getCatalogName(), entry.getSourceId(),
+			resultRows.add(new String[]{entry.getCatalogName(), entry.getSourceId(),
 					roundTo3DecLZ(entry.getTargetDistance()), "N/A", "N/A", roundTo3DecLZ(tpm), roundTo3DecLZ(pmRa),
-					roundTo3DecLZ(pmDec), roundTo3DecLZ(pmRaErr), roundTo3DecLZ(pmDecErr) });
+					roundTo3DecLZ(pmDec), roundTo3DecLZ(pmRaErr), roundTo3DecLZ(pmDecErr)});
 		}
 	}
 
@@ -1047,14 +980,14 @@ public class ImageSeriesTab implements Tab {
 			CatalogEntry nearestEntry = catalogEntries.get(0);
 			if (nearestEntry.getTargetDistance() < 10) {
 				switch (nearestEntry.getCatalogName()) {
-				case TwoMassCatalogEntry.CATALOG_NAME -> twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
-				case AllWiseCatalogEntry.CATALOG_NAME -> allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
-				case SdssCatalogEntry.CATALOG_NAME -> sdssEntry = (SdssCatalogEntry) nearestEntry;
-				case PanStarrsCatalogEntry.CATALOG_NAME -> panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
-				case GaiaDR3CatalogEntry.CATALOG_NAME -> gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
-				case CatWiseCatalogEntry.CATALOG_NAME -> catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
-				case NoirlabCatalogEntry.CATALOG_NAME -> noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
-				case UkidssCatalogEntry.CATALOG_NAME -> ukidssEntry = (UkidssCatalogEntry) nearestEntry;
+					case TwoMassCatalogEntry.CATALOG_NAME -> twoMassEntry = (TwoMassCatalogEntry) nearestEntry;
+					case AllWiseCatalogEntry.CATALOG_NAME -> allWiseEntry = (AllWiseCatalogEntry) nearestEntry;
+					case SdssCatalogEntry.CATALOG_NAME -> sdssEntry = (SdssCatalogEntry) nearestEntry;
+					case PanStarrsCatalogEntry.CATALOG_NAME -> panStarrsEntry = (PanStarrsCatalogEntry) nearestEntry;
+					case GaiaDR3CatalogEntry.CATALOG_NAME -> gaiaDR3Entry = (GaiaDR3CatalogEntry) nearestEntry;
+					case CatWiseCatalogEntry.CATALOG_NAME -> catWiseEntry = (CatWiseCatalogEntry) nearestEntry;
+					case NoirlabCatalogEntry.CATALOG_NAME -> noirlabEntry = (NoirlabCatalogEntry) nearestEntry;
+					case UkidssCatalogEntry.CATALOG_NAME -> ukidssEntry = (UkidssCatalogEntry) nearestEntry;
 				}
 			}
 			return catalogEntries;
@@ -1069,7 +1002,7 @@ public class ImageSeriesTab implements Tab {
 		});
 		CatalogEntry catalogEntry = catalogEntries.get(0);
 		Object[] columns = catalogEntry.getColumnTitles();
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(list.toArray(rows), columns);
 		JTable catalogTable = new JTable(defaultTableModel);
 		alignCatalogColumns(catalogTable, catalogEntry);
@@ -1107,23 +1040,23 @@ public class ImageSeriesTab implements Tab {
 
 	private void activateSelectedCatalogOverlay(ImageViewerTab imageViewerTab, CatalogEntry selected) {
 		switch (selected.getCatalogName()) {
-		case SimbadCatalogEntry.CATALOG_NAME -> imageViewerTab.getSimbadOverlay().setSelected(true);
-		case AllWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getAllWiseOverlay().setSelected(true);
-		case CatWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getCatWiseOverlay().setSelected(true);
-		case UnWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getUnWiseOverlay().setSelected(true);
-		case GaiaDR2CatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaOverlay().setSelected(true);
-		case GaiaDR3CatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaDR3Overlay().setSelected(true);
-		case NoirlabCatalogEntry.CATALOG_NAME -> imageViewerTab.getNoirlabOverlay().setSelected(true);
-		case PanStarrsCatalogEntry.CATALOG_NAME -> imageViewerTab.getPanStarrsOverlay().setSelected(true);
-		case SdssCatalogEntry.CATALOG_NAME -> imageViewerTab.getSdssOverlay().setSelected(true);
-		case VhsCatalogEntry.CATALOG_NAME -> imageViewerTab.getVhsOverlay().setSelected(true);
-		case UhsCatalogEntry.CATALOG_NAME -> imageViewerTab.getUhsOverlay().setSelected(true);
-		case UkidssCatalogEntry.CATALOG_NAME -> imageViewerTab.getUkidssOverlay().setSelected(true);
-		case TwoMassCatalogEntry.CATALOG_NAME -> imageViewerTab.getTwoMassOverlay().setSelected(true);
-		case TessCatalogEntry.CATALOG_NAME -> imageViewerTab.getTessOverlay().setSelected(true);
-		case DesCatalogEntry.CATALOG_NAME -> imageViewerTab.getDesOverlay().setSelected(true);
-		case GaiaWDCatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaWDOverlay().setSelected(true);
-		case MocaCatalogEntry.CATALOG_NAME -> imageViewerTab.getMocaOverlay().setSelected(true);
+			case SimbadCatalogEntry.CATALOG_NAME -> imageViewerTab.getSimbadOverlay().setSelected(true);
+			case AllWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getAllWiseOverlay().setSelected(true);
+			case CatWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getCatWiseOverlay().setSelected(true);
+			case UnWiseCatalogEntry.CATALOG_NAME -> imageViewerTab.getUnWiseOverlay().setSelected(true);
+			case GaiaDR2CatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaOverlay().setSelected(true);
+			case GaiaDR3CatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaDR3Overlay().setSelected(true);
+			case NoirlabCatalogEntry.CATALOG_NAME -> imageViewerTab.getNoirlabOverlay().setSelected(true);
+			case PanStarrsCatalogEntry.CATALOG_NAME -> imageViewerTab.getPanStarrsOverlay().setSelected(true);
+			case SdssCatalogEntry.CATALOG_NAME -> imageViewerTab.getSdssOverlay().setSelected(true);
+			case VhsCatalogEntry.CATALOG_NAME -> imageViewerTab.getVhsOverlay().setSelected(true);
+			case UhsCatalogEntry.CATALOG_NAME -> imageViewerTab.getUhsOverlay().setSelected(true);
+			case UkidssCatalogEntry.CATALOG_NAME -> imageViewerTab.getUkidssOverlay().setSelected(true);
+			case TwoMassCatalogEntry.CATALOG_NAME -> imageViewerTab.getTwoMassOverlay().setSelected(true);
+			case TessCatalogEntry.CATALOG_NAME -> imageViewerTab.getTessOverlay().setSelected(true);
+			case DesCatalogEntry.CATALOG_NAME -> imageViewerTab.getDesOverlay().setSelected(true);
+			case GaiaWDCatalogEntry.CATALOG_NAME -> imageViewerTab.getGaiaWDOverlay().setSelected(true);
+			case MocaCatalogEntry.CATALOG_NAME -> imageViewerTab.getMocaOverlay().setSelected(true);
 		}
 	}
 

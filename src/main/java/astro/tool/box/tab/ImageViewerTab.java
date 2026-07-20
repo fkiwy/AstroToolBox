@@ -114,6 +114,17 @@ public class ImageViewerTab implements Tab {
 	private final DustExtinctionService dustExtinctionService;
 	private final List<SpectralTypeLookup> brownDwarfLookupEntries;
 	private final Overlays overlays;
+	private final Map<String, ImageContainer> imagesW1 = new HashMap();
+	private final Map<String, ImageContainer> imagesW2 = new HashMap();
+	private final Map<String, ImageContainer> imagesW1All = new HashMap();
+	private final Map<String, ImageContainer> imagesW2All = new HashMap();
+	private final Map<String, ImageContainer> imagesW1Ends = new HashMap();
+	private final Map<String, ImageContainer> imagesW2Ends = new HashMap();
+	private final List<NumberPair> crosshairs = new ArrayList();
+	private final List<Fits> band1Images = new ArrayList();
+	private final List<Fits> band2Images = new ArrayList();
+	private final List<FlipbookComponent> flipbook = new ArrayList();
+	private final boolean nearestBywSubjects;
 	private List<CatalogEntry> simbadEntries;
 	private List<CatalogEntry> allWiseEntries;
 	private List<CatalogEntry> catWiseEntries;
@@ -139,7 +150,6 @@ public class ImageViewerTab implements Tab {
 	private List<CatalogEntry> gaiaWDEntries;
 	private List<CatalogEntry> mocaEntries;
 	private List<CatalogEntry> ssoEntries;
-
 	private JPanel imagePanel;
 	private JPanel rightPanel;
 	private JPanel bywTopRow;
@@ -238,7 +248,6 @@ public class ImageViewerTab implements Tab {
 	private JTable collectionTable;
 	private JTable currentTable;
 	private Timer timer;
-
 	private BufferedImage wiseImage;
 	private BufferedImage desiImage;
 	private BufferedImage ps1Image;
@@ -254,19 +263,8 @@ public class ImageViewerTab implements Tab {
 	private BufferedImage processedUkidssImage;
 	private BufferedImage processedSdssImage;
 	private BufferedImage processedDssImage;
-	private final Map<String, ImageContainer> imagesW1 = new HashMap();
-	private final Map<String, ImageContainer> imagesW2 = new HashMap();
-	private final Map<String, ImageContainer> imagesW1All = new HashMap();
-	private final Map<String, ImageContainer> imagesW2All = new HashMap();
-	private final Map<String, ImageContainer> imagesW1Ends = new HashMap();
-	private final Map<String, ImageContainer> imagesW2Ends = new HashMap();
 	private Map<String, CustomOverlay> customOverlays;
-	private final List<NumberPair> crosshairs = new ArrayList();
-	private final List<Fits> band1Images = new ArrayList();
-	private final List<Fits> band2Images = new ArrayList();
-	private final List<FlipbookComponent> flipbook = new ArrayList();
 	private ImageViewerTab imageViewer;
-
 	private Tile tile;
 	private WiseBand wiseBand = WISE_BAND;
 	private double pixelScale = PIXEL_SCALE_WISE;
@@ -285,42 +283,32 @@ public class ImageViewerTab implements Tab {
 	private int speed = SPEED;
 	private int zoom = ZOOM;
 	private int size = SIZE;
-
 	private int year_ps1_y_i_g;
 	private int year_vhs_k_h_j;
 	private int year_uhs_k_j;
 	private int year_ukidss_k_h_j;
 	// private int year_sdss_z_g_u;
 	private int year_dss_2ir_1r_1b;
-
 	private double targetRa;
 	private double targetDec;
-
 	private double crval1;
 	private double crval2;
-
 	private double crpix1;
 	private double crpix2;
-
 	private int naxis1;
 	private int naxis2;
-
 	private int pointerX;
 	private int pointerY;
-
 	private int componentIndex;
-
 	private int previousSize;
 	private double previousRa;
 	private double previousDec;
-
 	private boolean loadImages;
 	private boolean stopDownloadProcess;
 	private boolean flipbookComplete;
 	private boolean imageCutOff;
 	private boolean timerStopped;
 	private boolean hasException;
-	private final boolean nearestBywSubjects;
 	private boolean asyncDownloads;
 	private boolean legacyImages;
 	private boolean panstarrsImages;
@@ -360,6 +348,55 @@ public class ImageViewerTab implements Tab {
 		overlays = new Overlays();
 		overlays.deserialize(getUserSetting(OVERLAYS_KEY, overlays.serialize()));
 		nearestBywSubjects = Boolean.parseBoolean(getUserSetting(NEAREST_BYW_SUBJECTS, "true"));
+	}
+
+	private static List<Epoch> selectBoundaryEpochs(List<Epoch> epochs) {
+		List<Epoch> result = new ArrayList<>();
+
+		Epoch first0 = null, first1 = null, last0 = null, last1 = null;
+
+		for (Epoch e : epochs) {
+			if (e.getForward() == 0) {
+				if (first0 == null)
+					first0 = e;
+				last0 = e;
+			} else if (e.getForward() == 1) {
+				if (first1 == null)
+					first1 = e;
+				last1 = e;
+			}
+		}
+
+		if (first0 != null)
+			result.add(first0);
+		if (first1 != null)
+			result.add(first1);
+		if (last0 != null)
+			result.add(last0);
+		if (last1 != null)
+			result.add(last1);
+
+		return result;
+	}
+
+	private static int getInvertedValue(JSlider slider) {
+		return slider.getMaximum()
+				- slider.getValue()
+				+ slider.getMinimum();
+	}
+
+	private static double determineRobustSigma(List<Double> values, double median) {
+		List<Double> deviations = new ArrayList<>(values.size());
+
+		for (double value : values) {
+			deviations.add(Math.abs(value - median));
+		}
+
+		deviations.sort(Comparator.naturalOrder());
+
+		double mad = determineMedian(deviations);
+
+		return mad * 1.4826;
 	}
 
 	@Override
@@ -2992,35 +3029,6 @@ public class ImageViewerTab implements Tab {
 		return true;
 	}
 
-	private static List<Epoch> selectBoundaryEpochs(List<Epoch> epochs) {
-		List<Epoch> result = new ArrayList<>();
-
-		Epoch first0 = null, first1 = null, last0 = null, last1 = null;
-
-		for (Epoch e : epochs) {
-			if (e.getForward() == 0) {
-				if (first0 == null)
-					first0 = e;
-				last0 = e;
-			} else if (e.getForward() == 1) {
-				if (first1 == null)
-					first1 = e;
-				last1 = e;
-			}
-		}
-
-		if (first0 != null)
-			result.add(first0);
-		if (first1 != null)
-			result.add(first1);
-		if (last0 != null)
-			result.add(last0);
-		if (last1 != null)
-			result.add(last1);
-
-		return result;
-	}
-
 	private boolean isFirstEpoch(Fits fits) throws Exception {
 		ImageHDU hdu = (ImageHDU) fits.getHDU(0);
 		long firstEpoch = hdu.getHeader().getLongValue("FEPOCH");
@@ -4250,26 +4258,6 @@ public class ImageViewerTab implements Tab {
 		}
 
 		return new NumberPair(lowerBound, upperBound);
-	}
-
-	private static int getInvertedValue(JSlider slider) {
-		return slider.getMaximum()
-				- slider.getValue()
-				+ slider.getMinimum();
-	}
-
-	private static double determineRobustSigma(List<Double> values, double median) {
-		List<Double> deviations = new ArrayList<>(values.size());
-
-		for (double value : values) {
-			deviations.add(Math.abs(value - median));
-		}
-
-		deviations.sort(Comparator.naturalOrder());
-
-		double mad = determineMedian(deviations);
-
-		return mad * 1.4826;
 	}
 
 	private boolean openNewCatalogSearch(double targetRa, double targetDec) {

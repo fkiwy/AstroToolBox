@@ -5,12 +5,6 @@ import java.util.List;
 
 public class Overlays {
 
-	enum ID {
-		SIMBAD, ALLWISE, CATWISE, UNWISE, GAIADR2, GAIADR3, NOIRLAB, PANSTARRS, SDSS, SPECTRA, VHS, UHS, UKIDSS,
-		TWOMASS, TESS, DES, GAIAWD, MOCA, SSO, PM_GAIA_DR2, PM_GAIA_DR3, PM_NOIRLAB, PM_CATWISE, PM_UKIDSS, PM_UHS,
-		GHOSTS, LATENTS, HALOS, SPIKES
-	}
-
 	private boolean simbad;
 	private boolean allwise;
 	private boolean catwise;
@@ -457,6 +451,12 @@ public class Overlays {
 
 	public void setSpikes(boolean spikes) {
 		this.spikes = spikes;
+	}
+
+	enum ID {
+		SIMBAD, ALLWISE, CATWISE, UNWISE, GAIADR2, GAIADR3, NOIRLAB, PANSTARRS, SDSS, SPECTRA, VHS, UHS, UKIDSS,
+		TWOMASS, TESS, DES, GAIAWD, MOCA, SSO, PM_GAIA_DR2, PM_GAIA_DR3, PM_NOIRLAB, PM_CATWISE, PM_UKIDSS, PM_UHS,
+		GHOSTS, LATENTS, HALOS, SPIKES
 	}
 
 }

@@ -1,8 +1,8 @@
 package astro.tool.box.lookup;
 
-import java.util.Objects;
-
 import astro.tool.box.enumeration.Band;
+
+import java.util.Objects;
 
 /**
  * @param bandKey       Band key
