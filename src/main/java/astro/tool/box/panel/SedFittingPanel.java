@@ -44,7 +44,6 @@ import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.function.PhotometricFunctions.*;
 import static astro.tool.box.function.StatisticFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.*;
-import static astro.tool.box.util.Constants.LINE_BREAK;
 import static astro.tool.box.util.Constants.LINE_SEP;
 import static java.lang.Math.abs;
 
@@ -301,11 +300,21 @@ public class SedFittingPanel extends JPanel {
 			showScrollableDialog(baseFrame, "SED data points", sedDataPoints.toString());
 		});
 
-		String info = "Holding the mouse pointer over a data point on your object's SED (black line), shows the corresponding magnitude, wavelength and flux density."
-				+ LINE_BREAK
-				+ "Right-clicking on the chart, opens a context menu with additional functions like printing and saving.";
+		String info = """
+				<u><b>Tips</b></u><br>
+				<ul>
+				<li>Hover over a data point on the object's SED (black line) to display its magnitude ± error, wavelength, and flux density.</li><br/>
+				<li>Right-click anywhere on the chart to open a context menu with additional options, such as printing and saving.</li><br/>
+				</ul>
+				<br/>
+				<u><b>Template References</b></u><br/>
+				<ul>
+				<li>UCD templates: M0–M5 are from Deacon et al. (2016); M6–T9 are from Best et al. (2018).</li><br/>
+				<li>White dwarf templates are from https://www.astro.umontreal.ca/~bergeron/CoolingModels/</li>
+				</ul>
+				""";
 
-		JLabel infoLabel = new JLabel("Tooltip");
+		JLabel infoLabel = new JLabel("Tool info");
 		infoLabel.setToolTipText(html(info));
 		commandPanel.add(infoLabel);
 
