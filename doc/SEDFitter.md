@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **SED Fitter** is a tool designed to estimate the spectral type of ultracool dwarfs by comparing their observed broadband **Spectral Energy Distribution (SED)** with a library of template SEDs.
+The **SED Fitter** compares observed broadband Spectral Energy Distributions (SEDs) with libraries of empirical template SEDs. It supports both ultracool dwarf (M–T) and white dwarf template fitting, displays photometric error bars, and derives robust photometric distance estimates for ultracool dwarf matches.
 
 Unlike traditional χ² fitting approaches that require precise photometric uncertainties and are highly sensitive to individual outliers, AstroToolBox uses a **robust median-based fitting algorithm** that is specifically optimized for heterogeneous survey photometry and partially missing data.
 
@@ -176,7 +176,7 @@ Pan-STARRS → NSC
 AllWISE    → CatWISE → unWISE
 ```
 
-This behaviour ensures that an SED can often be generated even when the preferred catalog is unavailable.
+This behavior ensures that an SED can often be generated even when the preferred catalog is unavailable.
 
 ---
 
@@ -250,7 +250,7 @@ This is useful for:
 
 * visual comparison,
 * investigating peculiar objects,
-* comparing neighbouring spectral types.
+* comparing neighboring spectral types.
 
 ---
 
@@ -396,7 +396,7 @@ Characteristics:
 
 * smooth overlap of template and observations,
 * small residuals,
-* neighbouring templates have similar shapes.
+* neighboring templates have similar shapes.
 
 Usually indicates a normal ultracool dwarf.
 
@@ -422,14 +422,25 @@ Large deviations may indicate:
 1. Generate the SED.
 2. Inspect the automatically selected template.
 3. Hover over suspicious data points.
-4. Compare with neighbouring spectral types.
+4. Compare with neighboring spectral types.
 5. If necessary, disable problematic catalogs and regenerate the SED.
 6. Save the figure or export the data points.
 
 ---
 
+# New Features
+
+- **Template type selection:** Choose between Ultracool Dwarf and White Dwarf template libraries.
+- **Photometric error bars:** Observed fluxes are plotted with vertical error bars propagated from magnitude uncertainties.
+- **Photometric distance estimates:** For the best ultracool dwarf match, the median photometric distance and median absolute deviation are displayed in the legend together with the bands used.
+- **Gaia support for white dwarfs:** White dwarf fitting can optionally use Gaia BP, G and RP photometry instead of optical survey photometry.
+
+---
+
 # Notes
 
-The template library currently contains empirical ultracool dwarf SEDs covering M, L, and T spectral types. M0 to M5 templates are from Deacon et al. (2016), M6 to T9 templates are from Best et al. (2018).
+The template library currently includes:
+- Empirical spectral energy distributions of ultracool dwarfs spanning spectral types M through T. The M0–M5 templates are taken from Deacon et al. (2016), while the M6–T9 templates are from Best et al. (2018).
+- White dwarf templates based on synthetic photometry derived from the Bergeron white dwarf atmosphere and cooling models. These templates cover a broad range of effective temperatures and represent both hydrogen- and helium-atmosphere white dwarfs.
 
 The SED fitter is intended as a **photometric classification tool** and should not replace spectroscopic classification whenever spectroscopy is available.
