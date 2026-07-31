@@ -9,7 +9,8 @@ public enum TabCode {
 
 	CQ(CatalogQueryTab.TAB_NAME), IS(ImageSeriesTab.TAB_NAME), PC(PhotometricClassifierTab.TAB_NAME),
 	VC(VizierCatalogsTab.TAB_NAME), AQ(AdqlQueryTab.TAB_NAME), BQ(BatchQueryTab.TAB_NAME), FB(FileBrowserTab.TAB_NAME),
-	OC(ObjectCollectionTab.TAB_NAME), CO(CustomOverlaysTab.TAB_NAME), TO(ToolTab.TAB_NAME), LO(LookupTab.TAB_NAME);
+	OC(ObjectCollectionTab.TAB_NAME), CO(CustomOverlaysTab.TAB_NAME), TO(ToolTab.TAB_NAME), LO(LookupTab.TAB_NAME),
+	SX(SpherexViewerTab.TAB_NAME);
 
 	private static final Map<String, String> TAB_CODES = new HashMap();
 	private static final Map<String, String> TAB_LABELS = new HashMap();

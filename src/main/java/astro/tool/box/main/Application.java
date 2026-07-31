@@ -54,6 +54,13 @@ public class Application {
 
 		String sourceTabs = USER_SETTINGS.getProperty(SOURCE_TABS, "");
 		String destTabs = USER_SETTINGS.getProperty(DEST_TABS, TabCode.getTabCodes());
+		// Existing installations retain their saved tab list.  New built-in tabs
+		// must therefore be appended explicitly, or they would only appear after a
+		// user resets the Settings tab.
+		if (!sourceTabs.concat(",").concat(destTabs).contains(TabCode.SX.name())) {
+			destTabs = destTabs.isEmpty() ? TabCode.SX.name() : destTabs + "," + TabCode.SX.name();
+			USER_SETTINGS.setProperty(DEST_TABS, destTabs);
+		}
 
 		Map<String, Tab> tabs = new HashMap<>();
 
@@ -95,13 +102,9 @@ public class Application {
 		LookupTab lookupTab = new LookupTab(baseFrame, tabbedPane);
 		tabs.put(TabCode.LO.name(), lookupTab);
 
-		// Add new tab here
-		/*
-		 * NewTab newTab = new NewTab(baseFrame, tabbedPane);
-		 * tabs.put(TabCode.XX.name(), newTab); String newTabCode = TabCode.XX.name();
-		 * if (!sourceTabs.concat(destTabs).contains(newTabCode)) { destTabs += "," +
-		 * newTabCode; USER_SETTINGS.setProperty(DEST_TABS, destTabs); }
-		 */
+		SpherexViewerTab spherexViewerTab = new SpherexViewerTab(baseFrame, tabbedPane);
+		tabs.put(TabCode.SX.name(), spherexViewerTab);
+
 		for (String sourceTab : sourceTabs.split(",", -1)) {
 			if (!sourceTab.isEmpty()) {
 				Tab tab = tabs.get(sourceTab);
