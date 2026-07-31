@@ -3846,7 +3846,7 @@ public class ImageViewerTab implements Tab {
 			return true;
 		}
 		String selectedBand = band == 1 ? "r" : "z";
-		String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
+		String baseUrl = DESI_BASE_URL + "/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
 		String imageUrl = baseUrl.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
 		try {
 			// Ascending scan
@@ -4346,8 +4346,11 @@ public class ImageViewerTab implements Tab {
 			if (imageSize > 3000) {
 				return null;
 			}
-			String imageUrl = "https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s"
+			String imageUrl = DESI_BASE_URL + "/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s"
 					.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_FILTERS, DESI_LS_DR_PARAM);
+
+			System.out.println(imageUrl);
+
 			HttpURLConnection connection = establishHttpConnection(imageUrl);
 			BufferedImage image;
 			try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
@@ -4355,6 +4358,7 @@ public class ImageViewerTab implements Tab {
 			}
 			return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}

@@ -60,6 +60,8 @@ public class Constants {
 
 	public static final int DESI_LS_EPOCH = 2017;
 
+	public static final String DESI_BASE_URL = "https://www.legacysurvey.org/viewer";
+
 	public static final String DESI_LS_DR_LABEL = "DR10";
 
 	public static final String DESI_LS_DR_PARAM = "ls-dr10";

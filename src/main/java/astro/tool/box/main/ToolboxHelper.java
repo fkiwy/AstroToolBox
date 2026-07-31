@@ -1011,7 +1011,7 @@ public class ToolboxHelper {
 		if (!band.isEmpty()) {
 			band = "&bands=" + band;
 		}
-		String imageUrl = "https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s"
+		String imageUrl = DESI_BASE_URL + "/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d%s"
 				.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, layer, size * 4, band);
 		try {
 			HttpURLConnection connection = establishHttpConnection(imageUrl);
