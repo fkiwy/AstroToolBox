@@ -2,6 +2,7 @@ package astro.tool.box.util;
 
 import astro.tool.box.enumeration.ImageType;
 
+import static astro.tool.box.util.Constants.DESI_BASE_URL;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
 
 public class ExternalResources {
@@ -37,12 +38,12 @@ public class ExternalResources {
 	}
 
 	public static String getLegacySkyViewerUrl(double degRA, double degDE, String layer) {
-		return "http://legacysurvey.org/viewer?ra=" + degRA + "&dec=" + degDE + "&mark=" + degRA + "," + degDE
+		return DESI_BASE_URL + "?ra=" + degRA + "&dec=" + degDE + "&mark=" + degRA + "," + degDE
 				+ "&zoom=15&layer=" + layer;
 	}
 
 	public static String getLegacySingleExposuresUrl(double degRA, double degDE, String layer) {
-		return "http://legacysurvey.org/viewer/exposures/?ra=" + degRA + "&dec=" + degDE + "&layer=" + layer;
+		return DESI_BASE_URL + "/exposures/?ra=" + degRA + "&dec=" + degDE + "&layer=" + layer;
 	}
 
 	public static String getSimbadUrl(double degRA, double degDE, double degRadius) {
