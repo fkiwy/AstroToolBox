@@ -1,28 +1,33 @@
 package astro.tool.box.tab;
 
 import astro.tool.box.spherex.SpherexPipeline;
-import org.jfree.chart.*;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
-import org.jfree.data.xy.*;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeries;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * UI for the initial public SPHEREx aperture-spectrum extractor.
  */
 public class SpherexViewerTab implements Tab {
 	public static final String TAB_NAME = "SPHEREx Spectrum";
+	private final String FONT_NAME = "Tahoma";
 	private final JFrame frame;
 	private final JTabbedPane tabs;
 	private JTextField ra, dec, size, radius;
@@ -125,7 +130,42 @@ public class SpherexViewerTab implements Tab {
 		YIntervalSeriesCollection data = new YIntervalSeriesCollection();
 		data.addSeries(series);
 		JFreeChart out = ChartFactory.createXYLineChart("SPHEREx aperture spectrum", "Wavelength (µm)", "Flux density (µJy)", data);
+
+		// Set fonts for title, axes, and legend
+		Font tahomaTitle = new Font(FONT_NAME, Font.PLAIN, 20);
+		Font tahomaLabel = new Font(FONT_NAME, Font.PLAIN, 17);
+		Font tahomaTick = new Font(FONT_NAME, Font.PLAIN, 14);
+
+		// Chart title
+		out.getTitle().setFont(tahomaTitle);
+
+		// Legend (if present)
+		if (out.getLegend() != null) {
+			out.getLegend().setItemFont(tahomaLabel);
+		}
+
 		XYPlot plot = out.getXYPlot();
+
+		// X-axis
+		plot.getDomainAxis().setLabelFont(tahomaLabel);
+		plot.getDomainAxis().setTickLabelFont(tahomaTick);
+
+		// Y-axis
+		plot.getRangeAxis().setLabelFont(tahomaLabel);
+		plot.getRangeAxis().setTickLabelFont(tahomaTick);
+
+		// Create grid
+		plot.setBackgroundPaint(Color.WHITE);
+
+		Color grid = new Color(230, 230, 230);
+		plot.setDomainGridlinePaint(grid);
+		plot.setRangeGridlinePaint(grid);
+
+		plot.setDomainGridlineStroke(new BasicStroke(0.75f));
+		plot.setRangeGridlineStroke(new BasicStroke(0.75f));
+
+		plot.setOutlineVisible(false);
+
 		XYErrorRenderer renderer = new XYErrorRenderer();
 		renderer.setDefaultLinesVisible(false);
 		renderer.setDefaultShapesVisible(true);
