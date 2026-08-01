@@ -17,6 +17,7 @@ public final class SpherexPipeline {
 	private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
 	private static final String TAP = "https://irsa.ipac.caltech.edu/TAP/sync";
 	private static final String SAPM_COLLECTION = "cal-sapm-v2-2025-164";
+	private static final String SPECTRAL_CHANNELS_COLLECTION = "cal-sch-v1-2026-106";
 	private static final int BAD_FLAGS = flagMask();
 
 	private SpherexPipeline() {
@@ -51,10 +52,11 @@ public final class SpherexPipeline {
 		List<Point> points = new ArrayList<>();
 		List<String> warnings = new ArrayList<>();
 		Map<Integer, double[][]> sapms = new HashMap<>();
+		Map<String, SpectralChannels> spectralChannels = new HashMap<>();
 		for (int i = 0; i < urls.size(); i++) {
 			progress.update("Downloading and measuring cutout " + (i + 1) + " of " + urls.size() + "…");
 			try {
-				Point p = measure(download(urls.get(i), config.cacheDir().resolve("cutouts"), "cutout_" + i + ".fits"), config, sapms);
+				Point p = measure(download(urls.get(i), config.cacheDir().resolve("cutouts"), "cutout_" + i + ".fits"), config, sapms, spectralChannels);
 				if (p != null) points.add(p);
 			} catch (Exception ex) {
 				warnings.add("Cutout " + (i + 1) + " skipped: " + ex.getMessage());
@@ -63,7 +65,7 @@ public final class SpherexPipeline {
 		if (points.isEmpty())
 			throw new IOException("No usable cutouts were measured." + (warnings.isEmpty() ? "" : " " + warnings.get(0)));
 		int measured = points.size();
-		if (config.bin()) points = bin(points);
+		if (config.bin()) points = bin(points, spectralChannels);
 		points.sort(Comparator.comparingDouble(Point::wavelengthUm));
 		progress.update("Spectrum complete.");
 		return new Result(points, urls.size(), measured, warnings);
@@ -85,13 +87,20 @@ public final class SpherexPipeline {
 		return rows;
 	}
 
-	private static Point measure(Path path, Config c, Map<Integer, double[][]> sapms) throws Exception {
+	private static Point measure(Path path, Config c, Map<Integer, double[][]> sapms,
+	                             Map<String, SpectralChannels> spectralChannels) throws Exception {
 		try (Fits fits = new Fits(path.toFile())) {
 			BasicHDU<?> imageHdu = ext(fits, "IMAGE");
 			if (imageHdu == null) throw new IOException("IMAGE extension missing");
 			Header h = imageHdu.getHeader();
 			int detector = h.getIntValue("DETECTOR", h.getIntValue("BAND", 0));
 			if (detector < 1 || detector > 6) throw new IOException("Invalid detector number");
+			String release = h.getStringValue("DATAREL", "qr2").toLowerCase(Locale.ROOT);
+			SpectralChannels channels = spectralChannels.get(release);
+			if (channels == null) {
+				channels = spectralChannels(release, c.cacheDir);
+				spectralChannels.put(release, channels);
+			}
 			double[] pos = worldToPixel(h, c.raDeg, c.decDeg);
 			double[][] image = doubles(imageHdu.getKernel());
 			double[][] sapm = sapms.get(detector);
@@ -104,7 +113,9 @@ public final class SpherexPipeline {
 			long[][] flags = longs(extData(fits, "FLAGS"));
 			double[] result = aperture(flux, variance, flags, pos[0], pos[1], c.apertureRadius);
 			if (!Double.isFinite(result[0]) || !Double.isFinite(result[1]) || result[1] <= 0) return null;
-			return new Point(wavelength(h, pos[0], detector), result[0], result[1], detector, 1);
+			double wavelength = wavelength(fits, h, pos[0], pos[1], detector, channels);
+			if (!Double.isFinite(wavelength)) throw new IOException("Could not determine calibrated wavelength");
+			return new Point(wavelength, result[0], result[1], detector, 1);
 		}
 	}
 
@@ -128,6 +139,48 @@ public final class SpherexPipeline {
 			BasicHDU<?> h = ext(fits, "IMAGE");
 			if (h == null) throw new IOException("SAPM IMAGE extension missing");
 			return doubles(h.getKernel());
+		}
+	}
+
+	/** QR2 spectral-channel table plus its full-detector pixel-to-channel map. */
+	private record SpectralChannels(int[][] channelMap, Map<Integer, List<Channel>> byDetector) {
+	}
+
+	private record Channel(int number, double centerUm, double minUm, double maxUm) {
+	}
+
+	private static SpectralChannels spectralChannels(String release, Path cache) throws Exception {
+		String file = "spectral_channels_spx_" + SPECTRAL_CHANNELS_COLLECTION + ".fits.gz";
+		Path local = cache.resolve("spectral_channels").resolve(release).resolve(SPECTRAL_CHANNELS_COLLECTION).resolve(file);
+		if (!Files.exists(local)) {
+			download("https://nasa-irsa-spherex.s3.amazonaws.com/" + release + "/spectral_channels/"
+					+ SPECTRAL_CHANNELS_COLLECTION + "/" + file, local.getParent(), file);
+		}
+		try (Fits fits = new Fits(local.toFile())) {
+			BasicHDU<?> mapHdu = ext(fits, "CHANNEL_MAP");
+			BasicHDU<?> tableHdu = ext(fits, "SPECTRAL_CHANNELS");
+			if (mapHdu == null || !(tableHdu instanceof BinaryTableHDU table))
+				throw new IOException("QR2 spectral_channels file is missing CHANNEL_MAP or SPECTRAL_CHANNELS");
+			int[][] map = integers2d(mapHdu.getKernel());
+			Map<Integer, List<Channel>> byDetector = new HashMap<>();
+			int detectorCol = table.findColumn("DETECTOR");
+			int subchannelCol = table.findColumn("SUBCHAN");
+			int wavelengthCol = table.findColumn("WAVELENGTH");
+			int minCol = table.findColumn("WL_MIN");
+			int maxCol = table.findColumn("WL_MAX");
+			if (detectorCol < 0 || subchannelCol < 0 || wavelengthCol < 0 || minCol < 0 || maxCol < 0)
+				throw new IOException("QR2 SPECTRAL_CHANNELS table has an unexpected schema");
+			for (int row = 0; row < table.getNRows(); row++) {
+				int detector = number(table.getElement(row, detectorCol)).intValue();
+				int subchannel = number(table.getElement(row, subchannelCol)).intValue();
+				Channel channel = new Channel(subchannel,
+						number(table.getElement(row, wavelengthCol)).doubleValue(),
+						number(table.getElement(row, minCol)).doubleValue(),
+						number(table.getElement(row, maxCol)).doubleValue());
+				byDetector.computeIfAbsent(detector, ignored -> new ArrayList<>()).add(channel);
+			}
+			for (List<Channel> channels : byDetector.values()) channels.sort(Comparator.comparingDouble(Channel::centerUm));
+			return new SpectralChannels(map, byDetector);
 		}
 	}
 
@@ -201,7 +254,7 @@ public final class SpherexPipeline {
 		return new double[]{cp1 + (e * dx - b * dy) / det, cp2 + (-d * dx + a * dy) / det};
 	}
 
-	private static double wavelength(Header h, double x, int detector) {
+	private static double wavelengthOld(Header h, double x, int detector) {
 		String ctype = h.getStringValue("CTYPE1W", "");
 		if (!ctype.contains("-TAB")) {
 			double value = h.getDoubleValue("CRVAL1W", h.getDoubleValue("CRVAL3", Double.NaN)) + (x - (h.getDoubleValue("CRPIX1W", h.getDoubleValue("CRPIX3", 1)) - 1)) * h.getDoubleValue("CD1_1W", h.getDoubleValue("CDELT3", Double.NaN));
@@ -216,7 +269,7 @@ public final class SpherexPipeline {
 		return bands[detector][0] + fraction * (bands[detector][1] - bands[detector][0]);
 	}
 
-	private static List<Point> bin(List<Point> input) {
+	private static List<Point> binOld(List<Point> input) {
 		Map<Integer, List<Point>> groups = new HashMap<>();
 		for (Point p : input) groups.computeIfAbsent(p.detector, k -> new ArrayList<>()).add(p);
 		List<Point> out = new ArrayList<>();
@@ -239,10 +292,95 @@ public final class SpherexPipeline {
 		return out;
 	}
 
+	private static double wavelength(Fits fits, Header h, double x, double y, int detector, SpectralChannels channels) throws Exception {
+		BasicHDU<?> hdu = ext(fits, h.getStringValue("PS1_0W", "WCS-WAVE"));
+		if (hdu instanceof BinaryTableHDU table) {
+			// In FITS -TAB WCS, PSn_1 names the coordinate array (VALUES), while
+			// PSn_2 names the matching index vector (X/Y).
+			int xc = table.findColumn("X"), yc = table.findColumn("Y"), vc = table.findColumn(h.getStringValue("PS1_1W", "VALUES"));
+			if (xc >= 0 && yc >= 0 && vc >= 0 && table.getNRows() > 0) {
+				int[] gx = integers(table.getElement(0, xc)), gy = integers(table.getElement(0, yc));
+				double[][][] values = doubles3d(table.getElement(0, vc));
+				double px = x + 1 - h.getDoubleValue("CRPIX1A", 1), py = y + 1 - h.getDoubleValue("CRPIX2A", 1);
+				double value = bilinear(values, gx, gy, px, py);
+				if (Double.isFinite(value)) return value;
+			}
+		}
+		int px = (int) Math.round(x + 1 - h.getDoubleValue("CRPIX1A", 1)) - 1, py = (int) Math.round(y + 1 - h.getDoubleValue("CRPIX2A", 1)) - 1;
+		if (py >= 0 && px >= 0 && py < channels.channelMap.length && px < channels.channelMap[0].length) {
+			int number = channels.channelMap[py][px];
+			for (Channel channel : channels.byDetector.getOrDefault(detector, List.of())) if (channel.number == number) return channel.centerUm;
+		}
+		return Double.NaN;
+	}
+
+	private static double bilinear(double[][][] values, int[] gx, int[] gy, double x, double y) {
+		int ix = bracket(gx, x), iy = bracket(gy, y);
+		if (ix < 0 || iy < 0 || values.length != gy.length || values[iy].length != gx.length) return Double.NaN;
+		double tx = (x - gx[ix]) / (gx[ix + 1] - gx[ix]), ty = (y - gy[iy]) / (gy[iy + 1] - gy[iy]);
+		double a = values[iy][ix][0] * (1 - tx) + values[iy][ix + 1][0] * tx;
+		double b = values[iy + 1][ix][0] * (1 - tx) + values[iy + 1][ix + 1][0] * tx;
+		return a * (1 - ty) + b * ty;
+	}
+
+	private static int bracket(int[] grid, double value) {
+		if (!Double.isFinite(value) || grid.length < 2 || value < grid[0] || value > grid[grid.length - 1]) return -1;
+		int index = Arrays.binarySearch(grid, (int) Math.floor(value));
+		if (index < 0) index = -index - 2;
+		return Math.max(0, Math.min(grid.length - 2, index));
+	}
+
+	private static List<Point> bin(List<Point> input, Map<String, SpectralChannels> calibrations) throws IOException {
+		if (calibrations.isEmpty()) throw new IOException("QR2 spectral-channel calibration was not loaded");
+		SpectralChannels calibration = calibrations.values().iterator().next();
+		Map<Integer, List<Point>> groups = new HashMap<>();
+		for (Point p : input) groups.computeIfAbsent(p.detector, ignored -> new ArrayList<>()).add(p);
+		List<Point> out = new ArrayList<>();
+		for (var entry : groups.entrySet()) for (Channel channel : calibration.byDetector.getOrDefault(entry.getKey(), List.of())) {
+			double weight = 0, flux = 0; int count = 0;
+			for (Point point : entry.getValue()) if (point.wavelengthUm >= channel.minUm && point.wavelengthUm <= channel.maxUm) {
+				double w = 1 / (point.errorUjy * point.errorUjy); weight += w; flux += w * point.fluxUjy; count++;
+			}
+			if (count > 0 && weight > 0) out.add(new Point(channel.centerUm, flux / weight, Math.sqrt(1 / weight), entry.getKey(), count));
+		}
+		return out;
+	}
+
 	private static int flagMask() {
 		int m = 0;
 		for (int b : new int[]{0, 1, 2, 4, 6, 7, 9, 10, 11, 14, 15, 17, 19, 22, 24, 26, 27, 28, 29}) m |= 1 << b;
 		return m;
+	}
+
+	private static int[] integers(Object value) {
+		if (value instanceof int[] a) return a;
+		if (value instanceof short[] a) { int[] out = new int[a.length]; for (int i = 0; i < a.length; i++) out[i] = a[i]; return out; }
+		if (value instanceof byte[] a) { int[] out = new int[a.length]; for (int i = 0; i < a.length; i++) out[i] = Byte.toUnsignedInt(a[i]); return out; }
+		throw new IllegalArgumentException("Unsupported FITS integer vector type: " + value.getClass().getName());
+	}
+
+	private static Number number(Object value) {
+		if (value instanceof Number number) return number;
+		if (value instanceof byte[] a && a.length == 1) return Byte.toUnsignedInt(a[0]);
+		if (value instanceof short[] a && a.length == 1) return a[0];
+		if (value instanceof int[] a && a.length == 1) return a[0];
+		if (value instanceof long[] a && a.length == 1) return a[0];
+		if (value instanceof float[] a && a.length == 1) return a[0];
+		if (value instanceof double[] a && a.length == 1) return a[0];
+		throw new IllegalArgumentException("Expected a scalar FITS table value");
+	}
+
+	private static int[][] integers2d(Object value) {
+		if (value instanceof int[][] a) return a;
+		if (value instanceof short[][] a) { int[][] out = new int[a.length][a[0].length]; for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) out[y][x] = a[y][x]; return out; }
+		if (value instanceof byte[][] a) { int[][] out = new int[a.length][a[0].length]; for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) out[y][x] = Byte.toUnsignedInt(a[y][x]); return out; }
+		throw new IllegalArgumentException("Unsupported FITS integer image type");
+	}
+
+	private static double[][][] doubles3d(Object value) {
+		if (value instanceof double[][][] a) return a;
+		if (value instanceof float[][][] a) { double[][][] out = new double[a.length][a[0].length][a[0][0].length]; for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) for (int z = 0; z < a[0][0].length; z++) out[y][x][z] = a[y][x][z]; return out; }
+		throw new IllegalArgumentException("Unsupported WCS-WAVE VALUES type");
 	}
 
 	private static double[][] doubles(Object o) {

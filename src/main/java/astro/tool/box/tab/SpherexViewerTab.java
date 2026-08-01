@@ -4,13 +4,19 @@ import astro.tool.box.spherex.SpherexPipeline;
 import org.jfree.chart.*;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * UI for the initial public SPHEREx aperture-spectrum extractor.
@@ -37,8 +43,8 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(2, 5, 6, 3));
-		ra = field(form, "RA (deg)", "24.2412498");
-		dec = field(form, "Dec (deg)", "9.5630705");
+		ra = field(form, "RA (deg)", "24.2455");
+		dec = field(form, "Dec (deg)", "9.5625");
 		size = field(form, "Cutout (arcsec)", "120");
 		radius = field(form, "Aperture (pixels)", "2.0");
 		bin = new JCheckBox("Bin spectrum", true);
@@ -123,9 +129,60 @@ public class SpherexViewerTab implements Tab {
 		XYErrorRenderer renderer = new XYErrorRenderer();
 		renderer.setDefaultLinesVisible(false);
 		renderer.setDefaultShapesVisible(true);
+		renderer.setSeriesShape(0, new Ellipse2D.Double(-3, -3, 6, 6));
 		plot.setRenderer(renderer);
+		XYSeriesCollection guideData = createGuideData(ps);
+		if (guideData.getSeriesCount() > 0) {
+			plot.setDataset(1, guideData);
+			XYSplineRenderer guideRenderer = new XYSplineRenderer(12);
+			guideRenderer.setDefaultShapesVisible(false);
+			guideRenderer.setDefaultLinesVisible(true);
+			guideRenderer.setSeriesPaint(0, Color.RED);
+			guideRenderer.setDefaultStroke(new BasicStroke(2f));
+			plot.setRenderer(1, guideRenderer);
+		}
 		plot.setBackgroundPaint(Color.WHITE);
 		return out;
+	}
+
+	/**
+	 * Build one continuous broad-shape guide, with robust anchors computed in
+	 * coarse bins for each detector. Medians keep individual noisy points from
+	 * pulling the spline around, while a single series joins the full spectrum.
+	 */
+	private XYSeriesCollection createGuideData(List<SpherexPipeline.Point> ps) {
+		Map<Integer, List<SpherexPipeline.Point>> byDetector = new TreeMap<>();
+		for (var point : ps) byDetector.computeIfAbsent(point.detector(), ignored -> new ArrayList<>()).add(point);
+		XYSeries guide = new XYSeries("Robust guidance spline");
+		for (var entry : byDetector.entrySet()) {
+			List<SpherexPipeline.Point> detectorPoints = entry.getValue();
+			detectorPoints.sort(Comparator.comparingDouble(SpherexPipeline.Point::wavelengthUm));
+			int bins = Math.min(8, detectorPoints.size());
+			if (bins < 3) continue;
+			for (int binIndex = 0; binIndex < bins; binIndex++) {
+				int start = binIndex * detectorPoints.size() / bins;
+				int end = (binIndex + 1) * detectorPoints.size() / bins;
+				List<Double> wavelengths = new ArrayList<>(), fluxes = new ArrayList<>();
+				for (int i = start; i < end; i++) {
+					var point = detectorPoints.get(i);
+					if (Double.isFinite(point.fluxUjy())) {
+						wavelengths.add(point.wavelengthUm());
+						fluxes.add(point.fluxUjy());
+					}
+				}
+				if (!fluxes.isEmpty()) guide.add(median(wavelengths), median(fluxes));
+			}
+		}
+		XYSeriesCollection result = new XYSeriesCollection();
+		if (guide.getItemCount() >= 3) result.addSeries(guide);
+		return result;
+	}
+
+	private double median(List<Double> values) {
+		List<Double> sorted = new ArrayList<>(values);
+		sorted.sort(Double::compare);
+		int middle = sorted.size() / 2;
+		return sorted.size() % 2 == 0 ? (sorted.get(middle - 1) + sorted.get(middle)) / 2 : sorted.get(middle);
 	}
 
 	private void saveCsv() {
