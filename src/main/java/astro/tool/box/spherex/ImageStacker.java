@@ -159,20 +159,31 @@ public class ImageStacker {
 
 		List<DetectorCutout> inputCutouts = includeReferenceImage ? sorted : sorted.subList(1, sorted.size());
 
+		int successCount = 0;
 		for (DetectorCutout cutout : inputCutouts) {
-			double[][] data = cropCenter(cutout.data, refHeight, refWidth);
-			long[][] flags = cropCenterLong(cutout.flags, refHeight, refWidth);
+			try {
+				double[][] data = cropCenter(cutout.data, refHeight, refWidth);
+				long[][] flags = cropCenterLong(cutout.flags, refHeight, refWidth);
 
-			for (int y = 0; y < refHeight; y++) {
-				for (int x = 0; x < refWidth; x++) {
-					boolean validFlags = (flags[y][x] & fatalMask) == 0;
-					boolean validData = Double.isFinite(data[y][x]);
-					if (validFlags && validData) {
-						stacked[y][x] += data[y][x];
-						counts[y][x] += 1;
+				for (int y = 0; y < refHeight; y++) {
+					for (int x = 0; x < refWidth; x++) {
+						boolean validFlags = (flags[y][x] & fatalMask) == 0;
+						boolean validData = Double.isFinite(data[y][x]);
+						if (validFlags && validData) {
+							stacked[y][x] += data[y][x];
+							counts[y][x] += 1;
+						}
 					}
 				}
+				successCount++;
+			} catch (Exception e) {
+				// Log but continue with other cutouts
+				System.err.println("Failed to process cutout " + cutout.sourceFile + " for detector " + detector + ": " + e.getMessage());
 			}
+		}
+
+		if (successCount == 0) {
+			throw new IllegalArgumentException("No cutouts could be successfully processed for detector " + detector);
 		}
 
 		double[][] meanImage = new double[refHeight][refWidth];
@@ -187,56 +198,78 @@ public class ImageStacker {
 		}
 
 		Header header = new Header();
-		header.addValue("NSTACK", inputCutouts.size(), "Number of cutouts included in stack");
+		header.addValue("NSTACK", successCount, "Number of cutouts included in stack");
 		header.addValue("NINPUT", sorted.size(), "Number of input cutouts for detector");
 		header.addValue("INCLREF", includeReferenceImage, "Reference cutout included in mean stack");
 		header.addValue("STACKTYP", "MEAN", "Stack combination method");
 		header.addValue("ZODISUB", true, "IMAGE - ZODI before stacking");
 
-		return new StackResult(detector, meanImage, header, sorted.size(), inputCutouts.size());
+		return new StackResult(detector, meanImage, header, sorted.size(), successCount);
 	}
 
 	/**
-	 * Center-crop a 2D array.
+	 * Center-crop or center-pad a 2D array to target size.
 	 */
 	private static double[][] cropCenter(double[][] data, int targetHeight, int targetWidth) {
 		int height = data.length;
 		int width = data[0].length;
 
-		if (targetHeight > height || targetWidth > width) {
-			throw new IllegalArgumentException(
-					"Cannot crop to larger size: " + height + "x" + width + " -> " + targetHeight + "x" + targetWidth);
-		}
-
-		int startY = (height - targetHeight) / 2;
-		int startX = (width - targetWidth) / 2;
-
 		double[][] result = new double[targetHeight][targetWidth];
+		
+		// Initialize with NaN (padding value)
 		for (int y = 0; y < targetHeight; y++) {
-			System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
+			for (int x = 0; x < targetWidth; x++) {
+				result[y][x] = Double.NaN;
+			}
 		}
+
+		// If data is smaller, center it in result (padding)
+		if (height <= targetHeight && width <= targetWidth) {
+			int startY = (targetHeight - height) / 2;
+			int startX = (targetWidth - width) / 2;
+			for (int y = 0; y < height; y++) {
+				System.arraycopy(data[y], 0, result[startY + y], startX, width);
+			}
+		} 
+		// If data is larger, center-crop it
+		else {
+			int startY = (height - targetHeight) / 2;
+			int startX = (width - targetWidth) / 2;
+			for (int y = 0; y < targetHeight; y++) {
+				System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
+			}
+		}
+		
 		return result;
 	}
 
 	/**
-	 * Center-crop a 2D long array (for flags).
+	 * Center-crop or center-pad a 2D long array (for flags).
 	 */
 	private static long[][] cropCenterLong(long[][] data, int targetHeight, int targetWidth) {
 		int height = data.length;
 		int width = data[0].length;
 
-		if (targetHeight > height || targetWidth > width) {
-			throw new IllegalArgumentException(
-					"Cannot crop to larger size: " + height + "x" + width + " -> " + targetHeight + "x" + targetWidth);
-		}
-
-		int startY = (height - targetHeight) / 2;
-		int startX = (width - targetWidth) / 2;
-
 		long[][] result = new long[targetHeight][targetWidth];
-		for (int y = 0; y < targetHeight; y++) {
-			System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
+		// Initialize with 0 (no bad pixels for padded regions)
+
+		// If data is smaller, center it in result (padding with 0)
+		if (height <= targetHeight && width <= targetWidth) {
+			int startY = (targetHeight - height) / 2;
+			int startX = (targetWidth - width) / 2;
+			for (int y = 0; y < height; y++) {
+				System.arraycopy(data[y], 0, result[startY + y], startX, width);
+			}
+		} 
+		// If data is larger, center-crop it
+		else {
+			int startY = (height - targetHeight) / 2;
+			int startX = (width - targetWidth) / 2;
+			for (int y = 0; y < targetHeight; y++) {
+				System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
+			}
 		}
+		
 		return result;
 	}
 
