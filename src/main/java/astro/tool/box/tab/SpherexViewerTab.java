@@ -34,12 +34,12 @@ public class SpherexViewerTab implements Tab {
 	private final JFrame frame;
 	private final JTabbedPane tabs;
 	private JTextField ra, dec, size, radius;
-	private JCheckBox bin, stackImages;
-	private JButton run, csv, png, stackButton;
+	private JCheckBox bin;
+	private JButton run, csv, png;
 	private JLabel status;
 	private JFreeChart chart;
 	private ChartPanel chartPanel;
-	private JLabel imagesLabel;
+	private JPanel imagesPanel;
 	private List<SpherexPipeline.Point> points = List.of();
 	private List<Map<String, Object>> stackedImages = List.of();
 
@@ -52,7 +52,7 @@ public class SpherexViewerTab implements Tab {
 	public void init(boolean visible) {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-		JPanel form = new JPanel(new GridLayout(3, 5, 6, 3));
+		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
 		ra = field(form, "RA (deg)", "24.2455");
 		dec = field(form, "Dec (deg)", "9.5625");
 		size = field(form, "Cutout (arcsec)", "120");
@@ -70,26 +70,21 @@ public class SpherexViewerTab implements Tab {
 		png.setEnabled(false);
 		png.addActionListener(e -> savePng());
 		form.add(png);
-		stackImages = new JCheckBox("Stack & display images", false);
-		form.add(stackImages);
-		stackButton = new JButton("Stack images");
-		stackButton.setEnabled(false);
-		stackButton.addActionListener(e -> stackAndDisplayImages());
-		form.add(stackButton);
 		main.add(form, BorderLayout.NORTH);
 		
-		// Create split panel for spectrum plot and images
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		// Create vertical layout with spectrum on top and images on bottom
+		JPanel contentPanel = new JPanel(new BorderLayout(8, 8));
 		chart = createChart(points);
 		chartPanel = new ChartPanel(chart);
-		splitPane.setLeftComponent(chartPanel);
+		contentPanel.add(chartPanel, BorderLayout.CENTER);
 		
-		imagesLabel = new JLabel("Images will appear here");
-		imagesLabel.setHorizontalAlignment(JLabel.CENTER);
-		imagesLabel.setVerticalAlignment(JLabel.CENTER);
-		splitPane.setRightComponent(imagesLabel);
-		splitPane.setDividerLocation(0.6);
-		main.add(splitPane, BorderLayout.CENTER);
+		imagesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		imagesPanel.setBackground(Color.WHITE);
+		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
+		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
+		imagesPanel.add(emptyLabel);
+		contentPanel.add(imagesPanel, BorderLayout.SOUTH);
+		main.add(contentPanel, BorderLayout.CENTER);
 		
 		status = new JLabel("Enter coordinates to generate an aperture spectrum from public SPHEREx cutouts.");
 		main.add(status, BorderLayout.SOUTH);
@@ -114,7 +109,6 @@ public class SpherexViewerTab implements Tab {
 			return;
 		}
 		run.setEnabled(false);
-		stackButton.setEnabled(false);
 		new SwingWorker<SpherexPipeline.Result, String>() {
 			@Override
 			protected SpherexPipeline.Result doInBackground() throws Exception {
@@ -139,8 +133,10 @@ public class SpherexViewerTab implements Tab {
 					status.setText("Generated " + points.size() + " spectrum points; " + r.warnings().size() + " cutouts skipped.");
 					csv.setEnabled(true);
 					png.setEnabled(true);
-					if (stackImages.isSelected()) {
-						stackButton.setEnabled(true);
+					
+					// Stack and display images using already-downloaded FITS files
+					if (!r.fitsFiles().isEmpty()) {
+						stackAndDisplayImages(r.fitsFiles());
 					}
 				} catch (Exception ex) {
 					error(ex.getCause() == null ? ex : ex.getCause());
@@ -251,52 +247,47 @@ public class SpherexViewerTab implements Tab {
 		return sorted.size() % 2 == 0 ? (sorted.get(middle - 1) + sorted.get(middle)) / 2 : sorted.get(middle);
 	}
 
-	private void stackAndDisplayImages() {
-		try {
-			double raVal = Double.parseDouble(ra.getText());
-			double decVal = Double.parseDouble(dec.getText());
-			int sizeVal = Integer.parseInt(size.getText());
-			Path cacheDir = Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex");
-			
-			status.setText("Stacking and displaying images...");
-			stackButton.setEnabled(false);
-			
-			new SwingWorker<List<Map<String, Object>>, String>() {
-				@Override
-				protected List<Map<String, Object>> doInBackground() throws Exception {
-					publish("Downloading and stacking detector cutouts...");
-					return SpherexPipeline.stackImages(raVal, decVal, sizeVal, cacheDir, this::publish);
-				}
+	private void stackAndDisplayImages(List<Path> fitsFiles) {
+		new SwingWorker<List<Map<String, Object>>, String>() {
+			@Override
+			protected List<Map<String, Object>> doInBackground() throws Exception {
+				publish("Stacking detector images from downloaded cutouts...");
+				return SpherexPipeline.stackImages(fitsFiles, this::publish);
+			}
 
-				@Override
-				protected void process(List<String> values) {
-					status.setText(values.get(values.size() - 1));
-				}
+			@Override
+			protected void process(List<String> values) {
+				status.setText(values.get(values.size() - 1));
+			}
 
-				@Override
-				protected void done() {
-					stackButton.setEnabled(true);
-					try {
-						stackedImages = get();
-						if (stackedImages.isEmpty()) {
-							status.setText("No images were stacked.");
-							return;
-						}
-						
-						// Display stacked images
-						BufferedImage imageGrid = ImagePlotter.plotImages(raVal, decVal, stackedImages, sizeVal, 10);
-						ImageIcon icon = new ImageIcon(imageGrid);
-						imagesLabel.setIcon(icon);
-						imagesLabel.setText(null);
-						status.setText("Stacked " + stackedImages.size() + " detector images.");
-					} catch (Exception ex) {
-						error(ex.getCause() == null ? ex : ex.getCause());
+			@Override
+			protected void done() {
+				try {
+					stackedImages = get();
+					if (stackedImages.isEmpty()) {
+						status.setText("No images were stacked.");
+						return;
 					}
+					
+					// Display stacked images below spectrum
+					double raVal = Double.parseDouble(ra.getText());
+					double decVal = Double.parseDouble(dec.getText());
+					int sizeVal = Integer.parseInt(size.getText());
+					BufferedImage imageGrid = ImagePlotter.plotImages(raVal, decVal, stackedImages, sizeVal, 10);
+					
+					// Clear previous content and add image
+					imagesPanel.removeAll();
+					JLabel imageLabel = new JLabel(new ImageIcon(imageGrid));
+					imagesPanel.add(imageLabel);
+					imagesPanel.revalidate();
+					imagesPanel.repaint();
+					
+					status.setText("Stacked " + stackedImages.size() + " detector images.");
+				} catch (Exception ex) {
+					error(ex.getCause() == null ? ex : ex.getCause());
 				}
-			}.execute();
-		} catch (Exception ex) {
-			error(ex);
-		}
+			}
+		}.execute();
 	}
 
 	private void saveCsv() {
