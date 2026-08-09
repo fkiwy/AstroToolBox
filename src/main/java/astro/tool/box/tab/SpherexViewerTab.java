@@ -58,7 +58,7 @@ public class SpherexViewerTab implements Tab {
 		ra = field(form, "RA (deg)", "");
 		dec = field(form, "Dec (deg)", "");
 		size = field(form, "Cutout (arcsec)", "120");
-		radius = field(form, "Aperture (pixels)", "2.0");
+		radius = field(form, "Aperture (pixels)", "4.0");
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
