@@ -42,6 +42,8 @@ public class SpherexViewerTab implements Tab {
 	private JPanel imagesPanel;
 	private List<SpherexPipeline.Point> points = List.of();
 	private List<Map<String, Object>> stackedImages = List.of();
+	private double lastRa = 0;
+	private double lastDec = 0;
 
 	public SpherexViewerTab(JFrame frame, JTabbedPane tabs) {
 		this.frame = frame;
@@ -71,21 +73,26 @@ public class SpherexViewerTab implements Tab {
 		png.addActionListener(e -> savePng());
 		form.add(png);
 		main.add(form, BorderLayout.NORTH);
-		
-		// Create vertical layout with spectrum on top and images on bottom
-		JPanel contentPanel = new JPanel(new BorderLayout(8, 8));
+
+		// Create vertical split pane with spectrum on top and images on bottom
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitPane.setDividerLocation(0.7);  // 70% for spectrum, 30% for images
+		splitPane.setResizeWeight(0.7);  // Spectrum gets 70% of extra space
+
 		chart = createChart(points);
 		chartPanel = new ChartPanel(chart);
-		contentPanel.add(chartPanel, BorderLayout.CENTER);
-		
+		chartPanel.setMinimumSize(new Dimension(400, 300));
+		splitPane.setTopComponent(chartPanel);
+
 		imagesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		imagesPanel.setBackground(Color.WHITE);
 		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
 		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
 		imagesPanel.add(emptyLabel);
-		contentPanel.add(imagesPanel, BorderLayout.SOUTH);
-		main.add(contentPanel, BorderLayout.CENTER);
-		
+		splitPane.setBottomComponent(imagesPanel);
+
+		main.add(splitPane, BorderLayout.CENTER);
+
 		status = new JLabel("Enter coordinates to generate an aperture spectrum from public SPHEREx cutouts.");
 		main.add(status, BorderLayout.SOUTH);
 		if (visible) tabs.addTab(TAB_NAME, main);
@@ -103,7 +110,18 @@ public class SpherexViewerTab implements Tab {
 	private void generate() {
 		final SpherexPipeline.Config config;
 		try {
-			config = new SpherexPipeline.Config(Double.parseDouble(ra.getText()), Double.parseDouble(dec.getText()), Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
+			double raVal = Double.parseDouble(ra.getText());
+			double decVal = Double.parseDouble(dec.getText());
+			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
+
+			// Clean up FITS directory if coordinates changed (new object)
+			if (!Double.isNaN(lastRa) && !Double.isNaN(lastDec)) {
+				if (raVal != lastRa || decVal != lastDec) {
+					cleanupCutoutDirectory(config.cacheDir());
+				}
+			}
+			lastRa = raVal;
+			lastDec = decVal;
 		} catch (Exception ex) {
 			error(ex);
 			return;
@@ -133,7 +151,7 @@ public class SpherexViewerTab implements Tab {
 					status.setText("Generated " + points.size() + " spectrum points; " + r.warnings().size() + " cutouts skipped.");
 					csv.setEnabled(true);
 					png.setEnabled(true);
-					
+
 					// Stack and display images using already-downloaded FITS files
 					if (!r.fitsFiles().isEmpty()) {
 						stackAndDisplayImages(r.fitsFiles());
@@ -268,20 +286,20 @@ public class SpherexViewerTab implements Tab {
 						status.setText("No images were stacked.");
 						return;
 					}
-					
+
 					// Display stacked images below spectrum
 					double raVal = Double.parseDouble(ra.getText());
 					double decVal = Double.parseDouble(dec.getText());
 					int sizeVal = Integer.parseInt(size.getText());
 					BufferedImage imageGrid = ImagePlotter.plotImages(raVal, decVal, stackedImages, sizeVal, 10);
-					
+
 					// Clear previous content and add image
 					imagesPanel.removeAll();
 					JLabel imageLabel = new JLabel(new ImageIcon(imageGrid));
 					imagesPanel.add(imageLabel);
 					imagesPanel.revalidate();
 					imagesPanel.repaint();
-					
+
 					status.setText("Stacked " + stackedImages.size() + " detector images.");
 				} catch (Exception ex) {
 					error(ex.getCause() == null ? ex : ex.getCause());
@@ -318,5 +336,26 @@ public class SpherexViewerTab implements Tab {
 	private void error(Throwable ex) {
 		status.setText("Spectrum generation failed.");
 		JOptionPane.showMessageDialog(frame, ex.getMessage(), TAB_NAME, JOptionPane.ERROR_MESSAGE);
+	}
+
+	private void cleanupCutoutDirectory(Path cacheDir) {
+		try {
+			Path cutoutsDir = cacheDir.resolve("cutouts");
+			if (Files.exists(cutoutsDir)) {
+				try (var paths = Files.walk(cutoutsDir)) {
+					paths.sorted(Comparator.reverseOrder())
+							.forEach(path -> {
+								try {
+									Files.delete(path);
+								} catch (Exception e) {
+									// Ignore errors during cleanup
+								}
+							});
+				}
+				status.setText("Cleaned up old cutout files for new object.");
+			}
+		} catch (Exception ex) {
+			// Silently ignore cleanup errors
+		}
 	}
 }

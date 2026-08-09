@@ -1,12 +1,21 @@
 package astro.tool.box.spherex;
 
-import nom.tam.fits.*;
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.BinaryTableHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.Header;
 
-import java.io.*;
-import java.net.*;
-import java.net.http.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.*;
 
@@ -36,7 +45,8 @@ public final class SpherexPipeline {
 	public record Point(double wavelengthUm, double fluxUjy, double errorUjy, int detector, int count) {
 	}
 
-	public record Result(List<Point> points, int discovered, int measured, List<String> warnings, List<Path> fitsFiles) {
+	public record Result(List<Point> points, int discovered, int measured, List<String> warnings,
+	                     List<Path> fitsFiles) {
 		public Result(List<Point> points, int discovered, int measured, List<String> warnings) {
 			this(points, discovered, measured, warnings, new ArrayList<>());
 		}
@@ -148,7 +158,9 @@ public final class SpherexPipeline {
 		}
 	}
 
-	/** QR2 spectral-channel table plus its full-detector pixel-to-channel map. */
+	/**
+	 * QR2 spectral-channel table plus its full-detector pixel-to-channel map.
+	 */
 	private record SpectralChannels(int[][] channelMap, Map<Integer, List<Channel>> byDetector) {
 	}
 
@@ -185,7 +197,8 @@ public final class SpherexPipeline {
 						number(table.getElement(row, maxCol)).doubleValue());
 				byDetector.computeIfAbsent(detector, ignored -> new ArrayList<>()).add(channel);
 			}
-			for (List<Channel> channels : byDetector.values()) channels.sort(Comparator.comparingDouble(Channel::centerUm));
+			for (List<Channel> channels : byDetector.values())
+				channels.sort(Comparator.comparingDouble(Channel::centerUm));
 			return new SpectralChannels(map, byDetector);
 		}
 	}
@@ -315,7 +328,8 @@ public final class SpherexPipeline {
 		int px = (int) Math.round(x + 1 - h.getDoubleValue("CRPIX1A", 1)) - 1, py = (int) Math.round(y + 1 - h.getDoubleValue("CRPIX2A", 1)) - 1;
 		if (py >= 0 && px >= 0 && py < channels.channelMap.length && px < channels.channelMap[0].length) {
 			int number = channels.channelMap[py][px];
-			for (Channel channel : channels.byDetector.getOrDefault(detector, List.of())) if (channel.number == number) return channel.centerUm;
+			for (Channel channel : channels.byDetector.getOrDefault(detector, List.of()))
+				if (channel.number == number) return channel.centerUm;
 		}
 		return Double.NaN;
 	}
@@ -342,13 +356,20 @@ public final class SpherexPipeline {
 		Map<Integer, List<Point>> groups = new HashMap<>();
 		for (Point p : input) groups.computeIfAbsent(p.detector, ignored -> new ArrayList<>()).add(p);
 		List<Point> out = new ArrayList<>();
-		for (var entry : groups.entrySet()) for (Channel channel : calibration.byDetector.getOrDefault(entry.getKey(), List.of())) {
-			double weight = 0, flux = 0; int count = 0;
-			for (Point point : entry.getValue()) if (point.wavelengthUm >= channel.minUm && point.wavelengthUm <= channel.maxUm) {
-				double w = 1 / (point.errorUjy * point.errorUjy); weight += w; flux += w * point.fluxUjy; count++;
+		for (var entry : groups.entrySet())
+			for (Channel channel : calibration.byDetector.getOrDefault(entry.getKey(), List.of())) {
+				double weight = 0, flux = 0;
+				int count = 0;
+				for (Point point : entry.getValue())
+					if (point.wavelengthUm >= channel.minUm && point.wavelengthUm <= channel.maxUm) {
+						double w = 1 / (point.errorUjy * point.errorUjy);
+						weight += w;
+						flux += w * point.fluxUjy;
+						count++;
+					}
+				if (count > 0 && weight > 0)
+					out.add(new Point(channel.centerUm, flux / weight, Math.sqrt(1 / weight), entry.getKey(), count));
 			}
-			if (count > 0 && weight > 0) out.add(new Point(channel.centerUm, flux / weight, Math.sqrt(1 / weight), entry.getKey(), count));
-		}
 		return out;
 	}
 
@@ -360,8 +381,16 @@ public final class SpherexPipeline {
 
 	private static int[] integers(Object value) {
 		if (value instanceof int[] a) return a;
-		if (value instanceof short[] a) { int[] out = new int[a.length]; for (int i = 0; i < a.length; i++) out[i] = a[i]; return out; }
-		if (value instanceof byte[] a) { int[] out = new int[a.length]; for (int i = 0; i < a.length; i++) out[i] = Byte.toUnsignedInt(a[i]); return out; }
+		if (value instanceof short[] a) {
+			int[] out = new int[a.length];
+			for (int i = 0; i < a.length; i++) out[i] = a[i];
+			return out;
+		}
+		if (value instanceof byte[] a) {
+			int[] out = new int[a.length];
+			for (int i = 0; i < a.length; i++) out[i] = Byte.toUnsignedInt(a[i]);
+			return out;
+		}
 		throw new IllegalArgumentException("Unsupported FITS integer vector type: " + value.getClass().getName());
 	}
 
@@ -378,14 +407,29 @@ public final class SpherexPipeline {
 
 	private static int[][] integers2d(Object value) {
 		if (value instanceof int[][] a) return a;
-		if (value instanceof short[][] a) { int[][] out = new int[a.length][a[0].length]; for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) out[y][x] = a[y][x]; return out; }
-		if (value instanceof byte[][] a) { int[][] out = new int[a.length][a[0].length]; for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) out[y][x] = Byte.toUnsignedInt(a[y][x]); return out; }
+		if (value instanceof short[][] a) {
+			int[][] out = new int[a.length][a[0].length];
+			for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) out[y][x] = a[y][x];
+			return out;
+		}
+		if (value instanceof byte[][] a) {
+			int[][] out = new int[a.length][a[0].length];
+			for (int y = 0; y < a.length; y++)
+				for (int x = 0; x < a[0].length; x++) out[y][x] = Byte.toUnsignedInt(a[y][x]);
+			return out;
+		}
 		throw new IllegalArgumentException("Unsupported FITS integer image type");
 	}
 
 	private static double[][][] doubles3d(Object value) {
 		if (value instanceof double[][][] a) return a;
-		if (value instanceof float[][][] a) { double[][][] out = new double[a.length][a[0].length][a[0][0].length]; for (int y = 0; y < a.length; y++) for (int x = 0; x < a[0].length; x++) for (int z = 0; z < a[0][0].length; z++) out[y][x][z] = a[y][x][z]; return out; }
+		if (value instanceof float[][][] a) {
+			double[][][] out = new double[a.length][a[0].length][a[0][0].length];
+			for (int y = 0; y < a.length; y++)
+				for (int x = 0; x < a[0].length; x++)
+					for (int z = 0; z < a[0][0].length; z++) out[y][x][z] = a[y][x][z];
+			return out;
+		}
 		throw new IllegalArgumentException("Unsupported WCS-WAVE VALUES type");
 	}
 
@@ -422,7 +466,7 @@ public final class SpherexPipeline {
 	 * Returns a list of stacked images organized by detector band.
 	 */
 	public static List<Map<String, Object>> stackImages(double raDeg, double decDeg, int cutoutArcsec,
-			Path cacheDir, Progress progress) throws Exception {
+	                                                    Path cacheDir, Progress progress) throws Exception {
 		progress.update("Querying IRSA for SPHEREx cutouts for stacking...");
 		List<String> urls = query(new Config(raDeg, decDeg, cutoutArcsec, 2.0, false, cacheDir));
 		if (urls.isEmpty()) throw new IOException("No SPHEREx cutouts cover these coordinates.");
@@ -541,7 +585,7 @@ public final class SpherexPipeline {
 	 * Extract detector cutout from FITS file.
 	 */
 	private static void extractDetectorCutout(Path fitsPath, double raDeg, double decDeg,
-			int cutoutArcsec, Map<String, List<ImageStacker.DetectorCutout>> result) throws Exception {
+	                                          int cutoutArcsec, Map<String, List<ImageStacker.DetectorCutout>> result) throws Exception {
 		try (Fits fits = new Fits(fitsPath.toFile())) {
 			BasicHDU<?> imageHdu = ext(fits, "IMAGE");
 			if (imageHdu == null) throw new IOException("IMAGE extension missing");
@@ -553,7 +597,7 @@ public final class SpherexPipeline {
 			String dateObs = h.getStringValue("DATE-OBS", "");
 			Object imageKernel = imageHdu.getKernel();
 			if (imageKernel == null) throw new IOException("IMAGE kernel is null");
-			
+
 			double[][] imageData = doubles(imageKernel);
 			if (imageData == null || imageData.length == 0) {
 				throw new IOException("IMAGE data is empty");
