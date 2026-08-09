@@ -439,12 +439,17 @@ public final class SpherexPipeline {
 			throw new IOException("No usable detector cutouts were extracted.");
 		}
 
+		progress.update("Found detectors: " + String.join(", ", detectorCutouts.keySet()));
+
 		List<Map<String, Object>> results = new ArrayList<>();
 		progress.update("Stacking detector cutouts...");
 
-		for (var entry : detectorCutouts.entrySet()) {
-			String detector = entry.getKey();
-			List<ImageStacker.DetectorCutout> cutouts = entry.getValue();
+		// Sort detectors numerically (1-6) not lexicographically (1, 10, 2, ...)
+		List<String> sortedDetectors = new ArrayList<>(detectorCutouts.keySet());
+		sortedDetectors.sort((a, b) -> Integer.compare(Integer.parseInt(a), Integer.parseInt(b)));
+
+		for (String detector : sortedDetectors) {
+			List<ImageStacker.DetectorCutout> cutouts = detectorCutouts.get(detector);
 
 			try {
 				ImageStacker.StackResult stackResult = ImageStacker.meanStackDetectorCutouts(
@@ -465,7 +470,7 @@ public final class SpherexPipeline {
 			}
 		}
 
-		results.sort((a, b) -> ((String) a.get("band")).compareTo((String) b.get("band")));
+		progress.update("Successfully stacked " + results.size() + " detectors");
 		return results;
 	}
 
@@ -480,24 +485,40 @@ public final class SpherexPipeline {
 
 			Header h = imageHdu.getHeader();
 			int detector = h.getIntValue("DETECTOR", h.getIntValue("BAND", 0));
-			if (detector < 1 || detector > 6) throw new IOException("Invalid detector number");
+			if (detector < 1 || detector > 6) throw new IOException("Invalid detector number: " + detector);
 
 			String dateObs = h.getStringValue("DATE-OBS", "");
-			double[][] imageData = doubles(imageHdu.getKernel());
+			Object imageKernel = imageHdu.getKernel();
+			if (imageKernel == null) throw new IOException("IMAGE kernel is null");
+			
+			double[][] imageData = doubles(imageKernel);
+			if (imageData == null || imageData.length == 0) {
+				throw new IOException("IMAGE data is empty");
+			}
 
 			// Extract ZODI and subtract
 			Object zodiRaw = extData(fits, "ZODI");
 			if (zodiRaw != null) {
 				double[][] zodi = doubles(zodiRaw);
-				for (int y = 0; y < imageData.length; y++) {
-					for (int x = 0; x < imageData[0].length; x++) {
-						imageData[y][x] -= zodi[y][x];
+				if (zodi != null && zodi.length == imageData.length && zodi[0].length == imageData[0].length) {
+					for (int y = 0; y < imageData.length; y++) {
+						for (int x = 0; x < imageData[0].length; x++) {
+							imageData[y][x] -= zodi[y][x];
+						}
 					}
 				}
 			}
 
-			// Get FLAGS
-			long[][] flags = longs(extData(fits, "FLAGS"));
+			// Get FLAGS (handle null case)
+			Object flagsRaw = extData(fits, "FLAGS");
+			long[][] flags = null;
+			if (flagsRaw != null) {
+				flags = longs(flagsRaw);
+			}
+			if (flags == null) {
+				// If no FLAGS extension, create empty flags (all zero = no bad pixels)
+				flags = new long[imageData.length][imageData[0].length];
+			}
 
 			String detectorStr = String.valueOf(detector);
 			result.computeIfAbsent(detectorStr, k -> new ArrayList<>())
