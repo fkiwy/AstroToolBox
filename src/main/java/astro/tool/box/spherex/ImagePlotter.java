@@ -1,6 +1,7 @@
 package astro.tool.box.spherex;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
@@ -180,6 +181,12 @@ public class ImagePlotter {
 	private static void drawPhotometryRadii(Graphics2D g2d, int panelX, int panelY,
 	                                        int panelWidth, int panelHeight, double[][] imageData, double[] radii) {
 
+		Object oldAntialiasing = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+		Object oldStrokeControl = g2d.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
+
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
 		int imgHeight = imageData.length;
 		int imgWidth = imageData[0].length;
 
@@ -198,26 +205,31 @@ public class ImagePlotter {
 		double outerBgRadius = radii[2];
 
 		// Draw aperture (red)
-		g2d.setColor(Color.RED);
+		g2d.setColor(Color.MAGENTA);
 		g2d.setStroke(new BasicStroke(1.0f));
 		drawScaledRadius(g2d, displayCenterX, displayCenterY, apertureRadius, radiusScale);
 
 		// Draw background annulus (blue)
-		g2d.setColor(Color.BLUE);
+		g2d.setColor(Color.CYAN);
 		drawScaledRadius(g2d, displayCenterX, displayCenterY, innerBgRadius, radiusScale);
 		drawScaledRadius(g2d, displayCenterX, displayCenterY, outerBgRadius, radiusScale);
+
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldAntialiasing);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, oldStrokeControl);
 	}
 
 	private static void drawScaledRadius(Graphics2D g2d, double centerX, double centerY,
 	                                     double radius, double scale) {
 
 		double scaledRadius = radius * scale;
+		double diameter = scaledRadius * 2;
 
-		int x = (int) Math.round(centerX - scaledRadius);
-		int y = (int) Math.round(centerY - scaledRadius);
-		int diameter = (int) Math.round(scaledRadius * 2);
-
-		g2d.drawOval(x, y, diameter, diameter);
+		g2d.draw(new Ellipse2D.Double(
+				centerX - scaledRadius,
+				centerY - scaledRadius,
+				diameter,
+				diameter
+		));
 	}
 
 	/**
