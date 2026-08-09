@@ -1,9 +1,12 @@
 package astro.tool.box.spherex;
 
-import nom.tam.fits.*;
+import nom.tam.fits.Header;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -50,7 +53,7 @@ public class ImageStacker {
 		public final int nStackedImages;
 
 		public StackResult(String detector, double[][] stackedImage, Header header,
-				int nInputImages, int nStackedImages) {
+		                   int nInputImages, int nStackedImages) {
 			this.detector = detector;
 			this.stackedImage = stackedImage;
 			this.header = header;
@@ -215,7 +218,7 @@ public class ImageStacker {
 		int width = data[0].length;
 
 		double[][] result = new double[targetHeight][targetWidth];
-		
+
 		// Initialize with NaN (padding value)
 		for (int y = 0; y < targetHeight; y++) {
 			for (int x = 0; x < targetWidth; x++) {
@@ -230,7 +233,7 @@ public class ImageStacker {
 			for (int y = 0; y < height; y++) {
 				System.arraycopy(data[y], 0, result[startY + y], startX, width);
 			}
-		} 
+		}
 		// If data is larger, center-crop it
 		else {
 			int startY = (height - targetHeight) / 2;
@@ -239,7 +242,7 @@ public class ImageStacker {
 				System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -260,7 +263,7 @@ public class ImageStacker {
 			for (int y = 0; y < height; y++) {
 				System.arraycopy(data[y], 0, result[startY + y], startX, width);
 			}
-		} 
+		}
 		// If data is larger, center-crop it
 		else {
 			int startY = (height - targetHeight) / 2;
@@ -269,7 +272,7 @@ public class ImageStacker {
 				System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
 			}
 		}
-		
+
 		return result;
 	}
 

@@ -2,8 +2,9 @@ package astro.tool.box.spherex;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utilities for plotting SPHEREx cutout images.
@@ -27,8 +28,8 @@ public class ImagePlotter {
 		public double imageContrast = 10.0;
 		public int rows = 5;
 		public int cols = 6;
-		public int figureWidth = 500;
-		public int figureHeight = 500;
+		public int figureWidth = 1000;
+		public int figureHeight = 1000;
 		public int labelFontSize = 12;
 		public int infoFontSize = 14;
 
@@ -47,7 +48,7 @@ public class ImagePlotter {
 	 * Create a diagnostic image grid for a target.
 	 */
 	public static BufferedImage plotImages(double ra, double dec, List<Map<String, Object>> images,
-			double imageSize, double imageContrast) throws Exception {
+	                                       double imageSize, double imageContrast) throws Exception {
 
 		PlotConfig config = new PlotConfig(imageContrast);
 
@@ -139,7 +140,7 @@ public class ImagePlotter {
 	 * Plot a single cutout image.
 	 */
 	private static void plotSingleCutout(Graphics2D g2d, PlotConfig config, ImageCutout cutout,
-			int x, int y, int width, int height) {
+	                                     int x, int y, int width, int height) {
 
 		// Find min/max for scaling
 		double[] limits = robustLimits(cutout.imageData, config.imageContrast);
@@ -150,11 +151,12 @@ public class ImagePlotter {
 		BufferedImage img = imageDataToBufferedImage(cutout.imageData, vmin, vmax);
 		g2d.drawImage(img, x, y, width, height, null);
 
-		// Draw label
-		g2d.setColor(new Color(255, 255, 255, 200));
-		g2d.fillRect(x + 5, y + 5, 40, 20);
+		// Draw label (white background, half size)
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(x + 5, y + 5, 20, 10);
 		g2d.setColor(Color.BLACK);
-		g2d.drawString(cutout.band, x + 8, y + 20);
+		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.drawString(cutout.band, x + 7, y + 13);
 
 		// Draw aperture circles
 		drawPhotometryRadii(g2d, x, y, width, height, cutout.imageData, cutout.photometryRadii);
@@ -190,7 +192,7 @@ public class ImagePlotter {
 	 * Draw photometry aperture circles.
 	 */
 	private static void drawPhotometryRadii(Graphics2D g2d, int panelX, int panelY,
-			int panelWidth, int panelHeight, double[][] imageData, double[] radii) {
+	                                        int panelWidth, int panelHeight, double[][] imageData, double[] radii) {
 
 		int imgHeight = imageData.length;
 		int imgWidth = imageData[0].length;
@@ -296,7 +298,7 @@ public class ImagePlotter {
 	/**
 	 * Center-crop arrays to common shape.
 	 */
-	public static double[][] cropToCommonCenter(double[][] ... arrays) throws Exception {
+	public static double[][] cropToCommonCenter(double[][]... arrays) throws Exception {
 		if (arrays.length == 0) {
 			throw new IllegalArgumentException("At least one array is required");
 		}
