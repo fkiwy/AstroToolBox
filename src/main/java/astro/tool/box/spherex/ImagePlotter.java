@@ -12,16 +12,7 @@ import java.util.Map;
  */
 public class ImagePlotter {
 
-	public static class ImageCutout {
-		public final String band;
-		public final double[][] imageData;
-		public final double[] photometryRadii;
-
-		public ImageCutout(String band, double[][] imageData, double[] photometryRadii) {
-			this.band = band;
-			this.imageData = imageData;
-			this.photometryRadii = photometryRadii;
-		}
+	public record ImageCutout(String band, double[][] imageData, double[] photometryRadii) {
 	}
 
 	public static class PlotConfig {
@@ -30,11 +21,6 @@ public class ImagePlotter {
 		public int cols = 6;
 		public int figureWidth = 1000;
 		public int figureHeight = 1000;
-		public int labelFontSize = 12;
-		public int infoFontSize = 14;
-
-		public PlotConfig() {
-		}
 
 		public PlotConfig(double imageContrast) {
 			this.imageContrast = imageContrast;
@@ -202,6 +188,10 @@ public class ImagePlotter {
 
 		double scaleX = (double) panelWidth / imgWidth;
 		double scaleY = (double) panelHeight / imgHeight;
+		double radiusScale = Math.min(scaleX, scaleY);
+
+		double displayCenterX = panelX + centerX * scaleX;
+		double displayCenterY = panelY + centerY * scaleY;
 
 		double apertureRadius = radii[0];
 		double innerBgRadius = radii[1];
@@ -210,22 +200,24 @@ public class ImagePlotter {
 		// Draw aperture (red)
 		g2d.setColor(Color.RED);
 		g2d.setStroke(new BasicStroke(1.0f));
-		int apertureX = (int) (panelX + centerX * scaleX - apertureRadius * scaleX);
-		int apertureY = (int) (panelY + centerY * scaleY - apertureRadius * scaleY);
-		int apertureDia = (int) (apertureRadius * 2 * scaleX);
-		g2d.drawOval(apertureX, apertureY, apertureDia, apertureDia);
+		drawScaledRadius(g2d, displayCenterX, displayCenterY, apertureRadius, radiusScale);
 
 		// Draw background annulus (blue)
 		g2d.setColor(Color.BLUE);
-		int bgInnerX = (int) (panelX + centerX * scaleX - innerBgRadius * scaleX);
-		int bgInnerY = (int) (panelY + centerY * scaleY - innerBgRadius * scaleY);
-		int bgInnerDia = (int) (innerBgRadius * 2 * scaleX);
-		g2d.drawOval(bgInnerX, bgInnerY, bgInnerDia, bgInnerDia);
+		drawScaledRadius(g2d, displayCenterX, displayCenterY, innerBgRadius, radiusScale);
+		drawScaledRadius(g2d, displayCenterX, displayCenterY, outerBgRadius, radiusScale);
+	}
 
-		int bgOuterX = (int) (panelX + centerX * scaleX - outerBgRadius * scaleX);
-		int bgOuterY = (int) (panelY + centerY * scaleY - outerBgRadius * scaleY);
-		int bgOuterDia = (int) (outerBgRadius * 2 * scaleX);
-		g2d.drawOval(bgOuterX, bgOuterY, bgOuterDia, bgOuterDia);
+	private static void drawScaledRadius(Graphics2D g2d, double centerX, double centerY,
+	                                     double radius, double scale) {
+
+		double scaledRadius = radius * scale;
+
+		int x = (int) Math.round(centerX - scaledRadius);
+		int y = (int) Math.round(centerY - scaledRadius);
+		int diameter = (int) Math.round(scaledRadius * 2);
+
+		g2d.drawOval(x, y, diameter, diameter);
 	}
 
 	/**
