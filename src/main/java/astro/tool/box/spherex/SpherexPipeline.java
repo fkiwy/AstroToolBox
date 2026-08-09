@@ -410,4 +410,120 @@ public final class SpherexPipeline {
 		if (o instanceof long[][] a) return a;
 		throw new IllegalArgumentException("Unsupported FLAGS type");
 	}
+
+	/**
+	 * Download and stack detector cutouts from the same source files used for spectrum extraction.
+	 * Returns a list of stacked images organized by detector band.
+	 */
+	public static List<Map<String, Object>> stackImages(double raDeg, double decDeg, int cutoutArcsec,
+			Path cacheDir, Progress progress) throws Exception {
+		progress.update("Querying IRSA for SPHEREx cutouts for stacking...");
+		List<String> urls = query(new Config(raDeg, decDeg, cutoutArcsec, 2.0, false, cacheDir));
+		if (urls.isEmpty()) throw new IOException("No SPHEREx cutouts cover these coordinates.");
+
+		Map<String, List<ImageStacker.DetectorCutout>> detectorCutouts = new HashMap<>();
+		long fatalMask = buildFatalMask(ImageStacker.DEFAULT_FATAL_FLAG_BITS);
+
+		for (int i = 0; i < urls.size(); i++) {
+			progress.update("Downloading cutout " + (i + 1) + " of " + urls.size() + " for stacking...");
+			try {
+				Path cutoutPath = download(urls.get(i), cacheDir.resolve("stacking_cutouts"), "cutout_" + i + ".fits");
+				extractDetectorCutout(cutoutPath, raDeg, decDeg, cutoutArcsec, detectorCutouts);
+			} catch (Exception ex) {
+				// Continue with other cutouts
+				progress.update("Skipping cutout " + (i + 1) + ": " + ex.getMessage());
+			}
+		}
+
+		if (detectorCutouts.isEmpty()) {
+			throw new IOException("No usable detector cutouts were extracted.");
+		}
+
+		List<Map<String, Object>> results = new ArrayList<>();
+		progress.update("Stacking detector cutouts...");
+
+		for (var entry : detectorCutouts.entrySet()) {
+			String detector = entry.getKey();
+			List<ImageStacker.DetectorCutout> cutouts = entry.getValue();
+
+			try {
+				ImageStacker.StackResult stackResult = ImageStacker.meanStackDetectorCutouts(
+						detector, cutouts, fatalMask, true);
+
+				Map<String, Object> resultMap = new HashMap<>();
+				resultMap.put("band", "D" + detector);
+				resultMap.put("hdu", stackResult.stackedImage);
+				resultMap.put("phot_radii", new double[]{
+						ImageStacker.DEFAULT_APERTURE_RADIUS_PIX,
+						ImageStacker.DEFAULT_BACKGROUND_INNER_RADIUS_PIX,
+						ImageStacker.DEFAULT_BACKGROUND_OUTER_RADIUS_PIX
+				});
+				results.add(resultMap);
+				progress.update("Stacked detector D" + detector + ": " + stackResult.nStackedImages + "/" + stackResult.nInputImages + " cutouts");
+			} catch (Exception ex) {
+				progress.update("Failed to stack detector D" + detector + ": " + ex.getMessage());
+			}
+		}
+
+		results.sort((a, b) -> ((String) a.get("band")).compareTo((String) b.get("band")));
+		return results;
+	}
+
+	/**
+	 * Extract detector cutout from FITS file.
+	 */
+	private static void extractDetectorCutout(Path fitsPath, double raDeg, double decDeg,
+			int cutoutArcsec, Map<String, List<ImageStacker.DetectorCutout>> result) throws Exception {
+		try (Fits fits = new Fits(fitsPath.toFile())) {
+			BasicHDU<?> imageHdu = ext(fits, "IMAGE");
+			if (imageHdu == null) throw new IOException("IMAGE extension missing");
+
+			Header h = imageHdu.getHeader();
+			int detector = h.getIntValue("DETECTOR", h.getIntValue("BAND", 0));
+			if (detector < 1 || detector > 6) throw new IOException("Invalid detector number");
+
+			String dateObs = h.getStringValue("DATE-OBS", "");
+			double[][] imageData = doubles(imageHdu.getKernel());
+
+			// Extract ZODI and subtract
+			Object zodiRaw = extData(fits, "ZODI");
+			if (zodiRaw != null) {
+				double[][] zodi = doubles(zodiRaw);
+				for (int y = 0; y < imageData.length; y++) {
+					for (int x = 0; x < imageData[0].length; x++) {
+						imageData[y][x] -= zodi[y][x];
+					}
+				}
+			}
+
+			// Get FLAGS
+			long[][] flags = longs(extData(fits, "FLAGS"));
+
+			String detectorStr = String.valueOf(detector);
+			result.computeIfAbsent(detectorStr, k -> new ArrayList<>())
+					.add(new ImageStacker.DetectorCutout(dateObs, imageData, flags, fitsPath.getFileName().toString()));
+		}
+	}
+
+	/**
+	 * Build fatal FLAGS bit mask.
+	 */
+	private static long buildFatalMask(double[] fatalFlagBits) {
+		long mask = 0;
+		for (double bit : fatalFlagBits) {
+			mask |= (1L << (int) bit);
+		}
+		return mask;
+	}
+
+	/**
+	 * Build fatal FLAGS bit mask from integer array.
+	 */
+	private static long buildFatalMask(int[] fatalFlagBits) {
+		long mask = 0;
+		for (int bit : fatalFlagBits) {
+			mask |= (1L << bit);
+		}
+		return mask;
+	}
 }

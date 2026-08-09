@@ -4348,9 +4348,6 @@ public class ImageViewerTab implements Tab {
 			}
 			String imageUrl = DESI_BASE_URL + "/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s"
 					.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_FILTERS, DESI_LS_DR_PARAM);
-
-			System.out.println(imageUrl);
-
 			HttpURLConnection connection = establishHttpConnection(imageUrl);
 			BufferedImage image;
 			try (BufferedInputStream stream = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE)) {
