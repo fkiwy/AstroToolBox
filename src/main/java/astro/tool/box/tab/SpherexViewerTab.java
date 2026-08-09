@@ -55,8 +55,8 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		ra = field(form, "RA (deg)", "24.2455");
-		dec = field(form, "Dec (deg)", "9.5625");
+		ra = field(form, "RA (deg)", "");
+		dec = field(form, "Dec (deg)", "");
 		size = field(form, "Cutout (arcsec)", "120");
 		radius = field(form, "Aperture (pixels)", "2.0");
 		bin = new JCheckBox("Bin spectrum", true);
@@ -76,20 +76,26 @@ public class SpherexViewerTab implements Tab {
 
 		// Create vertical split pane with spectrum on top and images on bottom
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		splitPane.setDividerLocation(0.7);  // 70% for spectrum, 30% for images
 		splitPane.setResizeWeight(0.7);  // Spectrum gets 70% of extra space
+		splitPane.setOneTouchExpandable(true);
 
 		chart = createChart(points);
 		chartPanel = new ChartPanel(chart);
-		chartPanel.setMinimumSize(new Dimension(400, 300));
+		chartPanel.setMinimumSize(new Dimension(400, 120));
 		splitPane.setTopComponent(chartPanel);
 
 		imagesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		imagesPanel.setBackground(Color.WHITE);
+		imagesPanel.setMinimumSize(new Dimension(400, 80));
 		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
 		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
 		imagesPanel.add(emptyLabel);
-		splitPane.setBottomComponent(imagesPanel);
+
+		JScrollPane imagesScrollPane = new JScrollPane(imagesPanel);
+		imagesScrollPane.setMinimumSize(new Dimension(400, 80));
+		splitPane.setBottomComponent(imagesScrollPane);
+
+		SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(0.7));
 
 		main.add(splitPane, BorderLayout.CENTER);
 
@@ -115,7 +121,7 @@ public class SpherexViewerTab implements Tab {
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
 			// Clean up FITS directory if coordinates changed (new object)
-			if (!Double.isNaN(lastRa) && !Double.isNaN(lastDec)) {
+			if (lastRa != 0 && lastDec != 0) {
 				if (raVal != lastRa || decVal != lastDec) {
 					cleanupCutoutDirectory(config.cacheDir());
 				}
