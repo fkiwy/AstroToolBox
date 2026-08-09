@@ -36,7 +36,10 @@ public final class SpherexPipeline {
 	public record Point(double wavelengthUm, double fluxUjy, double errorUjy, int detector, int count) {
 	}
 
-	public record Result(List<Point> points, int discovered, int measured, List<String> warnings) {
+	public record Result(List<Point> points, int discovered, int measured, List<String> warnings, List<Path> fitsFiles) {
+		public Result(List<Point> points, int discovered, int measured, List<String> warnings) {
+			this(points, discovered, measured, warnings, new ArrayList<>());
+		}
 	}
 
 	@FunctionalInterface
@@ -51,12 +54,15 @@ public final class SpherexPipeline {
 		if (urls.isEmpty()) throw new IOException("No SPHEREx cutouts cover these coordinates.");
 		List<Point> points = new ArrayList<>();
 		List<String> warnings = new ArrayList<>();
+		List<Path> fitsFiles = new ArrayList<>();
 		Map<Integer, double[][]> sapms = new HashMap<>();
 		Map<String, SpectralChannels> spectralChannels = new HashMap<>();
 		for (int i = 0; i < urls.size(); i++) {
 			progress.update("Downloading and measuring cutout " + (i + 1) + " of " + urls.size() + "…");
 			try {
-				Point p = measure(download(urls.get(i), config.cacheDir().resolve("cutouts"), "cutout_" + i + ".fits"), config, sapms, spectralChannels);
+				Path fitsPath = download(urls.get(i), config.cacheDir().resolve("cutouts"), "cutout_" + i + ".fits");
+				fitsFiles.add(fitsPath);
+				Point p = measure(fitsPath, config, sapms, spectralChannels);
 				if (p != null) points.add(p);
 			} catch (Exception ex) {
 				warnings.add("Cutout " + (i + 1) + " skipped: " + ex.getMessage());
@@ -68,7 +74,7 @@ public final class SpherexPipeline {
 		if (config.bin()) points = bin(points, spectralChannels);
 		points.sort(Comparator.comparingDouble(Point::wavelengthUm));
 		progress.update("Spectrum complete.");
-		return new Result(points, urls.size(), measured, warnings);
+		return new Result(points, urls.size(), measured, warnings, fitsFiles);
 	}
 
 	private static List<String> query(Config c) throws Exception {
@@ -429,6 +435,63 @@ public final class SpherexPipeline {
 			try {
 				Path cutoutPath = download(urls.get(i), cacheDir.resolve("stacking_cutouts"), "cutout_" + i + ".fits");
 				extractDetectorCutout(cutoutPath, raDeg, decDeg, cutoutArcsec, detectorCutouts);
+			} catch (Exception ex) {
+				// Continue with other cutouts
+				progress.update("Skipping cutout " + (i + 1) + ": " + ex.getMessage());
+			}
+		}
+
+		if (detectorCutouts.isEmpty()) {
+			throw new IOException("No usable detector cutouts were extracted.");
+		}
+
+		progress.update("Found detectors: " + String.join(", ", detectorCutouts.keySet()));
+
+		List<Map<String, Object>> results = new ArrayList<>();
+		progress.update("Stacking detector cutouts...");
+
+		// Sort detectors numerically (1-6) not lexicographically (1, 10, 2, ...)
+		List<String> sortedDetectors = new ArrayList<>(detectorCutouts.keySet());
+		sortedDetectors.sort((a, b) -> Integer.compare(Integer.parseInt(a), Integer.parseInt(b)));
+
+		for (String detector : sortedDetectors) {
+			List<ImageStacker.DetectorCutout> cutouts = detectorCutouts.get(detector);
+
+			try {
+				ImageStacker.StackResult stackResult = ImageStacker.meanStackDetectorCutouts(
+						detector, cutouts, fatalMask, true);
+
+				Map<String, Object> resultMap = new HashMap<>();
+				resultMap.put("band", "D" + detector);
+				resultMap.put("hdu", stackResult.stackedImage);
+				resultMap.put("phot_radii", new double[]{
+						ImageStacker.DEFAULT_APERTURE_RADIUS_PIX,
+						ImageStacker.DEFAULT_BACKGROUND_INNER_RADIUS_PIX,
+						ImageStacker.DEFAULT_BACKGROUND_OUTER_RADIUS_PIX
+				});
+				results.add(resultMap);
+				progress.update("Stacked detector D" + detector + ": " + stackResult.nStackedImages + "/" + stackResult.nInputImages + " cutouts");
+			} catch (Exception ex) {
+				progress.update("Failed to stack detector D" + detector + ": " + ex.getMessage());
+			}
+		}
+
+		progress.update("Successfully stacked " + results.size() + " detectors");
+		return results;
+	}
+
+	/**
+	 * Stack images using already-downloaded FITS files (avoids re-downloading).
+	 */
+	public static List<Map<String, Object>> stackImages(List<Path> fitsFiles, Progress progress) throws Exception {
+		Map<String, List<ImageStacker.DetectorCutout>> detectorCutouts = new HashMap<>();
+		long fatalMask = buildFatalMask(ImageStacker.DEFAULT_FATAL_FLAG_BITS);
+
+		for (int i = 0; i < fitsFiles.size(); i++) {
+			Path fitsPath = fitsFiles.get(i);
+			progress.update("Processing cutout " + (i + 1) + " of " + fitsFiles.size() + " for stacking...");
+			try {
+				extractDetectorCutout(fitsPath, 0, 0, 120, detectorCutouts);
 			} catch (Exception ex) {
 				// Continue with other cutouts
 				progress.update("Skipping cutout " + (i + 1) + ": " + ex.getMessage());
