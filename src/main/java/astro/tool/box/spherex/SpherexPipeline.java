@@ -462,69 +462,6 @@ public final class SpherexPipeline {
 	}
 
 	/**
-	 * Download and stack detector cutouts from the same source files used for spectrum extraction.
-	 * Returns a list of stacked images organized by detector band.
-	 */
-	public static List<Map<String, Object>> stackImages(double raDeg, double decDeg, int cutoutArcsec,
-	                                                    Path cacheDir, Progress progress) throws Exception {
-		progress.update("Querying IRSA for SPHEREx cutouts for stacking...");
-		List<String> urls = query(new Config(raDeg, decDeg, cutoutArcsec, 2.0, false, cacheDir));
-		if (urls.isEmpty()) throw new IOException("No SPHEREx cutouts cover these coordinates.");
-
-		Map<String, List<ImageStacker.DetectorCutout>> detectorCutouts = new HashMap<>();
-		long fatalMask = buildFatalMask(ImageStacker.DEFAULT_FATAL_FLAG_BITS);
-
-		for (int i = 0; i < urls.size(); i++) {
-			progress.update("Downloading cutout " + (i + 1) + " of " + urls.size() + " for stacking...");
-			try {
-				Path cutoutPath = download(urls.get(i), cacheDir.resolve("stacking_cutouts"), "cutout_" + i + ".fits");
-				extractDetectorCutout(cutoutPath, raDeg, decDeg, cutoutArcsec, detectorCutouts);
-			} catch (Exception ex) {
-				// Continue with other cutouts
-				progress.update("Skipping cutout " + (i + 1) + ": " + ex.getMessage());
-			}
-		}
-
-		if (detectorCutouts.isEmpty()) {
-			throw new IOException("No usable detector cutouts were extracted.");
-		}
-
-		progress.update("Found detectors: " + String.join(", ", detectorCutouts.keySet()));
-
-		List<Map<String, Object>> results = new ArrayList<>();
-		progress.update("Stacking detector cutouts...");
-
-		// Sort detectors numerically (1-6) not lexicographically (1, 10, 2, ...)
-		List<String> sortedDetectors = new ArrayList<>(detectorCutouts.keySet());
-		sortedDetectors.sort((a, b) -> Integer.compare(Integer.parseInt(a), Integer.parseInt(b)));
-
-		for (String detector : sortedDetectors) {
-			List<ImageStacker.DetectorCutout> cutouts = detectorCutouts.get(detector);
-
-			try {
-				ImageStacker.StackResult stackResult = ImageStacker.meanStackDetectorCutouts(
-						detector, cutouts, fatalMask, true);
-
-				Map<String, Object> resultMap = new HashMap<>();
-				resultMap.put("band", "D" + detector);
-				resultMap.put("hdu", stackResult.stackedImage);
-				resultMap.put("phot_radii", new double[]{
-						ImageStacker.DEFAULT_APERTURE_RADIUS_PIX,
-						ImageStacker.DEFAULT_BACKGROUND_INNER_RADIUS_PIX,
-						ImageStacker.DEFAULT_BACKGROUND_OUTER_RADIUS_PIX
-				});
-				results.add(resultMap);
-				progress.update("Stacked detector D" + detector + ": " + stackResult.nStackedImages + "/" + stackResult.nInputImages + " cutouts");
-			} catch (Exception ex) {
-				progress.update("Failed to stack detector D" + detector + ": " + ex.getMessage());
-			}
-		}
-
-		progress.update("Successfully stacked " + results.size() + " detectors");
-		return results;
-	}
-
-	/**
 	 * Stack images using already-downloaded FITS files (avoids re-downloading).
 	 */
 	public static List<Map<String, Object>> stackImages(List<Path> fitsFiles, Progress progress) throws Exception {
