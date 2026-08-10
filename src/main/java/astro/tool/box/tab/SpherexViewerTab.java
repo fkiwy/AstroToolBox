@@ -121,10 +121,8 @@ public class SpherexViewerTab implements Tab {
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
 			// Clean up FITS directory if coordinates changed (new object)
-			if (lastRa != 0 && lastDec != 0) {
-				if (raVal != lastRa || decVal != lastDec) {
-					cleanupCutoutDirectory(config.cacheDir());
-				}
+			if (raVal != lastRa || decVal != lastDec) {
+				cleanupCutoutDirectory(config.cacheDir());
 			}
 			lastRa = raVal;
 			lastDec = decVal;
