@@ -35,6 +35,7 @@ public class SpherexViewerTab implements Tab {
 	private final JTabbedPane tabs;
 	private JTextField ra, dec, size, radius;
 	private JCheckBox bin;
+	private JCheckBox cleanUpDirectory;
 	private JButton run, csv, png;
 	private JLabel status;
 	private JFreeChart chart;
@@ -64,6 +65,8 @@ public class SpherexViewerTab implements Tab {
 		run = new JButton("Generate spectrum");
 		run.addActionListener(e -> generate());
 		form.add(run);
+		cleanUpDirectory = new JCheckBox("Delete downloaded files", false);
+		form.add(cleanUpDirectory);
 		csv = new JButton("Save CSV");
 		csv.setEnabled(false);
 		csv.addActionListener(e -> saveCsv());
@@ -121,8 +124,9 @@ public class SpherexViewerTab implements Tab {
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
 			// Clean up FITS directory if coordinates changed (new object)
-			if (raVal != lastRa || decVal != lastDec) {
+			if (cleanUpDirectory.isSelected() || ((raVal != 0 && decVal != 0) && (raVal != lastRa || decVal != lastDec))) {
 				cleanupCutoutDirectory(config.cacheDir());
+				cleanUpDirectory.setSelected(false);
 			}
 			lastRa = raVal;
 			lastDec = decVal;
