@@ -1,5 +1,6 @@
 package astro.tool.box.tab;
 
+import astro.tool.box.container.NumberPair;
 import astro.tool.box.spherex.ImagePlotter;
 import astro.tool.box.spherex.SpherexPipeline;
 import org.jfree.chart.ChartFactory;
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 
+import static astro.tool.box.main.ToolboxHelper.getCoordinates;
 import static astro.tool.box.tab.SettingsTab.getUserSetting;
 import static astro.tool.box.tab.SettingsTab.setUserSetting;
 
@@ -36,7 +38,7 @@ public class SpherexViewerTab implements Tab {
 	private final String FONT_NAME = "Tahoma";
 	private final JFrame frame;
 	private final JTabbedPane tabs;
-	private JTextField ra, dec, size, radius;
+	private JTextField coordinates, size, radius;
 	private JCheckBox bin;
 	private JCheckBox cleanUpDirectory;
 	private JButton run, csv, png;
@@ -57,8 +59,7 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		ra = field(form, "RA (deg)", "111.835");
-		dec = field(form, "Dec (deg)", "17.161");
+		coordinates = field(form, "Coordinates", "111.835 17.161");
 		size = field(form, "Cutout (arcsec)", "120");
 		radius = field(form, "Aperture (pixels)", "4.0");
 		bin = new JCheckBox("Bin spectrum", true);
@@ -121,25 +122,29 @@ public class SpherexViewerTab implements Tab {
 		final SpherexPipeline.Config config;
 		final boolean newCoordinates;
 		try {
-			String raStr = ra.getText();
-			String decStr = dec.getText();
-			if (raStr.isEmpty() || decStr.isEmpty()) {
-				JOptionPane.showMessageDialog(frame, "RA and Dec must be provided.", TAB_NAME, JOptionPane.ERROR_MESSAGE);
+			String coordinatesStr = coordinates.getText().trim();
+			if (coordinatesStr.isEmpty()) {
+				JOptionPane.showMessageDialog(frame, "Coordinates must be provided.", TAB_NAME, JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			double raVal = Double.parseDouble(raStr);
-			double decVal = Double.parseDouble(decStr);
+
+			NumberPair coords = getCoordinates(coordinatesStr);
+			double raVal = coords.x();
+			double decVal = coords.y();
+			String normalizedRa = String.valueOf(raVal);
+			String normalizedDec = String.valueOf(decVal);
+
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
-			newCoordinates = !raStr.equals(getUserSetting("lastRa")) || !decStr.equals(getUserSetting("lastDec"));
+			newCoordinates = !normalizedRa.equals(getUserSetting("lastRa")) || !normalizedDec.equals(getUserSetting("lastDec"));
 
 			// Clean up FITS directory if coordinates changed (new object)
 			if (cleanUpDirectory.isSelected() || newCoordinates) {
 				cleanupCutoutDirectory(config.cacheDir());
 				cleanUpDirectory.setSelected(false);
 			}
-			setUserSetting("lastRa", raStr);
-			setUserSetting("lastDec", decStr);
+			setUserSetting("lastRa", normalizedRa);
+			setUserSetting("lastDec", normalizedDec);
 		} catch (Exception ex) {
 			error(ex);
 			return;
@@ -306,8 +311,9 @@ public class SpherexViewerTab implements Tab {
 					}
 
 					// Display stacked images below spectrum
-					double raVal = Double.parseDouble(ra.getText());
-					double decVal = Double.parseDouble(dec.getText());
+					NumberPair coords = getCoordinates(coordinates.getText().trim());
+					double raVal = coords.x();
+					double decVal = coords.y();
 					int sizeVal = Integer.parseInt(size.getText());
 					BufferedImage imageGrid = ImagePlotter.plotImages(raVal, decVal, stackedImages, sizeVal, 10);
 
