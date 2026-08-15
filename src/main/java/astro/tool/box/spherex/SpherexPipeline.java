@@ -58,33 +58,61 @@ public final class SpherexPipeline {
 	}
 
 	public static Result run(Config config, Progress progress) throws Exception {
+		return run(config, progress, true);
+	}
+
+	public static Result run(Config config, Progress progress, boolean queryIrsa) throws Exception {
 		Files.createDirectories(config.cacheDir());
-		progress.update("Querying IRSA for SPHEREx cutouts…");
-		List<String> urls = query(config);
-		if (urls.isEmpty()) throw new IOException("No SPHEREx cutouts cover these coordinates.");
+		List<Path> cachedFitsFiles = cachedCutouts(config.cacheDir().resolve("cutouts"));
+		List<String> urls = List.of();
+
+		if (queryIrsa || cachedFitsFiles.isEmpty()) {
+			progress.update("Querying IRSA for SPHEREx cutouts…");
+			urls = query(config);
+			if (urls.isEmpty()) throw new IOException("No SPHEREx cutouts cover these coordinates.");
+		} else {
+			progress.update("Reusing cached SPHEREx cutouts…");
+		}
+
 		List<Point> points = new ArrayList<>();
 		List<String> warnings = new ArrayList<>();
 		List<Path> fitsFiles = new ArrayList<>();
 		Map<Integer, double[][]> sapms = new HashMap<>();
 		Map<String, SpectralChannels> spectralChannels = new HashMap<>();
-		for (int i = 0; i < urls.size(); i++) {
-			progress.update("Downloading and measuring cutout " + (i + 1) + " of " + urls.size() + "…");
-			try {
-				Path fitsPath = download(urls.get(i), config.cacheDir().resolve("cutouts"), "cutout_" + i + ".fits");
-				fitsFiles.add(fitsPath);
-				Point p = measure(fitsPath, config, sapms, spectralChannels);
-				if (p != null) points.add(p);
-			} catch (Exception ex) {
-				warnings.add("Cutout " + (i + 1) + " skipped: " + ex.getMessage());
+
+		if (queryIrsa || cachedFitsFiles.isEmpty()) {
+			for (int i = 0; i < urls.size(); i++) {
+				progress.update("Downloading and measuring cutout " + (i + 1) + " of " + urls.size() + "…");
+				try {
+					Path fitsPath = download(urls.get(i), config.cacheDir().resolve("cutouts"), "cutout_" + i + ".fits");
+					fitsFiles.add(fitsPath);
+					Point p = measure(fitsPath, config, sapms, spectralChannels);
+					if (p != null) points.add(p);
+				} catch (Exception ex) {
+					warnings.add("Cutout " + (i + 1) + " skipped: " + ex.getMessage());
+				}
+			}
+		} else {
+			for (int i = 0; i < cachedFitsFiles.size(); i++) {
+				Path fitsPath = cachedFitsFiles.get(i);
+				progress.update("Measuring cached cutout " + (i + 1) + " of " + cachedFitsFiles.size() + "…");
+				try {
+					fitsFiles.add(fitsPath);
+					Point p = measure(fitsPath, config, sapms, spectralChannels);
+					if (p != null) points.add(p);
+				} catch (Exception ex) {
+					warnings.add("Cached cutout " + (i + 1) + " skipped: " + ex.getMessage());
+				}
 			}
 		}
+
 		if (points.isEmpty())
 			throw new IOException("No usable cutouts were measured." + (warnings.isEmpty() ? "" : " " + warnings.get(0)));
 		int measured = points.size();
 		if (config.bin()) points = bin(points, spectralChannels);
 		points.sort(Comparator.comparingDouble(Point::wavelengthUm));
 		progress.update("Spectrum complete.");
-		return new Result(points, urls.size(), measured, warnings, fitsFiles);
+		return new Result(points, queryIrsa ? urls.size() : cachedFitsFiles.size(), measured, warnings, fitsFiles);
 	}
 
 	private static List<String> query(Config c) throws Exception {
@@ -101,6 +129,16 @@ public final class SpherexPipeline {
 			if (!s.isBlank()) rows.add(s);
 		}
 		return rows;
+	}
+
+	private static List<Path> cachedCutouts(Path cutoutsDir) throws IOException {
+		if (!Files.isDirectory(cutoutsDir)) return List.of();
+		try (var paths = Files.list(cutoutsDir)) {
+			return paths
+					.filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".fits"))
+					.sorted(Comparator.comparing(path -> path.getFileName().toString()))
+					.toList();
+		}
 	}
 
 	private static Point measure(Path path, Config c, Map<Integer, double[][]> sapms,

@@ -119,6 +119,7 @@ public class SpherexViewerTab implements Tab {
 
 	private void generate() {
 		final SpherexPipeline.Config config;
+		final boolean newCoordinates;
 		try {
 			String raStr = ra.getText();
 			String decStr = dec.getText();
@@ -130,8 +131,10 @@ public class SpherexViewerTab implements Tab {
 			double decVal = Double.parseDouble(decStr);
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
+			newCoordinates = !raStr.equals(getUserSetting("lastRa")) || !decStr.equals(getUserSetting("lastDec"));
+
 			// Clean up FITS directory if coordinates changed (new object)
-			if (cleanUpDirectory.isSelected() || !raStr.equals(getUserSetting("lastRa")) || !decStr.equals(getUserSetting("lastDec"))) {
+			if (cleanUpDirectory.isSelected() || newCoordinates) {
 				cleanupCutoutDirectory(config.cacheDir());
 				cleanUpDirectory.setSelected(false);
 			}
@@ -145,7 +148,7 @@ public class SpherexViewerTab implements Tab {
 		new SwingWorker<SpherexPipeline.Result, String>() {
 			@Override
 			protected SpherexPipeline.Result doInBackground() throws Exception {
-				return SpherexPipeline.run(config, this::publish);
+				return SpherexPipeline.run(config, this::publish, newCoordinates);
 			}
 
 			@Override
