@@ -24,6 +24,9 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
+import static astro.tool.box.tab.SettingsTab.setUserSetting;
+
 /**
  * UI for the initial public SPHEREx aperture-spectrum extractor.
  * Extended to display stacked images over the spectrum plot.
@@ -43,8 +46,6 @@ public class SpherexViewerTab implements Tab {
 	private JPanel imagesPanel;
 	private List<SpherexPipeline.Point> points = List.of();
 	private List<Map<String, Object>> stackedImages = List.of();
-	private double lastRa = 0;
-	private double lastDec = 0;
 
 	public SpherexViewerTab(JFrame frame, JTabbedPane tabs) {
 		this.frame = frame;
@@ -56,8 +57,8 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		ra = field(form, "RA (deg)", "");
-		dec = field(form, "Dec (deg)", "");
+		ra = field(form, "RA (deg)", "111.835");
+		dec = field(form, "Dec (deg)", "17.161");
 		size = field(form, "Cutout (arcsec)", "120");
 		radius = field(form, "Aperture (pixels)", "4.0");
 		bin = new JCheckBox("Bin spectrum", true);
@@ -119,17 +120,23 @@ public class SpherexViewerTab implements Tab {
 	private void generate() {
 		final SpherexPipeline.Config config;
 		try {
-			double raVal = Double.parseDouble(ra.getText());
-			double decVal = Double.parseDouble(dec.getText());
+			String raStr = ra.getText();
+			String decStr = dec.getText();
+			if (raStr.isEmpty() || decStr.isEmpty()) {
+				JOptionPane.showMessageDialog(frame, "RA and Dec must be provided.", TAB_NAME, JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			double raVal = Double.parseDouble(raStr);
+			double decVal = Double.parseDouble(decStr);
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
 			// Clean up FITS directory if coordinates changed (new object)
-			if (cleanUpDirectory.isSelected() || ((raVal != 0 && decVal != 0) && (raVal != lastRa || decVal != lastDec))) {
+			if (cleanUpDirectory.isSelected() || !raStr.equals(getUserSetting("lastRa")) || !decStr.equals(getUserSetting("lastDec"))) {
 				cleanupCutoutDirectory(config.cacheDir());
 				cleanUpDirectory.setSelected(false);
 			}
-			lastRa = raVal;
-			lastDec = decVal;
+			setUserSetting("lastRa", raStr);
+			setUserSetting("lastDec", decStr);
 		} catch (Exception ex) {
 			error(ex);
 			return;
