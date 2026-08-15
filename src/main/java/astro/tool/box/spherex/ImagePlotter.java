@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class ImagePlotter {
 
-	public record ImageCutout(String band, double[][] imageData, double[] photometryRadii) {
+	public record ImageCutout(String band, Object imageData, double[] photometryRadii) {
 	}
 
 	public static class PlotConfig {
@@ -56,11 +56,20 @@ public class ImagePlotter {
 
 		// Plot individual cutouts
 		List<ImageCutout> cutouts = normalizeCutouts(images);
+		ImageCutout colorCutout = createD2D4D6ColorCutout(cutouts);
 		int panelWidth = config.figureWidth / config.cols;
 		int panelHeight = config.figureHeight / config.rows;
 
 		int panelIndex = 0;
 		for (ImageCutout cutout : cutouts) {
+			if ("D6".equals(cutout.band) && colorCutout != null) {
+				int row = panelIndex / config.cols;
+				int col = panelIndex % config.cols;
+				plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight,
+						panelWidth, panelHeight);
+				panelIndex++;
+			}
+
 			int row = panelIndex / config.cols;
 			int col = panelIndex % config.cols;
 			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight,
@@ -129,13 +138,15 @@ public class ImagePlotter {
 	private static void plotSingleCutout(Graphics2D g2d, PlotConfig config, ImageCutout cutout,
 	                                     int x, int y, int width, int height) {
 
+		double[][] imageData = (double[][]) cutout.imageData;
+
 		// Find min/max for scaling
-		double[] limits = robustLimits(cutout.imageData, config.imageContrast);
+		double[] limits = robustLimits(imageData, config.imageContrast);
 		double vmin = limits[0];
 		double vmax = limits[1];
 
 		// Draw grayscale image
-		BufferedImage img = imageDataToBufferedImage(cutout.imageData, vmin, vmax);
+		BufferedImage img = imageDataToBufferedImage(imageData, vmin, vmax);
 		g2d.drawImage(img, x, y, width, height, null);
 
 		// Draw label (white background, half size)
@@ -146,7 +157,99 @@ public class ImagePlotter {
 		g2d.drawString(cutout.band, x + 7, y + 13);
 
 		// Draw aperture circles
-		drawPhotometryRadii(g2d, x, y, width, height, cutout.imageData, cutout.photometryRadii);
+		drawPhotometryRadii(g2d, x, y, width, height, imageData, cutout.photometryRadii);
+	}
+
+	/**
+	 * Plot the D2/D4/D6 RGB composite cutout.
+	 */
+	private static void plotSingleColorCutout(Graphics2D g2d, PlotConfig config, ImageCutout cutout,
+	                                          int x, int y, int width, int height) {
+
+		double[][][] channels = (double[][][]) cutout.imageData;
+		BufferedImage img = colorChannelsToBufferedImage(channels[0], channels[1], channels[2], config.imageContrast);
+		g2d.drawImage(img, x, y, width, height, null);
+
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(x + 5, y + 5, 58, 10);
+		g2d.setColor(Color.BLACK);
+		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.drawString(cutout.band, x + 7, y + 13);
+
+		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii);
+	}
+
+	/**
+	 * Create an RGB composite from D2, D4, and D6.
+	 * Blue channel: D2, green channel: D4, red channel: D6.
+	 */
+	private static ImageCutout createD2D4D6ColorCutout(List<ImageCutout> cutouts) throws Exception {
+		ImageCutout d2 = null;
+		ImageCutout d4 = null;
+		ImageCutout d6 = null;
+
+		for (ImageCutout cutout : cutouts) {
+			if ("D2".equals(cutout.band)) {
+				d2 = cutout;
+			} else if ("D4".equals(cutout.band)) {
+				d4 = cutout;
+			} else if ("D6".equals(cutout.band)) {
+				d6 = cutout;
+			}
+		}
+
+		if (d2 == null || d4 == null || d6 == null) {
+			return null;
+		}
+
+		double[][] d2Data = (double[][]) d2.imageData;
+		double[][] d4Data = (double[][]) d4.imageData;
+		double[][] d6Data = (double[][]) d6.imageData;
+
+		double[][] blue = cropToCommonCenter(d2Data, d4Data, d6Data);
+		double[][] green = cropToCommonCenter(d4Data, d2Data, d6Data);
+		double[][] red = cropToCommonCenter(d6Data, d2Data, d4Data);
+
+		return new ImageCutout("D2/D4/D6", new double[][][]{red, green, blue}, d6.photometryRadii);
+	}
+
+	/**
+	 * Convert three image channels to an RGB BufferedImage.
+	 */
+	private static BufferedImage colorChannelsToBufferedImage(double[][] red, double[][] green,
+	                                                          double[][] blue, double imageContrast) {
+		int height = red.length;
+		int width = red[0].length;
+
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+		double[] redLimits = robustLimits(red, imageContrast);
+		double[] greenLimits = robustLimits(green, imageContrast);
+		double[] blueLimits = robustLimits(blue, imageContrast);
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				int r = scaleChannel(red[y][x], redLimits[0], redLimits[1]);
+				int g = scaleChannel(green[y][x], greenLimits[0], greenLimits[1]);
+				int b = scaleChannel(blue[y][x], blueLimits[0], blueLimits[1]);
+				img.setRGB(x, y, (r << 16) | (g << 8) | b);
+			}
+		}
+
+		return img;
+	}
+
+	private static int scaleChannel(double value, double vmin, double vmax) {
+		if (!Double.isFinite(value)) {
+			value = 0;
+		}
+
+		double range = vmax - vmin;
+		if (range <= 0) {
+			range = 1;
+		}
+
+		return (int) Math.min(255, Math.max(0, 255 * (value - vmin) / range));
 	}
 
 	/**
