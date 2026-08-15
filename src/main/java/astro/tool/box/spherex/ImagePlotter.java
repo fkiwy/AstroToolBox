@@ -76,8 +76,26 @@ public class ImagePlotter {
 			}
 		}
 
+		drawVerticalSeparators(g2d, config, panelWidth);
+
 		g2d.dispose();
 		return figure;
+	}
+
+	private static void drawVerticalSeparators(Graphics2D g2d, PlotConfig config, int panelWidth) {
+		Stroke oldStroke = g2d.getStroke();
+		Color oldColor = g2d.getColor();
+
+		g2d.setColor(Color.WHITE);
+		g2d.setStroke(new BasicStroke(1.0f));
+
+		for (int col = 1; col < config.cols; col++) {
+			int x = col * panelWidth;
+			g2d.drawLine(x, 0, x, config.figureHeight);
+		}
+
+		g2d.setStroke(oldStroke);
+		g2d.setColor(oldColor);
 	}
 
 	/**
