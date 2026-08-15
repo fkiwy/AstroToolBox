@@ -18,10 +18,10 @@ public class ImagePlotter {
 
 	public static class PlotConfig {
 		public double imageContrast = 10.0;
-		public int rows = 5;
-		public int cols = 6;
-		public int figureWidth = 1000;
-		public int figureHeight = 1000;
+		public int rows = 1;
+		public int cols = 7;
+		public int figureWidth = 1400;
+		public int figureHeight = 200;
 
 		public PlotConfig(double imageContrast) {
 			this.imageContrast = imageContrast;
@@ -62,19 +62,18 @@ public class ImagePlotter {
 
 		int panelIndex = 0;
 		for (ImageCutout cutout : cutouts) {
-			if ("D6".equals(cutout.band) && colorCutout != null) {
-				int row = panelIndex / config.cols;
-				int col = panelIndex % config.cols;
-				plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight,
-						panelWidth, panelHeight);
-				panelIndex++;
-			}
-
 			int row = panelIndex / config.cols;
 			int col = panelIndex % config.cols;
 			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight,
 					panelWidth, panelHeight);
 			panelIndex++;
+			if ("D6".equals(cutout.band) && colorCutout != null) {
+				row = panelIndex / config.cols;
+				col = panelIndex % config.cols;
+				plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight,
+						panelWidth, panelHeight);
+				panelIndex++;
+			}
 		}
 
 		g2d.dispose();
@@ -153,7 +152,7 @@ public class ImagePlotter {
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(x + 5, y + 5, 20, 10);
 		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		g2d.drawString(cutout.band, x + 7, y + 13);
 
 		// Draw aperture circles
@@ -173,7 +172,7 @@ public class ImagePlotter {
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(x + 5, y + 5, 58, 10);
 		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		g2d.drawString(cutout.band, x + 7, y + 13);
 
 		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii);
