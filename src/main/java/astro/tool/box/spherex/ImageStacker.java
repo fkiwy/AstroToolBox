@@ -67,14 +67,20 @@ public class ImageStacker {
 		public final Header header;
 		public final int nInputImages;
 		public final int nStackedImages;
+		/** Target position in the stacked image, using 0-based pixel coordinates. */
+		public final double targetPixelX;
+		public final double targetPixelY;
 
 		public StackResult(String detector, double[][] stackedImage, Header header,
-		                   int nInputImages, int nStackedImages) {
+		                   int nInputImages, int nStackedImages,
+		                   double targetPixelX, double targetPixelY) {
 			this.detector = detector;
 			this.stackedImage = stackedImage;
 			this.header = header;
 			this.nInputImages = nInputImages;
 			this.nStackedImages = nStackedImages;
+			this.targetPixelX = targetPixelX;
+			this.targetPixelY = targetPixelY;
 		}
 	}
 
@@ -290,6 +296,25 @@ public class ImageStacker {
 		if (outputHeader == null)
 			outputHeader = new Header();
 
+		/*
+		 * Determine the actual target position in the output pixel grid.
+		 * For a reprojected stack this is obtained from the output WCS, rather
+		 * than assuming that the target is at width/2, height/2.  This matters
+		 * for the photometry overlays because FITS CRPIX uses 1-based pixel
+		 * coordinates whereas Java image arrays use 0-based coordinates.
+		 */
+		double targetPixelX;
+		double targetPixelY;
+		if (canReproject && requestedCentre != null) {
+			double[] targetPixel = worldToPixel(
+					outputHeader, requestedCentre[0], requestedCentre[1]);
+			targetPixelX = targetPixel[0];
+			targetPixelY = targetPixel[1];
+		} else {
+			targetPixelX = (refWidth - 1) / 2.0;
+			targetPixelY = (refHeight - 1) / 2.0;
+		}
+
 		outputHeader.addValue(
 				"NSTACK", successCount,
 				"Number of cutouts included in stack");
@@ -316,7 +341,8 @@ public class ImageStacker {
 
 		return new StackResult(
 				detector, meanImage, outputHeader,
-				sorted.size(), successCount);
+				sorted.size(), successCount,
+				targetPixelX, targetPixelY);
 	}
 
 	/**

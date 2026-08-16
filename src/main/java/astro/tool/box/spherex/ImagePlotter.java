@@ -14,7 +14,7 @@ import java.util.ArrayList;
  */
 public class ImagePlotter {
 
-	public record ImageCutout(String band, Object imageData, double[] photometryRadii) {
+	public record ImageCutout(String band, Object imageData, double[] photometryRadii, double targetPixelX, double targetPixelY) {
 	}
 
 	public static class PlotConfig {
@@ -132,7 +132,9 @@ public class ImagePlotter {
 			}
 
 			validateImageData(imageData, band);
-			cutouts.add(new ImageCutout(band, imageData, radii));
+			double targetPixelX = getOptionalDouble(image, "target_pixel_x", Double.NaN);
+			double targetPixelY = getOptionalDouble(image, "target_pixel_y", Double.NaN);
+			cutouts.add(new ImageCutout(band, imageData, radii, targetPixelX, targetPixelY));
 		}
 
 		return cutouts;
@@ -167,7 +169,8 @@ public class ImagePlotter {
 		BufferedImage img = imageDataToBufferedImage(imageData, vmin, vmax);
 		g2d.drawImage(img, x, y, width, height, null);
 		drawPanelBorder(g2d, x, y, width, height);
-		drawTargetMarker(g2d, x, y, width, height, imageData.length, imageData[0].length);
+		drawTargetMarker(g2d, x, y, width, height, imageData.length, imageData[0].length,
+				cutout.targetPixelX, cutout.targetPixelY);
 
 		// Draw label (white background, half size)
 		g2d.setColor(Color.WHITE);
@@ -177,7 +180,8 @@ public class ImagePlotter {
 		g2d.drawString(cutout.band, x + 7, y + 15);
 
 		// Draw aperture circles
-		drawPhotometryRadii(g2d, x, y, width, height, imageData, cutout.photometryRadii);
+		drawPhotometryRadii(g2d, x, y, width, height, imageData, cutout.photometryRadii,
+				cutout.targetPixelX, cutout.targetPixelY);
 	}
 
 	/**
@@ -190,7 +194,8 @@ public class ImagePlotter {
 		BufferedImage img = colorChannelsToBufferedImage(channels[0], channels[1], channels[2], config.imageContrast);
 		g2d.drawImage(img, x, y, width, height, null);
 		drawPanelBorder(g2d, x, y, width, height);
-		drawTargetMarker(g2d, x, y, width, height, channels[2].length, channels[2][0].length);
+		drawTargetMarker(g2d, x, y, width, height, channels[2].length, channels[2][0].length,
+				cutout.targetPixelX, cutout.targetPixelY);
 
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(x + 5, y + 5, 85, 14);
@@ -198,7 +203,8 @@ public class ImagePlotter {
 		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
 		g2d.drawString(cutout.band, x + 7, y + 15);
 
-		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii);
+		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii,
+				cutout.targetPixelX, cutout.targetPixelY);
 	}
 
 	/**
@@ -227,7 +233,21 @@ public class ImagePlotter {
 		double[][] red = meanCommonCenter((double[][]) d5.imageData, (double[][]) d6.imageData);
 
 		double[][][] common = cropCommon(red, green, blue);
-		return new ImageCutout("D56-D34-D12", common, d6.photometryRadii);
+		int commonHeight = common[0].length;
+		int commonWidth = common[0][0].length;
+		int d6StartY = (d6DataHeight(d6) - commonHeight) / 2;
+		int d6StartX = (d6DataWidth(d6) - commonWidth) / 2;
+		double targetX = Double.isFinite(d6.targetPixelX) ? d6.targetPixelX - d6StartX : Double.NaN;
+		double targetY = Double.isFinite(d6.targetPixelY) ? d6.targetPixelY - d6StartY : Double.NaN;
+		return new ImageCutout("D56-D34-D12", common, d6.photometryRadii, targetX, targetY);
+	}
+
+	private static int d6DataHeight(ImageCutout c) {
+		return ((double[][]) c.imageData).length;
+	}
+
+	private static int d6DataWidth(ImageCutout c) {
+		return ((double[][]) c.imageData)[0].length;
 	}
 
 	private static ImageCutout findBand(List<ImageCutout> cutouts, String band) {
@@ -361,28 +381,31 @@ public class ImagePlotter {
 	 * helper so they cannot acquire a sub-pixel offset relative to each
 	 * other.
 	 */
-	private static double[] displayImageCenter(
+	private static double[] displayPixelPosition(
 			int panelX, int panelY,
 			int panelWidth, int panelHeight,
-			int imageHeight, int imageWidth) {
+			int imageHeight, int imageWidth,
+			double targetPixelX, double targetPixelY) {
 
-		double centerX = imageWidth / 2.0;
-		double centerY = imageHeight / 2.0;
+		// Backward-compatible fallback for image maps produced before target
+		// pixel coordinates were propagated by ImageStacker.
+		if (!Double.isFinite(targetPixelX)) targetPixelX = imageWidth / 2.0;
+		if (!Double.isFinite(targetPixelY)) targetPixelY = imageHeight / 2.0;
 
 		double scaleX = (double) panelWidth / imageWidth;
 		double scaleY = (double) panelHeight / imageHeight;
 
 		return new double[]{
-				panelX + centerX * scaleX,
-				panelY + centerY * scaleY
+				panelX + (targetPixelX + 0.5) * scaleX,
+				panelY + targetPixelY * scaleY
 		};
 	}
 
-	private static void drawTargetMarker(Graphics2D g2d, int panelX, int panelY, int panelWidth, int panelHeight, int imageHeight, int imageWidth) {
-		// Use exactly the same image-centre convention as the annuli.
-		double[] center = displayImageCenter(
+	private static void drawTargetMarker(Graphics2D g2d, int panelX, int panelY, int panelWidth, int panelHeight,
+	                                     int imageHeight, int imageWidth, double targetPixelX, double targetPixelY) {
+		double[] center = displayPixelPosition(
 				panelX, panelY, panelWidth, panelHeight,
-				imageHeight, imageWidth);
+				imageHeight, imageWidth, targetPixelX, targetPixelY);
 
 		Color old = g2d.getColor();
 		g2d.setColor(Color.RED);
@@ -394,7 +417,8 @@ public class ImagePlotter {
 	}
 
 	private static void drawPhotometryRadii(Graphics2D g2d, int panelX, int panelY,
-	                                        int panelWidth, int panelHeight, double[][] imageData, double[] radii) {
+	                                        int panelWidth, int panelHeight, double[][] imageData, double[] radii,
+	                                        double targetPixelX, double targetPixelY) {
 
 		Object oldAntialiasing = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
 		Object oldStrokeControl = g2d.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
@@ -409,11 +433,10 @@ public class ImagePlotter {
 		double scaleY = (double) panelHeight / imgHeight;
 		double radiusScale = Math.min(scaleX, scaleY);
 
-		// Use exactly the same centre as the target marker and as Python's
-		// _image_center_xy(), i.e. (nx / 2.0, ny / 2.0).
-		double[] center = displayImageCenter(
+		// Use the actual target pixel propagated by ImageStacker.
+		double[] center = displayPixelPosition(
 				panelX, panelY, panelWidth, panelHeight,
-				imgHeight, imgWidth);
+				imgHeight, imgWidth, targetPixelX, targetPixelY);
 		double displayCenterX = center[0];
 		double displayCenterY = center[1];
 
@@ -470,6 +493,12 @@ public class ImagePlotter {
 		while (text.contains(".") && text.endsWith("0")) text = text.substring(0, text.length() - 1);
 		if (text.endsWith(".")) text = text.substring(0, text.length() - 1);
 		return text;
+	}
+
+	private static double getOptionalDouble(Map<String, Object> image, String key, double fallback) {
+		Object value = image.get(key);
+		if (value instanceof Number n) return n.doubleValue();
+		return fallback;
 	}
 
 	/**

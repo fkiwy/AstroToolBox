@@ -289,22 +289,12 @@ public class SpherexViewerTab implements Tab {
 		return sorted.size() % 2 == 0 ? (sorted.get(middle - 1) + sorted.get(middle)) / 2 : sorted.get(middle);
 	}
 
-	private void stackAndDisplayImages(
-			List<Path> fitsFiles,
-			double raDeg,
-			double decDeg) {
-
+	private void stackAndDisplayImages(List<Path> fitsFiles, double raDeg, double decDeg) {
 		new SwingWorker<List<Map<String, Object>>, String>() {
 			@Override
 			protected List<Map<String, Object>> doInBackground() throws Exception {
 				publish("Stacking detector images from downloaded cutouts...");
-
-				return SpherexPipeline.stackImages(
-						fitsFiles,
-						this::publish,
-						raDeg,
-						decDeg
-				);
+				return SpherexPipeline.stackImages(fitsFiles, this::publish, raDeg, decDeg);
 			}
 
 			@Override
