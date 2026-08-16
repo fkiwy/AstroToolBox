@@ -6,7 +6,6 @@ import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 /**
  * Utilities for plotting SPHEREx cutout images.
@@ -14,7 +13,8 @@ import java.util.ArrayList;
  */
 public class ImagePlotter {
 
-	public record ImageCutout(String band, Object imageData, double[] photometryRadii, double targetPixelX, double targetPixelY) {
+	public record ImageCutout(String band, Object imageData, double[] photometryRadii, double targetPixelX,
+	                          double targetPixelY) {
 	}
 
 	public static class PlotConfig {
@@ -213,7 +213,7 @@ public class ImagePlotter {
 	 */
 	/**
 	 * Create the Python-compatible RGB composite.
-	 *
+	 * <p>
 	 * Blue  = mean(D1, D2)
 	 * Green = mean(D3, D4)
 	 * Red   = mean(D5, D6)
@@ -317,16 +317,16 @@ public class ImagePlotter {
 	/**
 	 * Reproduce image_plotter.py's _array_to_lupton_grayscale() for
 	 * each RGB channel.
-	 *
+	 * <p>
 	 * Python does NOT linearly map each RGB channel directly.  It calls:
-	 *
-	 *   make_lupton_rgb(data, data, data,
-	 *                   minimum=vmin, stretch=vmax-vmin, Q=0)
-	 *
+	 * <p>
+	 * make_lupton_rgb(data, data, data,
+	 * minimum=vmin, stretch=vmax-vmin, Q=0)
+	 * <p>
 	 * and converts the resulting RGB image to grayscale.  Astropy's
 	 * Lupton implementation treats Q=0 as a small non-zero Q internally
 	 * (0.1), so the mapping is very slightly nonlinear.
-	 *
+	 * <p>
 	 * We reproduce that mapping here rather than approximating it with
 	 * a simple linear scale.
 	 */
@@ -365,17 +365,17 @@ public class ImagePlotter {
 
 	/**
 	 * Java equivalent of:
-	 *
-	 *   vmin, vmax = _robust_limits(data, image_contrast)
-	 *   stretch = max(vmax-vmin, eps)
-	 *   rgb = make_lupton_rgb(
-	 *       data, data, data,
-	 *       minimum=vmin,
-	 *       stretch=stretch,
-	 *       Q=0
-	 *   )
-	 *   Image.fromarray(rgb).convert("L")
-	 *
+	 * <p>
+	 * vmin, vmax = _robust_limits(data, image_contrast)
+	 * stretch = max(vmax-vmin, eps)
+	 * rgb = make_lupton_rgb(
+	 * data, data, data,
+	 * minimum=vmin,
+	 * stretch=stretch,
+	 * Q=0
+	 * )
+	 * Image.fromarray(rgb).convert("L")
+	 * <p>
 	 * from image_plotter.py.
 	 */
 	private static void validateRgbShape(
@@ -530,7 +530,7 @@ public class ImagePlotter {
 	/**
 	 * Return the display coordinates corresponding to the Python image
 	 * plotter's image centre convention: (nx / 2.0, ny / 2.0).
-	 *
+	 * <p>
 	 * Both the target marker and the photometry overlays use this exact
 	 * helper so they cannot acquire a sub-pixel offset relative to each
 	 * other.

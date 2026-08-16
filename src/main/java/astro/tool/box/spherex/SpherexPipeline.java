@@ -1968,11 +1968,11 @@ public final class SpherexPipeline {
 	 * Stack already-downloaded detector cutouts on a common celestial grid.
 	 *
 	 * @param fitsFiles FITS cutouts to stack
-	 * @param progress progress callback
-	 * @param ra requested output centre RA in degrees; NaN keeps the
-	 *              reference cutout centre
-	 * @param dec requested output centre Dec in degrees; NaN keeps the
-	 *               reference cutout centre
+	 * @param progress  progress callback
+	 * @param ra        requested output centre RA in degrees; NaN keeps the
+	 *                  reference cutout centre
+	 * @param dec       requested output centre Dec in degrees; NaN keeps the
+	 *                  reference cutout centre
 	 */
 	public static List<Map<String, Object>> stackImages(
 			List<Path> fitsFiles, Progress progress,
