@@ -297,40 +297,194 @@ public class ImagePlotter {
 	/**
 	 * Convert three image channels to an RGB BufferedImage.
 	 */
-	private static BufferedImage colorChannelsToBufferedImage(double[][] red, double[][] green,
-	                                                          double[][] blue, double imageContrast) {
+	/**
+	 * Convert the three RGB science arrays to an RGB display image.
+	 *
+	 * This follows the Python image_plotter implementation:
+	 *
+	 *   red/green/blue are stretched independently using the same robust
+	 *   percentile/MAD limits as the grayscale panels, then combined.
+	 *
+	 * The Python implementation uses make_lupton_rgb(..., Q=0) for each
+	 * individual channel.  Q=0 is the linear limit of the Lupton mapping,
+	 * so the Java implementation uses the equivalent linear mapping.
+	 *
+	 * Invalid pixels are handled explicitly.  A missing value in one
+	 * channel does not contaminate the other two channels; a pixel for
+	 * which all three channels are invalid is rendered black.
+	 */
+
+	/**
+	 * Reproduce image_plotter.py's _array_to_lupton_grayscale() for
+	 * each RGB channel.
+	 *
+	 * Python does NOT linearly map each RGB channel directly.  It calls:
+	 *
+	 *   make_lupton_rgb(data, data, data,
+	 *                   minimum=vmin, stretch=vmax-vmin, Q=0)
+	 *
+	 * and converts the resulting RGB image to grayscale.  Astropy's
+	 * Lupton implementation treats Q=0 as a small non-zero Q internally
+	 * (0.1), so the mapping is very slightly nonlinear.
+	 *
+	 * We reproduce that mapping here rather than approximating it with
+	 * a simple linear scale.
+	 */
+	private static BufferedImage colorChannelsToBufferedImage(
+			double[][] red,
+			double[][] green,
+			double[][] blue,
+			double imageContrast) {
+
+		validateRgbShape(red, green, blue);
+
 		int height = red.length;
 		int width = red[0].length;
 
-		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		BufferedImage img =
+				new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-		double[] redLimits = robustLimits(red, imageContrast);
-		double[] greenLimits = robustLimits(green, imageContrast);
-		double[] blueLimits = robustLimits(blue, imageContrast);
+		int[][] r = luptonGrayscaleChannel(red, imageContrast);
+		int[][] g = luptonGrayscaleChannel(green, imageContrast);
+		int[][] b = luptonGrayscaleChannel(blue, imageContrast);
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				int r = scaleChannel(red[y][x], redLimits[0], redLimits[1]);
-				int g = scaleChannel(green[y][x], greenLimits[0], greenLimits[1]);
-				int b = scaleChannel(blue[y][x], blueLimits[0], blueLimits[1]);
-				img.setRGB(x, y, (r << 16) | (g << 8) | b);
+				img.setRGB(
+						x,
+						y,
+						(r[y][x] << 16) |
+								(g[y][x] << 8) |
+								b[y][x]
+				);
 			}
 		}
 
 		return img;
 	}
 
-	private static int scaleChannel(double value, double vmin, double vmax) {
-		if (!Double.isFinite(value)) {
-			value = 0;
+	/**
+	 * Java equivalent of:
+	 *
+	 *   vmin, vmax = _robust_limits(data, image_contrast)
+	 *   stretch = max(vmax-vmin, eps)
+	 *   rgb = make_lupton_rgb(
+	 *       data, data, data,
+	 *       minimum=vmin,
+	 *       stretch=stretch,
+	 *       Q=0
+	 *   )
+	 *   Image.fromarray(rgb).convert("L")
+	 *
+	 * from image_plotter.py.
+	 */
+	private static void validateRgbShape(
+			double[][] red, double[][] green, double[][] blue) {
+		if (red == null || green == null || blue == null ||
+				red.length == 0 || green.length == 0 || blue.length == 0) {
+			throw new IllegalArgumentException("RGB channels must be non-empty");
 		}
 
-		double range = vmax - vmin;
-		if (range <= 0) {
-			range = 1;
+		int height = red.length;
+		int width = red[0] == null ? 0 : red[0].length;
+		if (width == 0 || green[0] == null || blue[0] == null ||
+				green.length != height || blue.length != height ||
+				green[0].length != width || blue[0].length != width) {
+			throw new IllegalArgumentException(
+					"RGB channels must have identical dimensions");
 		}
 
-		return (int) Math.min(255, Math.max(0, 255 * (value - vmin) / range));
+		for (int y = 0; y < height; y++) {
+			if (red[y] == null || green[y] == null || blue[y] == null ||
+					red[y].length != width ||
+					green[y].length != width ||
+					blue[y].length != width) {
+				throw new IllegalArgumentException(
+						"RGB channels must have identical dimensions");
+			}
+		}
+	}
+
+	private static int[][] luptonGrayscaleChannel(
+			double[][] data,
+			double imageContrast) {
+
+		int height = data.length;
+		int width = data[0].length;
+
+		double[] limits = robustLimits(data, imageContrast);
+		double vmin = limits[0];
+		double vmax = limits[1];
+
+		double stretch = vmax - vmin;
+
+		if (!Double.isFinite(stretch) || stretch <= 0.0)
+			stretch = Math.ulp(1.0);
+
+		/*
+		 * Astropy's LuptonAsinhStretch changes Q=0 to Q=0.1 because
+		 * values below 1/2**23 are replaced by 0.1.
+		 */
+		final double q = 0.1;
+		final double frac = 0.1;
+
+		final double slope =
+				frac * 255.0 /
+						asinh(frac * q);
+
+		final double soften =
+				q / stretch;
+
+		int[][] out = new int[height][width];
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+
+				double value = data[y][x];
+
+				if (!Double.isFinite(value)) {
+					out[y][x] = 0;
+					continue;
+				}
+
+				double shifted = value - vmin;
+
+				/*
+				 * Astropy's AsinhMapping:
+				 *
+				 *   if I <= 0: 0
+				 *   else:
+				 *       asinh(I * Q/stretch) * slope
+				 */
+				if (!Double.isFinite(shifted) || shifted <= 0.0) {
+					out[y][x] = 0;
+					continue;
+				}
+
+				double mapped =
+						asinh(shifted * soften) *
+								slope;
+
+				int pixel = (int) mapped;
+
+				if (pixel < 0)
+					pixel = 0;
+				else if (pixel > 255)
+					pixel = 255;
+
+				out[y][x] = pixel;
+			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * Inverse hyperbolic sine.  java.lang.Math does not provide asinh
+	 * on the Java version used by AstroToolBox.
+	 */
+	private static double asinh(double x) {
+		return Math.log(x + Math.sqrt(x * x + 1.0));
 	}
 
 	/**
