@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.List;
 
 import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
 import static astro.tool.box.tab.SettingsTab.setUserSetting;
 
 /**

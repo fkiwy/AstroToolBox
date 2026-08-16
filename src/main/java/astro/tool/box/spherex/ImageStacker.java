@@ -67,7 +67,9 @@ public class ImageStacker {
 		public final Header header;
 		public final int nInputImages;
 		public final int nStackedImages;
-		/** Target position in the stacked image, using 0-based pixel coordinates. */
+		/**
+		 * Target position in the stacked image, using 0-based pixel coordinates.
+		 */
 		public final double targetPixelX;
 		public final double targetPixelY;
 
@@ -417,7 +419,7 @@ public class ImageStacker {
 
 	/**
 	 * Result of a celestial reprojection.
-	 *
+	 * <p>
 	 * The footprint records whether the requested output pixel falls inside
 	 * the geometric footprint of the source image. It is deliberately kept
 	 * separate from the data values: a geometrically covered pixel may still
@@ -429,14 +431,14 @@ public class ImageStacker {
 
 	/**
 	 * Reproject IMAGE-like data onto the common output TAN grid.
-	 *
+	 * <p>
 	 * This is deliberately NaN/flag aware. A single invalid or fatal source
 	 * pixel must not turn the whole bilinear interpolation into NaN, nor may
 	 * a fatal detector pixel leak into the reprojected image simply because
 	 * the nearest-neighbour FLAGS sample happens to land on an adjacent
 	 * good pixel. Instead, invalid source samples are omitted and the
 	 * remaining interpolation weights are renormalized.
-	 *
+	 * <p>
 	 * The footprint is independent of source data validity and is 1 when the
 	 * sky position maps inside the source image.
 	 */
