@@ -27,7 +27,7 @@ public final class SpherexPipeline {
 	private static final String TAP = "https://irsa.ipac.caltech.edu/TAP/sync";
 	private static final String SAPM_COLLECTION = "cal-sapm-v2-2025-164";
 	private static final String SPECTRAL_CHANNELS_COLLECTION = "cal-sch-v1-2026-106";
-	private static final int BAD_FLAGS = flagMask();
+	private static final long BAD_FLAGS = flagMask();
 
 	private SpherexPipeline() {
 	}
@@ -50,6 +50,9 @@ public final class SpherexPipeline {
 		public Result(List<Point> points, int discovered, int measured, List<String> warnings) {
 			this(points, discovered, measured, warnings, new ArrayList<>());
 		}
+	}
+
+	private record SapmKey(String release, int detector) {
 	}
 
 	@FunctionalInterface
@@ -77,7 +80,7 @@ public final class SpherexPipeline {
 		List<Point> points = new ArrayList<>();
 		List<String> warnings = new ArrayList<>();
 		List<Path> fitsFiles = new ArrayList<>();
-		Map<Integer, double[][]> sapms = new HashMap<>();
+		Map<SapmKey, double[][]> sapms = new HashMap<>();
 		Map<String, SpectralChannels> spectralChannels = new HashMap<>();
 
 		if (queryIrsa || cachedFitsFiles.isEmpty()) {
@@ -141,35 +144,132 @@ public final class SpherexPipeline {
 		}
 	}
 
-	private static Point measure(Path path, Config c, Map<Integer, double[][]> sapms,
+	private static Point measure(Path path, Config c,
+	                             Map<SapmKey, double[][]> sapms,
 	                             Map<String, SpectralChannels> spectralChannels) throws Exception {
 		try (Fits fits = new Fits(path.toFile())) {
 			BasicHDU<?> imageHdu = ext(fits, "IMAGE");
-			if (imageHdu == null) throw new IOException("IMAGE extension missing");
+			if (imageHdu == null)
+				throw new IOException("IMAGE extension missing");
+
 			Header h = imageHdu.getHeader();
-			int detector = h.getIntValue("DETECTOR", h.getIntValue("BAND", 0));
-			if (detector < 1 || detector > 6) throw new IOException("Invalid detector number");
-			String release = h.getStringValue("DATAREL", "qr2").toLowerCase(Locale.ROOT);
+
+			int detector = h.getIntValue(
+					"DETECTOR",
+					h.getIntValue("BAND", 0)
+			);
+
+			if (detector < 1 || detector > 6)
+				throw new IOException("Invalid detector number: " + detector);
+
+			String release = h.getStringValue(
+					"DATAREL",
+					"qr2"
+			).toLowerCase(Locale.ROOT);
+
 			SpectralChannels channels = spectralChannels.get(release);
 			if (channels == null) {
-				channels = spectralChannels(release, c.cacheDir);
+				channels = spectralChannels(release, c.cacheDir());
 				spectralChannels.put(release, channels);
 			}
-			double[] pos = worldToPixel(h, c.raDeg, c.decDeg);
+
+			/*
+			 * Source position in the cutout coordinate system.
+			 */
+			double[] pos = worldToPixel(
+					h,
+					c.raDeg(),
+					c.decDeg()
+			);
+
+			double x = pos[0];
+			double y = pos[1];
+
 			double[][] image = doubles(imageHdu.getKernel());
-			double[][] sapm = sapms.get(detector);
+			if (image == null || image.length == 0)
+				throw new IOException("IMAGE data is empty");
+
+			/*
+			 * Load the SAPM for THIS release and detector.
+			 *
+			 * Python uses:
+			 *
+			 *     sapm_key = (data_release, detector)
+			 *
+			 * so Java must not cache SAPM by detector alone.
+			 */
+			SapmKey sapmKey = new SapmKey(release, detector);
+
+			double[][] sapm = sapms.get(sapmKey);
 			if (sapm == null) {
-				sapm = sapm(detector, h, c.cacheDir);
-				sapms.put(detector, sapm);
+				sapm = sapm(detector, h, c.cacheDir());
+				sapms.put(sapmKey, sapm);
 			}
-			double[][] flux = toUjy(image, extData(fits, "ZODI"), sapm, h);
-			double[][] variance = toVariance(extData(fits, "VARIANCE"), sapm, h);
+
+			/*
+			 * Convert IMAGE -> uJy/pixel.
+			 */
+			double[][] flux = toUjy(
+					image,
+					extData(fits, "ZODI"),
+					sapm,
+					h
+			);
+
+			/*
+			 * Convert VARIANCE -> (uJy)^2/pixel.
+			 */
+			double[][] variance = toVariance(
+					extData(fits, "VARIANCE"),
+					sapm,
+					h
+			);
+
+			/*
+			 * FLAGS is optional.
+			 */
 			long[][] flags = longs(extData(fits, "FLAGS"));
-			double[] result = aperture(flux, variance, flags, pos[0], pos[1], c.apertureRadius);
-			if (!Double.isFinite(result[0]) || !Double.isFinite(result[1]) || result[1] <= 0) return null;
-			double wavelength = wavelength(fits, h, pos[0], pos[1], detector, channels);
-			if (!Double.isFinite(wavelength)) throw new IOException("Could not determine calibrated wavelength");
-			return new Point(wavelength, result[0], result[1], detector, 1);
+
+			/*
+			 * The Python implementation uses exact circular-aperture
+			 * integration and sigma-clipped local background estimation.
+			 */
+			double[] result = aperture(
+					flux,
+					variance,
+					flags,
+					x,
+					y,
+					c.apertureRadius()
+			);
+
+			if (!Double.isFinite(result[0]) ||
+					!Double.isFinite(result[1]) ||
+					result[1] <= 0) {
+				return null;
+			}
+
+			double wavelength = wavelength(
+					fits,
+					h,
+					x,
+					y,
+					detector,
+					channels
+			);
+
+			if (!Double.isFinite(wavelength))
+				throw new IOException(
+						"Could not determine calibrated wavelength"
+				);
+
+			return new Point(
+					wavelength,
+					result[0],
+					result[1],
+					detector,
+					1
+			);
 		}
 	}
 
@@ -278,27 +378,568 @@ public final class SpherexPipeline {
 		return out;
 	}
 
-	private static double[] aperture(double[][] f, double[][] v, long[][] flags, double x, double y, double radius) {
-		List<Double> bg = new ArrayList<>();
-		double sum = 0, var = 0;
-		int n = 0;
-		for (int iy = 0; iy < f.length; iy++)
-			for (int ix = 0; ix < f[0].length; ix++) {
-				if (!Double.isFinite(f[iy][ix]) || (flags != null && (flags[iy][ix] & BAD_FLAGS) != 0)) continue;
-				double d = Math.hypot(ix - x, iy - y);
-				if (d <= radius) {
-					sum += f[iy][ix];
-					n++;
-					if (v != null && Double.isFinite(v[iy][ix])) var += v[iy][ix];
+	/**
+	 * Python-equivalent circular aperture photometry.
+	 * <p>
+	 * The implementation mirrors the current SPExPI aperture path:
+	 * <p>
+	 * - exact fractional circular-aperture pixel weights
+	 * - fatal FLAGS excluded from the source aperture
+	 * - FLAGS bit 21 additionally excluded from the background
+	 * - 2r--3r local background annulus
+	 * - iterative 3-sigma clipping, maximum 5 iterations
+	 * - effective fractional aperture area
+	 * - variance propagation using the same effective area
+	 * <p>
+	 * Return:
+	 * [0] background-subtracted flux in uJy
+	 * [1] 1-sigma uncertainty in uJy
+	 */
+	private static double[] aperture(
+			double[][] f,
+			double[][] v,
+			long[][] flags,
+			double x,
+			double y,
+			double radius) {
+
+		if (!Double.isFinite(x) ||
+				!Double.isFinite(y) ||
+				!Double.isFinite(radius) ||
+				radius <= 0) {
+
+			return new double[]{
+					Double.NaN,
+					Double.NaN
+			};
+		}
+
+		int ny = f.length;
+		int nx = f[0].length;
+
+		if (x < 0 || y < 0 ||
+				x >= nx || y >= ny) {
+
+			return new double[]{
+					Double.NaN,
+					Double.NaN
+			};
+		}
+
+		/*
+		 * Python:
+		 *
+		 * CircularAperture((x, y), r)
+		 * CircularAnnulus((x, y), 2r, 3r)
+		 */
+		double rIn = 2.0 * radius;
+		double rOut = 3.0 * radius;
+
+		/*
+		 * ------------------------------------------------------------
+		 * 1. Source aperture
+		 * ------------------------------------------------------------
+		 */
+
+		double apertureFlux = 0.0;
+		double apertureVariance = 0.0;
+		double apertureArea = 0.0;
+
+		boolean hasVariance = v != null;
+
+		for (int iy = 0; iy < ny; iy++) {
+			for (int ix = 0; ix < nx; ix++) {
+
+				if (!Double.isFinite(f[iy][ix]))
+					continue;
+
+				if (isFatalFlag(flags, iy, ix))
+					continue;
+
+				/*
+				 * Exact fraction of this pixel covered by the circular
+				 * aperture.
+				 */
+				double weight = circleSquareIntersection(
+						x,
+						y,
+						radius,
+						ix,
+						iy
+				);
+
+				if (weight <= 0.0)
+					continue;
+
+				apertureArea += weight;
+				apertureFlux += weight * f[iy][ix];
+
+				if (hasVariance && Double.isFinite(v[iy][ix])) {
+					apertureVariance += weight * v[iy][ix];
 				}
-				if (d >= 2 * radius && d <= 3 * radius) bg.add(f[iy][ix]);
 			}
-		if (n == 0 || bg.isEmpty()) return new double[]{Double.NaN, Double.NaN};
-		bg.sort(Double::compare);
-		double med = bg.get(bg.size() / 2), s = 0;
-		for (double q : bg) s += (q - med) * (q - med);
-		double bgvar = s / Math.max(1, bg.size() - 1);
-		return new double[]{sum - n * med, Math.sqrt(Math.max(0, (v == null ? bgvar * n : var) + n * n * bgvar / bg.size()))};
+		}
+
+		if (!Double.isFinite(apertureArea) ||
+				apertureArea <= 0.0) {
+
+			return new double[]{
+					Double.NaN,
+					Double.NaN
+			};
+		}
+
+		/*
+		 * ------------------------------------------------------------
+		 * 2. Background annulus
+		 * ------------------------------------------------------------
+		 *
+		 * Python uses the normal fatal mask plus FLAG 21 for the
+		 * background mask when remove_known_sources=True.
+		 */
+		List<Double> background = new ArrayList<>();
+
+		for (int iy = 0; iy < ny; iy++) {
+			for (int ix = 0; ix < nx; ix++) {
+
+				if (!Double.isFinite(f[iy][ix]))
+					continue;
+
+				if (isBackgroundMasked(flags, iy, ix))
+					continue;
+
+				/*
+				 * For the annulus we use the same pixel-centre
+				 * selection convention used by the Python n_bg
+				 * calculation.
+				 */
+				double dx = ix - x;
+				double dy = iy - y;
+				double d = Math.hypot(dx, dy);
+
+				if (d >= rIn && d <= rOut)
+					background.add(f[iy][ix]);
+			}
+		}
+
+		if (background.isEmpty()) {
+			/*
+			 * Match Python's fallback: if removing known sources
+			 * leaves no usable background, retry without FLAG 21.
+			 */
+			for (int iy = 0; iy < ny; iy++) {
+				for (int ix = 0; ix < nx; ix++) {
+
+					if (!Double.isFinite(f[iy][ix]))
+						continue;
+
+					if (isFatalFlag(flags, iy, ix))
+						continue;
+
+					double dx = ix - x;
+					double dy = iy - y;
+					double d = Math.hypot(dx, dy);
+
+					if (d >= rIn && d <= rOut)
+						background.add(f[iy][ix]);
+				}
+			}
+		}
+
+		if (background.isEmpty()) {
+			return new double[]{
+					Double.NaN,
+					Double.NaN
+			};
+		}
+
+		/*
+		 * ------------------------------------------------------------
+		 * 3. Sigma clipping
+		 * ------------------------------------------------------------
+		 *
+		 * Python:
+		 *
+		 * SigmaClip(
+		 *     sigma=3.0,
+		 *     maxiters=5
+		 * )
+		 *
+		 * The implementation below follows the same iterative
+		 * median/MAD rejection principle.
+		 */
+		List<Double> clipped = sigmaClip(
+				background,
+				3.0,
+				5
+		);
+
+		if (clipped.isEmpty())
+			return new double[]{
+					Double.NaN,
+					Double.NaN
+			};
+
+		/*
+		 * Current Python configuration uses median background.
+		 */
+		double backgroundPerPixel = median(clipped);
+
+		if (!Double.isFinite(backgroundPerPixel)) {
+			return new double[]{
+					Double.NaN,
+					Double.NaN
+			};
+		}
+
+		/*
+		 * ------------------------------------------------------------
+		 * 4. Background-subtracted aperture flux
+		 * ------------------------------------------------------------
+		 */
+		double flux =
+				apertureFlux -
+						backgroundPerPixel * apertureArea;
+
+		/*
+		 * ------------------------------------------------------------
+		 * 5. Background variance
+		 * ------------------------------------------------------------
+		 *
+		 * Python:
+		 *
+		 *     var_bkg_per_pix = std^2 / n_bg
+		 *
+		 * where n_bg is the number of usable annulus pixels.
+		 */
+		double backgroundVariancePerPixel = 0.0;
+
+		if (clipped.size() > 1) {
+
+			double std = sampleStandardDeviation(clipped);
+
+			if (Double.isFinite(std)) {
+				backgroundVariancePerPixel =
+						(std * std) / clipped.size();
+			}
+		}
+
+		/*
+		 * If no VARIANCE extension exists, Python falls back to
+		 * background statistics for the aperture variance.
+		 */
+		if (!hasVariance) {
+
+			if (Double.isFinite(backgroundVariancePerPixel)) {
+				apertureVariance =
+						backgroundVariancePerPixel *
+								apertureArea;
+			} else {
+				apertureVariance = 0.0;
+			}
+		}
+
+		/*
+		 * Background contribution:
+		 *
+		 * Var(B * A) = A^2 Var(B)
+		 */
+		double totalVariance =
+				apertureVariance +
+						apertureArea *
+								apertureArea *
+								backgroundVariancePerPixel;
+
+		double error =
+				totalVariance >= 0.0
+						? Math.sqrt(totalVariance)
+						: Double.NaN;
+
+		return new double[]{
+				flux,
+				error
+		};
+	}
+
+	/**
+	 * Fatal pixel mask used for the source aperture.
+	 */
+	private static boolean isFatalFlag(
+			long[][] flags,
+			int y,
+			int x) {
+
+		return flags != null &&
+				(flags[y][x] & BAD_FLAGS) != 0;
+	}
+
+	/**
+	 * Background mask.
+	 * <p>
+	 * The Python pipeline uses:
+	 * <p>
+	 * bad_flag_bits + (21,)
+	 * <p>
+	 * for the background when known-source removal is enabled.
+	 */
+	private static boolean isBackgroundMasked(
+			long[][] flags,
+			int y,
+			int x) {
+
+		if (flags == null)
+			return false;
+
+		long value = flags[y][x];
+
+		if ((value & BAD_FLAGS) != 0)
+			return true;
+
+		/*
+		 * FLAG bit 21 = known source.
+		 */
+		return (value & (1L << 21)) != 0;
+	}
+
+	/**
+	 * Calculate the exact fractional area of a unit pixel covered by a
+	 * circle.
+	 * <p>
+	 * Pixel coordinates are interpreted in the same convention as
+	 * Photutils: pixel (ix, iy) occupies
+	 * <p>
+	 * [ix-0.5, ix+0.5] x [iy-0.5, iy+0.5]
+	 * <p>
+	 * The result is in [0, 1].
+	 * <p>
+	 * The calculation uses deterministic supersampling.  This avoids the
+	 * severe discontinuities produced by the old centre-of-pixel test:
+	 * <p>
+	 * if (distance <= radius)
+	 * <p>
+	 * while remaining dependency-free.
+	 */
+	private static double circleSquareIntersection(
+			double cx,
+			double cy,
+			double radius,
+			int ix,
+			int iy) {
+
+		double left = ix - 0.5;
+		double right = ix + 0.5;
+		double bottom = iy - 0.5;
+		double top = iy + 0.5;
+
+		/*
+		 * Quick rejection.
+		 */
+		double nearestX = clamp(cx, left, right);
+		double nearestY = clamp(cy, bottom, top);
+
+		double dx = nearestX - cx;
+		double dy = nearestY - cy;
+
+		if (dx * dx + dy * dy >= radius * radius)
+			return 0.0;
+
+		/*
+		 * Quick acceptance.
+		 */
+		double farthestDx =
+				Math.max(Math.abs(cx - left),
+						Math.abs(cx - right));
+
+		double farthestDy =
+				Math.max(Math.abs(cy - bottom),
+						Math.abs(cy - top));
+
+		if (farthestDx * farthestDx +
+				farthestDy * farthestDy <=
+				radius * radius) {
+
+			return 1.0;
+		}
+
+		/*
+		 * Numerical integration of the overlap.
+		 *
+		 * 12x12 is already considerably smoother than the previous
+		 * binary pixel selection and is more than adequate for the
+		 * small SPHEREx apertures used here.
+		 */
+		final int samples = 12;
+
+		int inside = 0;
+
+		for (int sy = 0; sy < samples; sy++) {
+			double py =
+					bottom +
+							(sy + 0.5) / samples;
+
+			for (int sx = 0; sx < samples; sx++) {
+				double px =
+						left +
+								(sx + 0.5) / samples;
+
+				double ddx = px - cx;
+				double ddy = py - cy;
+
+				if (ddx * ddx + ddy * ddy <=
+						radius * radius) {
+
+					inside++;
+				}
+			}
+		}
+
+		return inside /
+				(double) (samples * samples);
+	}
+
+	private static double clamp(
+			double value,
+			double min,
+			double max) {
+
+		return Math.max(min, Math.min(max, value));
+	}
+
+	/**
+	 * Iterative sigma clipping using the median and MAD-derived
+	 * standard deviation.
+	 * <p>
+	 * This mirrors the robust behaviour required by the Python
+	 * SigmaClip call without introducing another Java dependency.
+	 */
+	private static List<Double> sigmaClip(
+			List<Double> values,
+			double sigma,
+			int maxIterations) {
+
+		List<Double> current =
+				new ArrayList<>();
+
+		for (double value : values) {
+			if (Double.isFinite(value))
+				current.add(value);
+		}
+
+		if (current.size() < 2)
+			return current;
+
+		for (int iteration = 0;
+		     iteration < maxIterations;
+		     iteration++) {
+
+			double center = median(current);
+
+			if (!Double.isFinite(center))
+				break;
+
+			List<Double> deviations =
+					new ArrayList<>(current.size());
+
+			for (double value : current)
+				deviations.add(
+						Math.abs(value - center)
+				);
+
+			double mad = median(deviations);
+
+			/*
+			 * Gaussian-equivalent sigma from MAD.
+			 */
+			double robustStd = 1.4826 * mad;
+
+			/*
+			 * Constant-valued background.
+			 */
+			if (!Double.isFinite(robustStd) ||
+					robustStd == 0.0) {
+
+				break;
+			}
+
+			double limit = sigma * robustStd;
+
+			List<Double> next =
+					new ArrayList<>(current.size());
+
+			for (double value : current) {
+				if (Math.abs(value - center) <= limit)
+					next.add(value);
+			}
+
+			/*
+			 * Nothing changed.
+			 */
+			if (next.size() == current.size())
+				break;
+
+			/*
+			 * Never allow clipping to destroy the background sample.
+			 */
+			if (next.size() < 2)
+				break;
+
+			current = next;
+		}
+
+		return current;
+	}
+
+	private static double median(
+			List<Double> values) {
+
+		if (values == null ||
+				values.isEmpty()) {
+
+			return Double.NaN;
+		}
+
+		List<Double> sorted =
+				new ArrayList<>(values);
+
+		sorted.sort(Double::compare);
+
+		int n = sorted.size();
+		int middle = n / 2;
+
+		if ((n & 1) != 0)
+			return sorted.get(middle);
+
+		return 0.5 *
+				(sorted.get(middle - 1) +
+						sorted.get(middle));
+	}
+
+	private static double sampleStandardDeviation(
+			List<Double> values) {
+
+		if (values == null ||
+				values.size() < 2) {
+
+			return Double.NaN;
+		}
+
+		double mean = 0.0;
+
+		for (double value : values)
+			mean += value;
+
+		mean /= values.size();
+
+		double sum = 0.0;
+
+		for (double value : values) {
+			double d = value - mean;
+			sum += d * d;
+		}
+
+		return Math.sqrt(
+				sum / (values.size() - 1)
+		);
 	}
 
 	private static double[] worldToPixel(Header h, double ra, double dec) {
@@ -411,9 +1052,16 @@ public final class SpherexPipeline {
 		return out;
 	}
 
-	private static int flagMask() {
-		int m = 0;
-		for (int b : new int[]{0, 1, 2, 4, 6, 7, 9, 10, 11, 14, 15, 17, 19, 22, 24, 26, 27, 28, 29}) m |= 1 << b;
+	private static long flagMask() {
+		long m = 0L;
+
+		for (int b : new int[]{
+				0, 1, 2, 4, 6, 7, 9, 10, 11,
+				14, 15, 17, 19, 22, 24, 26, 27, 28, 29
+		}) {
+			m |= 1L << b;
+		}
+
 		return m;
 	}
 
