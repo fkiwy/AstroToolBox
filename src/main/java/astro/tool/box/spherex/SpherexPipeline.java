@@ -158,14 +158,12 @@ public final class SpherexPipeline {
 					"DETECTOR",
 					h.getIntValue("BAND", 0)
 			);
-
 			if (detector < 1 || detector > 6)
 				throw new IOException("Invalid detector number: " + detector);
 
-			String release = h.getStringValue(
-					"DATAREL",
-					"qr2"
-			).toLowerCase(Locale.ROOT);
+			String release = normalizeRelease(
+					h.getStringValue("DATAREL", "qr2")
+			);
 
 			SpectralChannels channels = spectralChannels.get(release);
 			if (channels == null) {
@@ -173,8 +171,86 @@ public final class SpherexPipeline {
 				spectralChannels.put(release, channels);
 			}
 
+			double[][] image = doubles(imageHdu.getKernel());
+			if (image == null || image.length == 0)
+				throw new IOException("IMAGE data is empty.");
+
 			/*
-			 * Source position in the cutout coordinate system.
+			 * The SAPM is a parent-detector image.  Slice it first, exactly
+			 * like extract_sapm_for_cutout() in SPExPI.
+			 */
+			SapmKey sapmKey = new SapmKey(release, detector);
+			double[][] sapm = sapms.get(sapmKey);
+			if (sapm == null) {
+				sapm = sapm(detector, h, c.cacheDir());
+				sapms.put(sapmKey, sapm);
+			}
+
+			CutoutSlices slices = cutoutSlices(
+					h,
+					image.length,
+					image[0].length,
+					sapm.length,
+					sapm[0].length
+			);
+
+			double[][] imageUse = crop(
+					image,
+					slices.imageX0(),
+					slices.imageY0(),
+					slices.imageX1(),
+					slices.imageY1()
+			);
+
+			double[][] sapmUse = crop(
+					sapm,
+					slices.parentX0(),
+					slices.parentY0(),
+					slices.parentX1(),
+					slices.parentY1()
+			);
+
+			Object zodiRaw = extData(fits, "ZODI");
+			double[][] zodiUse = zodiRaw == null ? null :
+					crop(doubles(zodiRaw),
+							slices.imageX0(),
+							slices.imageY0(),
+							slices.imageX1(),
+							slices.imageY1());
+
+			Object varianceRaw = extData(fits, "VARIANCE");
+			double[][] varianceUse = varianceRaw == null ? null :
+					crop(doubles(varianceRaw),
+							slices.imageX0(),
+							slices.imageY0(),
+							slices.imageX1(),
+							slices.imageY1());
+
+			Object flagsRaw = extData(fits, "FLAGS");
+			long[][] flagsUse = flagsRaw == null ? null :
+					crop(longs(flagsRaw),
+							slices.imageX0(),
+							slices.imageY0(),
+							slices.imageX1(),
+							slices.imageY1());
+
+			double[][] flux = toUjy(
+					imageUse,
+					zodiUse,
+					sapmUse,
+					h
+			);
+
+			double[][] variance = toVariance(
+					varianceUse,
+					sapmUse,
+					h
+			);
+
+			/*
+			 * WCS coordinates are defined in the original cutout frame.
+			 * Therefore calculate x/y before shifting the arrays for an
+			 * edge-clipped SAPM overlap, then shift into the clipped image.
 			 */
 			double[] pos = worldToPixel(
 					h,
@@ -182,62 +258,16 @@ public final class SpherexPipeline {
 					c.decDeg()
 			);
 
-			double x = pos[0];
-			double y = pos[1];
+			double x = pos[0] - slices.imageX0();
+			double y = pos[1] - slices.imageY0();
 
-			double[][] image = doubles(imageHdu.getKernel());
-			if (image == null || image.length == 0)
-				throw new IOException("IMAGE data is empty");
+			if (!Double.isFinite(x) || !Double.isFinite(y))
+				return null;
 
-			/*
-			 * Load the SAPM for THIS release and detector.
-			 *
-			 * Python uses:
-			 *
-			 *     sapm_key = (data_release, detector)
-			 *
-			 * so Java must not cache SAPM by detector alone.
-			 */
-			SapmKey sapmKey = new SapmKey(release, detector);
-
-			double[][] sapm = sapms.get(sapmKey);
-			if (sapm == null) {
-				sapm = sapm(detector, h, c.cacheDir());
-				sapms.put(sapmKey, sapm);
-			}
-
-			/*
-			 * Convert IMAGE -> uJy/pixel.
-			 */
-			double[][] flux = toUjy(
-					image,
-					extData(fits, "ZODI"),
-					sapm,
-					h
-			);
-
-			/*
-			 * Convert VARIANCE -> (uJy)^2/pixel.
-			 */
-			double[][] variance = toVariance(
-					extData(fits, "VARIANCE"),
-					sapm,
-					h
-			);
-
-			/*
-			 * FLAGS is optional.
-			 */
-			long[][] flags = longs(extData(fits, "FLAGS"));
-
-			/*
-			 * The Python implementation uses exact circular-aperture
-			 * integration and sigma-clipped local background estimation.
-			 */
 			double[] result = aperture(
 					flux,
 					variance,
-					flags,
+					flagsUse,
 					x,
 					y,
 					c.apertureRadius()
@@ -249,19 +279,22 @@ public final class SpherexPipeline {
 				return null;
 			}
 
+			/*
+			 * SPExPI obtains wavelength from the WCS at the same source
+			 * position.  Use the WCS-TAB value if available; the
+			 * spectral-channel map is only the fallback.
+			 */
 			double wavelength = wavelength(
 					fits,
 					h,
-					x,
-					y,
+					x + slices.imageX0(),
+					y + slices.imageY0(),
 					detector,
 					channels
 			);
 
 			if (!Double.isFinite(wavelength))
-				throw new IOException(
-						"Could not determine calibrated wavelength"
-				);
+				throw new IOException("Could not determine calibrated wavelength.");
 
 			return new Point(
 					wavelength,
@@ -271,6 +304,64 @@ public final class SpherexPipeline {
 					1
 			);
 		}
+	}
+
+	private static String normalizeRelease(String release) {
+		String text = release == null
+				? ""
+				: release.trim().toLowerCase(Locale.ROOT)
+				.replace('-', '_')
+				.replace(' ', '_');
+
+		if (text.contains("qr2_deep") || text.equals("qr2deep"))
+			return "qr2_deep";
+		if (text.contains("qr2"))
+			return "qr2";
+		if (text.contains("qr1"))
+			return "qr1";
+		return "unknown".equals(text) || text.isBlank() ? "qr2" : text;
+	}
+
+	private static double[][] crop(double[][] a, int x0, int y0, int x1, int y1) {
+		if (a == null)
+			return null;
+
+		if (x0 < 0 || y0 < 0 ||
+				x1 > a[0].length || y1 > a.length ||
+				x1 <= x0 || y1 <= y0)
+			throw new IllegalArgumentException("Invalid 2-D crop bounds.");
+
+		double[][] out = new double[y1 - y0][x1 - x0];
+
+		for (int y = y0; y < y1; y++)
+			System.arraycopy(
+					a[y], x0,
+					out[y - y0], 0,
+					x1 - x0
+			);
+
+		return out;
+	}
+
+	private static long[][] crop(long[][] a, int x0, int y0, int x1, int y1) {
+		if (a == null)
+			return null;
+
+		if (x0 < 0 || y0 < 0 ||
+				x1 > a[0].length || y1 > a.length ||
+				x1 <= x0 || y1 <= y0)
+			throw new IllegalArgumentException("Invalid integer 2-D crop bounds.");
+
+		long[][] out = new long[y1 - y0][x1 - x0];
+
+		for (int y = y0; y < y1; y++)
+			System.arraycopy(
+					a[y], x0,
+					out[y - y0], 0,
+					x1 - x0
+			);
+
+		return out;
 	}
 
 	private static BasicHDU<?> ext(Fits fits, String name) throws Exception {
@@ -354,28 +445,121 @@ public final class SpherexPipeline {
 	}
 
 	private static double[][] toUjy(double[][] image, Object zodiRaw, double[][] sapm, Header h) {
-		double[][] z = zodiRaw == null ? null : doubles(zodiRaw), out = new double[image.length][image[0].length];
-		int x0 = (int) Math.round(1 - h.getDoubleValue("CRPIX1A", 1)), y0 = (int) Math.round(1 - h.getDoubleValue("CRPIX2A", 1));
-		double scale = h.getStringValue("BUNIT", "MJy/sr").toLowerCase(Locale.ROOT).contains("mjy") ? 23.5044306 : 1;
-		for (int y = 0; y < out.length; y++)
+		double[][] z = zodiRaw == null ? null : doubles(zodiRaw);
+		if (z != null && (z.length != image.length || z[0].length != image[0].length))
+			throw new IllegalArgumentException("ZODI shape does not match IMAGE.");
+
+		double[][] out = new double[image.length][image[0].length];
+
+		double scale = fluxUnitScale(h.getStringValue("BUNIT", "MJy/sr"));
+
+		if (sapm.length != image.length || sapm[0].length != image[0].length)
+			throw new IllegalArgumentException(
+					"SAPM/image shape mismatch after parent-detector slicing: sapm="
+							+ sapm.length + "x" + sapm[0].length
+							+ ", image=" + image.length + "x" + image[0].length);
+
+		for (int y = 0; y < out.length; y++) {
 			for (int x = 0; x < out[0].length; x++) {
-				int sy = y + y0, sx = x + x0;
-				out[y][x] = (sy < 0 || sx < 0 || sy >= sapm.length || sx >= sapm[0].length) ? Double.NaN : (image[y][x] - (z == null ? 0 : z[y][x])) * scale * sapm[sy][sx];
+				double value = image[y][x];
+				if (z != null)
+					value -= z[y][x];
+
+				out[y][x] = value * scale * sapm[y][x];
 			}
+		}
 		return out;
 	}
 
 	private static double[][] toVariance(Object raw, double[][] sapm, Header h) {
-		if (raw == null) return null;
-		double[][] v = doubles(raw), out = new double[v.length][v[0].length];
-		int x0 = (int) Math.round(1 - h.getDoubleValue("CRPIX1A", 1)), y0 = (int) Math.round(1 - h.getDoubleValue("CRPIX2A", 1));
-		double scale = h.getStringValue("BUNIT", "MJy/sr").toLowerCase(Locale.ROOT).contains("mjy") ? 23.5044306 : 1;
-		for (int y = 0; y < out.length; y++)
+		if (raw == null)
+			return null;
+
+		double[][] v = doubles(raw);
+		if (v.length != sapm.length || v[0].length != sapm[0].length)
+			throw new IllegalArgumentException(
+					"VARIANCE/SAPM shape mismatch: variance="
+							+ v.length + "x" + v[0].length
+							+ ", sapm=" + sapm.length + "x" + sapm[0].length);
+
+		double scale = fluxUnitScale(h.getStringValue("BUNIT", "MJy/sr"));
+		double[][] out = new double[v.length][v[0].length];
+
+		for (int y = 0; y < out.length; y++) {
 			for (int x = 0; x < out[0].length; x++) {
-				int sy = y + y0, sx = x + x0;
-				out[y][x] = (sy < 0 || sx < 0 || sy >= sapm.length || sx >= sapm[0].length) ? Double.NaN : v[y][x] * scale * scale * sapm[sy][sx] * sapm[sy][sx];
+				double factor = scale * sapm[y][x];
+				out[y][x] = v[y][x] * factor * factor;
 			}
+		}
 		return out;
+	}
+
+	/**
+	 * MJy/sr -> uJy/arcsec^2 conversion.
+	 * <p>
+	 * 1 sr = (206264.806247...)^2 arcsec^2.
+	 */
+	private static double fluxUnitScale(String bunit) {
+		String unit = bunit == null ? "" : bunit.trim().toLowerCase(Locale.ROOT);
+
+		if (unit.contains("mjy") && unit.contains("sr"))
+			return 1.0e12 / 4.254517029617293e10;
+
+		if (unit.contains("jy") && unit.contains("sr"))
+			return 1.0e6 / 4.254517029617293e10;
+
+		if (unit.contains("ujy") && unit.contains("arcsec"))
+			return 1.0;
+
+		/*
+		 * Preserve the previous behaviour for already pixel-scaled data.
+		 */
+		return 1.0;
+	}
+
+	/**
+	 * Extract the SAPM region corresponding to the IMAGE cutout.
+	 * <p>
+	 * This is the Java equivalent of SPExPI's get_cutout_parent_slices().
+	 * The SAPM is a full detector map; IMAGE/VARIANCE/ZODI/FLAGS are cutouts.
+	 */
+	private static CutoutSlices cutoutSlices(Header h, int imageNy, int imageNx,
+	                                         int parentNy, int parentNx) {
+
+		if (!h.containsKey("CRPIX1A") || !h.containsKey("CRPIX2A")) {
+			int ny = Math.min(imageNy, parentNy);
+			int nx = Math.min(imageNx, parentNx);
+			return new CutoutSlices(0, 0, nx, ny, 0, 0, nx, ny);
+		}
+
+		int x0Parent = (int) Math.rint(1.0 - h.getDoubleValue("CRPIX1A"));
+		int y0Parent = (int) Math.rint(1.0 - h.getDoubleValue("CRPIX2A"));
+		int x1Parent = x0Parent + imageNx;
+		int y1Parent = y0Parent + imageNy;
+
+		int px0 = Math.max(0, x0Parent);
+		int py0 = Math.max(0, y0Parent);
+		int px1 = Math.min(parentNx, x1Parent);
+		int py1 = Math.min(parentNy, y1Parent);
+
+		if (px1 <= px0 || py1 <= py0)
+			throw new IllegalArgumentException(
+					"Cutout does not overlap parent detector SAPM map.");
+
+		int ix0 = px0 - x0Parent;
+		int iy0 = py0 - y0Parent;
+		int ix1 = ix0 + (px1 - px0);
+		int iy1 = iy0 + (py1 - py0);
+
+		return new CutoutSlices(
+				ix0, iy0, ix1, iy1,
+				px0, py0, px1, py1
+		);
+	}
+
+	private record CutoutSlices(
+			int imageX0, int imageY0, int imageX1, int imageY1,
+			int parentX0, int parentY0, int parentX1, int parentY1) {
 	}
 
 	/**
@@ -395,6 +579,7 @@ public final class SpherexPipeline {
 	 * [0] background-subtracted flux in uJy
 	 * [1] 1-sigma uncertainty in uJy
 	 */
+
 	private static double[] aperture(
 			double[][] f,
 			double[][] v,
@@ -406,67 +591,34 @@ public final class SpherexPipeline {
 		if (!Double.isFinite(x) ||
 				!Double.isFinite(y) ||
 				!Double.isFinite(radius) ||
-				radius <= 0) {
-
-			return new double[]{
-					Double.NaN,
-					Double.NaN
-			};
-		}
+				radius <= 0)
+			return new double[]{Double.NaN, Double.NaN};
 
 		int ny = f.length;
 		int nx = f[0].length;
 
-		if (x < 0 || y < 0 ||
-				x >= nx || y >= ny) {
+		if (x < 0 || y < 0 || x >= nx || y >= ny)
+			return new double[]{Double.NaN, Double.NaN};
 
-			return new double[]{
-					Double.NaN,
-					Double.NaN
-			};
-		}
-
-		/*
-		 * Python:
-		 *
-		 * CircularAperture((x, y), r)
-		 * CircularAnnulus((x, y), 2r, 3r)
-		 */
 		double rIn = 2.0 * radius;
 		double rOut = 3.0 * radius;
 
 		/*
-		 * ------------------------------------------------------------
-		 * 1. Source aperture
-		 * ------------------------------------------------------------
+		 * Python's make_bad_pixel_mask() masks both fatal flags and
+		 * non-finite flux.  The same mask is used for the aperture.
 		 */
-
 		double apertureFlux = 0.0;
 		double apertureVariance = 0.0;
 		double apertureArea = 0.0;
 
-		boolean hasVariance = v != null;
-
 		for (int iy = 0; iy < ny; iy++) {
 			for (int ix = 0; ix < nx; ix++) {
-
-				if (!Double.isFinite(f[iy][ix]))
+				if (!Double.isFinite(f[iy][ix]) ||
+						isFatalFlag(flags, iy, ix))
 					continue;
 
-				if (isFatalFlag(flags, iy, ix))
-					continue;
-
-				/*
-				 * Exact fraction of this pixel covered by the circular
-				 * aperture.
-				 */
 				double weight = circleSquareIntersection(
-						x,
-						y,
-						radius,
-						ix,
-						iy
-				);
+						x, y, radius, ix, iy);
 
 				if (weight <= 0.0)
 					continue;
@@ -474,71 +626,60 @@ public final class SpherexPipeline {
 				apertureArea += weight;
 				apertureFlux += weight * f[iy][ix];
 
-				if (hasVariance && Double.isFinite(v[iy][ix])) {
-					apertureVariance += weight * v[iy][ix];
+				/*
+				 * IMPORTANT:
+				 * photutils aperture_photometry() is applied to the
+				 * VARIANCE image itself with method="exact".
+				 * Therefore the variance contribution is w * V,
+				 * not w^2 * V.
+				 */
+				if (v != null &&
+						Double.isFinite(v[iy][ix])) {
+					apertureVariance +=
+							weight * v[iy][ix];
 				}
 			}
 		}
 
 		if (!Double.isFinite(apertureArea) ||
-				apertureArea <= 0.0) {
-
-			return new double[]{
-					Double.NaN,
-					Double.NaN
-			};
-		}
+				apertureArea <= 0)
+			return new double[]{Double.NaN, Double.NaN};
 
 		/*
-		 * ------------------------------------------------------------
-		 * 2. Background annulus
-		 * ------------------------------------------------------------
+		 * Background:
 		 *
-		 * Python uses the normal fatal mask plus FLAG 21 for the
-		 * background mask when remove_known_sources=True.
+		 * Photutils CircularAnnulus + ApertureStats uses the pixel
+		 * centre mask for selecting annulus pixels.  It is therefore
+		 * important not to replace this with fractional annulus areas.
 		 */
 		List<Double> background = new ArrayList<>();
 
 		for (int iy = 0; iy < ny; iy++) {
 			for (int ix = 0; ix < nx; ix++) {
-
-				if (!Double.isFinite(f[iy][ix]))
+				if (!Double.isFinite(f[iy][ix]) ||
+						isBackgroundMasked(flags, iy, ix))
 					continue;
 
-				if (isBackgroundMasked(flags, iy, ix))
-					continue;
-
-				/*
-				 * For the annulus we use the same pixel-centre
-				 * selection convention used by the Python n_bg
-				 * calculation.
-				 */
-				double dx = ix - x;
-				double dy = iy - y;
-				double d = Math.hypot(dx, dy);
+				double d = Math.hypot(ix - x, iy - y);
 
 				if (d >= rIn && d <= rOut)
 					background.add(f[iy][ix]);
 			}
 		}
 
+		/*
+		 * This is the same fallback used by the Python implementation:
+		 * if known-source masking leaves no usable background, retry
+		 * with the normal bad-pixel mask.
+		 */
 		if (background.isEmpty()) {
-			/*
-			 * Match Python's fallback: if removing known sources
-			 * leaves no usable background, retry without FLAG 21.
-			 */
 			for (int iy = 0; iy < ny; iy++) {
 				for (int ix = 0; ix < nx; ix++) {
-
-					if (!Double.isFinite(f[iy][ix]))
+					if (!Double.isFinite(f[iy][ix]) ||
+							isFatalFlag(flags, iy, ix))
 						continue;
 
-					if (isFatalFlag(flags, iy, ix))
-						continue;
-
-					double dx = ix - x;
-					double dy = iy - y;
-					double d = Math.hypot(dx, dy);
+					double d = Math.hypot(ix - x, iy - y);
 
 					if (d >= rIn && d <= rOut)
 						background.add(f[iy][ix]);
@@ -546,119 +687,151 @@ public final class SpherexPipeline {
 			}
 		}
 
-		if (background.isEmpty()) {
-			return new double[]{
-					Double.NaN,
-					Double.NaN
-			};
-		}
+		if (background.isEmpty())
+			return new double[]{Double.NaN, Double.NaN};
 
 		/*
-		 * ------------------------------------------------------------
-		 * 3. Sigma clipping
-		 * ------------------------------------------------------------
-		 *
-		 * Python:
-		 *
-		 * SigmaClip(
-		 *     sigma=3.0,
-		 *     maxiters=5
-		 * )
-		 *
-		 * The implementation below follows the same iterative
-		 * median/MAD rejection principle.
+		 * Astropy SigmaClip's default centre is the median and its
+		 * default std function is the standard deviation, not MAD.
 		 */
-		List<Double> clipped = sigmaClip(
+		List<Double> clipped = sigmaClipStd(
 				background,
 				3.0,
 				5
 		);
 
 		if (clipped.isEmpty())
-			return new double[]{
-					Double.NaN,
-					Double.NaN
-			};
+			return new double[]{Double.NaN, Double.NaN};
 
-		/*
-		 * Current Python configuration uses median background.
-		 */
 		double backgroundPerPixel = median(clipped);
 
-		if (!Double.isFinite(backgroundPerPixel)) {
-			return new double[]{
-					Double.NaN,
-					Double.NaN
-			};
-		}
+		if (!Double.isFinite(backgroundPerPixel))
+			return new double[]{Double.NaN, Double.NaN};
 
-		/*
-		 * ------------------------------------------------------------
-		 * 4. Background-subtracted aperture flux
-		 * ------------------------------------------------------------
-		 */
 		double flux =
 				apertureFlux -
 						backgroundPerPixel * apertureArea;
 
 		/*
-		 * ------------------------------------------------------------
-		 * 5. Background variance
-		 * ------------------------------------------------------------
+		 * Python calculates n_bg independently from the sigma-clipped
+		 * sample:
 		 *
-		 * Python:
+		 * annulus.to_mask(method="center")
+		 *      & (~bad_mask)
 		 *
-		 *     var_bkg_per_pix = std^2 / n_bg
-		 *
-		 * where n_bg is the number of usable annulus pixels.
+		 * Note that FLAG 21 is NOT part of this n_bg calculation.
 		 */
-		double backgroundVariancePerPixel = 0.0;
+		int nBg = 0;
 
-		if (clipped.size() > 1) {
+		for (int iy = 0; iy < ny; iy++) {
+			for (int ix = 0; ix < nx; ix++) {
+				if (!Double.isFinite(f[iy][ix]) ||
+						isFatalFlag(flags, iy, ix))
+					continue;
 
-			double std = sampleStandardDeviation(clipped);
+				double d = Math.hypot(ix - x, iy - y);
 
-			if (Double.isFinite(std)) {
-				backgroundVariancePerPixel =
-						(std * std) / clipped.size();
+				if (d >= rIn && d <= rOut)
+					nBg++;
 			}
 		}
 
-		/*
-		 * If no VARIANCE extension exists, Python falls back to
-		 * background statistics for the aperture variance.
-		 */
-		if (!hasVariance) {
+		double std = populationStandardDeviation(clipped);
 
-			if (Double.isFinite(backgroundVariancePerPixel)) {
-				apertureVariance =
-						backgroundVariancePerPixel *
-								apertureArea;
-			} else {
-				apertureVariance = 0.0;
-			}
-		}
+		double backgroundVariancePerPixel =
+				(nBg > 0 && Double.isFinite(std))
+						? std * std / nBg
+						: 0.0;
 
 		/*
-		 * Background contribution:
+		 * If VARIANCE is unavailable, Python uses:
 		 *
-		 * Var(B * A) = A^2 Var(B)
+		 *     var_sum = stats.std**2 * ap_area
+		 *
+		 * rather than dividing by n_bg.
 		 */
+		if (v == null && Double.isFinite(std))
+			apertureVariance =
+					std * std * apertureArea;
+
 		double totalVariance =
 				apertureVariance +
-						apertureArea *
-								apertureArea *
+						apertureArea * apertureArea *
 								backgroundVariancePerPixel;
 
 		double error =
-				totalVariance >= 0.0
+				totalVariance >= 0
 						? Math.sqrt(totalVariance)
 						: Double.NaN;
 
-		return new double[]{
-				flux,
-				error
-		};
+		return new double[]{flux, error};
+	}
+
+	private static List<Double> sigmaClipStd(
+			List<Double> values,
+			double sigma,
+			int maxIterations) {
+
+		List<Double> current = new ArrayList<>();
+
+		for (double value : values)
+			if (Double.isFinite(value))
+				current.add(value);
+
+		if (current.size() < 2)
+			return current;
+
+		for (int iteration = 0;
+		     iteration < maxIterations;
+		     iteration++) {
+
+			double center = median(current);
+			double std = populationStandardDeviation(current);
+
+			if (!Double.isFinite(center) ||
+					!Double.isFinite(std) ||
+					std == 0.0)
+				break;
+
+			double limit = sigma * std;
+			List<Double> next =
+					new ArrayList<>(current.size());
+
+			for (double value : current) {
+				if (Math.abs(value - center) <= limit)
+					next.add(value);
+			}
+
+			if (next.size() == current.size())
+				break;
+
+			if (next.isEmpty())
+				break;
+
+			current = next;
+		}
+
+		return current;
+	}
+
+	private static double populationStandardDeviation(
+			List<Double> values) {
+
+		if (values == null || values.isEmpty())
+			return Double.NaN;
+
+		double mean = 0.0;
+		for (double value : values)
+			mean += value;
+		mean /= values.size();
+
+		double sum = 0.0;
+		for (double value : values) {
+			double d = value - mean;
+			sum += d * d;
+		}
+
+		return Math.sqrt(sum / values.size());
 	}
 
 	/**
@@ -719,6 +892,7 @@ public final class SpherexPipeline {
 	 * <p>
 	 * while remaining dependency-free.
 	 */
+
 	private static double circleSquareIntersection(
 			double cx,
 			double cy,
@@ -731,45 +905,39 @@ public final class SpherexPipeline {
 		double bottom = iy - 0.5;
 		double top = iy + 0.5;
 
-		/*
-		 * Quick rejection.
-		 */
 		double nearestX = clamp(cx, left, right);
 		double nearestY = clamp(cy, bottom, top);
 
 		double dx = nearestX - cx;
 		double dy = nearestY - cy;
 
-		if (dx * dx + dy * dy >= radius * radius)
+		double r2 = radius * radius;
+
+		if (dx * dx + dy * dy >= r2)
 			return 0.0;
 
-		/*
-		 * Quick acceptance.
-		 */
 		double farthestDx =
 				Math.max(Math.abs(cx - left),
 						Math.abs(cx - right));
-
 		double farthestDy =
 				Math.max(Math.abs(cy - bottom),
 						Math.abs(cy - top));
 
 		if (farthestDx * farthestDx +
-				farthestDy * farthestDy <=
-				radius * radius) {
-
+				farthestDy * farthestDy <= r2)
 			return 1.0;
-		}
 
 		/*
-		 * Numerical integration of the overlap.
+		 * High-resolution deterministic area integration.
 		 *
-		 * 12x12 is already considerably smoother than the previous
-		 * binary pixel selection and is more than adequate for the
-		 * small SPHEREx apertures used here.
+		 * Photutils' "exact" method calculates the exact circle/pixel
+		 * overlap.  This dependency-free implementation converges to
+		 * that result to substantially better than the previous 12x12
+		 * approximation.  64x64 gives 4096 samples/pixel and the
+		 * remaining geometric error is negligible for SPHEREx
+		 * apertures compared with detector/background noise.
 		 */
-		final int samples = 12;
-
+		final int samples = 64;
 		int inside = 0;
 
 		for (int sy = 0; sy < samples; sy++) {
@@ -785,16 +953,12 @@ public final class SpherexPipeline {
 				double ddx = px - cx;
 				double ddy = py - cy;
 
-				if (ddx * ddx + ddy * ddy <=
-						radius * radius) {
-
+				if (ddx * ddx + ddy * ddy <= r2)
 					inside++;
-				}
 			}
 		}
 
-		return inside /
-				(double) (samples * samples);
+		return inside / (double) (samples * samples);
 	}
 
 	private static double clamp(
@@ -942,14 +1106,130 @@ public final class SpherexPipeline {
 		);
 	}
 
-	private static double[] worldToPixel(Header h, double ra, double dec) {
-		// QR2 cutouts store the projection matrix as PCi_j with CDELT=1.
-		// Prefer CD when available, otherwise use that PC matrix rather than the
-		// unit CDELT fallback, which would put the source far outside the cutout.
-		double cv1 = h.getDoubleValue("CRVAL1"), cv2 = h.getDoubleValue("CRVAL2"), cp1 = h.getDoubleValue("CRPIX1") - 1, cp2 = h.getDoubleValue("CRPIX2") - 1, a = h.getDoubleValue("CD1_1", h.getDoubleValue("PC1_1", h.getDoubleValue("CDELT1"))), b = h.getDoubleValue("CD1_2", h.getDoubleValue("PC1_2", 0)), d = h.getDoubleValue("CD2_1", h.getDoubleValue("PC2_1", 0)), e = h.getDoubleValue("CD2_2", h.getDoubleValue("PC2_2", h.getDoubleValue("CDELT2")));
-		double dx = (ra - cv1) * Math.cos(Math.toRadians(cv2)), dy = dec - cv2, det = a * e - b * d;
-		if (det == 0) throw new IllegalArgumentException("Invalid spatial WCS");
-		return new double[]{cp1 + (e * dx - b * dy) / det, cp2 + (-d * dx + a * dy) / det};
+	private static double[] worldToPixel(Header h, double raDeg, double decDeg) {
+		double crval1 = h.getDoubleValue("CRVAL1");
+		double crval2 = h.getDoubleValue("CRVAL2");
+		double crpix1 = h.getDoubleValue("CRPIX1");
+		double crpix2 = h.getDoubleValue("CRPIX2");
+
+		double dra = Math.toRadians(wrapDeltaRa(raDeg - crval1));
+		double dec = Math.toRadians(decDeg);
+		double dec0 = Math.toRadians(crval2);
+
+		String ctype1 = h.getStringValue("CTYPE1", "").toUpperCase(Locale.ROOT);
+		boolean tan = ctype1.contains("TAN");
+
+		double xiDeg;
+		double etaDeg;
+
+		if (tan) {
+			/*
+			 * Standard gnomonic (TAN) projection.
+			 */
+			double sinDec = Math.sin(dec);
+			double cosDec = Math.cos(dec);
+			double sinDec0 = Math.sin(dec0);
+			double cosDec0 = Math.cos(dec0);
+
+			double cosDra = Math.cos(dra);
+
+			double denominator =
+					sinDec0 * sinDec +
+							cosDec0 * cosDec * cosDra;
+
+			if (!Double.isFinite(denominator) ||
+					denominator <= 0)
+				throw new IllegalArgumentException(
+						"Target is outside the valid TAN projection.");
+
+			double xi =
+					cosDec * Math.sin(dra) /
+							denominator;
+
+			double eta =
+					(cosDec0 * sinDec -
+							sinDec0 * cosDec * cosDra) /
+							denominator;
+
+			xiDeg = Math.toDegrees(xi);
+			etaDeg = Math.toDegrees(eta);
+		} else {
+			/*
+			 * Small-field linear fallback.
+			 */
+			xiDeg = Math.toDegrees(dra) * Math.cos(dec0);
+			etaDeg = Math.toDegrees(dec - dec0);
+		}
+
+		double[] cd = getCdMatrix(h);
+
+		/*
+		 * FITS pixel coordinates are 1-based.  Return Java/array
+		 * zero-based coordinates.
+		 */
+		double det = cd[0] * cd[3] - cd[1] * cd[2];
+
+		if (!Double.isFinite(det) || Math.abs(det) < 1e-30)
+			throw new IllegalArgumentException("Invalid spatial WCS matrix.");
+
+		double u =
+				(cd[3] * xiDeg - cd[1] * etaDeg) / det;
+		double v =
+				(-cd[2] * xiDeg + cd[0] * etaDeg) / det;
+
+		return new double[]{
+				crpix1 - 1.0 + u,
+				crpix2 - 1.0 + v
+		};
+	}
+
+	private static double wrapDeltaRa(double deltaDeg) {
+		double d = deltaDeg % 360.0;
+		if (d > 180.0) d -= 360.0;
+		if (d < -180.0) d += 360.0;
+		return d;
+	}
+
+	/**
+	 * Return the FITS CD matrix in degrees/pixel.
+	 * <p>
+	 * If CDi_j exists, it is authoritative. Otherwise:
+	 * <p>
+	 * CD = diag(CDELT) * PC
+	 * <p>
+	 * This is important: the previous Java code used PCi_j directly
+	 * when present, silently dropping CDELT.
+	 */
+	private static double[] getCdMatrix(Header h) {
+		boolean hasCd =
+				h.containsKey("CD1_1") ||
+						h.containsKey("CD1_2") ||
+						h.containsKey("CD2_1") ||
+						h.containsKey("CD2_2");
+
+		if (hasCd) {
+			return new double[]{
+					h.getDoubleValue("CD1_1", 0),
+					h.getDoubleValue("CD1_2", 0),
+					h.getDoubleValue("CD2_1", 0),
+					h.getDoubleValue("CD2_2", 0)
+			};
+		}
+
+		double cdelt1 = h.getDoubleValue("CDELT1");
+		double cdelt2 = h.getDoubleValue("CDELT2");
+
+		double pc11 = h.getDoubleValue("PC1_1", 1);
+		double pc12 = h.getDoubleValue("PC1_2", 0);
+		double pc21 = h.getDoubleValue("PC2_1", 0);
+		double pc22 = h.getDoubleValue("PC2_2", 1);
+
+		return new double[]{
+				cdelt1 * pc11,
+				cdelt1 * pc12,
+				cdelt2 * pc21,
+				cdelt2 * pc22
+		};
 	}
 
 	private static double wavelengthOld(Header h, double x, int detector) {
@@ -1029,26 +1309,110 @@ public final class SpherexPipeline {
 		return Math.max(0, Math.min(grid.length - 2, index));
 	}
 
-	private static List<Point> bin(List<Point> input, Map<String, SpectralChannels> calibrations) throws IOException {
-		if (calibrations.isEmpty()) throw new IOException("QR2 spectral-channel calibration was not loaded");
-		SpectralChannels calibration = calibrations.values().iterator().next();
-		Map<Integer, List<Point>> groups = new HashMap<>();
-		for (Point p : input) groups.computeIfAbsent(p.detector, ignored -> new ArrayList<>()).add(p);
+	private static List<Point> bin(
+			List<Point> input,
+			Map<String, SpectralChannels> calibrations) {
+
+		/*
+		 * Match the current Python default:
+		 *
+		 *     use_spectral_channels_for_binning = False
+		 *
+		 * so oversampling is reduced using the detector-specific
+		 * resolving-power grids, not the spectral_channels calibration.
+		 */
+		Map<Integer, double[]> bands = new HashMap<>();
+		bands.put(1, new double[]{0.75, 1.11, 41});
+		bands.put(2, new double[]{1.11, 1.64, 41});
+		bands.put(3, new double[]{1.64, 2.42, 41});
+		bands.put(4, new double[]{2.42, 3.82, 35});
+		bands.put(5, new double[]{3.82, 4.42, 110});
+		bands.put(6, new double[]{4.42, 5.00, 130});
+
 		List<Point> out = new ArrayList<>();
-		for (var entry : groups.entrySet())
-			for (Channel channel : calibration.byDetector.getOrDefault(entry.getKey(), List.of())) {
-				double weight = 0, flux = 0;
+
+		Map<Integer, List<Point>> groups = new HashMap<>();
+		for (Point point : input) {
+			if (point == null ||
+					!Double.isFinite(point.wavelengthUm()) ||
+					!Double.isFinite(point.fluxUjy()) ||
+					!Double.isFinite(point.errorUjy()) ||
+					point.errorUjy() <= 0 ||
+					point.fluxUjy() == 0)
+				continue;
+
+			groups.computeIfAbsent(
+					point.detector(),
+					ignored -> new ArrayList<>()
+			).add(point);
+		}
+
+		for (var entry : groups.entrySet()) {
+			double[] band = bands.get(entry.getKey());
+			if (band == null)
+				continue;
+
+			double lo = band[0];
+			double hi = band[1];
+			int resolvingPower = (int) band[2];
+
+			double[] edges = new double[18];
+			edges[0] = lo;
+
+			for (int i = 1; i < edges.length; i++)
+				edges[i] =
+						lo * Math.pow(
+								1.0 + 1.0 / resolvingPower,
+								i
+						);
+
+			double normalization =
+					hi / edges[edges.length - 1];
+
+			for (int i = 0; i < edges.length; i++)
+				edges[i] *= normalization;
+
+			List<Point> detectorPoints = entry.getValue();
+
+			for (int i = 0; i < edges.length - 1; i++) {
+				double edgeLo = edges[i];
+				double edgeHi = edges[i + 1];
+
+				double weightSum = 0.0;
+				double fluxSum = 0.0;
 				int count = 0;
-				for (Point point : entry.getValue())
-					if (point.wavelengthUm >= channel.minUm && point.wavelengthUm <= channel.maxUm) {
-						double w = 1 / (point.errorUjy * point.errorUjy);
-						weight += w;
-						flux += w * point.fluxUjy;
-						count++;
-					}
-				if (count > 0 && weight > 0)
-					out.add(new Point(channel.centerUm, flux / weight, Math.sqrt(1 / weight), entry.getKey(), count));
+
+				for (Point point : detectorPoints) {
+					double wl = point.wavelengthUm();
+
+					if (wl < edgeLo || wl >= edgeHi)
+						continue;
+
+					double weight =
+							1.0 /
+									(point.errorUjy() * point.errorUjy());
+
+					weightSum += weight;
+					fluxSum += weight * point.fluxUjy();
+					count++;
+				}
+
+				if (count == 0 || weightSum <= 0)
+					continue;
+
+				double center =
+						Math.sqrt(edgeLo * edgeHi);
+
+				out.add(new Point(
+						center,
+						fluxSum / weightSum,
+						Math.sqrt(1.0 / weightSum),
+						entry.getKey(),
+						count
+				));
 			}
+		}
+
 		return out;
 	}
 
