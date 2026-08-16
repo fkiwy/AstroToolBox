@@ -1106,6 +1106,29 @@ public final class SpherexPipeline {
 		);
 	}
 
+	/**
+	 * Convert ICRS sky coordinates to zero-based cutout pixel coordinates
+	 * using the FITS spatial WCS.
+	 *
+	 * This implements the TAN-SIP inverse transformation used by
+	 * Astropy's:
+	 *
+	 *     WCS(header).world_to_pixel(...)
+	 *
+	 * in the SPExPI aperture path.
+	 *
+	 * The transformation is:
+	 *
+	 *   sky -> TAN intermediate world coordinates
+	 *       -> inverse CD/PC/CDELT
+	 *       -> inverse SIP polynomial
+	 *       -> zero-based pixel coordinates
+	 *
+	 * For normal TAN-SIP SPHEREx products the inverse SIP coefficients
+	 * AP_i_j / BP_i_j are present and are used directly.  If they are
+	 * absent, the forward SIP coefficients A_i_j / B_i_j are inverted
+	 * iteratively, as permitted by the SIP convention.
+	 */
 	private static double[] worldToPixel(Header h, double raDeg, double decDeg) {
 		double crval1 = h.getDoubleValue("CRVAL1");
 		double crval2 = h.getDoubleValue("CRVAL2");
@@ -1119,28 +1142,30 @@ public final class SpherexPipeline {
 		String ctype1 = h.getStringValue("CTYPE1", "").toUpperCase(Locale.ROOT);
 		boolean tan = ctype1.contains("TAN");
 
+		/*
+		 * Step 1: sky -> projected intermediate world coordinates.
+		 *
+		 * These are in degrees and correspond to the coordinates to
+		 * which the FITS CD matrix is applied.
+		 */
 		double xiDeg;
 		double etaDeg;
 
 		if (tan) {
-			/*
-			 * Standard gnomonic (TAN) projection.
-			 */
 			double sinDec = Math.sin(dec);
 			double cosDec = Math.cos(dec);
 			double sinDec0 = Math.sin(dec0);
 			double cosDec0 = Math.cos(dec0);
-
 			double cosDra = Math.cos(dra);
 
 			double denominator =
 					sinDec0 * sinDec +
 							cosDec0 * cosDec * cosDra;
 
-			if (!Double.isFinite(denominator) ||
-					denominator <= 0)
+			if (!Double.isFinite(denominator) || denominator <= 0.0) {
 				throw new IllegalArgumentException(
 						"Target is outside the valid TAN projection.");
+			}
 
 			double xi =
 					cosDec * Math.sin(dra) /
@@ -1155,32 +1180,254 @@ public final class SpherexPipeline {
 			etaDeg = Math.toDegrees(eta);
 		} else {
 			/*
-			 * Small-field linear fallback.
+			 * Linear fallback for non-TAN spatial WCS.
 			 */
 			xiDeg = Math.toDegrees(dra) * Math.cos(dec0);
 			etaDeg = Math.toDegrees(dec - dec0);
 		}
 
+		/*
+		 * Step 2: inverse linear WCS transformation.
+		 *
+		 * Before SIP, the inverse CD transformation gives the
+		 * intermediate pixel coordinates u', v', measured relative
+		 * to CRPIX.
+		 */
 		double[] cd = getCdMatrix(h);
 
+		double det =
+				cd[0] * cd[3] -
+						cd[1] * cd[2];
+
+		if (!Double.isFinite(det) ||
+				Math.abs(det) < 1e-30) {
+			throw new IllegalArgumentException(
+					"Invalid spatial WCS matrix.");
+		}
+
+		double uPrime =
+				(cd[3] * xiDeg -
+						cd[1] * etaDeg) / det;
+
+		double vPrime =
+				(-cd[2] * xiDeg +
+						cd[0] * etaDeg) / det;
+
 		/*
-		 * FITS pixel coordinates are 1-based.  Return Java/array
-		 * zero-based coordinates.
+		 * Step 3: inverse SIP transformation.
+		 *
+		 * SIP is defined in pixel coordinates relative to CRPIX.
+		 * The inverse coefficients AP/BP directly map the intermediate
+		 * coordinates (u',v') to the actual pixel coordinates (u,v).
 		 */
-		double det = cd[0] * cd[3] - cd[1] * cd[2];
+		double[] pixelOffset;
 
-		if (!Double.isFinite(det) || Math.abs(det) < 1e-30)
-			throw new IllegalArgumentException("Invalid spatial WCS matrix.");
+		if (hasSipInverse(h)) {
+			pixelOffset = applySipInverse(
+					h,
+					uPrime,
+					vPrime
+			);
+		} else if (hasSipForward(h)) {
+			/*
+			 * SIP inverse coefficients are optional.  If only A/B are
+			 * present, solve:
+			 *
+			 *     u' = u + A(u,v)
+			 *     v' = v + B(u,v)
+			 *
+			 * by fixed-point iteration.
+			 */
+			pixelOffset = invertSipForward(
+					h,
+					uPrime,
+					vPrime
+			);
+		} else {
+			pixelOffset = new double[]{
+					uPrime,
+					vPrime
+			};
+		}
 
-		double u =
-				(cd[3] * xiDeg - cd[1] * etaDeg) / det;
-		double v =
-				(-cd[2] * xiDeg + cd[0] * etaDeg) / det;
+		/*
+		 * FITS pixel coordinates are one-based; Java image arrays are
+		 * zero-based.
+		 */
+		return new double[]{
+				crpix1 - 1.0 + pixelOffset[0],
+				crpix2 - 1.0 + pixelOffset[1]
+		};
+	}
+
+	/**
+	 * Apply the inverse SIP polynomial:
+	 *
+	 *   u = u' + AP(u',v')
+	 *   v = v' + BP(u',v')
+	 *
+	 * SIP polynomial coefficients are stored in header keywords
+	 * AP_i_j and BP_i_j, with AP_ORDER/BP_ORDER specifying their
+	 * maximum total polynomial order.
+	 */
+	private static double[] applySipInverse(
+			Header h,
+			double uPrime,
+			double vPrime) {
+
+		double du = sipPolynomial(
+				h,
+				"AP",
+				"AP_ORDER",
+				uPrime,
+				vPrime
+		);
+
+		double dv = sipPolynomial(
+				h,
+				"BP",
+				"BP_ORDER",
+				uPrime,
+				vPrime
+		);
 
 		return new double[]{
-				crpix1 - 1.0 + u,
-				crpix2 - 1.0 + v
+				uPrime + du,
+				vPrime + dv
 		};
+	}
+
+	/**
+	 * Invert the forward SIP polynomial if AP/BP are not available.
+	 *
+	 * Forward SIP is:
+	 *
+	 *   u' = u + A(u,v)
+	 *   v' = v + B(u,v)
+	 *
+	 * The iteration below solves this system directly.  It is only a
+	 * fallback; SPHEREx TAN-SIP products normally provide AP/BP.
+	 */
+	private static double[] invertSipForward(
+			Header h,
+			double uPrime,
+			double vPrime) {
+
+		double u = uPrime;
+		double v = vPrime;
+
+		final int maxIterations = 30;
+		final double tolerance = 1e-9;
+
+		for (int iteration = 0;
+		     iteration < maxIterations;
+		     iteration++) {
+
+			double a = sipPolynomial(
+					h,
+					"A",
+					"A_ORDER",
+					u,
+					v
+			);
+
+			double b = sipPolynomial(
+					h,
+					"B",
+					"B_ORDER",
+					u,
+					v
+			);
+
+			double nextU = uPrime - a;
+			double nextV = vPrime - b;
+
+			double delta = Math.max(
+					Math.abs(nextU - u),
+					Math.abs(nextV - v)
+			);
+
+			u = nextU;
+			v = nextV;
+
+			if (delta < tolerance)
+				break;
+		}
+
+		return new double[]{
+				u,
+				v
+		};
+	}
+
+	/**
+	 * Evaluate a SIP polynomial of the form
+	 *
+	 *   sum C_i_j * u^i * v^j
+	 *
+	 * including the constant term where present.
+	 */
+	private static double sipPolynomial(
+			Header h,
+			String prefix,
+			String orderKeyword,
+			double u,
+			double v) {
+
+		int order = h.getIntValue(orderKeyword, 0);
+
+		if (order <= 0)
+			return 0.0;
+
+		double sum = 0.0;
+
+		/*
+		 * Build powers once.  SPHEREx currently uses low-order SIP
+		 * polynomials (typically order 3), so this is inexpensive and
+		 * avoids repeated Math.pow() calls.
+		 */
+		double[] up = new double[order + 1];
+		double[] vp = new double[order + 1];
+
+		up[0] = 1.0;
+		vp[0] = 1.0;
+
+		for (int i = 1; i <= order; i++) {
+			up[i] = up[i - 1] * u;
+			vp[i] = vp[i - 1] * v;
+		}
+
+		for (int i = 0; i <= order; i++) {
+			for (int j = 0; j <= order - i; j++) {
+				String key = prefix + "_" + i + "_" + j;
+
+				if (!h.containsKey(key))
+					continue;
+
+				double coefficient =
+						h.getDoubleValue(key, 0.0);
+
+				if (!Double.isFinite(coefficient) ||
+						coefficient == 0.0)
+					continue;
+
+				sum += coefficient *
+						up[i] *
+						vp[j];
+			}
+		}
+
+		return sum;
+	}
+
+	private static boolean hasSipInverse(Header h) {
+		return h.containsKey("AP_ORDER") ||
+				h.containsKey("BP_ORDER");
+	}
+
+	private static boolean hasSipForward(Header h) {
+		return h.containsKey("A_ORDER") ||
+				h.containsKey("B_ORDER");
 	}
 
 	private static double wrapDeltaRa(double deltaDeg) {
@@ -1192,13 +1439,13 @@ public final class SpherexPipeline {
 
 	/**
 	 * Return the FITS CD matrix in degrees/pixel.
-	 * <p>
+	 *
 	 * If CDi_j exists, it is authoritative. Otherwise:
-	 * <p>
-	 * CD = diag(CDELT) * PC
-	 * <p>
-	 * This is important: the previous Java code used PCi_j directly
-	 * when present, silently dropping CDELT.
+	 *
+	 *     CD = diag(CDELT) * PC
+	 *
+	 * This is important because using PCi_j directly would silently
+	 * drop CDELT.
 	 */
 	private static double[] getCdMatrix(Header h) {
 		boolean hasCd =
@@ -1216,13 +1463,19 @@ public final class SpherexPipeline {
 			};
 		}
 
-		double cdelt1 = h.getDoubleValue("CDELT1");
-		double cdelt2 = h.getDoubleValue("CDELT2");
+		double cdelt1 =
+				h.getDoubleValue("CDELT1");
+		double cdelt2 =
+				h.getDoubleValue("CDELT2");
 
-		double pc11 = h.getDoubleValue("PC1_1", 1);
-		double pc12 = h.getDoubleValue("PC1_2", 0);
-		double pc21 = h.getDoubleValue("PC2_1", 0);
-		double pc22 = h.getDoubleValue("PC2_2", 1);
+		double pc11 =
+				h.getDoubleValue("PC1_1", 1);
+		double pc12 =
+				h.getDoubleValue("PC1_2", 0);
+		double pc21 =
+				h.getDoubleValue("PC2_1", 0);
+		double pc22 =
+				h.getDoubleValue("PC2_2", 1);
 
 		return new double[]{
 				cdelt1 * pc11,
