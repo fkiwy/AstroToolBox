@@ -33,12 +33,33 @@ public final class SpherexPipeline {
 	}
 
 	public record Config(double raDeg, double decDeg, int cutoutArcsec, double apertureRadius,
-	                     boolean bin, Path cacheDir) {
+	                     boolean bin, Path cacheDir,
+	                     boolean removeOutliers, int outlierNbrOfBins, double outlierSigma) {
+		/**
+		 * Backward-compatible constructor used by SpherexViewerTab.
+		 *
+		 * Spectral outlier rejection is enabled by default, matching the
+		 * requested AstroToolBox behaviour.  The Python implementation has
+		 * the same algorithm available through its configuration, with the
+		 * current reference settings being 8 coarse wavelength bins and a
+		 * 3-sigma MAD threshold.
+		 */
+		public Config(double raDeg, double decDeg, int cutoutArcsec,
+		              double apertureRadius, boolean bin, Path cacheDir) {
+			this(raDeg, decDeg, cutoutArcsec, apertureRadius, bin, cacheDir,
+					true, 8, 3.0);
+		}
+
 		public Config {
-			if (!Double.isFinite(raDeg) || raDeg < 0 || raDeg >= 360 || !Double.isFinite(decDeg) || decDeg < -90 || decDeg > 90)
+			if (!Double.isFinite(raDeg) || raDeg < 0 || raDeg >= 360 ||
+					!Double.isFinite(decDeg) || decDeg < -90 || decDeg > 90)
 				throw new IllegalArgumentException("RA must be [0, 360) degrees and Dec must be [-90, 90] degrees.");
 			if (cutoutArcsec < 16 || cutoutArcsec > 1800 || apertureRadius <= 0)
 				throw new IllegalArgumentException("Use a 16–1800 arcsec cutout and positive aperture radius.");
+			if (outlierNbrOfBins < 1)
+				throw new IllegalArgumentException("outlierNbrOfBins must be >= 1.");
+			if (!Double.isFinite(outlierSigma) || outlierSigma <= 0)
+				throw new IllegalArgumentException("outlierSigma must be finite and > 0.");
 		}
 	}
 
@@ -112,6 +133,27 @@ public final class SpherexPipeline {
 		if (points.isEmpty())
 			throw new IOException("No usable cutouts were measured." + (warnings.isEmpty() ? "" : " " + warnings.get(0)));
 		int measured = points.size();
+
+		/*
+		 * Match SPExPI's final spectrum processing order:
+		 *
+		 *   sanitize -> detector-wise wavelength-bin MAD rejection -> binning
+		 *
+		 * The rejection is deliberately performed on the individual aperture
+		 * measurements, before inverse-variance spectral binning, so that a
+		 * single bad exposure cannot pull an entire output bin away from the
+		 * surrounding spectrum.
+		 */
+		points = sanitizePoints(points);
+		if (config.removeOutliers()) {
+			points = removeOutliersPerDetector(
+					points,
+					config.outlierNbrOfBins(),
+					config.outlierSigma(),
+					Set.of(1, 2, 3, 4, 5, 6)
+			);
+		}
+
 		if (config.bin()) points = bin(points, spectralChannels);
 		points.sort(Comparator.comparingDouble(Point::wavelengthUm));
 		progress.update("Spectrum complete.");
@@ -1560,6 +1602,157 @@ public final class SpherexPipeline {
 		int index = Arrays.binarySearch(grid, (int) Math.floor(value));
 		if (index < 0) index = -index - 2;
 		return Math.max(0, Math.min(grid.length - 2, index));
+	}
+
+	/**
+	 * Remove invalid raw measurements before the optional spectral outlier
+	 * rejection.  This corresponds to the sanitize_flux stage in SPExPI.
+	 * Negative fluxes are deliberately retained.
+	 */
+	private static List<Point> sanitizePoints(List<Point> input) {
+		List<Point> out = new ArrayList<>(input.size());
+		for (Point point : input) {
+			if (point == null ||
+					!Double.isFinite(point.wavelengthUm()) ||
+					!Double.isFinite(point.fluxUjy()) ||
+					!Double.isFinite(point.errorUjy()) ||
+					point.errorUjy() <= 0 ||
+					point.fluxUjy() == 0) {
+				continue;
+			}
+			out.add(point);
+		}
+		return out;
+	}
+
+	/**
+	 * Match SPExPI's remove_outliers_per_detector() implementation.
+	 *
+	 * For each selected detector the wavelength range is divided into a
+	 * small number of coarse bins.  Within each bin, a median/MAD criterion
+	 * rejects strong flux excursions.  The uncertainty is used only to
+	 * decide whether a measurement is valid; it is not used to define the
+	 * outlier threshold.
+	 *
+	 * The Python implementation uses the strict criterion
+	 *
+	 *     abs(flux - median) < sigma * 1.4826 * MAD
+	 *
+	 * and retains all finite valid points when MAD == 0.
+	 */
+	private static List<Point> removeOutliersPerDetector(
+			List<Point> input,
+			int nbrOfBins,
+			double sigma,
+			Set<Integer> detectorsToCheck) {
+
+		Map<Integer, double[]> ranges = new HashMap<>();
+		ranges.put(1, new double[]{0.75, 1.11});
+		ranges.put(2, new double[]{1.11, 1.64});
+		ranges.put(3, new double[]{1.64, 2.42});
+		ranges.put(4, new double[]{2.42, 3.82});
+		ranges.put(5, new double[]{3.82, 4.42});
+		ranges.put(6, new double[]{4.42, 5.00});
+
+		Map<Integer, List<Point>> byDetector = new TreeMap<>();
+		for (Point point : input) {
+			byDetector.computeIfAbsent(point.detector(), ignored -> new ArrayList<>()).add(point);
+		}
+
+		List<Point> out = new ArrayList<>(input.size());
+
+		for (var entry : byDetector.entrySet()) {
+			int detector = entry.getKey();
+			List<Point> detectorPoints = entry.getValue();
+
+			if (!detectorsToCheck.contains(detector)) {
+				out.addAll(detectorPoints);
+				continue;
+			}
+
+			double[] range = ranges.get(detector);
+			double lo;
+			double hi;
+
+			if (range != null) {
+				lo = range[0];
+				hi = range[1];
+			} else {
+				lo = detectorPoints.stream()
+						.mapToDouble(Point::wavelengthUm)
+						.min().orElse(Double.NaN);
+				hi = detectorPoints.stream()
+						.mapToDouble(Point::wavelengthUm)
+						.max().orElse(Double.NaN);
+			}
+
+			if (!Double.isFinite(lo) || !Double.isFinite(hi) || hi <= lo)
+				continue;
+
+			double width = (hi - lo) / nbrOfBins;
+
+			for (int bin = 0; bin < nbrOfBins; bin++) {
+				double edgeLo = lo + bin * width;
+				double edgeHi = lo + (bin + 1) * width;
+
+				List<Point> binPoints = new ArrayList<>();
+				for (Point point : detectorPoints) {
+					double wl = point.wavelengthUm();
+					if (wl >= edgeLo && wl < edgeHi)
+						binPoints.add(point);
+				}
+
+				if (binPoints.isEmpty())
+					continue;
+
+				List<Double> finiteFlux = new ArrayList<>();
+				for (Point point : binPoints) {
+					if (Double.isFinite(point.fluxUjy()) &&
+							Double.isFinite(point.errorUjy()) &&
+							point.errorUjy() > 0) {
+						finiteFlux.add(point.fluxUjy());
+					}
+				}
+
+				if (finiteFlux.isEmpty())
+					continue;
+
+				double med = median(finiteFlux);
+				List<Double> absoluteDeviations = new ArrayList<>(finiteFlux.size());
+				for (double flux : finiteFlux)
+					absoluteDeviations.add(Math.abs(flux - med));
+				double mad = median(absoluteDeviations);
+
+				/*
+				 * Reproduce the Python behaviour exactly: if MAD is zero (or
+				 * non-finite), do not reject any finite valid point.
+				 */
+				if (!Double.isFinite(mad) || mad == 0.0) {
+					for (Point point : binPoints) {
+						if (Double.isFinite(point.fluxUjy()) &&
+								Double.isFinite(point.errorUjy()) &&
+								point.errorUjy() > 0) {
+							out.add(point);
+						}
+					}
+					continue;
+				}
+
+				double threshold = sigma * 1.4826 * mad;
+				for (Point point : binPoints) {
+					if (!Double.isFinite(point.fluxUjy()) ||
+							!Double.isFinite(point.errorUjy()) ||
+							point.errorUjy() <= 0)
+						continue;
+
+					/* Python uses a strict '<' comparison. */
+					if (Math.abs(point.fluxUjy() - med) < threshold)
+						out.add(point);
+				}
+			}
+		}
+
+		return out;
 	}
 
 	private static List<Point> bin(
