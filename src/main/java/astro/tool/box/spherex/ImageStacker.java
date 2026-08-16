@@ -376,11 +376,12 @@ public class ImageStacker {
 		out.addValue("CRPIX2", (height + 1) / 2.0, "Reference pixel Y");
 
 		// East left: RA decreases towards increasing X.
-		// North up: Dec increases towards increasing Y.
+		// North up: Dec decreases towards increasing array row (Y),
+		// because image rows increase downward on screen.
 		out.addValue("CD1_1", -scale, "RA increment [deg/pixel]");
 		out.addValue("CD1_2", 0.0, "RA cross term [deg/pixel]");
 		out.addValue("CD2_1", 0.0, "Dec cross term [deg/pixel]");
-		out.addValue("CD2_2", scale, "Dec increment [deg/pixel]");
+		out.addValue("CD2_2", -scale, "Dec increment [deg/pixel]");
 
 		out.addValue("LONPOLE", 180.0, "TAN longitude pole");
 		out.addValue("LATPOLE", centreWorld[1], "TAN latitude pole");
