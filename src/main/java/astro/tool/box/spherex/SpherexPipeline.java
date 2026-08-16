@@ -2020,6 +2020,9 @@ public final class SpherexPipeline {
 				Map<String, Object> resultMap = new HashMap<>();
 				resultMap.put("band", "D" + detector);
 				resultMap.put("hdu", stackResult.stackedImage);
+				// Actual target position in the reprojected image, in 0-based pixels.
+				resultMap.put("target_pixel_x", stackResult.targetPixelX);
+				resultMap.put("target_pixel_y", stackResult.targetPixelY);
 				resultMap.put("phot_radii", new double[]{
 						ImageStacker.DEFAULT_APERTURE_RADIUS_PIX,
 						ImageStacker.DEFAULT_BACKGROUND_INNER_RADIUS_PIX,
