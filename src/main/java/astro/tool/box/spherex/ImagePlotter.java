@@ -353,13 +353,43 @@ public class ImagePlotter {
 		g2d.setColor(old);
 	}
 
+	/**
+	 * Return the display coordinates corresponding to the Python image
+	 * plotter's image centre convention: (nx / 2.0, ny / 2.0).
+	 *
+	 * Both the target marker and the photometry overlays use this exact
+	 * helper so they cannot acquire a sub-pixel offset relative to each
+	 * other.
+	 */
+	private static double[] displayImageCenter(
+			int panelX, int panelY,
+			int panelWidth, int panelHeight,
+			int imageHeight, int imageWidth) {
+
+		double centerX = imageWidth / 2.0;
+		double centerY = imageHeight / 2.0;
+
+		double scaleX = (double) panelWidth / imageWidth;
+		double scaleY = (double) panelHeight / imageHeight;
+
+		return new double[]{
+				panelX + centerX * scaleX,
+				panelY + centerY * scaleY
+		};
+	}
+
 	private static void drawTargetMarker(Graphics2D g2d, int panelX, int panelY, int panelWidth, int panelHeight, int imageHeight, int imageWidth) {
-		// The Stage-1 output WCS is explicitly centred on the requested target.
-		double cx = panelX + panelWidth * 0.5;
-		double cy = panelY + panelHeight * 0.5;
+		// Use exactly the same image-centre convention as the annuli.
+		double[] center = displayImageCenter(
+				panelX, panelY, panelWidth, panelHeight,
+				imageHeight, imageWidth);
+
 		Color old = g2d.getColor();
 		g2d.setColor(Color.RED);
-		g2d.fillOval((int)Math.round(cx - 1.5), (int)Math.round(cy - 1.5), 3, 3);
+		g2d.fillOval(
+				(int) Math.round(center[0] - 1.5),
+				(int) Math.round(center[1] - 1.5),
+				3, 3);
 		g2d.setColor(old);
 	}
 
@@ -375,15 +405,17 @@ public class ImagePlotter {
 		int imgHeight = imageData.length;
 		int imgWidth = imageData[0].length;
 
-		double centerX = imgWidth / 2.0;
-		double centerY = imgHeight / 2.0;
-
 		double scaleX = (double) panelWidth / imgWidth;
 		double scaleY = (double) panelHeight / imgHeight;
 		double radiusScale = Math.min(scaleX, scaleY);
 
-		double displayCenterX = panelX + centerX * scaleX;
-		double displayCenterY = panelY + centerY * scaleY;
+		// Use exactly the same centre as the target marker and as Python's
+		// _image_center_xy(), i.e. (nx / 2.0, ny / 2.0).
+		double[] center = displayImageCenter(
+				panelX, panelY, panelWidth, panelHeight,
+				imgHeight, imgWidth);
+		double displayCenterX = center[0];
+		double displayCenterY = center[1];
 
 		double apertureRadius = radii[0];
 		double innerBgRadius = radii[1];

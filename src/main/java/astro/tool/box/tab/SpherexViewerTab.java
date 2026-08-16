@@ -59,9 +59,9 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		coordinates = field(form, "Coordinates", "111.835 17.161");
+		coordinates = field(form, "Coordinates", "225.833 25.425");
 		size = field(form, "Cutout (arcsec)", "120");
-		radius = field(form, "Aperture (pixels)", "4.0");
+		radius = field(form, "Aperture (pixels)", "2.0");
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
@@ -136,13 +136,14 @@ public class SpherexViewerTab implements Tab {
 
 			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
 
-			newCoordinates = !normalizedRa.equals(getUserSetting("lastRa")) || !normalizedDec.equals(getUserSetting("lastDec"));
+			//newCoordinates = !normalizedRa.equals(getUserSetting("lastRa")) || !normalizedDec.equals(getUserSetting("lastDec"));
+			newCoordinates = false;
 
 			// Clean up FITS directory if coordinates changed (new object)
-			if (cleanUpDirectory.isSelected() || newCoordinates) {
-				cleanupCutoutDirectory(config.cacheDir());
-				cleanUpDirectory.setSelected(false);
-			}
+			//if (cleanUpDirectory.isSelected() || newCoordinates) {
+			//	cleanupCutoutDirectory(config.cacheDir());
+			//	cleanUpDirectory.setSelected(false);
+			//}
 			setUserSetting("lastRa", normalizedRa);
 			setUserSetting("lastDec", normalizedDec);
 		} catch (Exception ex) {
@@ -177,7 +178,7 @@ public class SpherexViewerTab implements Tab {
 
 					// Stack and display images using already-downloaded FITS files
 					if (!r.fitsFiles().isEmpty()) {
-						stackAndDisplayImages(r.fitsFiles());
+						stackAndDisplayImages(r.fitsFiles(), config.raDeg(), config.decDeg());
 					}
 				} catch (Exception ex) {
 					error(ex.getCause() == null ? ex : ex.getCause());
@@ -288,12 +289,22 @@ public class SpherexViewerTab implements Tab {
 		return sorted.size() % 2 == 0 ? (sorted.get(middle - 1) + sorted.get(middle)) / 2 : sorted.get(middle);
 	}
 
-	private void stackAndDisplayImages(List<Path> fitsFiles) {
+	private void stackAndDisplayImages(
+			List<Path> fitsFiles,
+			double raDeg,
+			double decDeg) {
+
 		new SwingWorker<List<Map<String, Object>>, String>() {
 			@Override
 			protected List<Map<String, Object>> doInBackground() throws Exception {
 				publish("Stacking detector images from downloaded cutouts...");
-				return SpherexPipeline.stackImages(fitsFiles, this::publish);
+
+				return SpherexPipeline.stackImages(
+						fitsFiles,
+						this::publish,
+						raDeg,
+						decDeg
+				);
 			}
 
 			@Override
