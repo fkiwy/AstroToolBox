@@ -1961,6 +1961,22 @@ public final class SpherexPipeline {
 	 * Stack images using already-downloaded FITS files (avoids re-downloading).
 	 */
 	public static List<Map<String, Object>> stackImages(List<Path> fitsFiles, Progress progress) throws Exception {
+		return stackImages(fitsFiles, progress, Double.NaN, Double.NaN);
+	}
+
+	/**
+	 * Stack already-downloaded detector cutouts on a common celestial grid.
+	 *
+	 * @param fitsFiles FITS cutouts to stack
+	 * @param progress progress callback
+	 * @param ra requested output centre RA in degrees; NaN keeps the
+	 *              reference cutout centre
+	 * @param dec requested output centre Dec in degrees; NaN keeps the
+	 *               reference cutout centre
+	 */
+	public static List<Map<String, Object>> stackImages(
+			List<Path> fitsFiles, Progress progress,
+			double ra, double dec) throws Exception {
 		Map<String, List<ImageStacker.DetectorCutout>> detectorCutouts = new HashMap<>();
 		long fatalMask = buildFatalMask(ImageStacker.DEFAULT_FATAL_FLAG_BITS);
 
@@ -1992,8 +2008,14 @@ public final class SpherexPipeline {
 			List<ImageStacker.DetectorCutout> cutouts = detectorCutouts.get(detector);
 
 			try {
-				ImageStacker.StackResult stackResult = ImageStacker.meanStackDetectorCutouts(
-						detector, cutouts, fatalMask, true);
+				ImageStacker.StackResult stackResult =
+						ImageStacker.meanStackDetectorCutouts(
+								detector,
+								cutouts,
+								fatalMask,
+								true,
+								ra,
+								dec);
 
 				Map<String, Object> resultMap = new HashMap<>();
 				resultMap.put("band", "D" + detector);
