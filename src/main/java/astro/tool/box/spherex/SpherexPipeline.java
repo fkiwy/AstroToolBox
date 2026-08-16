@@ -37,7 +37,7 @@ public final class SpherexPipeline {
 	                     boolean removeOutliers, int outlierNbrOfBins, double outlierSigma) {
 		/**
 		 * Backward-compatible constructor used by SpherexViewerTab.
-		 *
+		 * <p>
 		 * Spectral outlier rejection is enabled by default, matching the
 		 * requested AstroToolBox behaviour.  The Python implementation has
 		 * the same algorithm available through its configuration, with the
@@ -1151,21 +1151,21 @@ public final class SpherexPipeline {
 	/**
 	 * Convert ICRS sky coordinates to zero-based cutout pixel coordinates
 	 * using the FITS spatial WCS.
-	 *
+	 * <p>
 	 * This implements the TAN-SIP inverse transformation used by
 	 * Astropy's:
-	 *
-	 *     WCS(header).world_to_pixel(...)
-	 *
+	 * <p>
+	 * WCS(header).world_to_pixel(...)
+	 * <p>
 	 * in the SPExPI aperture path.
-	 *
+	 * <p>
 	 * The transformation is:
-	 *
-	 *   sky -> TAN intermediate world coordinates
-	 *       -> inverse CD/PC/CDELT
-	 *       -> inverse SIP polynomial
-	 *       -> zero-based pixel coordinates
-	 *
+	 * <p>
+	 * sky -> TAN intermediate world coordinates
+	 * -> inverse CD/PC/CDELT
+	 * -> inverse SIP polynomial
+	 * -> zero-based pixel coordinates
+	 * <p>
 	 * For normal TAN-SIP SPHEREx products the inverse SIP coefficients
 	 * AP_i_j / BP_i_j are present and are used directly.  If they are
 	 * absent, the forward SIP coefficients A_i_j / B_i_j are inverted
@@ -1304,10 +1304,10 @@ public final class SpherexPipeline {
 
 	/**
 	 * Apply the inverse SIP polynomial:
-	 *
-	 *   u = u' + AP(u',v')
-	 *   v = v' + BP(u',v')
-	 *
+	 * <p>
+	 * u = u' + AP(u',v')
+	 * v = v' + BP(u',v')
+	 * <p>
 	 * SIP polynomial coefficients are stored in header keywords
 	 * AP_i_j and BP_i_j, with AP_ORDER/BP_ORDER specifying their
 	 * maximum total polynomial order.
@@ -1341,12 +1341,12 @@ public final class SpherexPipeline {
 
 	/**
 	 * Invert the forward SIP polynomial if AP/BP are not available.
-	 *
+	 * <p>
 	 * Forward SIP is:
-	 *
-	 *   u' = u + A(u,v)
-	 *   v' = v + B(u,v)
-	 *
+	 * <p>
+	 * u' = u + A(u,v)
+	 * v' = v + B(u,v)
+	 * <p>
 	 * The iteration below solves this system directly.  It is only a
 	 * fallback; SPHEREx TAN-SIP products normally provide AP/BP.
 	 */
@@ -1404,9 +1404,9 @@ public final class SpherexPipeline {
 
 	/**
 	 * Evaluate a SIP polynomial of the form
-	 *
-	 *   sum C_i_j * u^i * v^j
-	 *
+	 * <p>
+	 * sum C_i_j * u^i * v^j
+	 * <p>
 	 * including the constant term where present.
 	 */
 	private static double sipPolynomial(
@@ -1481,11 +1481,11 @@ public final class SpherexPipeline {
 
 	/**
 	 * Return the FITS CD matrix in degrees/pixel.
-	 *
+	 * <p>
 	 * If CDi_j exists, it is authoritative. Otherwise:
-	 *
-	 *     CD = diag(CDELT) * PC
-	 *
+	 * <p>
+	 * CD = diag(CDELT) * PC
+	 * <p>
 	 * This is important because using PCi_j directly would silently
 	 * drop CDELT.
 	 */
@@ -1627,17 +1627,17 @@ public final class SpherexPipeline {
 
 	/**
 	 * Match SPExPI's remove_outliers_per_detector() implementation.
-	 *
+	 * <p>
 	 * For each selected detector the wavelength range is divided into a
 	 * small number of coarse bins.  Within each bin, a median/MAD criterion
 	 * rejects strong flux excursions.  The uncertainty is used only to
 	 * decide whether a measurement is valid; it is not used to define the
 	 * outlier threshold.
-	 *
+	 * <p>
 	 * The Python implementation uses the strict criterion
-	 *
-	 *     abs(flux - median) < sigma * 1.4826 * MAD
-	 *
+	 * <p>
+	 * abs(flux - median) < sigma * 1.4826 * MAD
+	 * <p>
 	 * and retains all finite valid points when MAD == 0.
 	 */
 	private static List<Point> removeOutliersPerDetector(
@@ -2062,7 +2062,13 @@ public final class SpherexPipeline {
 
 			String detectorStr = String.valueOf(detector);
 			result.computeIfAbsent(detectorStr, k -> new ArrayList<>())
-					.add(new ImageStacker.DetectorCutout(dateObs, imageData, flags, fitsPath.getFileName().toString()));
+					.add(new ImageStacker.DetectorCutout(
+							dateObs,
+							imageData,
+							flags,
+							h,
+							fitsPath.getFileName().toString()
+					));
 		}
 	}
 
