@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Utilities for plotting SPHEREx cutout images.
@@ -18,10 +19,10 @@ public class ImagePlotter {
 
 	public static class PlotConfig {
 		public double imageContrast = 10.0;
-		public int rows = 1;
-		public int cols = 7;
-		public int figureWidth = 1400;
-		public int figureHeight = 200;
+		public int rows = 5;
+		public int cols = 6;
+		public int figureWidth = 1200;
+		public int figureHeight = 1000;
 
 		public PlotConfig(double imageContrast) {
 			this.imageContrast = imageContrast;
@@ -38,46 +39,46 @@ public class ImagePlotter {
 	                                       double imageSize, double imageContrast) throws Exception {
 
 		PlotConfig config = new PlotConfig(imageContrast);
-
-		if (imageContrast < 0 || imageContrast >= 50) {
+		if (imageContrast < 0 || imageContrast >= 50)
 			throw new IllegalArgumentException("image_contrast must be in [0, 50)");
-		}
-		if (config.rows <= 0 || config.cols <= 0) {
-			throw new IllegalArgumentException("rows and cols must be positive");
-		}
 
-		// Create figure
-		BufferedImage figure = new BufferedImage(
-				config.figureWidth, config.figureHeight,
-				BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2d = figure.createGraphics();
-		g2d.setColor(Color.WHITE);
-		g2d.fillRect(0, 0, figure.getWidth(), figure.getHeight());
-
-		// Plot individual cutouts
 		List<ImageCutout> cutouts = normalizeCutouts(images);
-		ImageCutout colorCutout = createD2D4D6ColorCutout(cutouts);
 		int panelWidth = config.figureWidth / config.cols;
 		int panelHeight = config.figureHeight / config.rows;
 
+		BufferedImage figure = new BufferedImage(
+				config.figureWidth, config.figureHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = figure.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(0, 0, figure.getWidth(), figure.getHeight());
+
+		// Python layout: six grayscale detector panels, one RGB panel, one information panel.
 		int panelIndex = 0;
 		for (ImageCutout cutout : cutouts) {
+			if (panelIndex >= config.rows * config.cols - 1) break;
 			int row = panelIndex / config.cols;
 			int col = panelIndex % config.cols;
-			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight,
-					panelWidth, panelHeight);
+			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
 			panelIndex++;
-			if ("D6".equals(cutout.band) && colorCutout != null) {
-				row = panelIndex / config.cols;
-				col = panelIndex % config.cols;
-				plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight,
-						panelWidth, panelHeight);
-				panelIndex++;
-			}
+		}
+
+		ImageCutout colorCutout = createD1D2D3D4D5D6ColorCutout(cutouts);
+		if (colorCutout != null && panelIndex < config.rows * config.cols - 1) {
+			int row = panelIndex / config.cols;
+			int col = panelIndex % config.cols;
+			plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
+			panelIndex++;
+		}
+
+		// Final information panel.
+		if (panelIndex < config.rows * config.cols) {
+			int row = panelIndex / config.cols;
+			int col = panelIndex % config.cols;
+			plotInformationPanel(g2d, config, col * panelWidth, row * panelHeight, panelWidth, panelHeight, ra, dec, imageSize);
 		}
 
 		drawVerticalSeparators(g2d, config, panelWidth);
-
 		g2d.dispose();
 		return figure;
 	}
@@ -165,13 +166,15 @@ public class ImagePlotter {
 		// Draw grayscale image
 		BufferedImage img = imageDataToBufferedImage(imageData, vmin, vmax);
 		g2d.drawImage(img, x, y, width, height, null);
+		drawPanelBorder(g2d, x, y, width, height);
+		drawTargetMarker(g2d, x, y, width, height, imageData.length, imageData[0].length);
 
 		// Draw label (white background, half size)
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(x + 5, y + 5, 20, 10);
 		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		g2d.drawString(cutout.band, x + 7, y + 13);
+		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.drawString(cutout.band, x + 7, y + 15);
 
 		// Draw aperture circles
 		drawPhotometryRadii(g2d, x, y, width, height, imageData, cutout.photometryRadii);
@@ -186,12 +189,14 @@ public class ImagePlotter {
 		double[][][] channels = (double[][][]) cutout.imageData;
 		BufferedImage img = colorChannelsToBufferedImage(channels[0], channels[1], channels[2], config.imageContrast);
 		g2d.drawImage(img, x, y, width, height, null);
+		drawPanelBorder(g2d, x, y, width, height);
+		drawTargetMarker(g2d, x, y, width, height, channels[2].length, channels[2][0].length);
 
 		g2d.setColor(Color.WHITE);
-		g2d.fillRect(x + 5, y + 5, 58, 10);
+		g2d.fillRect(x + 5, y + 5, 85, 14);
 		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		g2d.drawString(cutout.band, x + 7, y + 13);
+		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.drawString(cutout.band, x + 7, y + 15);
 
 		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii);
 	}
@@ -200,34 +205,73 @@ public class ImagePlotter {
 	 * Create an RGB composite from D2, D4, and D6.
 	 * Blue channel: D2, green channel: D4, red channel: D6.
 	 */
-	private static ImageCutout createD2D4D6ColorCutout(List<ImageCutout> cutouts) throws Exception {
-		ImageCutout d2 = null;
-		ImageCutout d4 = null;
-		ImageCutout d6 = null;
+	/**
+	 * Create the Python-compatible RGB composite.
+	 *
+	 * Blue  = mean(D1, D2)
+	 * Green = mean(D3, D4)
+	 * Red   = mean(D5, D6)
+	 */
+	private static ImageCutout createD1D2D3D4D5D6ColorCutout(List<ImageCutout> cutouts) throws Exception {
+		ImageCutout d1 = findBand(cutouts, "D1");
+		ImageCutout d2 = findBand(cutouts, "D2");
+		ImageCutout d3 = findBand(cutouts, "D3");
+		ImageCutout d4 = findBand(cutouts, "D4");
+		ImageCutout d5 = findBand(cutouts, "D5");
+		ImageCutout d6 = findBand(cutouts, "D6");
+		if (d1 == null || d2 == null || d3 == null || d4 == null || d5 == null || d6 == null)
+			return null;
 
-		for (ImageCutout cutout : cutouts) {
-			if ("D2".equals(cutout.band)) {
-				d2 = cutout;
-			} else if ("D4".equals(cutout.band)) {
-				d4 = cutout;
-			} else if ("D6".equals(cutout.band)) {
-				d6 = cutout;
+		double[][] blue = meanCommonCenter((double[][]) d1.imageData, (double[][]) d2.imageData);
+		double[][] green = meanCommonCenter((double[][]) d3.imageData, (double[][]) d4.imageData);
+		double[][] red = meanCommonCenter((double[][]) d5.imageData, (double[][]) d6.imageData);
+
+		double[][][] common = cropCommon(red, green, blue);
+		return new ImageCutout("D56-D34-D12", common, d6.photometryRadii);
+	}
+
+	private static ImageCutout findBand(List<ImageCutout> cutouts, String band) {
+		for (ImageCutout c : cutouts)
+			if (band.equals(c.band)) return c;
+		return null;
+	}
+
+	private static double[][][] cropCommon(double[][]... arrays) {
+		if (arrays.length == 0) throw new IllegalArgumentException("At least one array is required");
+		int minHeight = Integer.MAX_VALUE;
+		int minWidth = Integer.MAX_VALUE;
+		for (double[][] array : arrays) {
+			if (array == null || array.length == 0 || array[0] == null || array[0].length == 0)
+				throw new IllegalArgumentException("Array has invalid shape");
+			minHeight = Math.min(minHeight, array.length);
+			minWidth = Math.min(minWidth, array[0].length);
+		}
+		double[][][] result = new double[arrays.length][minHeight][minWidth];
+		for (int i = 0; i < arrays.length; i++) {
+			int startY = (arrays[i].length - minHeight) / 2;
+			int startX = (arrays[i][0].length - minWidth) / 2;
+			for (int y = 0; y < minHeight; y++)
+				System.arraycopy(arrays[i][startY + y], startX, result[i][y], 0, minWidth);
+		}
+		return result;
+	}
+
+	private static double[][] meanCommonCenter(double[][] a, double[][] b) {
+		double[][][] common = cropCommon(a, b);
+		int h = common[0].length;
+		int w = common[0][0].length;
+		double[][] out = new double[h][w];
+		for (int y = 0; y < h; y++) {
+			for (int x = 0; x < w; x++) {
+				double av = common[0][y][x];
+				double bv = common[1][y][x];
+				if (Double.isFinite(av) && Double.isFinite(bv)) out[y][x] = 0.5 * (av + bv);
+				else if (Double.isFinite(av)) out[y][x] = av;
+				else if (Double.isFinite(bv)) out[y][x] = bv;
+				else out[y][x] = Double.NaN;
 			}
 		}
-
-		if (d2 == null || d4 == null || d6 == null) {
-			return null;
-		}
-
-		double[][] d2Data = (double[][]) d2.imageData;
-		double[][] d4Data = (double[][]) d4.imageData;
-		double[][] d6Data = (double[][]) d6.imageData;
-
-		double[][] blue = cropToCommonCenter(d2Data, d4Data, d6Data);
-		double[][] green = cropToCommonCenter(d4Data, d2Data, d6Data);
-		double[][] red = cropToCommonCenter(d6Data, d2Data, d4Data);
-
-		return new ImageCutout("D2/D4/D6", new double[][][]{red, green, blue}, d6.photometryRadii);
+		return out;
 	}
 
 	/**
@@ -288,6 +332,7 @@ public class ImagePlotter {
 					value = 0;
 				}
 				int gray = (int) Math.min(255, Math.max(0, 255 * (value - vmin) / range));
+				gray = 255 - gray; // Python image_plotter uses cmap="gray_r".
 				img.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
 			}
 		}
@@ -298,6 +343,26 @@ public class ImagePlotter {
 	/**
 	 * Draw photometry aperture circles.
 	 */
+	private static void drawPanelBorder(Graphics2D g2d, int x, int y, int width, int height) {
+		Color old = g2d.getColor();
+		Stroke oldStroke = g2d.getStroke();
+		g2d.setColor(Color.BLACK);
+		g2d.setStroke(new BasicStroke(1.0f));
+		g2d.drawRect(x, y, width - 1, height - 1);
+		g2d.setStroke(oldStroke);
+		g2d.setColor(old);
+	}
+
+	private static void drawTargetMarker(Graphics2D g2d, int panelX, int panelY, int panelWidth, int panelHeight, int imageHeight, int imageWidth) {
+		// The Stage-1 output WCS is explicitly centred on the requested target.
+		double cx = panelX + panelWidth * 0.5;
+		double cy = panelY + panelHeight * 0.5;
+		Color old = g2d.getColor();
+		g2d.setColor(Color.RED);
+		g2d.fillOval((int)Math.round(cx - 1.5), (int)Math.round(cy - 1.5), 3, 3);
+		g2d.setColor(old);
+	}
+
 	private static void drawPhotometryRadii(Graphics2D g2d, int panelX, int panelY,
 	                                        int panelWidth, int panelHeight, double[][] imageData, double[] radii) {
 
@@ -350,6 +415,29 @@ public class ImagePlotter {
 				diameter,
 				diameter
 		));
+	}
+
+	private static void plotInformationPanel(Graphics2D g2d, PlotConfig config, int x, int y,
+	                                         int width, int height, double ra, double dec, double imageSize) {
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(x, y, width, height);
+		g2d.setColor(Color.BLACK);
+		g2d.setFont(new Font("Arial", Font.PLAIN, 13));
+		g2d.drawString("Target", x + 12, y + 28);
+		g2d.drawString("RA = " + formatCoordinate(ra), x + 12, y + 55);
+		g2d.drawString("Dec = " + formatCoordinate(dec), x + 12, y + 82);
+		g2d.drawString("Size = " + Math.round(imageSize) + " arcsec", x + 12, y + 109);
+		g2d.drawString("North up, East left", x + 12, y + 136);
+		g2d.setColor(Color.GRAY);
+		g2d.drawRect(x, y, width - 1, height - 1);
+	}
+
+	private static String formatCoordinate(double value) {
+		if (!Double.isFinite(value)) return "n/a";
+		String text = String.format(java.util.Locale.ROOT, "%.7f", value);
+		while (text.contains(".") && text.endsWith("0")) text = text.substring(0, text.length() - 1);
+		if (text.endsWith(".")) text = text.substring(0, text.length() - 1);
+		return text;
 	}
 
 	/**

@@ -233,29 +233,31 @@ public class ImageStacker {
 		for (DetectorCutout cutout : inputCutouts) {
 			try {
 				double[][] data;
-				long[][] flags;
+				long[][] flags = null;
+				double[][] footprint;
 
 				if (canReproject) {
-					data = reprojectBilinear(
-							cutout.data, cutout.header,
-							outputHeader, refWidth, refHeight);
-
-					flags = reprojectNearestFlags(
-							cutout.flags, cutout.header,
-							outputHeader, refWidth, refHeight);
+					ReprojectedImage reprojection = reprojectBilinear(
+							cutout.data, cutout.flags, fatalMask,
+							cutout.header, outputHeader, refWidth, refHeight);
+					data = reprojection.data;
+					footprint = reprojection.footprint;
 				} else {
 					data = cropCenter(cutout.data, refHeight, refWidth);
 					flags = cropCenterLong(cutout.flags, refHeight, refWidth);
+					footprint = new double[refHeight][refWidth];
+					for (int y = 0; y < refHeight; y++)
+						Arrays.fill(footprint[y], 1.0);
 				}
 
 				for (int y = 0; y < refHeight; y++) {
 					for (int x = 0; x < refWidth; x++) {
-						boolean validFlags =
-								(flags[y][x] & fatalMask) == 0;
-						boolean validData =
-								Double.isFinite(data[y][x]);
+						boolean valid = canReproject
+								? footprint[y][x] > 0.0
+								: (flags[y][x] & fatalMask) == 0;
+						boolean validData = Double.isFinite(data[y][x]);
 
-						if (validFlags && validData) {
+						if (valid && validData) {
 							stacked[y][x] += data[y][x];
 							counts[y][x] += 1.0;
 						}
@@ -387,95 +389,79 @@ public class ImageStacker {
 	}
 
 	/**
-	 * Reproject IMAGE-like data onto the common output TAN grid using
-	 * bilinear interpolation. Pixels outside the source footprint are NaN.
+	 * Result of a celestial reprojection.
+	 *
+	 * The footprint records whether the requested output pixel falls inside
+	 * the geometric footprint of the source image. It is deliberately kept
+	 * separate from the data values: a geometrically covered pixel may still
+	 * be unusable because all contributing detector pixels are flagged or
+	 * non-finite.
 	 */
-	private static double[][] reprojectBilinear(
+	private record ReprojectedImage(double[][] data, double[][] footprint) {
+	}
+
+	/**
+	 * Reproject IMAGE-like data onto the common output TAN grid.
+	 *
+	 * This is deliberately NaN/flag aware. A single invalid or fatal source
+	 * pixel must not turn the whole bilinear interpolation into NaN, nor may
+	 * a fatal detector pixel leak into the reprojected image simply because
+	 * the nearest-neighbour FLAGS sample happens to land on an adjacent
+	 * good pixel. Instead, invalid source samples are omitted and the
+	 * remaining interpolation weights are renormalized.
+	 *
+	 * The footprint is independent of source data validity and is 1 when the
+	 * sky position maps inside the source image.
+	 */
+	private static ReprojectedImage reprojectBilinear(
 			double[][] source,
+			long[][] sourceFlags,
+			long fatalMask,
 			Header sourceWcs,
 			Header targetWcs,
 			int width,
 			int height) throws Exception {
 
 		validate2d(source, "source image");
+		if (sourceFlags != null)
+			validate2d(sourceFlags, "source flags");
 
 		double[][] out = new double[height][width];
+		double[][] footprint = new double[height][width];
 		for (double[] row : out) Arrays.fill(row, Double.NaN);
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 
-				double[] world = pixelToWorld(
-						targetWcs, x, y);
+				double[] world = pixelToWorld(targetWcs, x, y);
+				double[] src = worldToPixel(sourceWcs, world[0], world[1]);
 
-				double[] src = worldToPixel(
-						sourceWcs, world[0], world[1]);
-
-				if (!Double.isFinite(src[0]) ||
-						!Double.isFinite(src[1]))
+				if (!Double.isFinite(src[0]) || !Double.isFinite(src[1]))
 					continue;
 
-				out[y][x] = bilinear(
-						source, src[0], src[1]);
-			}
-		}
-
-		return out;
-	}
-
-	/**
-	 * Reproject FLAGS with nearest-neighbour sampling. Bit masks must never
-	 * be bilinearly interpolated.
-	 */
-	private static long[][] reprojectNearestFlags(
-			long[][] source,
-			Header sourceWcs,
-			Header targetWcs,
-			int width,
-			int height) throws Exception {
-
-		if (source == null)
-			return new long[height][width];
-
-		validate2d(source, "source flags");
-
-		long[][] out = new long[height][width];
-
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-
-				double[] world =
-						pixelToWorld(targetWcs, x, y);
-
-				double[] src =
-						worldToPixel(sourceWcs, world[0], world[1]);
-
-				if (!Double.isFinite(src[0]) ||
-						!Double.isFinite(src[1]))
-					continue;
-
-				int sx = (int) Math.round(src[0]);
-				int sy = (int) Math.round(src[1]);
-
-				if (sy >= 0 && sy < source.length &&
-						sx >= 0 && sx < source[0].length) {
-					out[y][x] = source[sy][sx];
+				if (src[0] >= 0.0 && src[0] <= source[0].length - 1.0 &&
+						src[1] >= 0.0 && src[1] <= source.length - 1.0) {
+					footprint[y][x] = 1.0;
 				}
+
+				out[y][x] = bilinearValidAware(
+						source, sourceFlags, fatalMask, src[0], src[1]);
 			}
 		}
 
-		return out;
+		return new ReprojectedImage(out, footprint);
 	}
 
 	/**
-	 * Bilinear interpolation in 0-based array coordinates.
-	 * <p>
-	 * A NaN source pixel invalidates the interpolation rather than silently
-	 * renormalizing the kernel. This is conservative and prevents flagged
-	 * detector gaps from being filled with fabricated flux.
+	 * Bilinear interpolation in 0-based array coordinates while ignoring
+	 * non-finite and fatal-flagged source samples. The remaining weights are
+	 * renormalized so one bad detector pixel does not create an artificial
+	 * hole in the reprojected image.
 	 */
-	private static double bilinear(
+	private static double bilinearValidAware(
 			double[][] image,
+			long[][] flags,
+			long fatalMask,
 			double x,
 			double y) {
 
@@ -485,28 +471,81 @@ public class ImageStacker {
 		int y1 = y0 + 1;
 
 		if (x0 < 0 || y0 < 0 ||
-				x1 >= image[0].length ||
-				y1 >= image.length)
+				x0 >= image[0].length || y0 >= image.length)
 			return Double.NaN;
 
-		double fx = x - x0;
-		double fy = y - y0;
+		// At the last pixel in either dimension, use the edge pixel itself
+		// for both sides of the interpolation rather than discarding it.
+		if (x1 >= image[0].length) x1 = x0;
+		if (y1 >= image.length) y1 = y0;
 
-		double v00 = image[y0][x0];
-		double v10 = image[y0][x1];
-		double v01 = image[y1][x0];
-		double v11 = image[y1][x1];
+		double fx = x1 == x0 ? 0.0 : x - x0;
+		double fy = y1 == y0 ? 0.0 : y - y0;
 
-		if (!Double.isFinite(v00) ||
-				!Double.isFinite(v10) ||
-				!Double.isFinite(v01) ||
-				!Double.isFinite(v11))
-			return Double.NaN;
+		double sum = 0.0;
+		double weightSum = 0.0;
 
-		return (1 - fx) * (1 - fy) * v00
-				+ fx * (1 - fy) * v10
-				+ (1 - fx) * fy * v01
-				+ fx * fy * v11;
+		int[] xs = {x0, x1, x0, x1};
+		int[] ys = {y0, y0, y1, y1};
+		double[] weights = {
+				(1.0 - fx) * (1.0 - fy),
+				fx * (1.0 - fy),
+				(1.0 - fx) * fy,
+				fx * fy
+		};
+
+		for (int i = 0; i < 4; i++) {
+			double weight = weights[i];
+			if (weight <= 0.0)
+				continue;
+
+			int sx = xs[i];
+			int sy = ys[i];
+			double value = image[sy][sx];
+
+			if (!Double.isFinite(value))
+				continue;
+
+			if (flags != null && (flags[sy][sx] & fatalMask) != 0)
+				continue;
+
+			sum += weight * value;
+			weightSum += weight;
+		}
+
+		return weightSum > 0.0 ? sum / weightSum : Double.NaN;
+	}
+
+	/**
+	 * Retained for callers that need a reprojected FLAGS image. FLAGS are
+	 * sampled with nearest neighbour because bit masks must never be
+	 * bilinearly interpolated.
+	 */
+	private static long[][] reprojectNearestFlags(
+			long[][] source, Header sourceWcs, Header targetWcs,
+			int width, int height) throws Exception {
+
+		if (source == null)
+			return new long[height][width];
+
+		validate2d(source, "source flags");
+		long[][] out = new long[height][width];
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				double[] world = pixelToWorld(targetWcs, x, y);
+				double[] src = worldToPixel(sourceWcs, world[0], world[1]);
+				if (!Double.isFinite(src[0]) || !Double.isFinite(src[1]))
+					continue;
+
+				int sx = (int) Math.round(src[0]);
+				int sy = (int) Math.round(src[1]);
+				if (sy >= 0 && sy < source.length && sx >= 0 && sx < source[0].length)
+					out[y][x] = source[sy][sx];
+			}
+		}
+
+		return out;
 	}
 
 	/**
