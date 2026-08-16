@@ -212,35 +212,58 @@ public class ImageStacker {
 
 	/**
 	 * Center-crop or center-pad a 2D array to target size.
+	 * <p>
+	 * The height and width are handled independently.  This is important
+	 * for SPHEREx cutouts because a detector can contain, for example,
+	 * both 19x20 and 20x20 images.  The previous implementation selected
+	 * either "pad" or "crop" for both dimensions at once, which caused
+	 * arraycopy() to attempt to copy more columns than existed in a row
+	 * when only one dimension differed.
 	 */
 	private static double[][] cropCenter(double[][] data, int targetHeight, int targetWidth) {
+		validate2d(data, "data");
+
 		int height = data.length;
 		int width = data[0].length;
 
 		double[][] result = new double[targetHeight][targetWidth];
 
-		// Initialize with NaN (padding value)
-		for (int y = 0; y < targetHeight; y++) {
-			for (int x = 0; x < targetWidth; x++) {
-				result[y][x] = Double.NaN;
-			}
+		// Padding value: pixels outside the source image do not contribute
+		// to the mean stack.
+		for (double[] row : result) {
+			Arrays.fill(row, Double.NaN);
 		}
 
-		// If data is smaller, center it in result (padding)
-		if (height <= targetHeight && width <= targetWidth) {
-			int startY = (targetHeight - height) / 2;
-			int startX = (targetWidth - width) / 2;
-			for (int y = 0; y < height; y++) {
-				System.arraycopy(data[y], 0, result[startY + y], startX, width);
-			}
-		}
-		// If data is larger, center-crop it
-		else {
-			int startY = (height - targetHeight) / 2;
-			int startX = (width - targetWidth) / 2;
-			for (int y = 0; y < targetHeight; y++) {
-				System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
-			}
+		/*
+		 * Determine the overlapping region independently in Y and X.
+		 *
+		 * If source > target: centre-crop the source.
+		 * If source < target: centre-pad the source into the target.
+		 */
+		int srcY = height > targetHeight
+				? (height - targetHeight) / 2
+				: 0;
+		int dstY = height < targetHeight
+				? (targetHeight - height) / 2
+				: 0;
+		int copyHeight = Math.min(height, targetHeight);
+
+		int srcX = width > targetWidth
+				? (width - targetWidth) / 2
+				: 0;
+		int dstX = width < targetWidth
+				? (targetWidth - width) / 2
+				: 0;
+		int copyWidth = Math.min(width, targetWidth);
+
+		for (int y = 0; y < copyHeight; y++) {
+			System.arraycopy(
+					data[srcY + y],
+					srcX,
+					result[dstY + y],
+					dstX,
+					copyWidth
+			);
 		}
 
 		return result;
@@ -248,32 +271,86 @@ public class ImageStacker {
 
 	/**
 	 * Center-crop or center-pad a 2D long array (for flags).
+	 * <p>
+	 * Height and width are handled independently for the same reason as
+	 * in cropCenter(double[][], int, int).  Padded flag pixels are zero,
+	 * meaning "no bad flag".
 	 */
 	private static long[][] cropCenterLong(long[][] data, int targetHeight, int targetWidth) {
+		validate2d(data, "flags");
+
 		int height = data.length;
 		int width = data[0].length;
 
 		long[][] result = new long[targetHeight][targetWidth];
-		// Initialize with 0 (no bad pixels for padded regions)
 
-		// If data is smaller, center it in result (padding with 0)
-		if (height <= targetHeight && width <= targetWidth) {
-			int startY = (targetHeight - height) / 2;
-			int startX = (targetWidth - width) / 2;
-			for (int y = 0; y < height; y++) {
-				System.arraycopy(data[y], 0, result[startY + y], startX, width);
-			}
-		}
-		// If data is larger, center-crop it
-		else {
-			int startY = (height - targetHeight) / 2;
-			int startX = (width - targetWidth) / 2;
-			for (int y = 0; y < targetHeight; y++) {
-				System.arraycopy(data[startY + y], startX, result[y], 0, targetWidth);
-			}
+		int srcY = height > targetHeight
+				? (height - targetHeight) / 2
+				: 0;
+		int dstY = height < targetHeight
+				? (targetHeight - height) / 2
+				: 0;
+		int copyHeight = Math.min(height, targetHeight);
+
+		int srcX = width > targetWidth
+				? (width - targetWidth) / 2
+				: 0;
+		int dstX = width < targetWidth
+				? (targetWidth - width) / 2
+				: 0;
+		int copyWidth = Math.min(width, targetWidth);
+
+		for (int y = 0; y < copyHeight; y++) {
+			System.arraycopy(
+					data[srcY + y],
+					srcX,
+					result[dstY + y],
+					dstX,
+					copyWidth
+			);
 		}
 
 		return result;
+	}
+
+	/**
+	 * Validate that a 2D FITS array is non-null, non-empty and rectangular.
+	 */
+	private static void validate2d(Object array, String name) {
+		if (array == null)
+			throw new IllegalArgumentException(name + " is null.");
+
+		int height;
+		int width;
+
+		if (array instanceof double[][] a) {
+			height = a.length;
+			if (height == 0 || a[0] == null || (width = a[0].length) == 0)
+				throw new IllegalArgumentException(name + " is empty.");
+
+			for (int y = 1; y < height; y++) {
+				if (a[y] == null || a[y].length != width)
+					throw new IllegalArgumentException(name + " is not rectangular.");
+			}
+			return;
+		}
+
+		if (array instanceof long[][] a) {
+			height = a.length;
+			if (height == 0 || a[0] == null || (width = a[0].length) == 0)
+				throw new IllegalArgumentException(name + " is empty.");
+
+			for (int y = 1; y < height; y++) {
+				if (a[y] == null || a[y].length != width)
+					throw new IllegalArgumentException(name + " is not rectangular.");
+			}
+			return;
+		}
+
+		throw new IllegalArgumentException(
+				"Unsupported 2-D array type for " + name + ": " +
+						array.getClass().getName()
+		);
 	}
 
 	/**
