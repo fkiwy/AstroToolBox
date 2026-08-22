@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.List;
 
 import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.tab.SettingsTab.getUserSetting;
 import static astro.tool.box.tab.SettingsTab.setUserSetting;
 
 /**
@@ -58,7 +59,7 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		coordinates = field(form, "Coordinates", "225.833 25.425");
+		coordinates = field(form, "Coordinates", "57.028, -60.380");
 		size = field(form, "Cutout (arcsec)", "120");
 		radius = field(form, "Aperture (pixels)", "2.0");
 		bin = new JCheckBox("Bin spectrum", true);
@@ -130,21 +131,71 @@ public class SpherexViewerTab implements Tab {
 			NumberPair coords = getCoordinates(coordinatesStr);
 			double raVal = coords.x();
 			double decVal = coords.y();
+
 			String normalizedRa = String.valueOf(raVal);
 			String normalizedDec = String.valueOf(decVal);
 
-			config = new SpherexPipeline.Config(raVal, decVal, Integer.parseInt(size.getText()), Double.parseDouble(radius.getText()), bin.isSelected(), Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex"));
+			config = new SpherexPipeline.Config(
+					raVal,
+					decVal,
+					Integer.parseInt(size.getText()),
+					Double.parseDouble(radius.getText()),
+					bin.isSelected(),
+					Path.of(
+							System.getProperty("user.home"),
+							".astro-tool-box",
+							"spherex"
+					)
+			);
 
-			//newCoordinates = !normalizedRa.equals(getUserSetting("lastRa")) || !normalizedDec.equals(getUserSetting("lastDec"));
-			newCoordinates = false;
+			String lastRaSetting = getUserSetting("lastRa");
+			String lastDecSetting = getUserSetting("lastDec");
+			String lastCutoutSize = getUserSetting("lastCutoutSize");
 
-			// Clean up FITS directory if coordinates changed (new object)
-			//if (cleanUpDirectory.isSelected() || newCoordinates) {
-			//	cleanupCutoutDirectory(config.cacheDir());
-			//	cleanUpDirectory.setSelected(false);
-			//}
+			if (lastRaSetting != null
+					&& lastDecSetting != null
+					&& lastCutoutSize != null
+					&& !lastRaSetting.isBlank()
+					&& !lastDecSetting.isBlank()
+					&& !lastCutoutSize.isBlank()) {
+
+				double lastRa = Double.parseDouble(lastRaSetting);
+				double lastDec = Double.parseDouble(lastDecSetting);
+				double lastSizeArcsec = Double.parseDouble(lastCutoutSize);
+
+				// Previous cutout half-size in degrees
+				double halfSizeDeg = (lastSizeArcsec / 2.0) / 3600.0;
+
+				// RA separation, including wrap-around at RA = 0/360
+				double deltaRaDeg = Math.abs(raVal - lastRa);
+
+				if (deltaRaDeg > 180.0) {
+					deltaRaDeg = 360.0 - deltaRaDeg;
+				}
+
+				// Project RA separation at the declination of the previous cutout
+				double deltaRaProjected = deltaRaDeg * Math.cos(Math.toRadians(lastDec));
+
+				double deltaDecDeg = Math.abs(decVal - lastDec);
+
+				// Only consider this a new object if it lies outside
+				// the previous cutout field of view.
+				newCoordinates = deltaRaProjected > halfSizeDeg
+						|| deltaDecDeg > halfSizeDeg;
+			} else {
+				newCoordinates = true;
+			}
+
+			// Clean up FITS directory if explicitly requested
+			// or if the new position is outside the previous field of view.
+			if (cleanUpDirectory.isSelected() || newCoordinates) {
+				cleanupCutoutDirectory(config.cacheDir());
+				cleanUpDirectory.setSelected(false);
+			}
+
 			setUserSetting("lastRa", normalizedRa);
 			setUserSetting("lastDec", normalizedDec);
+			setUserSetting("lastCutoutSize", size.getText());
 		} catch (Exception ex) {
 			error(ex);
 			return;
