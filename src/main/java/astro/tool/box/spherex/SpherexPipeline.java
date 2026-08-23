@@ -85,6 +85,14 @@ public final class SpherexPipeline {
 		return run(config, progress, true);
 	}
 
+	/**
+	 * Extract a spectrum at a new position from the currently cached SPHEREx
+	 * cutouts. No IRSA query or FITS download is performed.
+	 */
+	public static Result extractSpectrumAt(Config config, Progress progress) throws Exception {
+		return run(config, progress, false);
+	}
+
 	public static Result run(Config config, Progress progress, boolean queryIrsa) throws Exception {
 		Files.createDirectories(config.cacheDir());
 		List<Path> cachedFitsFiles = cachedCutouts(config.cacheDir().resolve("cutouts"));
@@ -2020,6 +2028,8 @@ public final class SpherexPipeline {
 				Map<String, Object> resultMap = new HashMap<>();
 				resultMap.put("band", "D" + detector);
 				resultMap.put("hdu", stackResult.stackedImage);
+				// Preserve the common output WCS for interactive pixel-to-sky conversion.
+				resultMap.put("header", stackResult.header);
 				// Actual target position in the reprojected image, in 0-based pixels.
 				resultMap.put("target_pixel_x", stackResult.targetPixelX);
 				resultMap.put("target_pixel_y", stackResult.targetPixelY);
@@ -2109,7 +2119,7 @@ public final class SpherexPipeline {
 	}
 
 	/**
-	 * Build fatal FLAGS bit mask from integer array.
+	 * Build fatal FLAGS bit mask from an integer array.
 	 */
 	private static long buildFatalMask(int[] fatalFlagBits) {
 		long mask = 0;
