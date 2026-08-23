@@ -389,7 +389,8 @@ public class SpherexViewerTab implements Tab {
 					rgbTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 					rgbImagePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-					rgbImagePanel.setMaximumSize(rgbImagePanel.getPreferredSize());
+					rgbImagePanel.setPreferredSize(new Dimension(500, 500));
+					rgbImagePanel.setMaximumSize(new Dimension(500, 500));
 
 					JLabel diagnosticTitle = new JLabel("Detector image stacks");
 					diagnosticTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
