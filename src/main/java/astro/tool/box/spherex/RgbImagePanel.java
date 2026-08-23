@@ -50,22 +50,50 @@ public class RgbImagePanel extends JPanel {
 
 	@Override
 	public Dimension getPreferredSize() {
-		if (image == null) return new Dimension(400, 400);
-		return new Dimension(image.getWidth(), image.getHeight());
+		return new Dimension(500, 500);
 	}
 
 	private Rectangle imageBounds() {
-		if (image == null) return new Rectangle();
 
-		double scale = Math.min(
-				(double) getWidth() / image.getWidth(),
-				(double) getHeight() / image.getHeight());
-		scale = Math.min(scale, 1.0);
+		if (image == null) {
+			return new Rectangle();
+		}
 
-		int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
-		int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
-		return new Rectangle((getWidth() - width) / 2,
-				(getHeight() - height) / 2, width, height);
+		/*
+		 * Scale the RGB image to fill the available panel area while
+		 * preserving its aspect ratio.
+		 *
+		 * Unlike the previous implementation, allow enlargement above
+		 * the native image resolution.
+		 */
+		double scale =
+				Math.min(
+						(double) getWidth() / image.getWidth(),
+						(double) getHeight() / image.getHeight()
+				);
+
+		int drawWidth =
+				Math.max(
+						1,
+						(int) Math.round(
+								image.getWidth() * scale
+						)
+				);
+
+		int drawHeight =
+				Math.max(
+						1,
+						(int) Math.round(
+								image.getHeight() * scale
+						)
+				);
+
+		return new Rectangle(
+				(getWidth() - drawWidth) / 2,
+				(getHeight() - drawHeight) / 2,
+				drawWidth,
+				drawHeight
+		);
 	}
 
 	private void handleClick(int mouseX, int mouseY) {
@@ -109,7 +137,7 @@ public class RgbImagePanel extends JPanel {
 		try {
 			Rectangle bounds = imageBounds();
 			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-					RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 			g2.drawImage(image, bounds.x, bounds.y, bounds.width, bounds.height, null);
 
 			if (Double.isFinite(selectedImageX) && Double.isFinite(selectedImageY)) {
