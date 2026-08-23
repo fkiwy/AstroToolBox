@@ -109,9 +109,9 @@ public class RgbImagePanel extends JPanel {
 		selectedImageY = y;
 		repaint();
 
-		// Convert Java 0-based pixel centre coordinates to FITS 1-based pixels.
-		double dx = (x + 1.0) - composite.crpix1();
-		double dy = (y + 1.0) - composite.crpix2();
+		// Convert Java 0-based pixel center coordinates to FITS 1-based pixels.
+		double dx = (x + 0.5) - composite.crpix1();
+		double dy = (y + 0.0) - composite.crpix2();
 
 		// Small-field tangent-plane approximation using the actual CD matrix.
 		double xiDeg = composite.cd11() * dx + composite.cd12() * dy;
