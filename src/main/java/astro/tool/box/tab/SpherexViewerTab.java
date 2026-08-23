@@ -382,7 +382,15 @@ public class SpherexViewerTab implements Tab {
 			@Override
 			protected List<Map<String, Object>> doInBackground() throws Exception {
 				publish("Stacking detector images from downloaded cutouts...");
-				return SpherexPipeline.stackImages(fitsFiles, this::publish, raDeg, decDeg);
+				return SpherexPipeline.stackImages(
+						fitsFiles,
+						this::publish,
+						raDeg,
+						decDeg,
+						currentFieldConfig != null
+								? currentFieldConfig.cutoutArcsec()
+								: 0
+				);
 			}
 
 			@Override
