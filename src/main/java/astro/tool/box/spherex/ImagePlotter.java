@@ -1,5 +1,7 @@
 package astro.tool.box.spherex;
 
+import nom.tam.fits.Header;
+
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
@@ -16,6 +18,22 @@ public class ImagePlotter {
 	public record ImageCutout(String band, Object imageData, double[] photometryRadii) {
 	}
 
+	/**
+	 * Standalone RGB composite together with the exact linear celestial WCS
+	 * parameters of its displayed pixel grid.
+	 */
+	public record RgbComposite(
+			BufferedImage image,
+			double crval1,
+			double crval2,
+			double crpix1,
+			double crpix2,
+			double cd11,
+			double cd12,
+			double cd21,
+			double cd22) {
+	}
+
 	public static class PlotConfig {
 		public double imageContrast = 10.0;
 		public int rows = 1;
@@ -29,6 +47,96 @@ public class ImagePlotter {
 	}
 
 	private ImagePlotter() {
+	}
+
+	/**
+	 * Create the standalone Python-compatible RGB composite used by the
+	 * interactive spectrum viewer.
+	 * <p>
+	 * Blue  = mean(D1, D2)
+	 * Green = mean(D3, D4)
+	 * Red   = mean(D5, D6)
+	 * <p>
+	 * The detector stacks are already on a common North-up/East-left TAN grid.
+	 * The WCS of D6 is propagated to the final centre-cropped RGB grid.
+	 */
+	public static RgbComposite createRgbComposite(
+			List<Map<String, Object>> images,
+			double imageContrast) throws Exception {
+
+		if (images == null || images.isEmpty()) {
+			throw new IllegalArgumentException("No stacked images available.");
+		}
+
+		Map<String, Map<String, Object>> byBand = new java.util.HashMap<>();
+		for (Map<String, Object> image : images) {
+			Object band = image.get("band");
+			if (band instanceof String name) {
+				byBand.put(name, image);
+			}
+		}
+
+		Map<String, Object> d1 = requireBand(byBand, "D1");
+		Map<String, Object> d2 = requireBand(byBand, "D2");
+		Map<String, Object> d3 = requireBand(byBand, "D3");
+		Map<String, Object> d4 = requireBand(byBand, "D4");
+		Map<String, Object> d5 = requireBand(byBand, "D5");
+		Map<String, Object> d6 = requireBand(byBand, "D6");
+
+		double[][] blue = meanCommonCenter(dataOf(d1), dataOf(d2));
+		double[][] green = meanCommonCenter(dataOf(d3), dataOf(d4));
+		double[][] red = meanCommonCenter(dataOf(d5), dataOf(d6));
+
+		double[][][] common = cropCommon(red, green, blue);
+		BufferedImage image = colorChannelsToBufferedImage(
+				common[0], common[1], common[2], imageContrast);
+
+		Header header = (Header) d6.get("header");
+		if (header == null) {
+			throw new IllegalArgumentException("D6 stacked image has no WCS header.");
+		}
+
+		int d6Height = dataOf(d6).length;
+		int d6Width = dataOf(d6)[0].length;
+		int startY = (d6Height - image.getHeight()) / 2;
+		int startX = (d6Width - image.getWidth()) / 2;
+
+		// FITS CRPIX is 1-based. Cropping removes startX/startY Java pixels.
+		double crpix1 = header.getDoubleValue("CRPIX1") - startX;
+		double crpix2 = header.getDoubleValue("CRPIX2") - startY;
+
+		double cd11 = header.getDoubleValue("CD1_1",
+				header.getDoubleValue("CDELT1", -6.2 / 3600.0));
+		double cd12 = header.getDoubleValue("CD1_2", 0.0);
+		double cd21 = header.getDoubleValue("CD2_1", 0.0);
+		double cd22 = header.getDoubleValue("CD2_2",
+				header.getDoubleValue("CDELT2", 6.2 / 3600.0));
+
+		return new RgbComposite(
+				image,
+				header.getDoubleValue("CRVAL1"),
+				header.getDoubleValue("CRVAL2"),
+				crpix1,
+				crpix2,
+				cd11, cd12, cd21, cd22);
+	}
+
+	private static Map<String, Object> requireBand(
+			Map<String, Map<String, Object>> byBand, String band) {
+		Map<String, Object> result = byBand.get(band);
+		if (result == null) {
+			throw new IllegalArgumentException(
+					"RGB composite requires detector " + band + ".");
+		}
+		return result;
+	}
+
+	private static double[][] dataOf(Map<String, Object> image) {
+		Object data = image.get("hdu");
+		if (!(data instanceof double[][] result)) {
+			throw new IllegalArgumentException("Invalid stacked image data.");
+		}
+		return result;
 	}
 
 	/**

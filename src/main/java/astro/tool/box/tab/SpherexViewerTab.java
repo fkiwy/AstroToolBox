@@ -2,6 +2,7 @@ package astro.tool.box.tab;
 
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.spherex.ImagePlotter;
+import astro.tool.box.spherex.RgbImagePanel;
 import astro.tool.box.spherex.SpherexPipeline;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -46,6 +47,9 @@ public class SpherexViewerTab implements Tab {
 	private JFreeChart chart;
 	private ChartPanel chartPanel;
 	private JPanel imagesPanel;
+	private RgbImagePanel rgbImagePanel;
+	private List<Path> currentFitsFiles = List.of();
+	private SpherexPipeline.Config currentFieldConfig;
 	private List<SpherexPipeline.Point> points = List.of();
 	private List<Map<String, Object>> stackedImages = List.of();
 
@@ -91,6 +95,8 @@ public class SpherexViewerTab implements Tab {
 
 		imagesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		imagesPanel.setBackground(Color.WHITE);
+		rgbImagePanel = new RgbImagePanel();
+		rgbImagePanel.setCoordinateClickListener(this::extractSpectrumAt);
 		imagesPanel.setMinimumSize(new Dimension(400, 80));
 		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
 		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -217,6 +223,8 @@ public class SpherexViewerTab implements Tab {
 				run.setEnabled(true);
 				try {
 					SpherexPipeline.Result r = get();
+					currentFitsFiles = r.fitsFiles();
+					currentFieldConfig = config;
 					points = r.points();
 					chart = createChart(points);
 					chartPanel.setChart(chart);
@@ -361,26 +369,132 @@ public class SpherexViewerTab implements Tab {
 						return;
 					}
 
-					// Display stacked images below spectrum
-					NumberPair coords = getCoordinates(coordinates.getText().trim());
-					double raVal = coords.x();
-					double decVal = coords.y();
 					int sizeVal = Integer.parseInt(size.getText());
-					BufferedImage imageGrid = ImagePlotter.plotImages(raVal, decVal, stackedImages, sizeVal, 10);
+					BufferedImage imageGrid = ImagePlotter.plotImages(
+							raDeg, decDeg, stackedImages, sizeVal, 10);
 
-					// Clear previous content and add image
+					ImagePlotter.RgbComposite composite =
+							ImagePlotter.createRgbComposite(stackedImages, 10);
+					rgbImagePanel.setComposite(composite);
+
 					imagesPanel.removeAll();
+
+					JPanel content = new JPanel();
+					content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+					content.setBackground(Color.WHITE);
+
+					JLabel rgbTitle = new JLabel(
+							"Interactive RGB composite — click an object to extract its spectrum");
+					rgbTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
+					rgbTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+					rgbImagePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+					rgbImagePanel.setMaximumSize(rgbImagePanel.getPreferredSize());
+
+					JLabel diagnosticTitle = new JLabel("Detector image stacks");
+					diagnosticTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
+					diagnosticTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
 					JLabel imageLabel = new JLabel(new ImageIcon(imageGrid));
-					imagesPanel.add(imageLabel);
+					imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+					content.add(rgbTitle);
+					content.add(Box.createVerticalStrut(5));
+					content.add(rgbImagePanel);
+					content.add(Box.createVerticalStrut(15));
+					content.add(diagnosticTitle);
+					content.add(Box.createVerticalStrut(5));
+					content.add(imageLabel);
+
+					imagesPanel.add(content);
 					imagesPanel.revalidate();
 					imagesPanel.repaint();
 
-					status.setText("Stacked " + stackedImages.size() + " detector images.");
+					status.setText("Stacked " + stackedImages.size()
+							+ " detector images. Click the RGB image to inspect another spectrum.");
 				} catch (Exception ex) {
 					error(ex.getCause() == null ? ex : ex.getCause());
 				}
 			}
 		}.execute();
+	}
+
+	/**
+	 * Re-extract a spectrum at a clicked RGB position without changing or
+	 * regenerating the current image cutouts.
+	 */
+	private void extractSpectrumAt(double raDeg, double decDeg) {
+		if (currentFieldConfig == null || currentFitsFiles.isEmpty()) return;
+
+		if (!isInsideCurrentField(raDeg, decDeg,
+				currentFieldConfig.raDeg(),
+				currentFieldConfig.decDeg(),
+				currentFieldConfig.cutoutArcsec())) {
+			status.setText("Selected position is outside the currently loaded field.");
+			return;
+		}
+
+		SpherexPipeline.Config clickConfig = new SpherexPipeline.Config(
+				raDeg, decDeg,
+				currentFieldConfig.cutoutArcsec(),
+				currentFieldConfig.apertureRadius(),
+				currentFieldConfig.bin(),
+				currentFieldConfig.cacheDir(),
+				currentFieldConfig.removeOutliers(),
+				currentFieldConfig.outlierNbrOfBins(),
+				currentFieldConfig.outlierSigma());
+
+		run.setEnabled(false);
+		status.setText(String.format(Locale.US,
+				"Extracting cached spectrum at RA %.6f, Dec %.6f...", raDeg, decDeg));
+
+		new SwingWorker<SpherexPipeline.Result, String>() {
+			@Override
+			protected SpherexPipeline.Result doInBackground() throws Exception {
+				return SpherexPipeline.extractSpectrumAt(clickConfig, this::publish);
+			}
+
+			@Override
+			protected void process(List<String> values) {
+				if (!values.isEmpty()) status.setText(values.get(values.size() - 1));
+			}
+
+			@Override
+			protected void done() {
+				run.setEnabled(true);
+				try {
+					SpherexPipeline.Result result = get();
+					points = result.points();
+					chart = createChart(points);
+					chartPanel.setChart(chart);
+					chartPanel.revalidate();
+					chartPanel.repaint();
+
+					coordinates.setText(String.format(Locale.US, "%.8f %.8f", raDeg, decDeg));
+					csv.setEnabled(true);
+					png.setEnabled(true);
+
+					status.setText("Generated " + points.size()
+							+ " spectrum points from cached FITS files.");
+				} catch (Exception ex) {
+					error(ex.getCause() == null ? ex : ex.getCause());
+				}
+			}
+		}.execute();
+	}
+
+	private boolean isInsideCurrentField(double raDeg, double decDeg,
+	                                     double fieldRaDeg, double fieldDecDeg,
+	                                     double cutoutArcsec) {
+		double halfSizeDeg = cutoutArcsec / 2.0 / 3600.0;
+
+		double deltaRa = Math.abs(raDeg - fieldRaDeg);
+		if (deltaRa > 180.0) deltaRa = 360.0 - deltaRa;
+
+		double projectedRa = deltaRa * Math.cos(Math.toRadians(fieldDecDeg));
+		double deltaDec = Math.abs(decDeg - fieldDecDeg);
+
+		return projectedRa <= halfSizeDeg && deltaDec <= halfSizeDeg;
 	}
 
 	private void saveCsv() {
