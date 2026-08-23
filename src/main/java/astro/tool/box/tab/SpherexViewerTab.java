@@ -84,50 +84,59 @@ public class SpherexViewerTab implements Tab {
 		main.add(form, BorderLayout.NORTH);
 
 		/*
-		 * Horizontal split pane:
-		 *
-		 *   spectrum panel | draggable vertical divider | image panels
-		 *
-		 * The divider is immediately to the right of the spectrum, so its
-		 * position directly controls only the width allocated to the spectrum.
+		 * Keep the spectrum plot at a fixed physical size and place it inside
+		 * a scroll pane. The chart itself therefore does not stretch or shrink
+		 * when the tab or split-pane divider is resized.
 		 */
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setContinuousLayout(true);
-		splitPane.setOneTouchExpandable(false);
-		splitPane.setDividerSize(6);
-		splitPane.setResizeWeight(0.5);
-
 		chart = createChart(points);
 		chartPanel = new ChartPanel(chart);
-		chartPanel.setMinimumSize(new Dimension(300, 300));
-		splitPane.setLeftComponent(chartPanel);
+
+		Dimension spectrumSize = new Dimension(1000, 500);
+		chartPanel.setPreferredSize(spectrumSize);
+		chartPanel.setMinimumSize(spectrumSize);
+		chartPanel.setMaximumSize(spectrumSize);
+
+		JScrollPane spectrumScrollPane = new JScrollPane(
+				chartPanel,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+		);
+		spectrumScrollPane.setMinimumSize(new Dimension(300, 300));
+		spectrumScrollPane.getViewport().setBackground(Color.WHITE);
 
 		imagesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		imagesPanel.setBackground(Color.WHITE);
 		rgbImagePanel = new RgbImagePanel();
 		rgbImagePanel.setCoordinateClickListener(this::extractSpectrumAt);
-		imagesPanel.setMinimumSize(new Dimension(300, 300));
 
 		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
 		emptyLabel.setHorizontalAlignment(JLabel.LEFT);
 		imagesPanel.add(emptyLabel);
 
-		JScrollPane imagesScrollPane = new JScrollPane(imagesPanel);
+		JScrollPane imagesScrollPane = new JScrollPane(
+				imagesPanel,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+		);
 		imagesScrollPane.setMinimumSize(new Dimension(300, 300));
-		splitPane.setRightComponent(imagesScrollPane);
+		imagesScrollPane.getViewport().setBackground(Color.WHITE);
 
 		/*
-		 * Set the initial spectrum width after the tab has been laid out.
-		 * The user can subsequently drag the vertical divider freely.
+		 * The divider only changes how much viewport space is allocated to
+		 * each side. The spectrum plot remains 700 x 500 pixels and becomes
+		 * scrollable whenever its viewport is smaller.
 		 */
-		SwingUtilities.invokeLater(() -> {
-			int width = splitPane.getWidth();
-			if (width > 0) {
-				splitPane.setDividerLocation(Math.max(300, width / 2));
-			} else {
-				splitPane.setDividerLocation(650);
-			}
-		});
+		JSplitPane splitPane = new JSplitPane(
+				JSplitPane.HORIZONTAL_SPLIT,
+				spectrumScrollPane,
+				imagesScrollPane
+		);
+		splitPane.setContinuousLayout(true);
+		splitPane.setOneTouchExpandable(false);
+		splitPane.setDividerSize(6);
+		splitPane.setResizeWeight(0.5);
+
+		SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(700));
 
 		main.add(splitPane, BorderLayout.CENTER);
 
