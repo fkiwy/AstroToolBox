@@ -1969,7 +1969,7 @@ public final class SpherexPipeline {
 	 * Stack images using already-downloaded FITS files (avoids re-downloading).
 	 */
 	public static List<Map<String, Object>> stackImages(List<Path> fitsFiles, Progress progress) throws Exception {
-		return stackImages(fitsFiles, progress, Double.NaN, Double.NaN);
+		return stackImages(fitsFiles, progress, Double.NaN, Double.NaN, 0);
 	}
 
 	/**
@@ -1985,6 +1985,17 @@ public final class SpherexPipeline {
 	public static List<Map<String, Object>> stackImages(
 			List<Path> fitsFiles, Progress progress,
 			double ra, double dec) throws Exception {
+		return stackImages(fitsFiles, progress, ra, dec, 0);
+	}
+
+	/**
+	 * Stack detector cutouts onto a square output grid matching the requested
+	 * field of view rather than inheriting the dimensions of a possibly clipped
+	 * detector cutout.
+	 */
+	public static List<Map<String, Object>> stackImages(
+			List<Path> fitsFiles, Progress progress,
+			double ra, double dec, int cutoutArcsec) throws Exception {
 		Map<String, List<ImageStacker.DetectorCutout>> detectorCutouts = new HashMap<>();
 		long fatalMask = buildFatalMask(ImageStacker.DEFAULT_FATAL_FLAG_BITS);
 
@@ -1992,7 +2003,7 @@ public final class SpherexPipeline {
 			Path fitsPath = fitsFiles.get(i);
 			progress.update("Processing cutout " + (i + 1) + " of " + fitsFiles.size() + " for stacking...");
 			try {
-				extractDetectorCutout(fitsPath, 0, 0, 120, detectorCutouts);
+				extractDetectorCutout(fitsPath, 0, 0, cutoutArcsec, detectorCutouts);
 			} catch (Exception ex) {
 				// Continue with other cutouts
 				progress.update("Skipping cutout " + (i + 1) + ": " + ex.getMessage());
@@ -2023,7 +2034,8 @@ public final class SpherexPipeline {
 								fatalMask,
 								true,
 								ra,
-								dec);
+								dec,
+								cutoutArcsec);
 
 				Map<String, Object> resultMap = new HashMap<>();
 				resultMap.put("band", "D" + detector);

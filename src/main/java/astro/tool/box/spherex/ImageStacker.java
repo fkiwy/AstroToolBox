@@ -174,11 +174,32 @@ public class ImageStacker {
 			String detector, List<DetectorCutout> cutouts, long fatalMask,
 			boolean includeReferenceImage, double raDeg, double decDeg) throws Exception {
 
+		return meanStackDetectorCutouts(
+				detector, cutouts, fatalMask, includeReferenceImage,
+				raDeg, decDeg, 0);
+	}
+
+	/**
+	 * Reproject and stack onto an explicitly requested square sky field.
+	 * <p>
+	 * This is important for large SPHEREx cutouts: individual detector
+	 * products can be clipped at one edge and therefore have rectangular
+	 * array dimensions. Using one such cutout as the output array shape
+	 * truncates the final stack. When requestedFoVArcsec is positive, the
+	 * output grid is instead derived from the requested angular field size
+	 * and the detector pixel scale.
+	 */
+	public static StackResult meanStackDetectorCutouts(
+			String detector, List<DetectorCutout> cutouts, long fatalMask,
+			boolean includeReferenceImage, double raDeg, double decDeg,
+			int requestedFoVArcsec) throws Exception {
+
 		return meanStackDetectorCutoutsInternal(
 				detector, cutouts, fatalMask, includeReferenceImage,
 				Double.isFinite(raDeg) && Double.isFinite(decDeg)
 						? new double[]{raDeg, decDeg}
-						: null);
+						: null,
+				requestedFoVArcsec);
 	}
 
 	public static StackResult meanStackDetectorCutouts(
@@ -186,12 +207,13 @@ public class ImageStacker {
 			boolean includeReferenceImage) throws Exception {
 
 		return meanStackDetectorCutoutsInternal(
-				detector, cutouts, fatalMask, includeReferenceImage, null);
+				detector, cutouts, fatalMask, includeReferenceImage, null, 0);
 	}
 
 	private static StackResult meanStackDetectorCutoutsInternal(
 			String detector, List<DetectorCutout> cutouts, long fatalMask,
-			boolean includeReferenceImage, double[] requestedCentre) throws Exception {
+			boolean includeReferenceImage, double[] requestedCentre,
+			int requestedFoVArcsec) throws Exception {
 
 		if (cutouts.isEmpty())
 			throw new IllegalArgumentException("No cutouts supplied for detector " + detector);
@@ -203,6 +225,37 @@ public class ImageStacker {
 		validate2d(reference.data, "reference data");
 		int refHeight = reference.data.length;
 		int refWidth = reference.data[0].length;
+
+		/*
+		 * Do not let a clipped reference cutout define the output dimensions.
+		 * For an explicitly requested FoV, construct a square output grid from
+		 * the requested angular size and the detector pixel scale.
+		 */
+		int outputHeight = refHeight;
+		int outputWidth = refWidth;
+
+		if (requestedFoVArcsec > 0) {
+			double pixelScaleDeg = 6.2 / 3600.0;
+
+			if (reference.header != null) {
+				double[] cd = getCdMatrix(reference.header);
+				double sx = Math.hypot(cd[0], cd[2]);
+				double sy = Math.hypot(cd[1], cd[3]);
+
+				if (Double.isFinite(sx) && sx > 0.0 &&
+						Double.isFinite(sy) && sy > 0.0) {
+					pixelScaleDeg = 0.5 * (sx + sy);
+				}
+			}
+
+			int pixels = Math.max(
+					1,
+					(int) Math.ceil(
+							(requestedFoVArcsec / 3600.0) / pixelScaleDeg));
+
+			outputWidth = pixels;
+			outputHeight = pixels;
+		}
 
 		/*
 		 * Stage 1: if WCS is available, all cutouts are reprojected onto
@@ -223,12 +276,12 @@ public class ImageStacker {
 
 		Header outputHeader = canReproject
 				? createNorthUpHeader(
-				reference.header, refWidth, refHeight,
+				reference.header, outputWidth, outputHeight,
 				requestedCentre)
 				: copyHeader(reference.header);
 
-		double[][] stacked = new double[refHeight][refWidth];
-		double[][] counts = new double[refHeight][refWidth];
+		double[][] stacked = new double[outputHeight][outputWidth];
+		double[][] counts = new double[outputHeight][outputWidth];
 
 		for (double[] row : stacked) Arrays.fill(row, 0.0);
 		for (double[] row : counts) Arrays.fill(row, 0.0);
@@ -247,19 +300,19 @@ public class ImageStacker {
 				if (canReproject) {
 					ReprojectedImage reprojection = reprojectBilinear(
 							cutout.data, cutout.flags, fatalMask,
-							cutout.header, outputHeader, refWidth, refHeight);
+							cutout.header, outputHeader, outputWidth, outputHeight);
 					data = reprojection.data;
 					footprint = reprojection.footprint;
 				} else {
-					data = cropCenter(cutout.data, refHeight, refWidth);
-					flags = cropCenterLong(cutout.flags, refHeight, refWidth);
-					footprint = new double[refHeight][refWidth];
-					for (int y = 0; y < refHeight; y++)
+					data = cropCenter(cutout.data, outputHeight, outputWidth);
+					flags = cropCenterLong(cutout.flags, outputHeight, outputWidth);
+					footprint = new double[outputHeight][outputWidth];
+					for (int y = 0; y < outputHeight; y++)
 						Arrays.fill(footprint[y], 1.0);
 				}
 
-				for (int y = 0; y < refHeight; y++) {
-					for (int x = 0; x < refWidth; x++) {
+				for (int y = 0; y < outputHeight; y++) {
+					for (int x = 0; x < outputWidth; x++) {
 						boolean valid = canReproject
 								? footprint[y][x] > 0.0
 								: (flags[y][x] & fatalMask) == 0;
@@ -284,10 +337,10 @@ public class ImageStacker {
 			throw new IllegalArgumentException(
 					"No cutouts could be successfully processed for detector " + detector);
 
-		double[][] meanImage = new double[refHeight][refWidth];
+		double[][] meanImage = new double[outputHeight][outputWidth];
 
-		for (int y = 0; y < refHeight; y++) {
-			for (int x = 0; x < refWidth; x++) {
+		for (int y = 0; y < outputHeight; y++) {
+			for (int x = 0; x < outputWidth; x++) {
 				meanImage[y][x] =
 						counts[y][x] > 0
 								? stacked[y][x] / counts[y][x]
@@ -313,8 +366,8 @@ public class ImageStacker {
 			targetPixelX = targetPixel[0];
 			targetPixelY = targetPixel[1];
 		} else {
-			targetPixelX = (refWidth - 1) / 2.0;
-			targetPixelY = (refHeight - 1) / 2.0;
+			targetPixelX = (outputWidth - 1) / 2.0;
+			targetPixelY = (outputHeight - 1) / 2.0;
 		}
 
 		outputHeader.addValue(
