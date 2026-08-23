@@ -83,30 +83,51 @@ public class SpherexViewerTab implements Tab {
 		form.add(png);
 		main.add(form, BorderLayout.NORTH);
 
-		// Create vertical split pane with spectrum on top and images on bottom
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		splitPane.setResizeWeight(0.7);  // Spectrum gets 70% of extra space
-		splitPane.setOneTouchExpandable(true);
+		/*
+		 * Horizontal split pane:
+		 *
+		 *   spectrum panel | draggable vertical divider | image panels
+		 *
+		 * The divider is immediately to the right of the spectrum, so its
+		 * position directly controls only the width allocated to the spectrum.
+		 */
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane.setContinuousLayout(true);
+		splitPane.setOneTouchExpandable(false);
+		splitPane.setDividerSize(6);
+		splitPane.setResizeWeight(0.5);
 
 		chart = createChart(points);
 		chartPanel = new ChartPanel(chart);
-		chartPanel.setMinimumSize(new Dimension(400, 120));
-		splitPane.setTopComponent(chartPanel);
+		chartPanel.setMinimumSize(new Dimension(300, 300));
+		splitPane.setLeftComponent(chartPanel);
 
 		imagesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		imagesPanel.setBackground(Color.WHITE);
 		rgbImagePanel = new RgbImagePanel();
 		rgbImagePanel.setCoordinateClickListener(this::extractSpectrumAt);
-		imagesPanel.setMinimumSize(new Dimension(400, 80));
+		imagesPanel.setMinimumSize(new Dimension(300, 300));
+
 		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
 		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
 		imagesPanel.add(emptyLabel);
 
 		JScrollPane imagesScrollPane = new JScrollPane(imagesPanel);
-		imagesScrollPane.setMinimumSize(new Dimension(400, 80));
-		splitPane.setBottomComponent(imagesScrollPane);
+		imagesScrollPane.setMinimumSize(new Dimension(300, 300));
+		splitPane.setRightComponent(imagesScrollPane);
 
-		SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(0.7));
+		/*
+		 * Set the initial spectrum width after the tab has been laid out.
+		 * The user can subsequently drag the vertical divider freely.
+		 */
+		SwingUtilities.invokeLater(() -> {
+			int width = splitPane.getWidth();
+			if (width > 0) {
+				splitPane.setDividerLocation(Math.max(300, width / 2));
+			} else {
+				splitPane.setDividerLocation(650);
+			}
+		});
 
 		main.add(splitPane, BorderLayout.CENTER);
 
