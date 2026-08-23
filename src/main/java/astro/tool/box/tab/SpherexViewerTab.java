@@ -102,14 +102,14 @@ public class SpherexViewerTab implements Tab {
 		chartPanel.setMinimumSize(new Dimension(300, 300));
 		splitPane.setLeftComponent(chartPanel);
 
-		imagesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		imagesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		imagesPanel.setBackground(Color.WHITE);
 		rgbImagePanel = new RgbImagePanel();
 		rgbImagePanel.setCoordinateClickListener(this::extractSpectrumAt);
 		imagesPanel.setMinimumSize(new Dimension(300, 300));
 
 		JLabel emptyLabel = new JLabel("Images will appear here after spectrum generation");
-		emptyLabel.setHorizontalAlignment(JLabel.CENTER);
+		emptyLabel.setHorizontalAlignment(JLabel.LEFT);
 		imagesPanel.add(emptyLabel);
 
 		JScrollPane imagesScrollPane = new JScrollPane(imagesPanel);
@@ -407,18 +407,18 @@ public class SpherexViewerTab implements Tab {
 					JLabel rgbTitle = new JLabel(
 							"Interactive RGB composite — click an object to extract its spectrum");
 					rgbTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
-					rgbTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+					rgbTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-					rgbImagePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+					rgbImagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 					rgbImagePanel.setPreferredSize(new Dimension(500, 500));
 					rgbImagePanel.setMaximumSize(new Dimension(500, 500));
 
 					JLabel diagnosticTitle = new JLabel("Detector image stacks");
 					diagnosticTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
-					diagnosticTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+					diagnosticTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 					JLabel imageLabel = new JLabel(new ImageIcon(imageGrid));
-					imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+					imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 					content.add(rgbTitle);
 					content.add(Box.createVerticalStrut(5));
