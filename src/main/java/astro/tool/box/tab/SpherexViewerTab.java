@@ -59,7 +59,7 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		coordinates = field(form, "Coordinates", "57.028, -60.380");
+		coordinates = field(form, "Coordinates", "152.560 -4.115");
 		size = field(form, "Cutout (arcsec)", "120");
 		radius = field(form, "Aperture (pixels)", "2.0");
 		bin = new JCheckBox("Bin spectrum", true);

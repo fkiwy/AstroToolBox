@@ -18,10 +18,10 @@ public class ImagePlotter {
 
 	public static class PlotConfig {
 		public double imageContrast = 10.0;
-		public int rows = 5;
-		public int cols = 6;
-		public int figureWidth = 1200;
-		public int figureHeight = 1000;
+		public int rows = 1;
+		public int cols = 7;
+		public int figureWidth = 1400;
+		public int figureHeight = 200;
 
 		public PlotConfig(double imageContrast) {
 			this.imageContrast = imageContrast;
@@ -52,29 +52,23 @@ public class ImagePlotter {
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(0, 0, figure.getWidth(), figure.getHeight());
 
-		// Python layout: six grayscale detector panels, one RGB panel, one information panel.
+		// RGB panel
 		int panelIndex = 0;
-		for (ImageCutout cutout : cutouts) {
-			if (panelIndex >= config.rows * config.cols - 1) break;
-			int row = panelIndex / config.cols;
-			int col = panelIndex % config.cols;
-			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
-			panelIndex++;
-		}
-
 		ImageCutout colorCutout = createD1D2D3D4D5D6ColorCutout(cutouts);
-		if (colorCutout != null && panelIndex < config.rows * config.cols - 1) {
+		if (colorCutout != null) {
 			int row = panelIndex / config.cols;
 			int col = panelIndex % config.cols;
 			plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
 			panelIndex++;
 		}
 
-		// Final information panel.
-		if (panelIndex < config.rows * config.cols) {
+		// Six grayscale detector panels
+		for (ImageCutout cutout : cutouts) {
+			if (panelIndex >= config.rows * config.cols) break;
 			int row = panelIndex / config.cols;
 			int col = panelIndex % config.cols;
-			plotInformationPanel(g2d, config, col * panelWidth, row * panelHeight, panelWidth, panelHeight, ra, dec, imageSize);
+			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
+			panelIndex++;
 		}
 
 		drawVerticalSeparators(g2d, config, panelWidth);
@@ -170,9 +164,9 @@ public class ImagePlotter {
 
 		// Draw label (white background, half size)
 		g2d.setColor(Color.WHITE);
-		g2d.fillRect(x + 5, y + 5, 20, 10);
+		g2d.fillRect(x + 5, y + 5, 20, 12);
 		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		g2d.drawString(cutout.band, x + 7, y + 15);
 
 		// Draw aperture circles
@@ -192,9 +186,9 @@ public class ImagePlotter {
 		drawTargetMarker(g2d, x, y, width, height, channels[2].length, channels[2][0].length);
 
 		g2d.setColor(Color.WHITE);
-		g2d.fillRect(x + 5, y + 5, 85, 14);
+		g2d.fillRect(x + 5, y + 5, 62, 12);
 		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		g2d.drawString(cutout.band, x + 7, y + 15);
 
 		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii);
@@ -609,21 +603,6 @@ public class ImagePlotter {
 				diameter,
 				diameter
 		));
-	}
-
-	private static void plotInformationPanel(Graphics2D g2d, PlotConfig config, int x, int y,
-	                                         int width, int height, double ra, double dec, double imageSize) {
-		g2d.setColor(Color.WHITE);
-		g2d.fillRect(x, y, width, height);
-		g2d.setColor(Color.BLACK);
-		g2d.setFont(new Font("Arial", Font.PLAIN, 13));
-		g2d.drawString("Target", x + 12, y + 28);
-		g2d.drawString("RA = " + formatCoordinate(ra), x + 12, y + 55);
-		g2d.drawString("Dec = " + formatCoordinate(dec), x + 12, y + 82);
-		g2d.drawString("Size = " + Math.round(imageSize) + " arcsec", x + 12, y + 109);
-		g2d.drawString("North up, East left", x + 12, y + 136);
-		g2d.setColor(Color.GRAY);
-		g2d.drawRect(x, y, width - 1, height - 1);
 	}
 
 	private static String formatCoordinate(double value) {
