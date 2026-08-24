@@ -33,7 +33,7 @@ public final class SpherexPipeline {
 	}
 
 	public record Config(double raDeg, double decDeg, int cutoutArcsec, double apertureRadius,
-	                     boolean bin, Path cacheDir,
+	                     boolean bin, Path cacheDir, Path calibrationDir,
 	                     boolean removeOutliers, int outlierNbrOfBins, double outlierSigma) {
 		/**
 		 * Backward-compatible constructor used by SpherexViewerTab.
@@ -45,8 +45,8 @@ public final class SpherexPipeline {
 		 * 3-sigma MAD threshold.
 		 */
 		public Config(double raDeg, double decDeg, int cutoutArcsec,
-		              double apertureRadius, boolean bin, Path cacheDir) {
-			this(raDeg, decDeg, cutoutArcsec, apertureRadius, bin, cacheDir,
+		              double apertureRadius, boolean bin, Path cacheDir, Path calibrationDir) {
+			this(raDeg, decDeg, cutoutArcsec, apertureRadius, bin, cacheDir, calibrationDir,
 					true, 8, 3.0);
 		}
 
@@ -95,6 +95,7 @@ public final class SpherexPipeline {
 
 	public static Result run(Config config, Progress progress, boolean queryIrsa) throws Exception {
 		Files.createDirectories(config.cacheDir());
+		Files.createDirectories(config.calibrationDir());
 		List<Path> cachedFitsFiles = cachedCutouts(config.cacheDir().resolve("cutouts"));
 		List<String> urls = List.of();
 
@@ -217,7 +218,7 @@ public final class SpherexPipeline {
 
 			SpectralChannels channels = spectralChannels.get(release);
 			if (channels == null) {
-				channels = spectralChannels(release, c.cacheDir());
+				channels = spectralChannels(release, c.calibrationDir());
 				spectralChannels.put(release, channels);
 			}
 
@@ -232,7 +233,7 @@ public final class SpherexPipeline {
 			SapmKey sapmKey = new SapmKey(release, detector);
 			double[][] sapm = sapms.get(sapmKey);
 			if (sapm == null) {
-				sapm = sapm(detector, h, c.cacheDir());
+				sapm = sapm(detector, h, c.calibrationDir());
 				sapms.put(sapmKey, sapm);
 			}
 
