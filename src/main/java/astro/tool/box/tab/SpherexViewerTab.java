@@ -63,9 +63,10 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		coordinates = field(form, "Coordinates", "226.6945 70.4635");
-		size = field(form, "Cutout (arcsec)", "120");
-		radius = field(form, "Aperture (pixels)", "2.0");
+		String lastCoordinates = getUserSetting("spherex.lastRa", "") + " " + getUserSetting("spherex.lastDec", "");
+		coordinates = field(form, "Coordinates", lastCoordinates.trim());
+		size = field(form, "Cutout (arcsec)", getUserSetting("spherex.lastCutoutSize", "120"));
+		radius = field(form, "Aperture (pixels)", getUserSetting("spherex.lastApertureRadius", "2.0"));
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
@@ -184,9 +185,9 @@ public class SpherexViewerTab implements Tab {
 					)
 			);
 
-			String lastRaSetting = getUserSetting("lastRa");
-			String lastDecSetting = getUserSetting("lastDec");
-			String lastCutoutSize = getUserSetting("lastCutoutSize");
+			String lastRaSetting = getUserSetting("spherex.lastRa");
+			String lastDecSetting = getUserSetting("spherex.lastDec");
+			String lastCutoutSize = getUserSetting("spherex.lastCutoutSize");
 
 			if (lastRaSetting != null
 					&& lastDecSetting != null
@@ -229,9 +230,10 @@ public class SpherexViewerTab implements Tab {
 				cleanUpDirectory.setSelected(false);
 			}
 
-			setUserSetting("lastRa", normalizedRa);
-			setUserSetting("lastDec", normalizedDec);
-			setUserSetting("lastCutoutSize", size.getText());
+			setUserSetting("spherex.lastRa", normalizedRa);
+			setUserSetting("spherex.lastDec", normalizedDec);
+			setUserSetting("spherex.lastCutoutSize", size.getText());
+			setUserSetting("spherex.lastApertureRadius", radius.getText());
 		} catch (Exception ex) {
 			error(ex);
 			return;
