@@ -639,8 +639,8 @@ public class ImagePlotter {
 		double scaleY = (double) panelHeight / imageHeight;
 
 		return new double[]{
-				panelX + (centerX + 0.5) * scaleX,
-				panelY + (centerY - 0.5) * scaleY
+				panelX + centerX * scaleX,
+				panelY + centerY * scaleY
 		};
 	}
 
