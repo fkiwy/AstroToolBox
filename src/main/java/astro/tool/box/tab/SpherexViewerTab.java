@@ -39,7 +39,7 @@ public class SpherexViewerTab implements Tab {
 	private final String FONT_NAME = "Tahoma";
 	private final JFrame frame;
 	private final JTabbedPane tabs;
-	private JTextField coordinates, size, radius;
+	private JTextField coordinates, size, radius, fitsCutoutsPath;
 	private JCheckBox bin;
 	private JCheckBox cleanUpDirectory;
 	private JButton run, csv, png;
@@ -67,6 +67,8 @@ public class SpherexViewerTab implements Tab {
 		coordinates = field(form, "Coordinates", lastCoordinates.trim());
 		size = field(form, "Cutout (arcsec)", getUserSetting("spherex.lastCutoutSize", "120"));
 		radius = field(form, "Aperture (pixels)", getUserSetting("spherex.lastApertureRadius", "2.0"));
+		fitsCutoutsPath = field(form, "FITS cutouts path", Path.of(
+				System.getProperty("user.home"), ".astro-tool-box", "spherex").toString());
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
@@ -172,17 +174,19 @@ public class SpherexViewerTab implements Tab {
 			String normalizedRa = String.valueOf(raVal);
 			String normalizedDec = String.valueOf(decVal);
 
+			String cachePath = fitsCutoutsPath.getText().trim();
+			if (cachePath.isEmpty()) {
+				JOptionPane.showMessageDialog(frame, "FITS cutouts path must be provided.", TAB_NAME, JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
 			config = new SpherexPipeline.Config(
 					raVal,
 					decVal,
 					Integer.parseInt(size.getText()),
 					Double.parseDouble(radius.getText()),
 					bin.isSelected(),
-					Path.of(
-							System.getProperty("user.home"),
-							".astro-tool-box",
-							"spherex"
-					)
+					Path.of(cachePath)
 			);
 
 			String lastRaSetting = getUserSetting("spherex.lastRa");
