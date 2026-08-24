@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 
+import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.getCoordinates;
 import static astro.tool.box.tab.SettingsTab.getUserSetting;
 import static astro.tool.box.tab.SettingsTab.setUserSetting;
@@ -52,6 +53,7 @@ public class SpherexViewerTab implements Tab {
 	private SpherexPipeline.Config currentFieldConfig;
 	private List<SpherexPipeline.Point> points = List.of();
 	private List<Map<String, Object>> stackedImages = List.of();
+	private Path spherexPath;
 
 	public SpherexViewerTab(JFrame frame, JTabbedPane tabs) {
 		this.frame = frame;
@@ -67,8 +69,8 @@ public class SpherexViewerTab implements Tab {
 		coordinates = field(form, "Coordinates", lastCoordinates.trim());
 		size = field(form, "Cutout (arcsec)", getUserSetting("spherex.lastCutoutSize", "120"));
 		radius = field(form, "Aperture (pixels)", getUserSetting("spherex.lastApertureRadius", "2.0"));
-		fitsCutoutsPath = field(form, "FITS cutouts path", Path.of(
-				System.getProperty("user.home"), ".astro-tool-box", "spherex").toString());
+		spherexPath = Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex");
+		fitsCutoutsPath = field(form, "FITS cutouts path", spherexPath.toString());
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
@@ -180,13 +182,20 @@ public class SpherexViewerTab implements Tab {
 				return;
 			}
 
+			if (cachePath.contains(".astro-tool-box") && cachePath.endsWith("spherex")) {
+				String objectName = "J" + roundTo7DecNZ(raVal) + addPlusSign(roundDouble(decVal, PATTERN_7DEC_NZ));
+				cachePath = Path.of(cachePath, objectName).toString();
+				fitsCutoutsPath.setText(cachePath);
+			}
+
 			config = new SpherexPipeline.Config(
 					raVal,
 					decVal,
 					Integer.parseInt(size.getText()),
 					Double.parseDouble(radius.getText()),
 					bin.isSelected(),
-					Path.of(cachePath)
+					Path.of(cachePath),
+					spherexPath
 			);
 
 			String lastRaSetting = getUserSetting("spherex.lastRa");
@@ -485,6 +494,7 @@ public class SpherexViewerTab implements Tab {
 				currentFieldConfig.apertureRadius(),
 				currentFieldConfig.bin(),
 				currentFieldConfig.cacheDir(),
+				currentFieldConfig.calibrationDir(),
 				currentFieldConfig.removeOutliers(),
 				currentFieldConfig.outlierNbrOfBins(),
 				currentFieldConfig.outlierSigma());
