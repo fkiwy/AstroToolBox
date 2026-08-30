@@ -28,8 +28,6 @@ import java.util.List;
 
 import static astro.tool.box.function.NumericFunctions.*;
 import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.tab.SettingsTab.setUserSetting;
 
 /**
  * UI for the initial public SPHEREx aperture-spectrum extractor.
@@ -37,6 +35,11 @@ import static astro.tool.box.tab.SettingsTab.setUserSetting;
  */
 public class SpherexViewerTab implements Tab {
 	public static final String TAB_NAME = "SPHEREx Spectrum";
+	private static final String SETTINGS_FILE_NAME = "spherex.properties";
+	private static final String LAST_RA = "spherex.lastRa";
+	private static final String LAST_DEC = "spherex.lastDec";
+	private static final String LAST_CUTOUT_SIZE = "spherex.lastCutoutSize";
+	private static final String LAST_APERTURE_RADIUS = "spherex.lastApertureRadius";
 	private final String FONT_NAME = "Tahoma";
 	private final JFrame frame;
 	private final JTabbedPane tabs;
@@ -65,11 +68,12 @@ public class SpherexViewerTab implements Tab {
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
-		String lastCoordinates = getUserSetting("spherex.lastRa", "") + " " + getUserSetting("spherex.lastDec", "");
-		coordinates = field(form, "Coordinates", lastCoordinates.trim());
-		size = field(form, "Cutout (arcsec)", getUserSetting("spherex.lastCutoutSize", "120"));
-		radius = field(form, "Aperture (pixels)", getUserSetting("spherex.lastApertureRadius", "2.0"));
 		spherexPath = Path.of(System.getProperty("user.home"), ".astro-tool-box", "spherex");
+		Properties settings = loadSettings(spherexPath);
+		String lastCoordinates = settings.getProperty(LAST_RA, "") + " " + settings.getProperty(LAST_DEC, "");
+		coordinates = field(form, "Coordinates", lastCoordinates.trim());
+		size = field(form, "Cutout (arcsec)", settings.getProperty(LAST_CUTOUT_SIZE, "120"));
+		radius = field(form, "Aperture (pixels)", settings.getProperty(LAST_APERTURE_RADIUS, "2.0"));
 		fitsCutoutsPath = field(form, "FITS cutouts path", spherexPath.toString());
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
@@ -187,6 +191,7 @@ public class SpherexViewerTab implements Tab {
 				cachePath = Path.of(cachePath, objectName).toString();
 				fitsCutoutsPath.setText(cachePath);
 			}
+			Path cacheDirectory = Path.of(cachePath);
 
 			config = new SpherexPipeline.Config(
 					raVal,
@@ -194,13 +199,14 @@ public class SpherexViewerTab implements Tab {
 					Integer.parseInt(size.getText()),
 					Double.parseDouble(radius.getText()),
 					bin.isSelected(),
-					Path.of(cachePath),
+					cacheDirectory,
 					spherexPath
 			);
 
-			String lastRaSetting = getUserSetting("spherex.lastRa");
-			String lastDecSetting = getUserSetting("spherex.lastDec");
-			String lastCutoutSize = getUserSetting("spherex.lastCutoutSize");
+			Properties settings = loadSettings(cacheDirectory);
+			String lastRaSetting = settings.getProperty(LAST_RA);
+			String lastDecSetting = settings.getProperty(LAST_DEC);
+			String lastCutoutSize = settings.getProperty(LAST_CUTOUT_SIZE);
 
 			if (lastRaSetting != null
 					&& lastDecSetting != null
@@ -243,10 +249,11 @@ public class SpherexViewerTab implements Tab {
 				cleanUpDirectory.setSelected(false);
 			}
 
-			setUserSetting("spherex.lastRa", normalizedRa);
-			setUserSetting("spherex.lastDec", normalizedDec);
-			setUserSetting("spherex.lastCutoutSize", size.getText());
-			setUserSetting("spherex.lastApertureRadius", radius.getText());
+			settings.setProperty(LAST_RA, normalizedRa);
+			settings.setProperty(LAST_DEC, normalizedDec);
+			settings.setProperty(LAST_CUTOUT_SIZE, size.getText());
+			settings.setProperty(LAST_APERTURE_RADIUS, radius.getText());
+			saveSettings(cacheDirectory, settings);
 		} catch (Exception ex) {
 			error(ex);
 			return;
@@ -580,6 +587,25 @@ public class SpherexViewerTab implements Tab {
 	private void error(Throwable ex) {
 		status.setText("Spectrum generation failed.");
 		JOptionPane.showMessageDialog(frame, ex.getMessage(), TAB_NAME, JOptionPane.ERROR_MESSAGE);
+	}
+
+	private Properties loadSettings(Path cachePath) {
+		Properties settings = new Properties();
+		Path settingsFile = cachePath.resolve(SETTINGS_FILE_NAME);
+		if (!Files.isRegularFile(settingsFile)) return settings;
+		try (var input = Files.newInputStream(settingsFile)) {
+			settings.load(input);
+		} catch (Exception ex) {
+			// Use defaults when the cache-specific settings file cannot be read.
+		}
+		return settings;
+	}
+
+	private void saveSettings(Path cachePath, Properties settings) throws java.io.IOException {
+		Files.createDirectories(cachePath);
+		try (var output = Files.newOutputStream(cachePath.resolve(SETTINGS_FILE_NAME))) {
+			settings.store(output, "SPHEREx viewer settings");
+		}
 	}
 
 	private void cleanupCutoutDirectory(Path cacheDir) {
