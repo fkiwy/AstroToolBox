@@ -166,6 +166,7 @@ public class SpherexViewerTab implements Tab {
 	private void generate() {
 		final SpherexPipeline.Config config;
 		final boolean newCoordinates;
+		final boolean largerCutoutSize;
 		try {
 			String coordinatesStr = coordinates.getText().trim();
 			if (coordinatesStr.isEmpty()) {
@@ -193,10 +194,12 @@ public class SpherexViewerTab implements Tab {
 			}
 			Path cacheDirectory = Path.of(cachePath);
 
+			int sizeArcsec = Integer.parseInt(size.getText());
+
 			config = new SpherexPipeline.Config(
 					raVal,
 					decVal,
-					Integer.parseInt(size.getText()),
+					sizeArcsec,
 					Double.parseDouble(radius.getText()),
 					bin.isSelected(),
 					cacheDirectory,
@@ -217,7 +220,7 @@ public class SpherexViewerTab implements Tab {
 
 				double lastRa = Double.parseDouble(lastRaSetting);
 				double lastDec = Double.parseDouble(lastDecSetting);
-				double lastSizeArcsec = Double.parseDouble(lastCutoutSize);
+				int lastSizeArcsec = Integer.parseInt(lastCutoutSize);
 
 				// Previous cutout half-size in degrees
 				double halfSizeDeg = (lastSizeArcsec / 2.0) / 3600.0;
@@ -238,13 +241,17 @@ public class SpherexViewerTab implements Tab {
 				// the previous cutout field of view.
 				newCoordinates = deltaRaProjected > halfSizeDeg
 						|| deltaDecDeg > halfSizeDeg;
+
+				largerCutoutSize = sizeArcsec > lastSizeArcsec;
 			} else {
 				newCoordinates = true;
+				largerCutoutSize = true;
 			}
 
 			// Clean up FITS directory if explicitly requested
-			// or if the new position is outside the previous field of view.
-			if (cleanUpDirectory.isSelected() || newCoordinates) {
+			// or if the new position is outside the previous field of view
+			// or if the cutout size is larger than the previous one.
+			if (cleanUpDirectory.isSelected() || newCoordinates || largerCutoutSize) {
 				cleanupCutoutDirectory(config.cacheDir());
 				cleanUpDirectory.setSelected(false);
 			}
