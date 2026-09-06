@@ -1,6 +1,7 @@
 package astro.tool.box.tab;
 
 import astro.tool.box.container.NumberPair;
+import astro.tool.box.component.DirectoryPicker;
 import astro.tool.box.spherex.ImagePlotter;
 import astro.tool.box.spherex.RgbImagePanel;
 import astro.tool.box.spherex.SpherexPipeline;
@@ -43,7 +44,8 @@ public class SpherexViewerTab implements Tab {
 	private final String FONT_NAME = "Tahoma";
 	private final JFrame frame;
 	private final JTabbedPane tabs;
-	private JTextField coordinates, size, radius, fitsCutoutsPath;
+	private JTextField coordinates, size, radius;
+	private DirectoryPicker fitsCutoutsPath;
 	private JCheckBox bin;
 	private JCheckBox cleanUpDirectory;
 	private JButton run, csv, png;
@@ -74,7 +76,7 @@ public class SpherexViewerTab implements Tab {
 		coordinates = field(form, "Coordinates", lastCoordinates.trim());
 		size = field(form, "Cutout (arcsec)", settings.getProperty(LAST_CUTOUT_SIZE, "120"));
 		radius = field(form, "Aperture (pixels)", settings.getProperty(LAST_APERTURE_RADIUS, "2.0"));
-		fitsCutoutsPath = field(form, "FITS cutouts path", spherexPath.toString());
+		fitsCutoutsPath = directoryPicker(form, "FITS cutouts path", spherexPath.toString());
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
@@ -163,6 +165,15 @@ public class SpherexViewerTab implements Tab {
 		return f;
 	}
 
+	private DirectoryPicker directoryPicker(JPanel panel, String label, String value) {
+		JPanel p = new JPanel(new BorderLayout());
+		p.add(new JLabel(label), BorderLayout.NORTH);
+		DirectoryPicker picker = new DirectoryPicker(value);
+		p.add(picker);
+		panel.add(p);
+		return picker;
+	}
+
 	private void generate() {
 		final SpherexPipeline.Config config;
 		final boolean newCoordinates;
@@ -181,7 +192,7 @@ public class SpherexViewerTab implements Tab {
 			String normalizedRa = String.valueOf(raVal);
 			String normalizedDec = String.valueOf(decVal);
 
-			String cachePath = fitsCutoutsPath.getText().trim();
+			String cachePath = fitsCutoutsPath.getSelectedDirectoryPath().trim();
 			if (cachePath.isEmpty()) {
 				JOptionPane.showMessageDialog(frame, "FITS cutouts path must be provided.", TAB_NAME, JOptionPane.ERROR_MESSAGE);
 				return;
@@ -190,7 +201,7 @@ public class SpherexViewerTab implements Tab {
 			if (cachePath.contains(".astro-tool-box") && cachePath.endsWith("spherex")) {
 				String objectName = "J" + roundTo7DecNZ(raVal) + addPlusSign(roundDouble(decVal, PATTERN_7DEC_NZ));
 				cachePath = Path.of(cachePath, objectName).toString();
-				fitsCutoutsPath.setText(cachePath);
+				fitsCutoutsPath.setSelectedDirectoryPath(cachePath);
 			}
 			Path cacheDirectory = Path.of(cachePath);
 
