@@ -77,6 +77,7 @@ public class SpherexViewerTab implements Tab {
 		size = field(form, "Cutout (arcsec)", settings.getProperty(LAST_CUTOUT_SIZE, "120"));
 		radius = field(form, "Aperture (pixels)", settings.getProperty(LAST_APERTURE_RADIUS, "2.0"));
 		fitsCutoutsPath = directoryPicker(form, "FITS cutouts path", spherexPath.toString());
+		fitsCutoutsPath.setDirectorySelectionListener(this::loadSettingsForDirectory);
 		bin = new JCheckBox("Bin spectrum", true);
 		form.add(bin);
 		run = new JButton("Generate spectrum");
@@ -172,6 +173,35 @@ public class SpherexViewerTab implements Tab {
 		p.add(picker);
 		panel.add(p);
 		return picker;
+	}
+
+	private void loadSettingsForDirectory(String directoryPath) {
+		if (directoryPath.isBlank()) return;
+		try {
+			Path directory = Path.of(directoryPath);
+			Path settingsFile = directory.resolve(SETTINGS_FILE_NAME);
+			if (!Files.isRegularFile(settingsFile)) return;
+
+			Properties settings = loadSettings(directory);
+			String lastRa = settings.getProperty(LAST_RA);
+			String lastDec = settings.getProperty(LAST_DEC);
+			if (lastRa != null && lastDec != null
+					&& !lastRa.isBlank() && !lastDec.isBlank()) {
+				coordinates.setText(lastRa + " " + lastDec);
+			}
+
+			String lastCutoutSize = settings.getProperty(LAST_CUTOUT_SIZE);
+			if (lastCutoutSize != null && !lastCutoutSize.isBlank()) {
+				size.setText(lastCutoutSize);
+			}
+
+			String lastApertureRadius = settings.getProperty(LAST_APERTURE_RADIUS);
+			if (lastApertureRadius != null && !lastApertureRadius.isBlank()) {
+				radius.setText(lastApertureRadius);
+			}
+		} catch (Exception ignored) {
+			// Retain the current values when the selected path cannot be read.
+		}
 	}
 
 	private void generate() {
