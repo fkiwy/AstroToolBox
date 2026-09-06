@@ -640,7 +640,7 @@ public class ImagePlotter {
 
 		return new double[]{
 				panelX + centerX * scaleX,
-				panelY + centerY * scaleY
+				panelY + (centerY + 0.5) * scaleY
 		};
 	}
 
