@@ -48,6 +48,37 @@ public class RgbImagePanel extends JPanel {
 		repaint();
 	}
 
+	/**
+	 * Marks a celestial position on the composite without treating it as a
+	 * mouse click. This lets the initially requested extraction position remain
+	 * visible when the RGB image is first displayed.
+	 */
+	public void setSelectedCoordinates(double raDeg, double decDeg) {
+		if (image == null || composite == null) return;
+
+		double deltaRa = raDeg - composite.crval1();
+		if (deltaRa > 180.0) deltaRa -= 360.0;
+		if (deltaRa < -180.0) deltaRa += 360.0;
+
+		double xiDeg = deltaRa * Math.cos(Math.toRadians(composite.crval2()));
+		double etaDeg = decDeg - composite.crval2();
+		double determinant = composite.cd11() * composite.cd22()
+				- composite.cd12() * composite.cd21();
+		if (Math.abs(determinant) < 1.0e-12) return;
+
+		double dx = (composite.cd22() * xiDeg - composite.cd12() * etaDeg) / determinant;
+		double dy = (-composite.cd21() * xiDeg + composite.cd11() * etaDeg) / determinant;
+
+		// Invert the pixel conventions used by handleClick().
+		double x = dx + composite.crpix1() - 0.5;
+		double y = dy + composite.crpix2();
+		if (x < 0 || x >= image.getWidth() || y < 0 || y >= image.getHeight()) return;
+
+		selectedImageX = x;
+		selectedImageY = y;
+		repaint();
+	}
+
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(500, 500);
@@ -144,7 +175,7 @@ public class RgbImagePanel extends JPanel {
 				double x = bounds.x + selectedImageX * bounds.width / image.getWidth();
 				double y = bounds.y + selectedImageY * bounds.height / image.getHeight();
 
-				g2.setColor(Color.YELLOW);
+				g2.setColor(Color.MAGENTA);
 				g2.setStroke(new BasicStroke(2.0f));
 				int r = 9;
 				g2.drawLine((int) Math.round(x - r), (int) Math.round(y),

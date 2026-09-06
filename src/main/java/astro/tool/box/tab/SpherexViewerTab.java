@@ -443,6 +443,7 @@ public class SpherexViewerTab implements Tab {
 					ImagePlotter.RgbComposite composite =
 							ImagePlotter.createRgbComposite(stackedImages, 10);
 					rgbImagePanel.setComposite(composite);
+					rgbImagePanel.setSelectedCoordinates(raDeg, decDeg);
 
 					imagesPanel.removeAll();
 
