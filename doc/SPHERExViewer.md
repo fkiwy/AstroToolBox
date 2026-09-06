@@ -72,6 +72,8 @@ You may instead choose a custom directory. This is useful when:
 - cutouts should be kept on a project or external drive;
 - a previous cache should be deliberately reused.
 
+When you select an existing directory that contains `spherex.properties`, the tab restores its saved coordinates, cutout size, and aperture radius into the corresponding fields. Those restored values are therefore the values used by **Generate spectrum** unless you edit them before generating. If you type a path rather than using **Browse...**, press Enter to load its settings.
+
 The selected directory is created if necessary. It can contain:
 
 ```text
