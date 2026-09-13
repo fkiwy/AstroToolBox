@@ -15,8 +15,8 @@ An internet connection is required for initial downloads and for any calibration
 3. Leave the default **Cutout (arcsec)** and **Aperture (pixels)** values initially, or adjust them for the target.
 4. Choose a **FITS cutouts path**. The default is normally appropriate.
 5. Click **Generate spectrum**.
-6. Wait for the status line to report completion. The spectrum appears on the left; the RGB composite and detector diagnostics appear on the right.
-7. Optionally click an object or feature in the RGB composite to extract another spectrum from the same field.
+6. Wait for the status line at the bottom to report completion. The spectrum appears on the left; the RGB composite and detector diagnostics appear on the right.
+7. Optionally, click an object or feature in the RGB composite to extract another spectrum from the same field.
 8. Use **Save CSV** or **Save PNG** to export the result.
 
 ## Input controls
@@ -95,16 +95,16 @@ The tab compares the requested position and cutout size with the saved settings 
 
 Changing to a different cache directory starts a separate cache history.
 
-## What happens during generation
+## What happens during the generation
 
-After **Generate spectrum** is clicked, the status line reports progress. Depending on cache state, the tab will:
+After **Generate spectrum** is clicked, the status line at the bottom reports progress. Depending on the cache state, the tab will:
 
 1. Create the cache and calibration directories as needed.
 2. Query IRSA for public SPHEREx cutouts covering the requested position, unless suitable cached cutouts are being reused.
 3. Download FITS cutouts into the cache when required.
 4. Read the FITS image and metadata, apply the aperture measurement, and associate the measurement with a detector and wavelength.
 5. Discard invalid points and reject detector-wise spectral outliers using a robust median-absolute-deviation method.
-6. Optionally bin the measurements into the output spectrum.
+6. Optionally, bin the measurements into the output spectrum.
 7. Plot the spectrum and stack the downloaded FITS images for the image display.
 
 Individual unsuitable or unreadable cutouts may be skipped. A completed status message reports the number of output spectrum points and the number of skipped cutouts. Generation fails if no usable cutouts can be measured.
@@ -127,7 +127,7 @@ After successful image stacking, the right side shows two products.
 
 ### Interactive RGB composite
 
-The top image is a 500 by 500 pixel RGB composite made from the aligned detector stacks. Its channels are formed as follows:
+The top image is a 500-by 500-pixel RGB composite made from the aligned detector stacks. Its channels are formed as follows:
 
 | RGB channel | Detector stacks used |
 | --- | --- |
