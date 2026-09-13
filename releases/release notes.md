@@ -1,5 +1,30 @@
 ## Release notes
 
+### AstroToolBox v4.6.0
+- Added a new SPHEREx Viewer tab for extracting and visualizing SPHEREx spectra
+- Added SPHEREx image stacking with WCS-based reprojection, outlier rejection, and data sanitization
+- Added RGB composite image generation for SPHEREx cutouts
+- Added interactive coordinate selection on SPHEREx images
+- Added cached spectrum extraction for SPHEREx data
+- Added support for configurable SPHEREx FITS cutout and calibration directories
+- Added persistence of SPHEREx Viewer settings, including coordinates, cutout size, aperture radius, and cache-specific settings
+- Added a directory picker for selecting the SPHEREx FITS cutouts path
+- Added highlighting of the spectrum extraction position on the RGB image
+- Added automatic cleanup options for SPHEREx cutout directories when coordinates or cutout size change
+- Improved SPHEREx image coordinate transformations, scaling, alignment, and RGB rendering
+- Improved SPHEREx spectrum chart formatting and layout
+- Fixed SPHEREx spectral channel calibration
+- Added documentation and tooltips for the SPHEREx Viewer
+- Added support for SPHEREx spectra and images
+- Enhanced the SED Fitter with error bars, magnitude errors, median photometric distances, template references, and updated documentation
+- Included white dwarf fitting in the UCD fitting panel
+- Show photometric distance only for UCD entries
+- Removed the MOCA catalog entry
+- Fixed UHS and UKIDSS image downloads
+- Added logging for NIR image download errors
+- Updated project dependencies
+- Refactored and cleaned up code, including adoption of Java records
+
 ### AstroToolBox v4.5.2
 - Add tooltip window
 - Improve version info panel

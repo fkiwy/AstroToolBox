@@ -77,7 +77,7 @@ import static astro.tool.box.util.ServiceHelper.readResponse;
 public class ToolboxHelper {
 
 	public static final String PGM_NAME = "AstroToolBox";
-	public static final String PGM_VERSION = "4.5.3";
+	public static final String PGM_VERSION = "4.6.0";
 	public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 	public static final String DOCUMENTS_URL = "https://github.com/fkiwy/AstroToolBox/blob/master/doc/";
 
