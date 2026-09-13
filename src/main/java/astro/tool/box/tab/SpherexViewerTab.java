@@ -1,7 +1,7 @@
 package astro.tool.box.tab;
 
-import astro.tool.box.container.NumberPair;
 import astro.tool.box.component.DirectoryPicker;
+import astro.tool.box.container.NumberPair;
 import astro.tool.box.spherex.ImagePlotter;
 import astro.tool.box.spherex.RgbImagePanel;
 import astro.tool.box.spherex.SpherexPipeline;
@@ -18,6 +18,8 @@ import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
@@ -28,14 +30,14 @@ import java.util.*;
 import java.util.List;
 
 import static astro.tool.box.function.NumericFunctions.*;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
+import static astro.tool.box.main.ToolboxHelper.*;
 
 /**
  * UI for the initial public SPHEREx aperture-spectrum extractor.
  * Extended to display stacked images over the spectrum plot.
  */
 public class SpherexViewerTab implements Tab {
-	public static final String TAB_NAME = "SPHEREx Spectrum";
+	public static final String TAB_NAME = "SPHEREx Viewer";
 	private static final String SETTINGS_FILE_NAME = "spherex.properties";
 	private static final String LAST_RA = "spherex.lastRa";
 	private static final String LAST_DEC = "spherex.lastDec";
@@ -59,6 +61,7 @@ public class SpherexViewerTab implements Tab {
 	private List<SpherexPipeline.Point> points = List.of();
 	private List<Map<String, Object>> stackedImages = List.of();
 	private Path spherexPath;
+	private boolean spherexTooltipShown;
 
 	public SpherexViewerTab(JFrame frame, JTabbedPane tabs) {
 		this.frame = frame;
@@ -67,6 +70,24 @@ public class SpherexViewerTab implements Tab {
 
 	@Override
 	public void init(boolean visible) {
+		tabs.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int selectedIndex = tabs.getSelectedIndex();
+				if (!spherexTooltipShown
+						&& selectedIndex >= 0
+						&& tabs.getTitleAt(selectedIndex).equals(TAB_NAME)) {
+					spherexTooltipShown = true;
+					JPanel panel = new JPanel();
+					panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+					panel.add(new JLabel("You can find the documentation for the SPHEREx Viewer tab here:"));
+					panel.add(Box.createVerticalStrut(10));
+					panel.add(createHyperlink("SPHEREx Viewer documentation", DOCUMENTS_URL + "SPHERExViewer.md"));
+					panel.add(Box.createVerticalStrut(10));
+					createToolTip(frame, panel, "spherexTabDoc");
+				}
+			}
+		});
 		JPanel main = new JPanel(new BorderLayout(8, 8));
 		main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		JPanel form = new JPanel(new GridLayout(3, 4, 6, 3));
