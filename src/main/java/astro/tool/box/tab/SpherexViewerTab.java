@@ -84,7 +84,7 @@ public class SpherexViewerTab implements Tab {
 					panel.add(Box.createVerticalStrut(10));
 					panel.add(createHyperlink("SPHEREx Viewer documentation", DOCUMENTS_URL + "SPHERExViewer.md"));
 					panel.add(Box.createVerticalStrut(10));
-					createToolTip(frame, panel, "spherexTabDoc");
+					createToolTip(frame, panel, "spherexViewerDoc");
 				}
 			}
 		});
