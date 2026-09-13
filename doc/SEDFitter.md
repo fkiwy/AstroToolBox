@@ -41,7 +41,7 @@ The SED fitter will then query the selected photometric catalogs, retrieve the a
 
 ## Catalog selection and fallback
 
-The three survey families are independent: select one optical source, one near-infrared source, and one mid-infrared source. Clicking a source clears the other choices in its family. The fitter also changes the selected check boxes as it follows a fallback chain, so the visible selections after a run show the sources it attempted or used.
+The three survey families are independent: select one optical source, one near-infrared source, and one mid-infrared source. Clicking a source clears the other choices in its family. The fitter also changes the selected checkboxes as it follows a fallback chain, so the visible selections after a run show the sources it attempted or used.
 
 If the preferred source has no matching entry, the following automatic fallbacks are applied during that run:
 
