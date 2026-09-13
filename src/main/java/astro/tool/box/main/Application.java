@@ -25,6 +25,7 @@ public class Application {
 
 	public static List<NumberTriplet> CMD_DATA;
 	private static boolean versionLoaded;
+	private static boolean sedFitterTooltipShown;
 	private int defaultCloseOperation;
 	private JFrame baseFrame;
 	private JTabbedPane tabbedPane;
@@ -40,6 +41,14 @@ public class Application {
 			manager.setDismissDelay(60000);
 		} catch (Exception e) {
 		}
+	}
+
+	public static boolean claimSedFitterTooltip() {
+		if (sedFitterTooltipShown) {
+			return false;
+		}
+		sedFitterTooltipShown = true;
+		return true;
 	}
 
 	public void init() {

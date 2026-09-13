@@ -7,6 +7,8 @@ import astro.tool.box.enumeration.Sed;
 import astro.tool.box.enumeration.SpectralType;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.SpectralTypeLookup;
+import astro.tool.box.main.Application;
+import astro.tool.box.main.ToolboxHelper;
 import astro.tool.box.service.CatalogQueryService;
 import astro.tool.box.util.CSVParser;
 import org.jfree.chart.ChartFactory;
@@ -32,6 +34,7 @@ import org.jfree.data.xy.YIntervalSeriesCollection;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
@@ -323,6 +326,23 @@ public class SedFittingPanel extends JPanel {
 		commandPanel.add(toolTip);
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		addHierarchyListener(e -> {
+			if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()
+					&& Application.claimSedFitterTooltip()) {
+				showDocumentationToolTip();
+			}
+		});
+	}
+
+	private void showDocumentationToolTip() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.add(new JLabel("You can find the documentation for the SED Fitter here:"));
+		panel.add(Box.createVerticalStrut(10));
+		panel.add(createHyperlink("SED Fitter documentation", DOCUMENTS_URL + "SEDFitter.md"));
+		panel.add(Box.createVerticalStrut(10));
+		Window window = SwingUtilities.getWindowAncestor(this);
+		ToolboxHelper.createToolTip(window instanceof JFrame ? (JFrame) window : baseFrame, panel, "sedFitterDoc");
 	}
 
 	private YIntervalSeriesCollection createSed(CatalogEntry catalogEntry, YIntervalSeriesCollection collection,

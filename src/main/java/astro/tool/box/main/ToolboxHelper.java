@@ -1534,6 +1534,12 @@ public class ToolboxHelper {
 		panel.add(new JSeparator());
 		panel.add(Box.createVerticalStrut(10));
 
+		panel.add(new JLabel("Tooltips are shown once per AstroToolBox session. Closing and re-opening the application will reset the tooltips."));
+		panel.add(Box.createVerticalStrut(10));
+
+		panel.add(new JLabel("To permanently disable this tooltip, check below box and click OK."));
+		panel.add(Box.createVerticalStrut(10));
+
 		JCheckBox disableToolTips = new JCheckBox(
 				"Disable this tooltip (you can re-enable all tooltips via the Settings tab)");
 		panel.add(disableToolTips);
