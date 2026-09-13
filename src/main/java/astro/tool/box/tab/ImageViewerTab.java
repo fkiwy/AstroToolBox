@@ -318,6 +318,7 @@ public class ImageViewerTab implements Tab {
 	private boolean sdssImages;
 	private boolean dssImages;
 	private boolean waitCursor = true;
+	private boolean sedFitterTooltipShown;
 
 	public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
 		this.baseFrame = baseFrame;
@@ -847,7 +848,10 @@ public class ImageViewerTab implements Tab {
 				@Override
 				public void stateChanged(ChangeEvent e) {
 					int selectedIndex = controlTabs.getSelectedIndex();
-					if (controlTabs.getTitleAt(selectedIndex).equals(overlayTabLabel)) {
+					if (!sedFitterTooltipShown
+							&& selectedIndex >= 0
+							&& controlTabs.getTitleAt(selectedIndex).equals(overlayTabLabel)) {
+						sedFitterTooltipShown = true;
 						JPanel panel = new JPanel();
 						panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 						panel.add(new JLabel(
