@@ -14,7 +14,7 @@ public enum Band {
 
 	public String val;
 
-	private Band(String val) {
+	Band(String val) {
 		this.val = val;
 	}
 

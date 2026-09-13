@@ -1,24 +1,19 @@
 package astro.tool.box.util;
 
+import javax.imageio.*;
+import javax.imageio.metadata.IIOInvalidTreeException;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import javax.imageio.IIOException;
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOInvalidTreeException;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
-import javax.imageio.stream.ImageOutputStream;
-
 public class GifSequencer {
 
 	public void generateFromFiles(String[] filenames, File output, int delay, boolean loop)
-			throws IIOException, IOException {
+			throws IOException {
 		int length = filenames.length;
 		BufferedImage[] img_list = new BufferedImage[length];
 
@@ -31,7 +26,7 @@ public class GifSequencer {
 	}
 
 	public void generateFromBI(BufferedImage[] images, File output, int delay, boolean loop)
-			throws IIOException, IOException {
+			throws IOException {
 		ImageWriter gifWriter = getWriter();
 		try (ImageOutputStream ios = getImageOutputStream(output)) {
 			IIOMetadata metadata = getMetadata(gifWriter, delay, loop);
@@ -85,7 +80,7 @@ public class GifSequencer {
 
 		app_node.setAttribute("applicationID", "NETSCAPE");
 		app_node.setAttribute("authenticationCode", "2.0");
-		app_node.setUserObject(new byte[] { 0x1, (byte) (0), (byte) ((0 >> 8)) });
+		app_node.setUserObject(new byte[]{0x1, (byte) (0), (byte) ((0 >> 8))});
 
 		app_extensions.appendChild(app_node);
 		root.appendChild(app_extensions);

@@ -1,65 +1,5 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.main.ToolboxHelper.USER_HOME;
-import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
-import static astro.tool.box.main.ToolboxHelper.getCatalogInstances;
-import static astro.tool.box.main.ToolboxHelper.html;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.LINE_SEP;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
-
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
-
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.LookAndFeel;
 import astro.tool.box.enumeration.TabCode;
@@ -67,6 +7,30 @@ import astro.tool.box.enumeration.TapProvider;
 import astro.tool.box.enumeration.WiseBand;
 import astro.tool.box.main.Application;
 import astro.tool.box.panel.DualListBox;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatNordIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTMoonlightIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTNightOwlIJTheme;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
+
+import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
 
 public class SettingsTab implements Tab {
 
@@ -76,15 +40,6 @@ public class SettingsTab implements Tab {
 	public static final String PROP_FILE_NAME = "/AstroToolBox.properties";
 	public static final String PROP_PATH = USER_HOME + PROP_FILE_NAME;
 	public static final Properties USER_SETTINGS = new Properties();
-	public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
-	public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.Flat_Light.name();
-
-	private final JFrame baseFrame;
-	private final JTabbedPane tabbedPane;
-	private final CatalogQueryTab catalogQueryTab;
-	private final ImageViewerTab imageViewerTab;
-	private final BatchQueryTab batchQueryTab;
-
 	// Global settings
 	public static final String LOOK_AND_FEEL = "lookAndFeel";
 	public static final String TAP_PROVIDER = "tapProvider";
@@ -95,7 +50,45 @@ public class SettingsTab implements Tab {
 	public static final String PHOTOMETRIC_ERRORS = "photometricErrors";
 	public static final String CUTOUT_SERVICE = "cutoutService";
 	public static final String OBJECT_COLLECTION_PATH = "objectCollectionPath";
-
+	public static final String PANSTARRS_FOV = "panstarrsFOV";
+	public static final String ALADIN_LITE_FOV = "aladinLiteFOV";
+	public static final String WISE_VIEW_FOV = "wiseViewFOV";
+	public static final String FINDER_CHART_FOV = "finderChartFOV";
+	public static final String SHOW_TOOL_TIPS = "showToolTips";
+	public static final String DISALBED_TOOL_TIPS = "disabledToolTips";
+	public static final String NEAREST_BYW_SUBJECTS = "nearestBywSubjects";
+	// Tabs
+	public static final String SOURCE_TABS = "sourceTabs";
+	public static final String DEST_TABS = "destTabs";
+	// Miscellaneous settings
+	private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
+	private static final String SEARCH_RADIUS = "searchRadius";
+	private static final String USER_NAME = "userName";
+	private static final String USER_EMAIL = "userEmail";
+	// Image viewer settings
+	private static final String WISE_BAND = "wiseBand";
+	private static final String SIZE = "imageSize";
+	private static final String SPEED = "speed";
+	private static final String ZOOM = "zoom";
+	private static final String DIFFERENT_SIZE = "differentSize";
+	private static final String PROPER_MOTION = "properMotion";
+	private static final String ASYNC_DOWNLOADS = "asyncDownloads";
+	private static final String LEGACY_IMAGES = "legacyImages";
+	private static final String PANSTARRS_IMAGES = "panstarrsImages";
+	private static final String VHS_IMAGES = "vhsImages";
+	private static final String UHS_IMAGES = "uhsImages";
+	private static final String UKIDSS_IMAGES = "ukidssImages";
+	private static final String SDSS_IMAGES = "sdssImages";
+	private static final String DSS_IMAGES = "dssImages";
+	// Catalogs
+	private static final String CATALOGS = "catalogs";
+	public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
+	public static String DEFAULT_LOOK_AND_FEEL = LookAndFeel.Flat_Light.name();
+	private final JFrame baseFrame;
+	private final JTabbedPane tabbedPane;
+	private final CatalogQueryTab catalogQueryTab;
+	private final ImageViewerTab imageViewerTab;
+	private final BatchQueryTab batchQueryTab;
 	private LookAndFeel lookAndFeel;
 	private TapProvider tapProvider;
 	private String proxyAddress;
@@ -105,19 +98,6 @@ public class SettingsTab implements Tab {
 	private boolean photometricErrors;
 	private String cutoutService;
 	private String objectCollectionPath;
-
-	// Miscellaneous settings
-	private static final String COPY_COORDS_TO_CLIPBOARD = "copyCoordsToClipboard";
-	private static final String SEARCH_RADIUS = "searchRadius";
-	private static final String USER_NAME = "userName";
-	private static final String USER_EMAIL = "userEmail";
-	public static final String PANSTARRS_FOV = "panstarrsFOV";
-	public static final String ALADIN_LITE_FOV = "aladinLiteFOV";
-	public static final String WISE_VIEW_FOV = "wiseViewFOV";
-	public static final String FINDER_CHART_FOV = "finderChartFOV";
-	public static final String SHOW_TOOL_TIPS = "showToolTips";
-	public static final String DISALBED_TOOL_TIPS = "disabledToolTips";
-
 	private boolean copyCoordsToClipboard;
 	private int searchRadius;
 	private int panstarrsFOV;
@@ -125,24 +105,6 @@ public class SettingsTab implements Tab {
 	private int wiseViewFOV;
 	private int finderChartFOV;
 	private boolean showToolTips;
-
-	// Image viewer settings
-	private static final String WISE_BAND = "wiseBand";
-	private static final String SIZE = "imageSize";
-	private static final String SPEED = "speed";
-	private static final String ZOOM = "zoom";
-	private static final String DIFFERENT_SIZE = "differentSize";
-	private static final String PROPER_MOTION = "properMotion";
-	public static final String NEAREST_BYW_SUBJECTS = "nearestBywSubjects";
-	private static final String ASYNC_DOWNLOADS = "asyncDownloads";
-	private static final String LEGACY_IMAGES = "legacyImages";
-	private static final String PANSTARRS_IMAGES = "panstarrsImages";
-	private static final String VHS_IMAGES = "vhsImages";
-	private static final String UHS_IMAGES = "uhsImages";
-	private static final String UKIDSS_IMAGES = "ukidssImages";
-	private static final String SDSS_IMAGES = "sdssImages";
-	private static final String DSS_IMAGES = "dssImages";
-
 	private WiseBand wiseBand;
 	private int size;
 	private int speed;
@@ -158,26 +120,112 @@ public class SettingsTab implements Tab {
 	private boolean ukidssImages;
 	private boolean sdssImages;
 	private boolean dssImages;
-
-	// Catalogs
-	private static final String CATALOGS = "catalogs";
 	private List<String> selectedCatalogs;
 	private JPanel catalogPanel;
-
-	// Tabs
-	public static final String SOURCE_TABS = "sourceTabs";
-	public static final String DEST_TABS = "destTabs";
-
 	private ActionListener actionListener;
 	private JComboBox wiseBandsBox;
 
 	public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab,
-			ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
+	                   ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
 		this.baseFrame = baseFrame;
 		this.tabbedPane = tabbedPane;
 		this.catalogQueryTab = catalogQueryTab;
 		this.imageViewerTab = imageViewerTab;
 		this.batchQueryTab = batchQueryTab;
+	}
+
+	public static LookAndFeel getLookAndFeel() {
+		return LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
+	}
+
+	public static void setLookAndFeel(LookAndFeel lookAndFeel) {
+		boolean isFlatLaf = false;
+		try {
+			switch (lookAndFeel) {
+				case OS -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				case Flat_Light -> {
+					UIManager.setLookAndFeel(new FlatLightLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Dark -> {
+					UIManager.setLookAndFeel(new FlatDarkLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Darcula -> {
+					UIManager.setLookAndFeel(new FlatDarculaLaf());
+					isFlatLaf = true;
+				}
+				case Flat_IntelliJ -> {
+					UIManager.setLookAndFeel(new FlatIntelliJLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Mac_Light -> {
+					UIManager.setLookAndFeel(new FlatMacLightLaf());
+					isFlatLaf = true;
+				}
+				case Flat_Mac_Dark -> {
+					UIManager.setLookAndFeel(new FlatMacDarkLaf());
+					isFlatLaf = true;
+				}
+				case Nord -> {
+					UIManager.setLookAndFeel(new FlatNordIJTheme());
+					isFlatLaf = true;
+				}
+				case NightOwl -> {
+					UIManager.setLookAndFeel(new FlatMTNightOwlIJTheme());
+					isFlatLaf = true;
+				}
+				case Moonlight -> {
+					UIManager.setLookAndFeel(new FlatMTMoonlightIJTheme());
+					isFlatLaf = true;
+				}
+			}
+			if (isFlatLaf) {
+				UIManager.put("Button.arc", 0);
+				UIManager.put("CheckBox.arc", 0);
+				UIManager.put("Component.arc", 0);
+				UIManager.put("ProgressBar.arc", 0);
+				UIManager.put("TextComponent.arc", 0);
+				UIManager.put("Component.arrowType", "triangle");
+				UIManager.put("ScrollBar.showButtons", true);
+				UIManager.put("ScrollBar.width", 15);
+			}
+		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
+		         | UnsupportedLookAndFeelException e) {
+		}
+	}
+
+	public static void loadUserSettings() {
+		try (InputStream input = new FileInputStream(PROP_PATH)) {
+			USER_SETTINGS.load(input);
+		} catch (IOException ex) {
+		}
+	}
+
+	public static void setUserSetting(String key, String value) {
+		USER_SETTINGS.setProperty(key, value);
+	}
+
+	public static String getUserSetting(String key) {
+		return USER_SETTINGS.getProperty(key);
+	}
+
+	public static String getUserSetting(String key, String defaultValue) {
+		String property = USER_SETTINGS.getProperty(key);
+		return property == null || property.isEmpty() ? defaultValue : property;
+	}
+
+	public static List<String> getSelectedCatalogs(Map<String, CatalogEntry> catalogInstances) {
+		String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
+		String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
+		return Arrays.asList(catalogs.split(","));
+	}
+
+	public static void saveSettings() {
+		try (OutputStream output = new FileOutputStream(PROP_PATH)) {
+			USER_SETTINGS.store(output, COMMENTS);
+		} catch (IOException ex) {
+		}
 	}
 
 	@Override
@@ -712,11 +760,7 @@ public class SettingsTab implements Tab {
 	}
 
 	private void enableStopDownloadButton() {
-		if (asyncDownloads) {
-			imageViewerTab.getStopDownloadButton().setEnabled(true);
-		} else {
-			imageViewerTab.getStopDownloadButton().setEnabled(false);
-		}
+		imageViewerTab.getStopDownloadButton().setEnabled(asyncDownloads);
 	}
 
 	private void setCheckBoxValue(JPanel panel, List<String> catalogList) {
@@ -724,100 +768,6 @@ public class SettingsTab implements Tab {
 			if (component instanceof JCheckBox catalogBox) {
 				catalogBox.setSelected(catalogList.contains(catalogBox.getText()));
 			}
-		}
-	}
-
-	public static void setLookAndFeel(LookAndFeel lookAndFeel) {
-		boolean isFlatLaf = false;
-		try {
-			switch (lookAndFeel) {
-			case OS -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			case Flat_Light -> {
-				UIManager.setLookAndFeel(new FlatLightLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Dark -> {
-				UIManager.setLookAndFeel(new FlatDarkLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Darcula -> {
-				UIManager.setLookAndFeel(new FlatDarculaLaf());
-				isFlatLaf = true;
-			}
-			case Flat_IntelliJ -> {
-				UIManager.setLookAndFeel(new FlatIntelliJLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Mac_Light -> {
-				UIManager.setLookAndFeel(new FlatMacLightLaf());
-				isFlatLaf = true;
-			}
-			case Flat_Mac_Dark -> {
-				UIManager.setLookAndFeel(new FlatMacDarkLaf());
-				isFlatLaf = true;
-			}
-			case Nord -> {
-				UIManager.setLookAndFeel(new FlatNordIJTheme());
-				isFlatLaf = true;
-			}
-			case NightOwl -> {
-				UIManager.setLookAndFeel(new FlatNightOwlIJTheme());
-				isFlatLaf = true;
-			}
-			case Moonlight -> {
-				UIManager.setLookAndFeel(new FlatMoonlightIJTheme());
-				isFlatLaf = true;
-			}
-			}
-			if (isFlatLaf) {
-				UIManager.put("Button.arc", 0);
-				UIManager.put("CheckBox.arc", 0);
-				UIManager.put("Component.arc", 0);
-				UIManager.put("ProgressBar.arc", 0);
-				UIManager.put("TextComponent.arc", 0);
-				UIManager.put("Component.arrowType", "triangle");
-				UIManager.put("ScrollBar.showButtons", true);
-				UIManager.put("ScrollBar.width", 15);
-			}
-		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
-				| UnsupportedLookAndFeelException e) {
-		}
-	}
-
-	public static LookAndFeel getLookAndFeel() {
-		return LookAndFeel.valueOf(getUserSetting(LOOK_AND_FEEL, DEFAULT_LOOK_AND_FEEL));
-	}
-
-	public static void loadUserSettings() {
-		try (InputStream input = new FileInputStream(PROP_PATH)) {
-			USER_SETTINGS.load(input);
-		} catch (IOException ex) {
-		}
-	}
-
-	public static void setUserSetting(String key, String value) {
-		USER_SETTINGS.setProperty(key, value);
-	}
-
-	public static String getUserSetting(String key) {
-		return USER_SETTINGS.getProperty(key);
-	}
-
-	public static String getUserSetting(String key, String defaultValue) {
-		String property = USER_SETTINGS.getProperty(key);
-		return property == null || property.isEmpty() ? defaultValue : property;
-	}
-
-	public static List<String> getSelectedCatalogs(Map<String, CatalogEntry> catalogInstances) {
-		String defaultCatalogs = catalogInstances.keySet().stream().collect(Collectors.joining(","));
-		String catalogs = USER_SETTINGS.getProperty(CATALOGS, defaultCatalogs);
-		return Arrays.asList(catalogs.split(","));
-	}
-
-	public static void saveSettings() {
-		try (OutputStream output = new FileOutputStream(PROP_PATH)) {
-			USER_SETTINGS.store(output, COMMENTS);
-		} catch (IOException ex) {
 		}
 	}
 

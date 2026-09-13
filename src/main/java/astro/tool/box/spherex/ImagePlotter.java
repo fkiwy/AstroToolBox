@@ -1,0 +1,827 @@
+package astro.tool.box.spherex;
+
+import nom.tam.fits.Header;
+
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Utilities for plotting SPHEREx cutout images.
+ * Converts functionality from Python image_plotter.py to Java.
+ */
+public class ImagePlotter {
+
+	public record ImageCutout(String band, Object imageData, double[] photometryRadii) {
+	}
+
+	/**
+	 * Standalone RGB composite together with the exact linear celestial WCS
+	 * parameters of its displayed pixel grid.
+	 */
+	public record RgbComposite(
+			BufferedImage image,
+			double crval1,
+			double crval2,
+			double crpix1,
+			double crpix2,
+			double cd11,
+			double cd12,
+			double cd21,
+			double cd22) {
+	}
+
+	public static class PlotConfig {
+		public double imageContrast = 10.0;
+		public int rows = 1;
+		public int cols = 7;
+		public int figureWidth = 1400;
+		public int figureHeight = 200;
+
+		public PlotConfig(double imageContrast) {
+			this.imageContrast = imageContrast;
+		}
+	}
+
+	private ImagePlotter() {
+	}
+
+	/**
+	 * Create the standalone Python-compatible RGB composite used by the
+	 * interactive spectrum viewer.
+	 * <p>
+	 * Blue  = mean(D1, D2)
+	 * Green = mean(D3, D4)
+	 * Red   = mean(D5, D6)
+	 * <p>
+	 * The detector stacks are already on a common North-up/East-left TAN grid.
+	 * The WCS of D6 is propagated to the final centre-cropped RGB grid.
+	 */
+	public static RgbComposite createRgbComposite(
+			List<Map<String, Object>> images,
+			double imageContrast) throws Exception {
+
+		if (images == null || images.isEmpty()) {
+			throw new IllegalArgumentException("No stacked images available.");
+		}
+
+		Map<String, Map<String, Object>> byBand = new java.util.HashMap<>();
+		for (Map<String, Object> image : images) {
+			Object band = image.get("band");
+			if (band instanceof String name) {
+				byBand.put(name, image);
+			}
+		}
+
+		Map<String, Object> d1 = requireBand(byBand, "D1");
+		Map<String, Object> d2 = requireBand(byBand, "D2");
+		Map<String, Object> d3 = requireBand(byBand, "D3");
+		Map<String, Object> d4 = requireBand(byBand, "D4");
+		Map<String, Object> d5 = requireBand(byBand, "D5");
+		Map<String, Object> d6 = requireBand(byBand, "D6");
+
+		double[][] blue = meanCommonCenter(dataOf(d1), dataOf(d2));
+		double[][] green = meanCommonCenter(dataOf(d3), dataOf(d4));
+		double[][] red = meanCommonCenter(dataOf(d5), dataOf(d6));
+
+		double[][][] common = cropCommon(red, green, blue);
+		BufferedImage image = colorChannelsToBufferedImage(
+				common[0], common[1], common[2], imageContrast);
+
+		Header header = (Header) d6.get("header");
+		if (header == null) {
+			throw new IllegalArgumentException("D6 stacked image has no WCS header.");
+		}
+
+		int d6Height = dataOf(d6).length;
+		int d6Width = dataOf(d6)[0].length;
+		int startY = (d6Height - image.getHeight()) / 2;
+		int startX = (d6Width - image.getWidth()) / 2;
+
+		// FITS CRPIX is 1-based. Cropping removes startX/startY Java pixels.
+		double crpix1 = header.getDoubleValue("CRPIX1") - startX;
+		double crpix2 = header.getDoubleValue("CRPIX2") - startY;
+
+		double cd11 = header.getDoubleValue("CD1_1",
+				header.getDoubleValue("CDELT1", -6.2 / 3600.0));
+		double cd12 = header.getDoubleValue("CD1_2", 0.0);
+		double cd21 = header.getDoubleValue("CD2_1", 0.0);
+		double cd22 = header.getDoubleValue("CD2_2",
+				header.getDoubleValue("CDELT2", 6.2 / 3600.0));
+
+		return new RgbComposite(
+				image,
+				header.getDoubleValue("CRVAL1"),
+				header.getDoubleValue("CRVAL2"),
+				crpix1,
+				crpix2,
+				cd11, cd12, cd21, cd22);
+	}
+
+	private static Map<String, Object> requireBand(
+			Map<String, Map<String, Object>> byBand, String band) {
+		Map<String, Object> result = byBand.get(band);
+		if (result == null) {
+			throw new IllegalArgumentException(
+					"RGB composite requires detector " + band + ".");
+		}
+		return result;
+	}
+
+	private static double[][] dataOf(Map<String, Object> image) {
+		Object data = image.get("hdu");
+		if (!(data instanceof double[][] result)) {
+			throw new IllegalArgumentException("Invalid stacked image data.");
+		}
+		return result;
+	}
+
+	/**
+	 * Create a diagnostic image grid for a target.
+	 */
+	public static BufferedImage plotImages(double ra, double dec, List<Map<String, Object>> images,
+	                                       double imageSize, double imageContrast) throws Exception {
+
+		PlotConfig config = new PlotConfig(imageContrast);
+		if (imageContrast < 0 || imageContrast >= 50)
+			throw new IllegalArgumentException("image_contrast must be in [0, 50)");
+
+		List<ImageCutout> cutouts = normalizeCutouts(images);
+		int panelWidth = config.figureWidth / config.cols;
+		int panelHeight = config.figureHeight / config.rows;
+
+		BufferedImage figure = new BufferedImage(
+				config.figureWidth, config.figureHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = figure.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(0, 0, figure.getWidth(), figure.getHeight());
+
+		// RGB panel
+		int panelIndex = 0;
+		ImageCutout colorCutout = createD1D2D3D4D5D6ColorCutout(cutouts);
+		if (colorCutout != null) {
+			int row = panelIndex / config.cols;
+			int col = panelIndex % config.cols;
+			plotSingleColorCutout(g2d, config, colorCutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
+			panelIndex++;
+		}
+
+		// Six grayscale detector panels
+		for (ImageCutout cutout : cutouts) {
+			if (panelIndex >= config.rows * config.cols) break;
+			int row = panelIndex / config.cols;
+			int col = panelIndex % config.cols;
+			plotSingleCutout(g2d, config, cutout, col * panelWidth, row * panelHeight, panelWidth, panelHeight);
+			panelIndex++;
+		}
+
+		drawVerticalSeparators(g2d, config, panelWidth);
+		g2d.dispose();
+		return figure;
+	}
+
+	private static void drawVerticalSeparators(Graphics2D g2d, PlotConfig config, int panelWidth) {
+		Stroke oldStroke = g2d.getStroke();
+		Color oldColor = g2d.getColor();
+
+		g2d.setColor(Color.WHITE);
+		g2d.setStroke(new BasicStroke(1.0f));
+
+		for (int col = 1; col < config.cols; col++) {
+			int x = col * panelWidth;
+			g2d.drawLine(x, 0, x, config.figureHeight);
+		}
+
+		g2d.setStroke(oldStroke);
+		g2d.setColor(oldColor);
+	}
+
+	/**
+	 * Normalize cutouts from input dictionaries.
+	 */
+	private static List<ImageCutout> normalizeCutouts(List<Map<String, Object>> images) throws Exception {
+		if (images == null || images.isEmpty()) {
+			throw new IllegalArgumentException("At least one image cutout is required.");
+		}
+
+		List<ImageCutout> cutouts = new java.util.ArrayList<>();
+		for (Map<String, Object> image : images) {
+			String band = (String) image.get("band");
+			if (band == null) {
+				throw new IllegalArgumentException("Missing 'band' in image entry");
+			}
+
+			Object hduObj = image.get("hdu");
+			if (hduObj == null || !(hduObj instanceof double[][])) {
+				throw new IllegalArgumentException("Missing or invalid 'hdu' in image entry for band " + band);
+			}
+
+			Object radiObj = image.get("phot_radii");
+			if (radiObj == null || !(radiObj instanceof double[])) {
+				throw new IllegalArgumentException("Missing or invalid 'phot_radii' in image entry for band " + band);
+			}
+
+			double[][] imageData = (double[][]) hduObj;
+			double[] radii = (double[]) radiObj;
+
+			if (radii.length != 3) {
+				throw new IllegalArgumentException("phot_radii must contain exactly 3 values for band " + band);
+			}
+
+			validateImageData(imageData, band);
+			cutouts.add(new ImageCutout(band, imageData, radii));
+		}
+
+		return cutouts;
+	}
+
+	/**
+	 * Validate image data.
+	 */
+	private static void validateImageData(double[][] data, String band) throws Exception {
+		if (data == null || data.length == 0) {
+			throw new IllegalArgumentException("Image data for band " + band + " is empty");
+		}
+		if (data.length == 0 || data[0].length == 0) {
+			throw new IllegalArgumentException("Image data for band " + band + " has invalid shape");
+		}
+	}
+
+	/**
+	 * Plot a single cutout image.
+	 */
+	private static void plotSingleCutout(Graphics2D g2d, PlotConfig config, ImageCutout cutout,
+	                                     int x, int y, int width, int height) {
+
+		double[][] imageData = (double[][]) cutout.imageData;
+
+		// Find min/max for scaling
+		double[] limits = robustLimits(imageData, config.imageContrast);
+		double vmin = limits[0];
+		double vmax = limits[1];
+
+		// Draw grayscale image
+		BufferedImage img = imageDataToBufferedImage(imageData, vmin, vmax);
+		g2d.drawImage(img, x, y, width, height, null);
+		drawPanelBorder(g2d, x, y, width, height);
+		drawTargetMarker(g2d, x, y, width, height, imageData.length, imageData[0].length);
+
+		// Draw label (white background, half size)
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(x + 5, y + 5, 20, 12);
+		g2d.setColor(Color.BLACK);
+		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		g2d.drawString(cutout.band, x + 7, y + 15);
+
+		// Draw aperture circles
+		drawPhotometryRadii(g2d, x, y, width, height, imageData, cutout.photometryRadii);
+	}
+
+	/**
+	 * Plot the D2/D4/D6 RGB composite cutout.
+	 */
+	private static void plotSingleColorCutout(Graphics2D g2d, PlotConfig config, ImageCutout cutout,
+	                                          int x, int y, int width, int height) {
+
+		double[][][] channels = (double[][][]) cutout.imageData;
+		BufferedImage img = colorChannelsToBufferedImage(channels[0], channels[1], channels[2], config.imageContrast);
+		g2d.drawImage(img, x, y, width, height, null);
+		drawPanelBorder(g2d, x, y, width, height);
+		drawTargetMarker(g2d, x, y, width, height, channels[2].length, channels[2][0].length);
+
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(x + 5, y + 5, 62, 12);
+		g2d.setColor(Color.BLACK);
+		g2d.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		g2d.drawString(cutout.band, x + 7, y + 15);
+
+		drawPhotometryRadii(g2d, x, y, width, height, channels[2], cutout.photometryRadii);
+	}
+
+	/**
+	 * Create an RGB composite from D2, D4, and D6.
+	 * Blue channel: D2, green channel: D4, red channel: D6.
+	 */
+	/**
+	 * Create the Python-compatible RGB composite.
+	 * <p>
+	 * Blue  = mean(D1, D2)
+	 * Green = mean(D3, D4)
+	 * Red   = mean(D5, D6)
+	 */
+	private static ImageCutout createD1D2D3D4D5D6ColorCutout(List<ImageCutout> cutouts) throws Exception {
+		ImageCutout d1 = findBand(cutouts, "D1");
+		ImageCutout d2 = findBand(cutouts, "D2");
+		ImageCutout d3 = findBand(cutouts, "D3");
+		ImageCutout d4 = findBand(cutouts, "D4");
+		ImageCutout d5 = findBand(cutouts, "D5");
+		ImageCutout d6 = findBand(cutouts, "D6");
+		if (d1 == null || d2 == null || d3 == null || d4 == null || d5 == null || d6 == null)
+			return null;
+
+		double[][] blue = meanCommonCenter((double[][]) d1.imageData, (double[][]) d2.imageData);
+		double[][] green = meanCommonCenter((double[][]) d3.imageData, (double[][]) d4.imageData);
+		double[][] red = meanCommonCenter((double[][]) d5.imageData, (double[][]) d6.imageData);
+
+		double[][][] common = cropCommon(red, green, blue);
+		int commonHeight = common[0].length;
+		int commonWidth = common[0][0].length;
+		int d6StartY = (d6DataHeight(d6) - commonHeight) / 2;
+		int d6StartX = (d6DataWidth(d6) - commonWidth) / 2;
+		return new ImageCutout("D56-D34-D12", common, d6.photometryRadii);
+	}
+
+	private static int d6DataHeight(ImageCutout c) {
+		return ((double[][]) c.imageData).length;
+	}
+
+	private static int d6DataWidth(ImageCutout c) {
+		return ((double[][]) c.imageData)[0].length;
+	}
+
+	private static ImageCutout findBand(List<ImageCutout> cutouts, String band) {
+		for (ImageCutout c : cutouts)
+			if (band.equals(c.band)) return c;
+		return null;
+	}
+
+	private static double[][][] cropCommon(double[][]... arrays) {
+		if (arrays.length == 0) throw new IllegalArgumentException("At least one array is required");
+		int minHeight = Integer.MAX_VALUE;
+		int minWidth = Integer.MAX_VALUE;
+		for (double[][] array : arrays) {
+			if (array == null || array.length == 0 || array[0] == null || array[0].length == 0)
+				throw new IllegalArgumentException("Array has invalid shape");
+			minHeight = Math.min(minHeight, array.length);
+			minWidth = Math.min(minWidth, array[0].length);
+		}
+		double[][][] result = new double[arrays.length][minHeight][minWidth];
+		for (int i = 0; i < arrays.length; i++) {
+			int startY = (arrays[i].length - minHeight) / 2;
+			int startX = (arrays[i][0].length - minWidth) / 2;
+			for (int y = 0; y < minHeight; y++)
+				System.arraycopy(arrays[i][startY + y], startX, result[i][y], 0, minWidth);
+		}
+		return result;
+	}
+
+	private static double[][] meanCommonCenter(double[][] a, double[][] b) {
+		double[][][] common = cropCommon(a, b);
+		int h = common[0].length;
+		int w = common[0][0].length;
+		double[][] out = new double[h][w];
+		for (int y = 0; y < h; y++) {
+			for (int x = 0; x < w; x++) {
+				double av = common[0][y][x];
+				double bv = common[1][y][x];
+				if (Double.isFinite(av) && Double.isFinite(bv)) out[y][x] = 0.5 * (av + bv);
+				else if (Double.isFinite(av)) out[y][x] = av;
+				else if (Double.isFinite(bv)) out[y][x] = bv;
+				else out[y][x] = Double.NaN;
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Convert three image channels to an RGB BufferedImage.
+	 */
+	/**
+	 * Convert the three RGB science arrays to an RGB display image.
+	 *
+	 * This follows the Python image_plotter implementation:
+	 *
+	 *   red/green/blue are stretched independently using the same robust
+	 *   percentile/MAD limits as the grayscale panels, then combined.
+	 *
+	 * The Python implementation uses make_lupton_rgb(..., Q=0) for each
+	 * individual channel.  Q=0 is the linear limit of the Lupton mapping,
+	 * so the Java implementation uses the equivalent linear mapping.
+	 *
+	 * Invalid pixels are handled explicitly.  A missing value in one
+	 * channel does not contaminate the other two channels; a pixel for
+	 * which all three channels are invalid is rendered black.
+	 */
+
+	/**
+	 * Reproduce image_plotter.py's _array_to_lupton_grayscale() for
+	 * each RGB channel.
+	 * <p>
+	 * Python does NOT linearly map each RGB channel directly.  It calls:
+	 * <p>
+	 * make_lupton_rgb(data, data, data,
+	 * minimum=vmin, stretch=vmax-vmin, Q=0)
+	 * <p>
+	 * and converts the resulting RGB image to grayscale.  Astropy's
+	 * Lupton implementation treats Q=0 as a small non-zero Q internally
+	 * (0.1), so the mapping is very slightly nonlinear.
+	 * <p>
+	 * We reproduce that mapping here rather than approximating it with
+	 * a simple linear scale.
+	 */
+	private static BufferedImage colorChannelsToBufferedImage(
+			double[][] red,
+			double[][] green,
+			double[][] blue,
+			double imageContrast) {
+
+		validateRgbShape(red, green, blue);
+
+		int height = red.length;
+		int width = red[0].length;
+
+		BufferedImage img =
+				new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+		int[][] r = luptonGrayscaleChannel(red, imageContrast);
+		int[][] g = luptonGrayscaleChannel(green, imageContrast);
+		int[][] b = luptonGrayscaleChannel(blue, imageContrast);
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				img.setRGB(
+						x,
+						y,
+						(r[y][x] << 16) |
+								(g[y][x] << 8) |
+								b[y][x]
+				);
+			}
+		}
+
+		return img;
+	}
+
+	/**
+	 * Java equivalent of:
+	 * <p>
+	 * vmin, vmax = _robust_limits(data, image_contrast)
+	 * stretch = max(vmax-vmin, eps)
+	 * rgb = make_lupton_rgb(
+	 * data, data, data,
+	 * minimum=vmin,
+	 * stretch=stretch,
+	 * Q=0
+	 * )
+	 * Image.fromarray(rgb).convert("L")
+	 * <p>
+	 * from image_plotter.py.
+	 */
+	private static void validateRgbShape(
+			double[][] red, double[][] green, double[][] blue) {
+		if (red == null || green == null || blue == null ||
+				red.length == 0 || green.length == 0 || blue.length == 0) {
+			throw new IllegalArgumentException("RGB channels must be non-empty");
+		}
+
+		int height = red.length;
+		int width = red[0] == null ? 0 : red[0].length;
+		if (width == 0 || green[0] == null || blue[0] == null ||
+				green.length != height || blue.length != height ||
+				green[0].length != width || blue[0].length != width) {
+			throw new IllegalArgumentException(
+					"RGB channels must have identical dimensions");
+		}
+
+		for (int y = 0; y < height; y++) {
+			if (red[y] == null || green[y] == null || blue[y] == null ||
+					red[y].length != width ||
+					green[y].length != width ||
+					blue[y].length != width) {
+				throw new IllegalArgumentException(
+						"RGB channels must have identical dimensions");
+			}
+		}
+	}
+
+	private static int[][] luptonGrayscaleChannel(
+			double[][] data,
+			double imageContrast) {
+
+		int height = data.length;
+		int width = data[0].length;
+
+		double[] limits = robustLimits(data, imageContrast);
+		double vmin = limits[0];
+		double vmax = limits[1];
+
+		double stretch = vmax - vmin;
+
+		if (!Double.isFinite(stretch) || stretch <= 0.0)
+			stretch = Math.ulp(1.0);
+
+		/*
+		 * Astropy's LuptonAsinhStretch changes Q=0 to Q=0.1 because
+		 * values below 1/2**23 are replaced by 0.1.
+		 */
+		final double q = 0.1;
+		final double frac = 0.1;
+
+		final double slope =
+				frac * 255.0 /
+						asinh(frac * q);
+
+		final double soften =
+				q / stretch;
+
+		int[][] out = new int[height][width];
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+
+				double value = data[y][x];
+
+				if (!Double.isFinite(value)) {
+					out[y][x] = 0;
+					continue;
+				}
+
+				double shifted = value - vmin;
+
+				/*
+				 * Astropy's AsinhMapping:
+				 *
+				 *   if I <= 0: 0
+				 *   else:
+				 *       asinh(I * Q/stretch) * slope
+				 */
+				if (!Double.isFinite(shifted) || shifted <= 0.0) {
+					out[y][x] = 0;
+					continue;
+				}
+
+				double mapped =
+						asinh(shifted * soften) *
+								slope;
+
+				int pixel = (int) mapped;
+
+				if (pixel < 0)
+					pixel = 0;
+				else if (pixel > 255)
+					pixel = 255;
+
+				out[y][x] = pixel;
+			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * Inverse hyperbolic sine.  java.lang.Math does not provide asinh
+	 * on the Java version used by AstroToolBox.
+	 */
+	private static double asinh(double x) {
+		return Math.log(x + Math.sqrt(x * x + 1.0));
+	}
+
+	/**
+	 * Convert image data array to BufferedImage.
+	 */
+	private static BufferedImage imageDataToBufferedImage(double[][] data, double vmin, double vmax) {
+		int height = data.length;
+		int width = data[0].length;
+
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+
+		double range = vmax - vmin;
+		if (range <= 0) range = 1;
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				double value = data[y][x];
+				if (!Double.isFinite(value)) {
+					value = 0;
+				}
+				int gray = (int) Math.min(255, Math.max(0, 255 * (value - vmin) / range));
+				gray = 255 - gray; // Python image_plotter uses cmap="gray_r".
+				img.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
+			}
+		}
+
+		return img;
+	}
+
+	/**
+	 * Draw photometry aperture circles.
+	 */
+	private static void drawPanelBorder(Graphics2D g2d, int x, int y, int width, int height) {
+		Color old = g2d.getColor();
+		Stroke oldStroke = g2d.getStroke();
+		g2d.setColor(Color.BLACK);
+		g2d.setStroke(new BasicStroke(1.0f));
+		g2d.drawRect(x, y, width - 1, height - 1);
+		g2d.setStroke(oldStroke);
+		g2d.setColor(old);
+	}
+
+	/**
+	 * Return the display coordinates corresponding to the Python image
+	 * plotter's image center convention: (nx / 2.0, ny / 2.0).
+	 * <p>
+	 * Both the target marker and the photometry overlays use this exact
+	 * helper so they cannot acquire a subpixel offset relative to each
+	 * other.
+	 */
+	private static double[] displayImageCenter(
+			int panelX, int panelY,
+			int panelWidth, int panelHeight,
+			int imageHeight, int imageWidth) {
+
+		double centerX = imageWidth / 2.0;
+		double centerY = imageHeight / 2.0;
+		double scaleX = (double) panelWidth / imageWidth;
+		double scaleY = (double) panelHeight / imageHeight;
+
+		return new double[]{
+				panelX + centerX * scaleX,
+				panelY + (centerY + 0.5) * scaleY
+		};
+	}
+
+	private static void drawTargetMarker(Graphics2D g2d, int panelX, int panelY, int panelWidth, int panelHeight,
+	                                     int imageHeight, int imageWidth) {
+		double[] center = displayImageCenter(
+				panelX, panelY, panelWidth, panelHeight,
+				imageHeight, imageWidth);
+
+		Color old = g2d.getColor();
+		g2d.setColor(Color.RED);
+		g2d.fillOval(
+				(int) Math.round(center[0] - 1.5),
+				(int) Math.round(center[1] - 1.5),
+				3, 3);
+		g2d.setColor(old);
+	}
+
+	private static void drawPhotometryRadii(Graphics2D g2d, int panelX, int panelY,
+	                                        int panelWidth, int panelHeight, double[][] imageData, double[] radii) {
+
+		Object oldAntialiasing = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+		Object oldStrokeControl = g2d.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
+
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+		int imgHeight = imageData.length;
+		int imgWidth = imageData[0].length;
+
+		double scaleX = (double) panelWidth / imgWidth;
+		double scaleY = (double) panelHeight / imgHeight;
+		double radiusScale = Math.min(scaleX, scaleY);
+
+		double[] center = displayImageCenter(
+				panelX, panelY, panelWidth, panelHeight,
+				imgHeight, imgWidth);
+		double displayCenterX = center[0];
+		double displayCenterY = center[1];
+
+		double apertureRadius = radii[0];
+		double innerBgRadius = radii[1];
+		double outerBgRadius = radii[2];
+
+		// Draw aperture (red)
+		g2d.setColor(Color.MAGENTA);
+		g2d.setStroke(new BasicStroke(1.0f));
+		drawScaledRadius(g2d, displayCenterX, displayCenterY, apertureRadius, radiusScale);
+
+		// Draw background annulus (blue)
+		g2d.setColor(Color.CYAN);
+		drawScaledRadius(g2d, displayCenterX, displayCenterY, innerBgRadius, radiusScale);
+		drawScaledRadius(g2d, displayCenterX, displayCenterY, outerBgRadius, radiusScale);
+
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldAntialiasing);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, oldStrokeControl);
+	}
+
+	private static void drawScaledRadius(Graphics2D g2d, double centerX, double centerY,
+	                                     double radius, double scale) {
+
+		double scaledRadius = radius * scale;
+		double diameter = scaledRadius * 2;
+
+		g2d.draw(new Ellipse2D.Double(
+				centerX - scaledRadius,
+				centerY - scaledRadius,
+				diameter,
+				diameter
+		));
+	}
+
+	private static String formatCoordinate(double value) {
+		if (!Double.isFinite(value)) return "n/a";
+		String text = String.format(java.util.Locale.ROOT, "%.7f", value);
+		while (text.contains(".") && text.endsWith("0")) text = text.substring(0, text.length() - 1);
+		if (text.endsWith(".")) text = text.substring(0, text.length() - 1);
+		return text;
+	}
+
+	private static double getOptionalDouble(Map<String, Object> image, String key, double fallback) {
+		Object value = image.get(key);
+		if (value instanceof Number n) return n.doubleValue();
+		return fallback;
+	}
+
+	/**
+	 * Calculate robust image-display limits.
+	 */
+	public static double[] robustLimits(double[][] data, double imageContrast) {
+		// Flatten and filter finite values
+		List<Double> finite = new java.util.ArrayList<>();
+		for (double[] row : data) {
+			for (double val : row) {
+				if (Double.isFinite(val)) {
+					finite.add(val);
+				}
+			}
+		}
+
+		if (finite.isEmpty()) {
+			return new double[]{0.0, 1.0};
+		}
+
+		Collections.sort(finite);
+
+		double lo = imageContrast;
+		double hi = 100.0 - imageContrast;
+		int loIdx = (int) (finite.size() * lo / 100.0);
+		int hiIdx = (int) (finite.size() * hi / 100.0);
+
+		double median = finite.get(finite.size() / 2);
+		double mad = calculateMAD(finite, median);
+		double percentileRange = finite.get(Math.min(hiIdx, finite.size() - 1))
+				- finite.get(Math.max(0, loIdx));
+
+		double vmin = median - 2.0 * mad;
+		double vmax = median + 2.0 * percentileRange;
+
+		if (!Double.isFinite(vmin) || !Double.isFinite(vmax) || vmax <= vmin) {
+			double std = calculateStd(finite, median);
+			vmin = median - std;
+			vmax = median + std;
+		}
+
+		return new double[]{vmin, vmax};
+	}
+
+	/**
+	 * Calculate median absolute deviation.
+	 */
+	private static double calculateMAD(List<Double> values, double median) {
+		List<Double> deviations = new java.util.ArrayList<>();
+		for (double val : values) {
+			deviations.add(Math.abs(val - median));
+		}
+		Collections.sort(deviations);
+		return deviations.get(deviations.size() / 2);
+	}
+
+	/**
+	 * Calculate standard deviation.
+	 */
+	private static double calculateStd(List<Double> values, double mean) {
+		if (values.size() < 2) return 1.0;
+
+		double sum = 0;
+		for (double val : values) {
+			sum += (val - mean) * (val - mean);
+		}
+		return Math.sqrt(sum / (values.size() - 1));
+	}
+
+	/**
+	 * Center-crop arrays to common shape.
+	 */
+	public static double[][] cropToCommonCenter(double[][]... arrays) throws Exception {
+		if (arrays.length == 0) {
+			throw new IllegalArgumentException("At least one array is required");
+		}
+
+		int minHeight = Integer.MAX_VALUE;
+		int minWidth = Integer.MAX_VALUE;
+
+		for (double[][] array : arrays) {
+			if (array.length == 0 || array[0].length == 0) {
+				throw new IllegalArgumentException("Array has invalid shape");
+			}
+			minHeight = Math.min(minHeight, array.length);
+			minWidth = Math.min(minWidth, array[0].length);
+		}
+
+		double[][] result = new double[minHeight][minWidth];
+		double[][] first = arrays[0];
+		int startY = (first.length - minHeight) / 2;
+		int startX = (first[0].length - minWidth) / 2;
+
+		for (int y = 0; y < minHeight; y++) {
+			System.arraycopy(first[startY + y], startX, result[y], 0, minWidth);
+		}
+
+		return result;
+	}
+}

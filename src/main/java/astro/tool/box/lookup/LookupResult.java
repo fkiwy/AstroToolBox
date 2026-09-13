@@ -1,8 +1,8 @@
 package astro.tool.box.lookup;
 
-import java.util.Objects;
-
 import astro.tool.box.enumeration.Color;
+
+import java.util.Objects;
 
 public class LookupResult {
 
@@ -34,7 +34,7 @@ public class LookupResult {
 	private Double sptNum;
 
 	public LookupResult(Color colorKey, double colorValue, String spt, int teff, double rsun, double msun,
-			double nearest, double gap) {
+	                    double nearest, double gap) {
 		this.colorKey = colorKey;
 		this.colorValue = colorValue;
 		this.spt = spt;
@@ -47,18 +47,17 @@ public class LookupResult {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("LookupResult{colorKey=").append(colorKey);
-		sb.append(", colorValue=").append(colorValue);
-		sb.append(", spt=").append(spt);
-		sb.append(", teff=").append(teff);
-		sb.append(", rsun=").append(rsun);
-		sb.append(", msun=").append(msun);
-		sb.append(", nearest=").append(nearest);
-		sb.append(", gap=").append(gap);
-		sb.append(", sptNum=").append(sptNum);
-		sb.append('}');
-		return sb.toString();
+		String sb = "LookupResult{colorKey=" + colorKey +
+				", colorValue=" + colorValue +
+				", spt=" + spt +
+				", teff=" + teff +
+				", rsun=" + rsun +
+				", msun=" + msun +
+				", nearest=" + nearest +
+				", gap=" + gap +
+				", sptNum=" + sptNum +
+				'}';
+		return sb;
 	}
 
 	@Override

@@ -1,13 +1,12 @@
 package astro.tool.box.container;
 
-import java.awt.Color;
-import java.io.File;
-import java.util.List;
-
-import javax.swing.JCheckBox;
-
 import astro.tool.box.catalog.CatalogEntry;
 import astro.tool.box.enumeration.Shape;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.util.List;
 
 public class CustomOverlay {
 
@@ -54,19 +53,18 @@ public class CustomOverlay {
 	}
 
 	public String serialize() {
-		StringBuilder data = new StringBuilder();
-		data.append(name).append(";");
-		data.append(color.getRGB()).append(";");
-		data.append(shape.name()).append(";");
-		data.append(raColumnIndex).append(";");
-		data.append(decColumnIndex).append(";");
-		data.append(file == null ? "" : file.getPath()).append(";");
-		data.append(tableName).append(";");
-		data.append(raColName).append(";");
-		data.append(decColName).append(";");
-		data.append(tapUrl).append(";");
-		data.append(adqlQuery);
-		return data.toString();
+		String data = name + ";" +
+				color.getRGB() + ";" +
+				shape.name() + ";" +
+				raColumnIndex + ";" +
+				decColumnIndex + ";" +
+				(file == null ? "" : file.getPath()) + ";" +
+				tableName + ";" +
+				raColName + ";" +
+				decColName + ";" +
+				tapUrl + ";" +
+				adqlQuery;
+		return data;
 	}
 
 	public void deserialize(String data) {

@@ -1,134 +1,25 @@
 package astro.tool.box.catalog;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAdditionError;
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.NumericFunctions.toLong;
-import static astro.tool.box.util.Comparators.getDoubleComparator;
-import static astro.tool.box.util.Comparators.getLongComparator;
-import static astro.tool.box.util.Comparators.getStringComparator;
-import static astro.tool.box.util.Constants.DATE_FORMATTER;
-import static astro.tool.box.util.Constants.SDSS_G;
-import static astro.tool.box.util.Constants.SDSS_I;
-import static astro.tool.box.util.Constants.SDSS_R;
-import static astro.tool.box.util.Constants.SDSS_U;
-import static astro.tool.box.util.Constants.SDSS_Z;
-import static astro.tool.box.util.ConversionFactors.ARCMIN_ARCSEC;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ServiceHelper.createSdssUrl;
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.ABOffset;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.Band;
-import astro.tool.box.enumeration.Color;
-import astro.tool.box.enumeration.JColor;
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.Comparators.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.ARCMIN_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ServiceHelper.createSdssUrl;
 
 public class SdssCatalogEntry implements CatalogEntry, Extinction {
 
 	public static final String CATALOG_NAME = "SDSS DR17";
-
-	// Unique object identifier
-	private long objID;
-
-	// J2000 Right Ascension (r-band)
-	private double ra;
-
-	// J2000 Declination (r-band)
-	private double dec;
-
-	// Error in RA (* cos(Dec), that is, proper units)
-	private double raErr;
-
-	// Error in Dec
-	private double decErr;
-
-	// Type of object
-	private int type;
-
-	// Clean photometry flag (1=clean, 0=unclean)
-	private int clean;
-
-	// Date of observation
-	private LocalDateTime mjd;
-
-	// Pointer to the spectrum of object, if exists, else 0
-	private BigInteger specObjID;
-
-	// Magnitude in u band
-	private double u_mag;
-
-	// Error in u magnitude
-	private double u_err;
-
-	// Magnitude in g band
-	private double g_mag;
-
-	// Error in g magnitude
-	private double g_err;
-
-	// Magnitude in r band
-	private double r_mag;
-
-	// Error in r magnitude
-	private double r_err;
-
-	// Magnitude in i band
-	private double i_mag;
-
-	// Error in i magnitude
-	private double i_err;
-
-	// Magnitude in z band
-	private double z_mag;
-
-	// Error in z magnitude
-	private double z_err;
-
-	// Right ascension used for distance calculation
-	private double targetRa;
-
-	// Declination used for distance calculation
-	private double targetDec;
-
-	// Pixel RA position
-	private double pixelRa;
-
-	// Pixel declination position
-	private double pixelDec;
-
-	// Search radius
-	private double searchRadius;
-
-	// Most likely spectral type
-	private String spt;
-
-	private boolean toVega;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
-
-	private Map<String, Integer> columns;
-
-	private String[] values;
-
 	private static final Map<Integer, String> OBJECT_TYPES;
 
 	static {
@@ -144,6 +35,61 @@ public class SdssCatalogEntry implements CatalogEntry, Extinction {
 		OBJECT_TYPES.put(8, "No objects in area");
 		OBJECT_TYPES.put(9, "Not a type");
 	}
+
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
+	// Unique object identifier
+	private long objID;
+	// J2000 Right Ascension (r-band)
+	private double ra;
+	// J2000 Declination (r-band)
+	private double dec;
+	// Error in RA (* cos(Dec), that is, proper units)
+	private double raErr;
+	// Error in Dec
+	private double decErr;
+	// Type of object
+	private int type;
+	// Clean photometry flag (1=clean, 0=unclean)
+	private int clean;
+	// Date of observation
+	private LocalDateTime mjd;
+	// Pointer to the spectrum of object, if exists, else 0
+	private BigInteger specObjID;
+	// Magnitude in u band
+	private double u_mag;
+	// Error in u magnitude
+	private double u_err;
+	// Magnitude in g band
+	private double g_mag;
+	// Error in g magnitude
+	private double g_err;
+	// Magnitude in r band
+	private double r_mag;
+	// Error in r magnitude
+	private double r_err;
+	// Magnitude in i band
+	private double i_mag;
+	// Error in i magnitude
+	private double i_err;
+	// Magnitude in z band
+	private double z_mag;
+	// Error in z magnitude
+	private double z_err;
+	// Right ascension used for distance calculation
+	private double targetRa;
+	// Declination used for distance calculation
+	private double targetDec;
+	// Pixel RA position
+	private double pixelRa;
+	// Pixel declination position
+	private double pixelDec;
+	// Search radius
+	private double searchRadius;
+	// Most likely spectral type
+	private String spt;
+	private boolean toVega;
+	private Map<String, Integer> columns;
+	private String[] values;
 
 	public SdssCatalogEntry() {
 	}

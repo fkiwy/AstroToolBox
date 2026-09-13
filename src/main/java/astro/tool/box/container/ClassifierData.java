@@ -21,7 +21,7 @@ public class ClassifierData {
 	}
 
 	public ClassifierData(String catalog, String colorKey, String colorValue, String spectralType,
-			String referenceColor, String sourceId) {
+	                      String referenceColor, String sourceId) {
 		this.catalog = catalog;
 		this.colorKey = colorKey;
 		this.colorValue = colorValue;

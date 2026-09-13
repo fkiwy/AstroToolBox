@@ -16,6 +16,9 @@ hs_err_pid*
 .apt_generated
 .tern-project
 
+# IntelliJ
+.idea
+
 # Maven
 log/
 target/

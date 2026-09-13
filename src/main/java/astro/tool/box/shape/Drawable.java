@@ -1,10 +1,10 @@
 package astro.tool.box.shape;
 
-import java.awt.Graphics;
+import java.awt.*;
 
 public interface Drawable {
 
-	static float STROKE_WIDTH = 2;
+	float STROKE_WIDTH = 2;
 
 	void draw(Graphics graphics);
 

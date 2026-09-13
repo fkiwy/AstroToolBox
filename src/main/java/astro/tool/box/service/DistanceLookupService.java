@@ -1,17 +1,17 @@
 package astro.tool.box.service;
 
-import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistance;
-import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistanceError;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Band;
 import astro.tool.box.lookup.BrownDwarfLookupEntry;
 import astro.tool.box.lookup.DistanceLookupResult;
 import astro.tool.box.lookup.SpectralTypeLookup;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistance;
+import static astro.tool.box.function.PhotometricFunctions.calculatePhotometricDistanceError;
 
 public class DistanceLookupService {
 
@@ -40,7 +40,7 @@ public class DistanceLookupService {
 			return results;
 		}
 		for (Map.Entry<Band, NumberPair> entry : apparentMagnitudes.entrySet()) {
-			double apparentMagnitude = entry.getValue().getX();
+			double apparentMagnitude = entry.getValue().x();
 			if (apparentMagnitude == 0) {
 				continue;
 			}
@@ -49,7 +49,7 @@ public class DistanceLookupService {
 				continue;
 			}
 			double distance = calculatePhotometricDistance(apparentMagnitude, absoluteMagnitude);
-			double apparentMagnitudeError = entry.getValue().getY();
+			double apparentMagnitudeError = entry.getValue().y();
 			double absoluteMagnitudeError = absoluteMagnitudesErrors.get(entry.getKey());
 			if (absoluteMagnitudeError == 0) {
 				absoluteMagnitudeError = 0.5;

@@ -1,38 +1,19 @@
 package astro.tool.box.enumeration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import astro.tool.box.tab.*;
 
-import astro.tool.box.tab.AdqlQueryTab;
-import astro.tool.box.tab.BatchQueryTab;
-import astro.tool.box.tab.CatalogQueryTab;
-import astro.tool.box.tab.CustomOverlaysTab;
-import astro.tool.box.tab.FileBrowserTab;
-import astro.tool.box.tab.ImageSeriesTab;
-import astro.tool.box.tab.LookupTab;
-import astro.tool.box.tab.ObjectCollectionTab;
-import astro.tool.box.tab.PhotometricClassifierTab;
-import astro.tool.box.tab.ToolTab;
-import astro.tool.box.tab.VizierCatalogsTab;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public enum TabCode {
 
 	CQ(CatalogQueryTab.TAB_NAME), IS(ImageSeriesTab.TAB_NAME), PC(PhotometricClassifierTab.TAB_NAME),
 	VC(VizierCatalogsTab.TAB_NAME), AQ(AdqlQueryTab.TAB_NAME), BQ(BatchQueryTab.TAB_NAME), FB(FileBrowserTab.TAB_NAME),
-	OC(ObjectCollectionTab.TAB_NAME), CO(CustomOverlaysTab.TAB_NAME), TO(ToolTab.TAB_NAME), LO(LookupTab.TAB_NAME);
-
-	public String val;
-
-	private TabCode(String val) {
-		this.val = val;
-	}
+	OC(ObjectCollectionTab.TAB_NAME), CO(CustomOverlaysTab.TAB_NAME), TO(ToolTab.TAB_NAME), LO(LookupTab.TAB_NAME),
+	SX(SpherexViewerTab.TAB_NAME);
 
 	private static final Map<String, String> TAB_CODES = new HashMap();
+	private static final Map<String, String> TAB_LABELS = new HashMap();
 
 	static {
 		for (TabCode tabCode : values()) {
@@ -40,16 +21,20 @@ public enum TabCode {
 		}
 	}
 
-	private static String getTabLabel(String tabCode) {
-		return TAB_CODES.get(tabCode);
-	}
-
-	private static final Map<String, String> TAB_LABELS = new HashMap();
-
 	static {
 		for (TabCode tabCode : values()) {
 			TAB_LABELS.put(tabCode.val, tabCode.name());
 		}
+	}
+
+	public String val;
+
+	TabCode(String val) {
+		this.val = val;
+	}
+
+	private static String getTabLabel(String tabCode) {
+		return TAB_CODES.get(tabCode);
 	}
 
 	private static String getTabCode(String tabLabel) {
@@ -61,7 +46,7 @@ public enum TabCode {
 			return Collections.emptyList();
 		}
 		List<String> tabLabels = new ArrayList();
-		for (String tabCode : Arrays.asList(tabCodes.split(",", -1))) {
+		for (String tabCode : tabCodes.split(",", -1)) {
 			String tabLabel = getTabLabel(tabCode);
 			if (tabLabel != null) {
 				tabLabels.add(tabLabel);

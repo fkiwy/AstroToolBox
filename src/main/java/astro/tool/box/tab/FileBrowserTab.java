@@ -1,20 +1,13 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
-import static astro.tool.box.main.ToolboxHelper.concatArrays;
-import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
-import static astro.tool.box.main.ToolboxHelper.createResultTableSorter;
-import static astro.tool.box.main.ToolboxHelper.resizeColumnWidth;
-import static astro.tool.box.main.ToolboxHelper.showConfirmDialog;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
+import astro.tool.box.util.FileTypeFilter;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -25,24 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.Timer;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-
-import astro.tool.box.util.FileTypeFilter;
+import static astro.tool.box.function.NumericFunctions.toInteger;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.util.Constants.LINE_SEP;
+import static astro.tool.box.util.Constants.SPLIT_CHAR;
 
 public class FileBrowserTab implements Tab {
 
@@ -64,7 +43,7 @@ public class FileBrowserTab implements Tab {
 	private int decColumnIndex;
 
 	public FileBrowserTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab,
-			ImageViewerTab imageViewerTab) {
+	                      ImageViewerTab imageViewerTab) {
 		this.baseFrame = baseFrame;
 		this.tabbedPane = tabbedPane;
 		this.catalogQueryTab = catalogQueryTab;
@@ -319,14 +298,14 @@ public class FileBrowserTab implements Tab {
 			List<String[]> rows = new ArrayList<>();
 			while (scanner.hasNextLine()) {
 				String[] columnValues = scanner.nextLine().split(",", -1);
-				String[] values = concatArrays(new String[] { String.valueOf(++rowNumber) }, columnValues);
+				String[] values = concatArrays(new String[]{String.valueOf(++rowNumber)}, columnValues);
 				if (columnCount > 0) {
 					values = concatArrays(values, newValues);
 				}
 				rows.add(values);
 			}
 
-			String[] names = concatArrays(new String[] { "row#" }, columnNames);
+			String[] names = concatArrays(new String[]{"row#"}, columnNames);
 			if (columnCount > 0) {
 				names = concatArrays(names, newNames);
 			}
@@ -338,7 +317,7 @@ public class FileBrowserTab implements Tab {
 	}
 
 	private void displayQueryResults(String[] columnNames, List<String[]> rows) {
-		Object[][] data = new Object[][] {};
+		Object[][] data = new Object[][]{};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(rows.toArray(data), columnNames);
 		resultTable = new JTable(defaultTableModel);
 		alignResultColumns(resultTable, rows);

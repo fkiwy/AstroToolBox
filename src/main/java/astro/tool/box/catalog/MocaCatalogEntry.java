@@ -1,28 +1,23 @@
 package astro.tool.box.catalog;
 
+import astro.tool.box.container.CatalogElement;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.enumeration.Alignment;
+import astro.tool.box.enumeration.JColor;
+import astro.tool.box.util.ServiceHelper;
+
+import java.awt.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecNZLZ;
 import static astro.tool.box.main.ToolboxHelper.showWarnDialog;
 import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
 import static astro.tool.box.util.Comparators.getDoubleComparator;
 import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-
-import java.awt.Color;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.enumeration.Alignment;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.util.ServiceHelper;
 
 public class MocaCatalogEntry extends GenericCatalogEntry {
 
@@ -48,14 +43,14 @@ public class MocaCatalogEntry extends GenericCatalogEntry {
 		double dec = getDec();
 		double radius = getSearchRadius() / DEG_ARCSEC;
 
-		String query = "SELECT * FROM summary_all_objects o LEFT JOIN moca_associations a ON o.moca_aid = a.moca_aid LEFT JOIN moca_membership_types m ON o.moca_mtid = m.moca_mtid WHERE ACOS(SIN(RADIANS(`dec`)) * SIN(RADIANS(%f)) + COS(RADIANS(`dec`)) * COS(RADIANS(%f)) * COS(RADIANS(ra - %f))) * 180 / PI() <= %f"
+		String query = "SELECT * FROM moca_objects o JOIN summary_all_objects_old s ON o.moca_oid = s.moca_oid LEFT OUTER JOIN moca_associations a ON s.moca_aid = a.moca_aid LEFT OUTER JOIN moca_membership_types m ON s.moca_mtid = m.moca_mtid WHERE ACOS(SIN(RADIANS(`dec`)) * SIN(RADIANS(%f)) + COS(RADIANS(`dec`)) * COS(RADIANS(%f)) * COS(RADIANS(ra - %f))) * 180 / PI() <= %f"
 				.formatted(dec, dec, ra, radius);
 
 		List<CatalogEntry> catalogEntries = new ArrayList();
 
 		try (Connection connection = DriverManager.getConnection(url, username, password);
-				Statement statement = connection.createStatement();
-				ResultSet resultSet = statement.executeQuery(query);) {
+		     Statement statement = connection.createStatement();
+		     ResultSet resultSet = statement.executeQuery(query)) {
 			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
 			List<String> columnNames = new ArrayList();

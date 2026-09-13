@@ -14,7 +14,7 @@ public enum ABOffset {
 
 	public double val;
 
-	private ABOffset(double val) {
+	ABOffset(double val) {
 		this.val = val;
 	}
 

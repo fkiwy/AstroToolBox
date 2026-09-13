@@ -1,214 +1,34 @@
 package astro.tool.box.tab;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateAngularDistance;
-import static astro.tool.box.function.AstrometricFunctions.calculatePositionFromProperMotion;
-import static astro.tool.box.function.AstrometricFunctions.convertDateTimeToMJD;
-import static astro.tool.box.function.AstrometricFunctions.convertMJDToDateTime;
-import static astro.tool.box.function.NumericFunctions.roundTo2DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
-import static astro.tool.box.function.NumericFunctions.roundTo3DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7Dec;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZ;
-import static astro.tool.box.function.NumericFunctions.roundTo7DecNZLZ;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
-import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
-import static astro.tool.box.function.StatisticFunctions.determineMedian;
-import static astro.tool.box.main.ToolboxHelper.AGN_WARNING;
-import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_HEIGHT;
-import static astro.tool.box.main.ToolboxHelper.BASE_FRAME_WIDTH;
-import static astro.tool.box.main.ToolboxHelper.BUFFER_SIZE;
-import static astro.tool.box.main.ToolboxHelper.INFO_ICON;
-import static astro.tool.box.main.ToolboxHelper.PHOT_DIST_INFO;
-import static astro.tool.box.main.ToolboxHelper.WD_WARNING;
-import static astro.tool.box.main.ToolboxHelper.addEmptyCatalogElement;
-import static astro.tool.box.main.ToolboxHelper.addFieldToPanel;
-import static astro.tool.box.main.ToolboxHelper.addLabelToPanel;
-import static astro.tool.box.main.ToolboxHelper.addTextToImage;
-import static astro.tool.box.main.ToolboxHelper.alignResultColumns;
-import static astro.tool.box.main.ToolboxHelper.collectObject;
-import static astro.tool.box.main.ToolboxHelper.copyCoordsToClipboard;
-import static astro.tool.box.main.ToolboxHelper.copyImage;
-import static astro.tool.box.main.ToolboxHelper.copyObjectCoordinates;
-import static astro.tool.box.main.ToolboxHelper.copyObjectInfo;
-import static astro.tool.box.main.ToolboxHelper.copyObjectSummary;
-import static astro.tool.box.main.ToolboxHelper.copyToClipboard;
-import static astro.tool.box.main.ToolboxHelper.createEmptyBorder;
-import static astro.tool.box.main.ToolboxHelper.createHeaderBox;
-import static astro.tool.box.main.ToolboxHelper.createHeaderLabel;
-import static astro.tool.box.main.ToolboxHelper.createHyperlink;
-import static astro.tool.box.main.ToolboxHelper.createLabel;
-import static astro.tool.box.main.ToolboxHelper.createMessageLabel;
-import static astro.tool.box.main.ToolboxHelper.createToolTip;
-import static astro.tool.box.main.ToolboxHelper.drawCenterShape;
-import static astro.tool.box.main.ToolboxHelper.fillTygoForm;
-import static astro.tool.box.main.ToolboxHelper.flipImage;
-import static astro.tool.box.main.ToolboxHelper.getChildWindowAdapter;
-import static astro.tool.box.main.ToolboxHelper.getCoordinates;
-import static astro.tool.box.main.ToolboxHelper.getEpoch;
-import static astro.tool.box.main.ToolboxHelper.getImageLabel;
-import static astro.tool.box.main.ToolboxHelper.getMeanEpoch;
-import static astro.tool.box.main.ToolboxHelper.getNearestZooniverseSubjects;
-import static astro.tool.box.main.ToolboxHelper.getPs1Epoch;
-import static astro.tool.box.main.ToolboxHelper.getPs1Epochs;
-import static astro.tool.box.main.ToolboxHelper.getPs1FileNames;
-import static astro.tool.box.main.ToolboxHelper.getToolBoxImage;
-import static astro.tool.box.main.ToolboxHelper.getWiseTiles;
-import static astro.tool.box.main.ToolboxHelper.html;
-import static astro.tool.box.main.ToolboxHelper.isSameTarget;
-import static astro.tool.box.main.ToolboxHelper.retrieveDesiImage;
-import static astro.tool.box.main.ToolboxHelper.retrieveImage;
-import static astro.tool.box.main.ToolboxHelper.retrieveNearInfraredImages;
-import static astro.tool.box.main.ToolboxHelper.retrievePs1Image;
-import static astro.tool.box.main.ToolboxHelper.rotateImage;
-import static astro.tool.box.main.ToolboxHelper.showErrorDialog;
-import static astro.tool.box.main.ToolboxHelper.showExceptionDialog;
-import static astro.tool.box.main.ToolboxHelper.showInfoDialog;
-import static astro.tool.box.main.ToolboxHelper.writeErrorLog;
-import static astro.tool.box.main.ToolboxHelper.zoomImage;
-import static astro.tool.box.tab.SettingsTab.COMMENTS;
-import static astro.tool.box.tab.SettingsTab.CUTOUT_SERVICE;
-import static astro.tool.box.tab.SettingsTab.NEAREST_BYW_SUBJECTS;
-import static astro.tool.box.tab.SettingsTab.PROP_PATH;
-import static astro.tool.box.tab.SettingsTab.USER_SETTINGS;
-import static astro.tool.box.tab.SettingsTab.getUserSetting;
-import static astro.tool.box.util.Constants.ALLWISE_EPOCH;
-import static astro.tool.box.util.Constants.CUTOUT_SERVICE_URL;
-import static astro.tool.box.util.Constants.DATE_FORMATTER;
-import static astro.tool.box.util.Constants.DESI_FILTERS;
-import static astro.tool.box.util.Constants.DESI_LS_DR_LABEL;
-import static astro.tool.box.util.Constants.DESI_LS_DR_PARAM;
-import static astro.tool.box.util.Constants.DESI_LS_EPOCH;
-import static astro.tool.box.util.Constants.LINE_BREAK;
-import static astro.tool.box.util.Constants.LINE_SEP;
-import static astro.tool.box.util.Constants.LINE_SEP_TEXT_AREA;
-import static astro.tool.box.util.Constants.PIXEL_SCALE_DECAM;
-import static astro.tool.box.util.Constants.PIXEL_SCALE_PS1;
-import static astro.tool.box.util.Constants.PIXEL_SCALE_WISE;
-import static astro.tool.box.util.Constants.SDSS_BASE_URL;
-import static astro.tool.box.util.Constants.SDSS_LABEL;
-import static astro.tool.box.util.Constants.SPITZER_EPOCH;
-import static astro.tool.box.util.Constants.SPLIT_CHAR;
-import static astro.tool.box.util.Constants.TAP_URL_PARAMS;
-import static astro.tool.box.util.Constants.UHS_LABEL;
-import static astro.tool.box.util.Constants.UHS_SURVEY_URL;
-import static astro.tool.box.util.Constants.UKIDSS_LABEL;
-import static astro.tool.box.util.Constants.UKIDSS_SURVEY_URL;
-import static astro.tool.box.util.Constants.VHS_LABEL;
-import static astro.tool.box.util.Constants.VHS_SURVEY_URL;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ConversionFactors.DEG_MAS;
-import static astro.tool.box.util.ExternalResources.getAladinLiteUrl;
-import static astro.tool.box.util.ExternalResources.getFinderChartUrl;
-import static astro.tool.box.util.ExternalResources.getLegacySkyViewerUrl;
-import static astro.tool.box.util.ExternalResources.getPanstarrsUrl;
-import static astro.tool.box.util.ExternalResources.getSimbadUrl;
-import static astro.tool.box.util.ExternalResources.getVizierUrl;
-import static astro.tool.box.util.ExternalResources.getWiseViewUrl;
-import static astro.tool.box.util.MiscUtils.encodeQuery;
-import static astro.tool.box.util.ServiceHelper.createVizieRUrl;
-import static astro.tool.box.util.ServiceHelper.establishHttpConnection;
-import static astro.tool.box.util.ServiceHelper.readResponse;
-import static java.lang.Math.abs;
-import static java.lang.Math.asin;
-import static java.lang.Math.atan;
-import static java.lang.Math.atan2;
-import static java.lang.Math.ceil;
-import static java.lang.Math.cos;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static java.lang.Math.toDegrees;
-import static java.lang.Math.toRadians;
-import static java.util.stream.Collectors.toList;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
-import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.RasterFormatException;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
+import astro.tool.box.catalog.*;
+import astro.tool.box.component.TextPrompt;
+import astro.tool.box.container.*;
+import astro.tool.box.enumeration.*;
+import astro.tool.box.enumeration.Shape;
+import astro.tool.box.exception.ExtinctionException;
+import astro.tool.box.lookup.*;
+import astro.tool.box.main.Application;
+import astro.tool.box.main.ImageSeriesPdf;
+import astro.tool.box.panel.*;
+import astro.tool.box.service.CatalogQueryService;
+import astro.tool.box.service.DistanceLookupService;
+import astro.tool.box.service.DustExtinctionService;
+import astro.tool.box.service.SpectralTypeLookupService;
+import astro.tool.box.shape.*;
+import astro.tool.box.util.CSVParser;
+import astro.tool.box.util.Counter;
+import astro.tool.box.util.FileTypeFilter;
+import astro.tool.box.util.GifSequencer;
+import nom.tam.fits.*;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
@@ -217,92 +37,41 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultCaret;
+import java.awt.*;
+import java.awt.Color;
+import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
+import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
-
-import astro.tool.box.catalog.AllWiseCatalogEntry;
-import astro.tool.box.catalog.Artifact;
-import astro.tool.box.catalog.CatWiseCatalogEntry;
-import astro.tool.box.catalog.CatWiseRejectEntry;
-import astro.tool.box.catalog.CatalogEntry;
-import astro.tool.box.catalog.DesCatalogEntry;
-import astro.tool.box.catalog.Extinction;
-import astro.tool.box.catalog.GaiaCmd;
-import astro.tool.box.catalog.GaiaDR2CatalogEntry;
-import astro.tool.box.catalog.GaiaDR3CatalogEntry;
-import astro.tool.box.catalog.GaiaWDCatalogEntry;
-import astro.tool.box.catalog.GenericCatalogEntry;
-import astro.tool.box.catalog.MocaCatalogEntry;
-import astro.tool.box.catalog.NoirlabCatalogEntry;
-import astro.tool.box.catalog.PanStarrsCatalogEntry;
-import astro.tool.box.catalog.ProperMotionQuery;
-import astro.tool.box.catalog.SdssCatalogEntry;
-import astro.tool.box.catalog.SimbadCatalogEntry;
-import astro.tool.box.catalog.SsoCatalogEntry;
-import astro.tool.box.catalog.TessCatalogEntry;
-import astro.tool.box.catalog.TwoMassCatalogEntry;
-import astro.tool.box.catalog.UhsCatalogEntry;
-import astro.tool.box.catalog.UkidssCatalogEntry;
-import astro.tool.box.catalog.UnWiseCatalogEntry;
-import astro.tool.box.catalog.VhsCatalogEntry;
-import astro.tool.box.catalog.WhiteDwarf;
-import astro.tool.box.component.TextPrompt;
-import astro.tool.box.container.CatalogElement;
-import astro.tool.box.container.Couple;
-import astro.tool.box.container.CustomOverlay;
-import astro.tool.box.container.Epoch;
-import astro.tool.box.container.FlipbookComponent;
-import astro.tool.box.container.ImageContainer;
-import astro.tool.box.container.NirImage;
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.Overlays;
-import astro.tool.box.container.Tile;
-import astro.tool.box.enumeration.ImageType;
-import astro.tool.box.enumeration.JColor;
-import astro.tool.box.enumeration.ObjectType;
-import astro.tool.box.enumeration.Shape;
-import astro.tool.box.enumeration.WiseBand;
-import astro.tool.box.exception.ExtinctionException;
-import astro.tool.box.lookup.BrownDwarfLookupEntry;
-import astro.tool.box.lookup.DistanceLookupResult;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.lookup.SpectralTypeLookup;
-import astro.tool.box.lookup.SpectralTypeLookupEntry;
-import astro.tool.box.main.Application;
-import astro.tool.box.main.ImageSeriesPdf;
-import astro.tool.box.panel.GaiaCmdPanel;
-import astro.tool.box.panel.ReferencesPanel;
-import astro.tool.box.panel.SedUcdPanel;
-import astro.tool.box.panel.SedWdPanel;
-import astro.tool.box.panel.WiseCcdPanel;
-import astro.tool.box.panel.WiseLcPanel;
-import astro.tool.box.service.CatalogQueryService;
-import astro.tool.box.service.DistanceLookupService;
-import astro.tool.box.service.DustExtinctionService;
-import astro.tool.box.service.SpectralTypeLookupService;
-import astro.tool.box.shape.Arrow;
-import astro.tool.box.shape.Circle;
-import astro.tool.box.shape.Cross;
-import astro.tool.box.shape.CrossHair;
-import astro.tool.box.shape.Diamond;
-import astro.tool.box.shape.Disk;
-import astro.tool.box.shape.Drawable;
-import astro.tool.box.shape.Square;
-import astro.tool.box.shape.Triangle;
-import astro.tool.box.shape.XCross;
-import astro.tool.box.util.CSVParser;
-import astro.tool.box.util.Counter;
-import astro.tool.box.util.FileTypeFilter;
-import astro.tool.box.util.GifSequencer;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
-import nom.tam.fits.Header;
-import nom.tam.fits.ImageData;
-import nom.tam.fits.ImageHDU;
+import static astro.tool.box.function.AstrometricFunctions.*;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleAGN;
+import static astro.tool.box.function.PhotometricFunctions.isAPossibleWD;
+import static astro.tool.box.function.StatisticFunctions.determineMedian;
+import static astro.tool.box.main.ToolboxHelper.*;
+import static astro.tool.box.tab.SettingsTab.*;
+import static astro.tool.box.util.Constants.*;
+import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
+import static astro.tool.box.util.ConversionFactors.DEG_MAS;
+import static astro.tool.box.util.ExternalResources.*;
+import static astro.tool.box.util.MiscUtils.encodeQuery;
+import static astro.tool.box.util.ServiceHelper.*;
+import static java.lang.Math.*;
+import static java.util.stream.Collectors.toList;
 
 public class ImageViewerTab implements Tab {
 
@@ -345,6 +114,17 @@ public class ImageViewerTab implements Tab {
 	private final DustExtinctionService dustExtinctionService;
 	private final List<SpectralTypeLookup> brownDwarfLookupEntries;
 	private final Overlays overlays;
+	private final Map<String, ImageContainer> imagesW1 = new HashMap();
+	private final Map<String, ImageContainer> imagesW2 = new HashMap();
+	private final Map<String, ImageContainer> imagesW1All = new HashMap();
+	private final Map<String, ImageContainer> imagesW2All = new HashMap();
+	private final Map<String, ImageContainer> imagesW1Ends = new HashMap();
+	private final Map<String, ImageContainer> imagesW2Ends = new HashMap();
+	private final List<NumberPair> crosshairs = new ArrayList();
+	private final List<Fits> band1Images = new ArrayList();
+	private final List<Fits> band2Images = new ArrayList();
+	private final List<FlipbookComponent> flipbook = new ArrayList();
+	private final boolean nearestBywSubjects;
 	private List<CatalogEntry> simbadEntries;
 	private List<CatalogEntry> allWiseEntries;
 	private List<CatalogEntry> catWiseEntries;
@@ -370,7 +150,6 @@ public class ImageViewerTab implements Tab {
 	private List<CatalogEntry> gaiaWDEntries;
 	private List<CatalogEntry> mocaEntries;
 	private List<CatalogEntry> ssoEntries;
-
 	private JPanel imagePanel;
 	private JPanel rightPanel;
 	private JPanel bywTopRow;
@@ -469,7 +248,6 @@ public class ImageViewerTab implements Tab {
 	private JTable collectionTable;
 	private JTable currentTable;
 	private Timer timer;
-
 	private BufferedImage wiseImage;
 	private BufferedImage desiImage;
 	private BufferedImage ps1Image;
@@ -485,19 +263,8 @@ public class ImageViewerTab implements Tab {
 	private BufferedImage processedUkidssImage;
 	private BufferedImage processedSdssImage;
 	private BufferedImage processedDssImage;
-	private Map<String, ImageContainer> imagesW1 = new HashMap();
-	private Map<String, ImageContainer> imagesW2 = new HashMap();
-	private Map<String, ImageContainer> imagesW1All = new HashMap();
-	private Map<String, ImageContainer> imagesW2All = new HashMap();
-	private Map<String, ImageContainer> imagesW1Ends = new HashMap();
-	private Map<String, ImageContainer> imagesW2Ends = new HashMap();
 	private Map<String, CustomOverlay> customOverlays;
-	private List<NumberPair> crosshairs = new ArrayList();
-	private List<Fits> band1Images = new ArrayList();
-	private List<Fits> band2Images = new ArrayList();
-	private List<FlipbookComponent> flipbook = new ArrayList();
 	private ImageViewerTab imageViewer;
-
 	private Tile tile;
 	private WiseBand wiseBand = WISE_BAND;
 	private double pixelScale = PIXEL_SCALE_WISE;
@@ -516,42 +283,32 @@ public class ImageViewerTab implements Tab {
 	private int speed = SPEED;
 	private int zoom = ZOOM;
 	private int size = SIZE;
-
 	private int year_ps1_y_i_g;
 	private int year_vhs_k_h_j;
 	private int year_uhs_k_j;
 	private int year_ukidss_k_h_j;
 	// private int year_sdss_z_g_u;
 	private int year_dss_2ir_1r_1b;
-
 	private double targetRa;
 	private double targetDec;
-
 	private double crval1;
 	private double crval2;
-
 	private double crpix1;
 	private double crpix2;
-
 	private int naxis1;
 	private int naxis2;
-
 	private int pointerX;
 	private int pointerY;
-
 	private int componentIndex;
-
 	private int previousSize;
 	private double previousRa;
 	private double previousDec;
-
 	private boolean loadImages;
 	private boolean stopDownloadProcess;
 	private boolean flipbookComplete;
 	private boolean imageCutOff;
 	private boolean timerStopped;
 	private boolean hasException;
-	private final boolean nearestBywSubjects;
 	private boolean asyncDownloads;
 	private boolean legacyImages;
 	private boolean panstarrsImages;
@@ -561,6 +318,7 @@ public class ImageViewerTab implements Tab {
 	private boolean sdssImages;
 	private boolean dssImages;
 	private boolean waitCursor = true;
+	private boolean sedFitterTooltipShown;
 
 	public ImageViewerTab(JFrame baseFrame, JTabbedPane tabbedPane) {
 		this.baseFrame = baseFrame;
@@ -591,6 +349,55 @@ public class ImageViewerTab implements Tab {
 		overlays = new Overlays();
 		overlays.deserialize(getUserSetting(OVERLAYS_KEY, overlays.serialize()));
 		nearestBywSubjects = Boolean.parseBoolean(getUserSetting(NEAREST_BYW_SUBJECTS, "true"));
+	}
+
+	private static List<Epoch> selectBoundaryEpochs(List<Epoch> epochs) {
+		List<Epoch> result = new ArrayList<>();
+
+		Epoch first0 = null, first1 = null, last0 = null, last1 = null;
+
+		for (Epoch e : epochs) {
+			if (e.getForward() == 0) {
+				if (first0 == null)
+					first0 = e;
+				last0 = e;
+			} else if (e.getForward() == 1) {
+				if (first1 == null)
+					first1 = e;
+				last1 = e;
+			}
+		}
+
+		if (first0 != null)
+			result.add(first0);
+		if (first1 != null)
+			result.add(first1);
+		if (last0 != null)
+			result.add(last0);
+		if (last1 != null)
+			result.add(last1);
+
+		return result;
+	}
+
+	private static int getInvertedValue(JSlider slider) {
+		return slider.getMaximum()
+				- slider.getValue()
+				+ slider.getMinimum();
+	}
+
+	private static double determineRobustSigma(List<Double> values, double median) {
+		List<Double> deviations = new ArrayList<>(values.size());
+
+		for (double value : values) {
+			deviations.add(Math.abs(value - median));
+		}
+
+		deviations.sort(Comparator.naturalOrder());
+
+		double mad = determineMedian(deviations);
+
+		return mad * 1.4826;
 	}
 
 	@Override
@@ -673,10 +480,10 @@ public class ImageViewerTab implements Tab {
 
 			mainControlPanel.add(new JLabel("Brightness:"));
 
-			brightnessSlider = new JSlider(1, 100, 1);
+			brightnessSlider = new JSlider(1, 100, 50);
 			mainControlPanel.add(brightnessSlider);
 			brightnessSlider.addChangeListener((ChangeEvent e) -> {
-				brightness = brightnessSlider.getValue();
+				brightness = getInvertedValue(brightnessSlider);
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					return;
@@ -689,7 +496,7 @@ public class ImageViewerTab implements Tab {
 			contrastSlider = new JSlider(1, 100, 50);
 			mainControlPanel.add(contrastSlider);
 			contrastSlider.addChangeListener((ChangeEvent e) -> {
-				contrast = contrastSlider.getValue();
+				contrast = getInvertedValue(contrastSlider);
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					return;
@@ -889,11 +696,7 @@ public class ImageViewerTab implements Tab {
 			JButton resetDefaultsButton = new JButton("Reset image defaults");
 			mainControlPanel.add(resetDefaultsButton);
 			resetDefaultsButton.addActionListener((ActionEvent evt) -> {
-				if (differenceImaging.isSelected()) {
-					blurImages.setSelected(true);
-				} else {
-					blurImages.setSelected(false);
-				}
+				blurImages.setSelected(differenceImaging.isSelected());
 				resetContrastSlider();
 				createFlipbook();
 			});
@@ -1045,7 +848,10 @@ public class ImageViewerTab implements Tab {
 				@Override
 				public void stateChanged(ChangeEvent e) {
 					int selectedIndex = controlTabs.getSelectedIndex();
-					if (controlTabs.getTitleAt(selectedIndex).equals(overlayTabLabel)) {
+					if (!sedFitterTooltipShown
+							&& selectedIndex >= 0
+							&& controlTabs.getTitleAt(selectedIndex).equals(overlayTabLabel)) {
+						sedFitterTooltipShown = true;
 						JPanel panel = new JPanel();
 						panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 						panel.add(new JLabel(
@@ -1221,14 +1027,14 @@ public class ImageViewerTab implements Tab {
 			mocaOverlay.addActionListener((ActionEvent evt) -> {
 				processImages();
 			});
-			overlayPanel.add(mocaOverlay);
+			//overlayPanel.add(mocaOverlay);
 
 			ssoOverlay = new JCheckBox("Solar System Objects", overlays.isSso());
 			ssoOverlay.setForeground(Color.BLUE);
 			ssoOverlay.addActionListener((ActionEvent evt) -> {
 				processImages();
 			});
-			overlaysControlPanel.add(ssoOverlay);
+			overlayPanel.add(ssoOverlay);
 
 			useCustomOverlays = new JCheckBox("Custom overlays:");
 			overlaysControlPanel.add(useCustomOverlays);
@@ -1348,7 +1154,7 @@ public class ImageViewerTab implements Tab {
 
 			JLabel artifactsLabel = createHeaderLabel(html("WISE artifacts " + INFO_ICON));
 			overlaysControlPanel.add(artifactsLabel);
-			artifactsLabel.setToolTipText(html("" + "Small shapes represent affected sources." + LINE_BREAK
+			artifactsLabel.setToolTipText(html("Small shapes represent affected sources." + LINE_BREAK
 					+ "Large shapes represent the actual artifacts."));
 
 			JPanel artifactPanel = new JPanel(new GridLayout(1, 2));
@@ -1571,7 +1377,7 @@ public class ImageViewerTab implements Tab {
 
 			imageSeriesPdf = new JCheckBox(html("Image series PDF " + INFO_ICON), false);
 			mouseControlPanel.add(imageSeriesPdf);
-			imageSeriesPdf.setToolTipText(html("" + "The creation of the PDF may take a few minutes." + LINE_BREAK
+			imageSeriesPdf.setToolTipText(html("The creation of the PDF may take a few minutes." + LINE_BREAK
 					+ "Do not continue working with AstroToolBox until the PDF is ready!"));
 			imageSeriesPdf.addActionListener((ActionEvent evt) -> {
 				if (imageSeriesPdf.isSelected()) {
@@ -1609,7 +1415,7 @@ public class ImageViewerTab implements Tab {
 
 			drawCrosshairs = createHeaderBox(html("Draw crosshairs: " + INFO_ICON));
 			mouseControlPanel.add(drawCrosshairs);
-			drawCrosshairs.setToolTipText(html("" + "Tick the check box!" + LINE_BREAK
+			drawCrosshairs.setToolTipText(html("Tick the check box!" + LINE_BREAK
 					+ "Push mouse wheel to draw a crosshair on a specific location." + LINE_BREAK
 					+ "Spin mouse wheel to change the crosshair's size." + LINE_BREAK
 					+ "Wheel-click the crosshair's center to delete it." + LINE_BREAK
@@ -1705,7 +1511,7 @@ public class ImageViewerTab implements Tab {
 				double distance = size * pixelScale * OVERLAP_FACTOR / DEG_ARCSEC;
 				NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec),
 						new NumberPair(distance, 0));
-				double newRa = coords.getX();
+				double newRa = coords.x();
 				newRa = newRa > 360 ? newRa - 360 : newRa;
 				newRa = newRa > 360 ? 0 : newRa;
 				coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
@@ -1718,7 +1524,7 @@ public class ImageViewerTab implements Tab {
 				double distance = size * pixelScale * OVERLAP_FACTOR / DEG_ARCSEC;
 				NumberPair coords = calculatePositionFromProperMotion(new NumberPair(targetRa, targetDec),
 						new NumberPair(-distance, 0));
-				double newRa = coords.getX();
+				double newRa = coords.x();
 				newRa = newRa < 0 ? newRa + 360 : newRa;
 				newRa = newRa < 0 ? 0 : newRa;
 				coordsField.setText(roundTo7DecNZLZ(newRa) + " " + roundTo7DecNZLZ(targetDec));
@@ -1839,8 +1645,8 @@ public class ImageViewerTab implements Tab {
 					int imageHeight = wiseImage.getHeight();
 					if (pointerX == 0 && pointerY == 0) {
 						NumberPair pixelCoords = toPixelCoordinates(targetRa, targetDec);
-						pointerX = (int) pixelCoords.getX();
-						pointerY = (int) pixelCoords.getY();
+						pointerX = (int) pixelCoords.x();
+						pointerY = (int) pixelCoords.y();
 					}
 					int upperLeftX = pointerX - (width / 2);
 					int upperLeftY = pointerY - (height / 2);
@@ -1919,11 +1725,11 @@ public class ImageViewerTab implements Tab {
 								new NirImage(year_dss_2ir_1r_1b, processedDssImage)));
 					}
 
-					surveyImages.sort(Comparator.comparing(c -> 3000 - c.getB().getYear()));
+					surveyImages.sort(Comparator.comparing(c -> 3000 - c.b().getYear()));
 
 					for (Couple<String, NirImage> couple : surveyImages) {
-						String surveyLabel = couple.getA();
-						BufferedImage surveyImage = couple.getB().getImage();
+						String surveyLabel = couple.a();
+						BufferedImage surveyImage = couple.b().getImage();
 
 						// Create and display magnified image
 						if (!imageCutOff) {
@@ -1958,14 +1764,14 @@ public class ImageViewerTab implements Tab {
 							NumberPair pointerCoords;
 							if (quadrantCount > 0 && quadrantCount < 4) {
 								NumberPair pixelCoords = undoRotationOfPixelCoords(mouseX, mouseY);
-								mouseX = (int) pixelCoords.getX();
-								mouseY = (int) pixelCoords.getY();
-								pointerCoords = toWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+								mouseX = (int) pixelCoords.x();
+								mouseY = (int) pixelCoords.y();
+								pointerCoords = toWorldCoordinates((int) pixelCoords.x(), (int) pixelCoords.y());
 							} else {
 								pointerCoords = toWorldCoordinates(mouseX, mouseY);
 							}
-							double newRa = pointerCoords.getX();
-							double newDec = pointerCoords.getY();
+							double newRa = pointerCoords.x();
+							double newDec = pointerCoords.y();
 							if (SwingUtilities.isRightMouseButton(evt)) {
 								CompletableFuture.supplyAsync(() -> openNewImageViewer(newRa, newDec));
 							} else if (SwingUtilities.isMiddleMouseButton(evt)) {
@@ -1977,10 +1783,10 @@ public class ImageViewerTab implements Tab {
 									ListIterator<NumberPair> iter = crosshairs.listIterator();
 									while (iter.hasNext()) {
 										NumberPair pixelCoords = iter.next();
-										if (pixelCoords.getX() > crosshairX - radius
-												&& pixelCoords.getX() < crosshairX + radius
-												&& pixelCoords.getY() > crosshairY - radius
-												&& pixelCoords.getY() < crosshairY + radius) {
+										if (pixelCoords.x() > crosshairX - radius
+												&& pixelCoords.x() < crosshairX + radius
+												&& pixelCoords.y() > crosshairY - radius
+												&& pixelCoords.y() < crosshairY + radius) {
 											iter.remove();
 											removed = true;
 										}
@@ -1991,12 +1797,12 @@ public class ImageViewerTab implements Tab {
 									StringBuilder sb = new StringBuilder();
 									for (int i = 0; i < crosshairs.size(); i++) {
 										NumberPair crosshair = crosshairs.get(i);
-										NumberPair c = toWorldCoordinates((int) round(crosshair.getX() * zoom),
-												(int) round(crosshair.getY() * zoom));
+										NumberPair c = toWorldCoordinates((int) round(crosshair.x() * zoom),
+												(int) round(crosshair.y() * zoom));
 										sb.append(i + 1).append(". ");
-										sb.append(roundTo7Dec(c.getX()));
+										sb.append(roundTo7Dec(c.x()));
 										sb.append(" ");
-										sb.append(roundTo7Dec(c.getY()));
+										sb.append(roundTo7Dec(c.y()));
 										sb.append(LINE_SEP_TEXT_AREA);
 									}
 									crosshairCoords.setText(sb.toString());
@@ -2681,7 +2487,7 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private void addMagnifiedImage(String imageLabel, BufferedImage image, int upperLeftX, int upperLeftY, int width,
-			int height) {
+	                               int height) {
 		try {
 			BufferedImage magnifiedImage = image.getSubimage(upperLeftX, upperLeftY, width, height);
 			magnifiedImage = zoomImage(magnifiedImage, 200);
@@ -2696,7 +2502,7 @@ public class ImageViewerTab implements Tab {
 	private void resetContrastSlider() {
 		ChangeListener changeListener;
 
-		brightness = 1;
+		brightness = 50;
 		changeListener = brightnessSlider.getChangeListeners()[0];
 		brightnessSlider.removeChangeListener(changeListener);
 		brightnessSlider.setValue(brightness);
@@ -2803,8 +2609,8 @@ public class ImageViewerTab implements Tab {
 			List<String> errorMessages = new ArrayList<>();
 			try {
 				NumberPair coordinates = getCoordinates(coords);
-				targetRa = coordinates.getX();
-				targetDec = coordinates.getY();
+				targetRa = coordinates.x();
+				targetDec = coordinates.y();
 				if (targetRa < 0) {
 					errorMessages.add("RA must not be smaller than 0 deg.");
 				}
@@ -3043,15 +2849,15 @@ public class ImageViewerTab implements Tab {
 					epochsW2.sort(Comparator.comparingInt(Epoch::getEpoch).thenComparingInt(Epoch::getForward));
 				}
 				switch (wiseBand) {
-				case W1 -> downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
-				case W2 -> downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
-				case W1W2 -> {
-					downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
-					if (stopDownloadProcess) {
-						break;
+					case W1 -> downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
+					case W2 -> downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
+					case W1W2 -> {
+						downloadRequestedEpochs(null, WiseBand.W1.val, epochsW1, imagesW1);
+						if (stopDownloadProcess) {
+							break;
+						}
+						downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
 					}
-					downloadRequestedEpochs(null, WiseBand.W2.val, epochsW2, imagesW2);
-				}
 				}
 				if (stopDownloadProcess) {
 					writeLogEntry("Download process stopped.");
@@ -3160,58 +2966,58 @@ public class ImageViewerTab implements Tab {
 
 			String band;
 			switch (wiseBand) {
-			case W1 -> {
-				if (desi) {
-					band = "DESI r";
-				} else if (ps1) {
-					band = "PS1 r";
-				} else {
-					band = "W1";
+				case W1 -> {
+					if (desi) {
+						band = "DESI r";
+					} else if (ps1) {
+						band = "PS1 r";
+					} else {
+						band = "W1";
+					}
+					for (int i = 0; i < band1GroupedImages.size(); i++) {
+						Fits fits = band1GroupedImages.get(i);
+						flipbook.add(new FlipbookComponent(fits, null, band,
+								desi ? getDataRelease(fits) : getMeanObsDate(fits), isFirstEpoch(fits)));
+					}
 				}
-				for (int i = 0; i < band1GroupedImages.size(); i++) {
-					Fits fits = band1GroupedImages.get(i);
-					flipbook.add(new FlipbookComponent(fits, null, band,
-							desi ? getDataRelease(fits) : getMeanObsDate(fits), isFirstEpoch(fits)));
+				case W2 -> {
+					if (desi) {
+						band = "DESI z";
+					} else if (ps1) {
+						band = "PS1 y";
+					} else {
+						band = "W2";
+					}
+					for (int i = 0; i < band2GroupedImages.size(); i++) {
+						Fits fits = band2GroupedImages.get(i);
+						flipbook.add(new FlipbookComponent(null, fits, band,
+								desi ? getDataRelease(fits) : getMeanObsDate(fits), isFirstEpoch(fits)));
+					}
 				}
-			}
-			case W2 -> {
-				if (desi) {
-					band = "DESI z";
-				} else if (ps1) {
-					band = "PS1 y";
-				} else {
-					band = "W2";
+				case W1W2 -> {
+					if (desi) {
+						band = "DESI r+z";
+					} else if (ps1) {
+						band = "PS1 r+y";
+					} else {
+						band = "W1+W2";
+					}
+					int size1 = band1GroupedImages.size();
+					int size2 = band2GroupedImages.size();
+					for (int i = 0; i < min(size1, size2); i++) {
+						Fits fits1 = band1GroupedImages.get(i);
+						Fits fits2 = band2GroupedImages.get(i);
+						flipbook.add(new FlipbookComponent(fits1, fits2, band,
+								desi ? getDataRelease(fits1) : getMeanObsDate(fits1), isFirstEpoch(fits1)));
+					}
 				}
-				for (int i = 0; i < band2GroupedImages.size(); i++) {
-					Fits fits = band2GroupedImages.get(i);
-					flipbook.add(new FlipbookComponent(null, fits, band,
-							desi ? getDataRelease(fits) : getMeanObsDate(fits), isFirstEpoch(fits)));
-				}
-			}
-			case W1W2 -> {
-				if (desi) {
-					band = "DESI r+z";
-				} else if (ps1) {
-					band = "PS1 r+y";
-				} else {
-					band = "W1+W2";
-				}
-				int size1 = band1GroupedImages.size();
-				int size2 = band2GroupedImages.size();
-				for (int i = 0; i < min(size1, size2); i++) {
-					Fits fits1 = band1GroupedImages.get(i);
-					Fits fits2 = band2GroupedImages.get(i);
-					flipbook.add(new FlipbookComponent(fits1, fits2, band,
-							desi ? getDataRelease(fits1) : getMeanObsDate(fits1), isFirstEpoch(fits1)));
-				}
-			}
 			}
 
 			int count = flipbook.size();
 			if (count > 0) {
 				NumberPair refVal = getRefValues(flipbook.get(0));
-				minValue = (int) refVal.getX();
-				maxValue = (int) refVal.getY();
+				minValue = (int) refVal.x();
+				maxValue = (int) refVal.y();
 			}
 
 			flipbookComplete = true;
@@ -3225,35 +3031,6 @@ public class ImageViewerTab implements Tab {
 			enableAll();
 		}
 		return true;
-	}
-
-	private static List<Epoch> selectBoundaryEpochs(List<Epoch> epochs) {
-		List<Epoch> result = new ArrayList<>();
-
-		Epoch first0 = null, first1 = null, last0 = null, last1 = null;
-
-		for (Epoch e : epochs) {
-			if (e.getForward() == 0) {
-				if (first0 == null)
-					first0 = e;
-				last0 = e;
-			} else if (e.getForward() == 1) {
-				if (first1 == null)
-					first1 = e;
-				last1 = e;
-			}
-		}
-
-		if (first0 != null)
-			result.add(first0);
-		if (first1 != null)
-			result.add(first1);
-		if (last0 != null)
-			result.add(last0);
-		if (last1 != null)
-			result.add(last1);
-
-		return result;
 	}
 
 	private boolean isFirstEpoch(Fits fits) throws Exception {
@@ -3318,8 +3095,8 @@ public class ImageViewerTab implements Tab {
 			ImageData imageData = hdu.getData();
 			float[][] values = (float[][]) imageData.getData();
 			NumberPair refValues = determineRefValues(values);
-			double minVal = refValues.getX();
-			double maxVal = refValues.getY();
+			double minVal = refValues.x();
+			double maxVal = refValues.y();
 			return new NumberPair(minVal, maxVal);
 		}
 		fits = component.getFits1();
@@ -3328,8 +3105,8 @@ public class ImageViewerTab implements Tab {
 			ImageData imageData = hdu.getData();
 			float[][] values = (float[][]) imageData.getData();
 			NumberPair refValues = determineRefValues(values);
-			double minVal = refValues.getX();
-			double maxVal = refValues.getY();
+			double minVal = refValues.x();
+			double maxVal = refValues.y();
 			return new NumberPair(minVal, maxVal);
 		}
 		return null;
@@ -3477,9 +3254,9 @@ public class ImageViewerTab implements Tab {
 		// Mark target coordinates
 		if (markTarget.isSelected()) {
 			NumberPair position = toPixelCoordinates(targetRa, targetDec);
-			Circle circle = new Circle(position.getX(), position.getY(), shapeSize * zoom / 100, Color.RED);
+			Circle circle = new Circle(position.x(), position.y(), shapeSize * zoom / 100, Color.RED);
 			circle.draw(image.getGraphics());
-			circle = new Circle(position.getX(), position.getY(), 1, Color.RED);
+			circle = new Circle(position.x(), position.y(), 1, Color.RED);
 			circle.draw(image.getGraphics());
 		}
 
@@ -3488,7 +3265,7 @@ public class ImageViewerTab implements Tab {
 			for (int i = 0; i < crosshairs.size(); i++) {
 				NumberPair crosshair = crosshairs.get(i);
 				String label = String.valueOf(i + 1);
-				CrossHair drawable = new CrossHair(crosshair.getX() * zoom, crosshair.getY() * zoom,
+				CrossHair drawable = new CrossHair(crosshair.x() * zoom, crosshair.y() * zoom,
 						shapeSize * zoom / 100, Color.RED, label);
 				drawable.draw(image.getGraphics());
 			}
@@ -3502,11 +3279,11 @@ public class ImageViewerTab implements Tab {
 			NumberPair coordinates;
 			if (quadrantCount > 0 && quadrantCount < 4) {
 				NumberPair pixelCoords = undoRotationOfPixelCoords(pointerX, pointerY);
-				coordinates = toWorldCoordinates((int) pixelCoords.getX(), (int) pixelCoords.getY());
+				coordinates = toWorldCoordinates((int) pixelCoords.x(), (int) pixelCoords.y());
 			} else {
 				coordinates = toWorldCoordinates(pointerX, pointerY);
 			}
-			String label = roundTo3DecNZ(coordinates.getX()) + " " + roundTo3DecNZ(coordinates.getY());
+			String label = roundTo3DecNZ(coordinates.x()) + " " + roundTo3DecNZ(coordinates.y());
 			CrossHair drawable = new CrossHair(pointerX, pointerY, shapeSize * zoom / 100, Color.RED, label);
 			drawable.draw(image.getGraphics());
 		}
@@ -3858,7 +3635,7 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private void downloadRequestedEpochs(Integer forward, int band, List<Epoch> epochs,
-			Map<String, ImageContainer> images) throws Exception {
+	                                     Map<String, ImageContainer> images) throws Exception {
 		if (epochs == null) {
 			writeLogEntry("No images found for band " + band + ".");
 			return;
@@ -3884,7 +3661,7 @@ public class ImageViewerTab implements Tab {
 						container = images.get(band + "_" + (requestedEpoch - 1));
 						if (container != null) {
 							Fits fits = new Fits();
-							fits.addHDU(Fits.makeHDU(container.getImage().getHDU(0).getData().getData()));
+							fits.addHDU(Fits.makeHDU(container.image().getHDU(0).getData().getData()));
 							Header header = fits.getHDU(0).getHeader();
 							header.addValue("FORWARD", epoch.getForward(), "Scan direction");
 							header.addValue("MJDMEAN", epoch.getMjdmean(), "Mean MJD");
@@ -3953,13 +3730,13 @@ public class ImageViewerTab implements Tab {
 			imagesW1All.putAll(imagesW1);
 			imagesW2All.putAll(imagesW2);
 		}
-		List<ImageContainer> containers = images.values().stream().filter(v -> !v.isSkip())
-				.sorted(Comparator.comparing(ImageContainer::getEpoch)).collect(toList());
+		List<ImageContainer> containers = images.values().stream().filter(v -> !v.skip())
+				.sorted(Comparator.comparing(ImageContainer::epoch)).collect(toList());
 		if (containers.isEmpty()) {
 			return;
 		}
-		extractHeaderInfo(containers.get(0).getImage()); // Must be the first image in the list
-		containers.stream().map(ImageContainer::getImage).forEach(i -> addImage(band, i));
+		extractHeaderInfo(containers.get(0).image()); // Must be the first image in the list
+		containers.stream().map(ImageContainer::image).forEach(i -> addImage(band, i));
 		epochCount = containers.size();
 	}
 
@@ -4022,9 +3799,9 @@ public class ImageViewerTab implements Tab {
 			String unwiseURL = "https://unwise.me/cutout_fits?version=%s&ra=%f&dec=%f&size=%d&bands=%d&file_img_m=on"
 					.formatted(unwiseEpoch, targetRa, targetDec, size, band);
 			try (InputStream fi = establishHttpConnection(unwiseURL).getInputStream();
-					InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE);
-					InputStream gzi = new GzipCompressorInputStream(bi);
-					ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
+			     InputStream bi = new BufferedInputStream(fi, BUFFER_SIZE);
+			     InputStream gzi = new GzipCompressorInputStream(bi);
+			     ArchiveInputStream ti = new TarArchiveInputStream(gzi)) {
 				ArchiveEntry entry;
 				Map<Long, byte[]> entries = new HashMap();
 				while ((entry = ti.getNextEntry()) != null) {
@@ -4073,7 +3850,7 @@ public class ImageViewerTab implements Tab {
 			return true;
 		}
 		String selectedBand = band == 1 ? "r" : "z";
-		String baseUrl = "https://www.legacysurvey.org/viewer/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
+		String baseUrl = DESI_BASE_URL + "/fits-cutout?ra=%f&dec=%f&pixscale=%f&layer=%s&size=%d&bands=%s";
 		String imageUrl = baseUrl.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, survey, size, selectedBand);
 		try {
 			// Ascending scan
@@ -4442,39 +4219,49 @@ public class ImageViewerTab implements Tab {
 
 	private NumberPair determineRefValues(float[][] values) {
 		List<Double> imageData = new ArrayList<>();
+
 		for (float[] row : values) {
 			for (float value : row) {
-				if (value != Float.POSITIVE_INFINITY && value != Float.NEGATIVE_INFINITY && value != Float.NaN) {
+				if (Float.isFinite(value)) {
 					imageData.add((double) value);
 				}
 			}
 		}
+
+		if (imageData.isEmpty()) {
+			return new NumberPair(0, 1);
+		}
+
 		imageData.sort(Comparator.naturalOrder());
+
+		double median = determineMedian(imageData);
+		double sigma = determineRobustSigma(imageData, median);
+
 		double lowerBound;
 		double upperBound;
-		if (differenceImaging.isSelected()) {
-			NumberPair limits = determineLimits(imageData, contrast / 10f, 100 - contrast / 10f);
-			lowerBound = limits.getX();
-			upperBound = limits.getY();
-		} else {
-			NumberPair limits = determineLimits(imageData, brightness, 1);
-			lowerBound = limits.getX();
-			limits = determineLimits(imageData, 1, 1);
-			double min = limits.getX();
-			double max = limits.getY();
-			double dev = max - min;
-			double med = determineMedian(imageData);
-			upperBound = med + ((100 - contrast) / 10f) * dev;
-		}
-		return new NumberPair(lowerBound, upperBound);
-	}
 
-	public static NumberPair determineLimits(List<Double> values, double lowPercentile, double highPercentile) {
-		int size = values.size();
-		int half = size / 2;
-		int min = (int) (half * lowPercentile / 100);
-		int max = (int) (half * (100 - highPercentile) / 100);
-		return new NumberPair(values.get(min), values.get((size - 1) - max));
+		if (differenceImaging.isSelected()) {
+			// Symmetric stretch around zero for difference images
+			double stretch = (contrast / 10.0) * sigma;
+
+			lowerBound = -stretch;
+			upperBound = stretch;
+		} else {
+			// brightness slider shifts lower limit
+			double blackPointSigma = 1.0 + brightness / 30.0;
+
+			// contrast slider controls upper limit
+			double whitePointSigma = 1.0 + contrast / 5.0;
+
+			lowerBound = median - blackPointSigma * sigma;
+			upperBound = median + whitePointSigma * sigma;
+		}
+
+		if (upperBound <= lowerBound) {
+			upperBound = lowerBound + 1;
+		}
+
+		return new NumberPair(lowerBound, upperBound);
 	}
 
 	private boolean openNewCatalogSearch(double targetRa, double targetDec) {
@@ -4563,7 +4350,7 @@ public class ImageViewerTab implements Tab {
 			if (imageSize > 3000) {
 				return null;
 			}
-			String imageUrl = "https://www.legacysurvey.org/viewer/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s"
+			String imageUrl = DESI_BASE_URL + "/jpeg-cutout?ra=%f&dec=%f&pixscale=%f&size=%d&bands=%s&layer=%s"
 					.formatted(targetRa, targetDec, PIXEL_SCALE_DECAM, imageSize, DESI_FILTERS, DESI_LS_DR_PARAM);
 			HttpURLConnection connection = establishHttpConnection(imageUrl);
 			BufferedImage image;
@@ -4572,6 +4359,7 @@ public class ImageViewerTab implements Tab {
 			}
 			return isSameTarget(targetRa, targetDec, size, this.targetRa, this.targetDec, this.size) ? image : null;
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}
@@ -5345,9 +5133,9 @@ public class ImageViewerTab implements Tab {
 				return;
 			}
 
-			timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+			timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
 			timeSeries.forEach(couple -> {
-				bandPanel.add(buildImagePanel(couple.getB().getImage(), couple.getA()));
+				bandPanel.add(buildImagePanel(couple.b().getImage(), couple.a()));
 			});
 
 			JFrame imageFrame = new JFrame();
@@ -5485,7 +5273,7 @@ public class ImageViewerTab implements Tab {
 				return;
 			}
 
-			timeSeries.sort(Comparator.comparing(c -> c.getB().getYear()));
+			timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
 
 			JPanel container = new JPanel();
 
@@ -5505,7 +5293,7 @@ public class ImageViewerTab implements Tab {
 						BufferedImage[] imageSet = new BufferedImage[timeSeries.size()];
 						int i = 0;
 						for (Couple<String, NirImage> nirImage : timeSeries) {
-							BufferedImage imageBuffer = nirImage.getB().getImage();
+							BufferedImage imageBuffer = nirImage.b().getImage();
 							imageSet[i++] = drawCenterShape(imageBuffer);
 						}
 						if (imageSet.length > 0) {
@@ -5533,7 +5321,7 @@ public class ImageViewerTab implements Tab {
 				}
 				displayPanel.removeAll();
 				Couple<String, NirImage> nirImage = timeSeries.get(imageCount);
-				displayPanel.add(buildImagePanel(nirImage.getB().getImage(), nirImage.getA()));
+				displayPanel.add(buildImagePanel(nirImage.b().getImage(), nirImage.a()));
 				imageFrame.setVisible(true);
 				imageCount++;
 			});
@@ -5673,20 +5461,20 @@ public class ImageViewerTab implements Tab {
 				catalogEntry.setDec(toDouble(columnValues[decColumnIndex]));
 				/*
 				 * NumberPair coords; double radius = size * pixelScale / 2 / DEG_ARCSEC;
-				 * 
+				 *
 				 * coords = calculatePositionFromProperMotion(new NumberPair(targetRa,
 				 * targetDec), new NumberPair(-radius, 0)); double rightBoundary =
 				 * coords.getX();
-				 * 
+				 *
 				 * coords = calculatePositionFromProperMotion(new NumberPair(targetRa,
 				 * targetDec), new NumberPair(radius, 0)); double leftBoundary = coords.getX();
-				 * 
+				 *
 				 * double bottomBoundary = targetDec - radius; double topBoundary = targetDec +
 				 * radius;
-				 * 
+				 *
 				 * double catalogRa = catalogEntry.getRa(); double catalogDec =
 				 * catalogEntry.getDec();
-				 * 
+				 *
 				 * if (isCatalogSearch || (catalogRa > rightBoundary && catalogRa < leftBoundary
 				 * && catalogDec > bottomBoundary && catalogDec < topBoundary)) {
 				 * catalogEntry.setTargetRa(targetRa); catalogEntry.setTargetDec(targetDec);
@@ -5721,11 +5509,11 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		catalogEntries.forEach(catalogEntry -> {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 			SdssCatalogEntry sdssCatalogEntry = (SdssCatalogEntry) catalogEntry;
 			if (!sdssCatalogEntry.getSpecObjID().equals(new BigInteger("0"))) {
-				Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), JColor.OLIVE.val);
+				Drawable toDraw = new Circle(position.x(), position.y(), getOverlaySize(), JColor.OLIVE.val);
 				toDraw.draw(graphics);
 			}
 		});
@@ -5775,17 +5563,17 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		catalogEntries.forEach(catalogEntry -> {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 			Drawable toDraw;
 			toDraw = switch (shape) {
-			case CIRCLE -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
-			case CROSS -> new Cross(position.getX(), position.getY(), getOverlaySize(), color);
-			case XCROSS -> new XCross(position.getX(), position.getY(), getOverlaySize(), color);
-			case SQUARE -> new Square(position.getX(), position.getY(), getOverlaySize(), color);
-			case TRIANGLE -> new Triangle(position.getX(), position.getY(), getOverlaySize(), color);
-			case DIAMOND -> new Diamond(position.getX(), position.getY(), getOverlaySize(), color);
-			default -> new Circle(position.getX(), position.getY(), getOverlaySize(), color);
+				case CIRCLE -> new Circle(position.x(), position.y(), getOverlaySize(), color);
+				case CROSS -> new Cross(position.x(), position.y(), getOverlaySize(), color);
+				case XCROSS -> new XCross(position.x(), position.y(), getOverlaySize(), color);
+				case SQUARE -> new Square(position.x(), position.y(), getOverlaySize(), color);
+				case TRIANGLE -> new Triangle(position.x(), position.y(), getOverlaySize(), color);
+				case DIAMOND -> new Diamond(position.x(), position.y(), getOverlaySize(), color);
+				default -> new Circle(position.x(), position.y(), getOverlaySize(), color);
 			};
 			toDraw.draw(graphics);
 		});
@@ -5795,8 +5583,8 @@ public class ImageViewerTab implements Tab {
 		Graphics graphics = image.getGraphics();
 		catalogEntries.forEach(catalogEntry -> {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 			Artifact artifact = (Artifact) catalogEntry;
 			String ab_flags = artifact.getAb_flags();
 			String cc_flags = artifact.getCc_flags();
@@ -5804,61 +5592,61 @@ public class ImageViewerTab implements Tab {
 				cc_flags = "0000";
 			}
 			switch (wiseBand) {
-			case W1 -> {
-				ab_flags = ab_flags.substring(0, 1);
-				cc_flags = cc_flags.substring(0, 1);
-			}
-			case W2 -> {
-				ab_flags = ab_flags.substring(1, 2);
-				cc_flags = cc_flags.substring(1, 2);
-			}
-			default -> {
-				ab_flags = ab_flags.substring(0, 2);
-				cc_flags = cc_flags.substring(0, 2);
-			}
+				case W1 -> {
+					ab_flags = ab_flags.substring(0, 1);
+					cc_flags = cc_flags.substring(0, 1);
+				}
+				case W2 -> {
+					ab_flags = ab_flags.substring(1, 2);
+					cc_flags = cc_flags.substring(1, 2);
+				}
+				default -> {
+					ab_flags = ab_flags.substring(0, 2);
+					cc_flags = cc_flags.substring(0, 2);
+				}
 			}
 			String flags = ab_flags + cc_flags;
 			if (ghostOverlay.isSelected()) {
 				if (flags.contains("o")) {
-					Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize() / 2,
+					Drawable toDraw = new Diamond(position.x(), position.y(), getOverlaySize() / 2,
 							Color.MAGENTA.darker());
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("O")) {
-					Drawable toDraw = new Diamond(position.getX(), position.getY(), getOverlaySize(),
+					Drawable toDraw = new Diamond(position.x(), position.y(), getOverlaySize(),
 							Color.MAGENTA.darker());
 					toDraw.draw(graphics);
 				}
 			}
 			if (haloOverlay.isSelected()) {
 				if (flags.contains("h")) {
-					Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize() / 2, Color.YELLOW);
+					Drawable toDraw = new Square(position.x(), position.y(), getOverlaySize() / 2, Color.YELLOW);
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("H")) {
-					Drawable toDraw = new Square(position.getX(), position.getY(), getOverlaySize(), Color.YELLOW);
+					Drawable toDraw = new Square(position.x(), position.y(), getOverlaySize(), Color.YELLOW);
 					toDraw.draw(graphics);
 				}
 			}
 			if (latentOverlay.isSelected()) {
 				if (flags.contains("p")) {
-					Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize() / 2,
+					Drawable toDraw = new XCross(position.x(), position.y(), getOverlaySize() / 2,
 							Color.GREEN.darker());
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("P")) {
-					Drawable toDraw = new XCross(position.getX(), position.getY(), getOverlaySize(),
+					Drawable toDraw = new XCross(position.x(), position.y(), getOverlaySize(),
 							Color.GREEN.darker());
 					toDraw.draw(graphics);
 				}
 			}
 			if (spikeOverlay.isSelected()) {
 				if (flags.contains("d")) {
-					Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize() / 2, Color.ORANGE);
+					Drawable toDraw = new Circle(position.x(), position.y(), getOverlaySize() / 2, Color.ORANGE);
 					toDraw.draw(graphics);
 				}
 				if (flags.contains("D")) {
-					Drawable toDraw = new Circle(position.getX(), position.getY(), getOverlaySize(), Color.ORANGE);
+					Drawable toDraw = new Circle(position.x(), position.y(), getOverlaySize(), Color.ORANGE);
 					toDraw.draw(graphics);
 				}
 			}
@@ -5866,12 +5654,12 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private void drawPMVectors(BufferedImage image, List<CatalogEntry> catalogEntries, Color color,
-			double flipbookIndex) { // flipbookIndex has to be a double!
+	                           double flipbookIndex) { // flipbookIndex has to be a double!
 		Graphics graphics = image.getGraphics();
 		for (CatalogEntry catalogEntry : catalogEntries) {
 			NumberPair position = toPixelCoordinates(catalogEntry.getRa(), catalogEntry.getDec());
-			catalogEntry.setPixelRa(position.getX());
-			catalogEntry.setPixelDec(position.getY());
+			catalogEntry.setPixelRa(position.x());
+			catalogEntry.setPixelDec(position.y());
 
 			double ra = catalogEntry.getRa();
 			double dec = catalogEntry.getDec();
@@ -5908,29 +5696,29 @@ public class ImageViewerTab implements Tab {
 				}
 				double totalEpochs = (flipbookIndex / flipbookSize) * getNumberOfWiseEpochs() * 2;
 				NumberPair newPosition = getNewPosition(ra, dec, pmRa, pmDec, numberOfYears, totalEpochs);
-				NumberPair pixelCoords = toPixelCoordinates(newPosition.getX(), newPosition.getY());
-				Disk disk = new Disk(pixelCoords.getX(), pixelCoords.getY(), getOverlaySize(2), color);
+				NumberPair pixelCoords = toPixelCoordinates(newPosition.x(), newPosition.y());
+				Disk disk = new Disk(pixelCoords.x(), pixelCoords.y(), getOverlaySize(2), color);
 				disk.draw(image.getGraphics());
 			} else {
 				NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec),
 						new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-				double fromRa = fromCoords.getX();
-				double fromDec = fromCoords.getY();
+				double fromRa = fromCoords.x();
+				double fromDec = fromCoords.y();
 
 				NumberPair fromPoint = toPixelCoordinates(fromRa, fromDec);
-				double fromX = fromPoint.getX();
-				double fromY = fromPoint.getY();
+				double fromX = fromPoint.x();
+				double fromY = fromPoint.y();
 
 				numberOfYears = getNumberOfWiseEpochs() + 2; // +2 years -> hibernation period
 
 				NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec),
 						new NumberPair(numberOfYears * pmRa / DEG_MAS, numberOfYears * pmDec / DEG_MAS));
-				double toRa = toCoords.getX();
-				double toDec = toCoords.getY();
+				double toRa = toCoords.x();
+				double toDec = toCoords.y();
 
 				NumberPair toPoint = toPixelCoordinates(toRa, toDec);
-				double toX = toPoint.getX();
-				double toY = toPoint.getY();
+				double toX = toPoint.x();
+				double toY = toPoint.y();
 
 				Arrow arrow = new Arrow(fromX, fromY, toX, toY, getOverlaySize(), color);
 				arrow.draw(graphics);
@@ -5939,16 +5727,16 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private NumberPair getNewPosition(double ra, double dec, double pmRa, double pmDec, double numberOfYears,
-			double totalEpochs) {
+	                                  double totalEpochs) {
 		NumberPair fromCoords = calculatePositionFromProperMotion(new NumberPair(ra, dec),
 				new NumberPair(-numberOfYears * pmRa / DEG_MAS, -numberOfYears * pmDec / DEG_MAS));
-		double fromRa = fromCoords.getX();
-		double fromDec = fromCoords.getY();
+		double fromRa = fromCoords.x();
+		double fromDec = fromCoords.y();
 
 		NumberPair toCoords = calculatePositionFromProperMotion(new NumberPair(fromRa, fromDec),
 				new NumberPair(totalEpochs * (pmRa / 2) / DEG_MAS, totalEpochs * (pmDec / 2) / DEG_MAS));
-		double toRa = toCoords.getX();
-		double toDec = toCoords.getY();
+		double toRa = toCoords.x();
+		double toDec = toCoords.y();
 
 		return new NumberPair(toRa, toDec);
 	}
@@ -6075,7 +5863,7 @@ public class ImageViewerTab implements Tab {
 			});
 
 			if (catalogEntry instanceof SimbadCatalogEntry) {
-				JButton referencesButton = new JButton("Literature Ref.");
+				JButton referencesButton = new JButton("Literature References");
 				collectPanel.add(referencesButton);
 				referencesButton.addActionListener((ActionEvent evt) -> {
 					JFrame referencesFrame = new JFrame();
@@ -6092,6 +5880,54 @@ public class ImageViewerTab implements Tab {
 					referencesFrame.setVisible(true);
 				});
 			}
+
+			if (catalogEntry instanceof GaiaCmd cmd) {
+				JButton createCmdButton = new JButton("Gaia CMD");
+				collectPanel.add(createCmdButton);
+				createCmdButton.addActionListener((var evt) -> {
+					try {
+						createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						JFrame frame = new JFrame();
+						frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+						frame.addWindowListener(getChildWindowAdapter(baseFrame));
+						frame.setIconImage(getToolBoxImage());
+						frame.setTitle("Gaia CMD");
+						frame.add(new GaiaCmdPanel(cmd));
+						frame.setSize(1000, 900);
+						frame.setLocation(0, 0);
+						frame.setAlwaysOnTop(false);
+						frame.setResizable(true);
+						frame.setVisible(true);
+					} catch (HeadlessException | SecurityException ex) {
+						showErrorDialog(baseFrame, ex.getMessage());
+					} finally {
+						createCmdButton.setCursor(Cursor.getDefaultCursor());
+					}
+				});
+			}
+
+			JButton createCcdButton = new JButton("WISE CCD");
+			collectPanel.add(createCcdButton);
+			createCcdButton.addActionListener((ActionEvent evt) -> {
+				try {
+					createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					JFrame frame = new JFrame();
+					frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+					frame.addWindowListener(getChildWindowAdapter(baseFrame));
+					frame.setIconImage(getToolBoxImage());
+					frame.setTitle("WISE CCD");
+					frame.add(new WiseCcdPanel(catalogQueryService, catalogEntry, baseFrame));
+					frame.setSize(1000, 900);
+					frame.setLocation(0, 0);
+					frame.setAlwaysOnTop(false);
+					frame.setResizable(true);
+					frame.setVisible(true);
+				} catch (HeadlessException | SecurityException ex) {
+					showErrorDialog(baseFrame, ex.getMessage());
+				} finally {
+					createCcdButton.setCursor(Cursor.getDefaultCursor());
+				}
+			});
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			toolsPanel.add(buttonPanel);
@@ -6137,67 +5973,8 @@ public class ImageViewerTab implements Tab {
 
 			});
 
-			JButton createSedButton = new JButton("Ultracool Dwarf SED");
-			buttonPanel.add(createSedButton);
-			createSedButton.addActionListener((ActionEvent evt) -> {
-				createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				JFrame frame = new JFrame();
-				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				frame.addWindowListener(getChildWindowAdapter(baseFrame));
-				frame.setIconImage(getToolBoxImage());
-				frame.setTitle("Ultracool Dwarf SED");
-				frame.add(new SedUcdPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
-				frame.setSize(1050, 900);
-				frame.setLocation(0, 0);
-				frame.setAlwaysOnTop(false);
-				frame.setResizable(true);
-				frame.setVisible(true);
-				createSedButton.setCursor(Cursor.getDefaultCursor());
-			});
-
-			JButton createWdSedButton = new JButton("White Dwarf SED");
-			buttonPanel.add(createWdSedButton);
-			createWdSedButton.addActionListener((ActionEvent evt) -> {
-				createWdSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				JFrame frame = new JFrame();
-				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				frame.addWindowListener(getChildWindowAdapter(baseFrame));
-				frame.setIconImage(getToolBoxImage());
-				frame.setTitle("White Dwarf SED");
-				frame.add(new SedWdPanel(catalogQueryService, catalogEntry, baseFrame));
-				frame.setSize(1050, 900);
-				frame.setLocation(0, 0);
-				frame.setAlwaysOnTop(false);
-				frame.setResizable(true);
-				frame.setVisible(true);
-				createWdSedButton.setCursor(Cursor.getDefaultCursor());
-			});
-
-			JButton createCcdButton = new JButton("WISE CCD");
-			collectPanel.add(createCcdButton);
-			createCcdButton.addActionListener((ActionEvent evt) -> {
-				try {
-					createCcdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					JFrame frame = new JFrame();
-					frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-					frame.addWindowListener(getChildWindowAdapter(baseFrame));
-					frame.setIconImage(getToolBoxImage());
-					frame.setTitle("WISE CCD");
-					frame.add(new WiseCcdPanel(catalogQueryService, catalogEntry, baseFrame));
-					frame.setSize(1000, 900);
-					frame.setLocation(0, 0);
-					frame.setAlwaysOnTop(false);
-					frame.setResizable(true);
-					frame.setVisible(true);
-				} catch (HeadlessException | SecurityException ex) {
-					showErrorDialog(baseFrame, ex.getMessage());
-				} finally {
-					createCcdButton.setCursor(Cursor.getDefaultCursor());
-				}
-			});
-
 			JButton createLcButton = new JButton("WISE Light Curves");
-			collectPanel.add(createLcButton);
+			buttonPanel.add(createLcButton);
 			createLcButton.addActionListener((ActionEvent evt) -> {
 				try {
 					createLcButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -6219,30 +5996,23 @@ public class ImageViewerTab implements Tab {
 				}
 			});
 
-			if (catalogEntry instanceof GaiaCmd cmd) {
-				JButton createCmdButton = new JButton("Gaia CMD");
-				collectPanel.add(createCmdButton);
-				createCmdButton.addActionListener((var evt) -> {
-					try {
-						createCmdButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-						JFrame frame = new JFrame();
-						frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-						frame.addWindowListener(getChildWindowAdapter(baseFrame));
-						frame.setIconImage(getToolBoxImage());
-						frame.setTitle("Gaia CMD");
-						frame.add(new GaiaCmdPanel(cmd));
-						frame.setSize(1000, 900);
-						frame.setLocation(0, 0);
-						frame.setAlwaysOnTop(false);
-						frame.setResizable(true);
-						frame.setVisible(true);
-					} catch (HeadlessException | SecurityException ex) {
-						showErrorDialog(baseFrame, ex.getMessage());
-					} finally {
-						createCmdButton.setCursor(Cursor.getDefaultCursor());
-					}
-				});
-			}
+			JButton createSedButton = new JButton("SED Fitting");
+			buttonPanel.add(createSedButton);
+			createSedButton.addActionListener((ActionEvent evt) -> {
+				createSedButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				JFrame frame = new JFrame();
+				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				frame.addWindowListener(getChildWindowAdapter(baseFrame));
+				frame.setIconImage(getToolBoxImage());
+				frame.setTitle("SED Fitting");
+				frame.add(new SedFittingPanel(brownDwarfLookupEntries, catalogQueryService, catalogEntry, baseFrame));
+				frame.setSize(1050, 900);
+				frame.setLocation(0, 0);
+				frame.setAlwaysOnTop(false);
+				frame.setResizable(true);
+				frame.setVisible(true);
+				createSedButton.setCursor(Cursor.getDefaultCursor());
+			});
 
 			if (addExtinctionCheckbox && catalogEntry instanceof Extinction) {
 				final Extinction selectedEntry = (Extinction) catalogEntry.copy();
@@ -6291,7 +6061,7 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private JScrollPane createMainSequenceSpectralTypePanel(List<LookupResult> results, CatalogEntry catalogEntry,
-			Color color) {
+	                                                        Color color) {
 		List<String[]> spectralTypes = new ArrayList<>();
 		results.forEach(entry -> {
 			String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
@@ -6303,7 +6073,7 @@ public class ImageViewerTab implements Tab {
 
 		String titles = "spt,matched color,nearest color,offset,teff,radius (Rsun),mass (Msun)";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
 		alignResultColumns(spectralTypeTable, spectralTypes);
 		spectralTypeTable.setAutoCreateRowSorter(true);
@@ -6342,7 +6112,7 @@ public class ImageViewerTab implements Tab {
 	}
 
 	private JScrollPane createBrownDwarfsSpectralTypePanel(List<LookupResult> results, CatalogEntry catalogEntry,
-			Color color) {
+	                                                       Color color) {
 		List<String[]> spectralTypes = new ArrayList<>();
 		results.forEach(entry -> {
 			String matchedColor = entry.getColorKey().val + "=" + roundTo3DecNZ(entry.getColorValue());
@@ -6353,7 +6123,7 @@ public class ImageViewerTab implements Tab {
 
 		String titles = "spt,matched color,nearest color,offset";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable spectralTypeTable = new JTable(spectralTypes.toArray(rows), columns);
 		alignResultColumns(spectralTypeTable, spectralTypes);
 		spectralTypeTable.setAutoCreateRowSorter(true);
@@ -6391,10 +6161,10 @@ public class ImageViewerTab implements Tab {
 	private void createDistanceEstimatesPanel(List<DistanceLookupResult> results, String spt, Color color) {
 		List<String[]> distances = new ArrayList<>();
 		results.forEach(entry -> {
-			String matchedBand = entry.getBandKey().val + "=" + roundTo3DecNZ(entry.getBandValue());
-			String distance = roundTo3Dec(entry.getDistance());
-			if (entry.getDistanceError() > 0) {
-				distance += "±" + roundTo3Dec(entry.getDistanceError());
+			String matchedBand = entry.bandKey().val + "=" + roundTo3DecNZ(entry.bandValue());
+			String distance = roundTo3Dec(entry.distance());
+			if (entry.distanceError() > 0) {
+				distance += "±" + roundTo3Dec(entry.distanceError());
 			}
 			String resutValues = distance + "," + matchedBand;
 			distances.add(resutValues.split(",", -1));
@@ -6402,7 +6172,7 @@ public class ImageViewerTab implements Tab {
 
 		String titles = "distance (pc),matched bands";
 		String[] columns = titles.split(",", -1);
-		Object[][] rows = new Object[][] {};
+		Object[][] rows = new Object[][]{};
 		JTable distanceTable = new JTable(distances.toArray(rows), columns);
 		alignResultColumns(distanceTable, distances);
 		distanceTable.setAutoCreateRowSorter(true);

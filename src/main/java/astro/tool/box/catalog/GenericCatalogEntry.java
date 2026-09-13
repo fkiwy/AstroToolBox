@@ -1,10 +1,5 @@
 package astro.tool.box.catalog;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import astro.tool.box.container.CatalogElement;
 import astro.tool.box.container.NumberPair;
 import astro.tool.box.enumeration.Alignment;
@@ -12,34 +7,30 @@ import astro.tool.box.enumeration.Band;
 import astro.tool.box.enumeration.Color;
 import astro.tool.box.enumeration.JColor;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 public class GenericCatalogEntry implements CatalogEntry {
 
+	private final List<CatalogElement> catalogElements = new ArrayList<>();
 	private String[] titles;
-
 	private String[] values;
-
 	// Right ascension
 	private double ra;
-
 	// Declination
 	private double dec;
-
 	// Right ascension used for distance calculation
 	private double targetRa;
-
 	// Declination used for distance calculation
 	private double targetDec;
-
 	// Pixel RA position
 	private double pixelRa;
-
 	// Pixel declination position
 	private double pixelDec;
-
 	// Catalog name
 	private String catalogName;
-
-	private final List<CatalogElement> catalogElements = new ArrayList<>();
 
 	public GenericCatalogEntry() {
 	}

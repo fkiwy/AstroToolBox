@@ -1,12 +1,8 @@
 package astro.tool.box.shape;
 
-import static java.lang.Math.round;
+import java.awt.*;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import static java.lang.Math.round;
 
 public class Circle implements Drawable {
 

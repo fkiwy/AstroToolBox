@@ -1,20 +1,16 @@
 package astro.tool.box.function;
 
-import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
-import static java.lang.Math.abs;
-import static java.lang.Math.log;
-import static java.lang.Math.log10;
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
+import astro.tool.box.container.StringPair;
+import astro.tool.box.enumeration.Color;
+import astro.tool.box.lookup.LookupResult;
+import astro.tool.box.lookup.SpectralTypeLookup;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import astro.tool.box.container.StringPair;
-import astro.tool.box.enumeration.Color;
-import astro.tool.box.lookup.LookupResult;
-import astro.tool.box.lookup.SpectralTypeLookup;
+import static astro.tool.box.function.AstrometricFunctions.calculateParallacticDistance;
+import static java.lang.Math.*;
 
 public class PhotometricFunctions {
 
@@ -28,7 +24,7 @@ public class PhotometricFunctions {
 	 * @return the spectral type
 	 */
 	public static LookupResult evaluateSpectralType(Color colorKey, double colorValue, SpectralTypeLookup minEntry,
-			SpectralTypeLookup maxEntry) {
+	                                                SpectralTypeLookup maxEntry) {
 		Double minColorValue = minEntry.getColors().get(colorKey);
 		Double maxColorValue = maxEntry.getColors().get(colorKey);
 		if (minColorValue == null || maxColorValue == null || minColorValue == 0 || maxColorValue == 0

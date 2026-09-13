@@ -1,10 +1,7 @@
 package astro.tool.box.component;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-
-import javax.swing.Icon;
-import javax.swing.JLabel;
+import javax.swing.*;
+import java.awt.*;
 
 public class TranslucentLabel extends JLabel {
 

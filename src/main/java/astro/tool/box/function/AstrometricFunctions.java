@@ -1,44 +1,19 @@
 package astro.tool.box.function;
 
-import static astro.tool.box.function.NumericFunctions.formatDouble;
-import static astro.tool.box.function.NumericFunctions.formatInteger;
-import static astro.tool.box.function.NumericFunctions.toDouble;
-import static astro.tool.box.function.NumericFunctions.toInteger;
-import static astro.tool.box.util.ConversionFactors.ARCSEC_MAS;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCMIN;
-import static astro.tool.box.util.ConversionFactors.DEG_ARCSEC;
-import static astro.tool.box.util.ConversionFactors.DEG_MAS;
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.acos;
-import static java.lang.Math.asin;
-import static java.lang.Math.atan;
-import static java.lang.Math.atan2;
-import static java.lang.Math.cos;
-import static java.lang.Math.floor;
-import static java.lang.Math.pow;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static java.lang.Math.tan;
-import static java.lang.Math.toDegrees;
-import static java.lang.Math.toRadians;
+import astro.tool.box.container.NumberPair;
+import astro.tool.box.container.StringPair;
+import astro.tool.box.enumeration.Unit;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
-import astro.tool.box.container.NumberPair;
-import astro.tool.box.container.StringPair;
-import astro.tool.box.enumeration.Unit;
+import static astro.tool.box.function.NumericFunctions.*;
+import static astro.tool.box.util.ConversionFactors.*;
+import static java.lang.Math.*;
 
 public class AstrometricFunctions {
 
@@ -53,10 +28,10 @@ public class AstrometricFunctions {
 	 * @return the angular distance between 2 stars
 	 */
 	public static double calculateAngularDistance(NumberPair fromCoords, NumberPair toCoords, Double conversionFactor) {
-		double ra = toRadians(toCoords.getX());
-		double dec = toRadians(toCoords.getY());
-		double ra0 = toRadians(fromCoords.getX());
-		double dec0 = toRadians(fromCoords.getY());
+		double ra = toRadians(toCoords.x());
+		double dec = toRadians(toCoords.y());
+		double ra0 = toRadians(fromCoords.x());
+		double dec0 = toRadians(fromCoords.y());
 		double cosc = sin(dec0) * sin(dec) + cos(dec0) * cos(dec) * cos(ra - ra0);
 		double distance = toDegrees(acos(cosc)) * conversionFactor;
 		return Double.isInfinite(distance) || Double.isNaN(distance) ? 0 : distance;
@@ -70,10 +45,10 @@ public class AstrometricFunctions {
 	 * @return the difference between coordinates (deg, deg)
 	 */
 	public static NumberPair calculateDifferenceBetweenCoords(NumberPair fromCoords, NumberPair toCoords) {
-		double ra = toRadians(toCoords.getX());
-		double dec = toRadians(toCoords.getY());
-		double ra0 = toRadians(fromCoords.getX());
-		double dec0 = toRadians(fromCoords.getY());
+		double ra = toRadians(toCoords.x());
+		double dec = toRadians(toCoords.y());
+		double ra0 = toRadians(fromCoords.x());
+		double dec0 = toRadians(fromCoords.y());
 		double cosc = sin(dec0) * sin(dec) + cos(dec0) * cos(dec) * cos(ra - ra0);
 		double x = (cos(dec) * sin(ra - ra0)) / cosc;
 		double y = (cos(dec0) * sin(dec) - sin(dec0) * cos(dec) * cos(ra - ra0)) / cosc;
@@ -88,13 +63,13 @@ public class AstrometricFunctions {
 	 * @return the new position resulting from proper motion (deg, deg)
 	 */
 	public static NumberPair calculatePositionFromProperMotion(NumberPair coords, NumberPair properMotion) {
-		if (properMotion.getX() == 0 && properMotion.getY() == 0) {
+		if (properMotion.x() == 0 && properMotion.y() == 0) {
 			return coords;
 		}
-		double x = toRadians(properMotion.getX());
-		double y = toRadians(properMotion.getY());
-		double ra0 = toRadians(coords.getX());
-		double dec0 = toRadians(coords.getY());
+		double x = toRadians(properMotion.x());
+		double y = toRadians(properMotion.y());
+		double ra0 = toRadians(coords.x());
+		double dec0 = toRadians(coords.y());
 		double p = sqrt(x * x + y * y);
 		double c = atan(p);
 		double ra = ra0 + atan2(x * sin(c), p * cos(dec0) * cos(c) - y * sin(dec0) * sin(c));
@@ -112,13 +87,13 @@ public class AstrometricFunctions {
 	 * @return the linear distance between stars (pc)
 	 */
 	public static double calculateLinearDistance(NumberPair fromCoords, NumberPair toCoords, double fromParallax,
-			double toParallax) {
-		double fromRA = toRadians(fromCoords.getX());
-		double fromDE = toRadians(fromCoords.getY());
+	                                             double toParallax) {
+		double fromRA = toRadians(fromCoords.x());
+		double fromDE = toRadians(fromCoords.y());
 		double fromDist = calculateParallacticDistance(fromParallax);
 
-		double toRA = toRadians(toCoords.getX());
-		double toDE = toRadians(toCoords.getY());
+		double toRA = toRadians(toCoords.x());
+		double toDE = toRadians(toCoords.y());
 		double toDist = calculateParallacticDistance(toParallax);
 
 		double x1 = fromDist * cos(fromRA) * cos(fromDE);
@@ -161,10 +136,10 @@ public class AstrometricFunctions {
 	 * @return the proper motions (mas/yr, mas/yr)
 	 */
 	public static NumberPair calculateProperMotions(NumberPair fromCoords, NumberPair toCoords, int fromDays,
-			int toDays, Double conversionFactor) {
+	                                                int toDays, Double conversionFactor) {
 		NumberPair diffCoords = calculateDifferenceBetweenCoords(fromCoords, toCoords);
-		double diffRA = diffCoords.getX();
-		double diffDE = diffCoords.getY();
+		double diffRA = diffCoords.x();
+		double diffDE = diffCoords.y();
 		int diffDays = abs(fromDays - toDays);
 		double pmRA = (diffRA / diffDays) * 365;
 		double pmDE = (diffDE / diffDays) * 365;
@@ -232,33 +207,33 @@ public class AstrometricFunctions {
 	 */
 	public static double convertToUnit(double toConvert, Unit fromUnit, Unit toUnit) {
 		switch (fromUnit) {
-		case DEGREE -> {
-			return switch (toUnit) {
-			case DEGREE -> toConvert;
-			case ARCSEC -> toConvert * DEG_ARCSEC;
-			case MAS -> toConvert * DEG_MAS;
-			default -> 0;
-			};
-		}
-		case ARCSEC -> {
-			return switch (toUnit) {
-			case DEGREE -> toConvert / DEG_ARCSEC;
-			case ARCSEC -> toConvert;
-			case MAS -> toConvert * ARCSEC_MAS;
-			default -> 0;
-			};
-		}
-		case MAS -> {
-			return switch (toUnit) {
-			case DEGREE -> toConvert / DEG_MAS;
-			case ARCSEC -> toConvert / ARCSEC_MAS;
-			case MAS -> toConvert;
-			default -> 0;
-			};
-		}
-		default -> {
-			return 0;
-		}
+			case DEGREE -> {
+				return switch (toUnit) {
+					case DEGREE -> toConvert;
+					case ARCSEC -> toConvert * DEG_ARCSEC;
+					case MAS -> toConvert * DEG_MAS;
+					default -> 0;
+				};
+			}
+			case ARCSEC -> {
+				return switch (toUnit) {
+					case DEGREE -> toConvert / DEG_ARCSEC;
+					case ARCSEC -> toConvert;
+					case MAS -> toConvert * ARCSEC_MAS;
+					default -> 0;
+				};
+			}
+			case MAS -> {
+				return switch (toUnit) {
+					case DEGREE -> toConvert / DEG_MAS;
+					case ARCSEC -> toConvert / ARCSEC_MAS;
+					case MAS -> toConvert;
+					default -> 0;
+				};
+			}
+			default -> {
+				return 0;
+			}
 		}
 	}
 
@@ -453,10 +428,10 @@ public class AstrometricFunctions {
 	 * @return the position angle (deg)
 	 */
 	public static double calculatePositionAngle(NumberPair fromCoords, NumberPair toCoords) {
-		double ra = toRadians(toCoords.getX());
-		double dec = toRadians(toCoords.getY());
-		double ra0 = toRadians(fromCoords.getX());
-		double dec0 = toRadians(fromCoords.getY());
+		double ra = toRadians(toCoords.x());
+		double dec = toRadians(toCoords.y());
+		double ra0 = toRadians(fromCoords.x());
+		double dec0 = toRadians(fromCoords.y());
 		double denominator = cos(dec0) * tan(dec) - sin(dec0) * cos(ra - ra0);
 		double pa = atan(sin(ra - ra0) / denominator);
 		pa = toDegrees(pa);
@@ -511,7 +486,7 @@ public class AstrometricFunctions {
 	 * @return the tangential velocity error
 	 */
 	public static double calculateTangentialVelocityError(double a, double ae, double b, double be, double c,
-			double ce) {
+	                                                      double ce) {
 		return sqrt(pow(((VELOCITY_C / (a * a)) * sqrt(b * b + c * c)) * ae, 2)
 				+ pow((((VELOCITY_C * 2) / a) / (2 * sqrt(b * b + c * c))) * b * be, 2)
 				+ pow((((VELOCITY_C * 2) / a) / (2 * sqrt(b * b + c * c))) * c * ce, 2));
