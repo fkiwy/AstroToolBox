@@ -15,10 +15,9 @@
 - Improved SPHEREx spectrum chart formatting and layout
 - Fixed SPHEREx spectral channel calibration
 - Added documentation and tooltips for the SPHEREx Viewer
-- Added support for SPHEREx spectra and images
 - Enhanced the SED Fitter with error bars, magnitude errors, median photometric distances, template references, and updated documentation
 - Included white dwarf fitting in the UCD fitting panel
-- Show photometric distance only for UCD entries
+- Added photometric distance for UCD entries
 - Removed the MOCA catalog entry
 - Fixed UHS and UKIDSS image downloads
 - Added logging for NIR image download errors
