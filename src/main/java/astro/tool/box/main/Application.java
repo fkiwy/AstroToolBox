@@ -133,7 +133,7 @@ public class Application {
 		}
 
 		SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab,
-				batchQueryTab);
+				imageSeriesTab, batchQueryTab);
 		settingsTab.init(true);
 
 		baseFrame.setLocationRelativeTo(null);

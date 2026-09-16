@@ -80,6 +80,17 @@ public class SettingsTab implements Tab {
 	private static final String UKIDSS_IMAGES = "ukidssImages";
 	private static final String SDSS_IMAGES = "sdssImages";
 	private static final String DSS_IMAGES = "dssImages";
+	// Image series settings
+	private static final String IMAGE_SERIES_LEGACY_IMAGES = "imageSeriesLegacyImages";
+	private static final String IMAGE_SERIES_PANSTARRS_IMAGES = "imageSeriesPanstarrsImages";
+	private static final String IMAGE_SERIES_VHS_IMAGES = "imageSeriesVhsImages";
+	private static final String IMAGE_SERIES_UHS_IMAGES = "imageSeriesUhsImages";
+	private static final String IMAGE_SERIES_UKIDSS_IMAGES = "imageSeriesUkidssImages";
+	private static final String IMAGE_SERIES_SDSS_IMAGES = "imageSeriesSdssImages";
+	private static final String IMAGE_SERIES_DSS_IMAGES = "imageSeriesDssImages";
+	private static final String IMAGE_SERIES_TWOMASS_IMAGES = "imageSeriesTwoMassImages";
+	private static final String IMAGE_SERIES_SPITZER_IMAGES = "imageSeriesSpitzerImages";
+	private static final String IMAGE_SERIES_WISE_IMAGES = "imageSeriesWiseImages";
 	// Catalogs
 	private static final String CATALOGS = "catalogs";
 	public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
@@ -88,6 +99,7 @@ public class SettingsTab implements Tab {
 	private final JTabbedPane tabbedPane;
 	private final CatalogQueryTab catalogQueryTab;
 	private final ImageViewerTab imageViewerTab;
+	private final ImageSeriesTab imageSeriesTab;
 	private final BatchQueryTab batchQueryTab;
 	private LookAndFeel lookAndFeel;
 	private TapProvider tapProvider;
@@ -120,17 +132,28 @@ public class SettingsTab implements Tab {
 	private boolean ukidssImages;
 	private boolean sdssImages;
 	private boolean dssImages;
+	private boolean imageSeriesLegacyImages;
+	private boolean imageSeriesPanstarrsImages;
+	private boolean imageSeriesVhsImages;
+	private boolean imageSeriesUhsImages;
+	private boolean imageSeriesUkidssImages;
+	private boolean imageSeriesSdssImages;
+	private boolean imageSeriesDssImages;
+	private boolean imageSeriesTwoMassImages;
+	private boolean imageSeriesSpitzerImages;
+	private boolean imageSeriesWiseImages;
 	private List<String> selectedCatalogs;
 	private JPanel catalogPanel;
 	private ActionListener actionListener;
 	private JComboBox wiseBandsBox;
 
 	public SettingsTab(JFrame baseFrame, JTabbedPane tabbedPane, CatalogQueryTab catalogQueryTab,
-	                   ImageViewerTab imageViewerTab, BatchQueryTab batchQueryTab) {
+	                   ImageViewerTab imageViewerTab, ImageSeriesTab imageSeriesTab, BatchQueryTab batchQueryTab) {
 		this.baseFrame = baseFrame;
 		this.tabbedPane = tabbedPane;
 		this.catalogQueryTab = catalogQueryTab;
 		this.imageViewerTab = imageViewerTab;
+		this.imageSeriesTab = imageSeriesTab;
 		this.batchQueryTab = batchQueryTab;
 	}
 
@@ -193,6 +216,19 @@ public class SettingsTab implements Tab {
 		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
 		         | UnsupportedLookAndFeelException e) {
 		}
+	}
+
+	private void setImageSeriesImageDisplay() {
+		imageSeriesTab.setLegacyImages(imageSeriesLegacyImages);
+		imageSeriesTab.setPanstarrsImages(imageSeriesPanstarrsImages);
+		imageSeriesTab.setVhsImages(imageSeriesVhsImages);
+		imageSeriesTab.setUhsImages(imageSeriesUhsImages);
+		imageSeriesTab.setUkidssImages(imageSeriesUkidssImages);
+		imageSeriesTab.setSdssImages(imageSeriesSdssImages);
+		imageSeriesTab.setDssImages(imageSeriesDssImages);
+		imageSeriesTab.setTwoMassImages(imageSeriesTwoMassImages);
+		imageSeriesTab.setSpitzerImages(imageSeriesSpitzerImages);
+		imageSeriesTab.setWiseImages(imageSeriesWiseImages);
 	}
 
 	public static void loadUserSettings() {
@@ -428,6 +464,16 @@ public class SettingsTab implements Tab {
 			ukidssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(UKIDSS_IMAGES, "true"));
 			sdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(SDSS_IMAGES, "true"));
 			dssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(DSS_IMAGES, "true"));
+			imageSeriesLegacyImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_LEGACY_IMAGES, "true"));
+			imageSeriesPanstarrsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_PANSTARRS_IMAGES, "true"));
+			imageSeriesVhsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_VHS_IMAGES, "true"));
+			imageSeriesUhsImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_UHS_IMAGES, "true"));
+			imageSeriesUkidssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_UKIDSS_IMAGES, "true"));
+			imageSeriesSdssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_SDSS_IMAGES, "true"));
+			imageSeriesDssImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_DSS_IMAGES, "true"));
+			imageSeriesTwoMassImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_TWOMASS_IMAGES, "true"));
+			imageSeriesSpitzerImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_SPITZER_IMAGES, "true"));
+			imageSeriesWiseImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_WISE_IMAGES, "true"));
 
 			wiseBandsBox = imageViewerTab.getWiseBands();
 			actionListener = wiseBandsBox.getActionListeners()[0];
@@ -453,6 +499,7 @@ public class SettingsTab implements Tab {
 			imageViewerTab.setUkidssImages(ukidssImages);
 			imageViewerTab.setSdssImages(sdssImages);
 			imageViewerTab.setDssImages(dssImages);
+			setImageSeriesImageDisplay();
 
 			imageViewerSettings.add(new JLabel("Bands: ", SwingConstants.RIGHT));
 			JComboBox wiseBands = new JComboBox(WiseBand.values());
@@ -519,6 +566,34 @@ public class SettingsTab implements Tab {
 			imageViewerSettings.add(downloadPanel);
 			JCheckBox dssImagesCheckBox = new JCheckBox("DSS", dssImages);
 			downloadPanel.add(dssImagesCheckBox);
+
+			JPanel imageSeriesSettings = new JPanel(new GridLayout(gridRows, 1));
+			imageSeriesSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+					ImageSeriesTab.TAB_NAME + " Settings", TitledBorder.LEFT, TitledBorder.TOP));
+			imageSeriesSettings.setPreferredSize(new Dimension(200, panelHeight));
+			containerPanel.add(imageSeriesSettings);
+
+			imageSeriesSettings.add(new JLabel("Download selected surveys:"));
+			JCheckBox imageSeriesDssImagesCheckBox = new JCheckBox("DSS", imageSeriesDssImages);
+			imageSeriesSettings.add(imageSeriesDssImagesCheckBox);
+			JCheckBox imageSeriesTwoMassImagesCheckBox = new JCheckBox("2MASS", imageSeriesTwoMassImages);
+			imageSeriesSettings.add(imageSeriesTwoMassImagesCheckBox);
+			JCheckBox imageSeriesSdssImagesCheckBox = new JCheckBox("SDSS", imageSeriesSdssImages);
+			imageSeriesSettings.add(imageSeriesSdssImagesCheckBox);
+			JCheckBox imageSeriesSpitzerImagesCheckBox = new JCheckBox("Spitzer", imageSeriesSpitzerImages);
+			imageSeriesSettings.add(imageSeriesSpitzerImagesCheckBox);
+			JCheckBox imageSeriesWiseImagesCheckBox = new JCheckBox("WISE", imageSeriesWiseImages);
+			imageSeriesSettings.add(imageSeriesWiseImagesCheckBox);
+			JCheckBox imageSeriesUkidssImagesCheckBox = new JCheckBox("UKIDSS", imageSeriesUkidssImages);
+			imageSeriesSettings.add(imageSeriesUkidssImagesCheckBox);
+			JCheckBox imageSeriesUhsImagesCheckBox = new JCheckBox("UHS", imageSeriesUhsImages);
+			imageSeriesSettings.add(imageSeriesUhsImagesCheckBox);
+			JCheckBox imageSeriesVhsImagesCheckBox = new JCheckBox("VHS", imageSeriesVhsImages);
+			imageSeriesSettings.add(imageSeriesVhsImagesCheckBox);
+			JCheckBox imageSeriesPanstarrsImagesCheckBox = new JCheckBox("Pan-STARRS", imageSeriesPanstarrsImages);
+			imageSeriesSettings.add(imageSeriesPanstarrsImagesCheckBox);
+			JCheckBox imageSeriesLegacyImagesCheckBox = new JCheckBox("DECaLS", imageSeriesLegacyImages);
+			imageSeriesSettings.add(imageSeriesLegacyImagesCheckBox);
 
 			JPanel centerLayout = new JPanel(new GridLayout(2, 1));
 			settingsPanel.add(centerLayout, BorderLayout.CENTER);
@@ -632,6 +707,16 @@ public class SettingsTab implements Tab {
 					ukidssImages = ukidssImagesCheckBox.isSelected();
 					sdssImages = sdssImagesCheckBox.isSelected();
 					dssImages = dssImagesCheckBox.isSelected();
+					imageSeriesDssImages = imageSeriesDssImagesCheckBox.isSelected();
+					imageSeriesTwoMassImages = imageSeriesTwoMassImagesCheckBox.isSelected();
+					imageSeriesSdssImages = imageSeriesSdssImagesCheckBox.isSelected();
+					imageSeriesSpitzerImages = imageSeriesSpitzerImagesCheckBox.isSelected();
+					imageSeriesWiseImages = imageSeriesWiseImagesCheckBox.isSelected();
+					imageSeriesUkidssImages = imageSeriesUkidssImagesCheckBox.isSelected();
+					imageSeriesUhsImages = imageSeriesUhsImagesCheckBox.isSelected();
+					imageSeriesVhsImages = imageSeriesVhsImagesCheckBox.isSelected();
+					imageSeriesPanstarrsImages = imageSeriesPanstarrsImagesCheckBox.isSelected();
+					imageSeriesLegacyImages = imageSeriesLegacyImagesCheckBox.isSelected();
 				} catch (NumberFormatException ex) {
 					showErrorDialog(baseFrame, "Invalid input: " + ex.getMessage());
 					return;
@@ -699,6 +784,7 @@ public class SettingsTab implements Tab {
 				imageViewerTab.setUkidssImages(ukidssImages);
 				imageViewerTab.setSdssImages(sdssImages);
 				imageViewerTab.setDssImages(dssImages);
+				setImageSeriesImageDisplay();
 
 				USER_SETTINGS.setProperty(WISE_BAND, wiseBand.name());
 				USER_SETTINGS.setProperty(SIZE, sizeField.getText());
@@ -715,6 +801,16 @@ public class SettingsTab implements Tab {
 				USER_SETTINGS.setProperty(UKIDSS_IMAGES, String.valueOf(ukidssImages));
 				USER_SETTINGS.setProperty(SDSS_IMAGES, String.valueOf(sdssImages));
 				USER_SETTINGS.setProperty(DSS_IMAGES, String.valueOf(dssImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_LEGACY_IMAGES, String.valueOf(imageSeriesLegacyImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_PANSTARRS_IMAGES, String.valueOf(imageSeriesPanstarrsImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_VHS_IMAGES, String.valueOf(imageSeriesVhsImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_UHS_IMAGES, String.valueOf(imageSeriesUhsImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_UKIDSS_IMAGES, String.valueOf(imageSeriesUkidssImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_SDSS_IMAGES, String.valueOf(imageSeriesSdssImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_DSS_IMAGES, String.valueOf(imageSeriesDssImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_TWOMASS_IMAGES, String.valueOf(imageSeriesTwoMassImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_SPITZER_IMAGES, String.valueOf(imageSeriesSpitzerImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_WISE_IMAGES, String.valueOf(imageSeriesWiseImages));
 
 				// Catalogs
 				selectedCatalogs = new ArrayList<>();
