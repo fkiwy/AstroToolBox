@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
@@ -45,6 +49,8 @@ import static java.lang.Math.sqrt;
 public class ImageSeriesTab implements Tab {
 
 	public static final String TAB_NAME = "Image Series";
+	private static final ExecutorService IMAGE_DOWNLOAD_EXECUTOR = Executors.newFixedThreadPool(4,
+			new ImageDownloadThreadFactory());
 
 	private final JFrame baseFrame;
 	private final JTabbedPane tabbedPane;
@@ -467,7 +473,194 @@ public class ImageSeriesTab implements Tab {
 		}
 	}
 
+	/**
+	 * Downloads are deliberately parallel only at survey granularity.  A survey can
+	 * make several requests itself, but keeping those requests together prevents us
+	 * from flooding the remote archive servers.
+	 */
 	private void displayImages(double targetRa, double targetDec, int size) throws Exception {
+		List<CompletableFuture<SurveyResult>> downloads = new ArrayList<>();
+		if (dssImages) downloads.add(downloadIrsaSurvey("DSS", targetRa, targetDec, size,
+				new String[][]{{"DSS1 B", "poss1_blue"}, {"DSS1 R", "poss1_red"},
+						{"DSS2 B", "poss2ukstu_blue"}, {"DSS2 R", "poss2ukstu_red"},
+						{"DSS IR", "poss2ukstu_ir"}, {"DSS IR-R-B", "colorimage"}}, "dss", "DSS IR"));
+		if (twoMassImages) downloads.add(downloadIrsaSurvey("2MASS", targetRa, targetDec, size,
+				new String[][]{{"2MASS J", "j"}, {"2MASS H", "h"}, {"2MASS K", "k"},
+						{"2MASS K-H-J", "colorimage"}}, "2mass", "2MASS K"));
+		if (sdssImages) downloads.add(downloadIrsaSurvey("SDSS", targetRa, targetDec, size,
+				new String[][]{{"SDSS u", "u"}, {"SDSS g", "g"}, {"SDSS r", "r"},
+						{"SDSS i", "i"}, {"SDSS z", "z"}, {"SDSS z-g-u", "colorimage"}}, "sdss", "SDSS z"));
+		if (spitzerImages) downloads.add(downloadIrsaSurvey("Spitzer", targetRa, targetDec, size,
+				new String[][]{{"IRAC1", "spitzer.seip_science:IRAC1"}, {"IRAC2", "spitzer.seip_science:IRAC2"},
+						{"IRAC3", "spitzer.seip_science:IRAC3"}, {"IRAC4", "spitzer.seip_science:IRAC4"},
+						{"MIPS24", "spitzer.seip_science:MIPS24"}, {"IRAC3-2-1", "colorimage"}}, "seip", "IRAC4"));
+		if (wiseImagesEnabled) downloads.add(downloadIrsaSurvey("WISE", targetRa, targetDec, size,
+				new String[][]{{"WISE W1", "1"}, {"WISE W2", "2"}, {"WISE W3", "3"},
+						{"WISE W4", "4"}, {"WISE W4-W2-W1", "colorimage"}}, "wise", "WISE W2"));
+		if (ukidssImages && targetDec > -5) downloads.add(downloadNirSurvey(UKIDSS_LABEL, UKIDSS_SURVEY_URL, targetRa, targetDec, size));
+		if (uhsImages && targetDec > -5) downloads.add(downloadNirSurvey(UHS_LABEL, UHS_SURVEY_URL, targetRa, targetDec, size));
+		if (vhsImages && targetDec < 5) downloads.add(downloadNirSurvey(VHS_LABEL, VHS_SURVEY_URL, targetRa, targetDec, size));
+		if (panstarrsImages) downloads.add(downloadPs1Survey(targetRa, targetDec, size));
+		if (legacyImages) {
+			downloads.add(downloadDesiSurvey(targetRa, targetDec, size));
+			downloads.add(downloadDesiHistory(targetRa, targetDec, size));
+		}
+
+		CompletableFuture.allOf(downloads.toArray(CompletableFuture[]::new)).join();
+		List<SurveyResult> results = downloads.stream().map(CompletableFuture::join).toList();
+		SwingUtilities.invokeAndWait(() -> {
+			// A later search may have started while these requests were in flight.
+			if (targetRa == this.targetRa && targetDec == this.targetDec && size == fieldOfView) {
+				displayDownloadedSurveys(results);
+			}
+		});
+	}
+
+	private CompletableFuture<SurveyResult> downloadIrsaSurvey(String name, double ra, double dec, int size,
+			String[][] bands, String survey, String timeSeriesLabel) {
+		return CompletableFuture.supplyAsync(() -> {
+			List<SurveyImage> images = new ArrayList<>();
+			for (String[] band : bands) {
+				String value = band[1];
+				String archiveBand = value.equals("colorimage") ? "file_type=colorimage" : surveyBand(survey, value);
+				int year = value.equals("colorimage") ? 0 : getEpoch(ra, dec, size, survey, archiveBand);
+				BufferedImage image = retrieveImage(ra, dec, size, survey,
+						value.equals("colorimage") ? archiveBand : archiveBand + "&type=jpgurl");
+				if (image != null) images.add(new SurveyImage(band[0], year, image, band[0].equals(timeSeriesLabel)));
+			}
+			return new SurveyResult(name, images, null);
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult(name, List.of(), null));
+	}
+
+	private String surveyBand(String survey, String band) {
+		return switch (survey) {
+			case "dss" -> "dss_bands=" + band;
+			case "2mass" -> "twomass_bands=" + band;
+			case "sdss" -> "sdss_bands=" + band;
+			case "wise" -> "wise_bands=" + band;
+			case "seip" -> "seip_bands=" + band;
+			default -> band;
+		};
+	}
+
+	private CompletableFuture<SurveyResult> downloadNirSurvey(String name, String url, double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				List<SurveyImage> images = new ArrayList<>();
+				for (Entry<String, NirImage> entry : retrieveNearInfraredImages(ra, dec, size, url, name).entrySet()) {
+					NirImage image = entry.getValue();
+					images.add(new SurveyImage(name + " " + entry.getKey(), image.getYear(), image.getImage(), entry.getKey().equals("K")));
+				}
+				return new SurveyResult(name, images, null);
+			} catch (Exception ex) { return new SurveyResult(name, List.of(), null); }
+		}, IMAGE_DOWNLOAD_EXECUTOR);
+	}
+
+	private CompletableFuture<SurveyResult> downloadPs1Survey(double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			Map<String, String> files = getPs1FileNames(ra, dec);
+			Map<String, Double> years = getPs1Epochs(ra, dec);
+			List<SurveyImage> images = new ArrayList<>();
+			for (String band : List.of("g", "r", "i", "z", "y")) {
+				BufferedImage image = retrievePs1Image("red=%s".formatted(files.get(band)), ra, dec, size, true);
+				images.add(new SurveyImage("PS1 " + band, years.getOrDefault(band, 0d).intValue(), image, band.equals("z")));
+			}
+			BufferedImage color = retrievePs1Image("red=%s&green=%s&blue=%s".formatted(files.get("y"), files.get("i"), files.get("g")), ra, dec, size, false);
+			images.add(new SurveyImage("PS1 y-i-g", 0, color, false));
+			return new SurveyResult("Pan-STARRS", images, getPanstarrsUrl(ra, dec, size, ImageType.WARP));
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult("Pan-STARRS", List.of(), null));
+	}
+
+	private CompletableFuture<SurveyResult> downloadDesiSurvey(double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			List<SurveyImage> images = new ArrayList<>();
+			for (String band : List.of("g", "r", "z")) {
+				BufferedImage image = retrieveDesiImage(ra, dec, size, band, true);
+				if (image != null) images.add(new SurveyImage("DESI " + band, DESI_LS_EPOCH, image, band.equals("z")));
+			}
+			BufferedImage color = retrieveDesiImage(ra, dec, size, DESI_FILTERS, false);
+			if (color != null) images.add(new SurveyImage("DECaLS", DESI_LS_EPOCH, color, false));
+			return new SurveyResult("DESI LS", images, getLegacySingleExposuresUrl(ra, dec, DESI_LS_DR_PARAM));
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult("DESI LS", List.of(), null));
+	}
+
+	private CompletableFuture<SurveyResult> downloadDesiHistory(double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			List<SurveyImage> images = new ArrayList<>();
+			for (String[] layer : new String[][]{{"DESI DR5", "decals-dr5"}, {"DESI DR7", "decals-dr7"},
+					{"LS DR8", "ls-dr8"}, {"LS DR9", "ls-dr9"}, {"LS DR10", "ls-dr10"}}) {
+				BufferedImage image = retrieveDesiImage(ra, dec, size, DESI_FILTERS, false, layer[1]);
+				if (image != null) images.add(new SurveyImage(layer[0], 0, image, false));
+			}
+			return new SurveyResult("DESI LS time series", images, null);
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult("DESI LS time series", List.of(), null));
+	}
+
+	private void displayDownloadedSurveys(List<SurveyResult> results) {
+		for (SurveyResult result : results) {
+			if (result.images().isEmpty()) continue;
+			JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			for (SurveyImage image : result.images()) panel.add(buildImagePanel(image.image(), getImageLabel(image.label(), image.year())));
+			if (result.name().equals("DESI LS time series") && result.images().size() > 2) {
+				desiImages = result.images().stream()
+					.map(image -> new Couple<>(image.label(), image.image())).toList();
+				createTimeSeriesTimer(panel, desiImages, desiTimeSeriesTimer = new Timer(500, null));
+				addGifSaveButton(panel, desiImages);
+			}
+			if (result.link() != null) panel.add(createHyperlink(result.name().equals("Pan-STARRS") ? "WARP images" : "Single exposures", result.link()));
+			centerPanel.add(panel);
+			for (SurveyImage image : result.images()) if (image.timeSeries()) timeSeries.add(new Couple<>(getImageLabel(image.label(), image.year()), new NirImage(image.year(), image.image())));
+		}
+		timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
+		addCrossSurveyTimeSeries();
+		addWiseTimeSeries();
+		baseFrame.setVisible(true);
+		scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+	}
+
+	private void addCrossSurveyTimeSeries() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		List<Couple<String, BufferedImage>> images = new ArrayList<>();
+		for (Couple<String, NirImage> image : timeSeries) images.add(new Couple<>(image.a(), image.b().getImage()));
+		createTimeSeriesTimer(panel, images, timeSeriesTimer = new Timer(500, null));
+		if (images.size() > 1) addGifSaveButton(panel, images);
+		if (panel.getComponentCount() > 0) centerPanel.add(panel);
+	}
+
+	private void addWiseTimeSeries() {
+		List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
+		if (!wiseTimeSeries || flipbook == null || flipbook.isEmpty()) return;
+		wiseImages = new ArrayList<>();
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		for (int i = 0; i < flipbook.size(); i++) {
+			FlipbookComponent component = flipbook.get(i);
+			BufferedImage image = imageViewerTab.processImage(component, i);
+			panel.add(buildImagePanel(image, component.getTitle()));
+			wiseImages.add(new Couple<>(component.getTitle(), image));
+		}
+		createTimeSeriesTimer(panel, wiseImages, wiseTimeSeriesTimer = new Timer(500, null));
+		addGifSaveButton(panel, wiseImages);
+		centerPanel.add(panel);
+	}
+
+	private void addGifSaveButton(JPanel panel, List<Couple<String, BufferedImage>> images) {
+		JButton saveButton = new JButton("Save as GIF");
+		panel.add(saveButton);
+		saveButton.addActionListener(event -> { try { saveAnimatedGif(images, saveButton); } catch (Exception ex) { showExceptionDialog(baseFrame, ex); } });
+	}
+
+	private record SurveyImage(String label, int year, BufferedImage image, boolean timeSeries) { }
+	private record SurveyResult(String name, List<SurveyImage> images, String link) { }
+	private static final class ImageDownloadThreadFactory implements ThreadFactory {
+		private final AtomicInteger number = new AtomicInteger();
+		@Override public Thread newThread(Runnable task) {
+			Thread thread = new Thread(task, "image-survey-download-" + number.incrementAndGet());
+			thread.setDaemon(true);
+			return thread;
+		}
+	}
+
+	private void displayImagesSequential(double targetRa, double targetDec, int size) throws Exception {
 		JPanel bandPanel;
 		BufferedImage image;
 
