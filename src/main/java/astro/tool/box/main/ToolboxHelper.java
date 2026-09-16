@@ -1046,7 +1046,7 @@ public class ToolboxHelper {
 		String[] filterIds = new String[]{"2", "3", "4", "5"};
 		for (String filterId : filterIds) {
 			String downloadUrl = surveyUrl.formatted(targetRa, targetDec, filterId, imageSize, imageSize);
-			String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
+			String response = readNearInfraredResponse(establishHttpConnection(downloadUrl));
 			int i = 0;
 			String imageUrl = "";
 			String extNo = "";
@@ -1152,9 +1152,21 @@ public class ToolboxHelper {
 			connection.disconnect();
 			connection = (HttpURLConnection) new URL(imageUrl).openConnection(Proxy.NO_PROXY);
 			connection.setConnectTimeout(10000);
+			connection.setReadTimeout(15000);
 			configureNearInfraredFitsConnection(connection);
 		}
 		return connection;
+	}
+
+	private static String readNearInfraredResponse(HttpURLConnection connection) {
+		try (InputStream stream = connection.getInputStream()) {
+			return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+		} catch (IOException ex) {
+			writeErrorLog(ex);
+			return "";
+		} finally {
+			connection.disconnect();
+		}
 	}
 
 	private static void configureNearInfraredFitsConnection(HttpURLConnection connection) {

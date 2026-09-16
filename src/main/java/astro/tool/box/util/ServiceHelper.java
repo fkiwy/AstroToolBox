@@ -73,6 +73,7 @@ public class ServiceHelper {
 		}
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection(webProxy == null ? Proxy.NO_PROXY : webProxy);
 		connection.setConnectTimeout(10000);
+		connection.setReadTimeout(15000);
 		return connection;
 	}
 

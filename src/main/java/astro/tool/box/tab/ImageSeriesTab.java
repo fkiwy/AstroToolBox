@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
@@ -49,7 +50,11 @@ import static java.lang.Math.sqrt;
 public class ImageSeriesTab implements Tab {
 
 	public static final String TAB_NAME = "Image Series";
+	private static final long SURVEY_TIMEOUT_SECONDS = 20;
 	private static final ExecutorService IMAGE_DOWNLOAD_EXECUTOR = Executors.newFixedThreadPool(4,
+			new ImageDownloadThreadFactory());
+	// A stalled WFA request must not occupy a worker needed by the other archives.
+	private static final ExecutorService NIR_DOWNLOAD_EXECUTOR = Executors.newFixedThreadPool(2,
 			new ImageDownloadThreadFactory());
 
 	private final JFrame baseFrame;
@@ -480,30 +485,30 @@ public class ImageSeriesTab implements Tab {
 	 */
 	private void displayImages(double targetRa, double targetDec, int size) throws Exception {
 		List<CompletableFuture<SurveyResult>> downloads = new ArrayList<>();
-		if (dssImages) downloads.add(downloadIrsaSurvey("DSS", targetRa, targetDec, size,
+		if (dssImages) addDownload(downloads, downloadIrsaSurvey("DSS", targetRa, targetDec, size,
 				new String[][]{{"DSS1 B", "poss1_blue"}, {"DSS1 R", "poss1_red"},
 						{"DSS2 B", "poss2ukstu_blue"}, {"DSS2 R", "poss2ukstu_red"},
 						{"DSS IR", "poss2ukstu_ir"}, {"DSS IR-R-B", "colorimage"}}, "dss", "DSS IR"));
-		if (twoMassImages) downloads.add(downloadIrsaSurvey("2MASS", targetRa, targetDec, size,
+		if (twoMassImages) addDownload(downloads, downloadIrsaSurvey("2MASS", targetRa, targetDec, size,
 				new String[][]{{"2MASS J", "j"}, {"2MASS H", "h"}, {"2MASS K", "k"},
 						{"2MASS K-H-J", "colorimage"}}, "2mass", "2MASS K"));
-		if (sdssImages) downloads.add(downloadIrsaSurvey("SDSS", targetRa, targetDec, size,
+		if (sdssImages) addDownload(downloads, downloadIrsaSurvey("SDSS", targetRa, targetDec, size,
 				new String[][]{{"SDSS u", "u"}, {"SDSS g", "g"}, {"SDSS r", "r"},
 						{"SDSS i", "i"}, {"SDSS z", "z"}, {"SDSS z-g-u", "colorimage"}}, "sdss", "SDSS z"));
-		if (spitzerImages) downloads.add(downloadIrsaSurvey("Spitzer", targetRa, targetDec, size,
+		if (spitzerImages) addDownload(downloads, downloadIrsaSurvey("Spitzer", targetRa, targetDec, size,
 				new String[][]{{"IRAC1", "spitzer.seip_science:IRAC1"}, {"IRAC2", "spitzer.seip_science:IRAC2"},
 						{"IRAC3", "spitzer.seip_science:IRAC3"}, {"IRAC4", "spitzer.seip_science:IRAC4"},
 						{"MIPS24", "spitzer.seip_science:MIPS24"}, {"IRAC3-2-1", "colorimage"}}, "seip", "IRAC4"));
-		if (wiseImagesEnabled) downloads.add(downloadIrsaSurvey("WISE", targetRa, targetDec, size,
+		if (wiseImagesEnabled) addDownload(downloads, downloadIrsaSurvey("WISE", targetRa, targetDec, size,
 				new String[][]{{"WISE W1", "1"}, {"WISE W2", "2"}, {"WISE W3", "3"},
 						{"WISE W4", "4"}, {"WISE W4-W2-W1", "colorimage"}}, "wise", "WISE W2"));
-		if (ukidssImages && targetDec > -5) downloads.add(downloadNirSurvey(UKIDSS_LABEL, UKIDSS_SURVEY_URL, targetRa, targetDec, size));
-		if (uhsImages && targetDec > -5) downloads.add(downloadNirSurvey(UHS_LABEL, UHS_SURVEY_URL, targetRa, targetDec, size));
-		if (vhsImages && targetDec < 5) downloads.add(downloadNirSurvey(VHS_LABEL, VHS_SURVEY_URL, targetRa, targetDec, size));
-		if (panstarrsImages) downloads.add(downloadPs1Survey(targetRa, targetDec, size));
+		if (ukidssImages && targetDec > -5) addDownload(downloads, downloadNirSurvey(UKIDSS_LABEL, UKIDSS_SURVEY_URL, targetRa, targetDec, size));
+		if (uhsImages && targetDec > -5) addDownload(downloads, downloadNirSurvey(UHS_LABEL, UHS_SURVEY_URL, targetRa, targetDec, size));
+		if (vhsImages && targetDec < 5) addDownload(downloads, downloadNirSurvey(VHS_LABEL, VHS_SURVEY_URL, targetRa, targetDec, size));
+		if (panstarrsImages) addDownload(downloads, downloadPs1Survey(targetRa, targetDec, size));
 		if (legacyImages) {
-			downloads.add(downloadDesiSurvey(targetRa, targetDec, size));
-			downloads.add(downloadDesiHistory(targetRa, targetDec, size));
+			addDownload(downloads, downloadDesiSurvey(targetRa, targetDec, size));
+			addDownload(downloads, downloadDesiHistory(targetRa, targetDec, size));
 		}
 
 		CompletableFuture.allOf(downloads.toArray(CompletableFuture[]::new)).join();
@@ -514,6 +519,11 @@ public class ImageSeriesTab implements Tab {
 				displayDownloadedSurveys(results);
 			}
 		});
+	}
+
+	private void addDownload(List<CompletableFuture<SurveyResult>> downloads, CompletableFuture<SurveyResult> download) {
+		downloads.add(download.completeOnTimeout(new SurveyResult("", List.of(), null), SURVEY_TIMEOUT_SECONDS,
+				TimeUnit.SECONDS));
 	}
 
 	private CompletableFuture<SurveyResult> downloadIrsaSurvey(String name, double ra, double dec, int size,
@@ -553,7 +563,7 @@ public class ImageSeriesTab implements Tab {
 				}
 				return new SurveyResult(name, images, null);
 			} catch (Exception ex) { return new SurveyResult(name, List.of(), null); }
-		}, IMAGE_DOWNLOAD_EXECUTOR);
+		}, NIR_DOWNLOAD_EXECUTOR);
 	}
 
 	private CompletableFuture<SurveyResult> downloadPs1Survey(double ra, double dec, int size) {
