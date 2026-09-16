@@ -3,5 +3,4 @@
 4.4.0,false,2025,04,27,""
 4.5.0,false,2026,01,31,"The new version provides full UHS DR3 support, including catalog access and proper motion overlays."
 4.5.1,false,2026,02,22,"This is a bugfix release."
-4.5.2,false,2026,04,05,"This release includes minor improvements."
-4.6.0,true,2026,09,13,"This release includes support for SPHEREx spectra and images."
+4.5.2,true,2026,04,05,"This release includes minor improvements."
