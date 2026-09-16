@@ -52,7 +52,9 @@ import java.awt.image.WritableRaster;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
@@ -89,6 +91,7 @@ public class ToolboxHelper {
 
 	private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
 	private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
+	private static final long MAX_ERROR_LOG_FILE_SIZE = 10L * 1024 * 1024;
 
 	public static int BASE_FRAME_WIDTH = 1275;
 	public static int BASE_FRAME_HEIGHT = 875;
@@ -203,9 +206,16 @@ public class ToolboxHelper {
 		writeLogEntry(formatMessage(message));
 	}
 
-	private static void writeLogEntry(String entry) {
+	private static synchronized void writeLogEntry(String entry) {
 		try {
-			Files.write(Paths.get(ERROR_FILE_PATH), entry.getBytes(), StandardOpenOption.CREATE,
+			byte[] logEntry = entry.getBytes(StandardCharsets.UTF_8);
+			Path errorLogPath = Paths.get(ERROR_FILE_PATH);
+			if (Files.exists(errorLogPath)
+					&& Files.size(errorLogPath) + logEntry.length > MAX_ERROR_LOG_FILE_SIZE) {
+				Files.write(errorLogPath, new byte[0], StandardOpenOption.TRUNCATE_EXISTING,
+						StandardOpenOption.WRITE);
+			}
+			Files.write(errorLogPath, logEntry, StandardOpenOption.CREATE,
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
 		}
