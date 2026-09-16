@@ -91,6 +91,7 @@ public class SettingsTab implements Tab {
 	private static final String IMAGE_SERIES_TWOMASS_IMAGES = "imageSeriesTwoMassImages";
 	private static final String IMAGE_SERIES_SPITZER_IMAGES = "imageSeriesSpitzerImages";
 	private static final String IMAGE_SERIES_WISE_IMAGES = "imageSeriesWiseImages";
+	private static final String IMAGE_SERIES_WISE_TIME_SERIES = "imageSeriesWiseTimeSeries";
 	// Catalogs
 	private static final String CATALOGS = "catalogs";
 	public static String DEFAULT_TAP_PROVIDER = TapProvider.VIZIER.name();
@@ -142,6 +143,7 @@ public class SettingsTab implements Tab {
 	private boolean imageSeriesTwoMassImages;
 	private boolean imageSeriesSpitzerImages;
 	private boolean imageSeriesWiseImages;
+	private boolean imageSeriesWiseTimeSeries;
 	private List<String> selectedCatalogs;
 	private JPanel catalogPanel;
 	private ActionListener actionListener;
@@ -229,6 +231,7 @@ public class SettingsTab implements Tab {
 		imageSeriesTab.setTwoMassImages(imageSeriesTwoMassImages);
 		imageSeriesTab.setSpitzerImages(imageSeriesSpitzerImages);
 		imageSeriesTab.setWiseImages(imageSeriesWiseImages);
+		imageSeriesTab.setWiseTimeSeries(imageSeriesWiseTimeSeries);
 	}
 
 	public static void loadUserSettings() {
@@ -474,6 +477,7 @@ public class SettingsTab implements Tab {
 			imageSeriesTwoMassImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_TWOMASS_IMAGES, "true"));
 			imageSeriesSpitzerImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_SPITZER_IMAGES, "true"));
 			imageSeriesWiseImages = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_WISE_IMAGES, "true"));
+			imageSeriesWiseTimeSeries = Boolean.parseBoolean(USER_SETTINGS.getProperty(IMAGE_SERIES_WISE_TIME_SERIES, "true"));
 
 			wiseBandsBox = imageViewerTab.getWiseBands();
 			actionListener = wiseBandsBox.getActionListeners()[0];
@@ -584,6 +588,8 @@ public class SettingsTab implements Tab {
 			imageSeriesSettings.add(imageSeriesSpitzerImagesCheckBox);
 			JCheckBox imageSeriesWiseImagesCheckBox = new JCheckBox("WISE", imageSeriesWiseImages);
 			imageSeriesSettings.add(imageSeriesWiseImagesCheckBox);
+			JCheckBox imageSeriesWiseTimeSeriesCheckBox = new JCheckBox("WISE time series", imageSeriesWiseTimeSeries);
+			imageSeriesSettings.add(imageSeriesWiseTimeSeriesCheckBox);
 			JCheckBox imageSeriesUkidssImagesCheckBox = new JCheckBox("UKIDSS", imageSeriesUkidssImages);
 			imageSeriesSettings.add(imageSeriesUkidssImagesCheckBox);
 			JCheckBox imageSeriesUhsImagesCheckBox = new JCheckBox("UHS", imageSeriesUhsImages);
@@ -712,6 +718,7 @@ public class SettingsTab implements Tab {
 					imageSeriesSdssImages = imageSeriesSdssImagesCheckBox.isSelected();
 					imageSeriesSpitzerImages = imageSeriesSpitzerImagesCheckBox.isSelected();
 					imageSeriesWiseImages = imageSeriesWiseImagesCheckBox.isSelected();
+					imageSeriesWiseTimeSeries = imageSeriesWiseTimeSeriesCheckBox.isSelected();
 					imageSeriesUkidssImages = imageSeriesUkidssImagesCheckBox.isSelected();
 					imageSeriesUhsImages = imageSeriesUhsImagesCheckBox.isSelected();
 					imageSeriesVhsImages = imageSeriesVhsImagesCheckBox.isSelected();
@@ -811,6 +818,7 @@ public class SettingsTab implements Tab {
 				USER_SETTINGS.setProperty(IMAGE_SERIES_TWOMASS_IMAGES, String.valueOf(imageSeriesTwoMassImages));
 				USER_SETTINGS.setProperty(IMAGE_SERIES_SPITZER_IMAGES, String.valueOf(imageSeriesSpitzerImages));
 				USER_SETTINGS.setProperty(IMAGE_SERIES_WISE_IMAGES, String.valueOf(imageSeriesWiseImages));
+				USER_SETTINGS.setProperty(IMAGE_SERIES_WISE_TIME_SERIES, String.valueOf(imageSeriesWiseTimeSeries));
 
 				// Catalogs
 				selectedCatalogs = new ArrayList<>();

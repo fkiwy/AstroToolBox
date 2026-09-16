@@ -97,6 +97,7 @@ public class ImageSeriesTab implements Tab {
 	private boolean twoMassImages = true;
 	private boolean spitzerImages = true;
 	private boolean wiseImagesEnabled = true;
+	private boolean wiseTimeSeries = true;
 
 	public ImageSeriesTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
 		this.baseFrame = baseFrame;
@@ -940,7 +941,7 @@ public class ImageSeriesTab implements Tab {
 		// WISE time series
 		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 		List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
-		if (wiseImagesEnabled && flipbook != null) {
+		if (wiseTimeSeries && flipbook != null) {
 			bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 			for (int i = 0; i < flipbook.size(); i++) {
@@ -1145,6 +1146,10 @@ public class ImageSeriesTab implements Tab {
 
 	public void setWiseImages(boolean wiseImagesEnabled) {
 		this.wiseImagesEnabled = wiseImagesEnabled;
+	}
+
+	public void setWiseTimeSeries(boolean wiseTimeSeries) {
+		this.wiseTimeSeries = wiseTimeSeries;
 	}
 
 }
