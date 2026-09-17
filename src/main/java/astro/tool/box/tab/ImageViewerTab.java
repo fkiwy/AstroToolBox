@@ -55,6 +55,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
@@ -310,6 +311,7 @@ public class ImageViewerTab implements Tab {
 	private boolean timerStopped;
 	private boolean hasException;
 	private boolean asyncDownloads;
+	private CompletableFuture<Boolean> flipbookFuture;
 	private boolean legacyImages;
 	private boolean panstarrsImages;
 	private boolean vhsImages;
@@ -2585,9 +2587,23 @@ public class ImageViewerTab implements Tab {
 
 	public void createFlipbook() {
 		if (asyncDownloads) {
-			CompletableFuture.supplyAsync(() -> assembleFlipbook());
+			flipbookFuture = CompletableFuture.supplyAsync(() -> assembleFlipbook());
 		} else {
-			assembleFlipbook();
+			flipbookFuture = CompletableFuture.completedFuture(assembleFlipbook());
+		}
+	}
+
+	public void waitForFlipbookReady() {
+		if (flipbookFuture == null) {
+			return;
+		}
+		try {
+			flipbookFuture.get();
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+			writeErrorLog(ex);
+		} catch (ExecutionException ex) {
+			writeErrorLog(ex);
 		}
 	}
 

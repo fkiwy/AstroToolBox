@@ -638,6 +638,7 @@ public class ImageSeriesTab implements Tab {
 	}
 
 	private void addWiseTimeSeries() {
+		imageViewerTab.waitForFlipbookReady();
 		List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
 		if (!wiseTimeSeries || flipbook == null || flipbook.isEmpty()) return;
 		wiseImages = new ArrayList<>();
