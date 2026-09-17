@@ -129,6 +129,8 @@ public class UhsCatalogEntry implements CatalogEntry, ProperMotionQuery, ProperM
 	private static String downloadHtmlFromUrl(String url) throws IOException {
 		StringBuilder content = new StringBuilder();
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+		connection.setConnectTimeout(10000);
+		connection.setReadTimeout(15000);
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 			String line;
 			while ((line = reader.readLine()) != null) {

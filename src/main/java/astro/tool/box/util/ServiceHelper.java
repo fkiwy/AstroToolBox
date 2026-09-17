@@ -72,9 +72,25 @@ public class ServiceHelper {
 			}
 		}
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection(webProxy == null ? Proxy.NO_PROXY : webProxy);
+		configureHttpConnection(connection);
+		try {
+			if (webProxy != null && connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+				// Some legacy endpoints can return 500 via a configured HTTP proxy even though
+				// the same URL is accessible directly without the proxy.
+				connection.disconnect();
+				connection = (HttpURLConnection) new URL(url).openConnection(Proxy.NO_PROXY);
+				configureHttpConnection(connection);
+			}
+		} catch (IOException ex) {
+			connection.disconnect();
+			throw ex;
+		}
+		return connection;
+	}
+
+	private static void configureHttpConnection(HttpURLConnection connection) {
 		connection.setConnectTimeout(10000);
 		connection.setReadTimeout(15000);
-		return connection;
 	}
 
 	public static String readResponse(HttpURLConnection connection, String serviceProvider) {

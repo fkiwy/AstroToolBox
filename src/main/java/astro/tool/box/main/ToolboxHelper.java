@@ -1146,14 +1146,17 @@ public class ToolboxHelper {
 	private static HttpURLConnection establishNearInfraredFitsConnection(String imageUrl) throws IOException {
 		HttpURLConnection connection = establishHttpConnection(imageUrl);
 		configureNearInfraredFitsConnection(connection);
-		if (connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-			// The legacy WSA CGI can return 500 when its response is routed through a
-			// configured HTTP proxy, even though the same URL is directly accessible.
+		try {
+			if (connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+				// The legacy WSA CGI can return 500 when its response is routed through a
+				// configured HTTP proxy, even though the same URL is directly accessible.
+				connection.disconnect();
+				connection = (HttpURLConnection) new URL(imageUrl).openConnection(Proxy.NO_PROXY);
+				configureNearInfraredFitsConnection(connection);
+			}
+		} catch (IOException ex) {
 			connection.disconnect();
-			connection = (HttpURLConnection) new URL(imageUrl).openConnection(Proxy.NO_PROXY);
-			connection.setConnectTimeout(10000);
-			connection.setReadTimeout(15000);
-			configureNearInfraredFitsConnection(connection);
+			throw ex;
 		}
 		return connection;
 	}
@@ -1170,6 +1173,8 @@ public class ToolboxHelper {
 	}
 
 	private static void configureNearInfraredFitsConnection(HttpURLConnection connection) {
+		connection.setConnectTimeout(10000);
+		connection.setReadTimeout(15000);
 		connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 		connection.setRequestProperty("Accept", "application/fits, application/octet-stream;q=0.9, */*;q=0.8");
 	}
