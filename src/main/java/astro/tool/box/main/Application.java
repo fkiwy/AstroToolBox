@@ -133,7 +133,7 @@ public class Application {
 		}
 
 		SettingsTab settingsTab = new SettingsTab(baseFrame, tabbedPane, catalogQueryTab, imageViewerTab,
-				batchQueryTab);
+				imageSeriesTab, batchQueryTab);
 		settingsTab.init(true);
 
 		baseFrame.setLocationRelativeTo(null);
@@ -149,8 +149,8 @@ public class Application {
 					String currentVersion = PGM_VERSION;
 					String latestVersion = "Not available!";
 					LocalDate referenceDate = LocalDate.now().minusMonths(1);
-					LocalDate releaseDate = LocalDate.MIN;
-					String versionMessage = "";
+					LocalDate latestReleaseDate = LocalDate.MIN;
+					String latestVersionMessage = "";
 					try (Scanner scanner = new Scanner(response)) {
 						while (scanner.hasNextLine()) {
 							String[] values = CSVParser.parseLine(scanner.nextLine());
@@ -159,19 +159,17 @@ public class Application {
 									Integer.parseInt(values[4]), values[5]);
 							if (version.isLatest()) {
 								latestVersion = version.getNumber();
-								versionMessage = version.getMessage();
-							}
-							if (currentVersion.equals(version.getNumber())) {
-								releaseDate = version.getDate();
+								latestReleaseDate = version.getDate();
+								latestVersionMessage = version.getMessage();
 							}
 						}
 					}
-					int latestVersion_num = Integer.parseInt(latestVersion.replace(".", ""));
-					int currentVersion_num = Integer.parseInt(currentVersion.replace(".", ""));
-					if (currentVersion_num < latestVersion_num) {
-						long remainingDays = DAYS.between(referenceDate, releaseDate);
-						showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays, versionMessage);
-						if (referenceDate.isEqual(releaseDate) || referenceDate.isAfter(releaseDate)) {
+					int latestVersionNumber = Integer.parseInt(latestVersion.replace(".", ""));
+					int currentVersionNumber = Integer.parseInt(currentVersion.replace(".", ""));
+					if (currentVersionNumber < latestVersionNumber) {
+						long remainingDays = DAYS.between(referenceDate, latestReleaseDate);
+						showVersionPanel(baseFrame, currentVersion, latestVersion, remainingDays, latestVersionMessage);
+						if (referenceDate.isEqual(latestReleaseDate) || referenceDate.isAfter(latestReleaseDate)) {
 							System.exit(0);
 						}
 					}

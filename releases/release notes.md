@@ -1,5 +1,11 @@
 ## Release notes
 
+### AstroToolBox v4.6.1
+- Fixed version expiration grace period calculation
+- Added Image Series survey display controls to the Settings tab
+- Parallelized image downloads for surveys in the Image Series tab
+- Refactored HTTP connection and timeout handling
+
 ### AstroToolBox v4.6.0
 - Added a new SPHEREx Viewer tab for extracting and visualizing SPHEREx spectra
 - Added SPHEREx image stacking with WCS-based reprojection, outlier rejection, and data sanitization

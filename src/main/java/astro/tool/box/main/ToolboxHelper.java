@@ -52,7 +52,9 @@ import java.awt.image.WritableRaster;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
@@ -77,7 +79,7 @@ import static astro.tool.box.util.ServiceHelper.readResponse;
 public class ToolboxHelper {
 
 	public static final String PGM_NAME = "AstroToolBox";
-	public static final String PGM_VERSION = "4.6.0";
+	public static final String PGM_VERSION = "4.6.1";
 	public static final String RELEASES_URL = "https://fkiwy.github.io/AstroToolBox/releases/";
 	public static final String DOCUMENTS_URL = "https://github.com/fkiwy/AstroToolBox/blob/master/doc/";
 
@@ -89,6 +91,7 @@ public class ToolboxHelper {
 
 	private static final String ERROR_FILE_NAME = "/AstroToolBoxError.txt";
 	private static final String ERROR_FILE_PATH = USER_HOME + ERROR_FILE_NAME;
+	private static final long MAX_ERROR_LOG_FILE_SIZE = 10L * 1024 * 1024;
 
 	public static int BASE_FRAME_WIDTH = 1275;
 	public static int BASE_FRAME_HEIGHT = 875;
@@ -203,9 +206,16 @@ public class ToolboxHelper {
 		writeLogEntry(formatMessage(message));
 	}
 
-	private static void writeLogEntry(String entry) {
+	private static synchronized void writeLogEntry(String entry) {
 		try {
-			Files.write(Paths.get(ERROR_FILE_PATH), entry.getBytes(), StandardOpenOption.CREATE,
+			byte[] logEntry = entry.getBytes(StandardCharsets.UTF_8);
+			Path errorLogPath = Paths.get(ERROR_FILE_PATH);
+			if (Files.exists(errorLogPath)
+					&& Files.size(errorLogPath) + logEntry.length > MAX_ERROR_LOG_FILE_SIZE) {
+				Files.write(errorLogPath, new byte[0], StandardOpenOption.TRUNCATE_EXISTING,
+						StandardOpenOption.WRITE);
+			}
+			Files.write(errorLogPath, logEntry, StandardOpenOption.CREATE,
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
 		}
@@ -1036,7 +1046,7 @@ public class ToolboxHelper {
 		String[] filterIds = new String[]{"2", "3", "4", "5"};
 		for (String filterId : filterIds) {
 			String downloadUrl = surveyUrl.formatted(targetRa, targetDec, filterId, imageSize, imageSize);
-			String response = readResponse(establishHttpConnection(downloadUrl), surveyLabel);
+			String response = readNearInfraredResponse(establishHttpConnection(downloadUrl));
 			int i = 0;
 			String imageUrl = "";
 			String extNo = "";
@@ -1136,18 +1146,35 @@ public class ToolboxHelper {
 	private static HttpURLConnection establishNearInfraredFitsConnection(String imageUrl) throws IOException {
 		HttpURLConnection connection = establishHttpConnection(imageUrl);
 		configureNearInfraredFitsConnection(connection);
-		if (connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-			// The legacy WSA CGI can return 500 when its response is routed through a
-			// configured HTTP proxy, even though the same URL is directly accessible.
+		try {
+			if (connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+				// The legacy WSA CGI can return 500 when its response is routed through a
+				// configured HTTP proxy, even though the same URL is directly accessible.
+				connection.disconnect();
+				connection = (HttpURLConnection) new URL(imageUrl).openConnection(Proxy.NO_PROXY);
+				configureNearInfraredFitsConnection(connection);
+			}
+		} catch (IOException ex) {
 			connection.disconnect();
-			connection = (HttpURLConnection) new URL(imageUrl).openConnection(Proxy.NO_PROXY);
-			connection.setConnectTimeout(10000);
-			configureNearInfraredFitsConnection(connection);
+			throw ex;
 		}
 		return connection;
 	}
 
+	private static String readNearInfraredResponse(HttpURLConnection connection) {
+		try (InputStream stream = connection.getInputStream()) {
+			return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+		} catch (IOException ex) {
+			writeErrorLog(ex);
+			return "";
+		} finally {
+			connection.disconnect();
+		}
+	}
+
 	private static void configureNearInfraredFitsConnection(HttpURLConnection connection) {
+		connection.setConnectTimeout(10000);
+		connection.setReadTimeout(15000);
 		connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 		connection.setRequestProperty("Accept", "application/fits, application/octet-stream;q=0.9, */*;q=0.8");
 	}

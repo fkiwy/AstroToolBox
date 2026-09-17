@@ -30,6 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static astro.tool.box.function.AstrometricFunctions.*;
 import static astro.tool.box.function.NumericFunctions.roundTo3DecLZ;
@@ -45,6 +50,12 @@ import static java.lang.Math.sqrt;
 public class ImageSeriesTab implements Tab {
 
 	public static final String TAB_NAME = "Image Series";
+	private static final long SURVEY_TIMEOUT_SECONDS = 20;
+	private static final ExecutorService IMAGE_DOWNLOAD_EXECUTOR = Executors.newFixedThreadPool(4,
+			new ImageDownloadThreadFactory());
+	// A stalled WFA request must not occupy a worker needed by the other archives.
+	private static final ExecutorService NIR_DOWNLOAD_EXECUTOR = Executors.newFixedThreadPool(2,
+			new ImageDownloadThreadFactory());
 
 	private final JFrame baseFrame;
 	private final JTabbedPane tabbedPane;
@@ -87,6 +98,17 @@ public class ImageSeriesTab implements Tab {
 	private double prevTargetRa;
 	private double prevTargetDec;
 	private int prevFieldOfView;
+	private boolean legacyImages = true;
+	private boolean panstarrsImages = true;
+	private boolean vhsImages = true;
+	private boolean uhsImages = true;
+	private boolean ukidssImages = true;
+	private boolean sdssImages = true;
+	private boolean dssImages = true;
+	private boolean twoMassImages = true;
+	private boolean spitzerImages = true;
+	private boolean wiseImagesEnabled = true;
+	private boolean wiseTimeSeries = true;
 
 	public ImageSeriesTab(JFrame baseFrame, JTabbedPane tabbedPane, ImageViewerTab imageViewerTab) {
 		this.baseFrame = baseFrame;
@@ -456,488 +478,196 @@ public class ImageSeriesTab implements Tab {
 		}
 	}
 
+	/**
+	 * Downloads are deliberately parallel only at survey granularity.  A survey can
+	 * make several requests itself, but keeping those requests together prevents us
+	 * from flooding the remote archive servers.
+	 */
 	private void displayImages(double targetRa, double targetDec, int size) throws Exception {
-		JPanel bandPanel;
-
-		// ______________________________
-		// DSS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		int year_1b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue");
-		int year_1r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss1_red");
-		int year_2b = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue");
-		int year_2r = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red");
-		int year_2ir = getEpoch(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir");
-		// int year_2ir_1r_1b = getMeanEpoch(year_2ir, year_1r, year_1b);
-		int year_2ir_1r_1b = year_2ir;
-
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-		BufferedImage image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_blue&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 B", year_1b)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss1_red&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DSS1 R", year_1r)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_blue&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 B", year_2b)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_red&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DSS2 R", year_2r)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "dss", "dss_bands=poss2ukstu_ir&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR", year_2ir)));
-			timeSeries.add(new Couple(getImageLabel("DSS IR", year_2ir), new NirImage(year_2ir, image)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "dss", "file_type=colorimage");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DSS IR-R-B", year_2ir_1r_1b)));
+		List<CompletableFuture<SurveyResult>> downloads = new ArrayList<>();
+		if (dssImages) addDownload(downloads, downloadIrsaSurvey("DSS", targetRa, targetDec, size,
+				new String[][]{{"DSS1 B", "poss1_blue"}, {"DSS1 R", "poss1_red"},
+						{"DSS2 B", "poss2ukstu_blue"}, {"DSS2 R", "poss2ukstu_red"},
+						{"DSS IR", "poss2ukstu_ir"}, {"DSS IR-R-B", "colorimage"}}, "dss", "DSS IR"));
+		if (twoMassImages) addDownload(downloads, downloadIrsaSurvey("2MASS", targetRa, targetDec, size,
+				new String[][]{{"2MASS J", "j"}, {"2MASS H", "h"}, {"2MASS K", "k"},
+						{"2MASS K-H-J", "colorimage"}}, "2mass", "2MASS K"));
+		if (sdssImages) addDownload(downloads, downloadIrsaSurvey("SDSS", targetRa, targetDec, size,
+				new String[][]{{"SDSS u", "u"}, {"SDSS g", "g"}, {"SDSS r", "r"},
+						{"SDSS i", "i"}, {"SDSS z", "z"}, {"SDSS z-g-u", "colorimage"}}, "sdss", "SDSS z"));
+		if (spitzerImages) addDownload(downloads, downloadIrsaSurvey("Spitzer", targetRa, targetDec, size,
+				new String[][]{{"IRAC1", "spitzer.seip_science:IRAC1"}, {"IRAC2", "spitzer.seip_science:IRAC2"},
+						{"IRAC3", "spitzer.seip_science:IRAC3"}, {"IRAC4", "spitzer.seip_science:IRAC4"},
+						{"MIPS24", "spitzer.seip_science:MIPS24"}, {"IRAC3-2-1", "colorimage"}}, "seip", "IRAC4"));
+		if (wiseImagesEnabled) addDownload(downloads, downloadIrsaSurvey("WISE", targetRa, targetDec, size,
+				new String[][]{{"WISE W1", "1"}, {"WISE W2", "2"}, {"WISE W3", "3"},
+						{"WISE W4", "4"}, {"WISE W4-W2-W1", "colorimage"}}, "wise", "WISE W2"));
+		if (ukidssImages && targetDec > -5) addDownload(downloads, downloadNirSurvey(UKIDSS_LABEL, UKIDSS_SURVEY_URL, targetRa, targetDec, size));
+		if (uhsImages && targetDec > -5) addDownload(downloads, downloadNirSurvey(UHS_LABEL, UHS_SURVEY_URL, targetRa, targetDec, size));
+		if (vhsImages && targetDec < 5) addDownload(downloads, downloadNirSurvey(VHS_LABEL, VHS_SURVEY_URL, targetRa, targetDec, size));
+		if (panstarrsImages) addDownload(downloads, downloadPs1Survey(targetRa, targetDec, size));
+		if (legacyImages) {
+			addDownload(downloads, downloadDesiSurvey(targetRa, targetDec, size));
+			addDownload(downloads, downloadDesiHistory(targetRa, targetDec, size));
 		}
 
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ______________________________
-		// 2MASS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		int year_j = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=j");
-		int year_h = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=h");
-		int year_k = getEpoch(targetRa, targetDec, size, "2mass", "twomass_bands=k");
-		int year_k_h_j = getMeanEpoch(year_k, year_h, year_j);
-
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-		image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=j&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("2MASS J", year_j)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=h&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("2MASS H", year_h)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "2mass", "twomass_bands=k&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K", year_k)));
-			timeSeries.add(new Couple(getImageLabel("2MASS K", year_k), new NirImage(year_k, image)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "2mass", "file_type=colorimage");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("2MASS K-H-J", year_k_h_j)));
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ______________________________
-		// SDSS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		int year_u = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=u");
-		int year_g = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=g");
-		int year_r = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=r");
-		int year_i = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=i");
-		int year_z = getEpoch(targetRa, targetDec, size, "sdss", "sdss_bands=z");
-		int year_z_g_u = getMeanEpoch(year_z, year_g, year_u);
-
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-		image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=u&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("SDSS u", year_u)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=g&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("SDSS g", year_g)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=r&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("SDSS r", year_r)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=i&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("SDSS i", year_i)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "sdss", "sdss_bands=z&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z", year_z)));
-			timeSeries.add(new Couple(getImageLabel("SDSS z", year_z), new NirImage(year_z, image)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "sdss", "file_type=colorimage");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("SDSS z-g-u", year_z_g_u)));
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ______________________________
-		// Spitzer
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		int year_ch1 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1");
-		int year_ch2 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2");
-		int year_ch3 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3");
-		int year_ch4 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4");
-		int year_mips24 = getEpoch(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24");
-		int year_ch3_ch2_ch1 = getMeanEpoch(year_ch3, year_ch2, year_ch1);
-
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-		image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC1&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("IRAC1", year_ch1)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC2&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("IRAC2", year_ch2)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC3&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3", year_ch3)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:IRAC4&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("IRAC4", year_ch4)));
-			timeSeries.add(new Couple(getImageLabel("IIRAC4", year_ch4), new NirImage(SPITZER_EPOCH, image)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "seip", "seip_bands=spitzer.seip_science:MIPS24&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("MIPS24", year_mips24)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "seip", "file_type=colorimage");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("IRAC3-2-1", year_ch3_ch2_ch1)));
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ______________________________
-		// WISE
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		int year_w1 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=1");
-		int year_w2 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=2");
-		int year_w3 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=3");
-		int year_w4 = getEpoch(targetRa, targetDec, size, "wise", "wise_bands=4");
-		int year_w4_w2_w1 = getMeanEpoch(year_w4, year_w2, year_w1);
-
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-		image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=1&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("WISE W1", year_w1)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=2&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("WISE W2", year_w2)));
-			timeSeries.add(new Couple(getImageLabel("WISE W2", year_w2), new NirImage(ALLWISE_EPOCH, image)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=3&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("WISE W3", year_w3)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "wise", "wise_bands=4&type=jpgurl");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4", year_w4)));
-		}
-		image = retrieveImage(targetRa, targetDec, size, "wise", "file_type=colorimage");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("WISE W4-W2-W1", year_w4_w2_w1)));
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ______________________________
-		// UKIDSS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		if (targetDec > -5) {
-			Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UKIDSS_SURVEY_URL,
-					UKIDSS_LABEL);
-			if (!images.isEmpty()) {
-				bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-				for (Entry<String, NirImage> entry : images.entrySet()) {
-					String band = entry.getKey();
-					NirImage nirImage = entry.getValue();
-					image = nirImage.getImage();
-					int year = nirImage.getYear();
-					bandPanel.add(buildImagePanel(image, getImageLabel(UKIDSS_LABEL + " " + band, year)));
-					if (band.equals("K")) {
-						timeSeries.add(
-								new Couple(getImageLabel(UKIDSS_LABEL + " " + band, year), new NirImage(year, image)));
-					}
-				}
-				if (bandPanel.getComponentCount() > 0) {
-					centerPanel.add(bandPanel);
-					baseFrame.setVisible(true);
-					scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-				}
+		CompletableFuture.allOf(downloads.toArray(CompletableFuture[]::new)).join();
+		List<SurveyResult> results = downloads.stream().map(CompletableFuture::join).toList();
+		SwingUtilities.invokeAndWait(() -> {
+			// A later search may have started while these requests were in flight.
+			if (targetRa == this.targetRa && targetDec == this.targetDec && size == fieldOfView) {
+				displayDownloadedSurveys(results);
 			}
-		}
+		});
+	}
 
-		// ______________________________
-		// UHS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		if (targetDec > -5) {
-			Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, UHS_SURVEY_URL,
-					UHS_LABEL);
-			if (!images.isEmpty()) {
-				bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-				for (Entry<String, NirImage> entry : images.entrySet()) {
-					String band = entry.getKey();
-					NirImage nirImage = entry.getValue();
-					image = nirImage.getImage();
-					int year = nirImage.getYear();
-					bandPanel.add(buildImagePanel(image, getImageLabel(UHS_LABEL + " " + band, year)));
-					if (band.equals("K")) {
-						timeSeries.add(
-								new Couple(getImageLabel(UHS_LABEL + " " + band, year), new NirImage(year, image)));
-					}
-				}
-				if (bandPanel.getComponentCount() > 0) {
-					centerPanel.add(bandPanel);
-					baseFrame.setVisible(true);
-					scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-				}
+	private void addDownload(List<CompletableFuture<SurveyResult>> downloads, CompletableFuture<SurveyResult> download) {
+		downloads.add(download.completeOnTimeout(new SurveyResult("", List.of(), null), SURVEY_TIMEOUT_SECONDS,
+				TimeUnit.SECONDS));
+	}
+
+	private CompletableFuture<SurveyResult> downloadIrsaSurvey(String name, double ra, double dec, int size,
+			String[][] bands, String survey, String timeSeriesLabel) {
+		return CompletableFuture.supplyAsync(() -> {
+			List<SurveyImage> images = new ArrayList<>();
+			for (String[] band : bands) {
+				String value = band[1];
+				String archiveBand = value.equals("colorimage") ? "file_type=colorimage" : surveyBand(survey, value);
+				int year = value.equals("colorimage") ? 0 : getEpoch(ra, dec, size, survey, archiveBand);
+				BufferedImage image = retrieveImage(ra, dec, size, survey,
+						value.equals("colorimage") ? archiveBand : archiveBand + "&type=jpgurl");
+				if (image != null) images.add(new SurveyImage(band[0], year, image, band[0].equals(timeSeriesLabel)));
 			}
-		}
+			return new SurveyResult(name, images, null);
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult(name, List.of(), null));
+	}
 
-		// ______________________________
-		// VHS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		if (targetDec < 5) {
-			Map<String, NirImage> images = retrieveNearInfraredImages(targetRa, targetDec, size, VHS_SURVEY_URL,
-					VHS_LABEL);
-			if (!images.isEmpty()) {
-				bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-				for (Entry<String, NirImage> entry : images.entrySet()) {
-					String band = entry.getKey();
-					NirImage nirImage = entry.getValue();
-					image = nirImage.getImage();
-					int year = nirImage.getYear();
-					bandPanel.add(buildImagePanel(image, getImageLabel(VHS_LABEL + " " + band, year)));
-					if (band.equals("K")) {
-						timeSeries.add(
-								new Couple(getImageLabel(VHS_LABEL + " " + band, year), new NirImage(year, image)));
-					}
+	private String surveyBand(String survey, String band) {
+		return switch (survey) {
+			case "dss" -> "dss_bands=" + band;
+			case "2mass" -> "twomass_bands=" + band;
+			case "sdss" -> "sdss_bands=" + band;
+			case "wise" -> "wise_bands=" + band;
+			case "seip" -> "seip_bands=" + band;
+			default -> band;
+		};
+	}
+
+	private CompletableFuture<SurveyResult> downloadNirSurvey(String name, String url, double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				List<SurveyImage> images = new ArrayList<>();
+				for (Entry<String, NirImage> entry : retrieveNearInfraredImages(ra, dec, size, url, name).entrySet()) {
+					NirImage image = entry.getValue();
+					images.add(new SurveyImage(name + " " + entry.getKey(), image.getYear(), image.getImage(), entry.getKey().equals("K")));
 				}
-				if (bandPanel.getComponentCount() > 0) {
-					centerPanel.add(bandPanel);
-					baseFrame.setVisible(true);
-					scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-				}
+				return new SurveyResult(name, images, null);
+			} catch (Exception ex) { return new SurveyResult(name, List.of(), null); }
+		}, NIR_DOWNLOAD_EXECUTOR);
+	}
+
+	private CompletableFuture<SurveyResult> downloadPs1Survey(double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			Map<String, String> files = getPs1FileNames(ra, dec);
+			Map<String, Double> years = getPs1Epochs(ra, dec);
+			List<SurveyImage> images = new ArrayList<>();
+			for (String band : List.of("g", "r", "i", "z", "y")) {
+				BufferedImage image = retrievePs1Image("red=%s".formatted(files.get(band)), ra, dec, size, true);
+				images.add(new SurveyImage("PS1 " + band, years.getOrDefault(band, 0d).intValue(), image, band.equals("z")));
 			}
-		}
+			BufferedImage color = retrievePs1Image("red=%s&green=%s&blue=%s".formatted(files.get("y"), files.get("i"), files.get("g")), ra, dec, size, false);
+			images.add(new SurveyImage("PS1 y-i-g", 0, color, false));
+			return new SurveyResult("Pan-STARRS", images, getPanstarrsUrl(ra, dec, size, ImageType.WARP));
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult("Pan-STARRS", List.of(), null));
+	}
 
-		// ______________________________
-		// Pan-STARRS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		Map<String, String> imageInfos = getPs1FileNames(targetRa, targetDec);
-		if (!imageInfos.isEmpty()) {
-			Map<String, Double> years = getPs1Epochs(targetRa, targetDec);
-			year_g = years.get("g").intValue();
-			year_r = years.get("r").intValue();
-			year_i = years.get("i").intValue();
-			year_z = years.get("z").intValue();
-			int year_y = years.get("y").intValue();
-			int year_y_i_g = getMeanEpoch(year_y, year_i, year_g);
-
-			bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-			bandPanel.add(buildImagePanel(
-					retrievePs1Image("red=%s".formatted(imageInfos.get("g")), targetRa, targetDec, size, true),
-					getImageLabel("PS1 g", year_g)));
-			bandPanel.add(buildImagePanel(
-					retrievePs1Image("red=%s".formatted(imageInfos.get("r")), targetRa, targetDec, size, true),
-					getImageLabel("PS1 r", year_r)));
-			bandPanel.add(buildImagePanel(
-					retrievePs1Image("red=%s".formatted(imageInfos.get("i")), targetRa, targetDec, size, true),
-					getImageLabel("PS1 i", year_i)));
-			bandPanel.add(buildImagePanel(
-					image = retrievePs1Image("red=%s".formatted(imageInfos.get("z")), targetRa, targetDec, size, true),
-					getImageLabel("PS1 z", year_z)));
-			timeSeries.add(new Couple(getImageLabel("PS1 z", year_z), new NirImage(year_z, image)));
-			bandPanel.add(buildImagePanel(
-					retrievePs1Image("red=%s".formatted(imageInfos.get("y")), targetRa, targetDec, size, true),
-					getImageLabel("PS1 y", year_y)));
-			bandPanel.add(buildImagePanel(
-					retrievePs1Image("red=%s&green=%s&blue=%s".formatted(imageInfos.get("y"), imageInfos.get("i"),
-							imageInfos.get("g")), targetRa, targetDec, size, false),
-					getImageLabel("PS1 y-i-g", year_y_i_g)));
-
-			if (bandPanel.getComponentCount() > 0) {
-				bandPanel.add(
-						createHyperlink("WARP images", getPanstarrsUrl(targetRa, targetDec, size, ImageType.WARP)));
-				centerPanel.add(bandPanel);
-				baseFrame.setVisible(true);
-				scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+	private CompletableFuture<SurveyResult> downloadDesiSurvey(double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			List<SurveyImage> images = new ArrayList<>();
+			for (String band : List.of("g", "r", "z")) {
+				BufferedImage image = retrieveDesiImage(ra, dec, size, band, true);
+				if (image != null) images.add(new SurveyImage("DESI " + band, DESI_LS_EPOCH, image, band.equals("z")));
 			}
-		}
+			BufferedImage color = retrieveDesiImage(ra, dec, size, DESI_FILTERS, false);
+			if (color != null) images.add(new SurveyImage("DECaLS", DESI_LS_EPOCH, color, false));
+			return new SurveyResult("DESI LS", images, getLegacySingleExposuresUrl(ra, dec, DESI_LS_DR_PARAM));
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult("DESI LS", List.of(), null));
+	}
 
-		// ______________________________
-		// DESI LS
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+	private CompletableFuture<SurveyResult> downloadDesiHistory(double ra, double dec, int size) {
+		return CompletableFuture.supplyAsync(() -> {
+			List<SurveyImage> images = new ArrayList<>();
+			for (String[] layer : new String[][]{{"DESI DR5", "decals-dr5"}, {"DESI DR7", "decals-dr7"},
+					{"LS DR8", "ls-dr8"}, {"LS DR9", "ls-dr9"}, {"LS DR10", "ls-dr10"}}) {
+				BufferedImage image = retrieveDesiImage(ra, dec, size, DESI_FILTERS, false, layer[1]);
+				if (image != null) images.add(new SurveyImage(layer[0], 0, image, false));
+			}
+			return new SurveyResult("DESI LS time series", images, null);
+		}, IMAGE_DOWNLOAD_EXECUTOR).exceptionally(ex -> new SurveyResult("DESI LS time series", List.of(), null));
+	}
 
-		image = retrieveDesiImage(targetRa, targetDec, size, "g", true);
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DESI g", DESI_LS_DR_LABEL)));
+	private void displayDownloadedSurveys(List<SurveyResult> results) {
+		for (SurveyResult result : results) {
+			if (result.images().isEmpty()) continue;
+			JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			for (SurveyImage image : result.images()) panel.add(buildImagePanel(image.image(), getImageLabel(image.label(), image.year())));
+			if (result.name().equals("DESI LS time series") && result.images().size() > 2) {
+				desiImages = result.images().stream()
+					.map(image -> new Couple<>(image.label(), image.image())).toList();
+				createTimeSeriesTimer(panel, desiImages, desiTimeSeriesTimer = new Timer(500, null));
+				addGifSaveButton(panel, desiImages);
+			}
+			if (result.link() != null) panel.add(createHyperlink(result.name().equals("Pan-STARRS") ? "WARP images" : "Single exposures", result.link()));
+			centerPanel.add(panel);
+			for (SurveyImage image : result.images()) if (image.timeSeries()) timeSeries.add(new Couple<>(getImageLabel(image.label(), image.year()), new NirImage(image.year(), image.image())));
 		}
-		image = retrieveDesiImage(targetRa, targetDec, size, "r", true);
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DESI r", DESI_LS_DR_LABEL)));
-		}
-		image = retrieveDesiImage(targetRa, targetDec, size, "z", true);
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DESI z", DESI_LS_DR_LABEL)));
-			timeSeries.add(new Couple(getImageLabel("DESI z", DESI_LS_DR_LABEL), new NirImage(DESI_LS_EPOCH, image)));
-		}
-		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false);
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, getImageLabel("DECaLS", DESI_LS_DR_LABEL)));
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			bandPanel.add(createHyperlink("Single exposures",
-					getLegacySingleExposuresUrl(targetRa, targetDec, DESI_LS_DR_PARAM)));
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ________________________________________
-		// Cross survey time series
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
 		timeSeries.sort(Comparator.comparing(c -> c.b().getYear()));
-		List<Couple<String, BufferedImage>> imageList = new ArrayList();
-		for (Couple<String, NirImage> couple : timeSeries) {
-			bandPanel.add(buildImagePanel(couple.b().getImage(), couple.a()));
-			imageList.add(new Couple(couple.a(), couple.b().getImage()));
-		}
+		addCrossSurveyTimeSeries();
+		addWiseTimeSeries();
+		baseFrame.setVisible(true);
+		scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
+	}
 
-		timeSeriesTimer = new Timer(500, null);
-		createTimeSeriesTimer(bandPanel, imageList, timeSeriesTimer);
+	private void addCrossSurveyTimeSeries() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		List<Couple<String, BufferedImage>> images = new ArrayList<>();
+		for (Couple<String, NirImage> image : timeSeries) images.add(new Couple<>(image.a(), image.b().getImage()));
+		createTimeSeriesTimer(panel, images, timeSeriesTimer = new Timer(500, null));
+		if (images.size() > 1) addGifSaveButton(panel, images);
+		if (panel.getComponentCount() > 0) centerPanel.add(panel);
+	}
 
-		if (timeSeries.size() > 1) {
-			JButton saveButton = new JButton("Save as GIF");
-			bandPanel.add(saveButton);
-			saveButton.addActionListener((ActionEvent evt) -> {
-				try {
-					saveAnimatedGif(imageList, saveButton);
-				} catch (Exception ex) {
-					showExceptionDialog(baseFrame, ex);
-				}
-			});
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ________________________________________
-		// DESI LS time series
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "decals-dr5");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "DESI DR5"));
-			desiImages.add(new Couple("DESI DR5", image));
-		}
-		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "decals-dr7");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "DESI DR7"));
-			desiImages.add(new Couple("DESI DR7", image));
-		}
-		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "ls-dr8");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "LS DR8"));
-			desiImages.add(new Couple("LS DR8", image));
-		}
-		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "ls-dr9");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "LS DR9"));
-			desiImages.add(new Couple("LS DR9", image));
-		}
-		image = retrieveDesiImage(targetRa, targetDec, size, DESI_FILTERS, false, "ls-dr10");
-		if (image != null) {
-			bandPanel.add(buildImagePanel(image, "LS DR10"));
-			desiImages.add(new Couple("LS DR10", image));
-		}
-
-		if (desiImages.size() > 2) {
-			desiTimeSeriesTimer = new Timer(500, null);
-			createTimeSeriesTimer(bandPanel, desiImages, desiTimeSeriesTimer);
-			JButton saveButton = new JButton("Save as GIF");
-			bandPanel.add(saveButton);
-			saveButton.addActionListener((ActionEvent evt) -> {
-				try {
-					saveAnimatedGif(desiImages, saveButton);
-				} catch (Exception ex) {
-					showExceptionDialog(baseFrame, ex);
-				}
-			});
-		}
-
-		if (bandPanel.getComponentCount() > 0) {
-			centerPanel.add(bandPanel);
-			baseFrame.setVisible(true);
-			scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-		}
-
-		// ________________________________________
-		// WISE time series
-		// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+	private void addWiseTimeSeries() {
+		imageViewerTab.waitForFlipbookReady();
 		List<FlipbookComponent> flipbook = imageViewerTab.getFlipbook();
-		if (flipbook != null) {
-			bandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		if (!wiseTimeSeries || flipbook == null || flipbook.isEmpty()) return;
+		wiseImages = new ArrayList<>();
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		for (int i = 0; i < flipbook.size(); i++) {
+			FlipbookComponent component = flipbook.get(i);
+			BufferedImage image = imageViewerTab.processImage(component, i);
+			panel.add(buildImagePanel(image, component.getTitle()));
+			wiseImages.add(new Couple<>(component.getTitle(), image));
+		}
+		createTimeSeriesTimer(panel, wiseImages, wiseTimeSeriesTimer = new Timer(500, null));
+		addGifSaveButton(panel, wiseImages);
+		centerPanel.add(panel);
+	}
 
-			for (int i = 0; i < flipbook.size(); i++) {
-				FlipbookComponent component = flipbook.get(i);
-				image = imageViewerTab.processImage(component, i);
-				bandPanel.add(buildImagePanel(image, component.getTitle()));
-				wiseImages.add(new Couple(component.getTitle(), image));
-			}
+	private void addGifSaveButton(JPanel panel, List<Couple<String, BufferedImage>> images) {
+		JButton saveButton = new JButton("Save as GIF");
+		panel.add(saveButton);
+		saveButton.addActionListener(event -> { try { saveAnimatedGif(images, saveButton); } catch (Exception ex) { showExceptionDialog(baseFrame, ex); } });
+	}
 
-			wiseTimeSeriesTimer = new Timer(500, null);
-			createTimeSeriesTimer(bandPanel, wiseImages, wiseTimeSeriesTimer);
-
-			JButton saveButton = new JButton("Save as GIF");
-			bandPanel.add(saveButton);
-			saveButton.addActionListener((ActionEvent evt) -> {
-				try {
-					saveAnimatedGif(wiseImages, saveButton);
-				} catch (Exception ex) {
-					showExceptionDialog(baseFrame, ex);
-				}
-			});
-
-			if (bandPanel.getComponentCount() > 0) {
-				centerPanel.add(bandPanel);
-				baseFrame.setVisible(true);
-				scrollPanel.getVerticalScrollBar().setValue(centerPanel.getHeight());
-			}
+	private record SurveyImage(String label, int year, BufferedImage image, boolean timeSeries) { }
+	private record SurveyResult(String name, List<SurveyImage> images, String link) { }
+	private static final class ImageDownloadThreadFactory implements ThreadFactory {
+		private final AtomicInteger number = new AtomicInteger();
+		@Override public Thread newThread(Runnable task) {
+			Thread thread = new Thread(task, "image-survey-download-" + number.incrementAndGet());
+			thread.setDaemon(true);
+			return thread;
 		}
 	}
 
@@ -1075,6 +805,50 @@ public class ImageSeriesTab implements Tab {
 		imageViewerTab.getNoirlabOverlay().setSelected(false);
 		imageViewerTab.getTessOverlay().setSelected(false);
 		imageViewerTab.getDesOverlay().setSelected(false);
+	}
+
+	public void setLegacyImages(boolean legacyImages) {
+		this.legacyImages = legacyImages;
+	}
+
+	public void setPanstarrsImages(boolean panstarrsImages) {
+		this.panstarrsImages = panstarrsImages;
+	}
+
+	public void setVhsImages(boolean vhsImages) {
+		this.vhsImages = vhsImages;
+	}
+
+	public void setUhsImages(boolean uhsImages) {
+		this.uhsImages = uhsImages;
+	}
+
+	public void setUkidssImages(boolean ukidssImages) {
+		this.ukidssImages = ukidssImages;
+	}
+
+	public void setSdssImages(boolean sdssImages) {
+		this.sdssImages = sdssImages;
+	}
+
+	public void setDssImages(boolean dssImages) {
+		this.dssImages = dssImages;
+	}
+
+	public void setTwoMassImages(boolean twoMassImages) {
+		this.twoMassImages = twoMassImages;
+	}
+
+	public void setSpitzerImages(boolean spitzerImages) {
+		this.spitzerImages = spitzerImages;
+	}
+
+	public void setWiseImages(boolean wiseImagesEnabled) {
+		this.wiseImagesEnabled = wiseImagesEnabled;
+	}
+
+	public void setWiseTimeSeries(boolean wiseTimeSeries) {
+		this.wiseTimeSeries = wiseTimeSeries;
 	}
 
 }
